@@ -6,6 +6,7 @@
 """
 
 from django.conf.urls import re_path
+
 from seed.docs.views import faq_page
 
 urlpatterns = [

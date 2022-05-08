@@ -5,12 +5,13 @@
 from datetime import datetime
 from pathlib import Path
 
-from config.settings.common import TIME_ZONE
 from django.test import TestCase
 from django.utils.timezone import \
     make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from django.utils.timezone import get_current_timezone
 from pytz import timezone
+
+from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User

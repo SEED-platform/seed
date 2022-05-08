@@ -8,6 +8,7 @@ All rights reserved.
 
 """
 from rest_framework import serializers
+
 from seed.models import PostOfficeEmail as Email
 from seed.models import PostOfficeEmailTemplate as EmailTemplate
 

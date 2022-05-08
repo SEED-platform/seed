@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
+
 from seed.decorators import DecoratorMixin
 from seed.filters import LabelFilterBackend
 from seed.models import StatusLabel as Label

@@ -6,6 +6,7 @@
 """
 from django.conf import settings
 from django.conf.urls import include, re_path
+
 from seed.api.v1.urls import urlpatterns as apiv1
 from seed.api.v2.urls import urlpatterns as apiv2
 from seed.api.v2_1.urls import urlpatterns as apiv2_1

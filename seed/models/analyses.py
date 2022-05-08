@@ -7,6 +7,7 @@
 import logging
 
 from django.db import models
+
 from seed.analysis_pipelines.utils import get_json_path
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization

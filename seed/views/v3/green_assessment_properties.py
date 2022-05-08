@@ -10,6 +10,7 @@ All rights reserved.
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from seed.filtersets import GAPropertyFilterSet
 from seed.models import GreenAssessmentProperty
 from seed.serializers.certification import GreenAssessmentPropertySerializer

@@ -10,6 +10,7 @@ import re
 import string
 
 from django.db import models
+
 from seed.models import Organization
 
 _log = logging.getLogger(__name__)

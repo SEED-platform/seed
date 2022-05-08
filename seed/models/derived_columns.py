@@ -14,6 +14,7 @@ from django.db import models
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
 from quantityfield.units import ureg
+
 from seed.landing.models import Organization
 from seed.models.columns import Column
 from seed.models.properties import PropertyState
@@ -82,14 +83,8 @@ class ExpressionEvaluator:
         """Transforms expression tree into a result by applying operations.
         Should be used with the expression grammar above
         """
-        from operator import (
-            add,
-            sub,
-            mul,
-            truediv as div,
-            neg,
-            mod
-        )
+        from operator import add, mod, mul, neg, sub
+        from operator import truediv as div
 
         number = float
         min = min

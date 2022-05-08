@@ -7,6 +7,7 @@
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.status import HTTP_409_CONFLICT
+
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AnalysisMessage

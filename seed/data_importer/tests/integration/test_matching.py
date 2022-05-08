@@ -12,6 +12,7 @@ from functools import reduce
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
+
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
 from seed.data_importer.tests.util import (

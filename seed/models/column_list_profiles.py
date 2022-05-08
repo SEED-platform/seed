@@ -9,6 +9,7 @@ from collections import OrderedDict
 
 from django.apps import apps
 from django.db import models
+
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models import Column
 from seed.models.derived_columns import DerivedColumn

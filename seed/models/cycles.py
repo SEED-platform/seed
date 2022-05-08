@@ -9,6 +9,7 @@ from datetime import date, datetime
 
 from django.db import models
 from django.utils import timezone
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 

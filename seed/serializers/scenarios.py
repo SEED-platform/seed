@@ -5,6 +5,7 @@
 :author
 """
 from rest_framework import serializers
+
 from seed.models import Scenario
 from seed.serializers.base import ChoiceField
 from seed.serializers.measures import PropertyMeasureSerializer

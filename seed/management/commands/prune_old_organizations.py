@@ -10,10 +10,11 @@ from __future__ import unicode_literals
 
 import logging
 
-import seed.models
-import seed.tasks
 from _localtools import get_core_organizations
 from django.core.management.base import BaseCommand
+
+import seed.models
+import seed.tasks
 
 logging.basicConfig(level=logging.DEBUG)
 

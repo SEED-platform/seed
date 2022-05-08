@@ -14,6 +14,7 @@ from collections import OrderedDict
 
 import mock
 from django.core.exceptions import ValidationError
+
 from seed.landing.models import SEEDUser as User
 from seed.serializers.certification import (
     GreenAssessmentPropertySerializer,

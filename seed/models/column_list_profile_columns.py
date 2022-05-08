@@ -6,6 +6,7 @@
 """
 
 from django.db import models
+
 from seed.models import Column, ColumnListProfile
 
 

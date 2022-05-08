@@ -8,6 +8,7 @@ import json
 
 from django.urls import reverse_lazy
 from django.utils.text import slugify
+
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (

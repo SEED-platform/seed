@@ -14,6 +14,7 @@ from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
+
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle

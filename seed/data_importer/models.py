@@ -12,11 +12,12 @@ import math
 import tempfile
 from urllib.parse import unquote
 
-from config.utils import de_camel_case
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django_extensions.db.models import TimeStampedModel
+
+from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -912,11 +913,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         :return: QuerySet, list of model objects [either PropertyState or TaxLotState]
         """
 
-        from seed.models import (
-            PropertyState,
-            TaxLotState,
-            DATA_STATE_MAPPING
-        )
+        from seed.models import DATA_STATE_MAPPING, PropertyState, TaxLotState
 
         assert kls in [PropertyState,
                        TaxLotState], 'Must be one of our State objects [PropertyState, TaxLotState]!'

@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
+
 from seed.decorators import DecoratorMixin
 from seed.filters import InventoryFilterBackend, LabelFilterBackend
 from seed.models import PropertyView

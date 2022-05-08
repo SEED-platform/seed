@@ -9,6 +9,7 @@ All rights reserved.
 """
 
 from rest_framework import serializers
+
 from seed.models import Property
 from seed.serializers.properties import (
     PropertyLabelsField,

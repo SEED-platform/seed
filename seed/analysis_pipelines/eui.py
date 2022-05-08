@@ -8,6 +8,7 @@ import datetime
 import logging
 
 from celery import chain, shared_task
+
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,

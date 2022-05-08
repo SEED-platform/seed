@@ -8,8 +8,9 @@ from __future__ import absolute_import
 
 import os
 
-from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
+
+from config.settings.common import *  # noqa
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]

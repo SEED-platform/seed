@@ -13,6 +13,7 @@ import vcr
 from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState

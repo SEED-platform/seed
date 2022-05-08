@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from seed.landing.models import SEEDUser as User
 from seed.models import Property, PropertyView
 from seed.models import StatusLabel as Label

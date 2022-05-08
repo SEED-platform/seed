@@ -2,6 +2,7 @@
 # encoding: utf-8
 from django.contrib.gis.geos import Polygon
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState

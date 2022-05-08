@@ -8,6 +8,7 @@ All rights reserved.
 """
 
 from rest_framework import serializers
+
 from seed.models import ColumnMapping
 from seed.serializers.columns import ColumnSerializer
 

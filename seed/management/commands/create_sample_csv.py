@@ -10,6 +10,7 @@ import random
 from math import floor
 
 from django.core.management.base import BaseCommand
+
 from seed.test_helpers.fake import BaseFake
 
 

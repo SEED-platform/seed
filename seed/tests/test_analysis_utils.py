@@ -7,6 +7,7 @@
 from datetime import datetime as dt
 
 from django.test import TestCase
+
 from seed.analysis_pipelines.utils import (
     SimpleMeterReading,
     _split_reading,

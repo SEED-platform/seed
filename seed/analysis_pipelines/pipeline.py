@@ -8,6 +8,7 @@ from celery import shared_task
 from django.db import transaction
 from django.db.utils import OperationalError
 from django.utils import timezone as tz
+
 from seed.decorators import get_prog_key
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView
@@ -264,10 +265,10 @@ class AnalysisPipeline(abc.ABC):
         :returns: An implementation of AnalysisPipeline, e.g. BsyncrPipeline
         """
         # import here to avoid circular dependencies
-        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.better import BETTERPipeline
-        from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
+        from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)

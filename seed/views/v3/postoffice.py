@@ -10,6 +10,7 @@ All rights reserved.
 from django.conf import settings
 from django.forms.models import model_to_dict
 from post_office import mail
+
 from seed.models import (
     PostOfficeEmail,
     PostOfficeEmailTemplate,

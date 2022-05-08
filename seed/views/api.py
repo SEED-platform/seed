@@ -7,6 +7,7 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from seed.decorators import ajax_request
 from seed.utils.api import (
     api_endpoint,

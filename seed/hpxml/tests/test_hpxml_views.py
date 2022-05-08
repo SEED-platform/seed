@@ -8,6 +8,7 @@ from datetime import datetime
 
 from django.urls import reverse
 from django.utils import timezone
+
 from seed.landing.models import SEEDUser as User
 from seed.models import PropertyView, StatusLabel
 from seed.test_helpers.fake import (

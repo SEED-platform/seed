@@ -12,6 +12,8 @@ from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from unidecode import unidecode
+
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -20,7 +22,6 @@ from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
-from unidecode import unidecode
 
 logger = get_task_logger(__name__)
 

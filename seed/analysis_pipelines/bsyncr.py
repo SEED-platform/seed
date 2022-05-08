@@ -18,6 +18,7 @@ from django.core.files.images import ImageFile
 from django.db.models import Count
 from lxml import etree
 from lxml.builder import ElementMaker
+
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,

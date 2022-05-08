@@ -9,6 +9,7 @@ All rights reserved.
 """
 
 from rest_framework import serializers
+
 from seed.models import InventoryDocument
 from seed.serializers.base import ChoiceField
 

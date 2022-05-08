@@ -4,6 +4,7 @@
 import os
 
 from django.test import TestCase
+
 from seed.lib.mcm.reader import GreenButtonParser
 
 

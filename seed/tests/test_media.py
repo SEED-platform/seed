@@ -4,6 +4,7 @@ import tempfile
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
+
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import OrganizationUser

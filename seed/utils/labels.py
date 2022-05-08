@@ -8,6 +8,7 @@ All rights reserved.
 import json
 
 from rest_framework import response, status
+
 from seed import search
 from seed.serializers.labels import LabelSerializer
 

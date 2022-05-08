@@ -4,6 +4,7 @@
 """
 
 from django.db import connection, models
+
 from seed.models import Property, Scenario
 
 

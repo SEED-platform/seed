@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models.columns import Column
 from seed.models.derived_columns import (

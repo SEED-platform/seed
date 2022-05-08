@@ -8,6 +8,7 @@ import json
 import logging
 
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models import AnalysisMessage
 from seed.test_helpers.fake import (

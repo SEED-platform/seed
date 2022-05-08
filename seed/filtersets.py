@@ -18,6 +18,7 @@ from django.db.models import Q
 from django.utils.timezone import make_aware
 from django_filters import BaseInFilter, CharFilter, DateFilter, NumberFilter
 from django_filters.rest_framework import FilterSet
+
 from seed.models import (
     Cycle,
     GreenAssessment,

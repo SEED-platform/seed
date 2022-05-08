@@ -17,6 +17,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive
+
 from seed.models.columns import Column
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt

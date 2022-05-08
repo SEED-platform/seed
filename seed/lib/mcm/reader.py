@@ -19,10 +19,11 @@ from csv import DictReader, Sniffer
 
 import xmltodict
 from past.builtins import basestring
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from unidecode import unidecode
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
+
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 (
     XL_CELL_EMPTY,

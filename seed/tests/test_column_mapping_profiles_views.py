@@ -4,6 +4,7 @@
 from json import dumps, loads
 
 from django.urls import reverse
+
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import ASSESSED_RAW, Column, ColumnMappingProfile
 from seed.tests.util import DataMappingBaseTestCase

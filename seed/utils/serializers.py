@@ -8,6 +8,7 @@ All rights reserved.
 :author Fable Turas <fable@raintechpdx.com>
 """
 from rest_framework.compat import unicode_to_repr
+
 from seed.utils.api import OrgMixin
 
 

@@ -11,6 +11,7 @@ from tempfile import NamedTemporaryFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from rest_framework import status
+
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
 from seed.serializers.building_file import BuildingFileSerializer

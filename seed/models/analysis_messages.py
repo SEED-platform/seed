@@ -8,6 +8,7 @@ import json
 import logging
 
 from django.db import models
+
 from seed.models import Analysis, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)

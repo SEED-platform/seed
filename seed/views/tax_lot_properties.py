@@ -18,6 +18,7 @@ from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
+
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (

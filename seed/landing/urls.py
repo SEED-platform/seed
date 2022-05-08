@@ -12,6 +12,7 @@ from django.contrib.auth.views import (
     PasswordChangeView,
     logout_then_login
 )
+
 from seed.landing.views import (
     account_activation_sent,
     activate,

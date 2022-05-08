@@ -7,6 +7,7 @@
 import logging
 
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.merging import merging
 from seed.lib.merging.merging import get_state_attrs, get_state_to_state_tuple

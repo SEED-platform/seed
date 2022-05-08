@@ -6,6 +6,7 @@
 """
 
 from rest_framework import serializers
+
 from seed.models import StatusLabel
 from seed.models.data_quality import DataQualityCheck, Rule
 

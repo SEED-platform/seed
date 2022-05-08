@@ -13,12 +13,13 @@ import os.path as osp
 import pathlib
 import zipfile
 
-from config.settings.common import BASE_DIR
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
+
+from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import map_data, save_raw_data
