@@ -9,7 +9,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
-from seed.utils.geocode import bounding_box_wkt
+from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
 from seed.utils.ubid import centroid_wkt, decode_unique_ids
 
@@ -76,22 +76,32 @@ class UbidUtilMethods(TestCase):
 
         decode_unique_ids(properties)
         refreshed_property = PropertyState.objects.get(pk=property.id)
-        property_bounding_box_wkt = (
+        known_property_bounding_box = wkt_to_polygon(
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
             "-87.56043749999996 41.74514999999997, "
             "-87.56043749999996 41.74504999999999, "
             "-87.56021875000002 41.74504999999999))"
-        )
-        property_centroid_wkt = (
+        )['coordinates'][0]
+
+        known_property_centroid = wkt_to_polygon(
             "POLYGON ((-87.5603125 41.74509999999998, "
             "-87.5603125 41.74512499999997, "
             "-87.56034374999999 41.74512499999997, "
             "-87.56034374999999 41.74509999999998, "
             "-87.5603125 41.74509999999998))"
-        )
-        self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
-        self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
+        )['coordinates'][0]
+
+        # Need to check that these are almost equal. Underlying gdal methods
+        # vary slightly on linux vs mac
+        for index, coord in enumerate(wkt_to_polygon(bounding_box_wkt(refreshed_property))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_property_bounding_box[index][0])
+            self.assertAlmostEqual(coord[1], known_property_bounding_box[index][1])
+
+        for index, coord in enumerate(wkt_to_polygon(centroid_wkt(refreshed_property))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_property_centroid[index][0])
+            self.assertAlmostEqual(coord[1], known_property_centroid[index][1])
+
         self.assertAlmostEqual(refreshed_property.latitude, 41.7451)
         self.assertAlmostEqual(refreshed_property.longitude, -87.560328125)
 
@@ -106,22 +116,33 @@ class UbidUtilMethods(TestCase):
 
         decode_unique_ids(taxlots)
         refreshed_taxlot = TaxLotState.objects.get(pk=taxlot.id)
-        taxlot_bounding_box_wkt = (
+
+        known_taxlot_bounding_box = wkt_to_polygon(
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
             "-87.56043749999996 41.74514999999997, "
             "-87.56043749999996 41.74504999999999, "
             "-87.56021875000002 41.74504999999999))"
-        )
-        taxlot_centroid_wkt = (
+        )['coordinates'][0]
+
+        known_taxlot_centroid = wkt_to_polygon(
             "POLYGON ((-87.5603125 41.74509999999998, "
             "-87.5603125 41.74512499999997, "
             "-87.56034374999999 41.74512499999997, "
             "-87.56034374999999 41.74509999999998, "
             "-87.5603125 41.74509999999998))"
-        )
-        self.assertEqual(taxlot_bounding_box_wkt, bounding_box_wkt(refreshed_taxlot))
-        self.assertEqual(taxlot_centroid_wkt, centroid_wkt(refreshed_taxlot))
+        )['coordinates'][0]
+
+        # Need to check that these are almost equal. Underlying gdal methods
+        # vary slightly on linux vs mac
+        for index, coord in enumerate(wkt_to_polygon(bounding_box_wkt(refreshed_taxlot))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_taxlot_bounding_box[index][0])
+            self.assertAlmostEqual(coord[1], known_taxlot_bounding_box[index][1])
+
+        for index, coord in enumerate(wkt_to_polygon(centroid_wkt(refreshed_taxlot))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_taxlot_centroid[index][0])
+            self.assertAlmostEqual(coord[1], known_taxlot_centroid[index][1])
+
         self.assertAlmostEqual(refreshed_taxlot.latitude, 41.7451)
         self.assertAlmostEqual(refreshed_taxlot.longitude, -87.560328125)
 

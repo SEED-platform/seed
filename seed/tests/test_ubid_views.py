@@ -14,7 +14,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
-from seed.utils.geocode import bounding_box_wkt
+from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
 from seed.utils.ubid import centroid_wkt
 
@@ -53,22 +53,31 @@ class UbidViewTests(TestCase):
 
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
-        property_bounding_box_wkt = (
+        known_property_bounding_box = wkt_to_polygon(
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
             "-87.56043749999996 41.74514999999997, "
             "-87.56043749999996 41.74504999999999, "
             "-87.56021875000002 41.74504999999999))"
-        )
-        property_centroid_wkt = (
+        )['coordinates'][0]
+
+        known_property_centroid = wkt_to_polygon(
             "POLYGON ((-87.5603125 41.74509999999998, "
             "-87.5603125 41.74512499999997, "
             "-87.56034374999999 41.74512499999997, "
             "-87.56034374999999 41.74509999999998, "
             "-87.5603125 41.74509999999998))"
-        )
-        self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
-        self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
+        )['coordinates'][0]
+
+        # Need to check that these are almost equal. Underlying gdal methods
+        # vary slightly on linux vs mac
+        for index, coord in enumerate(wkt_to_polygon(bounding_box_wkt(refreshed_property))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_property_bounding_box[index][0])
+            self.assertAlmostEqual(coord[1], known_property_bounding_box[index][1])
+
+        for index, coord in enumerate(wkt_to_polygon(centroid_wkt(refreshed_property))['coordinates'][0]):
+            self.assertAlmostEqual(coord[0], known_property_centroid[index][0])
+            self.assertAlmostEqual(coord[1], known_property_centroid[index][1])
 
     def test_decode_ubid_results_returns_a_summary_dictionary(self):
         property_none_details = self.property_state_factory.get_details()
