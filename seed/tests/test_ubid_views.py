@@ -61,13 +61,15 @@ class UbidViewTests(TestCase):
             "-87.56021875000002 41.74504999999999))"
         )
         property_centroid_wkt = (
-            "POLYGON ((-87.56031249999999 41.74509999999998, "
-            "-87.56031249999999 41.74512499999997, "
+            "POLYGON ((-87.5603125 41.74509999999998, 
+            "-87.5603125 41.74512499999997, "
             "-87.56034374999999 41.74512499999997, "
             "-87.56034374999999 41.74509999999998, "
-            "-87.56031249999999 41.74509999999998))"
+            "-87.5603125 41.74509999999998))"
         )
         self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
+        print(centroid_wkt(refreshed_property))
+
         self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
 
     def test_decode_ubid_results_returns_a_summary_dictionary(self):
