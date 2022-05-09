@@ -3,8 +3,9 @@
 
 import logging
 
-from buildingid.code import decode
 from django.contrib.gis.geos import GEOSGeometry
+
+from buildingid.code import decode
 
 _log = logging.getLogger(__name__)
 
