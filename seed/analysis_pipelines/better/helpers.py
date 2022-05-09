@@ -1,15 +1,20 @@
-from collections import namedtuple
 import logging
 import pathlib
+from collections import namedtuple
 
 from django.core.files.base import File as BaseFile
 
-from seed.analysis_pipelines.pipeline import StopAnalysisTaskChain, AnalysisPipelineException
-from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
+from seed.analysis_pipelines.better.buildingsync import (
+    _parse_analysis_property_view_id
+)
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipelineException,
+    StopAnalysisTaskChain
+)
 from seed.models import (
     AnalysisMessage,
     AnalysisOutputFile,
-    AnalysisPropertyView,
+    AnalysisPropertyView
 )
 
 logger = logging.getLogger(__name__)

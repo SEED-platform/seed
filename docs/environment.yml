@@ -4,4 +4,4 @@ channels:
 dependencies:
   - gdal
   - pip:
-    - sphinxcontrib-spelling
+      - sphinxcontrib-spelling

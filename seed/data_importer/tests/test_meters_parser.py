@@ -2,35 +2,28 @@
 # encoding: utf-8
 
 
-from config.settings.common import TIME_ZONE
-
 from datetime import datetime
+from pathlib import Path
 
 from django.test import TestCase
-from django.utils.timezone import (
-    get_current_timezone,
-    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-)
-
+from django.utils.timezone import \
+    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+from django.utils.timezone import get_current_timezone
 from pytz import timezone
 
+from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Meter,
-    PropertyState,
-    PropertyView,
-)
+from seed.models import Meter, PropertyState, PropertyView
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
-    FakePropertyStateFactory,
+    FakePropertyStateFactory
 )
 from seed.utils.organizations import create_organization
-from pathlib import Path
-from seed.lib.mcm import reader
 
 
 class ThermalConversionTests(TestCase):

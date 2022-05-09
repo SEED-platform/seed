@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from datetime import datetime
@@ -10,10 +10,10 @@ import pytz
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
+from seed.lib.mcm.cleaners import date_cleaner
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
 from seed.utils.time import convert_datestr
-from seed.lib.mcm.cleaners import date_cleaner
 
 
 class DummyClass(object):

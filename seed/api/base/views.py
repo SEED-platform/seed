@@ -1,16 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 #
-# :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+# :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 # :author
 
-from rest_framework.reverse import reverse
-from django.http import HttpResponse
-from rest_framework import viewsets
 import json
 
-from seed.decorators import ajax_request
+from django.http import HttpResponse
+from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.reverse import reverse
+
+from seed.decorators import ajax_request
 
 
 class TestReverseViewSet(viewsets.ViewSet):

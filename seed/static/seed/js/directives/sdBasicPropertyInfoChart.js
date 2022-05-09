@@ -240,10 +240,3 @@ angular.module('sdBasicPropertyInfoChart', [])
       }]
     };
   }]);
-
-
-
-
-
-
-

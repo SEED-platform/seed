@@ -1,19 +1,28 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from django.conf import settings
 from django.conf.urls import re_path
 from django.contrib.auth.views import (
-    logout_then_login, PasswordChangeView, PasswordChangeDoneView
+    PasswordChangeDoneView,
+    PasswordChangeView,
+    logout_then_login
 )
 
 from seed.landing.views import (
-    landing_page, login_view, password_reset, password_reset_done,
-    password_reset_complete, signup, create_account, account_activation_sent, activate
+    account_activation_sent,
+    activate,
+    create_account,
+    landing_page,
+    login_view,
+    password_reset,
+    password_reset_complete,
+    password_reset_done,
+    signup
 )
 
 urlpatterns = [

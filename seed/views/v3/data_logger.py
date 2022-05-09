@@ -1,20 +1,20 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+from datetime import datetime, timedelta
+
+from django.db.utils import IntegrityError
+from pytz import timezone as pytztimezone
 from rest_framework import viewsets
+
+from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (PropertyView,
-                         DataLogger,
-                         )
+from seed.models import DataLogger, PropertyView
 from seed.models.sensors import Sensor
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.api import OrgMixin
-from django.db.utils import IntegrityError
-from datetime import datetime, timedelta
-from config.settings.common import TIME_ZONE
-from pytz import timezone as pytztimezone
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
 
 class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):

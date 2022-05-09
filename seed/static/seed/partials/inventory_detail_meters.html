@@ -20,10 +20,10 @@
             <span>
                 <h2>
                     <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                        <i class="fa fa-building-o"></i><span translate>Property</span> :
                     </span>
                     <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                     </span>
                     <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
                 </h2>

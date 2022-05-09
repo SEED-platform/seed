@@ -1,33 +1,25 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-
-from calendar import monthrange
-from config.settings.common import TIME_ZONE
-from datetime import (
-    datetime,
-    timedelta,
-)
 import re
+from calendar import monthrange
+from datetime import datetime, timedelta
 
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
 from pytz import timezone
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Meter,
-    PropertyState,
-    PropertyView,
-)
+from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
-    usage_point_id,
+    usage_point_id
 )
 from seed.lib.mcm import reader
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import Meter, PropertyState, PropertyView
 
 import logging
 _log = logging.getLogger(__name__)

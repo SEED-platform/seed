@@ -1,23 +1,19 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
+from random import randint
 
 from celery import shared_task
-
-from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.decorators import permission_required
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-
-from random import randint
-
-from rest_framework import status
-from rest_framework import viewsets, serializers
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
 from seed import tasks
@@ -26,21 +22,24 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     Organization,
-    OrganizationUser,
+    OrganizationUser
 )
-from seed.models import Cycle, PropertyView, TaxLotView, Column
+from seed.models import Column, Cycle, PropertyView, TaxLotView
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.utils.match import (
-    whole_org_match_merge_link,
-    matching_criteria_column_names,
-)
-from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.match import (
+    matching_criteria_column_names,
+    whole_org_match_merge_link
+)
+from seed.utils.organizations import (
+    create_organization,
+    create_suborganization
+)
 
 
 def _dict_org(request, organizations):
@@ -682,7 +681,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_decimal_places = posted_org.get('display_decimal_places')
-        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:  # noqa
+        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:
             org.display_decimal_places = desired_display_decimal_places
         elif desired_display_decimal_places is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(

@@ -1,0 +1,55 @@
+exclude: |
+  (?x)(
+    .*/migrations
+  )
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]
+      - id: check-ast
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-xml
+      - id: check-yaml
+        exclude: .*/templates
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: pretty-format-json
+        args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.10.1
+    hooks:
+      - id: isort
+        args:
+          [
+            -m=VERTICAL_HANGING_INDENT,
+            --skip=seed/models/__init__.py,
+            --filter-files,
+          ]
+  - repo: https://github.com/humitos/mirrors-autoflake.git
+    rev: v1.1
+    hooks:
+      - id: autoflake
+        args:
+          [
+            "--in-place",
+            "--recursive",
+            "--remove-all-unused-imports",
+            "--remove-unused-variable",
+          ]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        args: ["--ignore=F401,E402,E501,E731,W503,W504"]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v2.6.2
+    hooks:
+      - id: prettier
+        # for now ignoring css, scss, html, javascript
+        types_or: [yaml, markdown]

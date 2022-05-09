@@ -1,33 +1,25 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from django.core.files.uploadedfile import SimpleUploadedFile
-
 import logging
-
 import os.path as osp
-
-from quantityfield.units import ureg
 import pathlib
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from quantityfield.units import ureg
+
 from seed.data_importer import tasks
-from seed.data_importer.tests.util import (
-    FAKE_MAPPINGS,
-)
+from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_IMPORT,
-    Column,
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, Column
 from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
+    FakePropertyViewFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 

@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 :author Nicholas Long  <nicholas.long@nrel.gov>
 """
@@ -21,18 +21,18 @@ from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
-    PropertyAuditLog,
     Property,
+    PropertyAuditLog,
     PropertyState,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
+    TaxLotView
 )
 from seed.serializers.building_file import BuildingFileSerializer
-from seed.serializers.inventory_document import InventoryDocumentSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.inventory_document import InventoryDocumentSerializer
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer

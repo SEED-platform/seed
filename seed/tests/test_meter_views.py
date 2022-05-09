@@ -7,8 +7,8 @@ from django.urls import reverse
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.utils.organizations import create_organization
 from seed.tests.util import DataMappingBaseTestCase
+from seed.utils.organizations import create_organization
 
 
 class TestMeterValidTypesUnits(DataMappingBaseTestCase):

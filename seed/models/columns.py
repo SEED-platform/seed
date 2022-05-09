@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -13,12 +13,8 @@ from collections import OrderedDict
 from typing import Literal, Optional
 
 from django.apps import apps
-from django.db import IntegrityError
 from django.core.exceptions import ValidationError
-from django.db import (
-    models,
-    transaction,
-)
+from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
@@ -606,15 +602,15 @@ class Column(models.Model):
         :param force: boolean force the overwrite of data in the column?
         :return:
         """
-        from datetime import (
-            datetime as datetime_type,
-            date as date_type,
-        )
+        from datetime import date as date_type
+        from datetime import datetime as datetime_type
+
         from django.db.utils import DataError
         from pint.errors import DimensionalityError
-        from seed.models.properties import PropertyState
-        from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
         from quantityfield.units import ureg
+
+        from seed.models.properties import PropertyState
+        from seed.models.tax_lots import DATA_STATE_MATCHING, TaxLotState
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):

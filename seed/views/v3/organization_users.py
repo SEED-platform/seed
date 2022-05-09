@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -8,12 +8,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (ROLE_OWNER,
-                                             Organization,
-                                             OrganizationUser)
+from seed.lib.superperms.orgs.models import (
+    ROLE_OWNER,
+    Organization,
+    OrganizationUser
+)
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.views.v3.organizations import _get_js_role

@@ -2,7 +2,7 @@
 	<auc:Facilities>
     <auc:Facility>
       <auc:Sites>
-        <auc:Site>  
+        <auc:Site>
           <auc:ClimateZoneType>
             <auc:ASHRAE>
               <auc:ClimateZone>3C</auc:ClimateZone>

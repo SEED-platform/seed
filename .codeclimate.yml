@@ -5,10 +5,10 @@
 # http://docs.codeclimate.com/article/169-configuring-analysis-languages
 #
 languages:
-   Ruby: false
-   JavaScript: true
-   Python: true
-   PHP: false
+  Ruby: false
+  JavaScript: true
+  Python: true
+  PHP: false
 #
 # ---Exclude Files or Directories---
 # List the files or directories you would like excluded from our analysis.
@@ -16,4 +16,4 @@ languages:
 # http://docs.codeclimate.com/article/166-excluding-files-folders
 #
 exclude_paths:
- - "seed/static/vendors/*"
+  - "seed/static/vendors/*"
