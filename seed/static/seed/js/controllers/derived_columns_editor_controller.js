@@ -253,7 +253,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
             return {
               parameter_name: param.parameter_name,
               source_column: param.source_column.id,
-              source_column_type: 'dog'
+              source_column_derived: param.source_column.hasOwnProperty('expression')
             };
           })
         };

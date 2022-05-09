@@ -316,6 +316,7 @@ class DerivedColumnParameter(models.Model):
     # parameter_name must be a valid identifier according to Python
     # see: https://docs.python.org/3/reference/lexical_analysis.html#identifiers
     parameter_name = models.CharField(max_length=50, blank=False)
+    source_column_derived = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
