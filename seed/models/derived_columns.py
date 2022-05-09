@@ -276,6 +276,7 @@ class DerivedColumn(models.Model):
 
         if parameters is None:
             parameters = {}
+        
 
         inventory_parameters = {}
         if inventory_state is not None:
@@ -285,6 +286,9 @@ class DerivedColumn(models.Model):
         merged_parameters = copy.copy(parameters)
         merged_parameters.update(inventory_parameters)
         merged_parameters = _cast_params_to_floats(merged_parameters)
+
+        # determine if any source columns are derived_columns
+        self.check_for_source_columns_derived(inventory_state, merged_parameters)
 
         try:
             return self._cached_evaluator.evaluate(merged_parameters)
@@ -302,6 +306,13 @@ class DerivedColumn(models.Model):
                             f'    expression: {self.expression}\n'
                             f'    exception: {e}')
 
+    def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
+        dcps = self.derivedcolumnparameter_set.all()
+        for dcp in dcps:
+            if dcp.source_column_derived:
+                dc = DerivedColumn.objects.get(pk=dcp.source_column_id)
+                val = dc.evaluate(inventory_state)
+                merged_parameters[dcp.parameter_name] = val
 
 class DerivedColumnParameter(models.Model):
     """
