@@ -1058,7 +1058,7 @@ class Column(models.Model):
                     units_pint=field.get('from_units', None),
                     column_name=field['from_field'],
                     column_description=field['from_field'],
-                is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
                 _log.debug("Creating a new from_column")
 
