@@ -38,6 +38,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.organization = organization_payload.organization;
       $scope.property_sensor_usage = property_sensor_usage;
       $scope.filler_cycle = cycles.cycles[0].id;
+      $scope.showOnlyOccupiedReadings = false;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -95,20 +96,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           type: 'string'
         }, {
           field: 'location_identifier',
-          displayName: 'Location Identifier',        
+          displayName: 'Location Identifier',
           enableHiding: false
         }, {
           field: 'number_of_sensor',
-          displayName: 'Number of Sensor',        
+          displayName: 'Number of Sensor',
           enableHiding: false
         }, {
           name: 'actions',
           field: 'actions',
-          displayName: 'Actions',      
+          displayName: 'Actions',
           enableHiding: false,
           cellTemplate: '<div style="display: flex; justify-content: space-around; align-content: center">' +
-            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' + 
-            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' + 
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
             '</div>',
           enableColumnMenu: false,
           enableColumnMoving: false,
@@ -135,7 +136,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           enableHiding: false
         }, {
           field: 'location_identifier',
-          displayName: 'location identifier',        
+          displayName: 'location identifier',
           enableHiding: false
         },{
           field: 'units',
@@ -175,6 +176,41 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         fastWatch: true
       };
 
+      $scope.exportSensors = function (grid_data, data_type) {
+        let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
+        let keys = grid_data.columnDefs.map(c => c.field).filter(key => key != 'data_logger');
+        let data = [keys.join(',')];
+
+        grid_data.data.forEach(d => {
+          let row = [];
+          keys.forEach(k => row.push(d[k]));
+          data.push(row.join(','));
+        });
+
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
+      }
+      $scope.exportSensorUsages = function (grid_data, sensor_data, data_type) {
+        let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
+        let keys = grid_data.columnDefs.map(c => c.field)
+
+        // grid data headers are a combination of display name and data logger. Use sensor_data to make a conversion object
+        let display_to_column = {'timestamp': 'timestamp'}
+        sensor_data.data.forEach(sensor => {
+          display_to_column[`${sensor.display_name} (${sensor.data_logger})`] = sensor.column_name
+        })
+
+        let data = [keys.map(k => display_to_column[k]).join(',')];
+
+        grid_data.data.forEach(d => {
+          let row = []
+          keys.forEach(k => row.push(d[k]))
+          data.push(row.join(','))
+        });
+
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
+      }
+
+
       $scope.apply_column_settings = function () {
         _.forEach($scope.usageGridOptions.columnDefs, function (column) {
           column.enableHiding = false;
@@ -203,6 +239,11 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           'Year'
         ],
         selected: 'Exact'
+      };
+
+      $scope.toggled_show_only_occupied_reading = function (b) {
+        $scope.showOnlyOccupiedReadings = b
+        $scope.refresh_readings();
       };
 
       // given a list of sensor labels, it returns the filtered readings and column defs
@@ -268,6 +309,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           $scope.inventory.view_id,
           $scope.organization.id,
           $scope.interval.selected,
+          $scope.showOnlyOccupiedReadings,
           [] // Not excluding any sensors from the query
         ).then(function (usage) {
           // update the base data and reset filters
@@ -277,7 +319,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           spinner_utility.hide();
         });
       };
-      
+
       $scope.open_data_logger_upload_modal = function (data_logger) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_logger_upload_modal.html',

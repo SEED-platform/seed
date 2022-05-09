@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 import itertools
@@ -9,9 +9,9 @@ import itertools
 from django.test import TestCase
 
 from seed.utils.search import (
-    is_string_expression,
-    parse_expression,
     STRING_EXPRESSION_REGEX,
+    is_string_expression,
+    parse_expression
 )
 
 

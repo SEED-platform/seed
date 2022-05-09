@@ -1,11 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import copy
 import logging
@@ -14,12 +13,13 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
-from django.db import (
-    models,
-    transaction,
-    IntegrityError,
+from django.db import IntegrityError, models, transaction
+from django.db.models.signals import (
+    m2m_changed,
+    post_save,
+    pre_delete,
+    pre_save
 )
-from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from past.builtins import basestring
@@ -31,24 +31,23 @@ from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
-    StatusLabel,
     DATA_STATE,
-    DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_UNKNOWN,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
+    StatusLabel
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
-    split_model_fields,
     obj_to_dict,
+    split_model_fields
 )
-from seed.utils.time import convert_datestr
-from seed.utils.time import convert_to_js_timestamp
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
+from seed.utils.time import convert_datestr, convert_to_js_timestamp
+
+from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -605,12 +604,11 @@ class PropertyState(models.Model):
         :param state1: *State
         :param state2: *State - given priority over state1
         """
-        from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure
         from seed.models.scenarios import Scenario
+        from seed.models.simulations import Simulation
 
         # TODO: get some items off of this property view - labels and eventually notes
-
         # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
         building_files = [x for x in state2.building_files.all()]

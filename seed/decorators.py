@@ -1,17 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden
+)
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.serializers.pint import PintJSONEncoder
-from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
+from seed.utils.cache import get_lock, lock_cache, make_key, unlock_cache
 
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
@@ -172,7 +176,6 @@ def require_organization_id(func):
             int(request.GET['organization_id'])
         except (ValueError, KeyError):
             error = True
-            pass
 
         if error:
             format_type = 'application/json'

@@ -1,19 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import annotations
+
 import copy
 from typing import Any, Union
 
-from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.db import models
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
-
 from quantityfield.units import ureg
 
 from seed.landing.models import Organization
@@ -84,14 +83,8 @@ class ExpressionEvaluator:
         """Transforms expression tree into a result by applying operations.
         Should be used with the expression grammar above
         """
-        from operator import (
-            add,
-            sub,
-            mul,
-            truediv as div,
-            neg,
-            mod
-        )
+        from operator import add, mod, mul, neg, sub
+        from operator import truediv as div
 
         number = float
         min = min

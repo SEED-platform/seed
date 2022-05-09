@@ -1,18 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from celery import shared_task
-
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
 
-
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Column,
     Cycle,
@@ -21,9 +20,8 @@ from seed.models import (
     PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotView,
+    TaxLotView
 )
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.utils.merge import merge_states_with_views
 from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles

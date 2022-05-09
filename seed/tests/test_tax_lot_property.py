@@ -1,21 +1,27 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
+import time
+from random import randint
 
 from django.urls import reverse_lazy
+from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
-    Cycle,
-    PropertyView,
-    TaxLotProperty,
     Column,
+    Cycle,
     Note,
+    Property,
+    PropertyView,
+    TaxLotProperty
 )
+from seed.tasks import update_inventory_metadata
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -24,7 +30,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from xlrd import open_workbook
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):
@@ -214,6 +219,23 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
+
+    def test_refresh_metadata(self):
+        ids = []
+        for i in range(50):
+            p = self.property_view_factory.get_property_view()
+            ids.append(p.id)
+            self.properties.append(p.id)
+
+        property_views = PropertyView.objects.filter(id__in=ids)
+        updated_initial = list(map(lambda pv: pv.property.updated, property_views))
+        time.sleep(1)
+
+        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        update_inventory_metadata(ids, 'properties', progress_data.key)
+
+        for i, p in enumerate(Property.objects.filter(id__in=ids)):
+            self.assertGreater(p.updated, updated_initial[i])
 
     def tearDown(self):
         for x in self.properties:

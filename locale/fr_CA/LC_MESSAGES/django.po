@@ -2048,6 +2048,9 @@ msgstr "Reconnaître vide"
 msgid "Record from Source"
 msgstr "Enregistrement de la source"
 
+msgid "Refresh Metadata of Selected Properties and Tax Lots"
+msgstr "Actualiser les métadonnées des propriétés et terrains d'impôt sélectionnés"
+
 #: src/django-tos-master/tos/templates/tos/tos_check.html:18
 msgid "Reject"
 msgstr "Rejeter"
@@ -3132,6 +3135,9 @@ msgstr "propriété"
 #: seed/models/models.py:177
 msgid "red"
 msgstr "rouge"
+
+msgid "refresh metadata"
+msgstr "Actualiser les métadonnées"
 
 msgid "save"
 msgstr "enregistrer"

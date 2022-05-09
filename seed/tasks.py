@@ -1,21 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import absolute_import
 
+import math
 import sys
+from datetime import datetime
 
-from celery import chord, chain
-from celery import shared_task
+import pytz
+from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.template import Context, Template, loader
 from django.urls import reverse_lazy
-from django.template import Template, Context, loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -24,10 +26,10 @@ from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    DATA_STATE_MATCHING,
     Column,
     ColumnMapping,
     Cycle,
-    DATA_STATE_MATCHING,
     Property,
     PropertyState,
     PropertyView,
@@ -35,7 +37,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
-
 
 logger = get_task_logger(__name__)
 
@@ -407,3 +408,26 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
+
+
+@shared_task
+def update_inventory_metadata(ids, inventory_type, progress_key):
+    now = datetime.now(pytz.UTC)
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.total = 100
+    id_count = len(ids)
+    batch_size = math.ceil(id_count / 100)
+
+    if inventory_type == 'properties':
+        inventory = Property.objects.filter(id__in=ids)
+    else:
+        inventory = TaxLot.objects.filter(id__in=ids)
+
+    for idx, inv in enumerate(inventory):
+        inv.updated = now
+        inv.save()
+        if batch_size > 0 and idx % batch_size == 0:
+            progress_data.step(f'Refreshing ({idx}/{id_count}) ')
+
+    progress_data.finish_with_success()
+    return progress_data.result()['progress']

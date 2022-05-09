@@ -2031,6 +2031,9 @@ msgstr "Recognize Empty"
 msgid "Record from Source"
 msgstr "Record from Source"
 
+msgid "Refresh Metadata of Selected Properties and Tax Lots"
+msgstr "Refresh Metadata of Selected Properties and Tax Lots"
+
 #: src/django-tos-master/tos/templates/tos/tos_check.html:18
 msgid "Reject"
 msgstr "Reject"
@@ -3110,6 +3113,9 @@ msgstr "property"
 #: seed/models/models.py:177
 msgid "red"
 msgstr "red"
+
+msgid "refresh metadata"
+msgstr "Refresh Metadata"
 
 msgid "save"
 msgstr "save"

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
@@ -12,17 +12,14 @@ from django.utils.text import slugify
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     OrganizationUser
 )
-from seed.models import (
-    Project, ProjectPropertyView,
-    PropertyView
-)
+from seed.models import Project, ProjectPropertyView, PropertyView
 from seed.test_helpers import fake
-from seed.tests.util import FakeRequest, DeleteModelsTestCase
+from seed.tests.util import DeleteModelsTestCase, FakeRequest
 from seed.utils.organizations import create_organization
 
 DEFAULT_NAME = 'proj1'

@@ -1,6 +1,6 @@
+import datetime
 from calendar import monthrange
 from collections import defaultdict, namedtuple
-import datetime
 from statistics import mean, pstdev
 
 from dateutil import relativedelta

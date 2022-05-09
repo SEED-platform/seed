@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 """
 # pylint:disable=no-name-in-module
@@ -13,18 +13,18 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
+    Organization,
+    OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import (
-    get_org_or_id,
-    get_org_id,
-    get_user_org,
     SEEDOrgPermissions,
-    SEEDPublicPermissions
+    SEEDPublicPermissions,
+    get_org_id,
+    get_org_or_id,
+    get_user_org
 )
 from seed.utils.organizations import create_organization
 

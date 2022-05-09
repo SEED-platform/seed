@@ -1,8 +1,9 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 """
 from django.db import models
+
 from seed.models import Property
 
 
@@ -15,6 +16,7 @@ class DataLogger(models.Model):
 
     display_name = models.CharField(max_length=255)
     location_identifier = models.CharField(max_length=2047, default="")
+    is_occupied_data = models.JSONField(null=False, default=dict)
 
     class Meta:
         unique_together = ('property', 'display_name')
@@ -49,6 +51,7 @@ class SensorReading(models.Model):
         on_delete=models.CASCADE,
         related_name='sensor_readings',
     )
+    is_occupied = models.BooleanField(null=False)
 
     class Meta:
         unique_together = ('timestamp', 'sensor')

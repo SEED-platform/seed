@@ -1,14 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
 from datetime import datetime
 
-from django.urls import reverse, reverse_lazy
 from django.test import TestCase
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -17,6 +17,7 @@ from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
+    VIEW_LIST_TAXLOT,
     Column,
     ColumnMapping,
     PropertyView,
@@ -24,17 +25,18 @@ from seed.models import (
     TaxLot,
     TaxLotProperty,
     TaxLotView,
-    Unit,
-    VIEW_LIST_TAXLOT)
+    Unit
+)
 from seed.test_helpers.fake import (
-    FakeCycleFactory,
     FakeColumnFactory,
+    FakeColumnListProfileFactory,
+    FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
     FakeTaxLotFactory,
-    FakeColumnListProfileFactory,
+    FakeTaxLotStateFactory
 )
+from seed.tests.util import AssertDictSubsetMixin, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -45,7 +47,6 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
-from seed.tests.util import DeleteModelsTestCase, AssertDictSubsetMixin
 
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             # 'calculated_taxlot_ids', 'primary',
@@ -106,7 +107,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
-                                   {'organization_id': 666})
+                                   {'organization_id': 6666})
         self.assertEqual(403, response.status_code)
         j = response.json()
         self.assertEqual(j['status'], 'error')
