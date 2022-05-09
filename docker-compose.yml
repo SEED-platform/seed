@@ -1,6 +1,6 @@
 # Docker Compose creates multiple containers on a single machine.
 # run `docker-compose up` to create and run/link the containers
-version: '3.4'
+version: "3.4"
 services:
   db-postgres:
     container_name: seed_postgres
@@ -16,7 +16,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '5'
+        max-file: "5"
   db-redis:
     container_name: seed_redis
     image: redis:5.0.1
@@ -56,7 +56,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '5'
+        max-file: "5"
   web-celery:
     container_name: seed_celery
     image: seedplatform/seed:latest
@@ -82,9 +82,9 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: '5'
+        max-file: "5"
   #oep-city-1:
-    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+  # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
   #  container_name: seed_oep
   #  image: seedplatform/oep:1.6
   #  depends_on:

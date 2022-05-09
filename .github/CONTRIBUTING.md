@@ -1,7 +1,6 @@
-SEED Platform Contribution Policy
-=================================
-*Version 1.0*
+# SEED Platform Contribution Policy
 
+_Version 1.0_
 
 The SEED team welcomes your contribution to the project. You can contribute to the SEED platform
 project in several ways: by using the software, reporting issues, contributing documentation, or
@@ -11,63 +10,67 @@ incorporated into SEED and made available under the SEED license.
 
 The contribution process for SEED is composed of three steps:
 
-1.	Send consent email
+1.  Send consent email
 
-    In order for us to distribute your code as part of SEED under the SEED
-[license](https://github.com/SEED-platform/seed/blob/main/LICENSE), we’ll need
-your consent. An email acknowledging understanding of these terms and agreeing to them is
-all that will be asked of any contributor. Send an email to the SEED project manager (see
-below for the address) including the following text and a list of co-contributors (if any):
+        In order for us to distribute your code as part of SEED under the SEED
 
-    *I agree to contribute to SEED. I agree to the following terms and conditions for my
-contributions: First, I agree that I am licensing the copyright to my contributions under
-the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
-Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
-Department of Energy, and to all recipients of a version of SEED that includes my
-contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
-any patent claims owned by me, or owned by my employer and known to me, that are or will be,
-necessarily infringed upon by my contributions alone, or by combination of my contributions
-with the version of SEED to which they are contributed, to make, have made, use, offer to
-sell, sell, import, and otherwise transfer any version of SEED that includes my
-contributions, in source code and object code form. Third, I represent and warrant that I
-am authorized to make the contributions and grant the foregoing license(s). Additionally,
-if, to my knowledge, my employer has rights to intellectual property that covers my
-contributions, I represent and warrant that I have received permission to make these
-contributions and grant the foregoing license(s) on behalf of my employer.*
+    [license](https://github.com/SEED-platform/seed/blob/main/LICENSE), we’ll need
+    your consent. An email acknowledging understanding of these terms and agreeing to them is
+    all that will be asked of any contributor. Send an email to the SEED project manager (see
+    below for the address) including the following text and a list of co-contributors (if any):
 
-    Once we have your consent on file, you’ll only need to redo it if conditions change (e.g. a
-change of employer).
+        *I agree to contribute to SEED. I agree to the following terms and conditions for my
 
+    contributions: First, I agree that I am licensing the copyright to my contributions under
+    the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
+    Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
+    Department of Energy, and to all recipients of a version of SEED that includes my
+    contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
+    any patent claims owned by me, or owned by my employer and known to me, that are or will be,
+    necessarily infringed upon by my contributions alone, or by combination of my contributions
+    with the version of SEED to which they are contributed, to make, have made, use, offer to
+    sell, sell, import, and otherwise transfer any version of SEED that includes my
+    contributions, in source code and object code form. Third, I represent and warrant that I
+    am authorized to make the contributions and grant the foregoing license(s). Additionally,
+    if, to my knowledge, my employer has rights to intellectual property that covers my
+    contributions, I represent and warrant that I have received permission to make these
+    contributions and grant the foregoing license(s) on behalf of my employer.\*
 
-2.	Scope agreement and timeline commitment
+        Once we have your consent on file, you’ll only need to redo it if conditions change (e.g. a
 
-    If your contribution is small (e.g. a bug fix), simply submit your contribution via GitHub.
-If you find a bug, first make sure it is not an already known issue, then report it in the GitHub
-[issue tracker](https://github.com/SEED-platform/seed/issues) for this repository. If your
-contribution is larger (e.g. a new feature or new functionality/capability), we’ll need to evaluate
-your proposed contribution first. To do that, we need a written description of why you wish to
-contribute to SEED platform, a detailed description of the project that you are proposing, the
-precise functionalities that you plan to implement as part of the project, and a timeframe for
-implementation (see [here][seed-proposal] for the template contribution proposal document). After
-we review your materials, we will schedule a meeting or conference call to discuss your
-information in more detail. We may ask you to revise your materials and make changes to it,
-which we will re-review. Before you do any work we must reach prior agreement and written
-approval on project areas, scope, timeframe, expected contents, and functionalities to be
-addressed.
+    change of employer).
 
-3.	Technical contribution process
+2.  Scope agreement and timeline commitment
 
-    We want SEED to adhere to our established quality standards. As such, we ask that you follow
-our Agile development process - particularly with respect to
-[coding standards](https://github.com/SEED-platform/seed/wiki/Coding-Standards),
-code review, unit tests, and code coverage. These items are explained further below.
-Smaller, non-code contributions may not require as much review as code contributions,
-but all contributions will be reviewed. Code contributions will initially be in a source
-control branch, and then will be merged into the official SEED repository after review and
-approval. Any bugs, either discovered by you, us, or any users will be tracked in our issue
-tracker. We request you that you take full responsibility for correcting bugs. Be aware
-that, unless notified otherwise, the correction of bugs takes precedence over the
-submission or creation of new code.
+        If your contribution is small (e.g. a bug fix), simply submit your contribution via GitHub.
+
+    If you find a bug, first make sure it is not an already known issue, then report it in the GitHub
+    [issue tracker](https://github.com/SEED-platform/seed/issues) for this repository. If your
+    contribution is larger (e.g. a new feature or new functionality/capability), we’ll need to evaluate
+    your proposed contribution first. To do that, we need a written description of why you wish to
+    contribute to SEED platform, a detailed description of the project that you are proposing, the
+    precise functionalities that you plan to implement as part of the project, and a timeframe for
+    implementation (see [here][seed-proposal] for the template contribution proposal document). After
+    we review your materials, we will schedule a meeting or conference call to discuss your
+    information in more detail. We may ask you to revise your materials and make changes to it,
+    which we will re-review. Before you do any work we must reach prior agreement and written
+    approval on project areas, scope, timeframe, expected contents, and functionalities to be
+    addressed.
+
+3.  Technical contribution process
+
+        We want SEED to adhere to our established quality standards. As such, we ask that you follow
+
+    our Agile development process - particularly with respect to
+    [coding standards](https://github.com/SEED-platform/seed/wiki/Coding-Standards),
+    code review, unit tests, and code coverage. These items are explained further below.
+    Smaller, non-code contributions may not require as much review as code contributions,
+    but all contributions will be reviewed. Code contributions will initially be in a source
+    control branch, and then will be merged into the official SEED repository after review and
+    approval. Any bugs, either discovered by you, us, or any users will be tracked in our issue
+    tracker. We request you that you take full responsibility for correcting bugs. Be aware
+    that, unless notified otherwise, the correction of bugs takes precedence over the
+    submission or creation of new code.
 
 **Release Schedule** - Contributions should be aligned with the SEED release schedule. SEED is
 currently released publicly three times each year (approximately on the last workday of
@@ -127,6 +130,5 @@ SEED is developed in collaboration with NREL, LBNL, and private firms.
 **Documents**
 
 [SEED_Contribution_Proposal_v1.0_2019-12-10.docx][seed-proposal]
-
 
 [seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.0_2019-12-10.docx
