@@ -788,8 +788,13 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      const evaluateDerivedColumns = function() {
+        const x = 10;
+        return evaluateDerivedColumns_X()
+      }
+
       // evaluate all derived columns and add the results to the table
-      var evaluateDerivedColumns = function () {
+      var evaluateDerivedColumns_X = function () {
         const batch_size = 100;
         const batched_inventory_ids = [];
         let batch_index = 0;

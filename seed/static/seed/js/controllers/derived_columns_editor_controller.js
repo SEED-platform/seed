@@ -107,7 +107,8 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           errors: {},
           source_column: {
             id: param.source_column,
-            displayName: source_column ? source_column.displayName : ''
+            displayName: source_column ? source_column.displayName : '',
+            source_column_derived: source_column.hasOwnProperty('expression'),
           }
         };
       });
@@ -251,7 +252,8 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           parameters: $scope.parameters.map(param => {
             return {
               parameter_name: param.parameter_name,
-              source_column: param.source_column.id
+              source_column: param.source_column.id,
+              source_column_type: 'dog'
             };
           })
         };
