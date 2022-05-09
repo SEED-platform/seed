@@ -148,4 +148,3 @@ describe('When I go to the taxlot page', function () {
     browser.driver.navigate().refresh();
   }, 45000);
 });
-

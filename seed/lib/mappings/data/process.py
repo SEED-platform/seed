@@ -1,6 +1,6 @@
 import json
-from os.path import realpath, join, dirname
 import re
+from os.path import dirname, join, realpath
 
 f = open(join(dirname(realpath(__file__)), "pm-mapping-orig.json"))
 data = json.load(f)

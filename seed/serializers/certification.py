@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 """
 from collections import OrderedDict
@@ -15,11 +15,13 @@ from past.builtins import basestring
 from rest_framework import serializers
 
 from seed.models import (
-    GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
     PropertyView
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
-from seed.utils.api import OrgValidator, OrgValidateMixin
+from seed.utils.api import OrgValidateMixin, OrgValidator
 from seed.utils.strings import titlecase
 
 ASSESSMENT_VALIDATOR = OrgValidator('assessment', 'organization_id')

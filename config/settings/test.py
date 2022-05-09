@@ -1,11 +1,17 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import absolute_import
 
-from config.settings.common import *  # noqa
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
+import logging
+import os
+
 from celery.utils import LOG_LEVELS
+
+from config.settings.common import *  # noqa
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -34,7 +40,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
 # Testing
-INSTALLED_APPS += (
+INSTALLED_APPS += ( # noqa F405
     "django_nose",
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -75,8 +81,6 @@ LOGGING = {
     },
 }
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:
@@ -85,6 +89,6 @@ else:
     from config.settings.local_untracked import *  # noqa
 
 
-# suppress some logging -- only show warnings or greater
-# logging.getLogger('faker.factory').setLevel(logging.ERROR)
-# logging.disable(logging.WARNING)
+# suppress some logging on faker -- only show warnings or greater
+logging.getLogger('faker.factory').setLevel(logging.ERROR)
+logging.disable(logging.WARNING)

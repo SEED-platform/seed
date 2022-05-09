@@ -1,20 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 import logging
 
-from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.models import (
-    Note,
-)
-from seed.serializers.notes import (
-    NoteSerializer,
-)
+from seed.models import Note
+from seed.serializers.notes import NoteSerializer
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 _log = logging.getLogger(__name__)

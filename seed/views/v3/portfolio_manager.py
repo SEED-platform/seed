@@ -4,28 +4,24 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 
 import json
 import logging
 import time
+from urllib.parse import quote
 
 import requests
 import xmltodict
-
 from django.http import JsonResponse
-
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
 from seed.utils.api_schema import AutoSchemaHelper
-
-from urllib.parse import quote
 
 _log = logging.getLogger(__name__)
 

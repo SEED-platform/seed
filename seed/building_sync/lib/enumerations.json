@@ -4473,9 +4473,7 @@
     "name": "TelephoneNumber",
     "sub_name": null,
     "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
-    "enumerations": [
-
-    ],
+    "enumerations": [],
     "enumerations_html": "<ul><li></li></ul>"
   },
   {
@@ -5024,9 +5022,7 @@
     "name": "ZipCode",
     "sub_name": null,
     "documentation": "BuildingSync Schema - Version 1.0 (January 31, 2019)",
-    "enumerations": [
-
-    ],
+    "enumerations": [],
     "enumerations_html": "<ul><li></li></ul>"
   },
   {

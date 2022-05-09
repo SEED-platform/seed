@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from config.settings.common import TIME_ZONE
-
 from pytz import timezone
 
+from config.settings.common import TIME_ZONE
 from seed.lib.mcm import reader
 from seed.models import Sensor
 

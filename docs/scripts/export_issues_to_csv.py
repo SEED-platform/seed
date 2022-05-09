@@ -27,7 +27,7 @@ def add_issue_to_csv(issue):
     # import json
     # print(json.dumps(issue.as_dict(), indent=2))
     print("Adding Issue %s : %s" % (issue.number, issue.title))
-    labels = [l.name for l in issue.labels()]
+    labels = [label.name for label in issue.labels()]
     ids_added.append(issue.number)
     line = []
     line.append(int(issue.number))  # Github ID

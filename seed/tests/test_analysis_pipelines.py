@@ -1,37 +1,59 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from datetime import datetime
-from io import BytesIO
 import json
 import logging
+from datetime import datetime
+from io import BytesIO
 from os import path
-
-from seed.analysis_pipelines.utils import SimpleMeterReading
 from unittest.mock import patch
 from zipfile import ZipFile
-from lxml import etree
-from pytz import timezone as pytztimezone
-from requests import Response
-from quantityfield.units import ureg
 
 from django.db.models import Q
 from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
-from config.settings.common import TIME_ZONE, BASE_DIR
+from lxml import etree
+from pytz import timezone as pytztimezone
+from quantityfield.units import ureg
+from requests import Response
 
+from config.settings.common import BASE_DIR, TIME_ZONE
+from seed.analysis_pipelines.better.buildingsync import _build_better_input
+from seed.analysis_pipelines.bsyncr import (
+    PREMISES_ID_NAME,
+    BsyncrPipeline,
+    _build_bsyncr_input,
+    _parse_analysis_property_view_id
+)
+from seed.analysis_pipelines.eui import (
+    ERROR_INVALID_GROSS_FLOOR_AREA,
+    ERROR_INVALID_METER_READINGS,
+    EUI_ANALYSIS_MESSAGES,
+    TIME_PERIOD,
+    _calculate_eui,
+    _get_valid_meters
+)
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipeline,
+    AnalysisPipelineException,
+    analysis_pipeline_task,
+    task_create_analysis_property_views
+)
+from seed.analysis_pipelines.utils import SimpleMeterReading
+from seed.building_sync.building_sync import BuildingSync
+from seed.building_sync.mappings import NAMESPACES
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Meter,
-    MeterReading,
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
     AnalysisOutputFile,
-    AnalysisPropertyView
+    AnalysisPropertyView,
+    Meter,
+    MeterReading
 )
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
@@ -39,32 +61,9 @@ from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
+    FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
-from seed.analysis_pipelines.pipeline import (
-    AnalysisPipelineException,
-    AnalysisPipeline,
-    task_create_analysis_property_views,
-    analysis_pipeline_task
-)
-from seed.analysis_pipelines.better.buildingsync import _build_better_input
-from seed.analysis_pipelines.bsyncr import (
-    _build_bsyncr_input,
-    BsyncrPipeline,
-    _parse_analysis_property_view_id,
-    PREMISES_ID_NAME
-)
-from seed.analysis_pipelines.eui import (
-    _calculate_eui,
-    _get_valid_meters,
-    EUI_ANALYSIS_MESSAGES,
-    ERROR_INVALID_GROSS_FLOOR_AREA,
-    ERROR_INVALID_METER_READINGS,
-    TIME_PERIOD
-)
-from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import NAMESPACES
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +109,9 @@ class TestAnalysisPipeline(TestCase):
 
     def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
         from inspect import getmembers
+
         from celery import Task
+
         from seed.analysis_pipelines import tasks
 
         def is_celery_task(v):
