@@ -1,32 +1,24 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author 'Piper Merriam <pipermerriam@gmail.com>', Paul Munday<paul@paulmunday.net>
 
 Unit tests for seed/views/labels.py
 """
-from django.db import IntegrityError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
-from seed.models import (
-    ASSESSED_RAW,
-    Property,
-    PropertyView,
-    StatusLabel as Label,
-    TaxLot,
-    TaxLotView,
-)
+from seed.models import ASSESSED_RAW, Property, PropertyView
+from seed.models import StatusLabel as Label
+from seed.models import TaxLot, TaxLotView
 from seed.models.data_quality import DataQualityCheck, Rule
-from seed.tests.util import DataMappingBaseTestCase
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from seed.views.v3.label_inventories import (
-    LabelInventoryViewSet,
-)
+from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
 class TestLabelIntegrityChecks(DataMappingBaseTestCase):

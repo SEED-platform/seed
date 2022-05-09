@@ -1,11 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from django.contrib.postgres.aggregates.general import ArrayAgg
-
 from django.db.models.aggregates import Count
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
@@ -15,12 +14,12 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLotState,
-    TaxLotView,
+    TaxLotView
 )
 from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
     FakeCycleFactory,
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 

@@ -3,39 +3,35 @@
 
 import json
 import os
-
-from config.settings.common import TIME_ZONE
-
-from datetime import datetime
 import pathlib
+from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse
 from django.test import TestCase
-from django.utils.timezone import (
-    get_current_timezone,
-    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-)
-
+from django.urls import reverse
+from django.utils.timezone import \
+    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+from django.utils.timezone import get_current_timezone
 from pytz import timezone
 
+from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     ASSESSED_RAW,
-    DATA_STATE_MAPPING,
     DATA_STATE_DELETE,
+    DATA_STATE_MAPPING,
     Meter,
     MeterReading,
     Property,
     PropertyState,
-    PropertyView,
+    PropertyView
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
-    FakePropertyStateFactory,
+    FakePropertyStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization

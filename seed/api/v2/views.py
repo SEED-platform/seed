@@ -1,3 +1,5 @@
+import logging
+
 from django.http import JsonResponse
 from rest_framework import viewsets
 
@@ -5,7 +7,6 @@ from seed.decorators import ajax_request_class
 from seed.utils.api import api_endpoint_class
 from seed.utils.cache import get_cache
 
-import logging
 _log = logging.getLogger(__name__)
 
 

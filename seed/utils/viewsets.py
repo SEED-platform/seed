@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author: Fable Turas fable@raintechpdx.com
 
 This provides a custom DRF ModelViewSet for rendering SEED API views with the
@@ -15,15 +15,16 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 
 # Imports from Django
 from typing import Any
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
 from oauth2_provider.contrib.rest_framework import OAuth2Authentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
-    UpdateModelMixin,
+    UpdateModelMixin
 )
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
@@ -100,7 +101,6 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
     should instead extend SEEDOrgModelViewset and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
     """
-    pass
 
 
 class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
@@ -110,4 +110,3 @@ class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
     """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
     create, and destroy actions.
     """
-    pass

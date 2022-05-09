@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 """
@@ -10,8 +10,8 @@ that's where the display preference lives.
 """
 
 import re
-
 from builtins import str
+
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers

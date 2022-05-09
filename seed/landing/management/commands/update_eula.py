@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 """
@@ -9,8 +9,8 @@ Creates a new ToS entry from an html file.
 """
 from django.core.management.base import BaseCommand
 
-
 # TODO: This method is no longer used as of Django 1.10 upgrade.
+
 
 class Command(BaseCommand):
 

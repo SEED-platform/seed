@@ -1,10 +1,14 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
+
+import os
+
+from kombu import Exchange, Queue
 
 from config.settings.common import *  # noqa
 
@@ -42,8 +46,8 @@ ALLOWED_HOSTS = ['*']
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
-EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")
-DEFAULT_FROM_EMAIL = SERVER_EMAIL
+EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend") # noqa F405
+DEFAULT_FROM_EMAIL = SERVER_EMAIL # noqa F405
 POST_OFFICE = {
     'BACKENDS': {
         'default': EMAIL_BACKEND,
@@ -56,11 +60,11 @@ POST_OFFICE = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB,
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWORD,
+        'NAME': POSTGRES_DB, # noqa F405
+        'USER': POSTGRES_USER, # noqa F405
+        'PASSWORD': POSTGRES_PASSWORD, # noqa F405
         'HOST': "db-postgres",
-        'PORT': POSTGRES_PORT,
+        'PORT': POSTGRES_PORT, # noqa F405
     }
 }
 
@@ -72,7 +76,7 @@ if 'REDIS_PASSWORD' in os.environ:
             'LOCATION': "db-redis:6379",
             'OPTIONS': {
                 'DB': 1,
-                'PASSWORD': REDIS_PASSWORD,
+                'PASSWORD': REDIS_PASSWORD, # noqa F405
             },
             'TIMEOUT': 300
         }
@@ -125,13 +129,13 @@ LOGGING = {
     },
 }
 
-if 'default' in SECRET_KEY:
+if 'default' in SECRET_KEY: # noqa F405
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import raven
     RAVEN_CONFIG = {
-        'dsn': SENTRY_RAVEN_DSN,
+        'dsn': SENTRY_RAVEN_DSN, # noqa F405
         # If you are using git, you can also automatically configure the
         # release based on the git info.
         'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),

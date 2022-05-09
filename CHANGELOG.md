@@ -97,7 +97,7 @@ Closed Issues and Features (Total: 7):
 Date Range: 09/28/21 - 11/04/21
 
 Closed Issues and Features (Total: 36):
-- Feature [#2524]( https://github.com/SEED-platform/seed/issues/2524 ), Export CSV -- Need a status bar or spinner or something to indicate that program is still working 
+- Feature [#2524]( https://github.com/SEED-platform/seed/issues/2524 ), Export CSV -- Need a status bar or spinner or something to indicate that program is still working
 - Feature [#2557]( https://github.com/SEED-platform/seed/issues/2557 ), Create Analyses Section
 - Fixed [#2587]( https://github.com/SEED-platform/seed/issues/2587 ), Add admin tools
 - Fixed [#2651]( https://github.com/SEED-platform/seed/issues/2651 ), Analysis and Merge/Link Matches on Property Detail view on production server (and shouldn't be)
@@ -149,7 +149,7 @@ Closed Issues and Features (Total: 65):
 - Maintenance [#2379]( https://github.com/SEED-platform/seed/issues/2379 ), Refactor perms for several API v3 views
 - Fixed [#2433]( https://github.com/SEED-platform/seed/issues/2433 ), Upgrade dependencies, python 3.9
 - Fixed [#2490]( https://github.com/SEED-platform/seed/issues/2490 ), Update Python dependencies to re-enable Python package installation
-- Feature [#2511]( https://github.com/SEED-platform/seed/issues/2511 ), Inventory List: Hover over the notes icon and see the notes 
+- Feature [#2511]( https://github.com/SEED-platform/seed/issues/2511 ), Inventory List: Hover over the notes icon and see the notes
 - Feature [#2535]( https://github.com/SEED-platform/seed/issues/2535 ), BSyncr Analysis results should render image results when available
 - Fixed [#2574]( https://github.com/SEED-platform/seed/issues/2574 ), `eui` and `area` columns don't respect filter syntax
 - Fixed [#2654]( https://github.com/SEED-platform/seed/issues/2654 ), Report on user adoption

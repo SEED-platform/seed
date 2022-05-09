@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import csv
@@ -10,11 +10,11 @@ import os
 import pathlib
 import pprint
 import time
+from http.client import RemoteDisconnected
 
 import psutil
 import requests
 import urllib3
-from http.client import RemoteDisconnected
 
 
 def report_memory():

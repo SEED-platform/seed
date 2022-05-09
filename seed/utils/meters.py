@@ -1,31 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from calendar import (
-    monthrange,
-)
-
+from calendar import monthrange
 from collections import defaultdict
-
-from config.settings.common import TIME_ZONE
-
-from datetime import (
-    datetime,
-    timedelta,
-    time,
-)
+from datetime import datetime, time, timedelta
 
 from django.db.models import Q
 from django.utils.timezone import make_aware
-
 from pytz import timezone
 
-from seed.models import Meter
+from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
-    usage_point_id,
+    usage_point_id
 )
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import Meter
 
 
 class PropertyMeterReadingsExporter():

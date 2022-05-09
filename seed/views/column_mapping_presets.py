@@ -2,20 +2,17 @@
 # encoding: utf-8
 
 from django.http import JsonResponse
-
 from rest_framework.decorators import action
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.viewsets import ViewSet
+
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    Column,
-    ColumnMappingProfile,
-    Organization,
+from seed.models import Column, ColumnMappingProfile, Organization
+from seed.serializers.column_mapping_profiles import (
+    ColumnMappingProfileSerializer
 )
-from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class
-
-from rest_framework.viewsets import ViewSet
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 
 class ColumnMappingPresetViewSet(ViewSet):

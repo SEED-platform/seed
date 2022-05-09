@@ -26,4 +26,3 @@ volumes:
     external: true
   seed_media:
     external: true
-

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -9,7 +9,10 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_VIEWER
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import (
+    create_organization,
+    create_suborganization
+)
 
 
 class TestOrganizations(TestCase):

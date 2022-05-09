@@ -3,9 +3,7 @@
 
 from django.db.models import Subquery
 from django.http import JsonResponse
-
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
@@ -13,7 +11,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.ubid import decode_unique_ids
 

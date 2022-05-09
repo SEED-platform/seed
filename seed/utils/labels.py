@@ -2,19 +2,15 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 import json
 
+from rest_framework import response, status
+
 from seed import search
-from seed.serializers.labels import (
-    LabelSerializer,
-)
-from rest_framework import (
-    response,
-    status,
-)
+from seed.serializers.labels import LabelSerializer
 
 
 def filter_labels_for_inv_type(request, inventory_type=None):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 """
@@ -13,8 +13,7 @@ https://bitbucket.org/Mathiasdm/django-simple-breadcrumbs/
 import logging
 
 from django import template
-from django.template import Node, Variable
-from django.template import VariableDoesNotExist
+from django.template import Node, Variable, VariableDoesNotExist
 from django.template.defaulttags import url
 from django.utils.translation import gettext as _
 

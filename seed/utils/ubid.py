@@ -1,10 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+import logging
+
 from buildingid.code import decode
 from django.contrib.gis.geos import GEOSGeometry
-
-import logging
 
 _log = logging.getLogger(__name__)
 

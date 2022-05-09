@@ -1,15 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from __future__ import absolute_import
+
 import logging
 
+from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2
+from seed.building_sync.mappings import (
+    BASE_MAPPING_V2,
+    merge_mappings,
+    xpath_to_column_map
+)
 
 _log = logging.getLogger(__name__)
 
@@ -40,6 +47,8 @@ def default_buildingsync_profile_mappings():
         "GJ/m**2/year",
         "MJ/m**2/year",
         "kBtu/m**2/year",
+        # from BAE
+        "F"
     ]
 
     mapping = BASE_MAPPING_V2.copy()
@@ -59,5 +68,31 @@ def default_buildingsync_profile_mappings():
             'to_field': col_name,
             'to_table_name': 'PropertyState'
         })
+
+    # BAE results
+    bsync_assets = BAE.get_default_asset_defs()
+    for item in bsync_assets:
+        from_units = item['units']
+        # only add units defined above
+        if from_units not in valid_units:
+            from_units = None
+        if item['type'] == 'sqft':
+            # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
+            for i in ['Primary', 'Secondary']:
+                result.append({
+                    'from_field': i + ' ' + item['export_name'],
+                    'from_field_value': 'text',  # hard code this for now
+                    'from_units': from_units,
+                    'to_field': i + ' ' + item['export_name'],
+                    'to_table_name': 'PropertyState'
+                })
+        else:
+            result.append({
+                'from_field': item['export_name'],
+                'from_field_value': 'text',  # hard code this for now
+                'from_units': from_units,
+                'to_field': item['export_name'],
+                'to_table_name': 'PropertyState'
+            })
 
     return result

@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 
@@ -17,18 +17,17 @@ from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import ViewSet
 
-from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    Organization
-)
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
-    MERGE_STATE_NEW,
-    MERGE_STATE_MERGED,
     MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    VIEW_LIST,
+    VIEW_LIST_TAXLOT,
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
@@ -36,26 +35,24 @@ from seed.models import (
     Note,
     PropertyView,
     StatusLabel,
+    TaxLot,
     TaxLotAuditLog,
     TaxLotProperty,
     TaxLotState,
-    TaxLotView,
-    TaxLot,
-    VIEW_LIST,
-    VIEW_LIST_TAXLOT)
+    TaxLotView
+)
 from seed.serializers.pint import (
-    apply_display_unit_preferences,
-    add_pint_unit_suffix
+    add_pint_unit_suffix,
+    apply_display_unit_preferences
 )
-from seed.serializers.properties import (
-    PropertyViewSerializer
-)
+from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (
     TaxLotSerializer,
     TaxLotStateSerializer,
     TaxLotViewSerializer
 )
-from seed.utils.api import api_endpoint_class, ProfileIdMixin
+from seed.utils.api import ProfileIdMixin, api_endpoint_class
+from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import (
     get_changed_fields,
