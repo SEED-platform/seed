@@ -1,4 +1,5 @@
 LBNL
+
 - Stephen Czarnecki (https://github.com/StephenCzarnecki)
 - Spencer Dutton (https://github.com/spencerdutton)
 - Megha Sandesh (https://github.com/meghasandesh)
@@ -6,18 +7,24 @@ LBNL
 - Claudine Custodio (https://github.com/cycustodio)
 
 ---
+
 Obispo Technology Group
+
 - Miles Clark (https://github.com/mmclark)
 
 ---
+
 QuickLeft
-- Aaron Rubin	Manager	(arubin@quickleft.com)
-- Nicholas Serra	(nserra@quickleft.com)
+
+- Aaron Rubin Manager (arubin@quickleft.com)
+- Nicholas Serra (nserra@quickleft.com)
 - Sam Breed (https://github.com/wookiehangover)
-- Phuong Palmares	(ppalmares@quickleft.com)
+- Phuong Palmares (ppalmares@quickleft.com)
 
 ---
+
 PSD Consulting / Impact Lab
+
 - Rich Andrulis (https://github.com/andrulis)
 - Greg Thomas (gthomas@psdconsulting.com)
 - (https://github.com/jasbrand)
@@ -28,32 +35,44 @@ PSD Consulting / Impact Lab
 - Phil Ngo (https://github.com/philngo)
 
 ---
+
 McQuillen Interactive
-- Daniel McQuillen	(https://github.com/danielmcquillen)
+
+- Daniel McQuillen (https://github.com/danielmcquillen)
 
 ---
+
 Cake Systems
+
 - Michael Atkins (matkins@earthadvantage.org)
 - Brandon Gallagher (bgallagher@cakesystems.com)
-- Julie Gallagher	(https://github.com/juliecov)
+- Julie Gallagher (https://github.com/juliecov)
 
 ---
+
 Windfall Technical
+
 - Nathan Addy (nathan.addy@gmail.com)
 
 ---
+
 NREL
+
 - Nicholas Long (https://github.com/nllong)
 - Alex Swindler (https://github.com/axelstudios)
 - Edwin Lee (https://github.com/myoldmopar)
 - Katherine Fleming (https://github.com/kflemin)
 
 ---
+
 Maalka
+
 - Clay Teeter (clay@maalka.com)
 
 ---
+
 Building Energy
+
 - Aleck Landgraf (https://github.com/alecklandgraf/)
 - Gavin McQuillan (https://github.com/gmcquillan)
 - John Skelton (https://github.com/afrojet)
@@ -66,10 +85,14 @@ Building Energy
 - Michael Dougherty (michael.dougherty@buildingenergy.com)
 
 ---
+
 Open Green Building Society
+
 - Ryan McCuaig (https://github.com/rgm/)
 
 ---
+
 Devetry
+
 - Adrian Lara (https://github.com/adrian-lara)
 - Daniel Bressan (https://github.com/danielbressan)

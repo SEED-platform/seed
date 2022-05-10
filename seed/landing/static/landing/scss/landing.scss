@@ -1,5 +1,7 @@
-$font-family-sans-serif: "PT Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-$font-family-sans-serif-narrow: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+$font-family-sans-serif: "PT Sans", "Helvetica Neue", Helvetica, Arial,
+  sans-serif;
+$font-family-sans-serif-narrow: "PT Sans Narrow", "Helvetica Neue", Helvetica,
+  Arial, sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -71,7 +73,8 @@ $bdp-landing-dk-gray: #606060;
   border-top-left-radius: $radius;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -108,7 +111,6 @@ body {
   @include box-shadow(0 0 26px rgba(0, 0, 0, 0.7));
 
   .page_section {
-
     .section_marketing {
       float: left;
       width: 50%;
@@ -184,7 +186,7 @@ body {
       min-height: 430px;
       text-align: center;
       border-left: 1px solid $bdp-landing-md-gray;
-      background: url('../images/landing/bg-paper.png');
+      background: url("../images/landing/bg-paper.png");
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
 
@@ -259,22 +261,25 @@ body {
           }
 
           .chrome {
-            background: url('../images/landing/logo-chrome-64.png') top center no-repeat;
+            background: url("../images/landing/logo-chrome-64.png") top center
+              no-repeat;
             margin-left: 63px;
           }
 
           .firefox {
-            background: url('../images/landing/logo-firefox-64.png') top center no-repeat;
+            background: url("../images/landing/logo-firefox-64.png") top center
+              no-repeat;
           }
 
           .safari {
-            background: url('../images/landing/logo-safari-64.png') top center no-repeat;
+            background: url("../images/landing/logo-safari-64.png") top center
+              no-repeat;
           }
 
           .ie {
-            background: url('../images/landing/logo-ie-64.png') top center no-repeat;
+            background: url("../images/landing/logo-ie-64.png") top center
+              no-repeat;
           }
-
         }
 
         .browser_name {
@@ -310,12 +315,12 @@ body {
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 2px;
-            font-family: 'PT Sans Narrow', sans-serif;
+            font-family: "PT Sans Narrow", sans-serif;
             font-size: 16px;
             line-height: 20px;
             color: $bdp-landing-lt-gray;
             background-color: $white;
-            border: 1px solid #CCC;
+            border: 1px solid #ccc;
             border-radius: 3px;
             @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075));
             @include box-shadow(0px 1px 1px $white);
@@ -325,7 +330,9 @@ body {
           input:focus {
             border-color: rgba(82, 168, 236, 0.8);
             outline: thin dotted 9;
-            @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075) /* , 0 0 8px rgba(82,168,236,.6) */
+            @include box-shadow(
+              inset 0 1px 1px rgba(0, 0, 0, 0.075)
+                /* , 0 0 8px rgba(82,168,236,.6) */
             );
           }
 
@@ -367,7 +374,6 @@ body {
           .opt-ins {
             padding-top: 16px;
           }
-
         }
 
         p {
@@ -380,7 +386,8 @@ body {
           font-size: 16px;
         }
 
-        .forgot_password, .create_account {
+        .forgot_password,
+        .create_account {
           display: inline-block;
           margin-top: 5px;
           margin-bottom: 20px;
@@ -405,14 +412,13 @@ body {
           .thank_you_text {
             margin: 0 auto;
             width: 75%;
-            line-height: 22px
+            line-height: 22px;
           }
         }
 
         span.email_me {
           font-size: 15px;
         }
-
       }
     }
 
@@ -430,7 +436,12 @@ body {
   }
 }
 
-.login.page .page_section .section_forms .signup_form table.signup_table .errorlist {
+.login.page
+  .page_section
+  .section_forms
+  .signup_form
+  table.signup_table
+  .errorlist {
   margin: 0 0 8px 0;
   padding: 0;
 
@@ -438,7 +449,6 @@ body {
     left: 0;
     position: relative;
   }
-
 }
 
 .terms_of_service {

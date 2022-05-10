@@ -2,6 +2,7 @@
 question: When and how does SEED geocode my data?
 tags: [features, geocoding]
 ---
+
 SEED will attempt to geocode your data with latitude and longitude values only if the following are true:
 
 1. Your organization has a MapQuest API key. You can register for one through MapQuest's website and apply it on your organization settings page.
