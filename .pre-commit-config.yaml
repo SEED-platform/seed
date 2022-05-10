@@ -51,5 +51,5 @@ repos:
     rev: v2.6.2
     hooks:
       - id: prettier
-        # for now ignoring css, scss, html, javascript
-        types_or: [yaml, markdown]
+        # for now ignoring html, javascript
+        types_or: [yaml, markdown, css, scss]
