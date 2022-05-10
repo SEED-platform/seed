@@ -247,6 +247,10 @@ class PropertyState(models.Model):
     source_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    total_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
+    total_marginal_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
+    total_ghg_emissions_intensity = QuantityField('kgCO2e/ft2/year', null=True, blank=True)
+    total_marginal_ghg_emissions_intensity = QuantityField('kgCO2e/ft2/year', null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
