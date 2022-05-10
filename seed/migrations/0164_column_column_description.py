@@ -20,7 +20,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0161_alter_inventorydocument_file_type'),
+        ('seed', '0163_add_bae_assets_to_buildingsync_default_profile'),
     ]
 
     operations = [
