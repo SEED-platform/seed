@@ -242,6 +242,15 @@ class TestColumns(TestCase):
         self.assertTrue(rextra_data_column.is_extra_data)
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
+    def test_column_has_description(self):
+        org1 = Organization.objects.create()
+        # Raw columns don't have a table name!
+        raw_column = seed_models.Column.objects.create(
+            column_name='site_eui',
+            organization=org1
+        )
+        self.assertEqual(raw_column.column_name, raw_column.column_description)
+
 
 class TestRenameColumns(TestCase):
     def setUp(self):

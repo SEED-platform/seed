@@ -603,6 +603,380 @@ class Column(models.Model):
             'column_description': 'eGRID Subregion Code',
             'data_type': 'string',
         },
+    # DATABASE_COLUMNS = [
+    #     {
+    #         'column_name': 'pm_property_id',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'PM Property ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'pm_parent_property_id',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'PM Parent Property ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'jurisdiction_tax_lot_id',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Jurisdiction Tax Lot ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'jurisdiction_property_id',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Jurisdiction Property ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'ulid',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'ULID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'ubid',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'UBID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'custom_id_1',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Custom ID 1',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'custom_id_1',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Custom ID 1',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'address_line_1',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Address Line 1',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'address_line_1',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Address Line 1',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'address_line_2',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Address Line 2',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'address_line_2',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Address Line 2',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'city',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'City',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'city',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'City',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'state',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'State',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'state',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'State',
+    #         'data_type': 'string',
+    #     }, {
+    #         # This should never be mapped to!
+    #         'column_name': 'normalized_address',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Normalized Address',
+    #         'data_type': 'string',
+    #     }, {
+    #         # This should never be mapped to!
+    #         'column_name': 'normalized_address',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Normalized Address',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'postal_code',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Postal Code',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'postal_code',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Postal Code',
+    #         'data_type': 'string',
+    #     }, {
+    #         # This field should never be mapped to!
+    #         'column_name': 'lot_number',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Associated Tax Lot ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'property_name',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Property Name',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'latitude',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Latitude',
+    #         'data_type': 'number',
+    #     }, {
+    #         'column_name': 'longitude',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Longitude',
+    #         'data_type': 'number',
+    #     }, {
+    #         'column_name': 'latitude',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Latitude',
+    #         'data_type': 'number',
+    #     }, {
+    #         'column_name': 'longitude',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Longitude',
+    #         'data_type': 'number',
+    #     }, {
+    #         'column_name': 'geocoding_confidence',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Geocoding Confidence',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'geocoding_confidence',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Geocoding Confidence',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'property_footprint',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Property Footprint',
+    #         'data_type': 'geometry',
+    #     }, {
+    #         'column_name': 'taxlot_footprint',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Tax Lot Footprint',
+    #         'data_type': 'geometry',
+    #     }, {
+    #         'column_name': 'campus',
+    #         'table_name': 'Property',
+    #         'display_name': 'Campus',
+    #         'data_type': 'boolean',
+    #         # 'type': 'boolean',
+    #     }, {
+    #         'column_name': 'updated',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Updated',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'created',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Created',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'updated',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Updated',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'created',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Created',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'gross_floor_area',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Gross Floor Area',
+    #         'data_type': 'area',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'use_description',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Use Description',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'energy_score',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'ENERGY STAR Score',
+    #         'data_type': 'integer',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'property_notes',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Property Notes',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'property_type',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Property Type',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'year_ending',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Year Ending',
+    #         'data_type': 'date',
+    #     }, {
+    #         'column_name': 'owner',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'owner_email',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner Email',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'owner_telephone',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner Telephone',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'building_count',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Building Count',
+    #         'data_type': 'integer',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'year_built',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Year Built',
+    #         'data_type': 'integer',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'recent_sale_date',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Recent Sale Date',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'conditioned_floor_area',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Conditioned Floor Area',
+    #         'data_type': 'area',
+    #         # 'type': 'number',
+    #         # 'dbField': True,
+    #     }, {
+    #         'column_name': 'occupied_floor_area',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Occupied Floor Area',
+    #         'data_type': 'area',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'owner_address',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner Address',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'owner_city_state',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner City/State',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'owner_postal_code',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Owner Postal Code',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'home_energy_score_id',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Home Energy Score ID',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'generation_date',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'PM Generation Date',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'release_date',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'PM Release Date',
+    #         'data_type': 'datetime',
+    #         # 'type': 'date',
+    #         # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
+    #     }, {
+    #         'column_name': 'site_eui',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Site EUI',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'site_eui_weather_normalized',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Site EUI Weather Normalized',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'site_eui_modeled',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Site EUI Modeled',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'source_eui',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Source EUI',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'source_eui_weather_normalized',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Source EUI Weather Normalized',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'source_eui_modeled',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Source EUI Modeled',
+    #         'data_type': 'eui',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'energy_alerts',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Energy Alerts',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'space_alerts',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Space Alerts',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'building_certification',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'Building Certification',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'number_properties',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Number Properties',
+    #         'data_type': 'integer',
+    #         # 'type': 'number',
+    #     }, {
+    #         'column_name': 'block_number',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'Block Number',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'district',
+    #         'table_name': 'TaxLotState',
+    #         'display_name': 'District',
+    #         'data_type': 'string',
+    #     }, {
+    #         'column_name': 'egrid_subregion_code',
+    #         'table_name': 'PropertyState',
+    #         'display_name': 'eGRID Subregion Code',
+    #         'data_type': 'string',
+    #     },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
@@ -611,7 +985,7 @@ class Column(models.Model):
     table_name = models.CharField(max_length=512, blank=True, db_index=True)
 
     display_name = models.CharField(max_length=512, blank=True)
-    column_description = models.TextField(max_length=1000, blank=True, default=column_name)
+    column_description = models.TextField(max_length=1000, blank=True, default=None)
     data_type = models.CharField(max_length=64, default='None')
 
     # Add created/modified timestamps
@@ -660,6 +1034,11 @@ class Column(models.Model):
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
+
+    def save(self, *args, **kwargs):
+        if self.column_name and not self.column_description:
+            self.column_description = self.column_name
+        super().save(*args, **kwargs)
 
     def rename_column(self, new_column_name, force=False):
         """

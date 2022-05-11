@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='column',
             name='column_description',
-            field=models.TextField(blank=True, default=models.CharField(db_index=True, max_length=512), max_length=1000),
+            field=models.TextField(blank=True, default=None, max_length=1000),
         ),
         migrations.RunPython(forwards)
     ]
