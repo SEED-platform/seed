@@ -1067,7 +1067,7 @@ class TestColumnsByInventory(TestCase):
                 "space_alerts": "string",
                 "state": "string",
                 "taxlot_footprint": "geometry",
-                "total_marginal_ghg_emissions": "float", 
+                "total_marginal_ghg_emissions": "float",
                 "total_marginal_ghg_emissions_intensity": "float",
                 "total_ghg_emissions": "float",
                 "total_ghg_emissions_intensity": "float",
