@@ -1314,7 +1314,7 @@ class Column(models.Model):
                 if not new_c['display_name']:
                     new_c['column_description'] = new_c['column_name']
                 else:
-                    new_c['column_description'] = new_c['display_name']   
+                    new_c['column_description'] = new_c['display_name']
 
             columns.append(new_c)
 
@@ -1372,7 +1372,7 @@ class Column(models.Model):
                 if not new_c['display_name']:
                     new_c['column_description'] = new_c['column_name']
                 else:
-                    new_c['column_description'] = new_c['display_name']   
+                    new_c['column_description'] = new_c['display_name']
 
             # Related fields
             new_c['related'] = False
