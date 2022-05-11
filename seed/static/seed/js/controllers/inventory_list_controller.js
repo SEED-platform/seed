@@ -800,9 +800,16 @@ angular.module('BE.seed.controller.inventory_list', [])
           batch_index += batch_size;
         }
 
+        // Find all columns that linked to a derived column.
+        // With the associated derived columns evaluate it and attatch it to the original column
+        const visible_columns_with_derived_columns = $scope.columns.filter(col => col.derived_column);
+        const derived_column_ids = visible_columns_with_derived_columns.map(col => col.derived_column);
+        const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
+        column_name_lookup = {}
+        visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
+        
         const all_evaluation_results = [];
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
-        for (const col of visible_derived_columns) {
+        for (const col of attatched_derived_columns) {
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
@@ -824,9 +831,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           // finally, update the data to include the calculated values
           $scope.data.forEach(row => {
             Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-              const derived_column = visible_derived_columns.find(col => col.id == derived_column_id);
+              const derived_column = attatched_derived_columns.find(col => col.id == derived_column_id);
               const result = results.find(res => res.id == row.id) || {};
-              row[derived_column.name] = result.value;
+              row[column_name_lookup[derived_column.name]] = result.value;
             });
           });
         });
@@ -1306,5 +1313,4 @@ angular.module('BE.seed.controller.inventory_list', [])
           refresh_objects();
         }
       };
-      console.log('scope', $scope)
     }]);
