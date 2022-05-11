@@ -218,12 +218,18 @@ class DerivedColumn(models.Model):
         created = not self.pk
         self.full_clean()
         save_response = super().save(*args, **kwargs)
+        if self.inventory_type == 0:
+            inventory_type = 'PropertyState'
+        elif self.inventory_type == 1:
+            inventory_type = 'TaxLotState'
         if created:
             Column.objects.create(
                 derived_column = self,
                 is_derived_column = True,
                 column_name = self.name,
                 display_name = self.name,
+                table_name = inventory_type,
+                organization = self.organization
             )
         return save_response
 
@@ -319,9 +325,10 @@ class DerivedColumn(models.Model):
     def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
         dcps = self.derivedcolumnparameter_set.all()
         for dcp in dcps:
-            if dcp.source_column_derived:
-                dc = DerivedColumn.objects.get(pk=dcp.source_column_id)
-                val = dc.evaluate(inventory_state)
+            column = Column.objects.get(pk=dcp.source_column_id)
+            if column.is_derived_column:
+                dc = column.derived_column
+                val = dc.evaluate(inventory_state) 
                 merged_parameters[dcp.parameter_name] = val
 
 class DerivedColumnParameter(models.Model):

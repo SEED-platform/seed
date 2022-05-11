@@ -585,6 +585,8 @@ class Column(models.Model):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
+        if self.is_derived_column:
+            return
         # Don't allow Columns that are not extra_data and not a field in the database
         if (not self.is_extra_data) and self.table_name:
             # if it isn't extra data and the table_name IS set, then it must be part of the database fields

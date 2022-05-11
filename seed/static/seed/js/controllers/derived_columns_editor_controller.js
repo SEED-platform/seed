@@ -79,12 +79,12 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       $scope.derived_column = derived_column_payload.derived_column || make_derived_column();
       $scope.parameters = $scope.derived_column.parameters;
 
-      // $scope.property_columns = property_columns_payload.filter(col => !col.related);
-
-      derivedCols = derived_columns_payload.derived_columns.map(dc => ({ ...dc, 'displayName': dc.name }))
-      propertyCols = property_columns_payload.filter(col => !col.related)
       
-      $scope.property_columns = propertyCols.concat(derivedCols)
+      // derivedCols = derived_columns_payload.derived_columns.map(dc => ({ ...dc, 'displayName': dc.name }))
+      // propertyCols = property_columns_payload.filter(col => !col.related)
+      // $scope.property_columns = propertyCols.concat(derivedCols)
+      
+      $scope.property_columns = property_columns_payload.filter(col => !col.related);
       $scope.taxlot_columns = taxlot_columns_payload.filter(col => !col.related);
 
       // turn each parameter's source_column (an ID to a Column) into an object
