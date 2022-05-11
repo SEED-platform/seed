@@ -102,16 +102,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.columns.push(foundCol);
           }
         });
-
-        // add derived columns
-        _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
-          if (foundCol) {
-            foundCol.is_derived_column = true;
-            foundCol.displayName = foundCol.name;
-            $scope.columns.push(foundCol);
-          }
-        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
@@ -593,7 +583,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         // Modify headerCellClass
-        if (col.is_derived_column) {
+        if (col.derived_column) {
           col.headerCellClass = 'derived-column-display-name';
         }
 
