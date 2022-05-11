@@ -215,8 +215,18 @@ class DerivedColumn(models.Model):
             })
 
     def save(self, *args, **kwargs):
+        created = not self.pk
         self.full_clean()
-        return super().save(*args, **kwargs)
+        save_response = super().save(*args, **kwargs)
+        if created:
+            Column.objects.create(
+                derived_column = self,
+                is_derived_column = True,
+                column_name = self.name,
+                display_name = self.name,
+            )
+        return save_response
+
 
     def get_parameter_values(self, inventory_state: Union[PropertyState, TaxLotState]) -> dict[str, Any]:
         """Construct a dictionary of column values keyed by expression parameter
