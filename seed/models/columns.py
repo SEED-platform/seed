@@ -534,6 +534,26 @@ class Column(models.Model):
             'table_name': 'PropertyState',
             'display_name': 'eGRID Subregion Code',
             'data_type': 'string',
+        }, {
+            'column_name': 'total_ghg_emissions',
+            'table_name': 'PropertyState',
+            'display_name': 'Total GHG Emissions',
+            'data_type': 'number',
+        }, {
+            'column_name': 'total_marginal_ghg_emissions',
+            'table_name': 'PropertyState',
+            'display_name': 'Total Marginal GHG Emissions',
+            'data_type': 'number',
+        }, {
+            'column_name': 'total_ghg_emissions_intensity',
+            'table_name': 'PropertyState',
+            'display_name': 'Total GHG Emissions Intensity',
+            'data_type': 'number',
+        }, {
+            'column_name': 'total_marginal_ghg_emissions_intensity',
+            'table_name': 'PropertyState',
+            'display_name': 'Total Marginal GHG Emissions Intensity',
+            'data_type': 'number',
         },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)

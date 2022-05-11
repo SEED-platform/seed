@@ -1067,6 +1067,10 @@ class TestColumnsByInventory(TestCase):
                 "space_alerts": "string",
                 "state": "string",
                 "taxlot_footprint": "geometry",
+                "total_marginal_ghg_emissions": "float", 
+                "total_marginal_ghg_emissions_intensity": "float",
+                "total_ghg_emissions": "float",
+                "total_ghg_emissions_intensity": "float",
                 "ubid": "string",
                 "ulid": "string",
                 "updated": "datetime",
@@ -1095,6 +1099,8 @@ class TestColumnsByInventory(TestCase):
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
                 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
+                'total_ghg_emissions', 'total_ghg_emissions_intensity',
+                'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
                 'ubid', 'ulid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
@@ -1115,6 +1121,8 @@ class TestColumnsByInventory(TestCase):
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
                     'taxlot_footprint',
+                    'total_ghg_emissions', 'total_ghg_emissions_intensity',
+                    'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
                     'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
