@@ -225,7 +225,6 @@ class DerivedColumn(models.Model):
         if created:
             Column.objects.create(
                 derived_column = self,
-                is_derived_column = True,
                 column_name = self.name,
                 display_name = self.name,
                 table_name = inventory_type,
@@ -326,7 +325,7 @@ class DerivedColumn(models.Model):
         dcps = self.derivedcolumnparameter_set.all()
         for dcp in dcps:
             column = Column.objects.get(pk=dcp.source_column_id)
-            if column.is_derived_column:
+            if column.derived_column:
                 dc = column.derived_column
                 val = dc.evaluate(inventory_state) 
                 merged_parameters[dcp.parameter_name] = val

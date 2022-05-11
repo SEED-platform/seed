@@ -569,12 +569,8 @@ class Column(models.Model):
     recognize_empty = models.BooleanField(default=False)
 
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
-    
-    is_derived_column = models.BooleanField(default=False)
     derived_column = models.OneToOneField('DerivedColumn', on_delete=models.CASCADE, null=True, blank=True)
 
-
- 
 
     class Meta:
         constraints = [
@@ -585,7 +581,7 @@ class Column(models.Model):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
-        if self.is_derived_column:
+        if self.derived_column:
             return
         # Don't allow Columns that are not extra_data and not a field in the database
         if (not self.is_extra_data) and self.table_name:
