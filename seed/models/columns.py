@@ -22,6 +22,7 @@ from django.utils.translation import gettext_lazy as _
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
+# from seed.models.derived_columns import DerivedColumn
 
 INVENTORY_DISPLAY = {
     'PropertyState': 'Property',
@@ -568,6 +569,10 @@ class Column(models.Model):
     recognize_empty = models.BooleanField(default=False)
 
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
+
+    derived_column_type = models.BooleanField(default=False)
+    derived_column = models.OneToOneField('DerivedColumn', on_delete=models.CASCADE, null=True, blank=True)
+
 
     class Meta:
         constraints = [
