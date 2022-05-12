@@ -291,7 +291,7 @@ class DerivedColumn(models.Model):
 
         if parameters is None:
             parameters = {}
-        
+
 
         inventory_parameters = {}
         if inventory_state is not None:
@@ -327,7 +327,7 @@ class DerivedColumn(models.Model):
             column = Column.objects.get(pk=dcp.source_column_id)
             if column.derived_column:
                 dc = column.derived_column
-                val = dc.evaluate(inventory_state) 
+                val = dc.evaluate(inventory_state)
                 merged_parameters[dcp.parameter_name] = val
 
 class DerivedColumnParameter(models.Model):

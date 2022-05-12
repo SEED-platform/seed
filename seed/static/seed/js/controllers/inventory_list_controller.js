@@ -797,7 +797,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
         column_name_lookup = {}
         visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
-        
+
         const all_evaluation_results = [];
         for (const col of attatched_derived_columns) {
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
