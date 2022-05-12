@@ -36,6 +36,7 @@ EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
 GHG_DEFAULT_UNITS = 'MtCO2e/year'
 GHG_INTENSITY_DEFAULT_UNITS = 'kgCO2e/ft**2/year'
 
+
 def to_raw_magnitude(obj):
     return "{:.2f}".format(obj.magnitude)
 
