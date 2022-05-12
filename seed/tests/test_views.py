@@ -1720,6 +1720,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'table_name': 'TaxLotState',
             'column_name': 'jurisdiction_tax_lot_id',
             'display_name': 'Jurisdiction Tax Lot ID',
+            'column_description': 'Jurisdiction Tax Lot ID', #hoping this solves the error
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
@@ -1734,11 +1735,13 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'comstock_mapping': None,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
+        # breakpoint()
 
         expected_property_extra_data_column = {
             'table_name': 'PropertyState',
             'column_name': 'Property Extra Data Column',
             'display_name': 'Property Extra Data Column (Property)',
+            'column_description': 'Property Extra Data Column', #for some reason this one uses column_name but the one above uses display_name
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'geocoding_order': 0,
@@ -1757,6 +1760,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column',
+            'column_description': 'Taxlot Extra Data Column',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'geocoding_order': 0,
