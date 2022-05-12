@@ -48,7 +48,6 @@
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
     <div class="section_content with_padding" style="overflow:hidden;">
         <h3 translate="NUMBER_COLUMNS_AVAILABLE" translate-values="{ count: (data.length | number) }"></h3>
-        <p class="text-danger">NOTE: ordering of all derived column (<i class="fa fa-link"></i>) rows is currently ignored; they will all appear at the end of the list when viewed.</p>
         <p>{$:: (inventory_type === 'taxlots' ? 'LIST_GUIDANCE_TAXLOTS_NO_PIN' : 'LIST_GUIDANCE_PROPERTIES_NO_PIN') | translate $}</p>
     </div>
     <div class="section_content">
