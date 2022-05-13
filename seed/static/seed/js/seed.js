@@ -1438,17 +1438,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Profile', inventory_type, brief=true);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
             var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
             if (_.includes(validProfileIds, lastProfileId)) {
-              return _.find(profiles, {id: lastProfileId});
+              return inventory_service.get_column_list_profile(lastProfileId);
             }
-            var currentProfile = _.first(profiles);
-            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
-            return currentProfile;
+            var currentProfileId = _.first(profiles).id;
+            if (currentProfileId) inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type);
+            return inventory_service.get_column_list_profile(currentProfileId);
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {

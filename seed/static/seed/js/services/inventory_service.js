@@ -1094,12 +1094,23 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_column_list_profiles = function (profile_location, inventory_type) {
+    inventory_service.get_column_list_profile = function (id) {
+      return $http.get('/api/v3/column_list_profiles/' + id, {
+        params: {
+          organization_id: user_service.get_organization().id,
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.get_column_list_profiles = function (profile_location, inventory_type, brief=false) {
       return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
-          profile_location: profile_location
+          profile_location: profile_location,
+          brief: brief,
         }
       }).then(function (response) {
         var profiles = response.data.data.sort(function (a, b) {
