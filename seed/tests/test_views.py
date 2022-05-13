@@ -1760,7 +1760,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Taxlot Extra Data Column',
             'display_name': 'Taxlot Extra Data Column',
-            'column_description': 'Taxlot Extra Data Column',
+            'column_description': 'Taxlot Extra Data Column', #Not sure which field this is based on since column_name and display_name are identical
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'geocoding_order': 0,
