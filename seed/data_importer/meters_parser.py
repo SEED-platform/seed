@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-
+import logging
 import re
 from calendar import monthrange
 from datetime import datetime, timedelta
@@ -21,6 +21,8 @@ from seed.data_importer.utils import (
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, PropertyState, PropertyView
+
+_log = logging.getLogger(__name__)
 
 
 class MetersParser(object):
@@ -181,8 +183,6 @@ class MetersParser(object):
 
         if self._cache_proposed_imports is None:
             self._cache_proposed_imports = []
-            energy_type_lookup = dict(Meter.ENERGY_TYPES)
-
             # Gather info based on property_id - cycles (query) and related pm_property_ids (parsed in different method)
             property_ids_info = {}
             for pm_property_id, property_ids in self._source_to_property_ids.items():
@@ -200,7 +200,7 @@ class MetersParser(object):
             # Put summaries together based on source type
             for meter in self.meter_and_reading_objs:
                 meter_summary = {
-                    'type': energy_type_lookup[meter['type']],
+                    'type': Meter.ENERGY_TYPE_BY_METER_TYPE[meter['type']],
                     'incoming': len(meter.get("readings")),
                     'property_id': meter['property_id'],
                 }
@@ -413,10 +413,9 @@ class MetersParser(object):
         these are deduplicated.
         """
         type_unit_combinations = set()
-        energy_type_lookup = dict(Meter.ENERGY_TYPES)
 
         for meter in self.meter_and_reading_objs:
-            type = energy_type_lookup[meter['type']]
+            type = Meter.ENERGY_TYPE_BY_METER_TYPE[meter['type']]
             type_units = {
                 (type, reading['source_unit'])
                 for reading
@@ -450,18 +449,15 @@ class MetersParser(object):
         # and natural gas in the same row)
         provided_reading_types = []
         for field in raw_data[0].keys():
-            if field.startswith('Electricity Use') or field.startswith('Natural Gas Use'):
-                provided_reading_types.append(field)
+            for header_string in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
+                if field.startswith(header_string):
+                    provided_reading_types.append(field)
+                    continue
 
         if not provided_reading_types:
             return []
 
         TYPE_AND_UNITS_REGEX = re.compile(r'(?P<meter_type>.*)\s+\((?P<units>.*)\)')
-        meter_type_lookup = dict(Meter.ENERGY_TYPES)
-        METER_TYPE_MAPPING = {
-            'Electricity Use (Grid)': meter_type_lookup[Meter.ELECTRICITY_GRID],
-            'Natural Gas Use': meter_type_lookup[Meter.NATURAL_GAS],
-        }
         METER_UNITS_MAPPING = {
             'kBtu': 'kBtu (thousand Btu)',
             'GJ': 'GJ',
@@ -489,7 +485,7 @@ class MetersParser(object):
                     raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
 
                 meter_type_match = type_and_units_match.group('meter_type').strip()
-                meter_type = METER_TYPE_MAPPING.get(meter_type_match)
+                meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(meter_type_match)
                 if meter_type is None:
                     raise Exception(f'Invalid meter type "{meter_type_match}"')
 
