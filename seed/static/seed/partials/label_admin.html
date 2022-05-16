@@ -70,7 +70,7 @@
                             </td>
                             <td style="border-right: 0 none;">
                                 <span editable-checkbox="label.show_in_list" e-title="{$:: 'Show in List' | translate $}" e-name="show_in_list" e-form="rowform">{$:: label.show_in_list ? 'Show in List' : '' | translate $}</span>
-                           
+
                             </td>
                             <td style="white-space: nowrap" align="right">
                                 <form editable-form name="rowform" onbeforesave="saveLabel($data, label.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == label">

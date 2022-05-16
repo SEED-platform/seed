@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 import csv
@@ -13,7 +13,7 @@ import io
 from collections import OrderedDict
 
 import xlsxwriter
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
@@ -22,24 +22,15 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    ColumnListProfile,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
-    ColumnListProfile,
+    TaxLotView
 )
-from seed.models.meters import (
-    Meter,
-    MeterReading
-)
-from seed.models.property_measures import (
-    PropertyMeasure
-)
-from seed.models.scenarios import (
-    Scenario
-)
-from seed.serializers.tax_lot_properties import (
-    TaxLotPropertySerializer
-)
+from seed.models.meters import Meter, MeterReading
+from seed.models.property_measures import PropertyMeasure
+from seed.models.scenarios import Scenario
+from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.utils.api import api_endpoint_class
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AnalysisMessage
 from seed.serializers.analysis_messages import AnalysisMessageSerializer
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.utils.api import OrgMixin, api_endpoint_class
 
 
 class AnalysisMessageViewSet(viewsets.ViewSet, OrgMixin):

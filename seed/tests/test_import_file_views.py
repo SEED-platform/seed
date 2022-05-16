@@ -5,27 +5,43 @@ import ast
 import copy
 import json
 import os
+import pathlib
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import get_current_timezone
-import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tests.util import (FAKE_EXTRA_DATA, FAKE_MAPPINGS,
-                                           FAKE_ROW)
-from seed.data_importer.views import (ImportFileViewSet,
-                                      convert_first_five_rows_to_list)
+from seed.data_importer.tests.util import (
+    FAKE_EXTRA_DATA,
+    FAKE_MAPPINGS,
+    FAKE_ROW
+)
+from seed.data_importer.views import (
+    ImportFileViewSet,
+    convert_first_five_rows_to_list
+)
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING,
-                         MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, PORTFOLIO_RAW,
-                         Column, PropertyState, PropertyView)
-from seed.test_helpers.fake import (FakeCycleFactory, FakePropertyFactory,
-                                    FakePropertyStateFactory)
+from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    PORTFOLIO_RAW,
+    Column,
+    PropertyState,
+    PropertyView
+)
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory
+)
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 

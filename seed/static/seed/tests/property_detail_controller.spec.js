@@ -50,7 +50,7 @@ describe('controller: inventory_detail_controller', function () {
         id: 4,
         organization: 24,
         parent_property: '',
-        inventory_documents: [ 
+        inventory_documents: [
           {
             "id": 1,
             "file_type": "PDF",
@@ -58,7 +58,7 @@ describe('controller: inventory_detail_controller', function () {
             "file": "/media/inventory_documents/1-s2.0-S1364032115000672-main.pdf",
             "filename": "1-s2.0-S1364032115000672-main.pdf",
             "property": 4
-          } 
+          }
         ],
       },
       cycle: {

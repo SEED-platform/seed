@@ -1,23 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
 from datetime import date
 
-from django.urls import reverse_lazy, NoReverseMatch
 from django.test import TestCase
+from django.urls import NoReverseMatch, reverse_lazy
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
-    OrganizationUser,
-    Organization
+    Organization,
+    OrganizationUser
 )
 from seed.models.columns import Column
 from seed.models.cycles import Cycle

@@ -1,12 +1,10 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 """
 
-from django.db import (
-    connection,
-    models,
-)
+from django.db import connection, models
+
 from seed.models import Property, Scenario
 
 
@@ -63,6 +61,40 @@ class Meter(models.Model):
         (COST, 'Cost'),
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
     )
+    ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
+
+    # list of header strings and their related energy types
+    ENERGY_TYPE_BY_HEADER_STRING = {
+
+        # these mappings are assumed based on ESPM values
+        'Coal Use (Anthracite)': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
+        'Coal Use (Bituminous)': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
+        'Coke': ENERGY_TYPE_BY_METER_TYPE[COKE],
+        'Diesel': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+        'District Chilled Water Use (Absorption)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ABSORPTION],
+        'District Chilled Water Use (Electric)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ELECTRIC],
+        'District Chilled Water Use (Engine)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ENGINE],
+        'District Chilled Water Use (Other)': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_OTHER],
+        'District Hot Water Use': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_HOT_WATER],
+        'District Steam Use': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_STEAM],
+        'Electricity Use (Grid)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_GRID],
+        'Electricity Use (Solar)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_SOLAR],
+        'Electricity Use (Wind)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_WIND],
+        'Fuel Oil Use (No. 1)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_1],
+        'Fuel Oil Use (No. 2)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
+        'Fuel Oil Use (No. 4)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_4],
+        'Fuel Oil Use (No. 5 and No. 6)': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_5_AND_NO_6],
+        'Kerosene Use': ENERGY_TYPE_BY_METER_TYPE[KEROSENE],
+        'Natural Gas Use': ENERGY_TYPE_BY_METER_TYPE[NATURAL_GAS],
+        'Other Use': ENERGY_TYPE_BY_METER_TYPE[OTHER],
+        'Propane Use': ENERGY_TYPE_BY_METER_TYPE[PROPANE],
+        'Wood Use': ENERGY_TYPE_BY_METER_TYPE[WOOD],
+        'Electricity Use (Unknown)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
+
+        # theese values are added based on known usage
+        'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
+        'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+    }
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
 

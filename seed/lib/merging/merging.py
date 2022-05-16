@@ -1,17 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
 from collections import defaultdict
 
-from seed.models import (
-    Column,
-    PropertyState,
-    TaxLotState,
-)
+from seed.models import Column, PropertyState, TaxLotState
 
 _log = logging.getLogger(__name__)
 
@@ -190,7 +186,8 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     default = state2
     state2_present_columns = None
     if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
-        null = None  # noqa
+        # null has to be defined, not sure why, probably the eval?
+        null = None  # noqa F841
         state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns

@@ -4,21 +4,21 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 """
 
-from seed.models.derived_columns import DerivedColumn
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    VIEW_LIST_INVENTORY_TYPE,
+    VIEW_LOCATION_TYPES,
     Column,
     ColumnListProfile,
-    ColumnListProfileColumn,
-    VIEW_LOCATION_TYPES,
-    VIEW_LIST_INVENTORY_TYPE
+    ColumnListProfileColumn
 )
-from seed.lib.superperms.orgs.models import Organization
+from seed.models.derived_columns import DerivedColumn
 from seed.serializers.base import ChoiceField
 
 

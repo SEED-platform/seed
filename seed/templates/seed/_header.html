@@ -1,6 +1,6 @@
 <div class="header">
     <div class="hover-org-container" ng-if="show_org_id" style="{$ hover_style $}">
-        <span class='hover-org-id'> 
+        <span class='hover-org-id'>
             ID: {$ hover_org_id $}
         </span>
     </div>
@@ -14,9 +14,9 @@
                     <span class="glyphicon glyphicon-refresh spinning"></span> <span translate>Loading...</span>
                 </li>
                 <li ng-repeat="org in menu.user.organizations">
-                    <a 
-                        href ng-click="set_user_org(org)" 
-                        ng-class="{'pink-bg': !org.user_role}" 
+                    <a
+                        href ng-click="set_user_org(org)"
+                        ng-class="{'pink-bg': !org.user_role}"
                         ng-mouseover="mouseover_org(org.id)"
                         ng-mouseout="mouseout_org()"
                     >

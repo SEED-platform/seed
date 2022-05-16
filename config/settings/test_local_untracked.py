@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 :license: see LICENSE for more details.
 
@@ -15,6 +15,7 @@ seed local_untracked.py
     For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 import os
+
 from kombu import Exchange, Queue
 
 DEBUG = True

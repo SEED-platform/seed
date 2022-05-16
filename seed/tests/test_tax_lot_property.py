@@ -1,24 +1,27 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
+import time
+from random import randint
 
 from django.urls import reverse_lazy
-from random import randint
-import time
+from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
-    Cycle,
-    PropertyView,
-    TaxLotProperty,
     Column,
+    Cycle,
     Note,
     Property,
+    PropertyView,
+    TaxLotProperty
 )
+from seed.tasks import update_inventory_metadata
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -27,9 +30,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from xlrd import open_workbook
-from seed.lib.progress_data.progress_data import ProgressData
-from seed.tasks import update_inventory_metadata
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):

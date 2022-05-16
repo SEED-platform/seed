@@ -1,31 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from calendar import (
-    monthrange,
-)
-
+from calendar import monthrange
 from collections import defaultdict
-
-from config.settings.common import TIME_ZONE
-
-from datetime import (
-    datetime,
-    timedelta,
-    time,
-)
+from datetime import datetime, time, timedelta
 
 from django.db.models import Q
 from django.utils.timezone import make_aware
-
 from pytz import timezone
 
-from seed.models import Meter
+from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
-    usage_point_id,
+    usage_point_id
 )
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import Meter
 
 
 class PropertyMeterReadingsExporter():
@@ -145,9 +135,11 @@ class PropertyMeterReadingsExporter():
                 # partial usages of the full usage are calculated from a linear relationship between the range_seconds to the total_seconds
                 for range in ranges:
                     range_seconds = round((range[1] - range[0]).total_seconds())
+                    if range_seconds == 0:
+                        continue
                     month_key = range[1].strftime('%B %Y')
                     reading = usage['reading'] / total_seconds * range_seconds / conversion_factor
-                    if reading:
+                    if reading is not None:
                         monthly_readings[month_key] = monthly_readings.get(month_key, {'month': month_key})
                         monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
 

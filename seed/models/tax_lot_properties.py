@@ -1,15 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from __future__ import unicode_literals, annotations
+from __future__ import annotations, unicode_literals
 
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import Sequence, Union, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
@@ -19,10 +19,7 @@ from django.db.models import Count
 from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
-from seed.utils.geocode import (
-    bounding_box_wkt,
-    long_lat_wkt,
-)
+from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
 
 if TYPE_CHECKING:

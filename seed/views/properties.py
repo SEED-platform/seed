@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 
@@ -17,27 +17,28 @@ from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import ViewSet
 
-from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
-from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
+from seed.filtersets import PropertyStateFilterSet, PropertyViewFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    Organization
-)
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_USER_EDIT,
-    Column,
-    ColumnListProfile,
-    ColumnListProfileColumn,
-    Cycle,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-    Meter,
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY,
+    Column,
+    ColumnListProfile,
+    ColumnListProfileColumn,
+    Cycle,
     Measure,
-    Note,
-    Property,
+    Meter,
+    Note
+)
+from seed.models import Property as PropertyModel
+from seed.models import (
     PropertyAuditLog,
     PropertyMeasure,
     PropertyState,
@@ -45,33 +46,29 @@ from seed.models import (
     Simulation,
     StatusLabel,
     TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST,
-    VIEW_LIST_PROPERTY
+    TaxLotView
 )
-from seed.models import Property as PropertyModel
-from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.pint import (
-    apply_display_unit_preferences,
-    add_pint_unit_suffix
+    PintJSONEncoder,
+    add_pint_unit_suffix,
+    apply_display_unit_preferences
 )
 from seed.serializers.properties import (
     PropertySerializer,
     PropertyStateSerializer,
     PropertyViewAsStateSerializer,
-    PropertyViewSerializer,
+    PropertyViewSerializer
 )
-from seed.serializers.taxlots import (
-    TaxLotViewSerializer,
-)
+from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.utils.api import ProfileIdMixin, api_endpoint_class
+from seed.utils.match import match_merge_link
+from seed.utils.merge import merge_properties
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
-    update_result_with_master,
     properties_across_cycles,
+    update_result_with_master
 )
-from seed.utils.merge import merge_properties
 from seed.utils.viewsets import (
     SEEDOrgCreateUpdateModelViewSet,
     SEEDOrgModelViewSet
@@ -573,16 +570,16 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         new_property.id = None
         new_property.save()
 
-        new_property_2 = Property.objects.get(pk=new_property.id)
+        new_property_2 = PropertyModel.objects.get(pk=new_property.id)
         new_property_2.id = None
         new_property_2.save()
 
-        Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
-        Property.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
+        PropertyModel.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
+        PropertyModel.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
 
         # If canonical Property is NOT associated to a different -View, delete it
         if not PropertyView.objects.filter(property_id=old_view.property_id).exclude(id=old_view.id).exists():
-            Property.objects.get(pk=old_view.property_id).delete()
+            PropertyModel.objects.get(pk=old_view.property_id).delete()
 
         # Create the views
         new_view1 = PropertyView(

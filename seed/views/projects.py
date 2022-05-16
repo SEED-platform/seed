@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 # system imports
@@ -11,27 +11,23 @@ from dateutil import parser
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils import timezone
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 
 from seed import search
-from seed.decorators import (
-    DecoratorMixin
-)
+from seed.decorators import DecoratorMixin
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     COMPLIANCE_CHOICES,
-)
-from seed.models import (
     Compliance,
     Project,
     ProjectPropertyView,
     ProjectTaxLotView,
     PropertyView,
-    TaxLotView,
+    TaxLotView
 )
 from seed.serializers.projects import ProjectSerializer
 from seed.serializers.properties import PropertyViewSerializer
