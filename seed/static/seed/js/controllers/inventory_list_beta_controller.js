@@ -138,10 +138,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           updateColumnFilterSort();
           console.log("watch restore_status called, -> get_labels  and load_inventory(1)")
           get_labels();
-          $scope.load_inventory(1)
-            .then(function () {
-              $scope.restore_status = RESTORE_COMPLETE;
-            });
+          $scope.restore_status = RESTORE_COMPLETE;
         } else{
           console.log("watch restore_status called, did nothing")
         }
