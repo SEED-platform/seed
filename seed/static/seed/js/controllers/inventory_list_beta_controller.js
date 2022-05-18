@@ -130,17 +130,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       const RESTORE_SETTINGS_DONE = 'restore settings done';
       const RESTORE_COMPLETE = 'restore done';
       $scope.restore_status = RESTORE_NOT_STARTED;
-      console.log("set up watch restore_status")
       $scope.$watch('restore_status', function () {
         // Load the initial data for the page
         // this only happens ONCE (after the ui-grid's saveState.restore has completed)
         if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
           updateColumnFilterSort();
-          console.log("watch restore_status called, -> get_labels  and load_inventory(1)")
           get_labels();
           $scope.restore_status = RESTORE_COMPLETE;
-        } else{
-          console.log("watch restore_status called, did nothing")
         }
       });
 
@@ -329,7 +325,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       var filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-        console.log("filterUsingLabels -> load_inventory(1)")
         $scope.load_inventory(1);
       };
 
@@ -338,7 +333,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.labelLogicUpdated = function (labelLogic) {
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
-        console.log("labelLogicUpdated -> filterUsingLabels")
         filterUsingLabels();
       };
 
@@ -364,7 +358,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
-          console.log("open_update_labels_modal -> load_inventory")
           $scope.load_inventory(1);
         });
       };
@@ -808,7 +801,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.load_inventory = function (page) {
-        console.log("load_inventory called")
         const page_size = 100;
         spinner_utility.show();
         return fetch(page, page_size)
@@ -838,7 +830,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.update_cycle = function (cycle) {
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
-        console.log("update_cycle -> load_inventory")
         $scope.load_inventory(1);
       };
 
@@ -858,7 +849,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       let watchingSelectedLabels = false;
       var get_labels = function () {
-        console.log("get labels is called")
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
             return !_.isEmpty(label.is_applied);
@@ -873,25 +863,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           // watch for changes
           if (!watchingSelectedLabels) {
             watchingSelectedLabels = true;
-            console.log("get_labels sets up watch selected_labels")
-            $scope.$watchCollection('selected_labels', () => {
-              console.log("watch selected_labels called -> filterUsingLabels()")
-              filterUsingLabels()
-            });
+            $scope.$watchCollection('selected_labels', filterUsingLabels);
           }
           $scope.build_labels();
         });
       };
-
-
-      // $scope.hannah = ["boo"]
-      // // $scope.hannah = ["0o0o0o0o0"]
-      // $scope.$watchCollection('hannah', (new_v, old_v) => {
-      //   console.log("+++ watch hannah called with " + JSON.stringify(new_v) + " " + JSON.stringify(old_v))
-      // });
-      // // // $scope.hannah = ["ah!"]
-      // // // $scope.hannah = ["oh"]
-      // // // $scope.hannah = ["GRR"]
 
       $scope.open_ubid_modal = function (selectedViewIds) {
         $uibModal.open({
@@ -930,7 +906,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
         modalInstance.result.then(function (/*result*/) {
           // dialog was closed with 'Close' button.
-          console.log("open_geocode_modal -> load_inventory")
           $scope.load_inventory(1);
         });
       };
@@ -950,7 +925,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
 
         modalInstance.result.then(function (result) {
-          console.log("open_delete_modal -> load_inventory")
           if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
           else if (result.delete_state === 'success') {
             var selectedRows = $scope.gridApi.selection.getSelectedRows();
@@ -997,11 +971,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
                 return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
               });
             }
-            console.log("open_delete_modal -> load_inventory")
             $scope.load_inventory(1);
           }
         }, function (result) {
-          console.log("open_delete_modal -> load_inventory")
           if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
         });
       };
@@ -1336,11 +1308,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           state = JSON.parse(state);
           $scope.gridApi.saveState.restore($scope, state)
             .then(function () {
-              console.log("$scope.restore_status = RESTORE_SETTINGS_DONE;")
               $scope.restore_status = RESTORE_SETTINGS_DONE;
             });
         } else {
-          console.log("$scope.restore_status = RESTORE_SETTINGS_DONE;")
           $scope.restore_status = RESTORE_SETTINGS_DONE;
         }
       };
@@ -1420,14 +1390,12 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           gridApi.core.on.filterChanged($scope, _.debounce(() => {
             if ($scope.restore_status === RESTORE_COMPLETE) {
               updateColumnFilterSort();
-              console.log("grid options -> load_inventory")
               $scope.load_inventory(1);
             }
           }, 1000));
           gridApi.core.on.sortChanged($scope, _.debounce(() => {
             if ($scope.restore_status === RESTORE_COMPLETE) {
               updateColumnFilterSort();
-              console.log("grid options -> load_inventory")
               $scope.load_inventory(1);
             }
           }, 1000));
