@@ -420,6 +420,9 @@ msgstr "Close Preview"
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
+msgid "Column Description"
+msgstr "Column Description"
+
 msgid "Column List Profile"
 msgstr "Column List Profile"
 
