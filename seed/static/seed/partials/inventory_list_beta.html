@@ -56,6 +56,14 @@
             </div>
         </div>
         <div class="row">
+            <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
+            <div class="input-group input-group-sm grow">
+                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
+                </tags-input>
+                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
+            </div>
+        </div>
+        <div class="row">
             <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
             <div class="input-group input-group-sm grow">
                 <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
@@ -67,14 +75,6 @@
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</span>
-            </div>
-        </div>
-        <div class="row">
-            <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
-            <div class="input-group input-group-sm grow">
-                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
-                </tags-input>
-                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
             </div>
         </div>
     </form>
