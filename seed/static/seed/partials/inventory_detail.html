@@ -164,28 +164,28 @@
 
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.is_derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span class="sd-data-content" uib-popover="{$:: item_state[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span class="sd-data-content" uib-popover="{$:: item_state[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, item_state[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span class="sd-data-content" uib-popover="{$ item_state.extra_data[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span class="sd-data-content" uib-popover="{$ item_state.extra_data[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, item_state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'property / taxlot' fields -->
                             <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.is_derived_column" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span class="sd-data-content" uib-popover="{$ item_parent[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span class="sd-data-content" uib-popover="{$ item_parent[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, item_parent[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current derived column value -->
                             <td ng-if="edit_form_showing===false && col.is_derived_column" class="ellipsis">
-                                <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
                                     <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
                                 </span>
@@ -209,10 +209,10 @@
 
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" uib-popover="{$:: historical_item.state[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" uib-popover="{$:: historical_item.state[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, historical_item.state[col.column_name]) $}</span>
                                 </span>
-                                <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
+                                <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" uib-popover="{$:: historical_item.state.extra_data[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, historical_item.state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>

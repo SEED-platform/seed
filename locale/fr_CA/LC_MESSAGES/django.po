@@ -426,6 +426,9 @@ msgstr "Fermer l'aperçu"
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
+msgid "Column Description"
+msgstr "Description de la colonne"
+
 msgid "Column List Profile"
 msgstr "Profil de liste de colonnes"
 
