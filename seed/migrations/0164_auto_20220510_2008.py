@@ -8,6 +8,18 @@ def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
 
+    with transaction.atomic():
+        # Go through all the organizations
+        for org in Organization.objects.all():
+            columns = Column.objects.filter(organization_id=org.id)
+
+            for col in columns:
+                if col.display_name is None or col.display_name == "":
+                    col.column_description = col.column_name
+                else:
+                    col.column_description = col.display_name
+                col.save()
+
     new_db_fields = [
         {
             'column_name': 'total_ghg_emissions',
@@ -64,6 +76,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='column',
+            name='column_description',
+            field=models.TextField(blank=True, default=None, max_length=1000),
+        ),
         migrations.AddField(
             model_name='propertystate',
             name='total_ghg_emissions',
