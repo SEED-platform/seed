@@ -242,6 +242,15 @@ class TestColumns(TestCase):
         self.assertTrue(rextra_data_column.is_extra_data)
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
+    def test_column_has_description(self):
+        org1 = Organization.objects.create()
+        # Raw columns don't have a table name!
+        raw_column = seed_models.Column.objects.create(
+            column_name='site_eui',
+            organization=org1
+        )
+        self.assertEqual(raw_column.column_name, raw_column.column_description)
+
 
 class TestRenameColumns(TestCase):
     def setUp(self):
@@ -858,6 +867,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'Column A',
             'display_name': 'Column A',
+            'column_description': 'Column A',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -877,6 +887,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': "Apostrophe's Field",
             'display_name': "Apostrophe's Field",
+            'column_description': "Apostrophe's Field",
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -896,6 +907,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'id',
             'display_name': 'id',
+            'column_description': 'id',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -915,6 +927,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
+            'column_description': 'PM Property ID',
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
@@ -935,6 +948,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'state',
             'display_name': 'State (Tax Lot)',
+            'column_description': 'State',
             'data_type': 'string',
             'geocoding_order': 4,
             'is_extra_data': False,
@@ -953,6 +967,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area (Tax Lot)',
+            'column_description': 'Gross Floor Area',
             'data_type': 'None',
             'geocoding_order': 0,
             'is_extra_data': True,
@@ -982,6 +997,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area',
+            'column_description': 'Gross Floor Area',
             'data_type': 'None',
             'geocoding_order': 0,
             'is_extra_data': True,
