@@ -1069,6 +1069,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
           case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
+          case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
@@ -1078,6 +1079,23 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
         $scope.model_actions = 'none';
       };
+
+      $scope.open_refresh_metadata_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
+          controller: 'refresh_metadata_modal_controller',
+          backdrop: 'static',
+          resolve: {
+            ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'id');
+            },
+            inventory_type: _.constant($scope.inventory_type),
+          }
+        });
+      }
 
       $scope.open_analyses_modal = function (selectedViewIds) {
         const modalInstance = $uibModal.open({
