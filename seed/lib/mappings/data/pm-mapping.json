@@ -291,6 +291,15 @@
     "display_name": "PM Property ID",
     "to_field": "pm_property_id",
     "to_table_name": "PropertyState",
+    "from_field": "Property ID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "PM Property ID",
+    "to_field": "pm_property_id",
+    "to_table_name": "PropertyState",
     "from_field": "Portfolio Manager ID",
     "units": "",
     "type": "string",

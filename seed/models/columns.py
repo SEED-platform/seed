@@ -166,165 +166,197 @@ class Column(models.Model):
             'column_name': 'pm_property_id',
             'table_name': 'PropertyState',
             'display_name': 'PM Property ID',
+            'column_description': 'PM Property ID',
             'data_type': 'string',
         }, {
             'column_name': 'pm_parent_property_id',
             'table_name': 'PropertyState',
             'display_name': 'PM Parent Property ID',
+            'column_description': 'PM Parent Property ID',
             'data_type': 'string',
         }, {
             'column_name': 'jurisdiction_tax_lot_id',
             'table_name': 'TaxLotState',
             'display_name': 'Jurisdiction Tax Lot ID',
+            'column_description': 'Jurisdiction Tax Lot ID',
             'data_type': 'string',
         }, {
             'column_name': 'jurisdiction_property_id',
             'table_name': 'PropertyState',
             'display_name': 'Jurisdiction Property ID',
+            'column_description': 'Jurisdiction Property ID',
             'data_type': 'string',
         }, {
             'column_name': 'ulid',
             'table_name': 'TaxLotState',
             'display_name': 'ULID',
+            'column_description': 'ULID',
             'data_type': 'string',
         }, {
             'column_name': 'ubid',
             'table_name': 'PropertyState',
             'display_name': 'UBID',
+            'column_description': 'UBID',
             'data_type': 'string',
         }, {
             'column_name': 'custom_id_1',
             'table_name': 'PropertyState',
             'display_name': 'Custom ID 1',
+            'column_description': 'Custom ID 1',
             'data_type': 'string',
         }, {
             'column_name': 'custom_id_1',
             'table_name': 'TaxLotState',
             'display_name': 'Custom ID 1',
+            'column_description': 'Custom ID 1',
             'data_type': 'string',
         }, {
             'column_name': 'address_line_1',
             'table_name': 'PropertyState',
             'display_name': 'Address Line 1',
+            'column_description': 'Address Line 1',
             'data_type': 'string',
         }, {
             'column_name': 'address_line_1',
             'table_name': 'TaxLotState',
             'display_name': 'Address Line 1',
+            'column_description': 'Address Line 1',
             'data_type': 'string',
         }, {
             'column_name': 'address_line_2',
             'table_name': 'PropertyState',
             'display_name': 'Address Line 2',
+            'column_description': 'Address Line 2',
             'data_type': 'string',
         }, {
             'column_name': 'address_line_2',
             'table_name': 'TaxLotState',
             'display_name': 'Address Line 2',
+            'column_description': 'Address Line 2',
             'data_type': 'string',
         }, {
             'column_name': 'city',
             'table_name': 'PropertyState',
             'display_name': 'City',
+            'column_description': 'City',
             'data_type': 'string',
         }, {
             'column_name': 'city',
             'table_name': 'TaxLotState',
             'display_name': 'City',
+            'column_description': 'City',
             'data_type': 'string',
         }, {
             'column_name': 'state',
             'table_name': 'PropertyState',
             'display_name': 'State',
+            'column_description': 'State',
             'data_type': 'string',
         }, {
             'column_name': 'state',
             'table_name': 'TaxLotState',
             'display_name': 'State',
+            'column_description': 'State',
             'data_type': 'string',
         }, {
             # This should never be mapped to!
             'column_name': 'normalized_address',
             'table_name': 'PropertyState',
             'display_name': 'Normalized Address',
+            'column_description': 'Normalized Address',
             'data_type': 'string',
         }, {
             # This should never be mapped to!
             'column_name': 'normalized_address',
             'table_name': 'TaxLotState',
             'display_name': 'Normalized Address',
+            'column_description': 'Normalized Address',
             'data_type': 'string',
         }, {
             'column_name': 'postal_code',
             'table_name': 'PropertyState',
             'display_name': 'Postal Code',
+            'column_description': 'Postal Code',
             'data_type': 'string',
         }, {
             'column_name': 'postal_code',
             'table_name': 'TaxLotState',
             'display_name': 'Postal Code',
+            'column_description': 'Postal Code',
             'data_type': 'string',
         }, {
             # This field should never be mapped to!
             'column_name': 'lot_number',
             'table_name': 'PropertyState',
             'display_name': 'Associated Tax Lot ID',
+            'column_description': 'Associated Tax Lot ID',
             'data_type': 'string',
         }, {
             'column_name': 'property_name',
             'table_name': 'PropertyState',
             'display_name': 'Property Name',
+            'column_description': 'Property Name',
             'data_type': 'string',
         }, {
             'column_name': 'latitude',
             'table_name': 'PropertyState',
             'display_name': 'Latitude',
+            'column_description': 'Latitude',
             'data_type': 'number',
         }, {
             'column_name': 'longitude',
             'table_name': 'PropertyState',
             'display_name': 'Longitude',
+            'column_description': 'Longitude',
             'data_type': 'number',
         }, {
             'column_name': 'latitude',
             'table_name': 'TaxLotState',
             'display_name': 'Latitude',
+            'column_description': 'Latitude',
             'data_type': 'number',
         }, {
             'column_name': 'longitude',
             'table_name': 'TaxLotState',
             'display_name': 'Longitude',
+            'column_description': 'Longitude',
             'data_type': 'number',
         }, {
             'column_name': 'geocoding_confidence',
             'table_name': 'PropertyState',
             'display_name': 'Geocoding Confidence',
+            'column_description': 'Geocoding Confidence',
             'data_type': 'string',
         }, {
             'column_name': 'geocoding_confidence',
             'table_name': 'TaxLotState',
             'display_name': 'Geocoding Confidence',
+            'column_description': 'Geocoding Confidence',
             'data_type': 'string',
         }, {
             'column_name': 'property_footprint',
             'table_name': 'PropertyState',
             'display_name': 'Property Footprint',
+            'column_description': 'Property Footprint',
             'data_type': 'geometry',
         }, {
             'column_name': 'taxlot_footprint',
             'table_name': 'TaxLotState',
             'display_name': 'Tax Lot Footprint',
+            'column_description': 'Tax Lot Footprint',
             'data_type': 'geometry',
         }, {
             'column_name': 'campus',
             'table_name': 'Property',
             'display_name': 'Campus',
+            'column_description': 'Campus',
             'data_type': 'boolean',
             # 'type': 'boolean',
         }, {
             'column_name': 'updated',
             'table_name': 'PropertyState',
             'display_name': 'Updated',
+            'column_description': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -332,6 +364,7 @@ class Column(models.Model):
             'column_name': 'created',
             'table_name': 'PropertyState',
             'display_name': 'Created',
+            'column_description': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -339,6 +372,7 @@ class Column(models.Model):
             'column_name': 'updated',
             'table_name': 'TaxLotState',
             'display_name': 'Updated',
+            'column_description': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -346,6 +380,7 @@ class Column(models.Model):
             'column_name': 'created',
             'table_name': 'TaxLotState',
             'display_name': 'Created',
+            'column_description': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -353,65 +388,77 @@ class Column(models.Model):
             'column_name': 'gross_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Gross Floor Area',
+            'column_description': 'Gross Floor Area',
             'data_type': 'area',
             # 'type': 'number',
         }, {
             'column_name': 'use_description',
             'table_name': 'PropertyState',
             'display_name': 'Use Description',
+            'column_description': 'Use Description',
             'data_type': 'string',
         }, {
             'column_name': 'energy_score',
             'table_name': 'PropertyState',
             'display_name': 'ENERGY STAR Score',
+            'column_description': 'ENERGY STAR Score',
             'data_type': 'integer',
             # 'type': 'number',
         }, {
             'column_name': 'property_notes',
             'table_name': 'PropertyState',
             'display_name': 'Property Notes',
+            'column_description': 'Property Notes',
             'data_type': 'string',
         }, {
             'column_name': 'property_type',
             'table_name': 'PropertyState',
             'display_name': 'Property Type',
+            'column_description': 'Property Type',
             'data_type': 'string',
         }, {
             'column_name': 'year_ending',
             'table_name': 'PropertyState',
             'display_name': 'Year Ending',
+            'column_description': 'Year Ending',
             'data_type': 'date',
         }, {
             'column_name': 'owner',
             'table_name': 'PropertyState',
             'display_name': 'Owner',
+            'column_description': 'Owner',
             'data_type': 'string',
         }, {
             'column_name': 'owner_email',
             'table_name': 'PropertyState',
             'display_name': 'Owner Email',
+            'column_description': 'Owner Email',
             'data_type': 'string',
         }, {
             'column_name': 'owner_telephone',
             'table_name': 'PropertyState',
             'display_name': 'Owner Telephone',
+            'column_description': 'Owner Telephone',
             'data_type': 'string',
         }, {
             'column_name': 'building_count',
             'table_name': 'PropertyState',
             'display_name': 'Building Count',
+            'column_description': 'Building Count',
             'data_type': 'integer',
             # 'type': 'number',
         }, {
             'column_name': 'year_built',
             'table_name': 'PropertyState',
             'display_name': 'Year Built',
+            'column_description': 'Year Built',
             'data_type': 'integer',
             # 'type': 'number',
         }, {
             'column_name': 'recent_sale_date',
             'table_name': 'PropertyState',
             'display_name': 'Recent Sale Date',
+            'column_description': 'Recent Sale Date',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -419,6 +466,7 @@ class Column(models.Model):
             'column_name': 'conditioned_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Conditioned Floor Area',
+            'column_description': 'Conditioned Floor Area',
             'data_type': 'area',
             # 'type': 'number',
             # 'dbField': True,
@@ -426,32 +474,38 @@ class Column(models.Model):
             'column_name': 'occupied_floor_area',
             'table_name': 'PropertyState',
             'display_name': 'Occupied Floor Area',
+            'column_description': 'Occupied Floor Area',
             'data_type': 'area',
             # 'type': 'number',
         }, {
             'column_name': 'owner_address',
             'table_name': 'PropertyState',
             'display_name': 'Owner Address',
+            'column_description': 'Owner Address',
             'data_type': 'string',
         }, {
             'column_name': 'owner_city_state',
             'table_name': 'PropertyState',
             'display_name': 'Owner City/State',
+            'column_description': 'Owner City/State',
             'data_type': 'string',
         }, {
             'column_name': 'owner_postal_code',
             'table_name': 'PropertyState',
             'display_name': 'Owner Postal Code',
+            'column_description': 'Owner Postal Code',
             'data_type': 'string',
         }, {
             'column_name': 'home_energy_score_id',
             'table_name': 'PropertyState',
             'display_name': 'Home Energy Score ID',
+            'column_description': 'Home Energy Score ID',
             'data_type': 'string',
         }, {
             'column_name': 'generation_date',
             'table_name': 'PropertyState',
             'display_name': 'PM Generation Date',
+            'column_description': 'PM Generation Date',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -459,6 +513,7 @@ class Column(models.Model):
             'column_name': 'release_date',
             'table_name': 'PropertyState',
             'display_name': 'PM Release Date',
+            'column_description': 'PM Release Date',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
@@ -466,73 +521,86 @@ class Column(models.Model):
             'column_name': 'site_eui',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI',
+            'column_description': 'Site EUI',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'site_eui_weather_normalized',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI Weather Normalized',
+            'column_description': 'Site EUI Weather Normalized',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'site_eui_modeled',
             'table_name': 'PropertyState',
             'display_name': 'Site EUI Modeled',
+            'column_description': 'Site EUI Modeled',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'source_eui',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI',
+            'column_description': 'Source EUI',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'source_eui_weather_normalized',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI Weather Normalized',
+            'column_description': 'Source EUI Weather Normalized',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'source_eui_modeled',
             'table_name': 'PropertyState',
             'display_name': 'Source EUI Modeled',
+            'column_description': 'Source EUI Modeled',
             'data_type': 'eui',
             # 'type': 'number',
         }, {
             'column_name': 'energy_alerts',
             'table_name': 'PropertyState',
             'display_name': 'Energy Alerts',
+            'column_description': 'Energy Alerts',
             'data_type': 'string',
         }, {
             'column_name': 'space_alerts',
             'table_name': 'PropertyState',
             'display_name': 'Space Alerts',
+            'column_description': 'Space Alerts',
             'data_type': 'string',
         }, {
             'column_name': 'building_certification',
             'table_name': 'PropertyState',
             'display_name': 'Building Certification',
+            'column_description': 'Building Certification',
             'data_type': 'string',
         }, {
             'column_name': 'number_properties',
             'table_name': 'TaxLotState',
             'display_name': 'Number Properties',
+            'column_description': 'Number Properties',
             'data_type': 'integer',
             # 'type': 'number',
         }, {
             'column_name': 'block_number',
             'table_name': 'TaxLotState',
             'display_name': 'Block Number',
+            'column_description': 'Block Number',
             'data_type': 'string',
         }, {
             'column_name': 'district',
             'table_name': 'TaxLotState',
             'display_name': 'District',
+            'column_description': 'District',
             'data_type': 'string',
         }, {
             'column_name': 'egrid_subregion_code',
             'table_name': 'PropertyState',
             'display_name': 'eGRID Subregion Code',
+            'column_description': 'eGRID Subregion Code',
             'data_type': 'string',
         }, {
             'column_name': 'total_ghg_emissions',
@@ -563,6 +631,7 @@ class Column(models.Model):
     table_name = models.CharField(max_length=512, blank=True, db_index=True)
 
     display_name = models.CharField(max_length=512, blank=True)
+    column_description = models.TextField(max_length=1000, blank=True, default=None)
     data_type = models.CharField(max_length=64, default='None')
 
     # Add created/modified timestamps
@@ -611,6 +680,11 @@ class Column(models.Model):
                     {'is_extra_data': _(
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
+
+    def save(self, *args, **kwargs):
+        if self.column_name and not self.column_description:
+            self.column_description = self.column_name
+        super().save(*args, **kwargs)
 
     def rename_column(self, new_column_name, force=False):
         """
@@ -682,6 +756,7 @@ class Column(models.Model):
                         table_name=self.table_name,
                         column_name=new_column_name,
                         display_name=new_column_name,
+                        column_description=new_column_name,
                         is_extra_data=True,
                         unit=self.unit,
                         # unit_pint  # Do not import unit_pint since that only works with db fields
@@ -1007,6 +1082,7 @@ class Column(models.Model):
                     table_name='',
                     units_pint=field.get('from_units', None),
                     column_name=field['from_field'],
+                    column_description=field['from_field'],
                     is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
                 _log.debug("Creating a new from_column")
@@ -1257,6 +1333,14 @@ class Column(models.Model):
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
 
+            # If no column_description, use the column name (this is the display name as it was typed
+            # during mapping) or display name
+            if not new_c['column_description']:
+                if not new_c['display_name']:
+                    new_c['column_description'] = new_c['column_name']
+                else:
+                    new_c['column_description'] = new_c['display_name']
+
             columns.append(new_c)
 
         # Sort by display name
@@ -1306,6 +1390,14 @@ class Column(models.Model):
             # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
+
+            # If no column_description, use the column name (this is the display name as it was typed
+            # during mapping) or display name
+            if not new_c['column_description']:
+                if not new_c['display_name']:
+                    new_c['column_description'] = new_c['column_name']
+                else:
+                    new_c['column_description'] = new_c['display_name']
 
             # Related fields
             new_c['related'] = False
