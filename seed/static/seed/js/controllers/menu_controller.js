@@ -210,12 +210,6 @@ angular.module('BE.seed.controller.menu', [])
             $scope.auth = data.message;
           });
       };
-      const set_org = function (org_id) {
-        organization_service.get_organization(org_id)
-          .then(function (data) {
-            $scope.org = data.organization;
-          });
-      };
       $scope.mouseover_org = function (org_id) {
         $scope.show_org_id = true;
         $scope.hover_org_id = org_id;
@@ -269,7 +263,6 @@ angular.module('BE.seed.controller.menu', [])
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
             set_auth($scope.menu.user.organization.id);
-            set_org($scope.menu.user.organization.id);
           }).catch(function (error) {
             // user does not have an org
             $rootScope.route_load_error = true;

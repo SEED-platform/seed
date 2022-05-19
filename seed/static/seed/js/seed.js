@@ -1457,12 +1457,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return inventory_service.get_taxlot_columns();
             }
           }],
-          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id;
-            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
-          }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
+          }],
+          derived_columns_payload: ['$stateParams', 'derived_columns_service', 'organization_payload', function ($stateParams, derived_columns_service, organization_payload) {
+            return derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type);
           }]
         }
       })
