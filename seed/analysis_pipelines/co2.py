@@ -351,6 +351,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         is_extra_data=True,
         column_name='analysis_co2',
         display_name='Average Annual CO2 (kgCO2e)',
+        column_description='Average Annual CO2 (kgCO2e)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
@@ -358,6 +359,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         is_extra_data=True,
         column_name='analysis_co2_coverage',
         display_name='Average Annual CO2 Coverage (% of the year)',
+        column_description='Average Annual CO2 Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
