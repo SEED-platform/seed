@@ -135,7 +135,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         // this only happens ONCE (after the ui-grid's saveState.restore has completed)
         if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
           updateColumnFilterSort();
+          console.log('>>> calling get_labels from watch restore_status')
           get_labels();
+          console.log('>>> restore status')
           $scope.load_inventory(1)
             .then(function () {
               $scope.restore_status = RESTORE_COMPLETE;
@@ -328,6 +330,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       var filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
+        console.log('>>> filter using labels')
         $scope.load_inventory(1);
       };
 
@@ -336,6 +339,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.labelLogicUpdated = function (labelLogic) {
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
+        console.log('>>> filterUsingLabels called from labelLogicUpdated')
         filterUsingLabels();
       };
 
@@ -361,6 +365,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
+          console.log('>>> open update labels modal')
           $scope.load_inventory(1);
         });
       };
@@ -454,6 +459,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         modalInstance.result.then(function () {
           // dialog was closed with 'Merge' button.
           $scope.selectedOrder = [];
+          console.log('>>> open merge modal')
           $scope.load_inventory(1);
         });
       };
@@ -805,6 +811,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.load_inventory = function (page) {
+        console.log('>>> load inventory')
         const page_size = 100;
         spinner_utility.show();
         return fetch(page, page_size)
@@ -832,6 +839,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.update_cycle = function (cycle) {
+        console.log('>>> update_cycle')
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
         $scope.load_inventory(1);
@@ -867,6 +875,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           // watch for changes
           if (!watchingSelectedLabels) {
             watchingSelectedLabels = true;
+            console.log('>>> filterUsingLabels called from get_labels')
             $scope.$watchCollection('selected_labels', filterUsingLabels);
           }
           $scope.build_labels();
@@ -910,6 +919,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
         modalInstance.result.then(function (/*result*/) {
           // dialog was closed with 'Close' button.
+          console.log('>>> open geocode modal')
           $scope.load_inventory(1);
         });
       };
@@ -929,6 +939,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
 
         modalInstance.result.then(function (result) {
+          console.log('>>> open delete modal 1')
           if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
           else if (result.delete_state === 'success') {
             var selectedRows = $scope.gridApi.selection.getSelectedRows();
@@ -975,9 +986,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
                 return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
               });
             }
+            console.log('>>> open delete modal 2')
             $scope.load_inventory(1);
           }
         }, function (result) {
+          console.log('>>> open delete modal 3')
           if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
         });
       };
@@ -1312,10 +1325,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           state = JSON.parse(state);
           $scope.gridApi.saveState.restore($scope, state)
             .then(function () {
+              console.log('>>> restore status DONE')
               $scope.restore_status = RESTORE_SETTINGS_DONE;
             });
         } else {
           $scope.restore_status = RESTORE_SETTINGS_DONE;
+          console.log('>>> restore status DONE')
+
         }
       };
 
@@ -1394,12 +1410,14 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           gridApi.core.on.filterChanged($scope, _.debounce(() => {
             if ($scope.restore_status === RESTORE_COMPLETE) {
               updateColumnFilterSort();
+              console.log('>>> grid options - visibility change')
               $scope.load_inventory(1);
             }
           }, 1000));
           gridApi.core.on.sortChanged($scope, _.debounce(() => {
             if ($scope.restore_status === RESTORE_COMPLETE) {
               updateColumnFilterSort();
+              console.log('>>> grid options - sort change')
               $scope.load_inventory(1);
             }
           }, 1000));
@@ -1458,6 +1476,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           }, 150));
 
           _.defer(function () {
+            console.log('>>> grid options calling restoreGridSettings')
             restoreGridSettings();
           });
         }
