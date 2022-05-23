@@ -378,6 +378,9 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
+    # should we save data to the property?
+    save_co2_results = analysis.configuration.get('save_co2_results', False)
+
     # create and save emissions for each property view
     for analysis_property_view in analysis_property_views:
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
@@ -418,9 +421,10 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh']
         }
         analysis_property_view.save()
-        property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
-        property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
-        property_view.state.save()
+        if save_co2_results:
+            property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
+            property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
+            property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()
