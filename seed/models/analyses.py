@@ -106,26 +106,34 @@ class Analysis(models.Model):
         elif self.service == self.BETTER:
             highlights = [
                 {
-                    'name': 'Potential Cost Savings (USD)',
-                    'value_template': '${json_value:,.2f}',
-                    'json_path': 'assessment.assessment_energy_use.cost_savings_combined',
-                },
-                {
-                    'name': 'Potential Energy Savings',
-                    'value_template': '{json_value:,.2f} kWh',
-                    'json_path': 'assessment.assessment_energy_use.energy_savings_combined',
+                    'name': ['Potential Cost Savings (USD)'],
+                    'value_template': ['${json_value:,.2f}'],
+                    'json_path': ['assessment.assessment_energy_use.cost_savings_combined'],
+                }, {
+                    'name': ['Potential Energy Savings'],
+                    'value_template': ['{json_value:,.2f} kWh'],
+                    'json_path': ['assessment.assessment_energy_use.energy_savings_combined'],
+                }, {
+                    'name': ['BETTER Inverse Model R^2 (Electricity', 'Fossil Fuel)'],
+                    'value_template': ['{json_value:,.2f}', '{json_value:,.2f}'],
+                    'json_path': ['inverse_model.Electricity.r2', 'inverse_model.Fossil Fuel.r2'],
                 }
             ]
 
             ret = []
             for highlight in highlights:
-                parsed_result = get_json_path(highlight['json_path'], results)
-                value = 'N/A'
-                if parsed_result is not None:
-                    value = highlight['value_template'].format(json_value=parsed_result)
+                full_name = []
+                full_value = []
+                for i, name in enumerate(highlight['name']):
+                    parsed_result = get_json_path(highlight['json_path'][i], results)
+                    value = 'N/A'
+                    if parsed_result is not None:
+                        value = highlight['value_template'][i].format(json_value=parsed_result)
+                    full_name.append(name)
+                    full_value.append(value)
                 ret.append({
-                    'name': highlight['name'],
-                    'value': value
+                    'name': ', '.join(full_name),
+                    'value': ', '.join(full_value)
                 })
 
             return ret

@@ -420,6 +420,9 @@ msgstr "Close Preview"
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
+msgid "Column Description"
+msgstr "Column Description"
+
 msgid "Column List Profile"
 msgstr "Column List Profile"
 
@@ -1672,6 +1675,9 @@ msgstr "Not all inventory items were successfully deleted"
 
 msgid "Note:"
 msgstr "Note:"
+
+msgid "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\""
+msgstr "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\""
 
 msgid "Note: Parent organization members are not automatically made members of sub-organizations."
 msgstr "Note: Parent organization members are not automatically made members of sub-organizations."

@@ -1,6 +1,6 @@
 # This docker-compose version is the configuration when deploying SEED using the
 # ./deploy.sh script. This file only builds what is needed for deploying locally.
-version: '3.4'
+version: "3.4"
 services:
   db-postgres:
     container_name: seed_postgres

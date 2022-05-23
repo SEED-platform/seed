@@ -73,6 +73,16 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.get_organization_brief = function (org_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/', {
+        params: {
+          brief: true
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user

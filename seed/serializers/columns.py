@@ -31,6 +31,7 @@ class ColumnSerializer(serializers.ModelSerializer):
             'column_name', 'is_extra_data', 'unit_name', 'unit_type', 'display_name', 'data_type',
             'is_matching_criteria', 'geocoding_order', 'recognize_empty', 'comstock_mapping',
             'derived_column',
+            'column_description',
         )
 
     def concat_name(self, obj):
