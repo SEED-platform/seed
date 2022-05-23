@@ -179,7 +179,8 @@ def _dict_org_brief(request, organizations):
             'org_id': o.id,
             'parent_id': o.parent_org_id,
             'id': o.id,
-            'user_role': user_role
+            'user_role': user_role,
+            'display_decimal_places': o.display_decimal_places,
         }
         orgs.append(org)
 
@@ -352,9 +353,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if brief:
             if request.user.is_superuser:
-                qs = Organization.objects.only('id', 'name', 'parent_org_id')
+                qs = Organization.objects.only('id', 'name', 'parent_org_id', 'display_decimal_places')
             else:
-                qs = request.user.orgs.only('id', 'name', 'parent_org_id')
+                qs = request.user.orgs.only('id', 'name', 'parent_org_id', 'display_decimal_places')
 
             orgs = _dict_org_brief(request, qs)
             if len(orgs) == 0:
@@ -399,6 +400,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         Retrieves a single organization by id.
         """
         org_id = pk
+        brief = json.loads(request.query_params.get('brief', 'false'))
 
         if org_id is None:
             return JsonResponse({
@@ -427,9 +429,14 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'user is not the owner of the org'
             }, status=status.HTTP_403_FORBIDDEN)
 
+        if brief:
+            org = _dict_org_brief(request, [org])[0]
+        else:
+            org = _dict_org(request, [org])[0]
+
         return JsonResponse({
             'status': 'success',
-            'organization': _dict_org(request, [org])[0],
+            'organization': org,
         })
 
     @swagger_auto_schema(

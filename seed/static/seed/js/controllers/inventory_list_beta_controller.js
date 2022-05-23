@@ -136,10 +136,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
           updateColumnFilterSort();
           get_labels();
-          $scope.load_inventory(1)
-            .then(function () {
-              $scope.restore_status = RESTORE_COMPLETE;
-            });
+          $scope.restore_status = RESTORE_COMPLETE;
         }
       });
 
