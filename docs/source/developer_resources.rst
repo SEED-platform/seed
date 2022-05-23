@@ -104,11 +104,13 @@ fields. Follow the steps below to add new fields to the SEED database:
                     'column_name': 'geocoding_confidence',
                     'table_name': 'PropertyState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }, {
                     'column_name': 'geocoding_confidence',
                     'table_name': 'TaxLotState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }
             ]
@@ -127,12 +129,16 @@ fields. Follow the steps below to add new fields to the SEED database:
                         new_db_field['organization_id'] = org.id
                         Column.objects.create(**new_db_field)
                     elif columns.count() == 1:
-                        # If the column exists, then just update the display_name and data_type if empty
+                        # If the column exists, then update the display_name and data_type if empty
                         c = columns.first()
                         if c.display_name is None or c.display_name == '':
                             c.display_name = new_db_field['display_name']
                         if c.data_type is None or c.data_type == '' or c.data_type == 'None':
                             c.data_type = new_db_field['data_type']
+                                for col in columns:
+                        # If the column exists, then update the column_description if empty
+                        if c.column_description is None or c.column_description == '':
+                            c.column_description = new_db_field['column_description']
                         c.save()
                     else:
                         print("  More than one column returned")

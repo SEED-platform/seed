@@ -2872,6 +2872,10 @@ gs-input .tags .tag-item .remove-button {
     flex-grow: 1;
     width: 100%;
   }
+
+  .pull-right {
+    justify-content: end;
+  }
 }
 
 #filters-list,
