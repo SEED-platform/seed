@@ -443,6 +443,18 @@ def _process_results(self, analysis_id):
             1,
             'min_model_r_squared'
         ),
+        ExtraDataColumnPath(
+            'better_inverse_r_squared_electricity',
+            'BETTER Inverse Model R^2 (Electricity)',
+            1,
+            'inverse_model.Electricity.r2'
+        ),
+        ExtraDataColumnPath(
+            'better_inverse_r_squared_fossile_fuel',
+            'BETTER Inverse Model R^2 (Fossil Fuel)',
+            1,
+            'inverse_model.Fossil Fuel.r2'
+        ),
     ] + ee_measure_column_data_paths
 
     # create columns if they don't already exist
