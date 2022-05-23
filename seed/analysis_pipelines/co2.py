@@ -418,8 +418,8 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh']
         }
         analysis_property_view.save()
-        property_view.state.extra_data.update({'analysis_co2': co2['average_annual_kgco2e']})
-        property_view.state.extra_data.update({'analysis_co2_coverage': co2['annual_coverage_percent']})
+        property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
+        property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
         property_view.state.save()
 
     # all done!
