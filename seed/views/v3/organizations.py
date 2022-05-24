@@ -178,6 +178,7 @@ def _dict_org_brief(request, organizations):
             'name': o.name,
             'org_id': o.id,
             'parent_id': o.parent_org_id,
+            'is_parent': o.is_parent,
             'id': o.id,
             'user_role': user_role,
             'display_decimal_places': o.display_decimal_places,
