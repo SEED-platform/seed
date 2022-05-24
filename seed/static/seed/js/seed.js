@@ -1446,9 +1446,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (_.includes(validProfileIds, lastProfileId)) {
               return inventory_service.get_column_list_profile(lastProfileId);
             }
-            var currentProfileId = _.first(profiles).id;
-            if (currentProfileId) inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type);
-            return inventory_service.get_column_list_profile(currentProfileId);
+            var currentProfileId = _.first(profiles)?.id;
+            if (currentProfileId) {
+              console.log("current profile is first profile")
+              inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type)
+              return inventory_service.get_column_list_profile(currentProfileId);
+            }
+            console.log("current profile is null")
+            return null;
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
