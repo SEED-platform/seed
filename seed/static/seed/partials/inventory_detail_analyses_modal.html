@@ -83,6 +83,19 @@
                     </div>
                 </div>
 
+                <div class="form-group" ng-if="new_analysis.service == 'CO2'">
+                    <label class="control-label sectionLabel">CO2 Analysis Options</label>
+                    <div class="form-group" style="padding-top: 1em">
+                        <div class="form-row">
+                            <label class="control-label sectionLabel text-muted">
+                                Save Results to Property
+                                <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If checked, the results from the analysis will be saved to the property, overriding any existing values or defaults.'"></i>
+                            </label>
+                            <input ng-model="new_analysis.configuration.save_co2_results" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;" checked="checked">
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
             </form>
         </div>

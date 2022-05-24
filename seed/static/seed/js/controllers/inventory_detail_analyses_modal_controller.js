@@ -66,7 +66,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             break;
 
           case 'CO2':
-            $scope.new_analysis.configuration = {};
+            $scope.new_analysis.configuration = {
+              save_co2_results: true
+            };
             break;
 
           case 'BETTER':
