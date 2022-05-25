@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0164_derivedcolumnparameter_source_column_derived'),
+        ('seed', '0165_column_column_description'),
     ]
 
     operations = [
