@@ -160,10 +160,10 @@
                     <tbody>
                         <tr ng-repeat="col in ::columns">
                             <!-- Column name -->
-                            <td ng-attr-title="{$:: col.column_name $}"><i ng-if="col.is_derived_column" class="fa fa-link"></i> {$:: col.displayName | translate $}</td>
+                            <td ng-attr-title="{$:: col.column_name $}"><i ng-if="col.derived_column" class="fa fa-link"></i> {$:: col.displayName | translate $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
-                            <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.is_derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" uib-popover="{$:: item_state[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, item_state[col.column_name]) $}</span>
                                 </span>
@@ -177,14 +177,14 @@
                             </td>
 
                             <!-- Show read-only current 'property / taxlot' fields -->
-                            <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.is_derived_column" ng-class="{highlight: col.changed}" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.derived_column" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" uib-popover="{$ item_parent[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span>{$:: displayValue(col.data_type, item_parent[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current derived column value -->
-                            <td ng-if="edit_form_showing===false && col.is_derived_column" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
                                 <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
                                     <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
@@ -193,16 +193,16 @@
 
                             <!-- Show input form to edit current field value -->
                             <td ng-if="edit_form_showing" ng-class="{highlight: col.changed}">
-                                <div ng-if="::!col.is_extra_data && !col.is_derived_column && col.table_name.toLowerCase().includes('state')">
+                                <div ng-if="::!col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')">
                                     <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[col.column_name]" ng-disabled="::isDisabledField(col.column_name)">
                                 </div>
                                 <div ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')">
                                     <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[col.column_name]">
                                 </div>
-                                <div ng-if="::!col.is_extra_data && !col.is_derived_column && !col.table_name.toLowerCase().includes('state')">
+                                <div ng-if="::!col.is_extra_data && !col.derived_column && !col.table_name.toLowerCase().includes('state')">
                                     <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[col.column_name]" ng-disabled="::isDisabledField(col.column_name)">
                                 </div>
-                                <div ng-if="::col.is_derived_column">
+                                <div ng-if="::col.derived_column">
                                     {$ item_derived_values[col.id] $}
                                 </div>
                             </td>
