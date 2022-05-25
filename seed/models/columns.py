@@ -23,8 +23,6 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
 
-# from seed.models.derived_columns import DerivedColumn
-
 INVENTORY_DISPLAY = {
     'PropertyState': 'Property',
     'TaxLotState': 'Tax Lot',
