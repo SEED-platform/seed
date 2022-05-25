@@ -411,7 +411,7 @@
   "LINK_OUT_CYCLE_MATCHES": "Matches outside of this cycle will be linked.",
   "LISTING_ORG_MATCHING_CRITERIA": "For this organization, records match if the following fields match:",
   "LIST_GUIDANCE_PROPERTIES": "Select columns from the list below to make them appear in your Property List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.",
-  "LIST_GUIDANCE_PROPERTIES_NO_PIN": "Select columns from the list below to make th  em appear in your Properties Detail table. Drag the rows to change the order in which they appear.",
+  "LIST_GUIDANCE_PROPERTIES_NO_PIN": "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear.",
   "LIST_GUIDANCE_TAXLOTS": "Select columns from the list below to make them appear in your Tax Lot List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view.",
   "LIST_GUIDANCE_TAXLOTS_NO_PIN": "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear.",
   "LONG_OPERATION_WARNING": "This operation may take a while.",
