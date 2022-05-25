@@ -593,7 +593,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/audit_template_login_modal.html',
           controller: 'audit_template_login_modal_controller',
-          resolve: {}
+          resolve: {
+            view_id: () => $stateParams.view_id,
+            organization_id: () => $scope.organization.id,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+          },
+          backdrop: 'static',
         });
       };
 
