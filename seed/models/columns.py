@@ -74,6 +74,10 @@ class Column(models.Model):
         ('PropertyState', 'source_eui'),
         ('PropertyState', 'source_eui_modeled'),
         ('PropertyState', 'source_eui_weather_normalized'),
+        ('PropertyState', 'total_ghg_emissions'),
+        ('PropertyState', 'total_marginal_ghg_emissions'),
+        ('PropertyState', 'total_ghg_emissions_intensity'),
+        ('PropertyState', 'total_marginal_ghg_emissions_intensity'),
     ]
 
     COLUMN_MERGE_FAVOR_NEW = 0
