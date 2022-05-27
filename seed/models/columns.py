@@ -622,7 +622,13 @@ class Column(models.Model):
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'number',
-        },
+        }, {
+            'column_name': 'property_timezone',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Time Zone',
+            'column_description': 'Time zone of the property',
+            'data_type': 'string',
+        }
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
