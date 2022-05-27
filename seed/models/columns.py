@@ -610,21 +610,25 @@ class Column(models.Model):
             'column_name': 'total_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
+            'column_description': 'Total GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
+            'column_description': 'Total Marginal GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
+            'column_description': 'Total GHG Emissions Intensity',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
+            'column_description': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'number',
         },
     ]
