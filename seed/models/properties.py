@@ -151,7 +151,7 @@ class PropertyState(models.Model):
     ubid = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The master campus record (campus=True on Property model) will
+    # for all the properties. The main campus record (campus=True on Property model) will
     # have the pm_property_id set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     pm_property_id = models.CharField(max_length=255, null=True, blank=True)
@@ -181,7 +181,6 @@ class PropertyState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
 
-    # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     # EPA's eGRID Subregion Code (https://www.epa.gov/egrid)
@@ -389,7 +388,7 @@ class PropertyState(models.Model):
         Return the history of the property state by parsing through the auditlog. Returns only the ids
         of the parent states and some descriptions.
 
-              master
+              main
               /   \
              /     \
           parent1  parent2
@@ -397,12 +396,12 @@ class PropertyState(models.Model):
         In the records, parent2 is most recent, so make sure to navigate parent two first since we
         are returning the data in reverse over (that is most recent changes first)
 
-        :return: list, history as a list, and the master record
+        :return: list, history as a list, and the main record
         """
 
         """Return history in reverse order."""
         history = []
-        master = {
+        main = {
             'state_id': self.id,
             'state_data': self,
             'date_edited': None,
@@ -436,7 +435,7 @@ class PropertyState(models.Model):
         ).order_by('-id').first()
 
         if log:
-            master = {
+            main = {
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -497,7 +496,7 @@ class PropertyState(models.Model):
                 record = record_dict(log)
                 history.append(record)
 
-        return history, master
+        return history, main
 
     @classmethod
     def coparent(cls, state_id):
@@ -552,6 +551,10 @@ class PropertyState(models.Model):
                     ps.energy_score,
                     ps.site_eui,
                     ps.site_eui_modeled,
+                    ps.total_ghg_emissions,
+                    ps.total_marginal_ghg_emissions,
+                    ps.total_ghg_emissions_intensity,
+                    ps.total_marginal_ghg_emissions_intensity,
                     ps.property_notes,
                     ps.property_type,
                     ps.year_ending,
@@ -592,8 +595,10 @@ class PropertyState(models.Model):
                        'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
                        'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
-                       'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',
+                       'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',
+                       'total_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity',
+                       'property_notes', 'property_type', 'year_ending', 'owner',
+                       'owner_email', 'owner_telephone', 'building_count',
                        'year_built', 'recent_sale_date', 'conditioned_floor_area',
                        'occupied_floor_area', 'owner_address', 'owner_postal_code',
                        'home_energy_score_id', 'generation_date', 'release_date',

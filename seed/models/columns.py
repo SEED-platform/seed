@@ -74,6 +74,10 @@ class Column(models.Model):
         ('PropertyState', 'source_eui'),
         ('PropertyState', 'source_eui_modeled'),
         ('PropertyState', 'source_eui_weather_normalized'),
+        ('PropertyState', 'total_ghg_emissions'),
+        ('PropertyState', 'total_marginal_ghg_emissions'),
+        ('PropertyState', 'total_ghg_emissions_intensity'),
+        ('PropertyState', 'total_marginal_ghg_emissions_intensity'),
     ]
 
     COLUMN_MERGE_FAVOR_NEW = 0
@@ -606,21 +610,25 @@ class Column(models.Model):
             'column_name': 'total_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
+            'column_description': 'Total GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
+            'column_description': 'Total Marginal GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
+            'column_description': 'Total GHG Emissions Intensity',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
+            'column_description': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'number',
         },
     ]
