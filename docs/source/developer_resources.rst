@@ -413,6 +413,19 @@ Best Practices
 8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
 9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.
 
+Building Documentation
+----------------------
+
+Older versions of the source code documentation is on read the docs; however, newer versions need to be built and pushed to the seed-website repository manually. To build the documentation follow the script below:
+
+.. code-block:: console
+
+        cd docs
+        rm -rf htmlout
+        sphinx-build -b html source htmlout
+
+For releasing, copy the ``htmlout`` directory into the seed-platform's website repository under ``docs/code_documentation/<new_version>``. Make sure to add the new documenation to the table in the ``docs/developer_resources.md``.
+
 
 Release Instructions
 --------------------
@@ -425,7 +438,7 @@ To make a release do the following:
 
 .. code-block:: console
 
-    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2021-12-27 –e 2022-03-31
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2022-03-31 –e 2022-05-29
 
 4. Paste the results (remove unneeded Accepted Pull Requests and the new issues) into the CHANGELOG.md. Cleanup the formatting (if needed).
 5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
@@ -433,4 +446,4 @@ To make a release do the following:
 7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
 8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
 9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-10. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)
+10. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documenation).
