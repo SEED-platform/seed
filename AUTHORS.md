@@ -96,9 +96,10 @@ Open Green Building Society
 
 ---
 
-Devetry
+Dept / Formerly Devetry
 
 - Adrian Lara (https://github.com/adrian-lara)
+- Ted Summer (https://github.com/macintoshpie)
 - Daniel Bressan (https://github.com/danielbressan)
 - Ross Perry (https://github.com/perryr16)
 - Ryo Schulz (https://github.com/Ryoken)
