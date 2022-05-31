@@ -446,4 +446,4 @@ To make a release do the following:
 7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
 8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
 9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-10. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documenation).
+10. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
