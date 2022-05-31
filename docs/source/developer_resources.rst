@@ -424,7 +424,7 @@ Older versions of the source code documentation is on read the docs; however, ne
         rm -rf htmlout
         sphinx-build -b html source htmlout
 
-For releasing, copy the ``htmlout`` directory into the seed-platform's website repository under ``docs/code_documentation/<new_version>``. Make sure to add the new documenation to the table in the ``docs/developer_resources.md``.
+For releasing, copy the ``htmlout`` directory into the seed-platform's website repository under ``docs/code_documentation/<new_version>``. Make sure to add the new documentation to the table in the ``docs/developer_resources.md``.
 
 
 Release Instructions
