@@ -66,9 +66,15 @@ NREL
 - Hannah Eslinger (https://github.com/haneslinger)
 - Alex Chapin (https://github.com/anchapin)
 - Lauren Adams (https://github.com/laurenliz22)
+- Noel Merket (https://github.com/nmerket)
 
 ---
 
+Earth Advantage
+
+- Fable Turas (https://github.com/fablet)
+
+---
 Maalka
 
 - Clay Teeter (clay@maalka.com)
