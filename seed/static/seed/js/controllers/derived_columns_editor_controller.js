@@ -80,6 +80,9 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       $scope.parameters = $scope.derived_column.parameters;
 
       // derivedCols = derived_columns_payload.derived_columns.map(dc => ({ ...dc, 'displayName': dc.name }))
+      derivedCols = derived_columns_payload.derived_columns
+      $scope.dcs = derived_columns_payload.derived_columns
+      // console.log('derivedCols OG', derivedCols.map(dc => dc.id))
       // propertyCols = property_columns_payload.filter(col => !col.related)
       // $scope.property_columns = propertyCols.concat(derivedCols)
 
@@ -121,10 +124,13 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           return param.parameter_name === this_param.parameter_name &&
             idx !== parameter_index;
         });
+
       };
 
       // updates parameter errors according to source column validity and check for duplicate
       const validate_parameter_source_column = function (parameter_index) {
+        // console.log('validate columns')
+        // console.log('derivedCols', derivedCols.map(dc => dc.id))
         const this_param = $scope.parameters[parameter_index];
         this_param.errors.invalid_source_column = !this_param.source_column;
 
@@ -136,7 +142,40 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         } else {
           this_param.errors.duplicate_source_column = false;
         }
+
+        this_param.errors.recursive_source_column = this_param.source_column.column_name == $scope.derived_column.name 
+        parents = find_derived_parents(this_param.source_column)
+        // console.log('parents', parents)
+        this_param.errors.recursive_source_column // && console.log('>>> Recursive definition')
       };
+
+      const find_derived_parents = function (source_col, parents=[]) {
+        /*
+        source_col type=Column
+        is the source col a derived col?
+        find the derived col's column
+        pass that back to the begining
+        */
+        if (source_col.derived_column){
+          derived_columns_service.get_derived_columns($scope.org.id, $scope.derived_column.inventory_type).then(
+            data => console.log('dcs',data)
+            // THIS RETURNS THE CORRECT DERIVED COLUMN IDS
+          )
+
+          // console.log(source_col)
+          const dc_id = source_col.derived_column
+          const dcs = derived_columns_payload.derived_columns
+          // console.log('find_derived', dcs.map(dc => dc.id))
+          // console.log('scope.dcs', $scope.dcs)
+          const dc = derivedCols.find(col => col.id = dc_id)
+          const parent_column_id = dc.parameters[0].source_column
+          const parent_source_col = $scope.property_columns.find(c => c.id == parent_column_id)
+          parents.push(parent_source_col)
+          find_derived_parents(parent_source_col, parents)
+        } else {
+          return parents
+        }
+      }
 
       const validate_parameter_in_expression = function (parameter_index) {
         const this_param = $scope.parameters[parameter_index];
@@ -258,6 +297,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         const creating = !$scope.derived_column.id;
         let api_call = null;
         if (creating) {
+          console.log('creating dc')
           api_call = () => {
             return derived_columns_service.create_derived_column(
               $scope.org.id,
@@ -265,6 +305,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
             );
           };
         } else {
+          console.log('updating dc')
           api_call = () => {
             return derived_columns_service.update_derived_column(
               $scope.org.id,

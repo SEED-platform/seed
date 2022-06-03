@@ -5,6 +5,8 @@
 :author
 """
 from copy import deepcopy
+import logging
+
 
 import django.core.exceptions
 from django.http import JsonResponse
@@ -22,6 +24,8 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
+_log = logging.getLogger(__name__)
+
 
 
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
@@ -49,6 +53,10 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             filter_params['inventory_type'] = inventory_type
 
         queryset = DerivedColumn.objects.filter(**filter_params)
+
+        dcs = DerivedColumnSerializer(queryset, many=True).data
+
+        logging.error('>>> Derived Column IDs: %s', [dc['id'] for dc in dcs])
 
         return JsonResponse({
             'status': 'success',
