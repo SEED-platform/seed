@@ -188,8 +188,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'selected': ['integer'],
+                'label_names': ['string'],
             },
-            description='IDs for properties to be checked for which labels are applied.'
+            description='- selected: Property View IDs to be checked for which labels are applied\n'
+                        '- label_names: list of label names to query'
         )
     )
     @has_perm_class('requires_viewer')
@@ -199,12 +201,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Returns a list of all labels where the is_applied field
         in the response pertains to the labels applied to property_view
         """
-        labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
-        super_organization = self.get_organization(request)
+        # labels are attached to the organization. A parent org's label should not be
+        # a factor of the current orgs labels.
+        organization = self.get_organization(request)
+
+        labels_qs = Label.objects.filter(
+            super_organization=organization
+        ).order_by('name').distinct()
+
+        # if labels names is passes, then get only those labels
+        if request.data.get('label_names', None):
+            labels_qs = labels_qs.filter(
+                name__in=request.data.get('label_names')
+            ).order_by('name')
+
         # TODO: refactor to avoid passing request here
-        return get_labels(request, labels, super_organization, 'property_view')
+        return get_labels(request, labels_qs, organization, 'property_view')
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
