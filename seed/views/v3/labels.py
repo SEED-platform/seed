@@ -102,7 +102,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
 
     def get_queryset(self):
         labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
+            super_organization=self.get_organization(self.request)
         ).order_by("name").distinct()
         return labels
 
