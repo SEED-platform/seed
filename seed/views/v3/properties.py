@@ -201,12 +201,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Returns a list of all labels where the is_applied field
         in the response pertains to the labels applied to property_view
         """
-        # labels are attached to the organization. A parent org's label should not be
-        # a factor of the current orgs labels.
-        organization = self.get_organization(request)
+        # labels are attached to the organization, but newly created ones in a suborg are
+        # part of the suborg.  A parent org's label should not be a factor of the current orgs labels,
+        # but that isn't the current state of the system. This needs to be reworked when
+        # we deal with accountability hierarchies.
+        # organization = self.get_organization(request)
+        super_organization = self.get_parent_org(request)
 
         labels_qs = Label.objects.filter(
-            super_organization=organization
+            super_organization=super_organization
         ).order_by('name').distinct()
 
         # if labels names is passes, then get only those labels
@@ -216,7 +219,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ).order_by('name')
 
         # TODO: refactor to avoid passing request here
-        return get_labels(request, labels_qs, organization, 'property_view')
+        return get_labels(request, labels_qs, super_organization, 'property_view')
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
