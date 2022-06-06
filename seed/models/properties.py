@@ -134,7 +134,7 @@ class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
     For property_timezone, use the pytz timezone strings. The US has the following and a full
-    list can be creates by running calling pytz.all_timezones in Python:
+    list can be created by calling pytz.all_timezones in Python:
         * US/Alaska
         * US/Aleutian
         * US/Arizona
