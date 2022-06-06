@@ -243,7 +243,6 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         for i, ps in enumerate(PropertyState.objects.filter(id__in=ps_ids)):
             self.assertGreater(ps.updated, ps_updated_initial[i])
 
-
     def tearDown(self):
         for x in self.properties:
             PropertyView.objects.get(pk=x).delete()
