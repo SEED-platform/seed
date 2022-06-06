@@ -79,13 +79,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       $scope.derived_column = derived_column_payload.derived_column || make_derived_column();
       $scope.parameters = $scope.derived_column.parameters;
 
-      // derivedCols = derived_columns_payload.derived_columns.map(dc => ({ ...dc, 'displayName': dc.name }))
-      derivedCols = derived_columns_payload.derived_columns
-      $scope.dcs = derived_columns_payload.derived_columns
-      // console.log('derivedCols OG', derivedCols.map(dc => dc.id))
-      // propertyCols = property_columns_payload.filter(col => !col.related)
-      // $scope.property_columns = propertyCols.concat(derivedCols)
-
+      $scope.derived_columns = derived_columns_payload.derived_columns
 
       $scope.property_columns = property_columns_payload.filter(col => !col.related);
       $scope.taxlot_columns = taxlot_columns_payload.filter(col => !col.related);
@@ -130,8 +124,6 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
 
       // updates parameter errors according to source column validity and check for duplicate
       const validate_parameter_source_column = function (parameter_index) {
-        console.log('validate columns')
-        // console.log('derivedCols', derivedCols.map(dc => dc.id))
         $scope.recursive_definition = false
         const this_param = $scope.parameters[parameter_index];
         this_param.errors.invalid_source_column = !this_param.source_column;
@@ -146,94 +138,50 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         }
 
         this_param.errors.recursive_source_column = check_for_recursion(this_param.source_column)
-        // this_param.errors.recursive_source_column = this_param.source_column.column_name == $scope.derived_column.name
-        // check_recursion(this_param.source_column).then((recursion_check) => {
-        //   this_param.errors.recursive_source_column = this_param.errors.recursive_source_column || recursion_check
-        // });
-        // console.log('recursive',this_param.errors.recursive_source_column)
       };
 
 
-      // Remove columns that can cause circular definitions from the list of avaliable source columns
-      const check_for_recursion = function (param_column) {
-        if (!param_column.derived_column) {
-          console.log('not a derived column')
+      // Recusion exists when the source column (the definition) contains a reference to itself 
+      // a = b 
+      // b = c 
+      // c = a ----> a = a
+      const check_for_recursion = function (source_column) {
+        if (!source_column.derived_column) {
           return false
-        } else if (param_column.column_name == $scope.derived_column.name) {
-          console.log('same name, recursion')
+        } else if (source_column.derived_column == $scope.derived_column.id) {
           return true
-
         } else {
-          let param_derived_col = $scope.dcs.find(dc => dc.id == param_column.derived_column)
-          console.log('dc ids', $scope.dcs.map(dc => dc.id))
-          let recursive_column_ids = check_parameters_for_recursive_cols(param_derived_col.parameters)
-          // let recursive_column_ids = check_parameters_for_recursive_cols($scope.derived_column.parameters)
+          let source_derived_column = $scope.derived_columns.find(dc => dc.id == source_column.derived_column)
+          let nested_derived_columns = check_parameters_for_nested_derived_columns(source_derived_column.parameters)
   
-          const current_column_id = property_columns_payload.find(col => col.derived_column == $scope.derived_column.id).id;
-          // recursive_column_ids.push(current_column_id)
-          console.log('RECURSION?',recursive_column_ids.includes(current_column_id))
-          return recursive_column_ids.includes(current_column_id)
+          const current_column = property_columns_payload.find(col => col.derived_column == $scope.derived_column.id);
+          console.log('RECURSION?', nested_derived_columns.includes(current_column.id))
+          // if the current column has been found in the definition of any of the source_column's nested derived columns, recursion has occured.
+          return nested_derived_columns.includes(current_column.id)
         }
       }
-      const check_parameters_for_recursive_cols = function (params, recursive_column_ids = []) {
-        console.log('checking params for recursion:', params)
-        // a column is only recursive if it can be traced back to itself.
+      const check_parameters_for_nested_derived_columns = function (params, nested_derived_column_ids = []) {
         params.forEach(param => {
-          // find source col
           if (!param.source_column) {
             return
           }
           const source_col = property_columns_payload.find(col => col.id == param.source_column);
-          console.log('source_col.displayName', source_col.displayName)
-          console.log('source col dc?', source_col.derived_column)
           // is source col a derived col?
           if (source_col.derived_column) {
-            if (recursive_column_ids.includes(source_col.id)) {
-              console.log('id duplicated in recursive column ids')
-              return recursive_column_ids
+
+            if (nested_derived_column_ids.includes(source_col.id)) {
+              return nested_derived_column_ids
             }
-            console.log(source_col.displayName)
-            recursive_column_ids.push(source_col.id);
-            // continue to go deeper until there are no derived cols
-            const child_derived_col = derivedCols.find(dc => dc.id == source_col.derived_column)
-            check_parameters_for_recursive_cols(child_derived_col.parameters, recursive_column_ids)
+
+            nested_derived_column_ids.push(source_col.id);
+
+            const child_derived_col = $scope.derived_columns.find(dc => dc.id == source_col.derived_column)
+            // use recursion to find all nested (related) derived columns
+            check_parameters_for_nested_derived_columns(child_derived_col.parameters, nested_derived_column_ids)
           }
         });
-        return recursive_column_ids
-
+        return nested_derived_column_ids
       }
-      // const recursive_column_ids = find_recursive_column_ids()
-
-      // const check_recursion = function (source_col) {
-      //   /*
-      //   source_col type=Column
-      //   is the source col a derived col?
-      //   find the derived col's column
-      //   pass that back to the begining
-      //   */
-      //   return derived_columns_service.get_derived_columns($scope.org.id, $scope.derived_column.inventory_type)
-      //   .then((data) => {
-      //     if (source_col.derived_column){
-      //     // console.log('dcs', data.derived_columns);// THIS RETURNS THE CORRECT DERIVED COLUMN IDS
-      //     /*
-      //     Ultimate goal: does the param source column contain a derived column that is used to define itself.
-      //     */
-      //     $scope.derived_column // does it equal this?
-      //     const source_dc = data.derived_columns.find(dc => dc.id == source_col.derived_column)
-
-      //     // need to iterate over all sources, but first for now.
-      //      const parent_col = $scope.property_columns.find(pc => pc.id == source_dc.parameters[0].source_column)
-      //      const parent_derived_col = data.derived_columns.find(dc => dc.id == parent_col.derived_column)
-      //      if (parent_derived_col.id == $scope.derived_column.id) {
-      //       return true
-      //      }
-      //      else {
-      //        return false
-      //      }
-      //     }
-      //   });
-        
-      // }
 
       const validate_parameter_in_expression = function (parameter_index) {
         const this_param = $scope.parameters[parameter_index];
