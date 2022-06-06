@@ -18,9 +18,9 @@ from seed.models import (
     Cycle,
     Note,
     Property,
+    PropertyState,
     PropertyView,
-    TaxLotProperty,
-    PropertyState
+    TaxLotProperty
 )
 from seed.tasks import update_inventory_metadata
 from seed.test_helpers.fake import (
@@ -231,7 +231,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         p_updated_initial = [prop.updated for prop in Property.objects.all()]
         ps_updated_initial = [state.updated for state in PropertyState.objects.all()]
-        
+
         time.sleep(1)
 
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
