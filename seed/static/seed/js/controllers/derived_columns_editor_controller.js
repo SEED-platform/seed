@@ -131,6 +131,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       const validate_parameter_source_column = function (parameter_index) {
         // console.log('validate columns')
         // console.log('derivedCols', derivedCols.map(dc => dc.id))
+        $scope.recursive_definition = false
         const this_param = $scope.parameters[parameter_index];
         this_param.errors.invalid_source_column = !this_param.source_column;
 
@@ -143,38 +144,42 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           this_param.errors.duplicate_source_column = false;
         }
 
-        this_param.errors.recursive_source_column = this_param.source_column.column_name == $scope.derived_column.name 
-        parents = find_derived_parents(this_param.source_column)
-        // console.log('parents', parents)
-        this_param.errors.recursive_source_column // && console.log('>>> Recursive definition')
+        this_param.errors.recursive_source_column = this_param.source_column.column_name == $scope.derived_column.name
+        check_recursion(this_param.source_column).then((recursion_check) => {
+          this_param.errors.recursive_source_column = this_param.errors.recursive_source_column || recursion_check
+        });
+        console.log('recursive',this_param.errors.recursive_source_column)
       };
 
-      const find_derived_parents = function (source_col, parents=[]) {
+      const check_recursion = function (source_col) {
         /*
         source_col type=Column
         is the source col a derived col?
         find the derived col's column
         pass that back to the begining
         */
-        if (source_col.derived_column){
-          derived_columns_service.get_derived_columns($scope.org.id, $scope.derived_column.inventory_type).then(
-            data => console.log('dcs',data)
-            // THIS RETURNS THE CORRECT DERIVED COLUMN IDS
-          )
+        return derived_columns_service.get_derived_columns($scope.org.id, $scope.derived_column.inventory_type)
+        .then((data) => {
+          if (source_col.derived_column){
+          // console.log('dcs', data.derived_columns);// THIS RETURNS THE CORRECT DERIVED COLUMN IDS
+          /*
+          Ultimate goal: does the param source column contain a derived column that is used to define itself.
+          */
+          $scope.derived_column // does it equal this?
+          const source_dc = data.derived_columns.find(dc => dc.id == source_col.derived_column)
 
-          // console.log(source_col)
-          const dc_id = source_col.derived_column
-          const dcs = derived_columns_payload.derived_columns
-          // console.log('find_derived', dcs.map(dc => dc.id))
-          // console.log('scope.dcs', $scope.dcs)
-          const dc = derivedCols.find(col => col.id = dc_id)
-          const parent_column_id = dc.parameters[0].source_column
-          const parent_source_col = $scope.property_columns.find(c => c.id == parent_column_id)
-          parents.push(parent_source_col)
-          find_derived_parents(parent_source_col, parents)
-        } else {
-          return parents
-        }
+          // need to iterate over all sources, but first for now.
+           const parent_col = $scope.property_columns.find(pc => pc.id == source_dc.parameters[0].source_column)
+           const parent_derived_col = data.derived_columns.find(dc => dc.id == parent_col.derived_column)
+           if (parent_derived_col.id == $scope.derived_column.id) {
+            return true
+           }
+           else {
+             return false
+           }
+          }
+        });
+        
       }
 
       const validate_parameter_in_expression = function (parameter_index) {
