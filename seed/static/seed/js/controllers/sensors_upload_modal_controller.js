@@ -100,8 +100,8 @@ angular.module('BE.seed.controller.sensors_upload_modal', [])
         field: 'type',
         enableHiding: false
       }, {
-        field: 'location_identifier',
-        displayName: 'location identifier',
+        field: 'location_description',
+        displayName: 'Location Description',
         enableHiding: false
       }, {
         field: 'units',

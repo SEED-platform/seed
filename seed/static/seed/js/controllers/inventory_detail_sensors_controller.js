@@ -95,12 +95,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           enableHiding: false,
           type: 'string'
         }, {
-          field: 'location_identifier',
-          displayName: 'Location Identifier',
+          field: 'location_description',
+          displayName: 'Location Description',
           enableHiding: false
-        }, {
-          field: 'number_of_sensor',
-          displayName: 'Number of Sensor',
+        },{
+          field: 'manufacturer_name',
+          displayName: 'Manufacturer Name',
+          enableHiding: false
+        },{
+          field: 'model_name',
+          displayName: 'Model Name',
+          enableHiding: false
+        },{
+          field: 'serial_number',
+          displayName: 'Serial Number',
           enableHiding: false
         }, {
           name: 'actions',
@@ -135,8 +143,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           field: 'type',
           enableHiding: false
         }, {
-          field: 'location_identifier',
-          displayName: 'location identifier',
+          field: 'location_description',
+          displayName: 'Location Description',
           enableHiding: false
         },{
           field: 'units',
@@ -335,9 +343,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
             data_logger: function () {
               return data_logger?? {
                   display_name: null,
-                  location_identifier: "",
+                  location_description: "",
                   id: null,
-                  number_of_sensors: 0
               };
             },
             sensor_service: sensor_service,
