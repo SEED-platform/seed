@@ -857,7 +857,7 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
             "data_logger": data_logger
         })
         s.display_name = sensor_datum["display_name"]
-        s.location_identifier = sensor_datum["location_identifier"]
+        s.location_description = sensor_datum["location_description"]
         s.description = sensor_datum["description"]
         s.sensor_type = sensor_datum["type"]
         s.units = sensor_datum["units"]
@@ -1171,7 +1171,7 @@ def _append_sensor_import_results_to_summary(import_results):
         {
             "display_name": sensor.display_name,
             "type": sensor.sensor_type,
-            "location_identifier": sensor.location_identifier,
+            "location_description": sensor.location_description,
             "units": sensor.units,
             "column_name": sensor.column_name,
             "description": sensor.description,

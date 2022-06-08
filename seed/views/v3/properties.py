@@ -343,7 +343,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 res.append({
                     'id': sensor.id,
                     'display_name': sensor.display_name,
-                    'location_identifier': sensor.location_identifier,
+                    'location_description': sensor.location_description,
                     'description': sensor.description,
                     'type': sensor.sensor_type,
                     'units': sensor.units,
