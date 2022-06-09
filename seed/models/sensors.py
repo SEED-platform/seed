@@ -15,6 +15,7 @@ class DataLogger(models.Model):
     )
 
     display_name = models.CharField(max_length=255)
+    identifier = models.CharField(max_length=2047, default="")
     location_description = models.CharField(max_length=2047, default="")
     is_occupied_data = models.JSONField(null=False, default=dict)
     manufacturer_name = models.CharField(max_length=255, null=True)

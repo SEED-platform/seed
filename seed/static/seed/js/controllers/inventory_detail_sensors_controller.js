@@ -95,6 +95,10 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           enableHiding: false,
           type: 'string'
         }, {
+          field: 'identifier',
+          displayName: 'Id',
+          enableHiding: false
+        },{
           field: 'location_description',
           displayName: 'Location Description',
           enableHiding: false
