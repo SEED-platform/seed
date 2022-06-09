@@ -96,7 +96,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           type: 'string'
         }, {
           field: 'identifier',
-          displayName: 'Id',
+          displayName: 'Datalogger ID',
           enableHiding: false
         },{
           field: 'location_description',
