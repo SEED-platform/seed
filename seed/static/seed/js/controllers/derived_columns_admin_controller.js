@@ -75,7 +75,11 @@ angular.module('BE.seed.controller.derived_columns_admin', [])
             })
             .catch(err => {
               $log.error(err);
-              Notification.error(`Error attempting to delete "${derived_column.name}". Please refresh the page and try again.`);
+              if (err.data.detail == 'Cannot delete protected objects while related objects still exist') {
+                Notification.error(`Error attempting to delete "${derived_column.name}". Cannot delete Derived Columns while related Derived Columns still exist. Delete unrelated Derived Columns first.`);
+              } else {
+                Notification.error(`Error attempting to delete "${derived_column.name}". Please refresh the page and try again.`);
+              }
             });
         }, () => {
           //user doesn't want to
