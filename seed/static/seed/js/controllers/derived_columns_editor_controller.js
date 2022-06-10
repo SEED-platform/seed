@@ -137,15 +137,14 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           this_param.errors.duplicate_source_column = false;
         }
 
-        this_param.errors.recursive_source_column = check_for_recursion(this_param.source_column)
+        this_param.errors.circular_source_column = check_for_circular_definition(this_param.source_column)
       };
 
 
       // Recusion exists when the source column (the definition) contains a reference to itself 
-      // a = b 
-      // b = c 
-      // c = a ----> a = a
-      const check_for_recursion = function (source_column) {
+      // a = b
+      // b = a ----> b = b
+      const check_for_circular_definition = function (source_column) {
         if (!source_column.derived_column) {
           return false
         } else if (source_column.derived_column == $scope.derived_column.id) {
