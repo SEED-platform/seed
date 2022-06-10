@@ -20,7 +20,8 @@ angular.module('BE.seed.service.sensor', [])
         location_description,
         manufacturer_name,
         model_name,
-        serial_number
+        serial_number,
+        identifier,
       ) {
         return $http(
           {
@@ -33,6 +34,7 @@ angular.module('BE.seed.service.sensor', [])
               manufacturer_name,
               model_name,
               serial_number,
+              identifier,
             }
           }
         ).then(function (response) {

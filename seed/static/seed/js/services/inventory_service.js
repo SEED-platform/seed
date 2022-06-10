@@ -1164,9 +1164,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.refresh_metadata = function (ids, inventory_type, progress_key) {
+    inventory_service.refresh_metadata = function (ids, states, inventory_type, progress_key) {
       return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
         ids: ids,
+        states: states,
         inventory_type: inventory_type,
         progress_key: progress_key,
         organization_id: user_service.get_organization().id

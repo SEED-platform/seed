@@ -594,8 +594,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Kick off celery task to refresh metadata of selected inventory
         """
         ids = request.data.get('ids')
+        states = request.data.get('states')
         inventory_type = request.data.get('inventory_type')
         progress_key = request.data.get('progress_key')
 
-        update_inventory_metadata.subtask([ids, inventory_type, progress_key]).apply_async()
+        update_inventory_metadata.subtask([ids, states, inventory_type, progress_key]).apply_async()
         return
