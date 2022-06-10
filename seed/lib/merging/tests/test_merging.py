@@ -103,6 +103,7 @@ class StateFieldsTest(TestCase):
                     ('property_footprint', 'property_footprint'),
                     ('property_name', 'property_name'),
                     ('property_notes', 'property_notes'),
+                    ('property_timezone', 'property_timezone'),
                     ('property_type', 'property_type'),
                     ('recent_sale_date', 'recent_sale_date'),
                     ('release_date', 'release_date'),

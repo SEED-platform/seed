@@ -131,7 +131,23 @@ class Property(models.Model):
 
 
 class PropertyState(models.Model):
-    """Store a single property. This contains all the state information about the property"""
+    """Store a single property. This contains all the state information about the property
+
+    For property_timezone, use the pytz timezone strings. The US has the following and a full
+    list can be created by calling pytz.all_timezones in Python:
+        * US/Alaska
+        * US/Aleutian
+        * US/Arizona
+        * US/Central
+        * US/East-Indiana
+        * US/Eastern
+        * US/Hawaii
+        * US/Indiana-Starke
+        * US/Michigan
+        * US/Mountain
+        * US/Pacific
+        * US/Samoa
+    """
 
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
@@ -180,6 +196,9 @@ class PropertyState(models.Model):
     centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
+
+    # Store the timezone of the property
+    property_timezone = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
