@@ -302,7 +302,6 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         const creating = !$scope.derived_column.id;
         let api_call = null;
         if (creating) {
-          console.log('creating dc')
           api_call = () => {
             return derived_columns_service.create_derived_column(
               $scope.org.id,
@@ -310,7 +309,6 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
             );
           };
         } else {
-          console.log('updating dc')
           api_call = () => {
             return derived_columns_service.update_derived_column(
               $scope.org.id,
