@@ -673,7 +673,6 @@ class Column(models.Model):
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
     derived_column = models.OneToOneField('DerivedColumn', on_delete=models.CASCADE, null=True, blank=True)
 
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),

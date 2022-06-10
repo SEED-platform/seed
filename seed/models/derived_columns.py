@@ -224,14 +224,13 @@ class DerivedColumn(models.Model):
             inventory_type = 'TaxLotState'
         if created:
             Column.objects.create(
-                derived_column = self,
-                column_name = self.name,
-                display_name = self.name,
-                table_name = inventory_type,
-                organization = self.organization
+                derived_column=self,
+                column_name=self.name,
+                display_name=self.name,
+                table_name=inventory_type,
+                organization=self.organization
             )
         return save_response
-
 
     def get_parameter_values(self, inventory_state: Union[PropertyState, TaxLotState]) -> dict[str, Any]:
         """Construct a dictionary of column values keyed by expression parameter
@@ -292,7 +291,6 @@ class DerivedColumn(models.Model):
         if parameters is None:
             parameters = {}
 
-
         inventory_parameters = {}
         if inventory_state is not None:
             tmp_params = self.get_parameter_values(inventory_state)
@@ -329,6 +327,7 @@ class DerivedColumn(models.Model):
                 dc = column.derived_column
                 val = dc.evaluate(inventory_state)
                 merged_parameters[dcp.parameter_name] = val
+
 
 class DerivedColumnParameter(models.Model):
     """

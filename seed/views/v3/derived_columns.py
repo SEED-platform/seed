@@ -50,8 +50,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
 
         queryset = DerivedColumn.objects.filter(**filter_params)
 
-        dcs = DerivedColumnSerializer(queryset, many=True).data
-
         return JsonResponse({
             'status': 'success',
             'derived_columns': DerivedColumnSerializer(queryset, many=True).data

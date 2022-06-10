@@ -660,7 +660,7 @@ class TestDerivedColumns(TestCase):
         column_parameters = {
             'b': {
                 'source_column': column_with_derived_column,
-                'value': derived_column.evaluate(property_state), # evaluates to 3
+                'value': derived_column.evaluate(property_state),  # evaluates to 3
             },
         }
         models = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)
