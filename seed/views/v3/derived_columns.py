@@ -24,7 +24,6 @@ from seed.utils.api_schema import (
 )
 
 
-
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = DerivedColumnSerializer
     model = DerivedColumn
