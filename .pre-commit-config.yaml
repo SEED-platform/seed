@@ -18,6 +18,7 @@ repos:
         exclude: .*/templates
       - id: debug-statements
       - id: end-of-file-fixer
+        excldue: *.xlsx
       - id: mixed-line-ending
       - id: pretty-format-json
         args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
