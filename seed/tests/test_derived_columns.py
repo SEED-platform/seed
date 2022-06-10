@@ -319,7 +319,7 @@ class TestDerivedColumns(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def _derived_column_for_property_factory(self, expression, column_parameters):
+    def _derived_column_for_property_factory(self, expression, column_parameters, create_property_state=True):
         """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
         which can be used to evaluate the DerivedColumn expression.
 
@@ -369,7 +369,9 @@ class TestDerivedColumns(TestCase):
             else:
                 property_state_config[col.column_name] = param_value
 
-        property_state = self.property_state_factory.get_property_state(**property_state_config)
+        property_state = None
+        if create_property_state:
+            property_state = self.property_state_factory.get_property_state(**property_state_config)
 
         return {
             'property_state': property_state,
@@ -629,3 +631,42 @@ class TestDerivedColumns(TestCase):
 
         # -- Assert
         self.assertEqual(200, result)
+    
+    def test_derived_column_evaluation_with_derived_column_as_source_column(self):
+        """
+        Test that a derived column can be evaluated when a derived column is used in its definition
+        """
+        # -- Setup
+        # expression which sums all the parameters
+        expression = '$a + 2'
+        column_parameters = {
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+        }
+
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        derived_column = models['derived_column']
+        property_state = models['property_state']
+
+        derived_column.name = 'dc1'
+        derived_column.save()
+
+        self.assertEqual(derived_column.evaluate(property_state), 3)
+
+        column_with_derived_column = Column.objects.filter(derived_column=derived_column.id).first()
+        expression = '$b + 2'
+        column_parameters = {
+            'b': {
+                'source_column': column_with_derived_column,
+                'value': derived_column.evaluate(property_state), # evaluates to 3
+            },
+        }
+        models = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)
+        derived_column2 = models['derived_column']
+        derived_column2.name = 'dc2'
+        derived_column2.save()
+
+        # Derived Column 2 (defined by a different derived column) can be evaluated
+        self.assertEqual(derived_column2.evaluate(property_state), 5)
