@@ -631,7 +631,7 @@ class TestDerivedColumns(TestCase):
 
         # -- Assert
         self.assertEqual(200, result)
-    
+
     def test_derived_column_evaluation_with_derived_column_as_source_column(self):
         """
         Test that a derived column can be evaluated when a derived column is used in its definition
