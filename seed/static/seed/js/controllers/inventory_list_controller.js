@@ -1069,6 +1069,18 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return !_.has(row, '$$treeLevel');
               }), 'id');
             },
+            property_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            },
             inventory_type: _.constant($scope.inventory_type),
           }
         });

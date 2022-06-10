@@ -54,11 +54,10 @@
     <div id="sensor-info-container">
         <div class="sensor-header-container">
             <h4 translate>SENSORS</h4>
-            <button ng-hide="!has_sensors" type="button" class="btn btn-primary" ng-click="exportSensors(sensorGridOptions, 'Sensors')" translate>Export CSV</button>
         </div>
         <div id="grid-container" style="padding-top: 15px">
             <div ng-show="has_sensors">
-                <div ui-grid="sensorGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
+                <div ui-grid="sensorGridOptions" ui-grid-resize-columns  ui-grid-exporter ui-grid-auto-resize></div>
             </div>
             <div ng-hide="has_sensors">
                 <div class="jumbotron text-center" translate>No Data</div>
@@ -115,11 +114,10 @@
         <div class="section_content" ng-show="has_sensor_readings">
             <div class="sensor-header-container">
                 <h4 translate>SENSOR_READINGS</h4>
-                <button ng-hide="!has_sensor_readings" type="button" class="btn btn-primary" ng-click="exportSensorUsages(usageGridOptions, sensorGridOptions, 'Sensor_Usage')" translate>Export CSV</button>
             </div>
 
             <div id="usage-grid-container">
-                <div ui-grid="usageGridOptions" ui-grid-resize-columns></div>
+                <div ui-grid="usageGridOptions" ui-grid-exporter ui-grid-resize-columns></div>
             </div>
         </div>
         <div ng-hide="has_sensor_readings">
