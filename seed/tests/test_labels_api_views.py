@@ -7,7 +7,6 @@
 Unit tests for seed/views/labels.py
 """
 
-import json
 from collections import defaultdict
 from datetime import datetime
 
@@ -149,35 +148,55 @@ class TestLabelsViewSet(DeleteModelsTestCase):
 
         # Ensures that at least a single label exists to ensure that we are not
         # relying on auto-creation of labels for this test to pass.
-        new_label = Label.objects.create(
+        new_label_1 = Label.objects.create(
             color="red",
             name="test_label-a",
+            super_organization=organization_a,
+        )
+        new_label_2 = Label.objects.create(
+            color="blue",
+            name="test_label-b",
             super_organization=organization_a,
         )
 
         # Create 2 properties and 2 tax lots. Then, apply that label to one of each
         property_view_factory = FakePropertyViewFactory(organization=organization_a, user=user)
         p_view_1 = property_view_factory.get_property_view()
-        p_view_1.labels.add(new_label)
+        p_view_1.labels.add(new_label_1)
+        p_view_2 = property_view_factory.get_property_view()
+        p_view_2.labels.add(new_label_1)
+        p_view_2.labels.add(new_label_2)
+
+        # create more random properties
+        property_view_factory.get_property_view()
         property_view_factory.get_property_view()
 
         taxlot_view_factory = FakeTaxLotViewFactory(organization=organization_a, user=user)
         tl_view_1 = taxlot_view_factory.get_taxlot_view()
-        tl_view_1.labels.add(new_label)
+        tl_view_1.labels.add(new_label_1)
+        # more random tax lotx
         taxlot_view_factory.get_taxlot_view()
 
         client = APIClient()
         client.login(username=user.username, password='secret')
 
         url = reverse('api:v3:properties-labels')
-        response_a = client.post(url + '?organization_id={}'.format(organization_a.pk))
-        data = json.loads(response_a.content)
-
+        response_a = client.post(url + f'?organization_id={organization_a.pk}')
+        data = response_a.json()
         for label in data:
-            if label.get('name') != 'test_label-a':
-                self.assertCountEqual(label.get('is_applied'), [])
+            if label.get('name') == 'test_label-a':
+                self.assertListEqual(label.get('is_applied'), [p_view_1.id, p_view_2.id])
+            elif label.get('name') == 'test_label-b':
+                self.assertCountEqual(label.get('is_applied'), [p_view_2.id])
             else:
-                self.assertCountEqual(label.get('is_applied'), [p_view_1.id])
+                self.assertCountEqual(label.get('is_applied'), [])
+
+        # check if we can filter to only label_2 and on p_view 2
+        response_b = client.post(url + f'?organization_id={organization_a.pk}', data={'selected': [p_view_2.id], 'label_names': [new_label_1.name]})
+        data = response_b.json()
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0].get('name'), new_label_1.name)
+        self.assertListEqual(data[0].get('is_applied'), [p_view_2.id])
 
 
 class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
