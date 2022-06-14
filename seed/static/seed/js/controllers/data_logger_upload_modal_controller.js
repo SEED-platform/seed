@@ -26,6 +26,7 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
           manufacturer_name: null,
           model_name: null,
           serial_number: null,
+          identifier: null,
       };
 
       $scope.create_data_logger = function(){
@@ -43,6 +44,7 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
             $scope.data_logger.manufacturer_name,
             $scope.data_logger.model_name,
             $scope.data_logger.serial_number,
+            $scope.data_logger.identifier,
           ).then((result) => {
             $scope.data_logger = result;
             $scope.refresh_page();

@@ -44,6 +44,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
                 "manufacturer_name": data_logger.manufacturer_name,
                 "model_name": data_logger.model_name,
                 "serial_number": data_logger.serial_number,
+                "identifier": data_logger.identifier,
             })
 
         return res
@@ -63,6 +64,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         model_name = body.get('model_name')
         serial_number = body.get('serial_number')
         location_description = body.get("location_description")
+        identifier = body.get("identifier")
 
         property_view = PropertyView.objects.get(
             pk=property_view_id,
@@ -77,6 +79,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             manufacturer_name=manufacturer_name,
             model_name=model_name,
             serial_number=serial_number,
+            identifier=identifier,
         )
 
         # for every weekday from 2020-2023, mark as occupied from 8-5
@@ -117,6 +120,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
                 "manufacturer_name": data_logger.manufacturer_name,
                 "model_name": data_logger.model_name,
                 "serial_number": data_logger.serial_number,
+                "identifier": data_logger.identifier,
             }
 
         return result
