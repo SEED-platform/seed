@@ -59,7 +59,9 @@ def upload_file(upload_header, organization_id, upload_filepath, main_url, uploa
     return requests.post(
         upload_url,
         params=params,
-        files={'file': (pathlib.Path(upload_filepath).name, pathlib.Path(upload_filepath).read_bytes())}
+        files=[
+            ('file', (pathlib.Path(upload_filepath).name, pathlib.Path(upload_filepath).read_bytes())),
+        ],
         headers=upload_header
     )
 
