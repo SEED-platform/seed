@@ -94,6 +94,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.inventory_summary',
+  'BE.seed.controller.inventory_plots',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -1491,6 +1492,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         url: '/{inventory_type:properties|taxlots}/summary',
         templateUrl: static_url + 'seed/partials/inventory_summary.html',
         controller: 'inventory_summary_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_plots',
+        url: '/{inventory_type:properties|taxlots}/plots',
+        templateUrl: static_url + 'seed/partials/inventory_plots.html',
+        controller: 'inventory_plots_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
