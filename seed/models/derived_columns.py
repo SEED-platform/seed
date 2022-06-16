@@ -303,6 +303,9 @@ class DerivedColumn(models.Model):
         # determine if any source columns are derived_columns
         self.check_for_source_columns_derived(inventory_state, merged_parameters)
 
+        if any([val == None for val in merged_parameters.values()]):
+            return None
+
         try:
             return self._cached_evaluator.evaluate(merged_parameters)
         except KeyError:
