@@ -345,6 +345,9 @@ msgstr "Are you sure you want to delete the profile"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
+msgid "CONTINUE"
+msgstr "Continue"
+
 msgid "CONTINUE_QUESTION"
 msgstr "Are you sure you want to continue?"
 
@@ -353,6 +356,9 @@ msgstr "Created label {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
+
+msgid "CREATE_DATA_LOGGER"
+msgstr "Create a Data Logger"
 
 msgid "CURRENTLY_GEOCODING"
 msgstr "Currently geocoding"
@@ -630,6 +636,9 @@ msgstr "The data set <strong>name \"{dataset_name}\" already exists</strong>. Pl
 
 msgid "DATA_FILE_HEADER_DUP_WARNING"
 msgstr "Please review Date File Headers.  Duplicate or empty values are not allowed."
+
+msgid "DATA_LOGGERS"
+msgstr "Data Loggers"
 
 msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
@@ -1181,6 +1190,9 @@ msgstr "This action will kick off a match and merge round for the resulting reco
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
+msgid "INVALID_CSV_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong> files are supported."
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
@@ -1593,8 +1605,14 @@ msgstr "Move/copy buildings to another project"
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "A new column will be created, and/or existing data can be replaced."
 
+msgid "NON_UNIQUE_DATA_LOGGER_DISPLAY_NAME"
+msgstr "Display name must be unique."
+
 msgid "NOT_GEOCODED_PREVIOUSLY"
 msgstr "Not geocoded previously"
+
+msgid "NO_DATA_LOGGER_DISPLAY_NAME"
+msgstr "Please enter a display name."
 
 msgid "NO_MAPQUEST_API_KEY_FOR_ORG"
 msgstr "There is no MapQuest API key associated to your organization."
@@ -2192,6 +2210,18 @@ msgstr "Select Data Set"
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Select the type of file(s) you would like to add to {dataset_name}."
 
+msgid "SENSORS"
+msgstr "Sensors"
+
+msgid "SENSOR_CONTENTS_TITLE"
+msgstr "Confirm File Contents"
+
+msgid "SENSOR_READINGS"
+msgstr "Sensor Readings"
+
+msgid "SENSOR_READING_COUNTS_TITLE"
+msgstr "Sensor Reading Counts"
+
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
@@ -2621,6 +2651,9 @@ msgstr "Uploading <strong>{dataset_filename}</strong> to cycle <strong>{cycle_na
 msgid "UPLOAD_COMPLETE_TITLE"
 msgstr "Upload Complete"
 
+msgid "UPLOAD_DATA_LOGGER_BUTTON"
+msgstr "Create Data Logger"
+
 msgid "UPLOAD_FILE"
 msgstr "Upload File"
 
@@ -2633,6 +2666,15 @@ msgstr "Upload Incomplete"
 
 msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
 msgstr "Upload Portfolio Manager Meter Readings"
+
+msgid "UPLOAD_SENSORS_BUTTON"
+msgstr "Upload Sensors"
+
+msgid "UPLOAD_SENSOR_BUTTON"
+msgstr "Upload Sensor"
+
+msgid "UPLOAD_SENSOR_READINGS_BUTTON"
+msgstr "Upload Sensor Readings"
 
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."

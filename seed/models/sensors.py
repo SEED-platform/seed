@@ -15,8 +15,12 @@ class DataLogger(models.Model):
     )
 
     display_name = models.CharField(max_length=255)
-    location_identifier = models.CharField(max_length=2047, default="")
+    identifier = models.CharField(max_length=255, default="")
+    location_description = models.CharField(max_length=2047, default="")
     is_occupied_data = models.JSONField(null=False, default=dict)
+    manufacturer_name = models.CharField(max_length=255, null=True)
+    model_name = models.CharField(max_length=255, null=True)
+    serial_number = models.CharField(max_length=255, null=True)
 
     class Meta:
         unique_together = ('property', 'display_name')
@@ -30,7 +34,7 @@ class Sensor(models.Model):
     )
 
     display_name = models.CharField(max_length=255)
-    location_identifier = models.CharField(max_length=2047, default="")
+    location_description = models.CharField(max_length=2047, default="")
     description = models.CharField(max_length=2047, default="")
 
     sensor_type = models.CharField(max_length=63)

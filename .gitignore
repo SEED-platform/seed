@@ -76,6 +76,7 @@ docs/build/
 docs/scripts/Gemfile.lock
 docs/scripts/.python-version
 docs/scripts/seed_issues.csv
+docs/htmlout
 
 lokalise.cfg
 lokalise.yml

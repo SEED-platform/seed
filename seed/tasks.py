@@ -411,23 +411,35 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
 
 
 @shared_task
-def update_inventory_metadata(ids, inventory_type, progress_key):
+def update_inventory_metadata(ids, states, inventory_type, progress_key):
     now = datetime.now(pytz.UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
     id_count = len(ids)
     batch_size = math.ceil(id_count / 100)
 
+    # Find related Properties and PropertyStates
     if inventory_type == 'properties':
-        inventory = Property.objects.filter(id__in=ids)
-    else:
-        inventory = TaxLot.objects.filter(id__in=ids)
+        properties = Property.objects.filter(id__in=ids)
+        states = PropertyState.objects.filter(id__in=states)
+        inventory = list(properties) + list(states)
 
-    for idx, inv in enumerate(inventory):
-        inv.updated = now
-        inv.save()
+    elif inventory_type == 'taxlots':
+        taxlots = TaxLot.objects.filter(id__in=ids)
+        states = TaxLotState.objects.filter(id__in=states)
+        inventory = list(taxlots) + list(states)
+
+    else:
+        return
+
+    # Iterates across Properties (or Taxlots) and -States and refreshes each 'updated' attribute
+    # Updating Properties (or Taxlots) for OEP Connection
+    # Updating -States for UI feedack on inventory list
+    for idx, state in enumerate(inventory):
+        state.updated = now
+        state.save()
         if batch_size > 0 and idx % batch_size == 0:
-            progress_data.step(f'Refreshing ({idx}/{id_count}) ')
+            progress_data.step(f'Refreshing ({idx}/{id_count})')
 
     progress_data.finish_with_success()
     return progress_data.result()['progress']

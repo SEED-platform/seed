@@ -13,13 +13,29 @@ angular.module('BE.seed.service.sensor', [])
         });
       };
 
-      sensor_factory.create_data_logger = function (property_view_id, organization_id, display_name, location_identifier) {
+      sensor_factory.create_data_logger = function (
+        property_view_id,
+        organization_id,
+        display_name,
+        location_description,
+        manufacturer_name,
+        model_name,
+        serial_number,
+        identifier,
+      ) {
         return $http(
           {
             url: '/api/v3/data_loggers/',
             method: 'POST',
             params: {property_view_id,  organization_id},
-            data: {display_name, location_identifier}
+            data: {
+              display_name,
+              location_description,
+              manufacturer_name,
+              model_name,
+              serial_number,
+              identifier,
+            }
           }
         ).then(function (response) {
           return response.data;

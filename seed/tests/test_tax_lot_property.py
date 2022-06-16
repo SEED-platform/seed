@@ -18,6 +18,7 @@ from seed.models import (
     Cycle,
     Note,
     Property,
+    PropertyState,
     PropertyView,
     TaxLotProperty
 )
@@ -221,21 +222,26 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertEqual(len(data['features']), 51)
 
     def test_refresh_metadata(self):
-        ids = []
         for i in range(50):
             p = self.property_view_factory.get_property_view()
-            ids.append(p.id)
             self.properties.append(p.id)
 
-        property_views = PropertyView.objects.filter(id__in=ids)
-        updated_initial = list(map(lambda pv: pv.property.updated, property_views))
+        ids = [prop.id for prop in Property.objects.all()]
+        ps_ids = [ps.id for ps in PropertyState.objects.all()]
+
+        p_updated_initial = [prop.updated for prop in Property.objects.all()]
+        ps_updated_initial = [state.updated for state in PropertyState.objects.all()]
+
         time.sleep(1)
 
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
-        update_inventory_metadata(ids, 'properties', progress_data.key)
+        update_inventory_metadata(ids, ps_ids, 'properties', progress_data.key)
 
         for i, p in enumerate(Property.objects.filter(id__in=ids)):
-            self.assertGreater(p.updated, updated_initial[i])
+            self.assertGreater(p.updated, p_updated_initial[i])
+
+        for i, ps in enumerate(PropertyState.objects.filter(id__in=ps_ids)):
+            self.assertGreater(ps.updated, ps_updated_initial[i])
 
     def tearDown(self):
         for x in self.properties:

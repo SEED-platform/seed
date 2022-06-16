@@ -21,9 +21,12 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
       $scope.organization_id = organization_id;
       $scope.data_logger = {
           display_name: null,
-          location_identifier: "",
+          location_description: "",
           id: null,
-          number_of_sensors: 0
+          manufacturer_name: null,
+          model_name: null,
+          serial_number: null,
+          identifier: null,
       };
 
       $scope.create_data_logger = function(){
@@ -37,7 +40,11 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
             $scope.view_id,
             $scope.organization_id,
             $scope.data_logger.display_name,
-            $scope.data_logger.location_identifier
+            $scope.data_logger.location_description,
+            $scope.data_logger.manufacturer_name,
+            $scope.data_logger.model_name,
+            $scope.data_logger.serial_number,
+            $scope.data_logger.identifier,
           ).then((result) => {
             $scope.data_logger = result;
             $scope.refresh_page();
