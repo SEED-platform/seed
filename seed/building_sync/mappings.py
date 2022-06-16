@@ -618,6 +618,11 @@ BASE_MAPPING_V2 = {
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
+            },
+            'audit_template_building_id': {
+                'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Audit Template Building ID"]/auc:IdentifierValue',
+                'type': 'value',
+                'value': 'text',
             }
         }
     },
