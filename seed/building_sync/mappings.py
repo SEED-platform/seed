@@ -624,7 +624,7 @@ BASE_MAPPING_V2 = {
                 'type': 'value',
                 'value': 'text',
             },
-            'portfolio_manager_building_id': {
+            'pm_property_id': {
                 'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Portfolio Manager Building ID"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
