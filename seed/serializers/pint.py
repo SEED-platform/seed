@@ -179,6 +179,12 @@ class PintQuantitySerializerField(serializers.Field):
                 data = float(data) * ureg(org.display_units_eui)
             elif field.base_units == 'ft**2':
                 data = float(data) * ureg(org.display_units_area)
+            elif field.base_units == 'kgCO2/ft**2/year':
+                # not sure that this is used anywhere, but it's here just in case
+                data = float(data) * ureg(org.base_units)
+            elif field.base_units == 'MtCO2e/year':
+                # not sure that this is used anywhere, but it's here just in case
+                data = float(data) * ureg(org.base_units)
             else:
                 # This shouldn't happen unless we're supporting a new pints_unit QuantityField.
                 data = float(data) * ureg(field.base_units)
