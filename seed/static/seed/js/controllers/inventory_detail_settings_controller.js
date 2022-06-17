@@ -156,7 +156,6 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
 
       var currentColumns = function () {
         const columns = [];
-        // const derived_columns = [];
         _.forEach($scope.gridApi.grid.rows, function (row) {
           if (row.isSelected) {
               columns.push({
