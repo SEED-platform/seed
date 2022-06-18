@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     'base_url': f"{match.group(1)}//{match.group(2)}",
                     'username': options['username'],
                     'api_key': u.api_key,
-                    'port': int(match.group(3).replace(':','')) if match.group(3) else 80,
+                    'port': int(match.group(3).replace(':', '')) if match.group(3) else 80,
                     'use_ssl': True if 'https' in match.group(1) else False,
                 }
 
