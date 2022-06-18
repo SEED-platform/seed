@@ -4,6 +4,7 @@
 :author
 """
 import json
+import re
 
 from django.core.management.base import BaseCommand
 
@@ -32,16 +33,34 @@ class Command(BaseCommand):
                             action='store',
                             dest='file')
 
+        parser.add_argument('--pyseed',
+                            help='Write out in the format for pyseed',
+                            action='store_true',
+                            dest='pyseed')
+
     def handle(self, *args, **options):
         if User.objects.filter(username=options['username']).exists():
             u = User.objects.get(username=options['username'])
 
-            data = {
-                'name': 'seed_api_test',
-                'host': options['host'],
-                'username': options['username'],
-                'api_key': u.api_key,
-            }
+            if not options['pyseed']:
+                data = {
+                    'name': 'seed_api_test',
+                    'host': options['host'],
+                    'username': options['username'],
+                    'api_key': u.api_key,
+                }
+            else:
+                # pull out the protocol, port, and url to break up the parts
+                pattern = re.compile(r'^(.*:)//([A-Za-z0-9\-\.]+)(:[0-9]+)?(.*)$')
+                match = pattern.match(options['host'])
+                data = {
+                    'name': 'seed_api_test',
+                    'base_url': f"{match.group(1)}//{match.group(2)}",
+                    'username': options['username'],
+                    'api_key': u.api_key,
+                    'port': int(match.group(3).replace(':', '')) if match.group(3) else 80,
+                    'use_ssl': True if 'https' in match.group(1) else False,
+                }
 
             if options['file'] == 'none':
                 print(json.dumps(data))
