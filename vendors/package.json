@@ -24,6 +24,7 @@
     "angular-ui-sortable": "~0.19.0",
     "angular-xeditable": "~0.10.2",
     "bootstrap": "=3.4.1",
+    "chart.js": "^3.8.0",
     "d3": "~5.16.0",
     "dimple": "PMSI-AlignAlytics/dimple#2.3.0",
     "file-saver": "~2.0.5",
