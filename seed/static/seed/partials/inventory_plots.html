@@ -13,3 +13,15 @@
 <div class="section_nav_container">
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
+
+<div class="inventory-list-controls columns">
+    <div class="row">
+        <label>{$:: 'Cycle' | translate $}:</label>
+        <select class="form-control input-sm grow" ng-model="cycle.selected_cycle"
+            ng-change="update_cycle(cycle.selected_cycle)"
+            ng-options="option.name for option in ::cycle.cycles track by option.id">
+        </select>
+    </div>
+</div>
+
+<canvas id="myChart" style="margin: 0px 100px;"></canvas>

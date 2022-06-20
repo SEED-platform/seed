@@ -1516,6 +1516,36 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return inventory_service.get_column_list_profiles('List View Profile', inventory_type, brief=true);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return inventory_service.get_column_list_profile(lastProfileId);
+            }
+            var currentProfileId = _.first(profiles)?.id;
+            if (currentProfileId) {
+              inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type)
+              return inventory_service.get_column_list_profile(currentProfileId);
+            }
+            return null;
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization_brief(user_service.get_organization().id);
+          }],
+          derived_columns_payload: ['$stateParams', 'derived_columns_service', 'organization_payload', function ($stateParams, derived_columns_service, organization_payload) {
+            return derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type);
           }]
         }
       })
