@@ -246,6 +246,10 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     source_eui = PintQuantitySerializerField(allow_null=True, required=False)
     source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
     site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
 
     class Meta:
         fields = '__all__'

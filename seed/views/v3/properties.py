@@ -102,6 +102,7 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
     """
     address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     identifier = CharFilter(method='identifier_filter')
+    identifier_exact = CharFilter(method='identifier_exact_filter')
     cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
     cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
 
@@ -115,6 +116,22 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
         custom_id_1 = Q(state__custom_id_1__icontains=value)
         pm_property_id = Q(state__pm_property_id__icontains=value)
         ubid = Q(state__ubid__icontains=value)
+
+        query = (
+            address_line_1 |
+            jurisdiction_property_id |
+            custom_id_1 |
+            pm_property_id |
+            ubid
+        )
+        return queryset.filter(query).order_by('-state__id')
+
+    def identifier_exact_filter(self, queryset, name, value):
+        address_line_1 = Q(state__address_line_1__iexact=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id__iexact=value)
+        ubid = Q(state__ubid__iexact=value)
 
         query = (
             address_line_1 |
