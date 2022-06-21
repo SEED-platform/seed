@@ -9,13 +9,15 @@ def forwards(apps, schema_editor):
 
     with transaction.atomic():
         Column.objects.all().update(derived_column=None)
+        
+        table_name = {0: 'PropertyState', 1: 'TaxLotState'}
         for dc in DerivedColumn.objects.all():
             Column.objects.create(
                 derived_column=dc,
                 column_name=dc.name,
                 display_name=dc.name,
                 column_description=dc.name,
-                table_name=dc.inventory_type,
+                table_name=table_name[dc.inventory_type],
                 organization=dc.organization
             )
 
