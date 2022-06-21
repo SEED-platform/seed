@@ -1298,6 +1298,7 @@ msgstr "Pour cette organisation, les enregistrements correspondent si les champs
 msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire apparaître dans votre liste de propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent. Épinglez les lignes pour qu'elles soient épinglées dans la vue de liste."
 
+#, fuzzy
 msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau des propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
 

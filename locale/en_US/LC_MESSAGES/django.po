@@ -1288,7 +1288,7 @@ msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Select columns from the list below to make them appear in your Property List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view."
 
 msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
-msgstr "Select columns from the list below to make th  em appear in your Properties Detail table. Drag the rows to change the order in which they appear."
+msgstr "Select columns from the list below to make them appear in your Properties Detail table. Drag the rows to change the order in which they appear."
 
 msgid "LIST_GUIDANCE_TAXLOTS"
 msgstr "Select columns from the list below to make them appear in your Tax Lot List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view."
