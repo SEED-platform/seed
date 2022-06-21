@@ -9,10 +9,10 @@ def forwards(apps, schema_editor):
 
     with transaction.atomic():
         Column.objects.all().update(derived_column=None)
-        for col in Column.objects.all():
-            if not col.display_name:
-                col.display_name = col.column_description
-                col.save()
+        # for col in Column.objects.all():
+        #     if not col.display_name:
+        #         col.display_name = col.column_description
+        #         col.save()
         for dc in DerivedColumn.objects.all():
             # Generate a related column for each existing derived column
             Column.objects.create(
