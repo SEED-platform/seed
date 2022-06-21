@@ -227,8 +227,9 @@ class DerivedColumn(models.Model):
                 derived_column=self,
                 column_name=self.name,
                 display_name=self.name,
+                column_description=self.name,
                 table_name=inventory_type,
-                organization=self.organization
+                organization=self.organization,
             )
         return save_response
 
