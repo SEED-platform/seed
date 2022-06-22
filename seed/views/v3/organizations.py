@@ -148,7 +148,9 @@ def _dict_org(request, organizations):
             'new_user_email_from': o.new_user_email_from,
             'new_user_email_subject': o.new_user_email_subject,
             'new_user_email_content': o.new_user_email_content,
-            'new_user_email_signature': o.new_user_email_signature
+            'new_user_email_signature': o.new_user_email_signature,
+            'at_organization_token': o.at_organization_token,
+            'at_api_token': o.at_api_token
         }
         orgs.append(org)
 
@@ -618,6 +620,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:
             org.comstock_enabled = comstock_enabled
+
+        at_organization_token = posted_org.get('at_organization_token', False)
+        if at_organization_token != org.at_organization_token:
+            org.at_organization_token = at_organization_token
+
+        at_api_token = posted_org.get('at_api_token', False)
+        if at_api_token != org.at_api_token:
+            org.at_api_token = at_api_token
 
         org.save()
 
