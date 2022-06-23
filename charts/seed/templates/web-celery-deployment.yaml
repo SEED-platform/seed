@@ -58,6 +58,8 @@ spec:
               value: bsyncr
             - name: BETTER_HOST
               value: https://better-lbnl-development.herokuapp.com
+            - name: AUDIT_TEMPLATE_HOST
+              value: https://api.labworks.org
           image: seedplatform/seed:<version>
           imagePullPolicy: Always
           name: web-celery
