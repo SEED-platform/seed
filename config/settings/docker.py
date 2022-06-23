@@ -39,8 +39,12 @@ COMPRESS_ENABLED = False
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cooking and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Allow SEED within iframes
+SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = 'None'
 
 ALLOWED_HOSTS = ['*']
 
