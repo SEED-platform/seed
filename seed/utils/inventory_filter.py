@@ -8,6 +8,7 @@ from typing import Literal, Optional
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
+from django.http.request import QueryDict
 from rest_framework import status
 from rest_framework.request import Request
 
@@ -20,12 +21,14 @@ from seed.models import (
     ColumnListProfile,
     ColumnListProfileColumn,
     Cycle,
+    FilterGroup,
     PropertyView,
     TaxLotProperty,
     TaxLotView
 )
 from seed.search import FilterException, build_view_filters_and_sorts
 from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.properties import PropertyViewSerializer
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
@@ -200,6 +203,40 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         },
         'cycle_id': cycle.id,
         'results': unit_collapsed_results
+    }
+
+    return JsonResponse(response)
+
+
+def get_filter_group_results(query_dict: QueryDict, inventory_type: Literal['Property', 'Tax lot'], org_id: int):
+    if inventory_type == 'Property':
+        views_list = (
+            PropertyView.objects.select_related('property', 'state', 'cycle')
+            .filter(property__organization_id=org_id)
+        )
+    elif inventory_type == 'Tax lot':
+        views_list = (
+            TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
+            .filter(taxlot__organization_id=org_id)
+        )
+
+    # Retrieve all the columns that are in the db for this organization
+    columns_from_database = Column.retrieve_all(
+        org_id=org_id,
+        inventory_type=inventory_type,
+        only_used=False,
+    )
+
+    filters, annotations, order_by = build_view_filters_and_sorts(
+        query_dict,
+        columns_from_database
+    )
+
+    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    views_list = [PropertyViewSerializer(v).data for v in views_list]
+
+    response = {
+        'results': views_list
     }
 
     return JsonResponse(response)
