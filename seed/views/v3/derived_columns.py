@@ -5,7 +5,6 @@
 :author
 """
 from copy import deepcopy
-import logging
 
 import django.core.exceptions
 from django.http import JsonResponse
@@ -97,15 +96,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             serializer.save()
-            if data['inventory_type'] == 'Property':
-                Column.UNMAPPABLE_PROPERTY_FIELDS.append(data['name'])
-            elif self['inventory_type'] == 'Taxlot':
-                Column.UNMAPPABLE_TAXLOT_FIELDS.append(data['name'])
-            
-            logging.error('Column.UNMAPPABLE_PROPERTY_FIELDS %s', Column.UNMAPPABLE_PROPERTY_FIELDS)
-            logging.error('Column.UNMAPPABLE_TAXLOT_FIELDS %s', Column.UNMAPPABLE_TAXLOT_FIELDS)
-
-
             return JsonResponse({
                 'status': 'success',
                 'derived_column': serializer.data,
@@ -133,7 +123,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         derived_column = None
         try:
             derived_column = DerivedColumn.objects.get(id=pk, organization_id=org_id)
-            old_dc_name = derived_column.name
         except DerivedColumn.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
@@ -153,19 +142,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         try:
             serializer.save()
             Column.objects.filter(derived_column=pk).update(column_name=data['name'], display_name=data['name'], column_description=data['name'])
-            try:
-                if derived_column.inventory_type == 0:
-                    Column.UNMAPPABLE_PROPERTY_FIELDS.remove(old_dc_name)
-                    Column.UNMAPPABLE_PROPERTY_FIELDS.append(data['name'])
-                elif derived_column.inventory_type == 1:
-                    Column.UNMAPPABLE_TAXLOT_FIELDS.remove(old_dc_name)
-                    Column.UNMAPPABLE_TAXLOT_FIELDS.append(data['name'])
-            except ValueError: 
-                return
-
-            logging.error('Column.UNMAPPABLE_PROPERTY_FIELDS %s', Column.UNMAPPABLE_PROPERTY_FIELDS)
-            logging.error('Column.UNMAPPABLE_TAXLOT_FIELDS %s', Column.UNMAPPABLE_TAXLOT_FIELDS)
-
             return JsonResponse({
                 'status': 'success',
                 'derived_column': serializer.data,
@@ -191,26 +167,12 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
 
         try:
-            derived_column = DerivedColumn.objects.get(id=pk, organization_id=org_id)
-            derived_column_name = derived_column.name
-            derived_column_inventory_type = derived_column.inventory_type
-            derived_column.delete()
-            try:
-                if derived_column_inventory_type == 0:
-                    Column.UNMAPPABLE_PROPERTY_FIELDS.remove(derived_column_name)
-                elif derived_column_inventory_type == 1:
-                    Column.UNMAPPABLE_TAXLOT_FIELDS.remove(derived_column_name)
-            except ValueError: 
-                return
-            
+            DerivedColumn.objects.get(id=pk, organization_id=org_id).delete()
         except DerivedColumn.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'message': f'Derived column with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
-
-        logging.error('Column.UNMAPPABLE_PROPERTY_FIELDS %s', Column.UNMAPPABLE_PROPERTY_FIELDS)
-        logging.error('Column.UNMAPPABLE_TAXLOT_FIELDS %s', Column.UNMAPPABLE_TAXLOT_FIELDS)
 
         return JsonResponse({
             'status': 'success',

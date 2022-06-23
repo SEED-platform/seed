@@ -1362,6 +1362,9 @@ class Column(models.Model):
 
         # Sort by display name
         columns.sort(key=lambda col: col['display_name'].lower())
+        
+        # Remove derived columns from mappable columns
+        columns = [col for col in columns if not col['derived_column']]
 
         return columns
 
