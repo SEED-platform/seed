@@ -53,6 +53,8 @@ class DataAggregationViewTests(TestCase):
 
     def test_create_data_aggregation(self):
         breakpoint()
-        url = reverse('api:v3:data_aggregation', args=[])
-        response = self.client.post(reverse(url, content_type='application/json'))
+        self.client.post(
+            reverse('api:v3:data_aggregations-list')
+        )
+        # response = self.client.post(reverse(url, content_type='application/json'))
         # breakpoint()
