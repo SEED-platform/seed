@@ -6,10 +6,12 @@
 """
 from django.db import models
 from seed.models import Column
+from seed.lib.superperms.orgs.models import Organization
 
 class DataAggregation(models.Model):
     name = models.CharField(max_length=255)
     column = models.ForeignKey(Column, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     AVG = 0
     COUNT = 1
