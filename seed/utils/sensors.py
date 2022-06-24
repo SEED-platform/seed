@@ -31,24 +31,23 @@ class PropertySensorReadingsExporter():
         self.showOnlyOccupiedReadings = showOnlyOccupiedReadings
         self.tz = timezone(TIME_ZONE)
 
-    def readings_and_column_defs(self, interval):
+    def readings_and_column_defs(self, interval, page, per_page):
         if interval == 'Exact':
-            return self._usages_by_exact_times()
+            return self._usages_by_exact_times(page, per_page)
         elif interval == 'Month':
             return self._usages_by_month()
         elif interval == 'Year':
             return self._usages_by_year()
 
-    def _usages_by_exact_times(self):
+    def _usages_by_exact_times(self, page, per_page):
         """
         Returns readings and column definitions formatted to display all records and their
         start and end times.
         """
-        per_page = 500
-        page = 1
-
-        sensor_reading =  SensorReading.objects.filter(sensor__in=self.sensors)
-        timestamps = sensor_reading.distinct('timestamp').order_by("timestamp").values_list("timestamp", flat=True)
+        sensor_readings = SensorReading.objects.filter(sensor__in=self.sensors)
+        if self.showOnlyOccupiedReadings:
+            sensor_readings = sensor_readings.filter(is_occupied=True)
+        timestamps = sensor_readings.distinct('timestamp').order_by("timestamp").values_list("timestamp", flat=True)
         paginator = Paginator(timestamps, per_page)
         timestamps_in_page = paginator.page(page)
 
@@ -84,6 +83,15 @@ class PropertySensorReadingsExporter():
                     timestamps[times_key][field_name] = sensor_reading.reading
 
         return {
+            'pagination': {
+                'page': page,
+                'start': paginator.page(page).start_index(),
+                'end': paginator.page(page).end_index(),
+                'num_pages': paginator.num_pages,
+                'has_next': paginator.page(page).has_next(),
+                'has_previous': paginator.page(page).has_previous(),
+                'total': paginator.count
+            },
             'readings': list(timestamps.values()),
             'column_defs': list(column_defs.values())
         }
