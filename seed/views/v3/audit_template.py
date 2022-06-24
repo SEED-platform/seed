@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import JsonResponse
+from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -16,8 +16,10 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
-
-    def get_json(self, pk, detail):
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def get_building_xml(self, request, pk):
         org_id = self.get_organization(self.request)
         org = Organization.objects.get(pk=org_id)
         at_api_token = org.at_api_token
@@ -28,26 +30,6 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         at = AuditTemplate(at_api_token)
-        return at.get_building(pk, detail)
+        response = at.get_building(pk)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @has_perm_class('can_view_data')
-    @action(detail=True, methods=['GET'])
-    def get_simple_json(self, request, pk):
-        response = self.get_json(pk, False)
-
-        return JsonResponse({
-            'success': True,
-            'response': response
-        })
-
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @has_perm_class('can_view_data')
-    @action(detail=True, methods=['GET'])
-    def get_detailed_json(self, request, pk):
-        response = self.get_json(pk, True)
-
-        return JsonResponse({
-            'success': True,
-            'response': response
-        })
+        return HttpResponse(response)
