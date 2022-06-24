@@ -157,7 +157,7 @@ class DataAggregationViewSet(viewsets.ViewSet, OrgMixin):
         
         data = deepcopy(request.data)
         data.update({'organization': organization})
-        serializer = DataAggregationSerializer(data_aggregation, data=data, partial=False)
+        serializer = DataAggregationSerializer(data_aggregation, data=data, partial=True)
         if not serializer.is_valid():
             return JsonResponse({
                 'status': 'error',
