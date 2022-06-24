@@ -4,12 +4,13 @@
 from calendar import month_name
 from collections import defaultdict
 
+from django.core.paginator import Paginator
 from django.db.models import Avg
 from django.db.models.functions import TruncMonth, TruncYear
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.models import Sensor
+from seed.models import Sensor, SensorReading
 
 
 class PropertySensorReadingsExporter():
@@ -43,6 +44,13 @@ class PropertySensorReadingsExporter():
         Returns readings and column definitions formatted to display all records and their
         start and end times.
         """
+        per_page = 500
+        page = 1
+
+        sensor_reading =  SensorReading.objects.filter(sensor__in=self.sensors)
+        timestamps = sensor_reading.distinct('timestamp').order_by("timestamp").values_list("timestamp", flat=True)
+        paginator = Paginator(timestamps, per_page)
+        timestamps_in_page = paginator.page(page)
 
         # Used to consolidate different readings (types) within the same time window
         timestamps = defaultdict(lambda: {})
@@ -55,21 +63,25 @@ class PropertySensorReadingsExporter():
             },
         }
 
-        time_format = "%Y-%m-%d %H:%M:%S"
+        if len(timestamps_in_page) > 0:
+            eariliest_time = timestamps_in_page[0]
+            latest_time = timestamps_in_page[-1]
 
-        for sensor in self.sensors:
-            field_name = self._build_column_def(sensor, column_defs)
+            time_format = "%Y-%m-%d %H:%M:%S"
 
-            sensor_readings = sensor.sensor_readings
-            if self.showOnlyOccupiedReadings:
-                sensor_readings = sensor_readings.filter(is_occupied=True)
+            for sensor in self.sensors:
+                field_name = self._build_column_def(sensor, column_defs)
 
-            for sensor_reading in sensor_readings.all():
-                timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
-                times_key = str(timestamp)
+                sensor_readings = sensor.sensor_readings.filter(timestamp__range=[eariliest_time, latest_time])
+                if self.showOnlyOccupiedReadings:
+                    sensor_readings = sensor_readings.filter(is_occupied=True)
 
-                timestamps[times_key]["timestamp"] = timestamp
-                timestamps[times_key][field_name] = sensor_reading.reading
+                for sensor_reading in sensor_readings.all():
+                    timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
+                    times_key = str(timestamp)
+
+                    timestamps[times_key]["timestamp"] = timestamp
+                    timestamps[times_key][field_name] = sensor_reading.reading
 
         return {
             'readings': list(timestamps.values()),
