@@ -346,23 +346,31 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     progress_data.step('Calculating Average Annual CO2')
     analysis = Analysis.objects.get(id=analysis_id)
 
-    # make sure we have the extra data columns we need
-    Column.objects.get_or_create(
+    # make sure we have the extra data columns we need, don't set the
+    # displayname and description if the column already exists because
+    # the user might have changed them which would re-create new columns
+    # here.
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2',
-        display_name='Average Annual CO2 (kgCO2e)',
-        column_description='Average Annual CO2 (kgCO2e)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
-    Column.objects.get_or_create(
+    if created:
+        column.display_name = 'Average Annual CO2 (kgCO2e)',
+        column.column_description = 'Average Annual CO2 (kgCO2e)',
+        column.save()
+
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2_coverage',
-        display_name='Average Annual CO2 Coverage (% of the year)',
-        column_description='Average Annual CO2 Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
+    if created:
+        column.display_name = 'Average Annual CO2 Coverage (% of the year)'
+        column.column_description = 'Average Annual CO2 Coverage (% of the year)'
+        column.save()
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {
