@@ -430,6 +430,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         }
         analysis_property_view.save()
         if save_co2_results:
+            # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
             property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
             property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
             property_view.state.save()
