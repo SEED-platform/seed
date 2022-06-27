@@ -1898,6 +1898,9 @@ msgstr "Please go to the following page and setup your account:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
+msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
+msgstr "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
+
 msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 msgstr "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 

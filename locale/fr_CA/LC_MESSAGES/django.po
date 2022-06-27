@@ -1912,6 +1912,9 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
 
+msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
+msgstr "Veuillez vérifier les noms de colonne SEED ou les noms de colonne du fichier importé. Les noms de colonne qui correspondent à un nom de colonne dérivée existant ne sont pas autorisés."
+
 msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 msgstr "Veuillez consulter les noms de colonnes SEED ou les noms de colonnes du fichier en cours d'importation. Les valeurs en double ne sont pas autorisées dans les deux cas."
 
