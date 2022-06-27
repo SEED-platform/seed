@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_service',
   'property_column_names',
   'taxlot_column_names',
+  'audit_template_service',
   'meters_service',
   '$translate',
   function (
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_service,
     property_column_names,
     taxlot_column_names,
+    audit_template_service,
     meters_service,
     $translate
   ) {
@@ -152,6 +154,21 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         $scope.org_static = angular.copy($scope.org);
         $scope.$emit('organization_list_updated');
         // $scope.$emit('app_error', data);
+      });
+    };
+
+    $scope.open_at_token_modal = function (org) {
+      var modal = $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/at_token_modal.html',
+        controller: 'at_token_modal_controller',
+        resolve: {
+          'organization': org,
+          'audit_template_service': audit_template_service
+        }
+      });
+      modal.result.then(function (token) {
+        $scope.org.at_api_token = token;
+        $scope.org_static.at_api_token = token;
       });
     };
   }]);

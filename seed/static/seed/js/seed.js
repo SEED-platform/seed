@@ -44,6 +44,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
   'BE.seed.controller.api',
+  'BE.seed.controller.at_token_modal',
   'BE.seed.controller.audit_template_login_modal',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
@@ -145,6 +146,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.audit_template',
   'BE.seed.service.analyses',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',

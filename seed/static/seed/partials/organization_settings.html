@@ -113,12 +113,15 @@
 
             <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <h3 translate>Audit Template API Key</h3>
+                    <h3 translate>Audit Template API Token</h3>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" ng-model="org.at_api_token" ng-disabled="::!auth.requires_owner">
                             </div>
+                            <button type="button" class="btn btn-info" ng-click="open_at_token_modal(org)">
+                                <span translate>Generate Token</span>
+                            </button>
                         </div>
                     </form>
                 </div>

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -33,3 +33,60 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         response = at.get_building(pk)
 
         return HttpResponse(response)
+
+    @swagger_auto_schema(manual_parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.query_integer_field(
+            'org_token',
+            required=True,
+            description='Audit Template Organization Token'
+        ),
+        AutoSchemaHelper.query_integer_field(
+            'email',
+            required=True,
+            description='Audit Template Email'
+        ),
+        AutoSchemaHelper.query_integer_field(
+            'password',
+            required=True,
+            description='Audit Template Password'
+        ),
+    ])
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['GET'])
+    def get_api_token(self, request):
+        org_token = request.query_params.get('organization_token', None)
+        if not org_token:
+            return JsonResponse({
+                'success': False,
+                'message': 'Audit Template organization token is not defined'
+            })
+        email = request.query_params.get('email', None)
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'message': 'Audit Template email is not defined'
+            })
+        password = request.query_params.get('password', None)
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'message': 'Audit Template password is not defined'
+            })
+
+        at = AuditTemplate(None)
+        token, message = at.get_api_token(org_token, email, password)
+        if not token:
+            return JsonResponse({
+                'success': False,
+                'message': message
+            })
+
+        org_id = self.get_organization(self.request)
+        org = Organization.objects.get(pk=org_id)
+        org.at_api_token = token
+        org.save()
+        return JsonResponse({
+            'success': True,
+            'data': token
+        })
