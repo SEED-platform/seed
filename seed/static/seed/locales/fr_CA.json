@@ -836,7 +836,7 @@
     "This email link is invalid.": "Cette opération est irréversible.",
     "This label name is already taken.": "Ce nom d'étiquette est déjà pris.",
     "This password must contain at least %(quantity)d %(type)s characters.": "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères.",
-    "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?": "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes contenant des données. Es-tu sur de vouloir continuer?",
+    "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?": "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?",
     "Time Period": "Période de temps",
     "To Date": "À ce jour",
     "To change your password, enter your requested password twice.": "Pour changer votre mot de passe, entrez votre mot de passe demandé deux fois.",

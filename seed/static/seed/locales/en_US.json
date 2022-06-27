@@ -836,7 +836,7 @@
     "This email link is invalid.": "This email link is invalid.",
     "This label name is already taken.": "This label name is already taken.",
     "This password must contain at least %(quantity)d %(type)s characters.": "This password must contain at least %(quantity)d %(type)s characters.",
-    "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?": "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?",
+    "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?": "This will reset your visible columns and column order to only non-derived columns that contain data. Are you sure you want to continue?",
     "Time Period": "Time Period",
     "To Date": "To Date",
     "To change your password, enter your requested password twice.": "To change your password, enter your requested password twice.",

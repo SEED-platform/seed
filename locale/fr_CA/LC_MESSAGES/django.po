@@ -2616,7 +2616,7 @@ msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
 
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes contenant des données. Es-tu sur de vouloir continuer?"
+msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?"
 
 msgid "Time Period"
 msgstr "Période de temps"
