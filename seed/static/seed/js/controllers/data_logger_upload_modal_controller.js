@@ -62,4 +62,8 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
         $uibModalInstance.dismiss('cancel');
       };
 
+      $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+      };
+
     }]);
