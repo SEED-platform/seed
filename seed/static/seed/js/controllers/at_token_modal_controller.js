@@ -32,7 +32,6 @@ angular.module('BE.seed.controller.at_token_modal', []).controller('at_token_mod
         return;
       }
       $scope.waiting_for_server = true;
-
       return audit_template_service.get_api_token(
         $scope.org.id, $scope.fields.org_token, $scope.fields.email, $scope.fields.password
       ).then(result => {

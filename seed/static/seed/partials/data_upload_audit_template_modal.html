@@ -9,7 +9,7 @@
         <div ng-switch-when="UPLOAD_OPTIONS">
 
             <div class="flex-centered grow">
-                <div class="col-sm-8 btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization_id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)">
+                <div class="col-sm-8 btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)">
                     <i class="fa fa-file-code-o fa-2x"></i>
                     <span class="grow" translate>Upload Audit Template XML</span>
                 </div>
@@ -27,14 +27,19 @@
         <!-- Import Form -->
         <div ng-switch-when="IMPORT_FORM|AWAITING_REPONSE" ng-switch-when-separator="|">
 
-            <div class="alert alert-danger" ng-show="error == 'INCOMPELETE_CREDENTIALS'" translate>
-                An Audit Template building ID and API token is required.
+            <div class="alert alert-danger" ng-show="error">
+                {$ error $}
+            </div>
+
+            <div class="flex-centered grow" style="margin-top:10px;">
+                <label class="one-line" translate>Audit Template Building ID</label>
+                <input type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_building_id"/>
             </div>
 
             <div class="flex-centered grow" style="margin-top:10px;">
                 <label class="one-line" translate>Audit Template API Token</label>
-                <input type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="organization.at_api_token"/>
-                <button type="button" class="btn btn-info" ng-disabled="stage != 'IMPORT_FORM'" ng-click="open_at_token_modal(organization)">
+                <input type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_api_token"/>
+                <button type="button" class="btn btn-info" ng-disabled="stage != 'IMPORT_FORM'" ng-click="open_at_token_modal()">
                     <span translate>Generate Token</span>
                 </button>
             </div>

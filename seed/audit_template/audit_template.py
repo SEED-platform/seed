@@ -24,11 +24,11 @@ class AuditTemplate(object):
         try:
             response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
-                return None, [f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}']
+                return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
         except Exception as e:
-            return None, [f'Unexpected error from Audit Template: {e}']
+            return None, f'Unexpected error from Audit Template: {e}'
 
-        return response
+        return response, ""
 
     def get_api_token(self, organization_token, email, password):
         url = f'{self.API_URL}/users/authenticate?organization_token={organization_token}&email={quote(email)}&password={quote(password)}'
@@ -37,9 +37,9 @@ class AuditTemplate(object):
         try:
             response = requests.request("POST", url, headers=headers)
             if response.status_code != 200:
-                return None, [f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}']
+                return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
         except Exception as e:
-            return None, [f'Unexpected error from Audit Template: {e}']
+            return None, f'Unexpected error from Audit Template: {e}'
 
         try:
             response_body = response.json()

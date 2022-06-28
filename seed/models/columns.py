@@ -215,6 +215,18 @@ class Column(models.Model):
             'column_description': 'Custom ID 1',
             'data_type': 'string',
         }, {
+            'column_name': 'at_building_id',
+            'table_name': 'PropertyState',
+            'display_name': 'Audit Template Building ID',
+            'column_description': 'Audit Template Building ID',
+            'data_type': 'integer',
+        }, {
+            'column_name': 'at_building_id',
+            'table_name': 'TaxLotState',
+            'display_name': 'Audit Template Building ID',
+            'column_description': 'Audit Template Building ID',
+            'data_type': 'integer',
+        }, {
             'column_name': 'address_line_1',
             'table_name': 'PropertyState',
             'display_name': 'Address Line 1',

@@ -163,6 +163,9 @@ class PropertyState(models.Model):
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
+    # Audit Template has their own building id
+    at_building_id = models.CharField(max_length=255, null=True, blank=True)
+
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
     ubid = models.CharField(max_length=255, null=True, blank=True)
 

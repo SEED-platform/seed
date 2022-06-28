@@ -21,13 +21,13 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       return $http.get([
         '/api/v3/audit_template/', at_building_id, '/get_building_xml/?organization_id=', org_id
       ].join('')).then(function (response) {
-        console.log('response', response);
         return response.data;
       });
     };
 
     const analyses_factory = {
-      get_api_token: get_api_token
+      'get_api_token': get_api_token,
+      'get_building_xml': get_building_xml
     };
 
     return analyses_factory;

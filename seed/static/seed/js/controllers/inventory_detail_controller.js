@@ -34,6 +34,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
+    'audit_template_service',
     function (
       $http,
       $state,
@@ -64,7 +65,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       profiles,
       current_profile,
       labels_payload,
-      organization_payload
+      organization_payload,
+      audit_template_service
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -83,6 +85,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
+      $scope.at_building_id = inventory_payload.state.at_building_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -594,10 +597,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_audit_template_modal.html',
           controller: 'data_upload_audit_template_modal_controller',
           resolve: {
-            view_id: () => $stateParams.view_id,
+            at_building_id: () => $scope.at_building_id,
             organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
-            upload_from_file: () => $scope.uploaderfunc,
+            upload_from_file: () => $scope.uploaderfunc
           },
           backdrop: 'static',
         });
