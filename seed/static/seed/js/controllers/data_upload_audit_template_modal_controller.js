@@ -67,15 +67,15 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
         $scope.error = '';
         spinner_utility.show();
         return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.at_building_id).then(result => {
+          spinner_utility.hide()
           if (!result.success) {
             $scope.error = 'Error: ' + result.message
-            spinner_utility.hide();
             $scope.stage = "IMPORT_FORM";
           } else {
             console.log(result)
-          }
-          // spinner_utility.hide();
-          // $scope.show_results();
+            // todo: process XML
+            // $scope.show_results();
+          }   
         });
       };
         
