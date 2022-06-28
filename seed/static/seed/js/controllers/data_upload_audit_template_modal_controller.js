@@ -74,7 +74,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
           } else {
             console.log(result)
             // todo: process XML
-            // $scope.show_results();
+            $scope.show_results();
           }   
         });
       };
