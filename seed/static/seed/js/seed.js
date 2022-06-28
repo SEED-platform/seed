@@ -750,7 +750,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
-          }]
+          }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
         }
       })
       .state({
@@ -1359,6 +1363,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
 
             return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
+          }],
+          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           property_columns_payload: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id, false, false);
