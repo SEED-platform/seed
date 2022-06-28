@@ -2475,16 +2475,9 @@ select {
 /* STYLES FOR LABELS AND RELATED */
 
 /* Holds inline form for creating new labels */
-.newLabelInput {
-  margin: 20px;
-  border: 1px solid #eee;
-  padding: 10px 10px 5px 10px;
-  border-radius: 5px;
-  background-color: #f1f1f1;
-}
-
-/* Holds inline form for creating new labels */
-.newAnalysisInput {
+.newLabelInput,
+.newAnalysisInput,
+.modal-input {
   margin: 20px;
   border: 1px solid #eee;
   padding: 10px 10px 5px 10px;
@@ -4127,10 +4120,16 @@ FAQ page
 .flex-centered {
   display: flex;
   align-items: center;
+  justify-content: center;
+  column-gap: 10px;
 }
 
 .grow {
   flex-grow: 1;
+}
+
+.one-line {
+  white-space: nowrap;
 }
 
 // org settings tabs

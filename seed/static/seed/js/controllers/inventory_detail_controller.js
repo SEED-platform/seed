@@ -589,13 +589,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-      $scope.open_audit_template_login_modal = function () {
+      $scope.open_data_upload_audit_template_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/audit_template_login_modal.html',
-          controller: 'audit_template_login_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/data_upload_audit_template_modal.html',
+          controller: 'data_upload_audit_template_modal_controller',
           resolve: {
             view_id: () => $stateParams.view_id,
-            organization_id: () => $scope.organization.id,
+            organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
             upload_from_file: () => $scope.uploaderfunc,
           },
