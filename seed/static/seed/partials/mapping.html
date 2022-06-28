@@ -116,6 +116,7 @@
                     {$:: 'TAXLOT_MATCHING_FIELDS_REQUIREMENT' | translate $}: {$ taxlot_matching_criteria_columns $}.
                 </div>
                 <div class="alert alert-danger" ng-show="duplicates_present" translate>Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.</div>
+                <div class="alert alert-danger" ng-show="derived_column_match" translate>Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed.</div>
                 <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
                 <div class="alert alert-danger" ng-show="is_buildingsync_and_profile_not_ok()" translate>Please apply a column mapping profile or save your current mapping as a profile.</div>
                 <table class="table table-striped" ng-hide="review_mappings">

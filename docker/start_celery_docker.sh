@@ -13,7 +13,7 @@ echo "Waiting for web to start"
 
 # check if the number of workers is set in the env
 if [ -z ${NUMBER_OF_WORKERS} ]; then
-    echo "var is unset"
+    echo "env var for NUMBER_OF_WORKERS of celery is unset"
     # Set the number of workers to half the number of cores on the machine
     export NUMBER_OF_WORKERS=$(($(nproc) / 2))
     export NUMBER_OF_WORKERS=$(($NUMBER_OF_WORKERS>1?$NUMBER_OF_WORKERS:1))

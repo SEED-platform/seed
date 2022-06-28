@@ -14,7 +14,7 @@ services:
       - ref_seed_pgdata:/var/lib/postgresql/data
   web:
     container_name: seed_web
-    image: seedplatform/seed:dev
+    image: seedplatform/seed:develop
     build:
       context: .
       dockerfile: Dockerfile-dev
@@ -27,7 +27,7 @@ services:
       - ./config:/seed/config/
   web-celery:
     container_name: seed_celery
-    image: seedplatform/seed:dev
+    image: seedplatform/seed:develop
     build:
       context: .
       dockerfile: Dockerfile-dev
