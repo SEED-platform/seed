@@ -1298,6 +1298,7 @@ msgstr "Pour cette organisation, les enregistrements correspondent si les champs
 msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire apparaître dans votre liste de propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent. Épinglez les lignes pour qu'elles soient épinglées dans la vue de liste."
 
+#, fuzzy
 msgid "LIST_GUIDANCE_PROPERTIES_NO_PIN"
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau des propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
 
@@ -1910,6 +1911,9 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
+
+msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
+msgstr "Veuillez vérifier les noms de colonne SEED ou les noms de colonne du fichier importé. Les noms de colonne qui correspondent à un nom de colonne dérivée existant ne sont pas autorisés."
 
 msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 msgstr "Veuillez consulter les noms de colonnes SEED ou les noms de colonnes du fichier en cours d'importation. Les valeurs en double ne sont pas autorisées dans les deux cas."
@@ -2612,7 +2616,7 @@ msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
 
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes contenant des données. Es-tu sur de vouloir continuer?"
+msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux seules colonnes non dérivées contenant des données. Es-tu sur de vouloir continuer?"
 
 msgid "Time Period"
 msgstr "Période de temps"

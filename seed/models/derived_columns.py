@@ -215,8 +215,23 @@ class DerivedColumn(models.Model):
             })
 
     def save(self, *args, **kwargs):
+        created = not self.pk
         self.full_clean()
-        return super().save(*args, **kwargs)
+        save_response = super().save(*args, **kwargs)
+        if self.inventory_type == 0:
+            inventory_type = 'PropertyState'
+        elif self.inventory_type == 1:
+            inventory_type = 'TaxLotState'
+        if created:
+            Column.objects.create(
+                derived_column=self,
+                column_name=self.name,
+                display_name=self.name,
+                column_description=self.name,
+                table_name=inventory_type,
+                organization=self.organization,
+            )
+        return save_response
 
     def get_parameter_values(self, inventory_state: Union[PropertyState, TaxLotState]) -> dict[str, Any]:
         """Construct a dictionary of column values keyed by expression parameter
@@ -286,6 +301,12 @@ class DerivedColumn(models.Model):
         merged_parameters.update(inventory_parameters)
         merged_parameters = _cast_params_to_floats(merged_parameters)
 
+        # determine if any source columns are derived_columns
+        self.check_for_source_columns_derived(inventory_state, merged_parameters)
+
+        if any([val is None for val in merged_parameters.values()]):
+            return None
+
         try:
             return self._cached_evaluator.evaluate(merged_parameters)
         except KeyError:
@@ -301,6 +322,15 @@ class DerivedColumn(models.Model):
                             f'    parameters: {merged_parameters}\n'
                             f'    expression: {self.expression}\n'
                             f'    exception: {e}')
+
+    def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
+        dcps = self.derivedcolumnparameter_set.all()
+        for dcp in dcps:
+            column = Column.objects.get(pk=dcp.source_column_id)
+            if column.derived_column:
+                dc = column.derived_column
+                val = dc.evaluate(inventory_state)
+                merged_parameters[dcp.parameter_name] = val
 
 
 class DerivedColumnParameter(models.Model):
