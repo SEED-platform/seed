@@ -2361,6 +2361,24 @@ select {
 
 .inventory-summary-controls {
   margin: 20px 10px;
+  .data-agg-btn {
+    outline: 1px solid gray !important;
+    border-radius: 3px;
+    width: 120px;
+    padding: 10px;
+    color: $blue;
+
+    &:hover {
+      background: #EEEEEE;
+      cursor: pointer;
+    }
+
+    &:active {
+      color: black;
+      cursor: pointer;
+    }
+  }
+
 }
 
 #column_settings_count {

@@ -133,6 +133,29 @@ angular.module('BE.seed.controller.inventory_summary', [])
         refresh_data();
       };
 
+      $scope.open_data_aggregation_modal = function() {
+        console.log('data agg click')
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/data_aggregation_modal.html',
+          controller: 'data_aggregation_modal_controller',
+          resolve: {
+            columns: function () {
+              return ['a','b','c'];
+            },
+            currentProfile: function () {
+              return '$scope.currentProfile';
+            },
+            cycle: function () {
+              return '$scope.cycle.selected_cycle';
+            },
+            inventory_type: function () {
+              return '$stateParams.inventory_type';
+            },
+          }
+        });
+      }
+
       // load initial data
       refresh_data();
     }
