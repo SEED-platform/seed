@@ -2380,7 +2380,39 @@ select {
   }
 
 }
+.data-agg-crud-options-container {
+  .crud-options {
+    display: flex;
+    list-style-type: none;
 
+    .crud-option {
+
+      padding: 5px;
+      margin-left: 2px;
+      margin-top: 3px;
+
+      &:hover {
+        background: white;
+        cursor: pointer
+      }
+    }
+    .active {
+      border: 1px solid gray;
+      border-bottom-color: transparent;
+      border-radius: 3px;
+      background: white;
+    }
+    .inactive:hover {
+      background: #EEEEEE;
+    }
+  }
+  .crud-detail {
+    border: 1px solid gray;
+    border-radius: 3px;
+    margin: -12px 10px 15px 10px;
+    padding: 5px;
+  }
+}
 #column_settings_count {
   table,
   th,

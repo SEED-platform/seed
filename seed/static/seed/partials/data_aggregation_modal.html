@@ -1,6 +1,23 @@
 <div class="modal-header">
     <h4 class="modal-title" translate>THIS IS THE DATA AGGREGATION TITLE</h4>
 </div>
+<div class="data-agg-crud-options-container">
+    <ul class="crud-options">
+        <li class="crud-option" ng-class="{active: crud_selection === 'create', inactive: crud_selection !== 'create'}" ng-click="crud_select('create')">Create</li>
+        <li class="crud-option" ng-class="{active: crud_selection === 'update', inactive: crud_selection !== 'update'}" ng-click="crud_select('update')">Update</li>
+        <li class="crud-option" ng-class="{active: crud_selection === 'delete', inactive: crud_selection !== 'delete'}" ng-click="crud_select('delete')">Delete</li>
+    </ul>
+    <div class="crud-detail" ng-if="crud_selection == 'create'">
+        CREATE INFO
+    </div>
+    <div class="crud-detail" ng-if="crud_selection == 'update'">
+        UPDATE INFO
+    </div>
+    <div class="crud-detail" ng-if="crud_selection == 'delete'">
+        DELETE INFO
+    </div>
+    
+</div>
 <div class="modal-body row">
     <div class="col-sm-12">
         <div translate>

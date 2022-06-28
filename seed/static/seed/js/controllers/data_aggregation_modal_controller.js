@@ -4,18 +4,22 @@
  */
 angular.module('BE.seed.controller.data_aggregation_modal', []).controller('data_aggregation_modal_controller', [
         '$scope',
+        '$uibModalInstance',
         function (
-            $scope
+            $scope,
+            $uibModalInstance,
         ) {
-            $scope.x = 10;
-            $scope.cancel = function() {
-                console.log('cancel')
+            $scope.crud_selection = 'create'
+
+            $scope.crud_select = function(crud_option) {
+                $scope.crud_selection = crud_option
             }
             $scope.start = function() {
                 console.log('start')
             }
-            $scope.refresh = function() {
-                console.log('refresh')
-            }
+
+            $scope.cancel = function () {
+                $uibModalInstance.dismiss();
+            };
         }
     ]);
