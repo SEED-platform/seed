@@ -1503,7 +1503,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
-          }]
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+              return inventory_service.get_property_columns();
+          }],
         }
       })
       .state({

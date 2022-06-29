@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
     'analyses_service',
     'inventory_service',
     'cycles',
+    'all_columns',
     function (
       $scope,
       $stateParams,
@@ -18,7 +19,8 @@ angular.module('BE.seed.controller.inventory_summary', [])
       urls,
       analyses_service,
       inventory_service,
-      cycles_payload
+      cycles_payload,
+      all_columns,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
@@ -140,8 +142,8 @@ angular.module('BE.seed.controller.inventory_summary', [])
           templateUrl: urls.static_url + 'seed/partials/data_aggregation_modal.html',
           controller: 'data_aggregation_modal_controller',
           resolve: {
-            columns: function () {
-              return ['a','b','c'];
+            all_columns: function () {
+              return all_columns
             },
             currentProfile: function () {
               return '$scope.currentProfile';
