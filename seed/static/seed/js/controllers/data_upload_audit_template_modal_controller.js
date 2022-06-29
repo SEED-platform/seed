@@ -16,6 +16,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
     'upload_from_file',
     'audit_template_service',
     'at_building_id',
+    'view_id',
     function (
       $scope,
       $state,
@@ -28,10 +29,12 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       cycle_id,
       upload_from_file,
       audit_template_service,
-      at_building_id
+      at_building_id,
+      view_id
     ) {
       $scope.stage = "UPLOAD_OPTIONS";
       $scope.organization = organization;
+      $scope.view_id = view_id;
       $scope.cycle_id = cycle_id;
       $scope.upload_from_file = upload_from_file;
       $scope.error = '';

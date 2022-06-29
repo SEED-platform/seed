@@ -600,7 +600,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
             at_building_id: () => $scope.at_building_id,
             organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
-            upload_from_file: () => $scope.uploaderfunc
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id
           },
           backdrop: 'static',
         });
