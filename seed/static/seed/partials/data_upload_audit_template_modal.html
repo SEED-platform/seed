@@ -27,23 +27,19 @@
         <!-- Import Form -->
         <div ng-switch-when="IMPORT_FORM|AWAITING_REPONSE" ng-switch-when-separator="|">
 
-            <div class="alert alert-danger" ng-show="error">
+            <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
                 {$ error $}
             </div>
 
-            <div class="flex-centered grow" style="margin-top:10px;">
-                <div class="col-sm-4 no-padding">
-                    <label for="input-at-buiilding-id" translate>Audit Template Building ID</label>
-                </div>
+            <div class="flex-centered grow">
+                <label class="col-sm-4 no-padding" for="input-at-building-id" translate>Audit Template Building ID</label>
                 <div class="col-sm-8 no-padding">
-                    <input id="input-at-buiilding-id" type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_building_id"/>
+                    <input id="input-at-building-id" type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_building_id"/>
                 </div>
             </div>
 
             <div class="flex-centered grow" style="margin-top:10px;">
-                <div class="col-sm-4 no-padding">
-                    <label for="input-at-api-token" translate>Audit Template API Token</label>
-                </div>
+                <label class="col-sm-4 no-padding" for="input-at-api-token" translate>Audit Template API Token</label>
                 <div class="col-sm-8 no-padding flex-centered">
                     <input id="input-at-api-token" type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_api_token"/>
                     <button type="button" class="btn btn-info" ng-disabled="stage != 'IMPORT_FORM'" ng-click="open_at_token_modal()">
