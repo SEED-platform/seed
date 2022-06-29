@@ -31,11 +31,7 @@ def build_column_mapping(base_mapping=None, custom_mapping=None):
         for xpath, db_column in column_mapping.items()
     }
 
-
-def default_buildingsync_profile_mappings():
-    """Returns the default ColumnMappingProfile mappings for BuildingSync
-    :return: list
-    """
+def get_valid_units():
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
         # area units
@@ -50,6 +46,46 @@ def default_buildingsync_profile_mappings():
         # from BAE
         "F"
     ]
+    return valid_units
+
+def get_BAE_mappings():
+    results = []
+    valid_units = get_valid_units()
+    # results
+    bsync_assets = BAE.get_default_asset_defs()
+    for item in bsync_assets:
+        from_units = None
+        if 'units' in item:
+            from_units = item['units']
+        # only add units defined above
+        if from_units not in valid_units:
+            from_units = None
+        if item['type'] == 'sqft':
+            # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
+            for i in ['Primary', 'Secondary']:
+                results.append({
+                    'from_field': i + ' ' + item['export_name'],
+                    'from_field_value': 'text',  # hard code this for now
+                    'from_units': from_units,
+                    'to_field': i + ' ' + item['export_name'],
+                    'to_table_name': 'PropertyState'
+                })
+        else:
+            results.append({
+                'from_field': item['export_name'],
+                'from_field_value': 'text',  # hard code this for now
+                'from_units': from_units,
+                'to_field': item['export_name'],
+                'to_table_name': 'PropertyState'
+            })
+    return results
+
+
+def default_buildingsync_profile_mappings():
+    """Returns the default ColumnMappingProfile mappings for BuildingSync
+    :return: list
+    """
+    valid_Units = get_valid_units()
 
     mapping = BASE_MAPPING_V2.copy()
     base_path = mapping['property']['xpath'].rstrip('/')
@@ -70,29 +106,7 @@ def default_buildingsync_profile_mappings():
         })
 
     # BAE results
-    bsync_assets = BAE.get_default_asset_defs()
-    for item in bsync_assets:
-        from_units = item['units']
-        # only add units defined above
-        if from_units not in valid_units:
-            from_units = None
-        if item['type'] == 'sqft':
-            # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
-            for i in ['Primary', 'Secondary']:
-                result.append({
-                    'from_field': i + ' ' + item['export_name'],
-                    'from_field_value': 'text',  # hard code this for now
-                    'from_units': from_units,
-                    'to_field': i + ' ' + item['export_name'],
-                    'to_table_name': 'PropertyState'
-                })
-        else:
-            result.append({
-                'from_field': item['export_name'],
-                'from_field_value': 'text',  # hard code this for now
-                'from_units': from_units,
-                'to_field': item['export_name'],
-                'to_table_name': 'PropertyState'
-            })
+    bae_results = get_BAE_mappings()
+    result.extend(bae_results)
 
     return result
