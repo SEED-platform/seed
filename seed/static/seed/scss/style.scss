@@ -2384,12 +2384,12 @@ select {
   .crud-options {
     display: flex;
     list-style-type: none;
+    border-bottom: 1px solid #ccc;
+    color: $blue;
 
     .crud-option {
-
       padding: 5px;
       margin-left: 2px;
-      margin-top: 3px;
 
       &:hover {
         background: white;
@@ -2397,20 +2397,17 @@ select {
       }
     }
     .active {
-      border: 1px solid gray;
-      border-bottom-color: transparent;
-      border-radius: 3px;
-      background: white;
+      background: #EEEEEE;
     }
     .inactive:hover {
       background: #EEEEEE;
     }
   }
   .crud-detail {
-    border: 1px solid gray;
+    border: 1px solid #ccc;
     border-radius: 3px;
-    margin: -12px 10px 15px 10px;
     padding: 5px;
+    margin: 5px;
   }
 }
 #column_settings_count {

@@ -1,3 +1,9 @@
+<script type="text/ng-template" id="typeahead.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
 <div class="modal-header">
     <h4 class="modal-title" translate>THIS IS THE DATA AGGREGATION TITLE</h4>
 </div>
@@ -8,7 +14,49 @@
         <li class="crud-option" ng-class="{active: crud_selection === 'delete', inactive: crud_selection !== 'delete'}" ng-click="crud_select('delete')">Delete</li>
     </ul>
     <div class="crud-detail" ng-if="crud_selection == 'create'">
-        CREATE INFO
+        Create a Data Aggregation
+        <div style="display: grid; gap:1rem;">
+            <div>
+                <input 
+                    type="text"
+                    ng-model="new_data_aggregation.name"
+                    ng-change="validate_new_data_aggregation()"
+                    class="form-control"
+                    placeholder="Data Aggregation Name"
+                >
+            </div>
+            <select 
+                type="text"
+                ng-model="new_data_aggregation.type"
+                ng-options="option for option in data_aggregation_type_options"
+                ng-change="validate_new_data_aggregation()"
+                class="form-control"
+            >
+            {{data_aggregation_type_options[0]}}
+            </select>
+
+            <div>
+                <input
+                    type="text"
+                    ng-model="new_data_aggregation.column"
+                    ng-blur="validate_new_data_aggregation()"
+                    class="form-control"
+                    placeholder="Source column name"
+                    uib-typeahead="column as column.displayName for column in all_columns | filter:{displayName:$viewValue}"
+                    typeahead-template-url="typeahead.html"
+                    typeahead-editable="false"
+                    typeahead-show-hint="true"
+                    typeahead-min-length="0"
+                    typeahead-select-on-exact="true"
+                    typeahead-select-on-blur="true"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    aria-label="Source column name"
+                >
+            </div>
+        </div>
     </div>
     <div class="crud-detail" ng-if="crud_selection == 'update'">
         UPDATE INFO
@@ -27,5 +75,7 @@
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" >Cancel</button>
-    <button type="button" class="btn btn-info" ng-click="start()" autofocus>Start</button>
+    <button type="button" class="btn btn-info" ng-if="crud_selection == 'create'" ng-disabled="!validate_new_data_aggregation()" ng-click="create()" autofocus>Create</button>
+    <button type="button" class="btn btn-info" ng-if="crud_selection == 'update'" ng-click="update()" autofocus>Update</button>
+    <button type="button" class="btn btn-info" ng-if="crud_selection == 'delete'" ng-click="delete()" autofocus>Delete</button>
 </div>

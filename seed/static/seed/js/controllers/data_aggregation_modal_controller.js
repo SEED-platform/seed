@@ -5,21 +5,40 @@
 angular.module('BE.seed.controller.data_aggregation_modal', []).controller('data_aggregation_modal_controller', [
         '$scope',
         '$uibModalInstance',
+        'all_columns',
         function (
             $scope,
             $uibModalInstance,
+            all_columns,
         ) {
+            $scope.all_columns = all_columns
             $scope.crud_selection = 'create'
+            $scope.new_data_aggregation = {
+                'name': null,
+                'type': null,
+                'column': null,
+            }
+            $scope.data_aggregation_type_options = ['Average', 'Count', 'Max', 'Min', 'Sum']
+
+            $scope.validate_new_data_aggregation = function() {
+                console.log($scope.new_data_aggregation)
+                return Object.values($scope.new_data_aggregation).every(Boolean)
+            }
 
             $scope.crud_select = function(crud_option) {
                 $scope.crud_selection = crud_option
             }
-            $scope.start = function() {
-                console.log('start')
+            $scope.create = function() {
+                console.log('create')
             }
 
             $scope.cancel = function () {
                 $uibModalInstance.dismiss();
             };
+
+            const init = function() {
+                const x = 10
+            }
+            init()
         }
     ]);
