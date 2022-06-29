@@ -4120,12 +4120,24 @@ FAQ page
 .flex-centered {
   display: flex;
   align-items: center;
-  justify-content: center;
   column-gap: 10px;
+
+  label {
+    float: right;
+    margin: 0;
+  }
+}
+
+.center {
+  justify-content: center;
 }
 
 .grow {
   flex-grow: 1;
+}
+
+.no-padding {
+  padding: 0 !important;
 }
 
 .one-line {
