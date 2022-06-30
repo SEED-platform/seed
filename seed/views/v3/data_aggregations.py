@@ -96,7 +96,7 @@ class DataAggregationViewSet(viewsets.ViewSet, OrgMixin):
         try: 
             serializer.save()
             return JsonResponse({
-                'status': 'sucess',
+                'status': 'success',
                 'data_aggregation': serializer.data
             })
         except django.core.exceptions.ValidationError as e:
