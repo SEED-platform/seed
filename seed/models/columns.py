@@ -219,7 +219,7 @@ class Column(models.Model):
             'table_name': 'PropertyState',
             'display_name': 'Audit Template Building ID',
             'column_description': 'Audit Template Building ID',
-            'data_type': 'integer',
+            'data_type': 'string',
         }, {
             'column_name': 'address_line_1',
             'table_name': 'PropertyState',

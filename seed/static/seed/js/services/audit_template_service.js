@@ -17,9 +17,9 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     };
 
-    const get_building_xml = function (org_id, at_building_id) {
+    const get_building_xml = function (org_id, audit_template_building_id) {
       return $http.get([
-        '/api/v3/audit_template/', at_building_id, '/get_building_xml/?organization_id=', org_id
+        '/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id
       ].join('')).then(function (response) {
         return response.data;
       });

@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
     'cycle_id',
     'upload_from_file',
     'audit_template_service',
-    'at_building_id',
+    'audit_template_building_id',
     'view_id',
     function (
       $scope,
@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       cycle_id,
       upload_from_file,
       audit_template_service,
-      at_building_id,
+      audit_template_building_id,
       view_id
     ) {
       $scope.stage = "UPLOAD_OPTIONS";
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       $scope.upload_from_file = upload_from_file;
       $scope.error = '';
       $scope.fields = {
-        'at_building_id': at_building_id,
+        'audit_template_building_id': audit_template_building_id,
         'at_api_token': organization.at_api_token
       };
 
@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       };
 
       $scope.confirm_import = function () {
-        if (!$scope.fields.at_api_token || !$scope.fields.at_building_id) {
+        if (!$scope.fields.at_api_token || !$scope.fields.audit_template_building_id) {
           $scope.error = "An Audit Template building ID and API token is required.";
         } else {
           $scope.submit_request();
@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
         $scope.stage = "AWAITING_REPONSE";
         $scope.error = '';
         spinner_utility.show();
-        return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.at_building_id).then(result => {
+        return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
           spinner_utility.hide()
           if (!result.success) {
             $scope.error = 'Error: ' + result.message

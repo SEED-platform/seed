@@ -17,8 +17,8 @@ class AuditTemplate(object):
     def __init__(self, token):
         self._token = token
 
-    def get_building(self, at_building_id):
-        url = f'{self.API_URL}/building_sync/download/rp/buildings/{at_building_id}.xml?token={self._token}'
+    def get_building(self, audit_template_building_id):
+        url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={self._token}'
         headers = {'accept': 'application/xml'}
 
         try:

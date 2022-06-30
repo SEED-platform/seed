@@ -85,7 +85,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
-      $scope.at_building_id = inventory_payload.state.at_building_id;
+      $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -107,10 +107,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       } else {
         $scope.item_parent = inventory_payload.taxlot;
       }
-
-      // Detail Column List Profile
-      $scope.profiles = profiles;
-      $scope.currentProfile = current_profile;
 
       if (analyses_payload.analyses) {
         $scope.analysis = analyses_payload.analyses.sort(function (a, b) {
@@ -587,7 +583,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           templateUrl: urls.static_url + 'seed/partials/data_upload_audit_template_modal.html',
           controller: 'data_upload_audit_template_modal_controller',
           resolve: {
-            at_building_id: () => $scope.at_building_id,
+            audit_template_building_id: () => $scope.audit_template_building_id,
             organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
             upload_from_file: () => $scope.uploaderfunc,
