@@ -31,6 +31,7 @@ def build_column_mapping(base_mapping=None, custom_mapping=None):
         for xpath, db_column in column_mapping.items()
     }
 
+
 def get_valid_units():
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
@@ -47,6 +48,7 @@ def get_valid_units():
         "F"
     ]
     return valid_units
+
 
 def get_BAE_mappings():
     results = []
@@ -85,7 +87,7 @@ def default_buildingsync_profile_mappings():
     """Returns the default ColumnMappingProfile mappings for BuildingSync
     :return: list
     """
-    valid_Units = get_valid_units()
+    valid_units = get_valid_units()
 
     mapping = BASE_MAPPING_V2.copy()
     base_path = mapping['property']['xpath'].rstrip('/')
