@@ -2380,34 +2380,22 @@ select {
   }
 
 }
-.data-agg-crud-options-container {
-  .crud-options {
-    display: flex;
-    list-style-type: none;
-    border-bottom: 1px solid #ccc;
-    color: $blue;
 
-    .crud-option {
-      padding: 5px;
-      margin-left: 2px;
+.crud-option{
+  position: absolute;
+  right: 20px;
+  top: 10px;
+}
+.data-agg-detail {
+  padding:30px 0;
 
-      &:hover {
-        background: white;
-        cursor: pointer
-      }
-    }
-    .active {
-      background: #EEEEEE;
-    }
-    .inactive:hover {
-      background: #EEEEEE;
-    }
-  }
   .crud-detail {
-    border: 1px solid #ccc;
-    border-radius: 3px;
     padding: 5px;
     margin: 5px;
+  }
+  .detail-outline{
+  border: 1px solid #ccc;
+  border-radius: 3px;
   }
 }
 #column_settings_count {
@@ -2508,9 +2496,6 @@ select {
   background: #428bca;
   color: #fff;
   margin-right: 10px;
-}
-
-.angular-ui-tree-handle:hover {
 }
 
 .angular-ui-tree-placeholder {
