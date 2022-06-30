@@ -147,6 +147,7 @@ angular.module('BE.seed.directives', [
 angular.module('BE.seed.services', [
   'BE.seed.service.analyses',
   'BE.seed.service.auth',
+  'BE.seed.service.data_aggregation',
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
   'BE.seed.service.columns',
@@ -1507,6 +1508,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
               return inventory_service.get_property_columns();
           }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }]
         }
       })
       .state({

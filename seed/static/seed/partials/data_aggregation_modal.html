@@ -26,15 +26,12 @@
                 >
             </div>
             <select 
-                type="text"
-                ng-model="new_data_aggregation.type"
+                type="text" 
+                ng-model="new_data_aggregation.type" 
                 ng-options="option for option in data_aggregation_type_options"
-                ng-change="validate_new_data_aggregation()"
-                class="form-control"
-            >
-            {{data_aggregation_type_options[0]}}
+                ng-change="validate_new_data_aggregation()" 
+                class="form-control">
             </select>
-
             <div>
                 <input
                     type="text"

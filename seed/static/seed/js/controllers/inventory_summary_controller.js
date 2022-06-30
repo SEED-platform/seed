@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
     'inventory_service',
     'cycles',
     'all_columns',
+    'organization_payload',
     function (
       $scope,
       $stateParams,
@@ -21,9 +22,9 @@ angular.module('BE.seed.controller.inventory_summary', [])
       inventory_service,
       cycles_payload,
       all_columns,
+      organization_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-
       const lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
         selected_cycle: _.find(cycles_payload.cycles, {id: lastCycleId}) || _.first(cycles_payload.cycles),
@@ -145,15 +146,9 @@ angular.module('BE.seed.controller.inventory_summary', [])
             all_columns: function () {
               return all_columns
             },
-            currentProfile: function () {
-              return '$scope.currentProfile';
-            },
-            cycle: function () {
-              return '$scope.cycle.selected_cycle';
-            },
-            inventory_type: function () {
-              return '$stateParams.inventory_type';
-            },
+            organization: function () {
+              return organization_payload.organization
+            }
           }
         });
       }
