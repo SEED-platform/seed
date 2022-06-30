@@ -154,16 +154,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
           if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
         });
 
-        // add derived columns
-        _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
-          if (foundCol) {
-            foundCol.displayName = foundCol.name;
-            foundCol.column_name = foundCol.name;
-            foundCol.is_derived_column = true;
-            $scope.columns.push(foundCol);
-          }
-        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(columns, 'is_extra_data');
@@ -801,8 +791,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       // evaluate all derived columns and store the results
       var evaluate_derived_columns = function () {
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
-        const all_evaluation_results = visible_derived_columns.map(col => {
+        const visible_columns_with_derived_columns = $scope.columns.filter(col => col.derived_column);
+        const derived_column_ids = visible_columns_with_derived_columns.map(col => col.derived_column);
+        const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
+        column_name_lookup = {}
+        visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
+
+        const all_evaluation_results = attatched_derived_columns.map(col => {
           return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id])
             .then(res => {
               return {
@@ -814,7 +809,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
         $q.all(all_evaluation_results).then(results => {
           results.forEach(result => {
-            $scope.item_derived_values[result.derived_column_id] = result.value;
+            col_id = $scope.columns.find(col => col.derived_column == result.derived_column_id).id
+            $scope.item_derived_values[col_id] = result.value;
           });
         });
       };

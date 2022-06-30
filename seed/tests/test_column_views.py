@@ -141,8 +141,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
-
         # randomly check a column
         self.assertIn(expected, data)
 

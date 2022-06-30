@@ -336,7 +336,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
-        columns = Column.objects.filter(organization_id=org_id)
+        columns = Column.objects.filter(organization_id=org_id, derived_column=None)
         column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
 
         col_names = [x for x, y in list(columns.values_list('column_name', 'table_name')) if (y == 'PropertyState')]
