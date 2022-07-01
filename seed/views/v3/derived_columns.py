@@ -15,7 +15,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import DerivedColumn, PropertyView, TaxLotView
+from seed.models import Column, DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -141,6 +141,7 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             serializer.save()
+            Column.objects.filter(derived_column=pk).update(column_name=data['name'], display_name=data['name'], column_description=data['name'])
             return JsonResponse({
                 'status': 'success',
                 'derived_column': serializer.data,

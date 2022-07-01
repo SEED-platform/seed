@@ -879,6 +879,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -899,6 +900,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -919,6 +921,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -940,6 +943,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -960,6 +964,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -979,6 +984,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -1009,6 +1015,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
