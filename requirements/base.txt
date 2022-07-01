@@ -56,7 +56,7 @@ lark==0.11.3
 geojson==2.5.0
 
 # BuildingSync Asset Extractor
-buildingsync-asset-extractor==0.1.7
+buildingsync-asset-extractor==0.1.8
 
 # pnnl/buildingid-py
 -e git+https://github.com/SEED-platform/buildingid.git@f68219df82191563cc2aca818e0b0fa1b32dd52d#egg=pnnl-buildingid

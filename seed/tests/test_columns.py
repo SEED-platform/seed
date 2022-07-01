@@ -879,6 +879,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -899,6 +900,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -919,6 +921,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -940,6 +943,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -960,6 +964,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -979,6 +984,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -1009,6 +1015,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -1072,6 +1079,7 @@ class TestColumnsByInventory(TestCase):
                 "property_name": "string",
                 "property_notes": "string",
                 "property_type": "string",
+                "property_timezone": "string",
                 "recent_sale_date": "datetime",
                 "release_date": "datetime",
                 "site_eui": "float",
@@ -1111,7 +1119,7 @@ class TestColumnsByInventory(TestCase):
                 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
                 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
                 'postal_code', 'property_footprint', 'property_name', 'property_notes',
-                'property_type',
+                'property_type', 'property_timezone',
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
                 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
@@ -1132,12 +1140,10 @@ class TestColumnsByInventory(TestCase):
                     'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
                     'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
                     'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_footprint',
-                    'property_name',
-                    'property_notes', 'property_type', 'recent_sale_date', 'release_date',
-                    'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
+                    'property_name', 'property_notes', 'property_timezone', 'property_type', 'recent_sale_date',
+                    'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
-                    'taxlot_footprint',
-                    'total_ghg_emissions', 'total_ghg_emissions_intensity',
+                    'taxlot_footprint', 'total_ghg_emissions', 'total_ghg_emissions_intensity',
                     'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
                     'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
 

@@ -12,7 +12,6 @@ from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import DataLogger, PropertyView
-from seed.models.sensors import Sensor
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
@@ -41,8 +40,11 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             res.append({
                 'id': data_logger.id,
                 'display_name': data_logger.display_name,
-                'location_identifier': data_logger.location_identifier,
-                'number_of_sensor': len(Sensor.objects.filter(data_logger=data_logger.id).all())
+                'location_description': data_logger.location_description,
+                "manufacturer_name": data_logger.manufacturer_name,
+                "model_name": data_logger.model_name,
+                "serial_number": data_logger.serial_number,
+                "identifier": data_logger.identifier,
             })
 
         return res
@@ -58,7 +60,11 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
 
         body = dict(request.data)
         display_name = body['display_name']
-        location_identifier = body.get("location_identifier")
+        manufacturer_name = body.get('manufacturer_name')
+        model_name = body.get('model_name')
+        serial_number = body.get('serial_number')
+        location_description = body.get("location_description")
+        identifier = body.get("identifier")
 
         property_view = PropertyView.objects.get(
             pk=property_view_id,
@@ -69,7 +75,11 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         data_logger = DataLogger(
             property_id=property_id,
             display_name=display_name,
-            location_identifier=location_identifier
+            location_description=location_description,
+            manufacturer_name=manufacturer_name,
+            model_name=model_name,
+            serial_number=serial_number,
+            identifier=identifier,
         )
 
         # for every weekday from 2020-2023, mark as occupied from 8-5
@@ -106,8 +116,11 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             result = {
                 'id': data_logger.id,
                 'display_name': data_logger.display_name,
-                'location_identifier': data_logger.location_identifier,
-                'number_of_sensor': 0
+                'location_description': data_logger.location_description,
+                "manufacturer_name": data_logger.manufacturer_name,
+                "model_name": data_logger.model_name,
+                "serial_number": data_logger.serial_number,
+                "identifier": data_logger.identifier,
             }
 
         return result

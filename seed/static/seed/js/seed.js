@@ -750,7 +750,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
-          }]
+          }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
         }
       })
       .state({
@@ -1360,6 +1364,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
 
             return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
           }],
+          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
           property_columns_payload: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id, false, false);
           }],
@@ -1438,17 +1446,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Profile', inventory_type, brief=true);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
             var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
             if (_.includes(validProfileIds, lastProfileId)) {
-              return _.find(profiles, {id: lastProfileId});
+              return inventory_service.get_column_list_profile(lastProfileId);
             }
-            var currentProfile = _.first(profiles);
-            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
-            return currentProfile;
+            var currentProfileId = _.first(profiles)?.id;
+            if (currentProfileId) {
+              inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type)
+              return inventory_service.get_column_list_profile(currentProfileId);
+            }
+            return null;
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
@@ -1457,12 +1468,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return inventory_service.get_taxlot_columns();
             }
           }],
-          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id;
-            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
-          }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
-            return organization_service.get_organization(user_service.get_organization().id);
+            return organization_service.get_organization_brief(user_service.get_organization().id);
+          }],
+          derived_columns_payload: ['$stateParams', 'derived_columns_service', 'organization_payload', function ($stateParams, derived_columns_service, organization_payload) {
+            return derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type);
           }]
         }
       })

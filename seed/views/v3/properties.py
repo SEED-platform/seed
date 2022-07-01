@@ -102,6 +102,7 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
     """
     address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     identifier = CharFilter(method='identifier_filter')
+    identifier_exact = CharFilter(method='identifier_exact_filter')
     cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
     cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
 
@@ -115,6 +116,22 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
         custom_id_1 = Q(state__custom_id_1__icontains=value)
         pm_property_id = Q(state__pm_property_id__icontains=value)
         ubid = Q(state__ubid__icontains=value)
+
+        query = (
+            address_line_1 |
+            jurisdiction_property_id |
+            custom_id_1 |
+            pm_property_id |
+            ubid
+        )
+        return queryset.filter(query).order_by('-state__id')
+
+    def identifier_exact_filter(self, queryset, name, value):
+        address_line_1 = Q(state__address_line_1__iexact=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id__iexact=value)
+        ubid = Q(state__ubid__iexact=value)
 
         query = (
             address_line_1 |
@@ -188,8 +205,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'selected': ['integer'],
+                'label_names': ['string'],
             },
-            description='IDs for properties to be checked for which labels are applied.'
+            description='- selected: Property View IDs to be checked for which labels are applied\n'
+                        '- label_names: list of label names to query'
         )
     )
     @has_perm_class('requires_viewer')
@@ -199,12 +218,25 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Returns a list of all labels where the is_applied field
         in the response pertains to the labels applied to property_view
         """
-        labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
-        super_organization = self.get_organization(request)
+        # labels are attached to the organization, but newly created ones in a suborg are
+        # part of the suborg.  A parent org's label should not be a factor of the current orgs labels,
+        # but that isn't the current state of the system. This needs to be reworked when
+        # we deal with accountability hierarchies.
+        # organization = self.get_organization(request)
+        super_organization = self.get_parent_org(request)
+
+        labels_qs = Label.objects.filter(
+            super_organization=super_organization
+        ).order_by('name').distinct()
+
+        # if labels names is passes, then get only those labels
+        if request.data.get('label_names', None):
+            labels_qs = labels_qs.filter(
+                name__in=request.data.get('label_names')
+            ).order_by('name')
+
         # TODO: refactor to avoid passing request here
-        return get_labels(request, labels, super_organization, 'property_view')
+        return get_labels(request, labels_qs, super_organization, 'property_view')
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
@@ -328,7 +360,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 res.append({
                     'id': sensor.id,
                     'display_name': sensor.display_name,
-                    'location_identifier': sensor.location_identifier,
+                    'location_description': sensor.location_description,
                     'description': sensor.description,
                     'type': sensor.sensor_type,
                     'units': sensor.units,

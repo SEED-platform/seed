@@ -201,7 +201,7 @@ class TaxLotState(models.Model):
         Return the history of the taxlot state by parsing through the auditlog. Returns only the ids
         of the parent states and some descriptions.
 
-              master
+               main
               /    \
              /      \
           parent1  parent2
@@ -209,12 +209,12 @@ class TaxLotState(models.Model):
         In the records, parent2 is most recent, so make sure to navigate parent two first since we
         are returning the data in reverse over (that is most recent changes first)
 
-        :return: list, history as a list, and the master record
+        :return: list, history as a list, and the main record
         """
 
         """Return history in reverse order."""
         history = []
-        master = {
+        main = {
             'state_id': self.id,
             'state_data': self,
             'date_edited': None,
@@ -243,7 +243,7 @@ class TaxLotState(models.Model):
         ).order_by('-id').first()
 
         if log:
-            master = {
+            main = {
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -303,7 +303,7 @@ class TaxLotState(models.Model):
                 record = record_dict(log)
                 history.append(record)
 
-        return history, master
+        return history, main
 
     @classmethod
     def coparent(cls, state_id):

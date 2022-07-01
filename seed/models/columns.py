@@ -74,6 +74,10 @@ class Column(models.Model):
         ('PropertyState', 'source_eui'),
         ('PropertyState', 'source_eui_modeled'),
         ('PropertyState', 'source_eui_weather_normalized'),
+        ('PropertyState', 'total_ghg_emissions'),
+        ('PropertyState', 'total_marginal_ghg_emissions'),
+        ('PropertyState', 'total_ghg_emissions_intensity'),
+        ('PropertyState', 'total_marginal_ghg_emissions_intensity'),
     ]
 
     COLUMN_MERGE_FAVOR_NEW = 0
@@ -606,23 +610,33 @@ class Column(models.Model):
             'column_name': 'total_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
+            'column_description': 'Total GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
+            'column_description': 'Total Marginal GHG Emissions',
             'data_type': 'number',
         }, {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
+            'column_description': 'Total GHG Emissions Intensity',
             'data_type': 'number',
         }, {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
+            'column_description': 'Total Marginal GHG Emissions Intensity',
             'data_type': 'number',
-        },
+        }, {
+            'column_name': 'property_timezone',
+            'table_name': 'PropertyState',
+            'display_name': 'Property Time Zone',
+            'column_description': 'Time zone of the property',
+            'data_type': 'string',
+        }
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
@@ -657,6 +671,7 @@ class Column(models.Model):
     recognize_empty = models.BooleanField(default=False)
 
     comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
+    derived_column = models.OneToOneField('DerivedColumn', on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -667,6 +682,8 @@ class Column(models.Model):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
     def clean(self):
+        if self.derived_column:
+            return
         # Don't allow Columns that are not extra_data and not a field in the database
         if (not self.is_extra_data) and self.table_name:
             # if it isn't extra data and the table_name IS set, then it must be part of the database fields
@@ -1345,6 +1362,9 @@ class Column(models.Model):
 
         # Sort by display name
         columns.sort(key=lambda col: col['display_name'].lower())
+
+        # Remove derived columns from mappable columns
+        columns = [col for col in columns if not col['derived_column']]
 
         return columns
 

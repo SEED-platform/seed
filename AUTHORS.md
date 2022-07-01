@@ -62,6 +62,17 @@ NREL
 - Alex Swindler (https://github.com/axelstudios)
 - Edwin Lee (https://github.com/myoldmopar)
 - Katherine Fleming (https://github.com/kflemin)
+- Austin Viveiros (https://github.com/aviveiros)
+- Hannah Eslinger (https://github.com/haneslinger)
+- Alex Chapin (https://github.com/anchapin)
+- Lauren Adams (https://github.com/laurenliz22)
+- Noel Merket (https://github.com/nmerket)
+
+---
+
+Earth Advantage
+
+- Fable Turas (https://github.com/fablet)
 
 ---
 
@@ -92,7 +103,10 @@ Open Green Building Society
 
 ---
 
-Devetry
+Dept / Formerly Devetry
 
 - Adrian Lara (https://github.com/adrian-lara)
+- Ted Summer (https://github.com/macintoshpie)
 - Daniel Bressan (https://github.com/danielbressan)
+- Ross Perry (https://github.com/perryr16)
+- Ryo Schulz (https://github.com/Ryoken)

@@ -95,12 +95,24 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           enableHiding: false,
           type: 'string'
         }, {
-          field: 'location_identifier',
-          displayName: 'Location Identifier',
+          field: 'identifier',
+          displayName: 'Datalogger ID',
           enableHiding: false
-        }, {
-          field: 'number_of_sensor',
-          displayName: 'Number of Sensor',
+        },{
+          field: 'location_description',
+          displayName: 'Location Description',
+          enableHiding: false
+        },{
+          field: 'manufacturer_name',
+          displayName: 'Manufacturer Name',
+          enableHiding: false
+        },{
+          field: 'model_name',
+          displayName: 'Model Name',
+          enableHiding: false
+        },{
+          field: 'serial_number',
+          displayName: 'Serial Number',
           enableHiding: false
         }, {
           name: 'actions',
@@ -135,8 +147,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           field: 'type',
           enableHiding: false
         }, {
-          field: 'location_identifier',
-          displayName: 'location identifier',
+          field: 'location_description',
+          displayName: 'Location Description',
           enableHiding: false
         },{
           field: 'units',
@@ -164,7 +176,11 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true
+        fastWatch: true,
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'sensors.csv',
+        enableGridMenu: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
       };
 
       $scope.usageGridOptions = {
@@ -173,43 +189,13 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true
+        fastWatch: true,
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'sensor readings.csv',
+        enableGridMenu: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        enableFiltering: false,
       };
-
-      $scope.exportSensors = function (grid_data, data_type) {
-        let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
-        let keys = grid_data.columnDefs.map(c => c.field).filter(key => key != 'data_logger');
-        let data = [keys.join(',')];
-
-        grid_data.data.forEach(d => {
-          let row = [];
-          keys.forEach(k => row.push(d[k]));
-          data.push(row.join(','));
-        });
-
-        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
-      }
-      $scope.exportSensorUsages = function (grid_data, sensor_data, data_type) {
-        let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
-        let keys = grid_data.columnDefs.map(c => c.field)
-
-        // grid data headers are a combination of display name and data logger. Use sensor_data to make a conversion object
-        let display_to_column = {'timestamp': 'timestamp'}
-        sensor_data.data.forEach(sensor => {
-          display_to_column[`${sensor.display_name} (${sensor.data_logger})`] = sensor.column_name
-        })
-
-        let data = [keys.map(k => display_to_column[k]).join(',')];
-
-        grid_data.data.forEach(d => {
-          let row = []
-          keys.forEach(k => row.push(d[k]))
-          data.push(row.join(','))
-        });
-
-        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
-      }
-
 
       $scope.apply_column_settings = function () {
         _.forEach($scope.usageGridOptions.columnDefs, function (column) {
@@ -361,9 +347,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
             data_logger: function () {
               return data_logger?? {
                   display_name: null,
-                  location_identifier: "",
+                  location_description: "",
                   id: null,
-                  number_of_sensors: 0
               };
             },
             sensor_service: sensor_service,
