@@ -1,16 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
-from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
@@ -22,7 +20,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     def get_building_xml(self, request, pk):
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
-        if not response:
+        if response is None:
             return JsonResponse({
                 'success': False,
                 'message': message
