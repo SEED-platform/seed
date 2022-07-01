@@ -12,6 +12,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.serializers.data_aggregations import DataAggregationSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from seed.models.data_aggregations import DataAggregation
 from drf_yasg.utils import swagger_auto_schema
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -183,3 +184,37 @@ class DataAggregationViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Bad request',
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    # @swagger_auto_schema(
+    #     manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+    #     request_body=AutoSchemaHelper.schema_factory(
+    #         {
+    #             'column': 'integer',
+    #             'type': 'string',
+    #             'name': 'string',
+    #         },
+    #         description='-type: "Average", "Count", "Max", "Min", or "Sum'
+    #     )
+    # )
+    # @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['GET'])
+    def evaluate(self, request, pk):
+        organization = self.get_organization(request)
+        data = deepcopy(request.data)
+
+        try:
+            data_aggregation = DataAggregation.objects.get(id=pk, organization=organization)
+        except DataAggregation.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'DataAggregation with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        value = data_aggregation.evaluate()
+        return JsonResponse({
+            'status': 'success',
+            'data': value
+        })

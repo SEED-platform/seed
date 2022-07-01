@@ -5,6 +5,7 @@
 :author
 """
 from django.db import models
+from django.db.models import Avg, Count, Max, Min, Sum
 from seed.models import Column
 from seed.lib.superperms.orgs.models import Organization
 
@@ -27,3 +28,6 @@ class DataAggregation(models.Model):
     )
 
     type = models.IntegerField(choices=AGGREGATION_TYPES)
+
+    def evaluate(self):
+        return 123

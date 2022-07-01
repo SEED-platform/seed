@@ -9,11 +9,13 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
 
         data_aggregation_factory.create_data_aggregation = (organization_id, data) => {
             console.log('create data', data)
+            let { name, type, column } = data
+            column = column.id
             return $http({
                 url: '/api/v3/data_aggregations/',
                 method: 'POST',
                 params: {organization_id},
-                data: data,
+                data: {name, type, column},
             }).then(response => {
                 return response.data
             })
@@ -54,11 +56,26 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
 
         data_aggregation_factory.update_data_aggregation = (organization_id, data_aggregation_id, data) => {
             console.log('update data agg', data_aggregation_id)
+            let  { name, type, column } = data 
+            column = column.id
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/`,
                 method: 'PUT',
                 params: {organization_id},
-                data: data
+                data: {name, type, column}
+            }).then(response => {
+                return response.data
+            })
+        }
+
+        data_aggregation_factory.evaluate = (organization_id, data_aggregation_id) => {
+            // console.log(data_aggregation_id)
+            // return data_aggregation_id + 10
+            console.log('evaluate, id', data_aggregation_id)
+            return $http({
+                url: `/api/v3/data_aggregations/${data_aggregation_id}/evaluate/`,
+                method: 'GET',
+                params: {organization_id},
             }).then(response => {
                 return response.data
             })

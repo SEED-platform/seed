@@ -5,16 +5,18 @@
 </script>
 
 <div class="modal-header">
-    <h4 class="modal-title" ng-if="crud_selection == 'overview'">Data Aggregations</span></h4>
-    <h4 class="modal-title" ng-if="crud_selection != 'overview'">{$ capitalize(crud_selection) $} <span translate>a Data Aggregation</span></h4>
+    <h4 class="modal-title" ng-if="crud_selection == 'overview'"><i class="fa fa-calculator"></i> Data Aggregations</span></h4>
+    <h4 class="modal-title" ng-if="crud_selection != 'overview'"><i class="fa fa-calculator"></i> {$ capitalize(crud_selection) $} <span translate>a Data Aggregation</span></h4>
     <button type="button" class="btn btn-info crud-option" ng-if="crud_selection == 'overview'" ng-click="crud_select('create')" autofocus>Create Data Aggreagtion</button>
-
+    
+</div>
+<div class="white-space">
 </div>
 
 <div class="data-agg-detail section_content_container">
-    <div ng-if="crud_selection == 'overview'" class="section_content with_padding">
+    <div ng-if="crud_selection == 'overview'" class="section_content with_padding data-agg-table-container">
         <div class="table_list_container has_borders">
-            <table id="column-table" class="table has_no_btm_margin">
+            <table id="column-table" class="table has_no_btm_margin data-agg-table">
                 <thead>
                     <tr>
                         <th class="text-left">
@@ -24,7 +26,10 @@
                             <span>Type</span>
                         </th>
                         <th class="text-left">
-                            <span>Column ID/Name</span>
+                            <span>Column ID / Name</span>
+                        </th>
+                        <th class="text-left">
+                            <span>Value</span>
                         </th>
                         <th class="text-left">
                             <span>Actions</span>
@@ -41,6 +46,9 @@
                         </td>
                         <td>
                             {$ data_aggregation.column_id_name $}
+                        </td>
+                        <td>
+                            {$ data_aggregation.value $}
                         </td>
                         <td class="text-center">
                             <button class="btn btn-info" type="button" ng-click="edit_data_aggregation(data_aggregation.id)">
@@ -113,13 +121,6 @@
     </div>
 </div>
 
-<!-- <div class="modal-body row">
-    <div class="col-sm-12">
-        <div translate>
-            THIS IS THE DATA AGGREGATION MODAL DESCRIPTION
-        </div>
-    </div>
-</div> -->
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-if="crud_selection != 'overview'" ng-click="crud_select('overview')" autofocus>Back</button>
     <button type="button" class="btn btn-default" ng-click="cancel()" >Close</button>
