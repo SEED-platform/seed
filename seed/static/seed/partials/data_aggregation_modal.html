@@ -32,6 +32,9 @@
                             <span>Value</span>
                         </th>
                         <th class="text-left">
+                            <span>Units</span>
+                        </th>
+                        <th class="text-left">
                             <span>Actions</span>
                         </th>
                     </tr>
@@ -48,7 +51,10 @@
                             {$ data_aggregation.column_id_name $}
                         </td>
                         <td>
-                            {$ data_aggregation.value $}
+                            {$ data_aggregation.value.value $}
+                        </td>
+                        <td>
+                            {$ data_aggregation.value.units $}
                         </td>
                         <td class="text-center">
                             <button class="btn btn-info" type="button" ng-click="edit_data_aggregation(data_aggregation.id)">
@@ -122,8 +128,8 @@
 </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-if="crud_selection != 'overview'" ng-click="crud_select('overview')" autofocus>Back</button>
     <button type="button" class="btn btn-default" ng-click="cancel()" >Close</button>
+    <button type="button" class="btn btn-default" ng-if="crud_selection != 'overview'" ng-click="crud_select('overview')" autofocus>Back</button>
     <button type="button" class="btn btn-info" ng-if="crud_selection == 'create'" ng-disabled="!validate_data_aggregation()" ng-click="create_data_aggregation()" autofocus>Create</button>
     <button type="button" class="btn btn-info" ng-if="crud_selection == 'update'" ng-click="update_data_aggregation(data_aggregation.id)" autofocus>Update</button>
     <button type="button" class="btn btn-info" ng-if="crud_selection == 'delete'" ng-click="delete_data_aggregation(data_aggregation_to_delete.id)" autofocus>Delete</button>
