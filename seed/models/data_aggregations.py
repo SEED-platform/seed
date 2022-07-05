@@ -6,7 +6,7 @@
 """
 from django.db import models
 from django.db.models import Avg, Count, Max, Min, Sum
-from seed.models import Column, PropertyState
+from seed.models import Column, PropertyState, DerivedColumn
 from seed.lib.superperms.orgs.models import Organization
 import logging
 
@@ -36,27 +36,28 @@ class DataAggregation(models.Model):
         if column.is_extra_data:
             return self.evaluate_extra_data()
         elif column.derived_column:
-            return {"value": 'derived column', "units": None}
+            return self.evaluate_derived_column()
         else: 
             type_lookup = {0: Avg, 1: Count, 2: Max, 3: Min, 4: Sum}
             # PropertyState must be associated with the current org AND a valid PropertyView
             aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
 
-            if aggregation.get('value'):
+            if aggregation.get('value') or aggregation.get('value') is 0:
                 value = aggregation['value']
                 if type(value) is int or type(value) is float:
+                    logging.error('>>> %s',value)
                     return {"value": round(value,2), "units": None}
-
 
                 return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
 
             return 'failed'
 
+
     def evaluate_extra_data(self):
         extra_data_col = 'extra_data__' + self.column.column_name
         q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
         values = []
-        logging.error('>>> q_set %s', q_set)
+        # logging.error('>>> q_set %s', q_set)
         for val in list(q_set):
             try: 
                 values.append(float(val[extra_data_col]))
@@ -65,9 +66,21 @@ class DataAggregation(models.Model):
 
         if values:
             type_to_aggregate = {0: sum(values)/len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
-            logging.error('>>> values %s', values)
             return {"value": type_to_aggregate[self.type], "units": None}
-        
-        return {"value": 'def extra data', "units": None}
 
 
+    def evaluate_derived_column(self):
+        # DerivedColumn.evaluate(propertyState)
+        property_states = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False)
+        values = []
+
+        for state in property_states:
+            val = self.column.derived_column.evaluate(state)
+            if val is not None:
+                values.append(val)
+
+        # values = [self.column.derived_column.evaluate(state) for state in property_states if self.column.derived_column.evaluate(state) is not None]
+
+        if values:
+            type_to_aggregate = {0: sum(values)/len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
+            return {"value": type_to_aggregate[self.type], "units": None}
