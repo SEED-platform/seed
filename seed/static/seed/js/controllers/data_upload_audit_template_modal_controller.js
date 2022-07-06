@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
     'cycle_id',
     'upload_from_file',
     'audit_template_service',
+    'organization_service',
     'audit_template_building_id',
     'view_id',
     function (
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       cycle_id,
       upload_from_file,
       audit_template_service,
+      organization_service,
       audit_template_building_id,
       view_id
     ) {
@@ -70,18 +72,23 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
         $scope.stage = "AWAITING_REPONSE";
         $scope.error = '';
         spinner_utility.show();
-        return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
-          spinner_utility.hide();
-          if (typeof(result) == 'object' && !result.success) {
-            $scope.error = 'Error: ' + result.message
-            $scope.stage = "IMPORT_FORM";
-          } else {
-            console.log(result)
-            return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
+        if ($scope.fields.at_api_token != $scope.organization.at_api_token) {
+          $scope.organization.at_api_token = $scope.fields.at_api_token
+        }
+        return organization_service.save_org_settings($scope.organization).then(result => {
+          audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
+            spinner_utility.hide();
+            if (typeof(result) == 'object' && !result.success) {
+              $scope.error = 'Error: ' + result.message
+              $scope.stage = "IMPORT_FORM";
+            } else {
               console.log(result)
-              $scope.close();
-            });
-          }   
+              return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
+                console.log(result)
+                $scope.close();
+              });
+            }   
+          });
         });
       };
 
