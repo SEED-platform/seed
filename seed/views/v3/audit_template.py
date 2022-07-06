@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -36,10 +36,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'success': False,
                 'message': message
             })
-        return JsonResponse({
-            'success': True,
-            'data': response.text
-        })
+        return HttpResponse(response.text)
 
     # @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(),
     #     AutoSchemaHelper.query_integer_field(
