@@ -45,6 +45,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
 
       $scope.upload_from_file_and_close = function (event_message, file, progress) {
         $scope.close();
+        console.log(event_message, file, progress);
         $scope.upload_from_file(event_message, file, progress);
       };
 
@@ -70,20 +71,18 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
         $scope.error = '';
         spinner_utility.show();
         return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
-          spinner_utility.hide()
-          if (!result.success) {
+          spinner_utility.hide();
+          if (typeof(result) == 'object' && !result.success) {
             $scope.error = 'Error: ' + result.message
             $scope.stage = "IMPORT_FORM";
           } else {
             console.log(result)
-            // todo: process XML
-            $scope.show_results();
+            return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
+              console.log(result)
+              $scope.close();
+            });
           }   
         });
-      };
-        
-      $scope.show_results = function () {
-        $scope.stage = "CONFIRM_INCOMING_DATA";
       };
 
       $scope.close = function () {
