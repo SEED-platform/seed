@@ -1202,7 +1202,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         gridMenuCustomItems: [{
           title: 'Export All/Selected',
           action: function ($event) {
-            $scope.open_export_modal()
+            $scope.open_export_modal();
           },
           order: 100
         }],

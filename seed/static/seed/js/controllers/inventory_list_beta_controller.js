@@ -1027,7 +1027,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       $scope.model_actions = 'none';
       const elSelectActions = document.getElementById('select-actions');
-      $scope.run_action = function (viewIds = []) {
+      $scope.run_action = function (viewIds=[], action=null) {
         let selectedViewIds = [];
 
         // was the function called with a list of ids?
@@ -1055,7 +1055,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
         }
 
-        switch (elSelectActions.value) {
+        if (!action) {
+          action = elSelectActions.value;
+        }
+        switch (action) {
           case 'open_merge_modal': $scope.open_merge_modal(selectedViewIds); break;
           case 'open_delete_modal': $scope.open_delete_modal(selectedViewIds); break;
           case 'open_export_modal': $scope.open_export_modal(selectedViewIds); break;
@@ -1361,7 +1364,15 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
+        gridMenuCustomItems: [{
+          title: 'Export All/Selected',
+          action: function ($event) {
+            $scope.run_action([], 'open_export_modal');
+          },
+          order: 100
+        }],
+        exporterMenuCsv: false,
+        exporterMenuExcel: false,
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
