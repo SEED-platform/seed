@@ -637,7 +637,6 @@ class TestDerivedColumns(TestCase):
         Test that a derived column can be evaluated when a derived column is used in its definition
         """
         # -- Setup
-        # expression which sums all the parameters
         expression = '$a + 2'
         column_parameters = {
             'a': {

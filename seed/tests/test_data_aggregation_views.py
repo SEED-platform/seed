@@ -7,8 +7,20 @@
 import json
 from django.test import TestCase
 from django.urls import reverse
-from seed.models import DataAggregation, User, Column
+from seed.models import DataAggregation, User, Column, DerivedColumn, PropertyState, PropertyView
 from seed.utils.organizations import create_organization
+from django.utils.timezone import get_current_timezone
+from datetime import datetime
+from pprint import pprint as pp
+
+
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyViewFactory,
+    FakePropertyFactory,
+    FakeCycleFactory,
+)
 
 
 
@@ -151,3 +163,111 @@ class DataAggregationViewTests(TestCase):
         )
         data = json.loads(response.content)
         self.assertEqual(data['status'], 'success')
+
+
+class DataAggregationEvaluationTests(TestCase):
+    """
+    Test DataAggregation ability to evaluate various column types
+    """
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Johnny',
+            'last_name': 'Energy',
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.client.login(**user_details)
+
+        self.column_default = Column.objects.get(column_name='site_eui')
+        # need to make this 'extra data'
+        self.column_extra = Column.objects.create(
+            column_name='extra_column',
+            organization=self.org,
+            table_name='PropertyState',
+            is_extra_data=True,
+        )
+        # need to create a derived column first
+        self.derived_column = DerivedColumn.objects.create(
+            name='dc',
+            expression='$a + 10',
+            organization=self.org,
+            inventory_type=0,
+        )
+        self.derived_column.source_columns.add(self.column_default.id)
+        self.dcp = self.derived_column.derivedcolumnparameter_set.first()
+        self.dcp.parameter_name = 'a'
+        self.dcp.save()
+
+        self.derived_col_factory = FakeDerivedColumnFactory(
+            organization=self.org,
+            inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        # Create 3 property/state/views 
+        state = self.property_state_factory.get_property_state(extra_data={'extra_column': 100})
+        property = self.property_factory.get_property()
+        self.view1 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+        # add extra data
+        
+        state = self.property_state_factory.get_property_state(extra_data={'extra_column': 200})
+        property = self.property_factory.get_property()
+        self.view2 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        state = self.property_state_factory.get_property_state(extra_data={'extra_column': 300})
+        property = self.property_factory.get_property()
+        self.view3 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+        
+    def test_evaluate_data_aggregation_endpoint_with_standard_columns(self):
+        # Test the ability of a DataAggregation to evaluate a collection of standard columns
+        # site EUI values: 121, 269, 91
+
+        self.da_avg = DataAggregation.objects.create(name='eui_avg', type=0, column=self.column_default,organization=self.org)
+        self.da_cnt = DataAggregation.objects.create(name='eui_count', type=1, column=self.column_default,organization=self.org)
+        self.da_max = DataAggregation.objects.create(name='eui_max', type=2, column=self.column_default,organization=self.org)
+        self.da_min = DataAggregation.objects.create(name='eui_min', type=3, column=self.column_default,organization=self.org)
+        self.da_sum = DataAggregation.objects.create(name='eui_sum', type=4, column=self.column_default,organization=self.org)
+        
+        self.assertEqual(self.da_avg.evaluate(), {'value': 160.33, 'units': 'kBtu/ft²/year'})
+        self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
+        self.assertEqual(self.da_max.evaluate(), {'value': 269, 'units': 'kBtu/ft²/year'})
+        self.assertEqual(self.da_min.evaluate(), {'value': 91, 'units': 'kBtu/ft²/year'})
+        self.assertEqual(self.da_sum.evaluate(), {'value': 481, 'units': 'kBtu/ft²/year'})
+
+    def test_evaluate_data_aggregation_endpoint_with_derived_columns(self):
+        # Test the ability of a DataAggregation to evaluate a collection of derived columns
+        self.da_avg = DataAggregation.objects.create(name='dc_avg', type=0, column=self.derived_column.column, organization=self.org)
+        self.da_cnt = DataAggregation.objects.create(name='dc_count', type=1, column=self.derived_column.column, organization=self.org)
+        self.da_max = DataAggregation.objects.create(name='dc_max', type=2, column=self.derived_column.column, organization=self.org)
+        self.da_min = DataAggregation.objects.create(name='dc_min', type=3, column=self.derived_column.column, organization=self.org)
+        self.da_sum = DataAggregation.objects.create(name='dc_sum', type=4, column=self.derived_column.column, organization=self.org)
+        
+        self.assertEqual(self.da_avg.evaluate(), {'value': 170.33, 'units': None})
+        self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
+        self.assertEqual(self.da_max.evaluate(), {'value': 279, 'units': None})
+        self.assertEqual(self.da_min.evaluate(), {'value': 101, 'units': None})
+        self.assertEqual(self.da_sum.evaluate(), {'value': 511, 'units': None})
+
+
+    def test_evaluate_data_aggregation_endpoint_with_extra_data_columns(self):
+        # Test the ability of a DataAggregation to evaluate a collection of extra data columns
+
+        self.da_avg = DataAggregation.objects.create(name='extra_avg', type=0, column=self.column_extra,organization=self.org)
+        self.da_cnt = DataAggregation.objects.create(name='extra_count', type=1, column=self.column_extra,organization=self.org)
+        self.da_max = DataAggregation.objects.create(name='extra_max', type=2, column=self.column_extra,organization=self.org)
+        self.da_min = DataAggregation.objects.create(name='extra_min', type=3, column=self.column_extra,organization=self.org)
+        self.da_sum = DataAggregation.objects.create(name='extra_sum', type=4, column=self.column_extra,organization=self.org)
+        
+        self.assertEqual(self.da_avg.evaluate(), {'value': 200, 'units': None})
+        self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
+        self.assertEqual(self.da_max.evaluate(), {'value': 300, 'units': None})
+        self.assertEqual(self.da_min.evaluate(), {'value': 100, 'units': None})
+        self.assertEqual(self.da_sum.evaluate(), {'value': 600, 'units': None})
