@@ -1652,6 +1652,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(pm_property_id_col, results)
 
@@ -1671,6 +1672,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1690,6 +1692,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -1736,6 +1739,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
         # breakpoint()
@@ -1756,6 +1760,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1775,5 +1780,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

@@ -104,16 +104,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             $scope.columns.push(foundCol);
           }
         });
-
-        // add derived columns
-        _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
-          if (foundCol) {
-            foundCol.is_derived_column = true;
-            foundCol.displayName = foundCol.name;
-            $scope.columns.push(foundCol);
-          }
-        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
@@ -557,7 +547,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
 
         // Modify headerCellClass
-        if (col.is_derived_column) {
+        if (col.derived_column) {
           col.headerCellClass = 'derived-column-display-name';
         }
 
@@ -769,13 +759,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           batch_index += batch_size;
         }
 
+        // Find all columns that linked to a derived column.
+        // With the associated derived columns evaluate it and attatch it to the original column
+        const visible_columns_with_derived_columns = $scope.columns.filter(col => col.derived_column);
+        const derived_column_ids = visible_columns_with_derived_columns.map(col => col.derived_column);
+        const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
+        column_name_lookup = {}
+        visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
+
         const all_evaluation_results = [];
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
-        for (const col of visible_derived_columns) {
+        for (const col of attatched_derived_columns) {
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
-                return {derived_column_id: col.id, results: res.results};
+                return { derived_column_id: col.id, results: res.results };
               });
           }));
         }
@@ -793,9 +790,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           // finally, update the data to include the calculated values
           $scope.data.forEach(row => {
             Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-              const derived_column = visible_derived_columns.find(col => col.id == derived_column_id);
+              const derived_column = attatched_derived_columns.find(col => col.id == derived_column_id);
               const result = results.find(res => res.id == row.id) || {};
-              row[derived_column.name] = result.value;
+              row[column_name_lookup[derived_column.name]] = result.value;
             });
           });
         });

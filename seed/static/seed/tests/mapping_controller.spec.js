@@ -245,6 +245,9 @@ describe('controller: mapping_controller', function () {
       status: 'success',
       first_five_rows: mock_first_five_rows
     };
+    var fake_derived_columns_payload = {
+      derived_columns: [],
+    };
 
     const fake_organization_payload = {
       status: 'success',
@@ -265,6 +268,7 @@ describe('controller: mapping_controller', function () {
       cycles: mock_cycles,
       inventory_service: mock_inventory_service,
       organization_payload: fake_organization_payload,
+      derived_columns_payload: fake_derived_columns_payload,
     });
   }
 
