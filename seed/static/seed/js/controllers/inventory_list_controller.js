@@ -1199,7 +1199,15 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
+        gridMenuCustomItems: [{
+          title: 'Export All/Selected',
+          action: function ($event) {
+            $scope.open_export_modal()
+          },
+          order: 100
+        }],
+        exporterMenuCsv: false,
+        exporterMenuExcel: false,
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
