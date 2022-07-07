@@ -51,9 +51,9 @@ def get_valid_units():
 def get_bae_mappings():
     """ returns the default BAE assets ready for import"""
     results = []
-    
+
     # nothing should have units since they are stored in a separate dedicated field
-    # export_units field indicates fields that have a separate units field. 
+    # export_units field indicates fields that have a separate units field.
     # units field name is the same with " Units" appended.
 
     bsync_assets = BAE.get_default_asset_defs()
@@ -65,7 +65,7 @@ def get_bae_mappings():
                 results.append(make_bae_hash(i + ' ' + item['export_name']))
                 if 'export_units' in item and item['export_units'] is True:
                     # also export units field
-                     results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
+                    results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
 
         else:
             results.append(make_bae_hash(item['export_name']))
@@ -74,14 +74,14 @@ def get_bae_mappings():
 
     return results
 
+
 def make_bae_hash(name):
-    return {
-             'from_field': name,
-             'from_field_value': 'text',  # hard code this for now
-             'from_units': None,
-             'to_field': name,
-             'to_table_name': 'PropertyState'
-            }
+    return {'from_field': name,
+            'from_field_value': 'text',  # hard code this for now
+            'from_units': None,
+            'to_field': name,
+            'to_table_name': 'PropertyState'}
+
 
 def default_buildingsync_profile_mappings():
     """Returns the default ColumnMappingProfile mappings for BuildingSync
