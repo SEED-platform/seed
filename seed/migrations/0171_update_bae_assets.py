@@ -13,26 +13,6 @@ def update_bae_fields(apps, schema_editor):
     # profile number for 'BuildingSync Default' profile is 1
     prof_type = 1
 
-    # 'Audit Template Building Id' name matches the automatically generated field name from
-    # the default_buildingsync_profile_mappings method.
-    # this should already be taken care of by 169
-    # new_mappings = [
-    #     {
-    #         'from_field': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site/auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Audit Template Building ID"]/auc:IdentifierValue',
-    #         'from_field_value': 'text',
-    #         'from_units': None,
-    #         'to_table_name': 'PropertyState',
-    #         'to_field': 'Audit Template Building Id', 
-    #     },
-    #     {
-    #         'from_field': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site/auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Portfolio Manager Building ID"]/auc:IdentifierValue',
-    #         'from_field_value': 'text',
-    #         'from_units': None,
-    #         'to_table_name': 'PropertyState',
-    #         'to_field': 'pm_property_id',
-    #     }
-    # ]
-
     # get BAE fields
     new_mappings = get_bae_mappings()
     print(f"MAPPINGS: {new_mappings}")
