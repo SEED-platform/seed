@@ -32,10 +32,15 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       for (var i = 0; i < xml_string.length; i++) {
           binary += xml_string[i].charCodeAt(0).toString(2) + " ";
       }
-      body.append('file', binary);  // todo: this isn't working like I thought
-      return $http.put([
-        '/api/v3/properties/' + property_view_id + '/update_with_building_sync/?cycle_id=' + cycle_id + '&organization_id=' + org_id
-      ].join(''), body, {}).then(function (response) {
+      body.append('file', binary);
+
+      return $http.put(
+        ['/api/v3/properties/' + property_view_id + '/update_with_building_sync/?cycle_id=' + cycle_id + '&organization_id=' + org_id].join(''),
+        body,
+        {
+          headers: { 'Content-Type': undefined },
+        },
+      ).then(function (response) {
         return response.data;
       });
     }
