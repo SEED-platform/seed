@@ -15,7 +15,6 @@ from seed.models import (
     Column,
     DataAggregation,
     DerivedColumn,
-    PropertyState,
     PropertyView,
     User
 )
@@ -67,15 +66,13 @@ class DataAggregationViewTests(TestCase):
         data_aggregations = DataAggregation.objects.all()
         self.assertEqual(len(data_aggregations), 2)
 
-        self.assertEqual(data_aggregations[0].name,'column1 max')
-        self.assertEqual(data_aggregations[0].column_id, self.column1.id )
+        self.assertEqual(data_aggregations[0].name, 'column1 max')
+        self.assertEqual(data_aggregations[0].column_id, self.column1.id)
         self.assertEqual(data_aggregations[0].type, 2)
 
-        self.assertEqual(data_aggregations[1].name,'column1 min')
-        self.assertEqual(data_aggregations[1].column_id, self.column1.id )
+        self.assertEqual(data_aggregations[1].name, 'column1 min')
+        self.assertEqual(data_aggregations[1].column_id, self.column1.id)
         self.assertEqual(data_aggregations[1].type, 3)
-
-
 
     def test_data_aggregation_create_endpoint(self):
         self.assertEqual(len(DataAggregation.objects.all()), 2)
@@ -93,8 +90,6 @@ class DataAggregationViewTests(TestCase):
         self.assertEqual(len(DataAggregation.objects.all()), 3)
         self.assertEqual(DataAggregation.objects.get(name='column 1 sum').name, 'column 1 sum')
 
-
-
     def test_data_aggregation_list_endpoint(self):
         self.assertEqual(len(DataAggregation.objects.all()), 2)
 
@@ -111,7 +106,7 @@ class DataAggregationViewTests(TestCase):
     def test_data_aggregation_retreive_endpoint(self):
         response = self.client.get(
             reverse('api:v3:data_aggregations-detail', args=[self.data_aggregation_1.id]) + '?organization_id=' + str(self.org.id)
-            )
+        )
 
         data = json.loads(response.content)
         self.assertEqual(data['status'], 'success')
@@ -125,7 +120,6 @@ class DataAggregationViewTests(TestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['data_aggregation']['name'], 'column1 min')
 
-
     def test_data_aggregation_update_endpoint(self):
         id_1 = self.data_aggregation_1.id
         self.assertEqual(self.data_aggregation_1.name, 'column1 max')
@@ -136,7 +130,6 @@ class DataAggregationViewTests(TestCase):
                 "name": "updated name",
             }),
             content_type='application/json'
-
         )
 
         data = json.loads(response.content)
@@ -150,7 +143,7 @@ class DataAggregationViewTests(TestCase):
         self.assertEqual(len(DataAggregation.objects.all()), 2)
 
         response = self.client.delete(
-            reverse('api:v3:data_aggregations-detail',  args=[id_1]) + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:data_aggregations-detail', args=[id_1]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
 
@@ -235,11 +228,11 @@ class DataAggregationEvaluationTests(TestCase):
         # Test the ability of a DataAggregation to evaluate a collection of standard columns
         # site EUI values: 121, 269, 91
 
-        self.da_avg = DataAggregation.objects.create(name='eui_avg', type=0, column=self.column_default,organization=self.org)
-        self.da_cnt = DataAggregation.objects.create(name='eui_count', type=1, column=self.column_default,organization=self.org)
-        self.da_max = DataAggregation.objects.create(name='eui_max', type=2, column=self.column_default,organization=self.org)
-        self.da_min = DataAggregation.objects.create(name='eui_min', type=3, column=self.column_default,organization=self.org)
-        self.da_sum = DataAggregation.objects.create(name='eui_sum', type=4, column=self.column_default,organization=self.org)
+        self.da_avg = DataAggregation.objects.create(name='eui_avg', type=0, column=self.column_default, organization=self.org)
+        self.da_cnt = DataAggregation.objects.create(name='eui_count', type=1, column=self.column_default, organization=self.org)
+        self.da_max = DataAggregation.objects.create(name='eui_max', type=2, column=self.column_default, organization=self.org)
+        self.da_min = DataAggregation.objects.create(name='eui_min', type=3, column=self.column_default, organization=self.org)
+        self.da_sum = DataAggregation.objects.create(name='eui_sum', type=4, column=self.column_default, organization=self.org)
 
         self.assertEqual(self.da_avg.evaluate(), {'value': 160.33, 'units': 'kBtu/ft²/year'})
         self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
@@ -261,15 +254,14 @@ class DataAggregationEvaluationTests(TestCase):
         self.assertEqual(self.da_min.evaluate(), {'value': 101, 'units': None})
         self.assertEqual(self.da_sum.evaluate(), {'value': 511, 'units': None})
 
-
     def test_evaluate_data_aggregation_endpoint_with_extra_data_columns(self):
         # Test the ability of a DataAggregation to evaluate a collection of extra data columns
 
-        self.da_avg = DataAggregation.objects.create(name='extra_avg', type=0, column=self.column_extra,organization=self.org)
-        self.da_cnt = DataAggregation.objects.create(name='extra_count', type=1, column=self.column_extra,organization=self.org)
-        self.da_max = DataAggregation.objects.create(name='extra_max', type=2, column=self.column_extra,organization=self.org)
-        self.da_min = DataAggregation.objects.create(name='extra_min', type=3, column=self.column_extra,organization=self.org)
-        self.da_sum = DataAggregation.objects.create(name='extra_sum', type=4, column=self.column_extra,organization=self.org)
+        self.da_avg = DataAggregation.objects.create(name='extra_avg', type=0, column=self.column_extra, organization=self.org)
+        self.da_cnt = DataAggregation.objects.create(name='extra_count', type=1, column=self.column_extra, organization=self.org)
+        self.da_max = DataAggregation.objects.create(name='extra_max', type=2, column=self.column_extra, organization=self.org)
+        self.da_min = DataAggregation.objects.create(name='extra_min', type=3, column=self.column_extra, organization=self.org)
+        self.da_sum = DataAggregation.objects.create(name='extra_sum', type=4, column=self.column_extra, organization=self.org)
 
         self.assertEqual(self.da_avg.evaluate(), {'value': 200, 'units': None})
         self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})

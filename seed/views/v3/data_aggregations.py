@@ -90,7 +90,7 @@ class DataAggregationViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': serializer.errors
             }
             if serializer.errors.get("type"):
-                error_response['suggestion'] =  "Valid Types are 'Average', 'Count', 'Max', 'Min', 'Sum'"
+                error_response['suggestion'] = "Valid Types are 'Average', 'Count', 'Max', 'Min', 'Sum'"
 
             return JsonResponse(error_response)
 
@@ -185,18 +185,6 @@ class DataAggregationViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    # @swagger_auto_schema(
-    #     manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-    #     request_body=AutoSchemaHelper.schema_factory(
-    #         {
-    #             'column': 'integer',
-    #             'type': 'string',
-    #             'name': 'string',
-    #         },
-    #         description='-type: "Average", "Count", "Max", "Min", or "Sum'
-    #     )
-    # )
-    # @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')

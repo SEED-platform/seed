@@ -44,13 +44,12 @@ class DataAggregation(models.Model):
             # PropertyState must be associated with the current org and a valid PropertyView
             aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
 
-            if aggregation.get('value') or aggregation.get('value') is 0:
+            if aggregation.get('value') or aggregation.get('value') == 0:
                 value = aggregation['value']
                 if type(value) is int or type(value) is float:
-                    return {"value": round(value,2), "units": None}
+                    return {"value": round(value, 2), "units": None}
 
                 return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
-
 
     def evaluate_extra_data(self):
         extra_data_col = 'extra_data__' + self.column.column_name
@@ -63,9 +62,8 @@ class DataAggregation(models.Model):
                 pass
 
         if values:
-            type_to_aggregate = {0: sum(values)/len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
+            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
             return {"value": round(type_to_aggregate[self.type], 2), "units": None}
-
 
     def evaluate_derived_column(self):
         # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
@@ -80,5 +78,5 @@ class DataAggregation(models.Model):
         # values = [self.column.derived_column.evaluate(state) for state in property_states if self.column.derived_column.evaluate(state) is not None]
 
         if values:
-            type_to_aggregate = {0: sum(values)/len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
+            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
             return {"value": round(type_to_aggregate[self.type], 2), "units": None}
