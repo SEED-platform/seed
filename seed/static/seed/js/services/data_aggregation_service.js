@@ -56,7 +56,7 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
 
         data_aggregation_factory.update_data_aggregation = (organization_id, data_aggregation_id, data) => {
             console.log('update data agg', data_aggregation_id)
-            let  { name, type, column } = data 
+            let  { name, type, column } = data
             column = column.id
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/`,

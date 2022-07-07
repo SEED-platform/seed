@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.data_aggregation_modal', []).controller('data
                     $scope.data_aggregation_to_delete = response.data_aggregation
                 })
                 $scope.crud_select('delete')
-                
+
             }
 
             $scope.delete_data_aggregation = (data_aggregation_id) => {

@@ -8,7 +8,7 @@
     <h4 class="modal-title" ng-if="crud_selection == 'overview'"><i class="fa fa-calculator"></i> Data Aggregations</span></h4>
     <h4 class="modal-title" ng-if="crud_selection != 'overview'"><i class="fa fa-calculator"></i> {$ capitalize(crud_selection) $} <span translate>a Data Aggregation</span></h4>
     <button type="button" class="btn btn-info crud-option" ng-if="crud_selection == 'overview'" ng-click="crud_select('create')" autofocus>Create Data Aggreagtion</button>
-    
+
 </div>
 <div class="white-space">
 </div>
@@ -68,13 +68,13 @@
                 </tbody>
             </table>
         </div>
-        
+
     </div>
     <div class="crud-detail detail-outline" ng-if="crud_selection == 'create' || crud_selection == 'update'">
         <div style="display: grid; gap:1rem;">
             Aggregation Name
             <div>
-                <input 
+                <input
                     type="text"
                     ng-model="data_aggregation.name"
                     ng-change="validate_new_data_aggregation()"
@@ -83,11 +83,11 @@
                 >
             </div>
             Aggregation Type
-            <select 
-                type="text" 
-                ng-model="data_aggregation.type" 
+            <select
+                type="text"
+                ng-model="data_aggregation.type"
                 ng-options="option for option in data_aggregation_type_options"
-                ng-change="validate_new_data_aggregation()" 
+                ng-change="validate_new_data_aggregation()"
                 class="form-control">
             </select>
             Aggregation Source Column

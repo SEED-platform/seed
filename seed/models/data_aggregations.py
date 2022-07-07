@@ -4,11 +4,13 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+
 from django.db import models
 from django.db.models import Avg, Count, Max, Min, Sum
-from seed.models import Column, PropertyState, DerivedColumn
+
 from seed.lib.superperms.orgs.models import Organization
-import logging
+from seed.models import Column, PropertyState
+
 
 class DataAggregation(models.Model):
     name = models.CharField(max_length=255)
@@ -18,7 +20,7 @@ class DataAggregation(models.Model):
     AVG = 0
     COUNT = 1
     MAX = 2
-    MIN = 3 
+    MIN = 3
     SUM = 4
     AGGREGATION_TYPES = (
         (AVG, 'Average'),
@@ -32,12 +34,12 @@ class DataAggregation(models.Model):
 
     def evaluate(self):
         column = self.column
-        
+
         if column.is_extra_data:
             return self.evaluate_extra_data()
         elif column.derived_column:
             return self.evaluate_derived_column()
-        else: 
+        else:
             type_lookup = {0: Avg, 1: Count, 2: Max, 3: Min, 4: Sum}
             # PropertyState must be associated with the current org and a valid PropertyView
             aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
@@ -55,7 +57,7 @@ class DataAggregation(models.Model):
         q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
         values = []
         for val in list(q_set):
-            try: 
+            try:
                 values.append(float(val[extra_data_col]))
             except (ValueError, TypeError):
                 pass

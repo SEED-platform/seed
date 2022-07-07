@@ -2369,7 +2369,7 @@ select {
     color: $blue;
 
     &:hover {
-      background: #EEEEEE;
+      background: #eeeeee;
       cursor: pointer;
     }
 
@@ -2378,15 +2378,14 @@ select {
       cursor: pointer;
     }
   }
-
 }
 
-.crud-option{
+.crud-option {
   position: absolute;
   right: 20px;
   top: 10px;
 }
-.white-space{
+.white-space {
   background: white;
   height: 30px;
   width: 100%;
@@ -2404,11 +2403,10 @@ select {
     margin: 5px;
   }
 
-  .detail-outline{
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  .detail-outline {
+    border: 1px solid #ccc;
+    border-radius: 3px;
   }
-
 }
 #column_settings_count {
   table,

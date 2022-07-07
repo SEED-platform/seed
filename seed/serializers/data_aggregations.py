@@ -5,6 +5,7 @@
 :author
 """
 from rest_framework import serializers
+
 from seed.models.data_aggregations import DataAggregation
 from seed.serializers.utils import CustomChoicesField
 
@@ -12,11 +13,11 @@ from seed.serializers.utils import CustomChoicesField
 class DataAggregationSerializer(serializers.ModelSerializer):
     type = CustomChoicesField(DataAggregation.AGGREGATION_TYPES)
 
-    class Meta: 
-        model = DataAggregation 
+    class Meta:
+        model = DataAggregation
         fields = '__all__'
-    
+
     def create(self, validated_data):
         data_aggregation = DataAggregation.objects.create(**validated_data)
-        data_aggregation.save() 
+        data_aggregation.save()
         return data_aggregation

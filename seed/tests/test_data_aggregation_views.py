@@ -5,23 +5,28 @@
 :author
 """
 import json
+from datetime import datetime
+
 from django.test import TestCase
 from django.urls import reverse
-from seed.models import DataAggregation, User, Column, DerivedColumn, PropertyState, PropertyView
-from seed.utils.organizations import create_organization
 from django.utils.timezone import get_current_timezone
-from datetime import datetime
-from pprint import pprint as pp
 
-
-from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeDerivedColumnFactory,
-    FakePropertyViewFactory,
-    FakePropertyFactory,
-    FakeCycleFactory,
+from seed.models import (
+    Column,
+    DataAggregation,
+    DerivedColumn,
+    PropertyState,
+    PropertyView,
+    User
 )
-
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory
+)
+from seed.utils.organizations import create_organization
 
 
 class DataAggregationViewTests(TestCase):
@@ -60,7 +65,7 @@ class DataAggregationViewTests(TestCase):
 
     def test_data_aggregation_model(self):
         data_aggregations = DataAggregation.objects.all()
-        self.assertEqual(len(data_aggregations), 2) 
+        self.assertEqual(len(data_aggregations), 2)
 
         self.assertEqual(data_aggregations[0].name,'column1 max')
         self.assertEqual(data_aggregations[0].column_id, self.column1.id )
@@ -92,7 +97,7 @@ class DataAggregationViewTests(TestCase):
 
     def test_data_aggregation_list_endpoint(self):
         self.assertEqual(len(DataAggregation.objects.all()), 2)
-        
+
         response = self.client.get(
             reverse('api:v3:data_aggregations-list') + '?organization_id=' + str(self.org.id)
         )
@@ -111,7 +116,7 @@ class DataAggregationViewTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['data_aggregation']['name'], 'column1 max')
-        
+
         response = self.client.get(
             reverse('api:v3:data_aggregations-detail', args=[self.data_aggregation_2.id]) + '?organization_id=' + str(self.org.id)
         )
@@ -131,7 +136,7 @@ class DataAggregationViewTests(TestCase):
                 "name": "updated name",
             }),
             content_type='application/json'
-            
+
         )
 
         data = json.loads(response.content)
@@ -143,7 +148,7 @@ class DataAggregationViewTests(TestCase):
         id_1 = self.data_aggregation_1.id
         id_2 = self.data_aggregation_2.id
         self.assertEqual(len(DataAggregation.objects.all()), 2)
-        
+
         response = self.client.delete(
             reverse('api:v3:data_aggregations-detail',  args=[id_1]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
@@ -212,12 +217,12 @@ class DataAggregationEvaluationTests(TestCase):
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
-        # Create 3 property/state/views 
+        # Create 3 property/state/views
         state = self.property_state_factory.get_property_state(extra_data={'extra_column': 100})
         property = self.property_factory.get_property()
         self.view1 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
         # add extra data
-        
+
         state = self.property_state_factory.get_property_state(extra_data={'extra_column': 200})
         property = self.property_factory.get_property()
         self.view2 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
@@ -225,7 +230,7 @@ class DataAggregationEvaluationTests(TestCase):
         state = self.property_state_factory.get_property_state(extra_data={'extra_column': 300})
         property = self.property_factory.get_property()
         self.view3 = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
-        
+
     def test_evaluate_data_aggregation_endpoint_with_standard_columns(self):
         # Test the ability of a DataAggregation to evaluate a collection of standard columns
         # site EUI values: 121, 269, 91
@@ -235,7 +240,7 @@ class DataAggregationEvaluationTests(TestCase):
         self.da_max = DataAggregation.objects.create(name='eui_max', type=2, column=self.column_default,organization=self.org)
         self.da_min = DataAggregation.objects.create(name='eui_min', type=3, column=self.column_default,organization=self.org)
         self.da_sum = DataAggregation.objects.create(name='eui_sum', type=4, column=self.column_default,organization=self.org)
-        
+
         self.assertEqual(self.da_avg.evaluate(), {'value': 160.33, 'units': 'kBtu/ft²/year'})
         self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
         self.assertEqual(self.da_max.evaluate(), {'value': 269, 'units': 'kBtu/ft²/year'})
@@ -249,7 +254,7 @@ class DataAggregationEvaluationTests(TestCase):
         self.da_max = DataAggregation.objects.create(name='dc_max', type=2, column=self.derived_column.column, organization=self.org)
         self.da_min = DataAggregation.objects.create(name='dc_min', type=3, column=self.derived_column.column, organization=self.org)
         self.da_sum = DataAggregation.objects.create(name='dc_sum', type=4, column=self.derived_column.column, organization=self.org)
-        
+
         self.assertEqual(self.da_avg.evaluate(), {'value': 170.33, 'units': None})
         self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
         self.assertEqual(self.da_max.evaluate(), {'value': 279, 'units': None})
@@ -265,7 +270,7 @@ class DataAggregationEvaluationTests(TestCase):
         self.da_max = DataAggregation.objects.create(name='extra_max', type=2, column=self.column_extra,organization=self.org)
         self.da_min = DataAggregation.objects.create(name='extra_min', type=3, column=self.column_extra,organization=self.org)
         self.da_sum = DataAggregation.objects.create(name='extra_sum', type=4, column=self.column_extra,organization=self.org)
-        
+
         self.assertEqual(self.da_avg.evaluate(), {'value': 200, 'units': None})
         self.assertEqual(self.da_cnt.evaluate(), {'value': 3, 'units': None})
         self.assertEqual(self.da_max.evaluate(), {'value': 300, 'units': None})
