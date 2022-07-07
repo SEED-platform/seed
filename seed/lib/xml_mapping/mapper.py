@@ -48,7 +48,7 @@ def get_valid_units():
     return valid_units
 
 
-def get_BAE_mappings():
+def get_bae_mappings():
     """ returns the default BAE assets ready for import"""
     results = []
     
@@ -108,7 +108,7 @@ def default_buildingsync_profile_mappings():
         })
 
     # also grab BAE mappings
-    bae_results = get_BAE_mappings()
+    bae_results = get_bae_mappings()
     result.extend(bae_results)
 
     return result

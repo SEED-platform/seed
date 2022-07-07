@@ -3,7 +3,7 @@
 
 from django.db import migrations
 
-from seed.lib.xml_mapping.mapper import get_BAE_mappings
+from seed.lib.xml_mapping.mapper import get_bae_mappings
 
 
 def update_bae_fields(apps, schema_editor):
@@ -34,7 +34,7 @@ def update_bae_fields(apps, schema_editor):
     # ]
 
     # get BAE fields
-    new_mappings = get_BAE_mappings()
+    new_mappings = get_bae_mappings()
     print(f"MAPPINGS: {new_mappings}")
 
     for org in Organization.objects.all():
