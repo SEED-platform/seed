@@ -32,10 +32,7 @@ def build_column_mapping(base_mapping=None, custom_mapping=None):
     }
 
 
-def default_buildingsync_profile_mappings():
-    """Returns the default ColumnMappingProfile mappings for BuildingSync
-    :return: list
-    """
+def get_valid_units():
     # taken from mapping partial (./static/seed/partials/mapping.html)
     valid_units = [
         # area units
@@ -46,10 +43,51 @@ def default_buildingsync_profile_mappings():
         "kWh/m**2/year",
         "GJ/m**2/year",
         "MJ/m**2/year",
-        "kBtu/m**2/year",
-        # from BAE
-        "F"
+        "kBtu/m**2/year"
     ]
+    return valid_units
+
+
+def get_bae_mappings():
+    """ returns the default BAE assets ready for import"""
+    results = []
+
+    # nothing should have units since they are stored in a separate dedicated field
+    # export_units field indicates fields that have a separate units field.
+    # units field name is the same with " Units" appended.
+
+    bsync_assets = BAE.get_default_asset_defs()
+    for item in bsync_assets:
+
+        if item['type'] == 'sqft':
+            # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
+            for i in ['Primary', 'Secondary']:
+                results.append(make_bae_hash(i + ' ' + item['export_name']))
+                if 'export_units' in item and item['export_units'] is True:
+                    # also export units field
+                    results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
+
+        else:
+            results.append(make_bae_hash(item['export_name']))
+            if 'export_units' in item and item['export_units'] is True:
+                results.append(make_bae_hash(item['export_name'] + " Units"))
+
+    return results
+
+
+def make_bae_hash(name):
+    return {'from_field': name,
+            'from_field_value': 'text',  # hard code this for now
+            'from_units': None,
+            'to_field': name,
+            'to_table_name': 'PropertyState'}
+
+
+def default_buildingsync_profile_mappings():
+    """Returns the default ColumnMappingProfile mappings for BuildingSync
+    :return: list
+    """
+    valid_units = get_valid_units()
 
     mapping = BASE_MAPPING_V2.copy()
     base_path = mapping['property']['xpath'].rstrip('/')
@@ -69,30 +107,8 @@ def default_buildingsync_profile_mappings():
             'to_table_name': 'PropertyState'
         })
 
-    # BAE results
-    bsync_assets = BAE.get_default_asset_defs()
-    for item in bsync_assets:
-        from_units = item['units']
-        # only add units defined above
-        if from_units not in valid_units:
-            from_units = None
-        if item['type'] == 'sqft':
-            # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
-            for i in ['Primary', 'Secondary']:
-                result.append({
-                    'from_field': i + ' ' + item['export_name'],
-                    'from_field_value': 'text',  # hard code this for now
-                    'from_units': from_units,
-                    'to_field': i + ' ' + item['export_name'],
-                    'to_table_name': 'PropertyState'
-                })
-        else:
-            result.append({
-                'from_field': item['export_name'],
-                'from_field_value': 'text',  # hard code this for now
-                'from_units': from_units,
-                'to_field': item['export_name'],
-                'to_table_name': 'PropertyState'
-            })
+    # also grab BAE mappings
+    bae_results = get_bae_mappings()
+    result.extend(bae_results)
 
     return result
