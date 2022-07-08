@@ -137,14 +137,11 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
-        serialized_views = []
         original_views = {}
         if analyses:
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
-            for view in views_queryset:
-                serialized_view = AnalysisPropertyViewSerializer(view).data
-                serialized_views.append(serialized_view)
+            serialized_views = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
             original_views = {
                 apv_id: property_view.id if property_view is not None else None
                 for apv_id, property_view in property_views_by_apv_id.items()
