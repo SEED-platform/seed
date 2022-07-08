@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import json
 import logging
 
 from django.db.models import Count
@@ -118,6 +119,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     def list(self, request):
         organization_id = self.get_organization(request)
         property_id = request.query_params.get('property_id', None)
+        include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
         if property_id is not None:
@@ -137,22 +139,19 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
-        original_views = {}
-        if analyses:
+        results = {'status': 'success', 'analyses': analyses}
+
+        if analyses and include_views:
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
-            serialized_views = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
-            original_views = {
+
+            results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
+            results["original_views"] = {
                 apv_id: property_view.id if property_view is not None else None
                 for apv_id, property_view in property_views_by_apv_id.items()
             }
 
-        return JsonResponse({
-            'status': 'success',
-            'analyses': analyses,
-            'views': serialized_views,
-            'original_views': original_views
-        })
+        return JsonResponse(results)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
