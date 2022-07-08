@@ -75,8 +75,6 @@ class DataAggregation(models.Model):
             if val is not None:
                 values.append(val)
 
-        # values = [self.column.derived_column.evaluate(state) for state in property_states if self.column.derived_column.evaluate(state) is not None]
-
         if values:
             type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
             return {"value": round(type_to_aggregate[self.type], 2), "units": None}

@@ -8,7 +8,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         const data_aggregation_factory = {};
 
         data_aggregation_factory.create_data_aggregation = (organization_id, data) => {
-            console.log('create data', data)
             let { name, type, column } = data
             column = column.id
             return $http({
@@ -22,7 +21,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.get_data_aggregations = (organization_id) => {
-            console.log('get_data_aggs')
             return $http({
                 url: '/api/v3/data_aggregations/',
                 method: 'GET',
@@ -33,7 +31,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.get_data_aggregation = (organization_id, data_aggregation_id) => {
-            console.log('get_data_agg', data_aggregation_id)
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/`,
                 method: 'GET',
@@ -44,7 +41,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.delete_data_aggregation = (organization_id, data_aggregation_id) => {
-            console.log('delete data agg', data_aggregation_id)
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/`,
                 method: 'DELETE',
@@ -55,7 +51,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.update_data_aggregation = (organization_id, data_aggregation_id, data) => {
-            console.log('update data agg', data_aggregation_id)
             let  { name, type, column } = data
             column = column.id
             return $http({
@@ -69,7 +64,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.evaluate = (organization_id, data_aggregation_id) => {
-            console.log('evaluate, id', data_aggregation_id)
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/evaluate/`,
                 method: 'GET',
