@@ -69,8 +69,6 @@ angular.module('BE.seed.service.data_aggregation', []).factory('data_aggregation
         }
 
         data_aggregation_factory.evaluate = (organization_id, data_aggregation_id) => {
-            // console.log(data_aggregation_id)
-            // return data_aggregation_id + 10
             console.log('evaluate, id', data_aggregation_id)
             return $http({
                 url: `/api/v3/data_aggregations/${data_aggregation_id}/evaluate/`,
