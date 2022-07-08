@@ -37,6 +37,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
       $scope.property_sensor_usage = property_sensor_usage;
+      $scope.usage_pagination = property_sensor_usage.pagination;
       $scope.filler_cycle = cycles.cycles[0].id;
       $scope.showOnlyOccupiedReadings = false;
 
@@ -229,7 +230,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
       $scope.toggled_show_only_occupied_reading = function (b) {
         $scope.showOnlyOccupiedReadings = b
-        $scope.refresh_readings();
+        $scope.refresh_readings(1, $scope.usage_pagination.per_page);
       };
 
       // given a list of sensor labels, it returns the filtered readings and column defs
@@ -277,29 +278,37 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
       // filters the sensor readings by selected sensors and updates the table
       $scope.applyFilters = function () {
-        const results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.data_logger_selections, $scope.sensor_type_selections);
+        const results = filterBySensorSelections(
+          $scope.property_sensor_usage.readings,
+          $scope.property_sensor_usage.column_defs,
+          $scope.data_logger_selections,
+          $scope.sensor_type_selections
+        );
         const readings = results.readings;
         const columnDefs = results.columnDefs;
 
         $scope.usageGridOptions.columnDefs = columnDefs;
         $scope.usageGridOptions.data = readings;
-        $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
+        $scope.has_sensor_readings = readings.length > 0;
         $scope.apply_column_settings();
       };
 
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
-      $scope.refresh_readings = function () {
+      $scope.refresh_readings = function (page, per_page) {
         spinner_utility.show();
         sensor_service.property_sensor_usage(
           $scope.inventory.view_id,
           $scope.organization.id,
           $scope.interval.selected,
           $scope.showOnlyOccupiedReadings,
-          [] // Not excluding any sensors from the query
+          [], // Not excluding any sensors from the query
+          page,
+          per_page,
         ).then(function (usage) {
           // update the base data and reset filters
-          property_sensor_usage = usage;
+          $scope.property_sensor_usage = usage;
+          $scope.usage_pagination = usage.pagination;
 
           $scope.applyFilters();
           spinner_utility.hide();
