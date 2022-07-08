@@ -1,0 +1,34 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls columns">
+    <div class="row">
+        <label>{$:: 'Cycle' | translate $}:</label>
+        <select class="form-control input-sm grow" ng-model="cycle.selected_cycle"
+            ng-change="update_cycle(cycle.selected_cycle)"
+            ng-options="option.name for option in ::cycle.cycles track by option.id">
+        </select>
+    </div>
+</div>
+
+<div id="charts" style="display: flex;  height: 100%; width: 100%; padding: 10px">
+    <div style="width: 50%">
+        <canvas id="myChart1"></canvas>
+    </div>
+    <div style="width: 50%">
+        <canvas id="myChart2"></canvas>
+    </div>
+</div>
