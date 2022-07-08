@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0020_rename_display_significant_figures_organization_display_decimal_places'),
-        ('seed', '0170_column_derived_column'),
+        ('seed', '0171_update_bae_assets'),
     ]
 
     operations = [
