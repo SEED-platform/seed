@@ -4,12 +4,13 @@
 from calendar import month_name
 from collections import defaultdict
 
+from django.core.paginator import Paginator
 from django.db.models import Avg
 from django.db.models.functions import TruncMonth, TruncYear
 from pytz import timezone
 
 from config.settings.common import TIME_ZONE
-from seed.models import Sensor
+from seed.models import Sensor, SensorReading
 
 
 class PropertySensorReadingsExporter():
@@ -30,19 +31,25 @@ class PropertySensorReadingsExporter():
         self.showOnlyOccupiedReadings = showOnlyOccupiedReadings
         self.tz = timezone(TIME_ZONE)
 
-    def readings_and_column_defs(self, interval):
+    def readings_and_column_defs(self, interval, page, per_page):
         if interval == 'Exact':
-            return self._usages_by_exact_times()
+            return self._usages_by_exact_times(page, per_page)
         elif interval == 'Month':
             return self._usages_by_month()
         elif interval == 'Year':
             return self._usages_by_year()
 
-    def _usages_by_exact_times(self):
+    def _usages_by_exact_times(self, page, per_page):
         """
         Returns readings and column definitions formatted to display all records and their
         start and end times.
         """
+        sensor_readings = SensorReading.objects.filter(sensor__in=self.sensors)
+        if self.showOnlyOccupiedReadings:
+            sensor_readings = sensor_readings.filter(is_occupied=True)
+        timestamps = sensor_readings.distinct('timestamp').order_by("timestamp").values_list("timestamp", flat=True)
+        paginator = Paginator(timestamps, per_page)
+        timestamps_in_page = paginator.page(page)
 
         # Used to consolidate different readings (types) within the same time window
         timestamps = defaultdict(lambda: {})
@@ -55,23 +62,36 @@ class PropertySensorReadingsExporter():
             },
         }
 
-        time_format = "%Y-%m-%d %H:%M:%S"
+        if len(timestamps_in_page) > 0:
+            eariliest_time = timestamps_in_page[0]
+            latest_time = timestamps_in_page[-1]
 
-        for sensor in self.sensors:
-            field_name = self._build_column_def(sensor, column_defs)
+            time_format = "%Y-%m-%d %H:%M:%S"
 
-            sensor_readings = sensor.sensor_readings
-            if self.showOnlyOccupiedReadings:
-                sensor_readings = sensor_readings.filter(is_occupied=True)
+            for sensor in self.sensors:
+                field_name = self._build_column_def(sensor, column_defs)
 
-            for sensor_reading in sensor_readings.all():
-                timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
-                times_key = str(timestamp)
+                sensor_readings = sensor.sensor_readings.filter(timestamp__range=[eariliest_time, latest_time])
+                if self.showOnlyOccupiedReadings:
+                    sensor_readings = sensor_readings.filter(is_occupied=True)
 
-                timestamps[times_key]["timestamp"] = timestamp
-                timestamps[times_key][field_name] = sensor_reading.reading
+                for sensor_reading in sensor_readings.all():
+                    timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
+                    times_key = str(timestamp)
+
+                    timestamps[times_key]["timestamp"] = timestamp
+                    timestamps[times_key][field_name] = sensor_reading.reading
 
         return {
+            'pagination': {
+                'page': page,
+                'start': paginator.page(page).start_index(),
+                'end': paginator.page(page).end_index(),
+                'num_pages': paginator.num_pages,
+                'has_next': paginator.page(page).has_next(),
+                'has_previous': paginator.page(page).has_previous(),
+                'total': paginator.count
+            },
             'readings': list(timestamps.values()),
             'column_defs': list(column_defs.values())
         }

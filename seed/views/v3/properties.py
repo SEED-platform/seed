@@ -281,11 +281,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Retrieves sensor usage information
         """
+        org_id = self.get_organization(request)
+        page = request.query_params.get('page')
+        per_page = request.query_params.get('per_page')
+
         body = dict(request.data)
         interval = body['interval']
         excluded_sensor_ids = body['excluded_sensor_ids']
         showOnlyOccupiedReadings = body.get('showOnlyOccupiedReadings', False)
-        org_id = self.get_organization(request)
 
         property_view = PropertyView.objects.get(
             pk=pk,
@@ -295,7 +298,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings)
 
-        return exporter.readings_and_column_defs(interval)
+        if interval != "Exact" and (page or per_page):
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot pass query parameter "page" or "per_page" unless "interval" is "Exact"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        page = page if page is not None else 1
+        per_page = per_page if per_page is not None else 500
+
+        return exporter.readings_and_column_defs(interval, page, per_page)
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
