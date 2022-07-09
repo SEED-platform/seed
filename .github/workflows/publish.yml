@@ -64,4 +64,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: steps.parse_tag.outputs.seed_tags
+          tags: ${{ steps.parse_tag.outputs.seed_tags }}

@@ -15,7 +15,6 @@ def update_bae_fields(apps, schema_editor):
 
     # get BAE fields
     new_mappings = get_bae_mappings()
-    print(f"MAPPINGS: {new_mappings}")
 
     for org in Organization.objects.all():
         # first find current BuildingSync mapping
