@@ -1,5 +1,5 @@
 # Django
-django==3.2.13
+django==3.2.14
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
@@ -48,7 +48,6 @@ xlrd==1.2.0
 xlsxwriter==1.2.7
 xmltodict==0.12.0
 requests==2.22.0
-lxml==4.7.1
 probablepeople==0.5.4
 xmlschema==1.1.1
 lark==0.11.3
@@ -56,7 +55,8 @@ lark==0.11.3
 geojson==2.5.0
 
 # BuildingSync Asset Extractor
-buildingsync-asset-extractor==0.1.11
+# this also includes the lxml dependency required by SEED
+buildingsync-asset-extractor==0.1.12
 
 # pnnl/buildingid-py
 -e git+https://github.com/SEED-platform/buildingid.git@f68219df82191563cc2aca818e0b0fa1b32dd52d#egg=pnnl-buildingid

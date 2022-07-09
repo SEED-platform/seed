@@ -169,6 +169,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableFiltering: true,
         flatEntityAccess: true,
         fastWatch: true,
+        minRowsToShow: Math.min(data_loggers.length, 10),
       };
 
       $scope.sensorGridOptions = {
@@ -182,6 +183,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableGridMenu: true,
         exporterMenuPdf: false,
         exporterMenuExcel: false,
+        minRowsToShow: Math.min(sensors.length, 10),
       };
 
       $scope.usageGridOptions = {
@@ -196,6 +198,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         exporterMenuPdf: false,
         exporterMenuExcel: false,
         enableFiltering: false,
+        minRowsToShow: Math.min($scope.property_sensor_usage.readings.length, 10),
       };
 
       $scope.apply_column_settings = function () {
