@@ -34,81 +34,51 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
       audit_template_building_id,
       view_id
     ) {
-      $scope.stage = "UPLOAD_OPTIONS";
       $scope.organization = organization;
       $scope.view_id = view_id;
       $scope.cycle_id = cycle_id;
       $scope.upload_from_file = upload_from_file;
       $scope.error = '';
+      $scope.busy = false;
       $scope.fields = {
-        'audit_template_building_id': audit_template_building_id,
-        'at_api_token': organization.at_api_token
+        'audit_template_building_id': audit_template_building_id
       };
 
       $scope.upload_from_file_and_close = function (event_message, file, progress) {
         $scope.close();
-        console.log(event_message, file, progress);
         $scope.upload_from_file(event_message, file, progress);
       };
 
-      $scope.display_import_form = function () {
-        $scope.stage = "IMPORT_FORM";
-      };
-
-      $scope.cancel_import_form = function () {
-        $scope.stage = "UPLOAD_OPTIONS";
-        $scope.error = '';
-      };
-
       $scope.confirm_import = function () {
-        if (!$scope.fields.at_api_token || !$scope.fields.audit_template_building_id) {
-          $scope.error = "An Audit Template building ID and API token is required.";
+        if (!$scope.fields.audit_template_building_id) {
+          $scope.error = "An Audit Template building ID is required.";
         } else {
           $scope.submit_request();
         }
       };
 
       $scope.submit_request = function () {
-        $scope.stage = "AWAITING_REPONSE";
         $scope.error = '';
+        $scope.busy = true;
         spinner_utility.show();
-        if ($scope.fields.at_api_token != $scope.organization.at_api_token) {
-          $scope.organization.at_api_token = $scope.fields.at_api_token
-        }
-        return organization_service.save_org_settings($scope.organization).then(result => {
-          audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
-            spinner_utility.hide();
-            if (typeof(result) == 'object' && !result.success) {
-              $scope.error = 'Error: ' + result.message
-              $scope.stage = "IMPORT_FORM";
-            } else {
+        return audit_template_service.get_building_xml($scope.organization.id, $scope.fields.audit_template_building_id).then(result => {
+          spinner_utility.hide();
+          if (typeof(result) == 'object' && !result.success) {
+            $scope.error = 'Error: ' + result.message
+            $scope.busy = false;
+          } else {
+            console.log(result)
+            return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
               console.log(result)
-              return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
-                console.log(result)
-                $scope.close();
-              });
-            }   
-          });
+              $scope.close();
+              $scope.busy = false;
+            });
+          }   
         });
       };
 
       $scope.close = function () {
         $uibModalInstance.dismiss();
-      };
-
-      $scope.open_at_token_modal = function () {
-        var modal = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/at_token_modal.html',
-          controller: 'at_token_modal_controller',
-          resolve: {
-            'organization': $scope.organization,
-            'audit_template_service': audit_template_service
-          }
-        });
-        modal.result.then(function (token) {
-          $scope.fields.at_api_token = token;
-          $scope.organization.at_api_token = token;
-        });
       };
 
     }]);

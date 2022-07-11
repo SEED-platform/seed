@@ -150,7 +150,8 @@ def _dict_org(request, organizations):
             'new_user_email_content': o.new_user_email_content,
             'new_user_email_signature': o.new_user_email_signature,
             'at_organization_token': o.at_organization_token,
-            'at_api_token': o.at_api_token
+            'audit_template_user': o.audit_template_user,
+            'audit_template_password': o.audit_template_password,
         }
         orgs.append(org)
 
@@ -625,9 +626,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         if at_organization_token != org.at_organization_token:
             org.at_organization_token = at_organization_token
 
-        at_api_token = posted_org.get('at_api_token', False)
-        if at_api_token != org.at_api_token:
-            org.at_api_token = at_api_token
+        audit_template_user = posted_org.get('audit_template_user', False)
+        if audit_template_user != org.audit_template_user:
+            org.audit_template_user = audit_template_user
+
+        audit_template_password = posted_org.get('audit_template_password', False)
+        if audit_template_password != org.audit_template_password:
+            org.audit_template_password = audit_template_password
 
         org.save()
 

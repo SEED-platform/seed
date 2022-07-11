@@ -5,68 +5,31 @@
 <div ng-switch on="stage">
     <div class="modal-body modal-input">
 
-        <!-- Upload Options -->
-        <div ng-switch-when="UPLOAD_OPTIONS">
-
-            <div class="flex-centered center grow">
-                <div class="col-sm-8 btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)">
-                    <i class="fa fa-file-code-o fa-2x"></i>
-                    <span class="grow" translate>Upload Audit Template XML</span>
-                </div>
-            </div>
-
-            <div class="flex-centered center grow" style="margin-top:10px;">
-                <div class="col-sm-8 btn btn-primary upload-btn flex-centered" ng-click="display_import_form()">
-                    <i class="fa fa-id-card-o fa-2x"></i>
-                    <span class="grow" translate>Import from Audit Template</span>
-                </div>
-            </div>
-
+        <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
+            {$ error $}
         </div>
 
-        <!-- Import Form -->
-        <div ng-switch-when="IMPORT_FORM|AWAITING_REPONSE" ng-switch-when-separator="|">
-
-            <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
-                {$ error $}
+        <div class="flex-centered grow">
+            <div class="col-sm-12 btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
+                <i class="fa fa-file-code-o fa-2x"></i>
+                <span class="grow" translate>Upload Audit Template XML</span>
             </div>
-
-            <div class="flex-centered grow">
-                <label class="col-sm-4 no-padding" for="input-at-building-id" translate>Audit Template Building ID</label>
-                <div class="col-sm-8 no-padding">
-                    <input id="input-at-building-id" type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.audit_template_building_id"/>
-                </div>
-            </div>
-
-            <div class="flex-centered grow" style="margin-top:10px;">
-                <label class="col-sm-4 no-padding" for="input-at-api-token" translate>Audit Template API Token</label>
-                <div class="col-sm-8 no-padding flex-centered">
-                    <input id="input-at-api-token" type="text" class="form-control" ng-disabled="stage != 'IMPORT_FORM'" ng-model="fields.at_api_token"/>
-                    <button type="button" class="btn btn-info" ng-disabled="stage != 'IMPORT_FORM'" ng-click="open_at_token_modal()">
-                        <span translate>Generate Token</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex-centered grow" style="margin-top:10px;">
-                <button type="button" class="btn btn-default col-sm-4" ng-disabled="stage != 'IMPORT_FORM'" ng-click="cancel_import_form()" translate>Cancel</button>
-                <button type="button" class="btn btn-primary col-sm-8" ng-disabled="stage != 'IMPORT_FORM'" ng-click="confirm_import()"
-                translate>Confirm</button>
-            </div>
-
         </div>
 
-        <!-- Results -->
-        <div ng-switch-when="CONFIRM_INCOMING_DATA" ng-switch-when-separator="|">
-
-            <div class="flex-centered grow" translate>
-                Results form Audit Template.
+        <div class="flex-centered grow" style="margin-top:10px;">
+            <label class="col-sm-2 no-padding" for="input-at-building-id" translate>Audit Template Building ID</label>
+            <div class="col-sm-2 no-padding">
+                <input id="input-at-building-id" type="text" class="form-control" ng-model="fields.audit_template_building_id" ng-disabled="busy"/>
             </div>
-
+            <hr />
+            <div class="col-sm-8 btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
+                <i class="fa fa-id-card-o fa-2x"></i>
+                <span class="grow" translate>Import from Audit Template</span>
+            </div>
         </div>
 
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-default" ng-click="close()" ng-disabled="stage == 'AWAITING_REPONSE'" translate>Close</button>
+        <button type="button" class="btn btn-default" ng-click="close()" ng-disabled="busy" translate>Close</button>
     </div>
 </div>

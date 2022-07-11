@@ -31,7 +31,8 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     new_user_email_content = serializers.CharField(max_length=1024)
     new_user_email_signature = serializers.CharField(max_length=128)
     at_organization_token = serializers.CharField(max_length=128)
-    at_api_token = serializers.CharField(max_length=128)
+    audit_template_user = serializers.CharField(max_length=128)
+    audit_template_password = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

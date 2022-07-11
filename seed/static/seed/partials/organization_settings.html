@@ -113,15 +113,25 @@
 
             <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <h3 translate>Audit Template API Token</h3>
+                    <h3 translate>Audit Template Email</h3>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" ng-model="org.at_api_token" ng-disabled="::!auth.requires_owner">
+                                <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner">
                             </div>
-                            <button type="button" class="btn btn-info" ng-click="open_at_token_modal(org)">
-                                <span translate>Generate Token</span>
-                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Audit Template Password</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
+                            </div>
                         </div>
                     </form>
                 </div>

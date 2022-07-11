@@ -211,7 +211,8 @@ class Organization(models.Model):
     # API Tokens
     better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
     at_organization_token = models.CharField(blank=True, max_length=128, default='')
-    at_api_token = models.CharField(blank=True, max_length=128, default='')
+    audit_template_user = models.EmailField(blank=True, max_length=128, default='')
+    audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

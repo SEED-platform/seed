@@ -6,21 +6,12 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
     $log
   ) {
 
-    const get_api_token = function (org_id, org_token, email, password) {
-      return $http.get([
-        '/api/v3/audit_template/get_api_token/?organization_id=', org_id,
-        '&organization_token=', org_token,
-        '&email=', email,
-        '&password=', password
-      ].join('')).then(function (response) {
-        return response.data;
-      });
-    };
-
     const get_building_xml = function (org_id, audit_template_building_id) {
       return $http.get([
         '/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id
       ].join('')).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
         return response.data;
       });
     };
@@ -36,17 +27,15 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
       return $http.put(
         ['/api/v3/properties/' + property_view_id + '/update_with_building_sync/?cycle_id=' + cycle_id + '&organization_id=' + org_id].join(''),
-        body,
-        {
-          headers: { 'Content-Type': undefined },
-        },
+        body, { headers: { 'Content-Type': undefined }, },
       ).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
         return response.data;
       });
     }
 
     const analyses_factory = {
-      'get_api_token': get_api_token,
       'get_building_xml': get_building_xml,
       'update_building_with_xml': update_building_with_xml
     };

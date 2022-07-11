@@ -6,6 +6,8 @@ import logging
 import requests
 from urllib.parse import quote
 
+from seed.lib.superperms.orgs.models import Organization
+
 _log = logging.getLogger(__name__)
 
 
@@ -14,11 +16,14 @@ class AuditTemplate(object):
     HOST = settings.AUDIT_TEMPLATE_HOST
     API_URL = f'{HOST}/api/v2'
 
-    def __init__(self, token):
-        self._token = token
+    def __init__(self, org_id):
+        self.org_id = org_id
 
     def get_building(self, audit_template_building_id):
-        url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={self._token}'
+        token, message = self.get_api_token();
+        if not token:
+            return None, message
+        url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={token}'
         headers = {'accept': 'application/xml'}
 
         try:
@@ -30,12 +35,20 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def get_api_token(self, organization_token, email, password):
-        url = f'{self.API_URL}/users/authenticate?organization_token={organization_token}&email={quote(email)}&password={quote(password)}'
-        headers = {'accept': 'application/xml'}
+    def get_api_token(self):
+        org = Organization.objects.get(pk=self.org_id)
+        if not org.at_organization_token or not org.audit_template_user or not org.audit_template_password:
+            return None, f'An Audit Template organization token, user email and password are required!'
+        url = f'{self.API_URL}/users/authenticate'
+        json = {
+            'organization_token': org.at_organization_token,
+            'email': org.audit_template_user,
+            'password': org.audit_template_password
+        }
+        headers = {"Content-Type": "application/json; charset=utf-8", 'accept': 'application/xml'}
 
         try:
-            response = requests.request("POST", url, headers=headers)
+            response = requests.request("POST", url, headers=headers, json=json)
             if response.status_code != 200:
                 return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
         except Exception as e:
