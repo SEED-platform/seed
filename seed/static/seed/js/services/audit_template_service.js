@@ -18,16 +18,15 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
     const update_building_with_xml = function (org_id, cycle_id, property_view_id, xml_string) {
       let body = new FormData();
+      let blob = new Blob([xml_string], {type: 'text/xml'});
+      body.append('file', blob, ['at_', new Date().getTime() , '.xml'].join(''));
       body.append('file_type', 1);
-      binary = '';
-      for (var i = 0; i < xml_string.length; i++) {
-          binary += xml_string[i].charCodeAt(0).toString(2) + " ";
-      }
-      body.append('file', binary);
+      let headers = {'Content-Type': undefined};
 
-      return $http.put(
-        ['/api/v3/properties/' + property_view_id + '/update_with_building_sync/?cycle_id=' + cycle_id + '&organization_id=' + org_id].join(''),
-        body, { headers: { 'Content-Type': undefined }, },
+      return $http.put([
+          '/api/v3/properties/', property_view_id, '/update_with_building_sync/?',
+          'cycle_id=', cycle_id, '&', 'organization_id=', org_id
+        ].join(''), body, {headers: headers},
       ).then(function (response) {
         return response.data;
       }).catch(function (response) {

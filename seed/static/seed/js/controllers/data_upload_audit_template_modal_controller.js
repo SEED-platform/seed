@@ -67,10 +67,9 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
             $scope.error = 'Error: ' + result.message
             $scope.busy = false;
           } else {
-            console.log(result)
             return audit_template_service.update_building_with_xml($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
-              console.log(result)
               $scope.close();
+              $scope.upload_from_file('upload_complete', null, null)
               $scope.busy = false;
             });
           }   
