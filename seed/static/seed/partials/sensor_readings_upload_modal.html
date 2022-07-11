@@ -30,8 +30,7 @@
     <div class="data_upload_steps container-fluid" ng-switch-when="3">
         <div class="progress_bar_container">
             <div class="progress_bar_copy_top"
-                 translate="UPLOADING_PROGRESS"
-                 translate-values="{ dataset_filename: filename }"></div>
+                 translate="UPLOADING_FILE_TITLE"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
             <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
