@@ -33,6 +33,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'i18nService', // from ui-grid
     'organization_payload',
     'gridUtil',
+    'uiGridGridMenuService',
     function (
       $scope,
       $filter,
@@ -62,7 +63,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       uiGridConstants,
       i18nService,
       organization_payload,
-      gridUtil
+      gridUtil,
+      uiGridGridMenuService
     ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
@@ -1199,7 +1201,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableFiltering: true,
         enableGridMenu: true,
         enableSorting: true,
-        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'Data.csv',
+        exporterMenuCsv: false,
+        exporterMenuExcel: false,
         exporterMenuPdf: false,
         fastWatch: true,
         flatEntityAccess: true,
@@ -1261,6 +1264,18 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.selectedCount = selected.length;
             $scope.selectedParentCount = parentsSelectedIds.length;
 
+            if ($scope.gridApi) {
+              uiGridGridMenuService.removeFromGridMenu($scope.gridApi.grid, 'dynamic-export');
+              $scope.gridApi.core.addToGridMenu($scope.gridApi.grid, [{
+                id: 'dynamic-export',
+                title: ($scope.selectedCount == 0 ? 'Export All' : 'Export Selected'),
+                order: 100,
+                action: function ($event) {
+                  $scope.open_export_modal();
+                }
+              }]);
+            }
+
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
             var added = _.difference(parentsSelectedIds, $scope.selectedOrder);
             if (removed.length === 1 && !added.length) {
@@ -1310,10 +1325,12 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           _.defer(function () {
             restoreGridSettings();
+            selectionChanged();
           });
 
           // Load the initial data
           refresh_objects();
         }
       };
+
     }]);
