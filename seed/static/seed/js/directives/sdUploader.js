@@ -158,7 +158,6 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
       }
     }
   });
-  console.log(uploader);
   return uploader;
 };
 
