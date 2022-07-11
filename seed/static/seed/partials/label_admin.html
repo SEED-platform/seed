@@ -36,7 +36,7 @@
                                 </ul>
                             </div>
                         </div>
-                        <span style="white-space: nowrap; margin-right: 10px;">Show in List <input type="checkbox" style="margin-left: 5px;" name="show_in_list" ng-model="new_label.show_in_list" ng-click="show_in_list_click()" /></span>
+                        <span style="white-space: nowrap; margin-right: 10px;" translate>Show in List <input type="checkbox" style="margin-left: 5px;" name="show_in_list" ng-model="new_label.show_in_list" /></span>
                         <button id="btnCreateLabel" class="btn btn-primary" ng-disabled="newLabelForm.$invalid" translate>Create label</button>
                         <div class="help-block">
                             <span class="has-error" ng-show="newLabelForm.name.$error.sdCheckLabelExists" translate>This label name is already taken.</span>
