@@ -182,7 +182,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.cancel = function () {
         // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
-        if ($scope.step.number == 15) {
+        if ($scope.step.number == 15 && $scope.file_id) {
           dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
             $uibModalInstance.dismiss('cancel');
           });

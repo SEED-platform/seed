@@ -449,8 +449,12 @@
         <div class="row text-center" ng-hide="step_10_mapquest_api_error">
             <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
-        <div class="row text-center" ng-if="import_file_reusable_for_meters">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" translate>Import Meters from the same file</button>
+        <div class="row text-center" ng-disabled="!import_file_reusable_for_meters">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" translate>Import Meters from the same file
+                <uib-progress class="progress-striped active">
+                    <uib-bar value="100" type="info"></uib-bar>
+                </uib-progress>
+            </button>
         </div>
         <div class="row text-center" ng-if="step_10_mapquest_api_error">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reset_mapquest_api_key()" translate>Update MapQuest API key</button>
