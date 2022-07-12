@@ -583,7 +583,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           uploader_service
             .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
             .then(present_parsed_meters_confirmation)
-            .then($scope.preparing_pm_meters_preview = false)
+            .then(function () {
+              $scope.preparing_pm_meters_preview = false
+            })
             .catch(present_meter_import_error);
         });
       };
