@@ -72,7 +72,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', [])
               $scope.upload_from_file('upload_complete', null, null)
               $scope.busy = false;
             });
-          }   
+          }
         });
       };
 
