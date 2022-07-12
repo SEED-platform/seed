@@ -443,15 +443,15 @@
         </div>
     </div>
     <div ng-switch-when="10">
-        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error" >
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" ng-disabled="pm_meters_preview_ready" translate>Add another file</button>
         </div>
         <div class="row text-center" ng-hide="step_10_mapquest_api_error">
-            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" ng-disabled="pm_meters_preview_ready" translate>View my properties</button>
         </div>
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="!import_file_reusable_for_meters" ng-click="reuse_import_file_to_import_meters(file_id)"><span translate>Import Meters from the same file aaa</span>
-                <uib-progress class="progress-striped active" style="margin-bottom: 0" ng-if="!import_file_reusable_for_meters">
+                <uib-progress class="progress-striped active" style="margin-bottom: 0" ng-if="!import_file_reusable_for_meters || !pm_meters_preview_ready">
                     <uib-bar value="100" type="info"></uib-bar>
                 </uib-progress>
             </button>
