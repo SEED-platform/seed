@@ -1,10 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.conf import settings
 import logging
+
 import requests
-from urllib.parse import quote
+from django.conf import settings
 
 from seed.lib.superperms.orgs.models import Organization
 
