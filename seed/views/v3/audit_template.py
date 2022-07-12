@@ -1,16 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
-from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
