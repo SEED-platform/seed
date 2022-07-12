@@ -20,7 +20,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     def get_building_xml(self, request, pk):
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
-        if not response:
+        if response is None:
             return JsonResponse({
                 'success': False,
                 'message': message
