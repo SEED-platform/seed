@@ -95,6 +95,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
       };
 
+
+
+
       /* SCOPE VARS */
       /* ~~~~~~~~~~ */
 
@@ -202,6 +205,176 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.chartStatusMessage = 'No Data';
       $scope.aggChartStatusMessage = 'No Data';
 
+      /* NEW CHART STUFF */
+      var createChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis) {
+        var canvas = document.getElementById(elementId);
+        var ctx = canvas.getContext("2d");
+
+        return new Chart(ctx, {
+          type: type,
+          data: {
+            datasets: [{
+              data: []
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: 20
+            },
+            indexAxis: indexAxis,
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: xAxisKey,
+                },
+              },
+              y: {
+                display: true,
+                title: {
+                  display: true,
+                  text: yAxisKey
+                },
+                ticks: {
+                // round values
+                callback: function(value, index, values) {
+                    return Math.round(value, 3);
+                }
+            }
+              }
+            },
+            elements: {
+              point: {
+                radius: 5,
+                backgroundColor: '#458CC8'
+              },
+              bar: {
+                backgroundColor: '#458CC8'
+              }
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                displayColors: false,
+                mode: 'index',
+                callbacks: {
+                  label: function (ctx) {
+                    //console.log("CTX raw: ", ctx);
+                    let label = [];
+                    let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
+                    if (labeltmp.length > 0) {
+                      // label.push('Year Ending: ' + labeltmp[0].yr_e);
+                      label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
+                      label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
+                    }
+                    return label
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      var createAggChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis) {
+        var canvas = document.getElementById(elementId);
+        var ctx = canvas.getContext("2d");
+
+        return new Chart(ctx, {
+          type: type,
+          data: {
+            datasets: [{
+              data: []
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              padding: 20
+            },
+            indexAxis: 'y',
+            scales: {
+              x: {
+                display: true,
+                title: {
+                  display: true,
+                  text: xAxisKey,
+                },
+                ticks: {
+                  precision: 0
+                },
+              },
+              y: {
+                display: true,
+                type: 'category',
+                title: {
+                  display: true,
+                  text: yAxisKey
+                }
+              }
+            },
+            elements: {
+              point: {
+                radius: 5,
+                backgroundColor: '#458CC8'
+              },
+              bar: {
+                backgroundColor: '#458CC8'
+              }
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                displayColors: false,
+                mode: 'index',
+                callbacks: {
+                  label: function (ctx) {
+                    //console.log("CTX raw: ", ctx);
+                    let label = [];
+                    let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
+                    if (labeltmp.length > 0) {
+                      // label.push('Year Ending: ' + labeltmp[0].yr_e);
+                      label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
+                      label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
+                    }
+                    return label
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      $scope.scatterChart =
+        createChart(
+          elementId = "chartNew",
+          type = "scatter",
+          xAxisKey = $scope.xAxisVars[0]['label'],
+          yAxisKey = $scope.yAxisVars[0]['label'],
+          indexAxis = 'x'
+        )
+
+      $scope.barChart =
+        createAggChart(
+          elementId = "aggChartNew",
+          type = "bar",
+          xAxisKey = $scope.xAxisVars[0]['label'],
+          yAxisKey = $scope.yAxisVars[0]['label'],
+          indexAxis = 'y'
+        )
+
+
+      /* END NEW CHART STUFF */
+
 
       /* UI HANDLERS */
       /* ~~~~~~~~~~~ */
@@ -261,8 +434,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
         getAggChartData();
         updateChartTitles();
         updateStorage();
-      };
 
+      };
 
       /* FLAGS FOR CHART STATE */
       /* ~~~~~~~~~~~~~~~~~~~~~ */
@@ -367,11 +540,19 @@ angular.module('BE.seed.controller.inventory_reports', [])
               yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat,
               colors: colorsArr
             };
+
+            // new chart
+            $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
+            $scope.scatterChart.options.scales.x.suggestedMin = 0;
+            $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
+            $scope.scatterChart.update()
+
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
               $scope.chartStatusMessage = '';
             } else {
               $scope.chartStatusMessage = 'No Data';
             }
+
           },
           function (data, status) {
             $scope.chartStatusMessage = 'Data Load Error';
@@ -405,7 +586,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
           data = data.aggregated_data;
-          $log.log(data);
+          //$log.log(data);
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -415,9 +596,17 @@ angular.module('BE.seed.controller.inventory_reports', [])
             chartData: data.chart_data,
             xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
             yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-            yAxisType: 'Category',
             colors: colorsArr
           };
+
+          // new agg chart
+          //$log.log('aggChartData:', $scope.aggChartData);
+          let the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
+          $scope.barChart.data.labels = the_data.map(a => a.y)
+          $scope.barChart.data.datasets[0].data = the_data.map(a => a.x)
+          //$log.log('barchart: ', $scope.barChart);
+          $scope.barChart.update()
+
           if (!_.isEmpty($scope.aggChartData.chartData)) {
             $scope.aggChartStatusMessage = '';
           } else {

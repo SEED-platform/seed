@@ -208,6 +208,8 @@ angular.module('BE.seed.controller.inventory_plots', [])
           chart.data.datasets[0].data = data
           chart.data.datasets[0].labels = labels
           chart.update();
+          console.log("CHART DATA:");
+          console.log(chart.data);
         }
       }
 
