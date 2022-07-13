@@ -186,6 +186,11 @@ class TaxLotProperty(models.Model):
             state_id__in=models.Subquery(states_qs.values('state_id'))
         ).values_list('state_id', flat=True)
 
+        # determine whether meters exist
+        # meters_qs = lookups['view_class'].objects.filter(id__in=ids)
+        # if not meters_qs.exists():
+        #     meters_qs = None
+
         # gather all columns - separate the 'related' columns
         related_columns = []
         obj_columns = []
@@ -240,6 +245,8 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_view_id']] = obj.id
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
+
+            # obj.dict['meters_exist'] = obj_note_counts.get(obj.id, 0)
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
@@ -400,6 +407,7 @@ class TaxLotProperty(models.Model):
 
             join_dict['notes_count'] = join_note_counts.get(getattr(join, lookups['related_view_id']), 0)
             join_dict['merged_indicator'] = getattr(join, lookups['related_view']).state_id in join_merged_state_ids
+            # join_dict['meters_exist'] = join_note_counts.get(getattr(join, lookups['related_view_id']), 0)
 
             # remove the measures from this view for now
             if join_dict.get('measures'):

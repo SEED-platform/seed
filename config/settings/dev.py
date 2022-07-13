@@ -26,10 +26,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'USER': 'seed',
+        'PASSWORD': 'GDEus3fasd1askj89QkAldjfX',
         'HOST': '127.0.0.1',
-        'PORT': '',
+        'PORT': '5432',
     },
 }
 
