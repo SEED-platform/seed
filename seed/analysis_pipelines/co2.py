@@ -419,7 +419,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             'Average Annual CO2 (kgCO2e)': co2['average_annual_kgco2e'],
             'Annual Coverage %': co2['annual_coverage_percent'],
             'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh'],
-            'Total GHG Emissions Intensity (kgCO2e/ft2/year and kgCO2e/m2/year)': co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
+            'Total GHG Emissions Intensity (kgCO2e/ft\u00b2/year)': co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
         if save_co2_results:
