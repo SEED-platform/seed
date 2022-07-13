@@ -415,7 +415,6 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             continue
 
         # save the results
-        logging.error('>>> co2 %s', co2)
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average_annual_kgco2e'],
             'Annual Coverage %': co2['annual_coverage_percent'],
