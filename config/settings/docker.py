@@ -64,7 +64,7 @@ DATABASES = {
         'NAME': POSTGRES_DB, # noqa F405
         'USER': POSTGRES_USER, # noqa F405
         'PASSWORD': POSTGRES_PASSWORD, # noqa F405
-        'HOST': (POSTGRES_HOST if 'POSTGRES_HOST' in os.environ else "db-postgres"),
+        'HOST': (POSTGRES_HOST if 'POSTGRES_HOST' in os.environ else "db-postgres"), # noqa F405
         'PORT': POSTGRES_PORT, # noqa F405
     }
 }
