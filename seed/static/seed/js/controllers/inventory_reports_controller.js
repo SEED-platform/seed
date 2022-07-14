@@ -132,8 +132,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
           label: $translate.instant(column.displayName), //full name for variable
           varName: column.column_name, //name of variable, to be sent to server
           axisLabel: parse_axis_label(column), //label to be used in charts, should include units
-          axisType: 'Measure', //DimpleJS property for axis type
-          axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+          // axisType: 'Measure', //DimpleJS property for axis type
+          // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
         };
       });
 
@@ -143,24 +143,24 @@ angular.module('BE.seed.controller.inventory_reports', [])
           label: $translate.instant('Gross Floor Area'),
           varName: 'gross_floor_area',
           axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
-          axisTickFormat: ',.0f',
-          axisType: 'Measure',
+          // axisTickFormat: ',.0f',
+          // axisType: 'Measure',
           axisMin: ''
         }, {
           name: $translate.instant('Property Classification'),
           label: $translate.instant('Property Classification'),
           varName: 'use_description',
           axisLabel: translateAxisLabel('Property Classification'),
-          axisTickFormat: '',
-          axisType: 'Category',
+          // axisTickFormat: '',
+          // axisType: 'Category',
           axisMin: ''
         }, {
           name: $translate.instant('Year Built'),
           label: $translate.instant('Year Built'),
           varName: 'year_built',
           axisLabel: translateAxisLabel('Year Built'),
-          axisTickFormat: '.0f',
-          axisType: 'Measure',
+          // axisTickFormat: '.0f',
+          // axisType: 'Measure',
           axisMin: '1900'
         }
       ];
@@ -264,84 +264,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
                 mode: 'index',
                 callbacks: {
                   label: function (ctx) {
-                    //console.log("CTX raw: ", ctx);
                     let label = [];
                     let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
                     if (labeltmp.length > 0) {
-                      // label.push('Year Ending: ' + labeltmp[0].yr_e);
-                      label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
-                      label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
-                    }
-                    return label
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
-
-      var createAggChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis) {
-        var canvas = document.getElementById(elementId);
-        var ctx = canvas.getContext("2d");
-
-        return new Chart(ctx, {
-          type: type,
-          data: {
-            datasets: [{
-              data: []
-            }],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            layout: {
-              padding: 20
-            },
-            indexAxis: 'y',
-            scales: {
-              x: {
-                display: true,
-                title: {
-                  display: true,
-                  text: xAxisKey,
-                },
-                ticks: {
-                  precision: 0
-                },
-              },
-              y: {
-                display: true,
-                type: 'category',
-                title: {
-                  display: true,
-                  text: yAxisKey
-                }
-              }
-            },
-            elements: {
-              point: {
-                radius: 5,
-                backgroundColor: '#458CC8'
-              },
-              bar: {
-                backgroundColor: '#458CC8'
-              }
-            },
-            plugins: {
-              legend: {
-                display: false,
-              },
-              tooltip: {
-                displayColors: false,
-                mode: 'index',
-                callbacks: {
-                  label: function (ctx) {
-                    //console.log("CTX raw: ", ctx);
-                    let label = [];
-                    let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
-                    if (labeltmp.length > 0) {
-                      // label.push('Year Ending: ' + labeltmp[0].yr_e);
                       label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
                       label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
                     }
@@ -364,13 +289,21 @@ angular.module('BE.seed.controller.inventory_reports', [])
         )
 
       $scope.barChart =
-        createAggChart(
+        createChart(
           elementId = "aggChartNew",
           type = "bar",
           xAxisKey = $scope.xAxisVars[0]['label'],
           yAxisKey = $scope.yAxisVars[0]['label'],
           indexAxis = 'y'
         )
+
+      // specific styling for bar chart
+      $scope.barChart.options.scales.x.ticks = { precision: 0 };
+      $scope.barChart.options.scales.y.type = 'category';
+      $scope.barChart.options.scales.y.ticks = {};
+
+      // specific styling for scatter chart
+      $scope.scatterChart.options.scales.x.suggestedMin = 0;
 
 
       /* END NEW CHART STUFF */
@@ -541,9 +474,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
               colors: colorsArr
             };
 
-            // new chart
+            // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
-            $scope.scatterChart.options.scales.x.suggestedMin = 0;
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             $scope.scatterChart.update()
 
@@ -586,7 +518,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
           data = data.aggregated_data;
-          //$log.log(data);
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -600,11 +531,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
           };
 
           // new agg chart
-          //$log.log('aggChartData:', $scope.aggChartData);
           let the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
           $scope.barChart.data.labels = the_data.map(a => a.y)
           $scope.barChart.data.datasets[0].data = the_data.map(a => a.x)
-          //$log.log('barchart: ', $scope.barChart);
           $scope.barChart.update()
 
           if (!_.isEmpty($scope.aggChartData.chartData)) {
