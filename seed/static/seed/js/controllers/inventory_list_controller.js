@@ -655,12 +655,12 @@ angular.module('BE.seed.controller.inventory_list', [])
         visible: true,
         width: 30
       }, {
-        name: 'meters_exist',
+        name: 'meters_exist_indicator',
         displayName: '',
         headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <div title="' + $translate.instant('Meters Exist') + '" class="ui-grid-cell-contents meters-exist">' +
-          '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.meters_exist, \'text-info\': row.entity.meters_exist}"></i>' +
+          '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.meters_exist_indicator, \'text-info\': row.entity.meters_exist_indicator}"></i>' +
           '  </div>' +
           '</div>',
         enableColumnMenu: false,
@@ -721,7 +721,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'meters_exist', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
@@ -1150,7 +1150,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist', 'merged_indicator', 'id', 'labels'], col.name)
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
             && !col.colDef.is_derived_column;
         });
@@ -1250,7 +1250,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
-            // Ensure that 'merged_indicator', 'notes_count', 'meters_exist', and 'id' remain first
+            // Ensure that 'merged_indicator', 'notes_count', 'meters_exist_indicator', and 'id' remain first
             var col, staticColIndex;
             staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'merged_indicator'});
             if (staticColIndex !== 2) {
@@ -1264,7 +1264,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
             }
-            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'meters_exist'});
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'meters_exist_indicator'});
             if (staticColIndex !== 4) {
               col = $scope.gridApi.grid.columns[staticColIndex];
               $scope.gridApi.grid.columns.splice(staticColIndex, 1);
