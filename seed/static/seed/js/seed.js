@@ -90,7 +90,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_list',
-  'BE.seed.controller.inventory_list_beta',
+  'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -1392,10 +1392,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list',
-        url: '/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list.html',
-        controller: 'inventory_list_controller',
+        name: 'inventory_list_legacy',
+        url: '/legacy/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list_legacy.html',
+        controller: 'inventory_list_legacy_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
@@ -1438,10 +1438,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list_beta',
-        url: '/beta/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list_beta.html',
-        controller: 'inventory_list_beta_controller',
+        name: 'inventory_list',
+        url: '/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list.html',
+        controller: 'inventory_list_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
