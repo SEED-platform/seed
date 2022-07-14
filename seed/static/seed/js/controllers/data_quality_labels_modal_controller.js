@@ -38,7 +38,8 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
         $scope.new_label = {
           color: 'gray',
           label: 'default',
-          name: ''
+          name: '',
+          show_in_list: false,
         };
       };
 
