@@ -5,8 +5,8 @@
     <div class="modal-body">
         <div class="newLabelInput" style="margin-top:0;">
             <form name="newLabelForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm)" novalidate>
+                <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new label</label>
                 <div class="form-group" ng-class="{'has-error': newLabelForm.name.$invalid && newLabelForm.name.$dirty }">
-                    <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create new label</label>
                     <div class="input-group" style="padding-right:20px;">
                         <input id="labelName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="{$:: 'Label Name' | translate $}" sd-check-label-exists="labels" required>
                         <div uib-dropdown class="input-group-btn">
@@ -20,6 +20,7 @@
                             </ul>
                         </div>
                     </div>
+                    <span style="white-space: nowrap; margin-right: 20px;" >{$ 'Show in List' | translate $} <input type="checkbox" style="margin-left: 5px;" name="show_in_list" ng-model="new_label.show_in_list" /></span>
                     <button type="submit"
                             class="btn btn-primary"
                             ng-disabled="newLabelForm.$invalid || disabled" translate>Create label</button>
