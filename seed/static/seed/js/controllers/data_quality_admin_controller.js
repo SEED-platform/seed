@@ -125,7 +125,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
       ];
 
-      $scope.columns = _.map(angular.copy(columns), function (col) {
+      $scope.columns = _.map(angular.copy(columns.filter(col => !col.derived_column)), function (col) {
         if (!_.find(used_columns, ['id', col.id])) {
           col.group = 'Not Mapped';
         } else {
