@@ -171,6 +171,9 @@ msgstr "Adresse Ligne 2 (Lot d'impôt)"
 msgid "Admin"
 msgstr "Admin"
 
+msgid "An Audit Template organization token, user email and password are required"
+msgstr "Un jeton d'organisation Audit Template, un e-mail d'utilisateur et un mot de passe sont requis"
+
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
@@ -227,6 +230,18 @@ msgstr "ID de lot d'impôt associé"
 
 msgid "Associated Tax Lot IDs"
 msgstr "IDs des lots d'impôt associé"
+
+msgid "Audit Template Building ID"
+msgstr "Audit Template ID de bâtiment"
+
+msgid "Audit Template Email"
+msgstr "Audit Template Email"
+
+msgid "Audit Template Organization Token"
+msgstr "Audit Template jeton d'organisation"
+
+msgid "Audit Template Password"
+msgstr "Audit Template le mot de passe"
 
 #: seed/models/models.py:136
 msgid "Auditing"
@@ -1115,6 +1130,9 @@ msgstr "GJ/m²/année"
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmer le contenu du fichier GreenButton"
 
+msgid "Generate Token"
+msgstr "Générer un jeton"
+
 msgid "Geocode"
 msgstr "Géocodage"
 
@@ -1236,6 +1254,9 @@ msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Importer les données de Portfolio Manager"
+
+msgid "Import from Audit Template"
+msgstr "Importer à partir du Audit Template"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "En outre, vous devez spécifier où le champ doit être associé aux données du lot d'impôt ou aux données de la propriété. Cela affectera la manière dont les données sont mises en correspondance et fusionnées, ainsi que la manière dont elles sont affichées dans la vue Inventaire."
@@ -2721,6 +2742,9 @@ msgstr "Mettre à jour avec BuildingSync"
 
 msgid "Updated"
 msgstr "Mise à jour"
+
+msgid "Upload Audit Template XML"
+msgstr "Téléchargement Audit Template XML"
 
 #, fuzzy
 msgid "Upload BuildingSync Data"

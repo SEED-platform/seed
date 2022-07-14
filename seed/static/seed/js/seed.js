@@ -55,6 +55,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
+  'BE.seed.controller.data_upload_audit_template_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
@@ -144,6 +145,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.audit_template',
   'BE.seed.service.analyses',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',

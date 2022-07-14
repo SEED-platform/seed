@@ -34,6 +34,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
+    'audit_template_service',
     function (
       $http,
       $state,
@@ -64,7 +65,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       profiles,
       current_profile,
       labels_payload,
-      organization_payload
+      organization_payload,
+      audit_template_service
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -83,6 +85,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
+      $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -104,10 +107,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       } else {
         $scope.item_parent = inventory_payload.taxlot;
       }
-
-      // Detail Column List Profile
-      $scope.profiles = profiles;
-      $scope.currentProfile = current_profile;
 
       if (analyses_payload.analyses) {
         $scope.analysis = analyses_payload.analyses.sort(function (a, b) {
@@ -576,6 +575,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
             inventory_type: $scope.inventory_type,
             view_id: result.view_id
           });
+        });
+      };
+
+      $scope.open_data_upload_audit_template_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_audit_template_modal.html',
+          controller: 'data_upload_audit_template_modal_controller',
+          resolve: {
+            audit_template_building_id: () => $scope.audit_template_building_id,
+            organization: () => $scope.organization,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id
+          },
+          backdrop: 'static',
         });
       };
 
