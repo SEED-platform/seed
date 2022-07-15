@@ -3776,13 +3776,13 @@ $pairedCellWidth: 60px;
   }
 }
 
-.meters-exist {
+.meters-exist-indicator {
   font-size: 9px;
   text-decoration: none !important;
 
   i.fa {
-    font-size: 13px;
-    padding-left: 3px;
+    font-size: 17px;
+    padding-left: 6px;
 
     &.text-muted {
       color: #222;
