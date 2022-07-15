@@ -30,8 +30,8 @@ SENTRY_JS_DSN (optional), Sentry JavaScript DSN
 SENTRY_RAVEN_DSN (optional), Sentry Django DSN (Raven-based)
 
 # example (do not use these values in production).
-export POSTGRES_USER=seed
-export POSTGRES_PASSWORD=GDEus3fasd1askj89QkAldjfX
+export POSTGRES_USER=seeduser
+export POSTGRES_PASSWORD=super-secret-password
 export SEED_ADMIN_USER=user@seed-platform.org
 export SEED_ADMIN_PASSWORD=super-secret-password
 export SEED_ADMIN_ORG=default
