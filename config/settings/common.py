@@ -16,7 +16,7 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-PROTOCOL = os.environ.get('PROTOCOL','https')
+PROTOCOL = os.environ.get('PROTOCOL', 'https')
 
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
