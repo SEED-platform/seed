@@ -22,7 +22,6 @@ angular.module('BE.seed.controller.inventory_list', [])
     'cycles',
     'profiles',
     'current_profile',
-    'labels',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -53,7 +52,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       cycles,
       profiles,
       current_profile,
-      labels,
       all_columns,
       derived_columns_payload,
       urls,
@@ -70,6 +68,10 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
       $scope.selectedOrder = [];
+      $scope.columnDisplayByName = {};
+      for (const i in all_columns) {
+        $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
+      }
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -109,7 +111,47 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       }
 
-      $scope.restoring = false;
+      // restore_response is a state tracker for avoiding multiple reloads
+      // of the inventory data when initializing the page.
+      // The problem occurs due to retriggering of data reload, summarized by this issue:
+      // https://github.com/angular-ui/ui-grid/issues/5280
+      // Note that this implementation can _still_ result in an unwanted race condition
+      // but for the most part seems to avoid it without arbitrary wait timers
+      const RESTORE_NOT_STARTED = 'not started';
+      const RESTORE_SETTINGS = 'restoring settings';
+      const RESTORE_SETTINGS_DONE = 'restore settings done';
+      const RESTORE_COMPLETE = 'restore done';
+      $scope.restore_status = RESTORE_NOT_STARTED;
+      $scope.$watch('restore_status', function () {
+        // Load the initial data for the page
+        // this only happens ONCE (after the ui-grid's saveState.restore has completed)
+        if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
+          updateColumnFilterSort();
+          get_labels();
+          $scope.restore_status = RESTORE_COMPLETE;
+        }
+      });
+
+      // stores columns that have filtering and/or sorting applied
+      $scope.column_filters = [];
+      $scope.column_sorts = [];
+
+      // remove editing on list inputs (ngTagsInput doesn't support readonly yet)
+      const findList = {};
+      for (const elementId of ['filters-list', 'sort-list']) {
+        findList[elementId] = {attempts: 0};
+        findList[elementId].interval = setInterval(() => {
+          let listInput = document.getElementById(elementId).getElementsByTagName('input')[0];
+          if (listInput) {
+            listInput.readOnly = true;
+            clearInterval(findList[elementId].interval);
+          }
+          findList[elementId].attempts++;
+          if (findList[elementId].attempts > 10) {
+            clearInterval(findList[elementId].interval);
+          }
+        }, 1000);
+      }
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
@@ -128,7 +170,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
         }
       };
-      $scope.build_labels();
 
       // Builds the html to display labels associated with this row entity
       $scope.display_labels = function (entity) {
@@ -184,12 +225,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
-
-      // Reapply valid previously-applied labels
-      var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
-      $scope.selected_labels = _.filter($scope.labels, function (label) {
-        return _.includes(ids, label.id);
-      });
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
@@ -280,57 +315,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels (current_labels) {
-        var inventoryIds;
-        if ($scope.inventory_type === 'properties') {
-          inventoryIds = _.map($scope.data, 'property_view_id').sort();
-        } else {
-          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
-        }
-        $scope.labels = _.filter(current_labels, function (label) {
-          return _.some(label.is_applied, function (id) {
-            return _.includes(inventoryIds, id);
-          });
-        });
-        // Ensure that no previously-applied labels remain
-        // Filter on $scope.labels to refresh is_applied
-        $scope.selected_labels = _.filter($scope.labels, function (label) {
-          return _.find($scope.selected_labels, ['id', label.id]);
-        });
-        $scope.build_labels();
-      }
-
       var filterUsingLabels = function () {
-        // Only submit the `id` of the label to the API.
-        var ids;
-        if ($scope.labelLogic === 'and') {
-          ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-          ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        }
-
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-
-        if ($scope.selected_labels.length) {
-          _.forEach($scope.gridApi.grid.rows, function (row) {
-            var view_id;
-            if ($scope.inventory_type === 'properties') {
-              view_id = row.entity.property_view_id;
-            } else {
-              view_id = row.entity.taxlot_view_id;
-            }
-            if ($scope.labelLogic === 'exclude') {
-              if ((_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
-              else $scope.gridApi.core.clearRowInvisible(row);
-            } else {
-              if ((!_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
-              else $scope.gridApi.core.clearRowInvisible(row);
-            }
-          });
-        } else {
-          _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
-        }
-        _.delay($scope.updateHeight, 150);
+        $scope.load_inventory(1);
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
@@ -341,22 +328,19 @@ angular.module('BE.seed.controller.inventory_list', [])
         filterUsingLabels();
       };
 
-      $scope.$watchCollection('selected_labels', filterUsingLabels);
-
       /**
        Opens the update building labels modal.
        All further actions for labels happen with that modal and its related controller,
        including creating a new label or applying to/removing from a building.
        When the modal is closed, and refresh labels.
        */
-      $scope.open_update_labels_modal = function () {
+      $scope.open_update_labels_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
+              return selectedViewIds;
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -366,6 +350,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
+          $scope.load_inventory(1);
         });
       };
 
@@ -373,22 +358,16 @@ angular.module('BE.seed.controller.inventory_list', [])
        Opens the postoffice modal for sending emails.
        'property_state_id's/'taxlot_state_id's for selected rows are stored as part of the resolver
       */
-      $scope.open_postoffice_modal = function () {
-        var modalInstance = $uibModal.open({
+      $scope.open_postoffice_modal = function (selectedViewIds) {
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/postoffice_modal.html',
           controller: 'postoffice_modal_controller',
           resolve: {
             property_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -397,8 +376,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_merge_modal = function () {
+      $scope.open_merge_modal = function (selectedViewIds) {
         spinner_utility.show();
+        selectedViewIds.reverse();
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/merge_modal.html',
           controller: 'merge_modal_controller',
@@ -417,9 +397,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             data: function () {
               const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-              const selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                return row.$$treeLevel === 0;
-              }), viewIdProp).reverse();
               var data = new Array(selectedViewIds.length);
 
               if ($scope.inventory_type === 'properties') {
@@ -449,15 +426,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             has_meters: function () {
               if ($scope.inventory_type === 'properties') {
-                const selected_property_view_ids = _.map(
-                  _.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                    return row.$$treeLevel === 0;
-                  }),
-                  'property_view_id'
-                ).reverse();
-
                 return inventory_service.properties_meters_exist(
-                  selected_property_view_ids
+                  selectedViewIds
                 ).then(function (has_meters) {
                   return has_meters;
                 });
@@ -473,7 +443,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           // dialog was closed with 'Merge' button.
           $scope.selectedOrder = [];
-          refresh_objects();
+          $scope.load_inventory(1);
         });
       };
 
@@ -526,18 +496,11 @@ angular.module('BE.seed.controller.inventory_list', [])
         return cache[record.id];
       };
 
-      $scope.run_data_quality_check = function () {
+      $scope.run_data_quality_check = function (selectedViewIds) {
         spinner_utility.show();
 
-        var property_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'property_view_id');
-
-        var taxlot_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'taxlot_view_id');
+        var property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
+        var taxlot_view_ids = $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
 
         data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
@@ -567,7 +530,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      // Columns
+      // Column defaults. Column description popover
       var defaults = {
         headerCellFilter: 'translate',
         headerCellTemplate: `<div role="columnheader" ng-class="{ 'sortable': sortable, 'ui-grid-header-cell-last-col': isLastCol }" ui-grid-one-bind-aria-labelledby-grid="col.uid + '-header-text ' + col.uid + '-sortdir-text'" aria-sort="{{col.sort.direction == asc ? 'ascending' : ( col.sort.direction == desc ? 'descending' : (!col.sort.direction ? 'none' : 'other'))}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex" uib-tooltip="{{ col.colDef.column_description }}" tooltip-append-to-body="true"><span class="ui-grid-header-cell-label" ui-grid-one-bind-id-grid="col.uid + '-header-text'">{{ col.displayName CUSTOM_FILTERS }}</span> <span ui-grid-one-bind-id-grid="col.uid + '-sortdir-text'" ui-grid-visible="col.sort.direction" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ 'ui-grid-icon-up-dir': col.sort.direction == asc, 'ui-grid-icon-down-dir': col.sort.direction == desc, 'ui-grid-icon-blank': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + ' ' + ( col.sort.priority + 1 )  : null}}" aria-hidden="true"></i> <sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div><div role="button" tabindex="0" ui-grid-one-bind-id-grid="col.uid + '-menu-button'" class="ui-grid-column-menu-button" ng-if="grid.options.enableColumnMenus && !col.isRowHeader  && col.colDef.enableColumnMenu !== false" ng-click="toggleMenu($event)" ng-keydown="headerCellArrowKeyDown($event)" ui-grid-one-bind-aria-label="i18n.headerCell.aria.columnMenuButtonLabel" aria-expanded="{{col.menuShown}}" aria-haspopup="true"><i class="ui-grid-icon-angle-down" aria-hidden="true">&nbsp;</i></div><div ui-grid-filter ng-hide="col.filterContainer === 'columnMenu'"></div></div>`,
@@ -593,20 +556,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         // Modify misc
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
-          options.filter = inventory_service.dateFilter();
-        } else if (col.data_type === 'date') {
-          options.filter = inventory_service.dateFilter();
         } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
-          options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-          options.sortingAlgorithm = naturalSort;
         } else if (col.is_derived_column) {
-          options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-          options.sortingAlgorithm = naturalSort;
-        } else {
-          options.filter = inventory_service.combinedFilter();
-          options.sortingAlgorithm = naturalSort;
         }
 
         if (col.column_name === 'number_properties' && col.related) options.treeAggregationType = 'total';
@@ -858,30 +811,45 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
-        get_labels();
         $scope.updateQueued = true;
       };
 
       var fetch = function (page, chunk) {
-        // console.log('Fetching page ' + page + ' (chunk size ' + chunk + ')');
         var fn;
         if ($scope.inventory_type === 'properties') {
           fn = inventory_service.get_properties;
         } else if ($scope.inventory_type === 'taxlots') {
           fn = inventory_service.get_taxlots;
         }
-        return fn(page, chunk, $scope.cycle.selected_cycle, _.get($scope, 'currentProfile.id')).then(function (data) {
-          $scope.progress = {
-            current: data.pagination.end,
-            total: data.pagination.total,
-            percent: Math.round(data.pagination.end / data.pagination.total * 100)
-          };
-          if (data.pagination.has_next) {
-            return fetch(page + 1, chunk).then(function (data2) {
-              return data.results.concat(data2);
-            });
+
+        // add label filtering
+        let include_ids = undefined;
+        let exclude_ids = undefined;
+        if ($scope.selected_labels.length) {
+          if ($scope.labelLogic === 'and') {
+            let intersection = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+            include_ids = intersection.length ? intersection : [0];
+          } else if ($scope.labelLogic === 'or') {
+            include_ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
+          } else if ($scope.labelLogic === 'exclude') {
+            exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
-          return data.results;
+        }
+
+        return fn(
+          page,
+          chunk,
+          $scope.cycle.selected_cycle,
+          _.get($scope, 'currentProfile.id'),
+          include_ids,
+          exclude_ids,
+          true,
+          $scope.organization.id,
+          false,
+          $scope.column_filters,
+          $scope.column_sorts
+        ).then(function (data) {
+          return data;
         });
       };
 
@@ -910,7 +878,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
-                return {derived_column_id: col.id, results: res.results};
+                return { derived_column_id: col.id, results: res.results };
               });
           }));
         }
@@ -936,84 +904,100 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var refresh_objects = function () {
-        var page = 1;
-        var chunk = 5000;
-        $scope.progress = {};
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
-          backdrop: 'static',
-          windowClass: 'inventory-progress-modal',
-          scope: $scope
-        });
-        // console.time('fetch');
-        return fetch(page, chunk).then(function (data) {
-          // console.timeEnd('fetch');
-          processData(data);
-          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
-          modalInstance.close();
-          evaluateDerivedColumns();
-        });
+      $scope.load_inventory = function (page) {
+        const page_size = 100;
+        spinner_utility.show();
+        return fetch(page, page_size)
+          .then(function (data) {
+            if (data.status === 'error') {
+              let message = data.message;
+              if (data.recommended_action === 'update_column_settings') {
+                const columnSettingsUrl = $state.href(
+                  'organization_column_settings',
+                  {organization_id: $scope.organization.id, inventory_type: $scope.inventory_type}
+                );
+                message = `${message}<br><a href="${columnSettingsUrl}">Click here to update your column settings</a>`;
+              }
+              Notification.error({message, delay: 15000});
+              spinner_utility.hide();
+              return;
+            }
+            $scope.inventory_pagination = data.pagination;
+            processData(data.results);
+            $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
+            evaluateDerivedColumns();
+            $scope.select_none();
+            spinner_utility.hide();
+          });
       };
 
       $scope.update_cycle = function (cycle) {
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
-        refresh_objects();
+        $scope.load_inventory(1);
       };
 
       $scope.filters_exist = function () {
-        return !!_.find($scope.gridApi.grid.columns, function (col) {
-          return !_.isEmpty(col.filter.term);
-        });
+        return !$scope.column_filters.length;
       };
 
+      $scope.sorts_exist = function () {
+        return !$scope.column_sorts.length;
+      };
+
+      // it appears resetColumnSorting() doesn't trigger on.sortChanged so we do it manually
+      $scope.reset_column_sorting = function () {
+        $scope.gridApi.grid.resetColumnSorting();
+        $scope.gridApi.core.raise.sortChanged();
+      };
+
+      let watchingSelectedLabels = false;
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
-          updateApplicableLabels(current_labels);
-          filterUsingLabels();
+          $scope.labels = _.filter(current_labels, function (label) {
+            return !_.isEmpty(label.is_applied);
+          });
+
+          // load saved label filter
+          let ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+          $scope.selected_labels = _.filter($scope.labels, function (label) {
+            return _.includes(ids, label.id);
+          });
+
+          // watch for changes
+          if (!watchingSelectedLabels) {
+            watchingSelectedLabels = true;
+            $scope.$watchCollection('selected_labels', filterUsingLabels);
+          }
+          $scope.build_labels();
         });
       };
 
-      processData();
-
-      $scope.open_ubid_modal = function () {
+      $scope.open_ubid_modal = function (selectedViewIds) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
           controller: 'ubid_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
           }
         });
       };
 
-      $scope.open_geocode_modal = function () {
+      $scope.open_geocode_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
           controller: 'geocode_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             },
             org_id: function () {
               return $scope.organization.id;
@@ -1026,32 +1010,26 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         modalInstance.result.then(function (/*result*/) {
           // dialog was closed with 'Close' button.
-          refresh_objects();
+          $scope.load_inventory(1);
         });
       };
 
-      $scope.open_delete_modal = function () {
+      $scope.open_delete_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
           controller: 'delete_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
           }
         });
 
         modalInstance.result.then(function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
           else if (result.delete_state === 'success') {
             var selectedRows = $scope.gridApi.selection.getSelectedRows();
             var selectedChildRows = _.remove(selectedRows, function (row) {
@@ -1097,9 +1075,10 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
               });
             }
+            $scope.load_inventory(1);
           }
         }, function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
         });
       };
 
@@ -1114,21 +1093,13 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.open_export_modal = function () {
+      $scope.open_export_modal = function (selectedViewIds) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
-          backdrop: 'static',
           resolve: {
             ids: function () {
-              var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
-                return row.entity[viewId];
-              });
-              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), viewId);
-              return _.filter(visibleRowIds, function (id) {
-                return _.includes(selectedRowIds, id);
-              });
+              return selectedViewIds;
             },
             filter_header_string: function () {
               if ($scope.selected_labels.length) {
@@ -1160,6 +1131,58 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.model_actions = 'none';
+      const elSelectActions = document.getElementById('select-actions');
+      $scope.run_action = function (viewIds=[], action=null) {
+        let selectedViewIds = [];
+
+        // was the function called with a list of ids?
+        if (viewIds.length > 0) {
+          selectedViewIds = viewIds;
+
+        // if it appears everything selected, only get the full set of ids...
+        } else if ($scope.selectedCount === $scope.inventory_pagination.total) {
+          selectedViewIds = [];
+
+          if ($scope.inventory_type === 'properties') {
+            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+              $scope.run_action(inventory_data.results);
+            });
+          } else if ($scope.inventory_type === 'taxlots') {
+            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+              $scope.run_action(inventory_data.results);
+            });
+          }
+          return;
+
+        // ... otherwise use what's selected in the grid
+        } else {
+          let view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+          selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
+        }
+
+        if (!action) {
+          action = elSelectActions.value;
+        }
+        switch (action) {
+          case 'open_merge_modal': $scope.open_merge_modal(selectedViewIds); break;
+          case 'open_delete_modal': $scope.open_delete_modal(selectedViewIds); break;
+          case 'open_export_modal': $scope.open_export_modal(selectedViewIds); break;
+          case 'open_update_labels_modal': $scope.open_update_labels_modal(selectedViewIds); break;
+          case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
+          case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
+          case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
+          case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
+          case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
+          case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
+          case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
+          case 'select_all': $scope.select_all(); break;
+          case 'select_none': $scope.select_none(); break;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
+        }
+        $scope.model_actions = 'none';
+      };
+
       $scope.open_refresh_metadata_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
@@ -1189,16 +1212,13 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
-      $scope.open_analyses_modal = function () {
+      $scope.open_analyses_modal = function (selectedViewIds) {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             }
           }
         });
@@ -1277,27 +1297,183 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
       };
 
-      var saveGridSettings = function () {
-        if (!$scope.restoring) {
-          var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
-            return _.keys(col.sort).length + (_.get(col, 'filters[0].term', '') || '').length > 0;
-          });
-          inventory_service.saveGridSettings(localStorageKey + '.sort', {
-            columns: columns
-          });
+      $scope.selected_display = '';
+      $scope.update_selected_display = function () {
+        if ($scope.gridApi) {
+          uiGridGridMenuService.removeFromGridMenu($scope.gridApi.grid, 'dynamic-export');
+          $scope.gridApi.core.addToGridMenu($scope.gridApi.grid, [{
+            id: 'dynamic-export',
+            title: ($scope.selectedCount == 0 ? 'Export All' : 'Export Selected'),
+            order: 100,
+            action: function ($event) {
+              $scope.run_action([], 'open_export_modal');
+            }
+          }]);
+        }
+        $scope.selected_display = [$scope.selectedCount, $translate.instant('selected')].join(' ');
+      };
+      $scope.update_selected_display();
+
+      const operatorLookup = {
+        ne: '!=',
+        exact: '=',
+        lt: '<',
+        lte: '<=',
+        gt: '<',
+        gte: '<=',
+        icontains: ''
+      };
+
+      $scope.delete_filter = function (filterToDelete) {
+        const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
+        if (!column || column.filters.size < 1) {
+          return false;
+        }
+        let newTerm = [];
+        for (let i in $scope.column_filters) {
+          const filter = $scope.column_filters[i];
+          if (filter.name !== filterToDelete.name || filter === filterToDelete) {
+            continue;
+          }
+          newTerm.push(operatorLookup[filter.operator] + filter.value);
+        }
+        column.filters[0].term = newTerm.join(', ');
+        return false;
+      };
+
+      $scope.delete_sort = function (sortToDelete) {
+        $scope.gridApi.grid.getColumn(sortToDelete.name).unsort();
+        return true;
+      };
+
+      // https://regexr.com/6cka2
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\\\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+      const parseFilter = function (expression) {
+        // parses an expression string into an object containing operator and value
+        const filterData = expression.match(combinedRegex);
+        if (filterData) {
+          if (!_.isUndefined(filterData[2])) {
+            // Numeric Equality
+            const operator = filterData[1];
+            const value = Number(filterData[2].replace('\\.', '.'));
+            if (operator === '!') {
+              return {string: 'is not', operator: 'ne', value};
+            } else {
+              return {string: 'is', operator: 'exact', value};
+            }
+          } else if (!_.isUndefined(filterData[4])) {
+            // Text Equality
+            const operator = filterData[3];
+            const value = filterData[4];
+            if (operator === '!') {
+              return {string: 'is not', operator: 'ne', value};
+            } else {
+              return {string: 'is', operator: 'exact', value};
+            }
+          } else if (!_.isUndefined(filterData[7])) {
+            // Numeric Comparison
+            const operator = filterData[5];
+            const value = Number(filterData[6].replace('\\.', '.'));
+            switch (operator) {
+              case '<':
+                return {string: '<', operator: 'lt', value};
+              case '<=':
+                return {string: '<=', operator: 'lte', value};
+              case '>':
+                return {string: '>', operator: 'gt', value};
+              case '>=':
+                return {string: '>=', operator: 'gte', value};
+            }
+          } else {
+            // Date Comparison
+            const operator = filterData[5];
+            const value = filterData[8];
+            switch (operator) {
+              case '<':
+                return {string: '<', operator: 'lt', value};
+              case '<=':
+                return {string: '<=', operator: 'lte', value};
+              case '>':
+                return {string: '>', operator: 'gt', value};
+              case '>=':
+                return {string: '>=', operator: 'gte', value};
+            }
+          }
+        } else {
+          // Case-insensitive Contains
+          return {string: 'contains', operator: 'icontains', value: expression};
         }
       };
 
-      var restoreGridSettings = function () {
-        $scope.restoring = true;
-        var state = inventory_service.loadGridSettings(localStorageKey + '.sort');
+      const updateColumnFilterSort = function () {
+        const columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
+          return _.keys(col.sort).filter(key => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
+        });
+
+        inventory_service.saveGridSettings(localStorageKey + '.sort', {
+          columns: columns
+        });
+
+        $scope.column_filters = [];
+        $scope.column_sorts = [];
+        // parse the filters and sorts
+        for (const column of columns) {
+          const {name, filters, sort} = column;
+          // remove the column id at the end of the name
+          const column_name = name.split('_').slice(0, -1).join('_');
+
+          for (const filter of filters) {
+            if (_.isEmpty(filter)) {
+              continue;
+            }
+
+            // a filter can contain many comma-separated filters
+            const subFilters = _.map(_.split(filter.term, ','), _.trim);
+            for (const subFilter of subFilters) {
+              if (subFilter) {
+                const {string, operator, value} = parseFilter(subFilter);
+                const index = all_columns.findIndex(p => p.name === column_name);
+                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                $scope.column_filters.push({name, column_name, operator, value, display});
+              }
+            }
+          }
+
+          if (sort.direction) {
+            // remove the column id at the end of the name
+            const column_name = name.split('_').slice(0, -1).join('_');
+            const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+            $scope.column_sorts.push({name, column_name, direction: sort.direction, display, priority: sort.priority});
+            $scope.column_sorts.sort((a, b) => (a.priority > b.priority));
+          }
+        }
+      };
+
+      const restoreGridSettings = function () {
+        $scope.restore_status = RESTORE_SETTINGS;
+        let state = inventory_service.loadGridSettings(localStorageKey + '.sort');
         if (!_.isNull(state)) {
           state = JSON.parse(state);
-          $scope.gridApi.saveState.restore($scope, state);
+          $scope.gridApi.saveState.restore($scope, state)
+            .then(function () {
+              $scope.restore_status = RESTORE_SETTINGS_DONE;
+            });
+        } else {
+          $scope.restore_status = RESTORE_SETTINGS_DONE;
         }
-        _.defer(function () {
-          $scope.restoring = false;
-        });
+      };
+
+      $scope.select_all = function () {
+        // select all rows to visibly support everything has been selected
+        $scope.gridApi.selection.selectAllRows();
+        $scope.selectedCount = $scope.inventory_pagination.total;
+        $scope.update_selected_display();
+      };
+
+      $scope.select_none = function () {
+        $scope.gridApi.selection.clearSelectedRows();
+        $scope.selectedCount = 0;
+        $scope.update_selected_display();
       };
 
       $scope.gridOptions = {
@@ -1322,6 +1498,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         saveTreeView: false,
         saveVisible: false,
         saveWidths: false,
+        useExternalFiltering: true,
+        useExternalSorting: true,
         columnDefs: $scope.columns,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
@@ -1364,8 +1542,18 @@ angular.module('BE.seed.controller.inventory_list', [])
             saveSettings();
           });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-          gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
-          gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));
+          gridApi.core.on.filterChanged($scope, _.debounce(() => {
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
+          }, 1000));
+          gridApi.core.on.sortChanged($scope, _.debounce(() => {
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
+          }, 1000));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
 
           var selectionChanged = function () {
@@ -1374,32 +1562,19 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.selectedCount = selected.length;
             $scope.selectedParentCount = parentsSelectedIds.length;
 
-            if ($scope.gridApi) {
-              uiGridGridMenuService.removeFromGridMenu($scope.gridApi.grid, 'dynamic-export');
-              $scope.gridApi.core.addToGridMenu($scope.gridApi.grid, [{
-                id: 'dynamic-export',
-                title: ($scope.selectedCount == 0 ? 'Export All' : 'Export Selected'),
-                order: 100,
-                action: function ($event) {
-                  $scope.open_export_modal();
-                }
-              }]);
-            }
-
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
             var added = _.difference(parentsSelectedIds, $scope.selectedOrder);
             if (removed.length === 1 && !added.length) {
-              // console.log('Removed ', removed);
               _.remove($scope.selectedOrder, function (item) {
                 return item === removed[0];
               });
             } else if (added.length === 1 && !removed.length) {
-              // console.log('Added ', added);
               $scope.selectedOrder.push(added[0]);
             }
+            $scope.update_selected_display();
           };
 
-          var selectAllChanged = function () {
+          var selectPageChanged = function () {
             var allSelected = $scope.gridApi.selection.getSelectedRows();
 
             if (!allSelected.length) {
@@ -1417,10 +1592,11 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.selectedCount = allSelected.length;
               $scope.selectedParentCount = parentsSelectedIds.length;
             }
+            $scope.update_selected_display();
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, selectAllChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, selectPageChanged);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
@@ -1428,19 +1604,13 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
               if ($scope.updateQueued) {
                 $scope.updateQueued = false;
-                if ($scope.selected_labels.length) filterUsingLabels();
               }
             });
           }, 150));
 
           _.defer(function () {
             restoreGridSettings();
-            selectionChanged();
           });
-
-          // Load the initial data
-          refresh_objects();
         }
       };
-
     }]);

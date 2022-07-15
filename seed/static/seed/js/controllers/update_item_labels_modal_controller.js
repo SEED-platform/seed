@@ -42,7 +42,8 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
         $scope.new_label = {
           color: 'gray',
           label: 'default',
-          name: ''
+          name: '',
+          show_in_list: false,
         };
       };
 
