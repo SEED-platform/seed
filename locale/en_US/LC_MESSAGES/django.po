@@ -170,6 +170,9 @@ msgstr "Address Line 2 (Tax Lot)"
 msgid "Admin"
 msgstr "Admin"
 
+msgid "An Audit Template organization token, user email and password are required"
+msgstr "An Audit Template organization token, user email and password are required"
+
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
@@ -226,6 +229,18 @@ msgstr "Associated Tax Lot ID"
 
 msgid "Associated Tax Lot IDs"
 msgstr "Associated Tax Lot IDs"
+
+msgid "Audit Template Building ID"
+msgstr "Audit Template Building ID"
+
+msgid "Audit Template Email"
+msgstr "Audit Template Email"
+
+msgid "Audit Template Organization Token"
+msgstr "Audit Template Organization Token"
+
+msgid "Audit Template Password"
+msgstr "Audit Template Password"
 
 #: seed/models/models.py:136
 msgid "Auditing"
@@ -1104,6 +1119,9 @@ msgstr "GJ/m²/year"
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirm GreenButton File Contents"
 
+msgid "Generate Token"
+msgstr "Generate Token"
+
 msgid "Geocode"
 msgstr "Geocode"
 
@@ -1137,6 +1155,9 @@ msgstr "Getting Started Guide"
 
 msgid "Go to Detail Page"
 msgstr "Go to Detail Page"
+
+msgid "Go to Meters"
+msgstr "Go to Meters"
 
 msgid "Go to Notes"
 msgstr "Go to Notes"
@@ -1225,6 +1246,9 @@ msgstr "Ignored tax lot duplicates within the import file"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
+
+msgid "Import from Audit Template"
+msgstr "Import from Audit Template"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
@@ -2699,6 +2723,9 @@ msgstr "Update with BuildingSync"
 
 msgid "Updated"
 msgstr "Updated"
+
+msgid "Upload Audit Template XML"
+msgstr "Upload Audit Template XML"
 
 msgid "Upload BuildingSync Data"
 msgstr "Upload BuildingSync Data"

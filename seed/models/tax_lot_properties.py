@@ -187,9 +187,9 @@ class TaxLotProperty(models.Model):
         ).values_list('state_id', flat=True)
 
         # gather meter counts
-        Meter = apps.get_model('seed', 'Meter')
-        obj_meter_counts = {x[0]: x[1] for x in Meter.objects.filter(**{lookups['obj_query_in']: ids})
-                            .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
+        # Meter = apps.get_model('seed', 'Meter')
+        # obj_meter_counts = {x[0]: x[1] for x in Meter.objects.filter(**{lookups['obj_query_in']: ids})
+        #                     .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
 
         # gather all columns - separate the 'related' columns
         related_columns = []
@@ -246,13 +246,9 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
-            obj_dict['meters_exist_indicator'] = len(obj_meter_counts.get(obj.id, 0)) > 0
-
-            # This is to handle Tax Lots which don't have meters
-            # try:
-            #     obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
-            # except DoesNotExist:
-            #     obj_dict['meters_exist_indicator'] = False
+            # This is only applicable to Properties since Tax Lots don't have meters
+            if this_cls == 'Property':
+                obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
