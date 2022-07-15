@@ -33,7 +33,7 @@ def remove_old_ghg_columns(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0171_update_bae_assets'),
+        ('seed', '0173_update_bae_assets'),
     ]
 
     operations = [
