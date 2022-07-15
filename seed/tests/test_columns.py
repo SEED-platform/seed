@@ -1042,6 +1042,7 @@ class TestColumnsByInventory(TestCase):
             "types": {
                 "address_line_1": "string",
                 "address_line_2": "string",
+                "audit_template_building_id": "string",
                 "block_number": "string",
                 "building_certification": "string",
                 "building_count": "integer",
@@ -1110,7 +1111,7 @@ class TestColumnsByInventory(TestCase):
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields(self.fake_org.pk)
 
-        data = ['address_line_1', 'address_line_2', 'block_number',
+        data = ['address_line_1', 'address_line_2', 'audit_template_building_id', 'block_number',
                 'building_certification', 'building_count', 'campus', 'city',
                 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts',
                 'energy_score', 'generation_date', 'geocoding_confidence', 'gross_floor_area',
@@ -1132,7 +1133,7 @@ class TestColumnsByInventory(TestCase):
 
     def test_retrieve_db_field_name_from_db_tables(self):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""
-        expected = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
+        expected = ['address_line_1', 'address_line_2', 'audit_template_building_id', 'block_number', 'building_certification',
                     'building_count', 'city', 'conditioned_floor_area',
                     'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts', 'energy_score', 'generation_date',
                     'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',

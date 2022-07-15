@@ -27,6 +27,7 @@
     </div>
 
     <uib-tabset class="org-settings" active="activePill" vertical="true" type="pills">
+
         <uib-tab index="0" heading="{$:: 'Options' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
@@ -35,19 +36,6 @@
                         <div class="form-group">
                             <div class="col-sm-4">
                                 <input type="text" class="form-control" id="editOrganizationName" ng-model="org.name" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>MapQuest API Key</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" ng-model="org.mapquest_api_key" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
                     </form>
@@ -79,6 +67,22 @@
                     </form>
                 </div>
             </div>
+        </uib-tab>
+
+        <uib-tab index="1" heading="{$:: 'API Key' | translate $}">
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>MapQuest API Key</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="org.mapquest_api_key" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <div class="section_content_container">
                 <div class="section_content with_padding">
@@ -93,8 +97,48 @@
                     </form>
                 </div>
             </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Audit Template Organization Token</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Audit Template Email</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Audit Template Password</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </uib-tab>
-        <uib-tab index="1" heading="{$:: 'Units' | translate $}">
+
+        <uib-tab index="2" heading="{$:: 'Units' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
@@ -169,7 +213,8 @@
                 </div>
             </div>
         </uib-tab>
-        <uib-tab index="2" heading="{$:: 'Default Display Fields' | translate $}">
+
+        <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Property Display Field</h3>
@@ -200,7 +245,8 @@
                 </div>
             </div>
         </uib-tab>
-        <uib-tab index="3" heading="{$:: 'Email' | translate $}">
+
+        <uib-tab index="4" heading="{$:: 'Email' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>New User Email</h3>
@@ -234,7 +280,8 @@
                 </div>
             </div>
         </uib-tab>
-        <uib-tab index="4" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
+
+        <uib-tab index="5" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
             <div class="section_content_container">
                 <div class="section_content with_padding maintenance">
                     <h3 translate>Maintenance Actions</h3>

@@ -324,6 +324,9 @@ BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov')
 
+# Audit Template Production Host
+AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://buildingenergyscore.energy.gov')
+
 # Google reCAPTCHA env variable for self-registration. SITE_KEY defaults
 # to the key registered for SEED. Override it needing to test.
 # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do

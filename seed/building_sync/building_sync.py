@@ -377,6 +377,7 @@ class BuildingSync(object):
             'gross_floor_area': property_['gross_floor_area'],
             'net_floor_area': property_['net_floor_area'],
             'footprint_floor_area': property_['footprint_floor_area'],
+            'audit_template_building_id': property_['audit_template_building_id'],
         }
 
         return res
