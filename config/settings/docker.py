@@ -23,7 +23,8 @@ SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND'] + SMTP_ENV_VARS
+                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND',
+                     'POSTGRES_HOST'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -63,7 +64,7 @@ DATABASES = {
         'NAME': POSTGRES_DB, # noqa F405
         'USER': POSTGRES_USER, # noqa F405
         'PASSWORD': POSTGRES_PASSWORD, # noqa F405
-        'HOST': "db-postgres",
+        'HOST': os.environ.get('POSTGRES_HOST', 'db-postgres'), # noqa F405
         'PORT': POSTGRES_PORT, # noqa F405
     }
 }
