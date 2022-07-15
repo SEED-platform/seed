@@ -134,11 +134,23 @@ if 'default' in SECRET_KEY: # noqa F405
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if 'SENTRY_RAVEN_DSN' in os.environ:
-    import raven
-    RAVEN_CONFIG = {
-        'dsn': SENTRY_RAVEN_DSN, # noqa F405
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
-    }
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_RAVEN_DSN, # noqa F405
+        integrations=[
+            DjangoIntegration(),
+        ],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=0.25,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
+
 # SENTRY_JS_DSN is directly passed through to the Sentry configuration for JS.
