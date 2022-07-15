@@ -95,9 +95,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
       };
 
-
-
-
       /* SCOPE VARS */
       /* ~~~~~~~~~~ */
 
@@ -143,24 +140,18 @@ angular.module('BE.seed.controller.inventory_reports', [])
           label: $translate.instant('Gross Floor Area'),
           varName: 'gross_floor_area',
           axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
-          // axisTickFormat: ',.0f',
-          // axisType: 'Measure',
           axisMin: ''
         }, {
           name: $translate.instant('Property Classification'),
           label: $translate.instant('Property Classification'),
           varName: 'use_description',
           axisLabel: translateAxisLabel('Property Classification'),
-          // axisTickFormat: '',
-          // axisType: 'Category',
           axisMin: ''
         }, {
           name: $translate.instant('Year Built'),
           label: $translate.instant('Year Built'),
           varName: 'year_built',
           axisLabel: translateAxisLabel('Year Built'),
-          // axisTickFormat: '.0f',
-          // axisType: 'Measure',
           axisMin: '1900'
         }
       ];
