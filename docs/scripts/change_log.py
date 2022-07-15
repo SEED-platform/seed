@@ -146,6 +146,8 @@ for issue in repo.issues(state='open', labels='Include Before Closure'):
             add_issue(closed_issues, naming_lookup['Maintenance'][False], issue)
         elif 'Enhancement' in labels:
             add_issue(closed_issues, naming_lookup['Enhancement'][False], issue)
+        elif 'Project Tracking' in labels:
+            continue
         else:
             add_issue(closed_issues, naming_lookup['Issue'][False], issue)
 
@@ -162,6 +164,8 @@ for issue in repo.issues(state='open'):
                 add_issue(new_issues, naming_lookup['Maintenance'][True], issue)
             elif 'Enhancement' in labels:
                 add_issue(new_issues, naming_lookup['Enhancement'][True], issue)
+            elif 'Project Tracking' in labels:
+                continue
             else:
                 add_issue(new_issues, naming_lookup['Issue'][True], issue)
 
