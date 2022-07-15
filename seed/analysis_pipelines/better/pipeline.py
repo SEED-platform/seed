@@ -457,16 +457,23 @@ def _process_results(self, analysis_id):
         ),
     ] + ee_measure_column_data_paths
 
-    # create columns if they don't already exist
     for column_data_path in column_data_paths:
-        Column.objects.get_or_create(
+        # check if the column exists with the bare minimum required pieces of data. For example,
+        # don't check column_description and display_name because they may be changed by
+        # the user at a later time.
+        column, created = Column.objects.get_or_create(
             is_extra_data=True,
             column_name=column_data_path.column_name,
-            display_name=column_data_path.column_display_name,
-            column_description=column_data_path.column_display_name,
             organization=analysis.organization,
             table_name='PropertyState',
         )
+
+        # add in the other fields of the columns only if it is a new column.
+        if created:
+            column.display_name = column_data_path.column_display_name
+            column.column_description = column_data_path.column_display_name
+
+        column.save()
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
