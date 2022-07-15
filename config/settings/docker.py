@@ -47,7 +47,7 @@ ALLOWED_HOSTS = ['*']
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
-EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend") # noqa F405
+EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django_ses.SESBackend')
 DEFAULT_FROM_EMAIL = SERVER_EMAIL # noqa F405
 POST_OFFICE = {
     'BACKENDS': {
@@ -136,11 +136,13 @@ if 'default' in SECRET_KEY: # noqa F405
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.celery import CeleryIntegration
 
     sentry_sdk.init(
-        dsn=SENTRY_RAVEN_DSN, # noqa F405
+        dsn=os.environ.get('SENTRY_RAVEN_DSN'),
         integrations=[
             DjangoIntegration(),
+            CeleryIntegration(),
         ],
 
     # Set traces_sample_rate to 1.0 to capture 100%

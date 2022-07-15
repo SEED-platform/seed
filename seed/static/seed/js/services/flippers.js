@@ -24,7 +24,7 @@ angular.module('BE.seed.service.flippers', [])
     };
 
     var log_stale_flipper = function (flipper) {
-      // TODO throw someplace more useful; raven? sentry?
+      // TODO throw someplace more useful; sentry?
       $log.warn('Flipper \'' + flipper.label + '\' is stale; tell ' + flipper.owner + ' to tidy up.');
     };
 
