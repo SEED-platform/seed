@@ -47,7 +47,7 @@ spec:
             - name: POSTGRES_PORT
               value: "5432"
             - name: POSTGRES_USER
-              value: seed
+              value: seeduser
             - name: SECRET_KEY
               # secret key generator -- https://djskgen.herokuapp.com
               value: <secret>

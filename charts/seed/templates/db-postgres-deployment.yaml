@@ -33,7 +33,7 @@ spec:
             - name: POSTGRES_PASSWORD
               value: super-secret-password
             - name: POSTGRES_USER
-              value: seed
+              value: seeduser
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           image: timescale/timescaledb-postgis:latest-pg12
