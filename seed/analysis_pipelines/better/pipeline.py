@@ -513,7 +513,7 @@ def _process_results(self, analysis_id):
         # do some extra cleanup of the results:
         #  - round decimal places of floats
         #  - for fuel-type specific fields, set values to null if the model for
-        #    that fuel type wasn't valid (e.g. if electricity model is invalid,
+        #    that fuel type wasn't valid (e.g., if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
             value = value if not isinstance(value, float) else round(value, 2)

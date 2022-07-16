@@ -56,7 +56,7 @@ Date Range: 03/31/22 - 07/15/22
 - Fixed [#3338]( https://github.com/SEED-platform/seed/issues/3338 ), Sensors: Can't dismiss Create a Data Logger modal when it's empty
 - Fixed [#3343]( https://github.com/SEED-platform/seed/issues/3343 ), Analysis results slow to load when connected to lots of properties
 - Maintenance [#3352]( https://github.com/SEED-platform/seed/issues/3352 ), Bump version of lxml to 4.9.1
-- Feature [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), upgrade to Django 3.2.14
+- Maintenance [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), Upgrade to Django 3.2.14
 - Fixed [#3366]( https://github.com/SEED-platform/seed/issues/3366 ), Make beta properties list page the default (and move previous to Legacy)
 
 # SEED Version 2.14.0

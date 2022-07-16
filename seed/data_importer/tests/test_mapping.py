@@ -93,7 +93,7 @@ class TestMapping(DataMappingBaseTestCase):
         """
         During import, when the initial -State objects are created from the extra_data values,
         ColumnMapping objects are used to take the extra_data dictionary values and create the
-        -State objects, setting the DB-level values as necessary - e.g. taking a raw
+        -State objects, setting the DB-level values as necessary - e.g., taking a raw
         "Site EUI (kBtu/ft2)" value and inserting it into the DB field "site_eui".
 
         Previously, remapping could cause extra Column objects to be created, and subsequently,

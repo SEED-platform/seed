@@ -45,7 +45,7 @@ CSRF_COOKIE_SECURE = False
 ALLOWED_HOSTS = ['*']
 
 # By default we are using SES as our email client. If you would like to use
-# another backend (e.g. SMTP), then please update this model to support both and
+# another backend (e.g., SMTP), then please update this model to support both and
 # create a pull request.
 EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend") # noqa F405
 DEFAULT_FROM_EMAIL = SERVER_EMAIL # noqa F405

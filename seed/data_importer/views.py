@@ -96,7 +96,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
               required: true
               paramType: body
             - name: source_type
-              description: the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')
+              description: the type of file (e.g., 'Portfolio Raw' or 'Assessed Raw')
               required: false
               paramType: body
             - name: source_program_version

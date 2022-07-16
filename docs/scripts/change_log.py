@@ -16,14 +16,14 @@ parser.add_argument('-k', '--github-key', required=True, help='Github API Key')
 parser.add_argument(
     '-s', '--start-date',
     required=False,
-    help='Start of data (e.g. 2020-12-29)',
+    help='Start of data (e.g., 2020-12-29)',
     type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
     default=datetime.datetime.now() + datetime.timedelta(-90)
 )
 parser.add_argument(
     '-e', '--end-date',
     required=False,
-    help='Start of data (e.g. 2020-12-29)',
+    help='Start of data (e.g., 2020-12-29)',
     type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
     default=datetime.datetime.now()
 )

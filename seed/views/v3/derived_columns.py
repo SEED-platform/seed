@@ -190,7 +190,7 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             openapi.Parameter(
                 'inventory_ids',
                 openapi.IN_QUERY,
-                description='List of inventory IDs (i.e. Property or TaxLot)',
+                description='List of inventory IDs (i.e., Property or TaxLot)',
                 required=True,
                 type=openapi.TYPE_ARRAY,
                 items=openapi.Items(
