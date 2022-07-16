@@ -33,6 +33,11 @@ def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
+    request.user = {
+        'first_name': '',
+        'last_name': '',
+        'email': ''
+    }
     return render(request, 'landing/home.html', {
         'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
         'debug': settings.DEBUG,
@@ -40,11 +45,6 @@ def landing_page(request):
         'initial_org_user_role': 0,
         'initial_org_name': '',
         'login_form': LoginForm(),
-        'user': {
-            'first_name': '',
-            'last_name': '',
-            'email': ''
-        },
         'username': ''
     })
 
@@ -94,6 +94,11 @@ def login_view(request):
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
+    request.user = {
+        'first_name': '',
+        'last_name': '',
+        'email': ''
+    }
     return render(request, 'landing/login.html', {
         'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
         'debug': settings.DEBUG,
@@ -101,11 +106,6 @@ def login_view(request):
         'initial_org_user_role': 0,
         'initial_org_name': '',
         'form': form,
-        'user': {
-            'first_name': '',
-            'last_name': '',
-            'email': ''
-        },
         'username': ''
     })
 
