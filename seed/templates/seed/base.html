@@ -61,10 +61,10 @@
             // username for sidebar
             window.BE.username = "{{ username }}";
             if (window.BE.username === "") {
-                window.BE.username = "{% if 'first_name' in request.user %}{{ request.user.first_name }}{% endif %} {% if 'last_name' in request.user %}{{ request.user.last_name }}{% endif %}";
+                window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name }}";
             }
             if (window.BE.username === " ") {
-                window.BE.username = "{% if 'email' in request.user %}{{ request.user.email }}{% endif %}"
+                window.BE.username = "{{ request.user.email }}"
             }
             window.BE.initial_org_id = "{{ initial_org_id }}";
             window.BE.initial_org_user_role = "{{ initial_org_user_role }}";

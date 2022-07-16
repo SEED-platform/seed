@@ -30,6 +30,7 @@ _log = logging.getLogger(__name__)
 
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
+    debug = settings.DEBUG
     return render(request, 'seed/jasmine_tests/AngularJSTests.html', locals())
 
 

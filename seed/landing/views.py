@@ -35,11 +35,16 @@ def landing_page(request):
     login_form = LoginForm()
     return render(request, 'landing/home.html', {
         'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
-        'debug': False,
+        'debug': settings.DEBUG,
         'initial_org_id': 0,
         'initial_org_user_role': 0,
         'initial_org_name': '',
         'login_form': LoginForm(),
+        'user': {
+            'first_name': '',
+            'last_name': '',
+            'email': ''
+        },
         'username': ''
     })
 
@@ -91,11 +96,16 @@ def login_view(request):
         form = LoginForm()
     return render(request, 'landing/login.html', {
         'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
-        'debug': False,
+        'debug': settings.DEBUG,
         'initial_org_id': 0,
         'initial_org_user_role': 0,
         'initial_org_name': '',
         'form': form,
+        'user': {
+            'first_name': '',
+            'last_name': '',
+            'email': ''
+        },
         'username': ''
     })
 
@@ -136,7 +146,7 @@ def password_reset_confirm(request, uidb64=None, token=None):
 
 
 def password_reset_complete(request):
-    return render(request, 'landing/password_reset_complete.html', {})
+    return render(request, 'landing/password_reset_complete.html', { 'debug': settings.DEBUG })
 
 
 def signup(request, uidb64=None, token=None):
@@ -197,11 +207,12 @@ def create_account(request):
 
     else:
         form = CustomCreateUserForm()
+    debug = settings.DEBUG
     return render(request, 'landing/create_account.html', locals())
 
 
 def account_activation_sent(request):
-    return render(request, 'landing/account_activation_sent.html', {})
+    return render(request, 'landing/account_activation_sent.html', { 'debug': settings.DEBUG })
 
 
 def activate(request, uidb64, token):
@@ -217,4 +228,4 @@ def activate(request, uidb64, token):
         login(request, user)
         return HttpResponseRedirect(reverse('seed:home'))
     else:
-        return render(request, 'account_activation_invalid.html')
+        return render(request, 'account_activation_invalid.html', { 'debug': settings.DEBUG })
