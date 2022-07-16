@@ -1,11 +1,12 @@
 # SEED Version 2.15.0
 
-Date Range: 03/31/22 - 07/15/22
+Date Range: 03/31/22 - 07/16/22
 
 - Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Improve performance moving between different views (Detail to List, etc)
 - Feature [#1754]( https://github.com/SEED-platform/seed/issues/1754 ), Attach PDF (or other files) to a building record
 - Fixed [#2685]( https://github.com/SEED-platform/seed/issues/2685 ), Meter data can't be shown by month
 - Feature [#2760]( https://github.com/SEED-platform/seed/issues/2760 ), Allow derived column definitions and parameters to be used in multiple derived column definitions
+- Feature [#2868]( https://github.com/SEED-platform/seed/issues/2868 ), Add Run ID to fields in Property List and Detail view with BETTER
 - Maintenance [#3029]( https://github.com/SEED-platform/seed/issues/3029 ), Clean up Prod MEDIA directory
 - Fixed [#3078]( https://github.com/SEED-platform/seed/issues/3078 ), Add ability to import data loggers and sensors for a property
 - Maintenance [#3079]( https://github.com/SEED-platform/seed/issues/3079 ), Run WAVA and address issues
@@ -58,7 +59,7 @@ Date Range: 03/31/22 - 07/15/22
 - Maintenance [#3352]( https://github.com/SEED-platform/seed/issues/3352 ), Bump version of lxml to 4.9.1
 - Maintenance [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), Upgrade to Django 3.2.14
 - Fixed [#3366]( https://github.com/SEED-platform/seed/issues/3366 ), Make beta properties list page the default (and move previous to Legacy)
-
+- Fixed [#3382]( https://github.com/SEED-platform/seed/issues/3382 ), Replace Raven with Sentry-sdk
 # SEED Version 2.14.0
 
 Date Range: 12/27/21 - 03/31/22
