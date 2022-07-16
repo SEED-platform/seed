@@ -30,6 +30,7 @@ _log = logging.getLogger(__name__)
 
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
+    debug = settings.DEBUG
     return render(request, 'seed/jasmine_tests/AngularJSTests.html', locals())
 
 
@@ -67,13 +68,11 @@ def home(request):
         * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
         * **username**: the request user's username (first and last name)
     """
-
     username = request.user.first_name + " " + request.user.last_name
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
     debug = settings.DEBUG
-
     return render(request, 'seed/index.html', locals())
 
 

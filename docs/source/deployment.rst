@@ -33,12 +33,25 @@ it is recommended to setup two sentry projects, one for backend and one for fron
 
 .. code-block:: python
 
-    import raven
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.celery import CeleryIntegration
 
-    RAVEN_CONFIG = {
-       'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
-       # If you are using git, you can also automatically configure the
-       # release based on the git info.
-       'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
-    }
+    sentry_sdk.init(
+        dsn="https://<user>@<key>.ingest.sentry.io/<job>",
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(),
+        ],
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0,
+
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
+
     SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
