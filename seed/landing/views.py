@@ -32,14 +32,13 @@ logger = logging.getLogger(__name__)
 def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
-    login_form = LoginForm()
     request.user = {
         'first_name': '',
         'last_name': '',
         'email': ''
     }
     return render(request, 'landing/home.html', {
-        'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
+        'context': {'self_registration': settings.INCLUDE_ACCT_REG},
         'debug': settings.DEBUG,
         'initial_org_id': 0,
         'initial_org_user_role': 0,
@@ -92,15 +91,18 @@ def login_view(request):
                 errors = ErrorList()
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Username and/or password were invalid.')
+                logger.error(f"User login failed: {form.cleaned_data['email']}")
     else:
         form = LoginForm()
+
+    # prepare the render request
     request.user = {
         'first_name': '',
         'last_name': '',
         'email': ''
     }
     return render(request, 'landing/login.html', {
-        'context': { 'self_registration': settings.INCLUDE_ACCT_REG },
+        'context': {'self_registration': settings.INCLUDE_ACCT_REG},
         'debug': settings.DEBUG,
         'initial_org_id': 0,
         'initial_org_user_role': 0,
@@ -146,7 +148,7 @@ def password_reset_confirm(request, uidb64=None, token=None):
 
 
 def password_reset_complete(request):
-    return render(request, 'landing/password_reset_complete.html', { 'debug': settings.DEBUG })
+    return render(request, 'landing/password_reset_complete.html', {'debug': settings.DEBUG})
 
 
 def signup(request, uidb64=None, token=None):
@@ -212,7 +214,7 @@ def create_account(request):
 
 
 def account_activation_sent(request):
-    return render(request, 'landing/account_activation_sent.html', { 'debug': settings.DEBUG })
+    return render(request, 'landing/account_activation_sent.html', {'debug': settings.DEBUG})
 
 
 def activate(request, uidb64, token):
@@ -228,4 +230,4 @@ def activate(request, uidb64, token):
         login(request, user)
         return HttpResponseRedirect(reverse('seed:home'))
     else:
-        return render(request, 'account_activation_invalid.html', { 'debug': settings.DEBUG })
+        return render(request, 'account_activation_invalid.html', {'debug': settings.DEBUG})

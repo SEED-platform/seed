@@ -67,9 +67,11 @@ urlpatterns = [
 handler404 = 'seed.views.main.error404'
 handler500 = 'seed.views.main.error500'
 
-# Add an endpoint for testing sentry and a method with divide by zero
+
 def trigger_error(request):
-    division_by_zero = 1 / 0
+    """Endpoint for testing sentry with a divide by zero"""
+    1 / 0
+
 
 if settings.DEBUG:
     from django.contrib import admin
@@ -84,7 +86,7 @@ if settings.DEBUG:
 
         # admin
         re_path(r'^admin/', admin.site.urls),
-        
+
         # test sentry error
         path('sentry-debug/', trigger_error)
     ]

@@ -38,7 +38,7 @@ COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
-# Make sure to disable secure cooking and csrf when usign Cloudflare
+# Make sure to disable secure cooking and csrf when using Cloudflare
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
@@ -48,7 +48,7 @@ ALLOWED_HOSTS = ['*']
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
 EMAIL_BACKEND = os.environ.get('DJANGO_EMAIL_BACKEND', 'django_ses.SESBackend')
-DEFAULT_FROM_EMAIL = SERVER_EMAIL # noqa F405
+DEFAULT_FROM_EMAIL = SERVER_EMAIL  # noqa F405
 POST_OFFICE = {
     'BACKENDS': {
         'default': EMAIL_BACKEND,
@@ -61,11 +61,11 @@ POST_OFFICE = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB, # noqa F405
-        'USER': POSTGRES_USER, # noqa F405
-        'PASSWORD': POSTGRES_PASSWORD, # noqa F405
-        'HOST': os.environ.get('POSTGRES_HOST', 'db-postgres'), # noqa F405
-        'PORT': POSTGRES_PORT, # noqa F405
+        'NAME': POSTGRES_DB,  # noqa F405
+        'USER': POSTGRES_USER,  # noqa F405
+        'PASSWORD': POSTGRES_PASSWORD,  # noqa F405
+        'HOST': os.environ.get('POSTGRES_HOST', 'db-postgres'),  # noqa F405
+        'PORT': POSTGRES_PORT,  # noqa F405
     }
 }
 
@@ -77,7 +77,7 @@ if 'REDIS_PASSWORD' in os.environ:
             'LOCATION': "db-redis:6379",
             'OPTIONS': {
                 'DB': 1,
-                'PASSWORD': REDIS_PASSWORD, # noqa F405
+                'PASSWORD': REDIS_PASSWORD,  # noqa F405
             },
             'TIMEOUT': 300
         }
@@ -130,13 +130,13 @@ LOGGING = {
     },
 }
 
-if 'default' in SECRET_KEY: # noqa F405
+if 'default' in SECRET_KEY:  # noqa F405
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
 
     sentry_sdk.init(
         dsn=os.environ.get('SENTRY_RAVEN_DSN'),
@@ -145,14 +145,14 @@ if 'SENTRY_RAVEN_DSN' in os.environ:
             CeleryIntegration(),
         ],
 
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    # We recommend adjusting this value in production.
-    traces_sample_rate=0.25,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=0.25,
 
-    # If you wish to associate users to errors (assuming you are using
-    # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True
-)
+        # If you wish to associate users to errors (assuming you are using
+        # django.contrib.auth) you may enable sending PII data.
+        send_default_pii=True
+    )
 
 # SENTRY_JS_DSN is directly passed through to the Sentry configuration for JS.
