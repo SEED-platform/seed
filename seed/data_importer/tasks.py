@@ -288,7 +288,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
     # figure out which import field is defined as the unique field that may have a delimiter of
-    # individual values (e.g. tax lot ids). The definition of the delimited field is currently
+    # individual values (e.g., tax lot ids). The definition of the delimited field is currently
     # hard coded
     try:
         delimited_fields = {}

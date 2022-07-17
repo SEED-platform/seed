@@ -18,7 +18,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def _openapi_type(cls, type_name):
         """returns an openapi type
 
-        :param type_name: str (e.g. 'string', 'boolean', 'integer')
+        :param type_name: str (e.g., 'string', 'boolean', 'integer')
         :return: openapi.TYPE_*
         """
         if type_name not in cls.openapi_types:

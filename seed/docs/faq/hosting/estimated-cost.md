@@ -6,7 +6,7 @@ tags: []
 There are three hosting options:
 
 1. Self-hosting on user-owned hardware
-2. Self-hosting on the cloud (e.g. Amazon, Google Compute)
+2. Self-hosting on the cloud (e.g., Amazon, Google Compute)
 3. Paying a hosting provider. Several companies offer SEED as a hosted solution:
    - [ClearlyEnergy](https://www.clearlyenergy.com/)
    - [Earth Advantage](https://www.earthadvantage.org/creating-change/home-energy-score.html)

@@ -26,12 +26,12 @@ The script reproduce the different steps that a SEED user would do to upload a b
 map each files, match them, create a project and a label and export a list of buildings.
 
 List of arguments:
-The script requires a host name (i.e. output file name), the main URL tested (e.g. https://seed.lbl.gov),
+The script requires a host name (i.e., output file name), the main URL tested (e.g., https://seed.lbl.gov),
 the SEED username and the corresponding API key.
 Those information can be listed as follow in the .ini file contained with the script or entered at the beginning of the script.
 
 Outputs:
-The script will create a .txt file that contains the log of the test, i.e. the success/failure of each apps test and the results of
+The script will create a .txt file that contains the log of the test, i.e., the success/failure of each apps test and the results of
 some apps.
 
 """

@@ -109,7 +109,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Property data) is not added to the response (default is True)'
             ),
         ]
     )
@@ -181,7 +181,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Property data) is not added to the response (default is True)'
             ),
             AutoSchemaHelper.query_boolean_field(
                 'ids_only',

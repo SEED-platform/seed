@@ -36,17 +36,17 @@ The contribution process for SEED is composed of three steps:
     contributions, I represent and warrant that I have received permission to make these
     contributions and grant the foregoing license(s) on behalf of my employer.\*
 
-        Once we have your consent on file, you’ll only need to redo it if conditions change (e.g. a
+        Once we have your consent on file, you’ll only need to redo it if conditions change (e.g., a
 
     change of employer).
 
 2.  Scope agreement and timeline commitment
 
-        If your contribution is small (e.g. a bug fix), simply submit your contribution via GitHub.
+        If your contribution is small (e.g., a bug fix), simply submit your contribution via GitHub.
 
     If you find a bug, first make sure it is not an already known issue, then report it in the GitHub
     [issue tracker](https://github.com/SEED-platform/seed/issues) for this repository. If your
-    contribution is larger (e.g. a new feature or new functionality/capability), we’ll need to evaluate
+    contribution is larger (e.g., a new feature or new functionality/capability), we’ll need to evaluate
     your proposed contribution first. To do that, we need a written description of why you wish to
     contribute to SEED platform, a detailed description of the project that you are proposing, the
     precise functionalities that you plan to implement as part of the project, and a timeframe for

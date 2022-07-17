@@ -69,7 +69,7 @@ your own IDE, we recommend the following extensions:
 
 - VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
 
-To run the same typechecking applied in CI (i.e. using mypy) you can run the following
+To run the same typechecking applied in CI (i.e., using mypy) you can run the following
 
 .. code-block:: console
 

@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='importrecord',
             name='app',
-            field=models.CharField(default='seed', help_text='The application (e.g. BPD or SEED) for this dataset', max_length=64, verbose_name='Destination App'),
+            field=models.CharField(default='seed', help_text='The application (e.g., BPD or SEED) for this dataset', max_length=64, verbose_name='Destination App'),
         ),
         migrations.AlterField(
             model_name='importrecord',

@@ -303,7 +303,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
 
           $scope.onDownEvents = function (type) {
             // If there is a previous event, then wait a while before
-            // activating the other mode - i.e. if the last event was a touch event then
+            // activating the other mode - i.e., if the last event was a touch event then
             // don't enable mouse events for a wee while (500ms or so)
             // Avoids problems with devices that emulate mouse events when you have touch events
 
@@ -405,7 +405,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
              * @name enableColumnMenu
              * @propertyOf ui.grid.class:GridOptions.columnDef
              * @description if column menus are enabled, controls the column menus for this specific
-             * column (i.e. if gridOptions.enableColumnMenus, then you can control column menus
+             * column (i.e., if gridOptions.enableColumnMenus, then you can control column menus
              * using this option. If gridOptions.enableColumnMenus === false then you get no column
              * menus irrespective of the value of this option ).  Defaults to true.
              *

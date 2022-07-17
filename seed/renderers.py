@@ -17,7 +17,7 @@ format.
 
 Use of the custom class(es) will generate the correct format, setting 'status'
 based on the HTTP status code from the response, obviating the need to
-override View(Set) methods unnecessarily, if e.g. ModelViewSet is used.
+override View(Set) methods unnecessarily, if e.g., ModelViewSet is used.
 """
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer

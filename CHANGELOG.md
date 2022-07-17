@@ -1,3 +1,65 @@
+# SEED Version 2.15.0
+
+Date Range: 03/31/22 - 07/16/22
+
+- Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Improve performance moving between different views (Detail to List, etc)
+- Feature [#1754]( https://github.com/SEED-platform/seed/issues/1754 ), Attach PDF (or other files) to a building record
+- Fixed [#2685]( https://github.com/SEED-platform/seed/issues/2685 ), Meter data can't be shown by month
+- Feature [#2760]( https://github.com/SEED-platform/seed/issues/2760 ), Allow derived column definitions and parameters to be used in multiple derived column definitions
+- Feature [#2868]( https://github.com/SEED-platform/seed/issues/2868 ), Add Run ID to fields in Property List and Detail view with BETTER
+- Maintenance [#3029]( https://github.com/SEED-platform/seed/issues/3029 ), Clean up Prod MEDIA directory
+- Fixed [#3078]( https://github.com/SEED-platform/seed/issues/3078 ), Add ability to import data loggers and sensors for a property
+- Maintenance [#3079]( https://github.com/SEED-platform/seed/issues/3079 ), Run WAVA and address issues
+- Fixed [#3106]( https://github.com/SEED-platform/seed/issues/3106 ), Implement container backup on production site
+- Fixed [#3133]( https://github.com/SEED-platform/seed/issues/3133 ), Create Sensor Model Tab
+- Fixed [#3136]( https://github.com/SEED-platform/seed/issues/3136 ), Create Sensor Readings
+- Fixed [#3146]( https://github.com/SEED-platform/seed/issues/3146 ), Extra Data Fields: Need to be able to specify number of decimal points
+- Fixed [#3154]( https://github.com/SEED-platform/seed/issues/3154 ), Add DataLogger concept
+- Fixed [#3174]( https://github.com/SEED-platform/seed/issues/3174 ), Add canonical GHG fields
+- Fixed [#3175]( https://github.com/SEED-platform/seed/issues/3175 ), Store results of carbon analysis into SEED db-based fields
+- Feature [#3178]( https://github.com/SEED-platform/seed/issues/3178 ), BETTER: Retrieve R2 analysis value from API request and display it in the BETTER results in SEED
+- Feature [#3185]( https://github.com/SEED-platform/seed/issues/3185 ), Derived Fields should be able to be moved anywhere in the Inventory List, not just at the end
+- Fixed [#3188]( https://github.com/SEED-platform/seed/issues/3188 ), Letter spacing for some derived columns is odd in Inventory List
+- Fixed [#3193]( https://github.com/SEED-platform/seed/issues/3193 ), Add email template help text on top of page
+- Fixed [#3199]( https://github.com/SEED-platform/seed/issues/3199 ), Improve the ESPM data import process
+- Feature [#3200]( https://github.com/SEED-platform/seed/issues/3200 ), BuildingSync Asset Extractor Integration
+- Maintenance [#3205]( https://github.com/SEED-platform/seed/issues/3205 ), Update lxml to 4.7.1
+- Fixed [#3207]( https://github.com/SEED-platform/seed/issues/3207 ), Disable showing measures and scenarios on tax lot page
+- Feature [#3209]( https://github.com/SEED-platform/seed/issues/3209 ), Add export functionality for dataloggers and sensors
+- Feature [#3216]( https://github.com/SEED-platform/seed/issues/3216 ), Add description field to columns
+- Fixed [#3218]( https://github.com/SEED-platform/seed/issues/3218 ), Add inventory action to "touch" record - refresh metadata
+- Fixed [#3219]( https://github.com/SEED-platform/seed/issues/3219 ), Integrate AT API to dynamically pull AT reports (via BuildingSync) into SEED
+- Fixed [#3221]( https://github.com/SEED-platform/seed/issues/3221 ), Inject multiple cycles of the BPS data, determine how to view across cycles
+- Fixed [#3223]( https://github.com/SEED-platform/seed/issues/3223 ), Generate example data set for use in BPS
+- Maintenance [#3231]( https://github.com/SEED-platform/seed/issues/3231 ), Format all python code using precommit
+- Fixed [#3233]( https://github.com/SEED-platform/seed/issues/3233 ), Create A Data Logger "Dismiss" button doesn't close the window if there is no data entered
+- Fixed [#3236]( https://github.com/SEED-platform/seed/issues/3236 ), Error trying to upload sensor data due to datetime field
+- Fixed [#3243]( https://github.com/SEED-platform/seed/issues/3243 ), Add timezone to property state
+- Fixed [#3248]( https://github.com/SEED-platform/seed/issues/3248 ), Remove print statements from BAE
+- Fixed [#3253]( https://github.com/SEED-platform/seed/issues/3253 ), Verify if Inventory List is pulling all the property states
+- Fixed [#3256]( https://github.com/SEED-platform/seed/issues/3256 ), Refactor Layout of Inventory-Beta "Filter By Label" and "Current Filters"
+- Fixed [#3269]( https://github.com/SEED-platform/seed/issues/3269 ), Unifying export functionality between Actions->Export and Hamburger Menu on UI Grid
+- Maintenance [#3275]( https://github.com/SEED-platform/seed/issues/3275 ), Fix readthedocs as it is not generating the same documentation as local builds of the documentation
+- Fixed [#3277]( https://github.com/SEED-platform/seed/issues/3277 ), Accountability hierarchy rough technical specification
+- Fixed [#3279]( https://github.com/SEED-platform/seed/issues/3279 ), Sensor Action buttons text is being truncated
+- Feature [#3280]( https://github.com/SEED-platform/seed/issues/3280 ), Sensors: Add more fields to Data Loggers section
+- Fixed [#3281]( https://github.com/SEED-platform/seed/issues/3281 ), Sensor Export: Data Logger field is missing + field name tweaks
+- Feature [#3287]( https://github.com/SEED-platform/seed/issues/3287 ), Add ability to API to filter property/labels by label names
+- Feature [#3295]( https://github.com/SEED-platform/seed/issues/3295 ), Column Description Field: Make larger, maybe memo box
+- Feature [#3300]( https://github.com/SEED-platform/seed/issues/3300 ), Add Emmissions Intensity to Analysis Results
+- Feature [#3308]( https://github.com/SEED-platform/seed/issues/3308 ), Add Audit Template Building ID to Audit Template Building Sync import
+- Feature [#3313]( https://github.com/SEED-platform/seed/issues/3313 ), Add property search on exact result match
+- Feature [#3316]( https://github.com/SEED-platform/seed/issues/3316 ), Add `--pyseed` argument to create_test_user_json managed task
+- Maintenance [#3318]( https://github.com/SEED-platform/seed/issues/3318 ), Push latest docker images as well as version tagged images when releasing
+- Fixed [#3324]( https://github.com/SEED-platform/seed/issues/3324 ), Importing Sensor Meta Data only imports one column name field -- timestamp
+- Fixed [#3325]( https://github.com/SEED-platform/seed/issues/3325 ), Fix of duplicate BETTER GHG Fields
+- Feature [#3335]( https://github.com/SEED-platform/seed/issues/3335 ), Add new BAE assets
+- Fixed [#3338]( https://github.com/SEED-platform/seed/issues/3338 ), Sensors: Can't dismiss Create a Data Logger modal when it's empty
+- Fixed [#3343]( https://github.com/SEED-platform/seed/issues/3343 ), Analysis results slow to load when connected to lots of properties
+- Maintenance [#3352]( https://github.com/SEED-platform/seed/issues/3352 ), Bump version of lxml to 4.9.1
+- Maintenance [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), Upgrade to Django 3.2.14
+- Fixed [#3366]( https://github.com/SEED-platform/seed/issues/3366 ), Make beta properties list page the default (and move previous to Legacy)
+- Fixed [#3382]( https://github.com/SEED-platform/seed/issues/3382 ), Replace Raven with Sentry-sdk
 # SEED Version 2.14.0
 
 Date Range: 12/27/21 - 03/31/22

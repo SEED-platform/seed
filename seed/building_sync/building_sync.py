@@ -273,7 +273,7 @@ class BuildingSync(object):
                         # readings for the same time period in SEED currently
                         # NOTE: to future reader, this problem seems to arise from the
                         # fact that SEED is unaware of the _type_ of reading,
-                        # e.g. see BuildingSync's ReadingType (point, median, average, peak, etc)
+                        # e.g., see BuildingSync's ReadingType (point, median, average, peak, etc)
 
                         # if the meter doesn't exist yet, copy it
                         original_meter = meters[meter_reading['source_id']]

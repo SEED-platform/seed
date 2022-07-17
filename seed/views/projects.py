@@ -611,7 +611,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  
     @has_perm_class('requires_member')
     def partial_update(self, request, pk):
         """
-        Updates a project. Allows partial update, i.e. only updated param s need be supplied.
+        Updates a project. Allows partial update, i.e., only updated param s need be supplied.
 
         :PUT: Expects organization_id in query string.
         ---

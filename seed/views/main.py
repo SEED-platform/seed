@@ -43,7 +43,7 @@ def _get_default_org(user):
     :returns: tuple (Organization id, Organization name, OrganizationUser role)
     """
     org = user.default_organization
-    # check if user is still in the org, i.e. s/he wasn't removed from his/her
+    # check if user is still in the org, i.e., they weren't removed from their
     # default org or did not have a set org and try to set the first one
     if not org or not user.orgs.exists():
         org = user.orgs.first()

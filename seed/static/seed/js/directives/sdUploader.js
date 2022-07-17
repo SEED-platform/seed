@@ -131,7 +131,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
           return;
         }
 
-        // Ignore this error handler if the network request hasn't taken place yet (e.g. invalid file extension)
+        // Ignore this error handler if the network request hasn't taken place yet (e.g., invalid file extension)
         if (!xhr) {
           alert(errorReason);
           return;
@@ -274,7 +274,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
           return;
         }
 
-        // Ignore this error handler if the network request hasn't taken place yet (e.g. invalid file extension)
+        // Ignore this error handler if the network request hasn't taken place yet (e.g., invalid file extension)
         if (!xhr) {
           alert(errorReason);
           return;
@@ -418,7 +418,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
           return;
         }
 
-        // Ignore this error handler if the network request hasn't taken place yet (e.g. invalid file extension)
+        // Ignore this error handler if the network request hasn't taken place yet (e.g., invalid file extension)
         if (!xhr) {
           alert(errorReason);
           return;

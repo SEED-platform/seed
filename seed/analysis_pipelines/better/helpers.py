@@ -58,7 +58,7 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
     :param progress_data: ProgressData
     :param errors: list[str], list of debug error messages
     :param what_failed_desc: str, description of what was happening when failure occurred
-        e.g. what were you trying to do
+        e.g., what were you trying to do
     :param analysis_property_view_id: int, optional, if provided, the error messages will be linked
         to this property view
     :param fail_on_error: bool, optional, if True and errors were found, this fails the pipeline
