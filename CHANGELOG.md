@@ -61,6 +61,7 @@ Closed Issues and Features (Total: 58):
 - Maintenance [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), Upgrade to Django 3.2.14
 - Fixed [#3366]( https://github.com/SEED-platform/seed/issues/3366 ), Make beta properties list page the default (and move previous to Legacy)
 - Fixed [#3382]( https://github.com/SEED-platform/seed/issues/3382 ), Replace Raven with Sentry-sdk
+
 # SEED Version 2.14.0
 
 Date Range: 12/27/21 - 03/31/22
