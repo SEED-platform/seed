@@ -1,45 +1,62 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
 
+import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-import xlrd
 
 from seed.data_importer.meters_parser import MetersParser
-from seed.lib.mcm import reader
-from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
-from seed.data_importer.tasks import do_checks
-from seed.data_importer.tasks import geocode_and_match_buildings_task
-from seed.data_importer.tasks import map_data
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
+from seed.data_importer.tasks import (
+    do_checks,
+    geocode_and_match_buildings_task,
+    map_data
+)
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import \
     validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mcm import mapper
+from seed.lib.mcm import mapper, reader
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
-from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
-                         DATA_STATE_MATCHING, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, Column, Cycle,
-                         ImportFile, Meter, Organization, PropertyAuditLog,
-                         PropertyState, PropertyView, TaxLotAuditLog,
-                         TaxLotProperty, TaxLotState, get_column_mapping,
-                         obj_to_dict)
+from seed.models import (
+    AUDIT_USER_EDIT,
+    DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    Column,
+    Cycle,
+    ImportFile,
+    Meter,
+    Organization,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    get_column_mapping,
+    obj_to_dict
+)
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.api import api_endpoint_class, OrgMixin
-from seed.utils.api_schema import (AutoSchemaHelper,
-                                   swagger_auto_schema_org_query_param)
+from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
 
 _log = logging.getLogger(__name__)
 
@@ -1018,6 +1035,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
         view_id = request.query_params.get('view_id')
+        data_logger_id = request.query_params.get('data_logger_id')
 
         try:
             import_file = ImportFile.objects.get(
@@ -1030,7 +1048,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+            PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find property with pk=' + str(
@@ -1041,7 +1059,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             "proposed_imports": list(parser.data)
         }
 
-        import_file.matching_results_data['property_id'] = property_id
+        import_file.matching_results_data['data_logger_id'] = data_logger_id
         import_file.save()
 
         return result
@@ -1051,7 +1069,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['GET'])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
-        view_id = request.query_params.get('view_id')
+        data_logger_id = request.query_params.get('data_logger_id')
 
         try:
             import_file = ImportFile.objects.get(
@@ -1064,17 +1082,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
-        except PropertyView.DoesNotExist:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Could not find property with pk=' + str(
-                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
             sensor_readings_parser = SensorsReadingsParser.factory(
                 import_file.local_file,
                 org_id,
-                property_id=property_id
+                data_logger_id=data_logger_id
             )
         except ValueError as e:
             return JsonResponse(
@@ -1082,7 +1093,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         result = sensor_readings_parser.get_validation_report()
 
-        import_file.matching_results_data['property_id'] = property_id
+        import_file.matching_results_data['data_logger_id'] = data_logger_id
         import_file.save()
 
         return result

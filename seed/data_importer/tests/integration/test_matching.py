@@ -1,33 +1,31 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
 import operator
 import os.path as osp
+import pathlib
 from functools import reduce
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
-import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
+    FAKE_ROW
 )
 from seed.models import (
-    ASSESSED_RAW,
     ASSESSED_BS,
+    ASSESSED_RAW,
     DATA_STATE_MAPPING,
-)
-from seed.models import (
     Column,
-    PropertyState,
+    PropertyState
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -144,7 +142,7 @@ class TestMatching(DataMappingBaseTestCase):
         matches = self.query_property_matches(property_states, '2342', None, None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
-        # should return both properties, the first one should be the pm match, i.e. the first prop
+        # should return both properties, the first one should be the pm match, i.e., the first prop
         matches = self.query_property_matches(property_states, '481516', '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)

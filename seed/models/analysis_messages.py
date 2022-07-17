@@ -1,19 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-import logging
 import json
+import logging
 
 from django.db import models
 
-from seed.models import (
-    Analysis,
-    AnalysisPropertyView
-)
-
+from seed.models import Analysis, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +35,10 @@ class AnalysisMessage(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     # if the message is relevant to a specific property then it should be linked
     # to an AnalysisPropertyView in addition to being linked to the analysis.
-    # e.g. if the AnalysisPropertyView is missing some required data
+    # e.g., if the AnalysisPropertyView is missing some required data
     # if the message is generic and applies to the entire analysis, analysis_property_view
     # should be None/NULL
-    # e.g. the service request returned a non-200 response
+    # e.g., the service request returned a non-200 response
     analysis_property_view = models.ForeignKey(AnalysisPropertyView, on_delete=models.CASCADE, null=True, blank=True)
     type = models.IntegerField(choices=MESSAGE_TYPES)
     # human-readable message which is presented on the frontend

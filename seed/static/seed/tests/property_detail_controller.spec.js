@@ -49,7 +49,17 @@ describe('controller: inventory_detail_controller', function () {
         campus: 'False',
         id: 4,
         organization: 24,
-        parent_property: ''
+        parent_property: '',
+        inventory_documents: [
+          {
+            "id": 1,
+            "file_type": "PDF",
+            "created": "2022-04-10T19:35:58.448094-07:00",
+            "file": "/media/inventory_documents/1-s2.0-S1364032115000672-main.pdf",
+            "filename": "1-s2.0-S1364032115000672-main.pdf",
+            "property": 4
+          }
+        ],
       },
       cycle: {
         created: '2016-08-02T16:38:22.925258Z',

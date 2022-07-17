@@ -1,29 +1,42 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from drf_yasg.utils import swagger_auto_schema
-from django.http import JsonResponse
+import json
+import logging
+
 from django.db.models import Count
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
-from rest_framework import viewsets, serializers, status
+from quantityfield.units import ureg
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
-from quantityfield.units import ureg
-
-from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipeline,
+    AnalysisPipelineException
+)
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, AnalysisPropertyView, Cycle, PropertyView, PropertyState, Column
+from seed.models import (
+    Analysis,
+    AnalysisPropertyView,
+    Column,
+    Cycle,
+    PropertyState,
+    PropertyView
+)
 from seed.serializers.analyses import AnalysisSerializer
-from seed.serializers.analysis_property_views import AnalysisPropertyViewSerializer
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.serializers.analysis_property_views import (
+    AnalysisPropertyViewSerializer
+)
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -106,6 +119,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     def list(self, request):
         organization_id = self.get_organization(request)
         property_id = request.query_params.get('property_id', None)
+        include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
         if property_id is not None:
@@ -125,25 +139,19 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
-        serialized_views = []
-        original_views = {}
-        if analyses:
+        results = {'status': 'success', 'analyses': analyses}
+
+        if analyses and include_views:
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
-            for view in views_queryset:
-                serialized_view = AnalysisPropertyViewSerializer(view).data
-                serialized_views.append(serialized_view)
-            original_views = {
+
+            results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
+            results["original_views"] = {
                 apv_id: property_view.id if property_view is not None else None
                 for apv_id, property_view in property_views_by_apv_id.items()
             }
 
-        return JsonResponse({
-            'status': 'success',
-            'analyses': analyses,
-            'views': serialized_views,
-            'original_views': original_views
-        })
+        return JsonResponse(results)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
@@ -324,7 +332,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
-        columns = Column.objects.filter(organization_id=org_id)
+        columns = Column.objects.filter(organization_id=org_id, derived_column=None)
         column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
 
         col_names = [x for x, y in list(columns.values_list('column_name', 'table_name')) if (y == 'PropertyState')]

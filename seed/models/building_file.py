@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -15,18 +15,17 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
 from seed.models import (
-    PropertyState,
-    Column,
-    PropertyMeasure,
-    Measure,
-    PropertyAuditLog,
     AUDIT_IMPORT,
-    Scenario,
+    MERGE_STATE_MERGED,
+    Column,
+    Measure,
     Meter,
     MeterReading,
-    MERGE_STATE_MERGED,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    Scenario
 )
-
 
 _log = logging.getLogger(__name__)
 
@@ -161,6 +160,7 @@ class BuildingFile(models.Model):
             parser_kwargs = {}
             # TODO: use table_mappings for BuildingSync process method
             data, messages = parser.process(*parser_args, **parser_kwargs)
+
         except ParsingError as e:
             return False, None, None, [str(e)]
 
@@ -263,7 +263,7 @@ class BuildingFile(models.Model):
                 if len(ref_case) == 1:
                     scenario.reference_case = ref_case.first()
 
-            # set the list of measures. Note that this can be empty (e.g. baseline has no measures)
+            # set the list of measures. Note that this can be empty (e.g., baseline has no measures)
             for measure_name in s.get('measures', []):
                 # find the join measure in the database
                 measure = None

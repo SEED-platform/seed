@@ -1,64 +1,61 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import ast
-import os
 import json
+import os
+import pathlib
 import unittest
-
-from config.settings.common import TIME_ZONE
-
 from datetime import datetime
+from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
-from django.utils.timezone import (
-    get_current_timezone,
-    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-)
-
+from django.utils.timezone import \
+    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+from django.utils.timezone import get_current_timezone
 from pytz import timezone
-import pathlib
 
-from seed.landing.models import SEEDUser as User
-from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord,
+from config.settings.common import TIME_ZONE
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import (
+    geocode_and_match_buildings_task,
+    save_raw_data
 )
-from seed.data_importer.tasks import geocode_and_match_buildings_task, save_raw_data
+from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
-
 from seed.models import (
     DATA_STATE_MAPPING,
+    BuildingFile,
+    Column,
+    ColumnMappingProfile,
     Meter,
     MeterReading,
     Note,
+    Organization,
     Property,
     PropertyState,
     PropertyView,
-    TaxLotView,
-    TaxLotProperty,
-    Column,
-    BuildingFile,
     Scenario,
-    ColumnMappingProfile,
-    Organization,
+    TaxLotProperty,
+    TaxLotView
 )
-from seed.models.sensors import Sensor, SensorReading
+from seed.models.sensors import DataLogger, Sensor, SensorReading
 from seed.test_helpers.fake import (
-    FakeCycleFactory,
     FakeColumnFactory,
+    FakeColumnListProfileFactory,
+    FakeCycleFactory,
+    FakeNoteFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeNoteFactory,
+    FakePropertyViewFactory,
     FakeStatusLabelFactory,
     FakeTaxLotFactory,
-    FakeTaxLotStateFactory,
-    FakePropertyViewFactory,
-    FakeColumnListProfileFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
@@ -143,6 +140,38 @@ class PropertyViewTests(DataMappingBaseTestCase):
         )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_upload_inventory_document_and_delete(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        test_filepath = os.path.relpath(os.path.join(location, 'data', 'test-document.pdf'))
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'upload_inventory_document/?organization_id={self.org.pk}'
+
+        document = open(test_filepath, 'rb')
+        response = self.client.put(
+            path=url,
+            data=encode_multipart(data=dict(
+                file=document,
+                file_type='PDF',
+                name='unused-name'),
+                boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT
+        )
+
+        data = response.json()
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(data['success'])
+
+        # verify that the object in on the property
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
+        response = self.client.get(url)
+        self.assertEqual(len(response.json()['property']['inventory_documents']), 1)
+        self.assertEqual(response.json()['property']['inventory_documents'][0]['filename'], 'test-document.pdf')
+        self.assertEqual(response.json()['property']['inventory_documents'][0]['file_type'], 'PDF')
 
     def test_edit_properties_creates_notes_after_initial_edit(self):
         state = self.property_state_factory.get_property_state()
@@ -1273,22 +1302,31 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
+        dl_a = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
         Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl_a,
             "display_name": "s1",
             "sensor_type": "first",
             "units": "one",
             "column_name": "sensor 1"
         })
         Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl_a,
             "display_name": "s2",
             "sensor_type": "second",
             "units": "two",
             "column_name": "sensor 2"
         })
+
+        dl_b = DataLogger.objects.create(**{
+            "property_id": self.property_2.id,
+            "display_name": "boo",
+        })
         Sensor.objects.create(**{
-            "sensor_property": self.property_2,
+            "data_logger": dl_b,
             "display_name": "s3",
             "sensor_type": "third",
             "units": "three",
@@ -1312,15 +1350,19 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual([r["column_name"] for r in result_dict], ["sensor 3"])
 
     def test_property_sensor_usage_returns_sensor_readings(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
         s1 = Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl,
             "display_name": "s1",
             "sensor_type": "first",
             "units": "one",
             "column_name": "sensor 1"
         })
         s2 = Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl,
             "display_name": "s2",
             "sensor_type": "second",
             "units": "two",
@@ -1342,17 +1384,19 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
             SensorReading.objects.create(**{
                 "reading": s1_reading,
                 "timestamp": timestamp,
-                "sensor": s1
+                "sensor": s1,
+                "is_occupied": False
             })
             SensorReading.objects.create(**{
                 "reading": s2_reading,
                 "timestamp": timestamp,
-                "sensor": s2
+                "sensor": s2,
+                "is_occupied": False
             })
             except_results.append({
                 "timestamp": str(timestamp.replace(tzinfo=None)),
-                s1.display_name: s1_reading,
-                s2.display_name: s2_reading
+                f"{s1.display_name} ({dl.display_name})": s1_reading,
+                f"{s2.display_name} ({dl.display_name})": s2_reading
             })
             s1_reading += 1
             s2_reading += 1
@@ -1379,10 +1423,10 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'month': 'January 2000', 's1': 2.0, 's2': 12.0},
-                {'month': 'February 2000', 's1': 4.0, 's2': 14.0},
-                {'month': 'January 2100', 's1': 3.0, 's2': 13.0},
-                {'month': 'February 2100', 's1': 5.0, 's2': 15.0}
+                {'month': 'January 2000', 's1 (moo)': 2.0, 's2 (moo)': 12.0},
+                {'month': 'February 2000', 's1 (moo)': 4.0, 's2 (moo)': 14.0},
+                {'month': 'January 2100', 's1 (moo)': 3.0, 's2 (moo)': 13.0},
+                {'month': 'February 2100', 's1 (moo)': 5.0, 's2 (moo)': 15.0}
             ]
         )
 
@@ -1398,8 +1442,8 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'year': 2000, 's1': 3.0, 's2': 13.0},
-                {'year': 2100, 's1': 4.0, 's2': 14.0},
+                {'year': 2000, 's1 (moo)': 3.0, 's2 (moo)': 13.0},
+                {'year': 2100, 's1 (moo)': 4.0, 's2 (moo)': 14.0},
             ]
         )
 
@@ -1782,22 +1826,22 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(597478.9 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(548603.7 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': 100 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(100 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 100,
                 },
                 {
                     'month': 'May 2016',
-                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(200 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 200,
                 },
             ],
@@ -1895,6 +1939,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
+    @skip('Overlapping data is not valid through ESPM. This test is no longer valid')
     def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
@@ -2011,7 +2056,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 },
             ]
         }
-
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
@@ -2069,6 +2113,121 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'column_defs': [
                 {
                     'field': 'year',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_meter_usage_can_filter_when_usages_span_a_single_month(self):
+        save_raw_data(self.import_file.id)
+
+        # add additional entries for the Electricity meter
+        tz_obj = timezone(TIME_ZONE)
+        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
+
+        # 2020 January-February reading has 1 full day in January 1 full day in February.
+        # The reading should be split 1/2 January (50) and 1/2 February (50)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 1, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 2, 2, 0, 0, 0), timezone=tz_obj),
+            'reading': 100 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        # 2020 March to April reading has 1 day in march, and 2 days in april.
+        # The reading should be split 1/3 march (100) and 2/3 april (200)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 3, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 4, 3, 0, 0, 0), timezone=tz_obj),
+            'reading': 300 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        # 2020 May to July shows readings can span multiple months.
+        # The reading should be split 1/32 May (10), 30/32 June (300), 1/32 July (10)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 5, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 7, 2, 0, 0, 0), timezone=tz_obj),
+            'reading': 320 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+
+        post_params = json.dumps({
+            'interval': 'Month',
+            'excluded_meter_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'Electric - Grid - PM - 5766973-0': 175213.75,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'month': 'January 2016'
+                },
+                {
+                    'Electric - Grid - PM - 5766973-0': 160880.85,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'month': 'February 2016'
+                },
+                {
+                    'month': 'January 2020',
+                    'Electric - Grid - PM - 5766973-0': 50,
+                },
+                {
+                    'month': 'February 2020',
+                    'Electric - Grid - PM - 5766973-0': 50,
+                },
+                {
+                    'month': 'March 2020',
+                    'Electric - Grid - PM - 5766973-0': 100,
+                },
+                {
+                    'month': 'April 2020',
+                    'Electric - Grid - PM - 5766973-0': 200,
+                },
+                {
+                    'month': 'May 2020',
+                    'Electric - Grid - PM - 5766973-0': 10,
+                },
+                {
+                    'month': 'June 2020',
+                    'Electric - Grid - PM - 5766973-0': 300,
+                },
+                {
+                    'month': 'July 2020',
+                    'Electric - Grid - PM - 5766973-0': 10,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'month',
                     '_filter_type': 'datetime',
                 },
                 {

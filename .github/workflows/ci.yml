@@ -4,8 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - 'develop'
-      - 'main'
+      - "develop"
+      - "main"
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
@@ -20,13 +20,10 @@ jobs:
       matrix:
         test_env: [django, functional, api]
     steps:
-      -
-        uses: actions/checkout@v2
-      -
-        name: Set up Docker Buildx
+      - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      -
-        name: Cache Docker layers
+      - name: Cache Docker layers
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
@@ -35,17 +32,14 @@ jobs:
           key: ${{ runner.os }}-buildx-v3-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-v3-
-      -
-        name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
-      -
-        name: Start the stack
+      - name: Build Docker dev image
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:develop --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
+      - name: Start the stack
         run: |
           docker volume create --name=seed_pgdata
           docker volume create --name=seed_media
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-      -
-        name: Migrate
+      - name: Migrate
         run: |
           # verify no migrations need to be made...
           docker exec seed_web python manage.py makemigrations --check --dry-run
@@ -54,10 +48,8 @@ jobs:
           docker exec seed_web ./manage.py migrate
           docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-      -
-        uses: actions/setup-node@v1
-      -
-        name: Install dependencies
+      - uses: actions/setup-node@v1
+      - name: Install dependencies
         run: |
           npm install
           sudo apt update
@@ -65,8 +57,7 @@ jobs:
           wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install -y /tmp/chrome.deb
           google-chrome --version
-      -
-        name: Test Django
+      - name: Test Django
         if: ${{ matrix.test_env == 'django' }}
         env:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
@@ -80,8 +71,7 @@ jobs:
           else
             echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
           fi
-      -
-        name: Test Frontend
+      - name: Test Frontend
         if: ${{ matrix.test_env == 'functional' }}
         env:
           DISPLAY: ":99"
@@ -91,37 +81,31 @@ jobs:
           ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
-      -
-        name: Test API
+      - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |
           docker exec seed_web ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
           docker exec seed_web python seed/tests/api/test_seed_host_api.py --noinput --nofile
-      -
-        name: Web container logs
+      - name: Web container logs
         if: ${{ always() }}
         run: docker logs seed_web
   formatting:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tox_env: [flake8, docs, mypy]
+        tox_env: [docs, precommit, mypy]
     steps:
-      -
-        uses: actions/checkout@v2
-      -
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
-      -
-        name: Install deps
+          python-version: "3.9"
+      - name: Install deps
         run: |
           pip install --upgrade pip
           pip install tox==2.7.0
           sudo apt update
           sudo apt install gdal-bin
-      -
-        name: Setup config
+      - name: Setup config
         run: |
           cat <<EOF > config/settings/local_untracked.py
           {
@@ -130,6 +114,5 @@ jobs:
               }
           }
           EOF
-      -
-        name: Run tox
+      - name: Run tox
         run: tox -e ${{ matrix.tox_env }}

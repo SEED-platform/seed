@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 This files has faker methods for generating fake data.
 The data is pseudo random, but still predictable. I.e. calling the same
 method mutiple times will always return the same sequence of results
@@ -25,13 +25,32 @@ from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    Analysis, AnalysisPropertyView, Cycle, Column, DerivedColumn, GreenAssessment, GreenAssessmentURL, Measure,
-    GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
-    PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
-    ColumnListProfileColumn,
     VIEW_LIST,
-    VIEW_LIST_PROPERTY)
+    VIEW_LIST_PROPERTY,
+    Analysis,
+    AnalysisPropertyView,
+    Column,
+    ColumnListProfile,
+    ColumnListProfileColumn,
+    Cycle,
+    DerivedColumn,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
+    Measure,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    StatusLabel,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
+)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
@@ -289,7 +308,7 @@ class FakePropertyStateFactory(BaseFake):
             organization=self._get_attr('organization', self.organization),
             **property_details
         )
-        # make sure to create an audit log so that we can test various methods (e.g. updating properties)
+        # make sure to create an audit log so that we can test various methods (e.g., updating properties)
         PropertyAuditLog.objects.create(
             organization=self._get_attr('organization', self.organization),
             state=ps,

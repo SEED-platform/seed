@@ -16,8 +16,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
 
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     Organization,
     OrganizationUser
@@ -58,7 +58,7 @@ def get_org_id(request):
     """Extract the organization ID from a request. Returns None if not found
 
     This function attempts to find the organization id by checking (in order):
-    - Path of the request (e.g. /organizations/<id>/...)
+    - Path of the request (e.g., /organizations/<id>/...)
     - Query parameters
     - Request body
 
@@ -71,7 +71,7 @@ def get_org_id(request):
         kwarg_name = request_view.authz_org_id_kwarg
         if kwarg_name:
             request_kwargs = request.parser_context.get('kwargs', {})
-            # some views might not include the ID in the path so we have to check (e.g. data quality)
+            # some views might not include the ID in the path so we have to check (e.g., data quality)
             kwarg_org_id = request_kwargs.get(kwarg_name, None)
             if kwarg_org_id is not None:
                 return kwarg_org_id
@@ -133,7 +133,7 @@ def get_user_org(user):
 class SEEDOrgPermissions(BasePermission):
     """
     Control API permissions based on OrganizationUser and HTTP Method
-    i.e. GET/POST etc.
+    i.e., GET/POST etc.
 
     Any method that can change data (POST, PUT, PATCH,  DELETE) requires
     ROLE_MEMBER, the rest (GET, OPTIONS, HEAD) require ROLE_VIEWER.

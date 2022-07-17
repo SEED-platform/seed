@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import csv
@@ -9,63 +9,59 @@ import datetime
 import logging
 import os
 
-from past.builtins import basestring
 import pint
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
+from past.builtins import basestring
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import api_view, action, parser_classes, \
+from rest_framework.decorators import (
+    action,
+    api_view,
+    parser_classes,
     permission_classes
-from rest_framework.parsers import MultiPartParser, FormParser
+)
+from rest_framework.parsers import FormParser, MultiPartParser
 
-from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord
-)
-from seed.data_importer.models import ROW_DELIMITER
+from seed.data_importer.models import ROW_DELIMITER, ImportFile, ImportRecord
 from seed.data_importer.tasks import do_checks
-from seed.data_importer.tasks import (
-    map_data,
-    geocode_buildings_task as task_geocode_buildings,
-    map_additional_models as task_map_additional_models,
-    match_buildings as task_match_buildings,
-    save_raw_data as task_save_raw,
-    validate_use_cases as task_validate_use_cases,
-)
-from seed.decorators import ajax_request, ajax_request_class
-from seed.decorators import get_prog_key
+from seed.data_importer.tasks import \
+    geocode_buildings_task as task_geocode_buildings
+from seed.data_importer.tasks import \
+    map_additional_models as task_map_additional_models
+from seed.data_importer.tasks import map_data
+from seed.data_importer.tasks import match_buildings as task_match_buildings
+from seed.data_importer.tasks import save_raw_data as task_save_raw
+from seed.data_importer.tasks import \
+    validate_use_cases as task_validate_use_cases
+from seed.decorators import ajax_request, ajax_request_class, get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
-from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    Organization,
-)
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
+from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
-    get_column_mapping,
-)
-from seed.models import (
-    obj_to_dict,
-    PropertyState,
-    TaxLotState,
+    AUDIT_USER_EDIT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
-    MERGE_STATE_UNKNOWN,
-    MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
-    Cycle,
-    Column,
-    PropertyAuditLog,
-    TaxLotAuditLog,
-    AUDIT_USER_EDIT,
-    TaxLotProperty,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    PORTFOLIO_RAW,
     SEED_DATA_SOURCES,
-    PORTFOLIO_RAW)
+    Column,
+    Cycle,
+    PropertyAuditLog,
+    PropertyState,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    get_column_mapping,
+    obj_to_dict
+)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
 from seed.utils.geocode import MapQuestAPIKeyError
@@ -100,7 +96,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
               required: true
               paramType: body
             - name: source_type
-              description: the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')
+              description: the type of file (e.g., 'Portfolio Raw' or 'Assessed Raw')
               required: false
               paramType: body
             - name: source_program_version

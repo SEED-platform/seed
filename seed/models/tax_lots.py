@@ -1,11 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import logging
 import re
@@ -13,30 +12,30 @@ from os import path
 
 from django.contrib.gis.db import models as geomodels
 from django.db import models
-from django.db.models.signals import post_save, pre_save, m2m_changed
+from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
-    StatusLabel,
     DATA_STATE,
-    DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_UNKNOWN,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
+    StatusLabel
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
-    split_model_fields,
     obj_to_dict,
+    split_model_fields
 )
 from seed.utils.time import convert_to_js_timestamp
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
+
+from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -202,7 +201,7 @@ class TaxLotState(models.Model):
         Return the history of the taxlot state by parsing through the auditlog. Returns only the ids
         of the parent states and some descriptions.
 
-              master
+               main
               /    \
              /      \
           parent1  parent2
@@ -210,12 +209,12 @@ class TaxLotState(models.Model):
         In the records, parent2 is most recent, so make sure to navigate parent two first since we
         are returning the data in reverse over (that is most recent changes first)
 
-        :return: list, history as a list, and the master record
+        :return: list, history as a list, and the main record
         """
 
         """Return history in reverse order."""
         history = []
-        master = {
+        main = {
             'state_id': self.id,
             'state_data': self,
             'date_edited': None,
@@ -244,7 +243,7 @@ class TaxLotState(models.Model):
         ).order_by('-id').first()
 
         if log:
-            master = {
+            main = {
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -304,7 +303,7 @@ class TaxLotState(models.Model):
                 record = record_dict(log)
                 history.append(record)
 
-        return history, master
+        return history, main
 
     @classmethod
     def coparent(cls, state_id):

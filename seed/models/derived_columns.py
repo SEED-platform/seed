@@ -1,19 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import annotations
+
 import copy
 from typing import Any, Union
 
-from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.db import models
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
-
 from quantityfield.units import ureg
 
 from seed.landing.models import Organization
@@ -84,14 +83,8 @@ class ExpressionEvaluator:
         """Transforms expression tree into a result by applying operations.
         Should be used with the expression grammar above
         """
-        from operator import (
-            add,
-            sub,
-            mul,
-            truediv as div,
-            neg,
-            mod
-        )
+        from operator import add, mod, mul, neg, sub
+        from operator import truediv as div
 
         number = float
         min = min
@@ -222,8 +215,23 @@ class DerivedColumn(models.Model):
             })
 
     def save(self, *args, **kwargs):
+        created = not self.pk
         self.full_clean()
-        return super().save(*args, **kwargs)
+        save_response = super().save(*args, **kwargs)
+        if self.inventory_type == 0:
+            inventory_type = 'PropertyState'
+        elif self.inventory_type == 1:
+            inventory_type = 'TaxLotState'
+        if created:
+            Column.objects.create(
+                derived_column=self,
+                column_name=self.name,
+                display_name=self.name,
+                column_description=self.name,
+                table_name=inventory_type,
+                organization=self.organization,
+            )
+        return save_response
 
     def get_parameter_values(self, inventory_state: Union[PropertyState, TaxLotState]) -> dict[str, Any]:
         """Construct a dictionary of column values keyed by expression parameter
@@ -293,6 +301,12 @@ class DerivedColumn(models.Model):
         merged_parameters.update(inventory_parameters)
         merged_parameters = _cast_params_to_floats(merged_parameters)
 
+        # determine if any source columns are derived_columns
+        self.check_for_source_columns_derived(inventory_state, merged_parameters)
+
+        if any([val is None for val in merged_parameters.values()]):
+            return None
+
         try:
             return self._cached_evaluator.evaluate(merged_parameters)
         except KeyError:
@@ -308,6 +322,15 @@ class DerivedColumn(models.Model):
                             f'    parameters: {merged_parameters}\n'
                             f'    expression: {self.expression}\n'
                             f'    exception: {e}')
+
+    def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
+        dcps = self.derivedcolumnparameter_set.all()
+        for dcp in dcps:
+            column = Column.objects.get(pk=dcp.source_column_id)
+            if column.derived_column:
+                dc = column.derived_column
+                val = dc.evaluate(inventory_state)
+                merged_parameters[dcp.parameter_name] = val
 
 
 class DerivedColumnParameter(models.Model):

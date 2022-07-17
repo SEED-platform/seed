@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 :license: see LICENSE for more details.
 
@@ -11,7 +11,7 @@ seed local_untracked.py
             or
             $ ./manage.py runserver --settings=config.settings.dev
         - add your settings. Make sure to update the DATABASES, AWS related configurations, and
-            CACHES (i.e. everything here starting with 'your-')
+            CACHES (i.e., everything here starting with 'your-')
     For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 from __future__ import absolute_import
@@ -52,15 +52,25 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY', '6Le
 #SERVER_EMAIL = 'info@seed-platform.org'
 #DEFAULT_FROM_EMAIL = 'info@seed-platform.org'
 
+
 # Sentry Configuration (Optional)
-# import raven
-# RAVEN_CONFIG = {
-#    'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
-#    # If you are using git, you can also automatically configure the
-#    # release based on the git info.
-#    'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
-# }
-# SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
+# import sentry_sdk
+# from sentry_sdk.integrations.django import DjangoIntegration
+# sentry_sdk.init(
+#     dsn="https://<user>@<key>.ingest.sentry.io/<job>",
+#     integrations=[
+#         DjangoIntegration(),
+#     ],
+#
+#     # Set traces_sample_rate to 1.0 to capture 100%
+#     # of transactions for performance monitoring.
+#     # We recommend adjusting this value in production.
+#     traces_sample_rate=1.0,
+#
+#     # If you wish to associate users to errors (assuming you are using
+#     # django.contrib.auth) you may enable sending PII data.
+#     send_default_pii=True
+# )
 
 # OAuth2 Configuration (Optional)
 # Token request Url is a common choice for audience

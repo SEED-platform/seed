@@ -215,6 +215,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.delete_inventory_document = function (view_id, file_id) {
+      return $http.delete('/api/v3/properties/' + view_id + '/delete_inventory_document/', {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        params: {
+          organization_id: user_service.get_organization().id,
+          file_id: file_id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     inventory_service.get_property_links = function (view_id) {
       // Error checks
       if (_.isNil(view_id)) {
@@ -1080,12 +1094,23 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_column_list_profiles = function (profile_location, inventory_type) {
+    inventory_service.get_column_list_profile = function (id) {
+      return $http.get('/api/v3/column_list_profiles/' + id, {
+        params: {
+          organization_id: user_service.get_organization().id,
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.get_column_list_profiles = function (profile_location, inventory_type, brief=false) {
       return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
-          profile_location: profile_location
+          profile_location: profile_location,
+          brief: brief,
         }
       }).then(function (response) {
         var profiles = response.data.data.sort(function (a, b) {
@@ -1133,6 +1158,24 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         return $q.reject();
       }
       return $http.delete('/api/v3/column_list_profiles/' + id + '/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      });
+    };
+
+    inventory_service.refresh_metadata = function (ids, states, inventory_type, progress_key) {
+      return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
+        ids: ids,
+        states: states,
+        inventory_type: inventory_type,
+        progress_key: progress_key,
+        organization_id: user_service.get_organization().id
+      });
+    };
+
+    inventory_service.start_refresh_metadata = function() {
+      return $http.get('/api/v3/tax_lot_properties/start_refresh_metadata/', {
         params: {
           organization_id: user_service.get_organization().id
         }

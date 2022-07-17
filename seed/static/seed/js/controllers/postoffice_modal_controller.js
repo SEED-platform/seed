@@ -35,4 +35,3 @@ angular.module('BE.seed.controller.postoffice_modal', [])
         });
       };
     }]);
-

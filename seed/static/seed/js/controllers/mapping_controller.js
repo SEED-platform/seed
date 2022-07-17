@@ -37,6 +37,7 @@ angular.module('BE.seed.controller.mapping', [])
     'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
     'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
     'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
+    'derived_columns_payload',
     function (
       $scope,
       $state,
@@ -70,7 +71,8 @@ angular.module('BE.seed.controller.mapping', [])
       naturalSort,
       COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
       COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
-      COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
+      COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
+      derived_columns_payload,
     ) {
       $scope.profiles = [
         {id: 0, mappings: [], name: '<None selected>'}
@@ -111,6 +113,7 @@ angular.module('BE.seed.controller.mapping', [])
             $scope.initialize_mappings();
             $scope.updateInventoryTypeDropdown();
             $scope.updateColDuplicateStatus();
+            $scope.updateDerivedColumnMatchStatus();
           }).catch(function () {
             $scope.dropdown_selected_profile = $scope.current_profile;
             return;
@@ -121,6 +124,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.initialize_mappings();
           $scope.updateInventoryTypeDropdown();
           $scope.updateColDuplicateStatus();
+          $scope.updateDerivedColumnMatchStatus();
         }
       };
 
@@ -316,6 +320,7 @@ angular.module('BE.seed.controller.mapping', [])
           }
         });
         $scope.updateColDuplicateStatus();
+        $scope.updateDerivedColumnMatchStatus();
       };
       $scope.updateInventoryTypeDropdown = function () {
         var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
@@ -362,7 +367,10 @@ angular.module('BE.seed.controller.mapping', [])
 
         $scope.flag_mappings_change();
 
-        if (!checkingMultiple) $scope.updateColDuplicateStatus();
+        if (!checkingMultiple) {
+          $scope.updateColDuplicateStatus()
+          $scope.updateDerivedColumnMatchStatus()
+        };
       };
 
       $scope.updateColDuplicateStatus = function () {
@@ -391,6 +399,13 @@ angular.module('BE.seed.controller.mapping', [])
         });
 
         $scope.duplicates_present = duplicates_present;
+      };
+
+      // Verify there are not any suggested Column names that match an existing Derived Column name
+      $scope.updateDerivedColumnMatchStatus = function () {
+        const suggestions = $scope.mappings.map(col => col.suggestion)
+        const derived_col_names = derived_columns_payload.derived_columns.map(col => col.name)
+        $scope.derived_column_match = suggestions.some(name => derived_col_names.includes(name)) ? true : false
       };
 
       var get_col_from_suggestion = function (name) {
@@ -456,6 +471,7 @@ angular.module('BE.seed.controller.mapping', [])
           if (changed) $scope.change(col, true);
         });
         $scope.updateColDuplicateStatus();
+        $scope.updateDerivedColumnMatchStatus();
       };
 
       /**
@@ -620,7 +636,8 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.empty_units_present() ||
           !$scope.required_property_fields_present() ||
           !$scope.required_taxlot_fields_present() ||
-          suggestions_not_provided_yet();
+          suggestions_not_provided_yet() ||
+          $scope.derived_column_match;
       };
 
       /**
@@ -716,7 +733,7 @@ angular.module('BE.seed.controller.mapping', [])
               if (col.data_type === 'datetime') {
                 options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                 options.filter = inventory_service.dateFilter();
-              } else if (col.data_type === 'area' || col.data_type === 'eui') {
+              } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
                 options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
                 options.sortingAlgorithm = naturalSort;
               } else {
@@ -861,6 +878,7 @@ angular.module('BE.seed.controller.mapping', [])
         }
 
         $scope.updateColDuplicateStatus();
+        $scope.updateDerivedColumnMatchStatus();
         $scope.updateInventoryTypeDropdown();
       };
       init();

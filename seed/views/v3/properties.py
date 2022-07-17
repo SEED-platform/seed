@@ -1,7 +1,8 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import logging
 import os
 from collections import namedtuple
 
@@ -10,47 +11,67 @@ from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import status, viewsets, generics
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
-                         MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW,
-                         BuildingFile, Column,
-                         ColumnMappingProfile, Cycle,
-                         Meter, Note, Property, PropertyAuditLog,
-                         PropertyMeasure, PropertyState, PropertyView,
-                         Sensor, Simulation)
+from seed.models import (
+    AUDIT_USER_EDIT,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    BuildingFile,
+    Column,
+    ColumnMappingProfile,
+    Cycle,
+    DataLogger,
+    InventoryDocument,
+    Meter,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    Sensor,
+    Simulation
+)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
-from seed.serializers.pint import (PintJSONEncoder)
-from seed.serializers.properties import (PropertySerializer,
-                                         PropertyStateSerializer,
-                                         PropertyViewAsStateSerializer,
-                                         PropertyViewSerializer,
-                                         UpdatePropertyPayloadSerializer)
+from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.properties import (
+    PropertySerializer,
+    PropertyStateSerializer,
+    PropertyViewAsStateSerializer,
+    PropertyViewSerializer,
+    UpdatePropertyPayloadSerializer
+)
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import (AutoSchemaHelper,
-                                   swagger_auto_schema_org_query_param)
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
+from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.properties import (
+    get_changed_fields,
+    pair_unpair_property_taxlot,
+    properties_across_cycles,
+    update_result_with_master
+)
 from seed.utils.sensors import PropertySensorReadingsExporter
-from seed.utils.properties import (get_changed_fields,
-                                   pair_unpair_property_taxlot,
-                                   properties_across_cycles,
-                                   update_result_with_master)
-from seed.utils.inventory_filter import get_filtered_results
 
-import logging
 logger = logging.getLogger(__name__)
 
 # Global toggle that controls whether or not to display the raw extra
@@ -81,6 +102,7 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
     """
     address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     identifier = CharFilter(method='identifier_filter')
+    identifier_exact = CharFilter(method='identifier_exact_filter')
     cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
     cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
 
@@ -94,6 +116,22 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
         custom_id_1 = Q(state__custom_id_1__icontains=value)
         pm_property_id = Q(state__pm_property_id__icontains=value)
         ubid = Q(state__ubid__icontains=value)
+
+        query = (
+            address_line_1 |
+            jurisdiction_property_id |
+            custom_id_1 |
+            pm_property_id |
+            ubid
+        )
+        return queryset.filter(query).order_by('-state__id')
+
+    def identifier_exact_filter(self, queryset, name, value):
+        address_line_1 = Q(state__address_line_1__iexact=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__iexact=value)
+        custom_id_1 = Q(state__custom_id_1__iexact=value)
+        pm_property_id = Q(state__pm_property_id__iexact=value)
+        ubid = Q(state__ubid__iexact=value)
 
         query = (
             address_line_1 |
@@ -167,8 +205,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'selected': ['integer'],
+                'label_names': ['string'],
             },
-            description='IDs for properties to be checked for which labels are applied.'
+            description='- selected: Property View IDs to be checked for which labels are applied\n'
+                        '- label_names: list of label names to query'
         )
     )
     @has_perm_class('requires_viewer')
@@ -178,12 +218,25 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Returns a list of all labels where the is_applied field
         in the response pertains to the labels applied to property_view
         """
-        labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
-        super_organization = self.get_organization(request)
+        # labels are attached to the organization, but newly created ones in a suborg are
+        # part of the suborg.  A parent org's label should not be a factor of the current orgs labels,
+        # but that isn't the current state of the system. This needs to be reworked when
+        # we deal with accountability hierarchies.
+        # organization = self.get_organization(request)
+        super_organization = self.get_parent_org(request)
+
+        labels_qs = Label.objects.filter(
+            super_organization=super_organization
+        ).order_by('name').distinct()
+
+        # if labels names is passes, then get only those labels
+        if request.data.get('label_names', None):
+            labels_qs = labels_qs.filter(
+                name__in=request.data.get('label_names')
+            ).order_by('name')
+
         # TODO: refactor to avoid passing request here
-        return get_labels(request, labels, super_organization, 'property_view')
+        return get_labels(request, labels_qs, super_organization, 'property_view')
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
@@ -228,10 +281,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Retrieves sensor usage information
         """
+        org_id = self.get_organization(request)
+        page = request.query_params.get('page')
+        per_page = request.query_params.get('per_page')
+
         body = dict(request.data)
         interval = body['interval']
         excluded_sensor_ids = body['excluded_sensor_ids']
-        org_id = self.get_organization(request)
+        showOnlyOccupiedReadings = body.get('showOnlyOccupiedReadings', False)
 
         property_view = PropertyView.objects.get(
             pk=pk,
@@ -239,9 +296,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
         property_id = property_view.property.id
 
-        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids)
+        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings)
 
-        return exporter.readings_and_column_defs(interval)
+        if interval != "Exact" and (page or per_page):
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot pass query parameter "page" or "per_page" unless "interval" is "Exact"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        page = page if page is not None else 1
+        per_page = per_page if per_page is not None else 500
+
+        return exporter.readings_and_column_defs(interval, page, per_page)
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
@@ -301,16 +366,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_id = property_view.property.id
 
         res = []
-        for sensor in Sensor.objects.filter(Q(sensor_property_id=property_id)):
-            res.append({
-                'id': sensor.id,
-                'display_name': sensor.display_name,
-                'location_identifier': sensor.location_identifier,
-                'description': sensor.description,
-                'type': sensor.sensor_type,
-                'units': sensor.units,
-                'column_name': sensor.column_name
-            })
+        for data_logger in DataLogger.objects.filter(property_id=property_id):
+            for sensor in Sensor.objects.filter(Q(data_logger_id=data_logger.id)):
+                res.append({
+                    'id': sensor.id,
+                    'display_name': sensor.display_name,
+                    'location_description': sensor.location_description,
+                    'description': sensor.description,
+                    'type': sensor.sensor_type,
+                    'units': sensor.units,
+                    'column_name': sensor.column_name,
+                    'data_logger': data_logger.display_name
+                })
 
         return res
 
@@ -335,7 +402,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Tax Lot data) is not added to the response (default is True)'
             ),
         ]
     )
@@ -406,7 +473,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Tax Lot data) is not added to the response (default is True)'
             ),
             AutoSchemaHelper.query_boolean_field(
                 'ids_only',
@@ -1333,6 +1400,96 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def upload_inventory_document(self, request, pk):
+        """
+        Upload an inventory document on a property. Currently only supports PDFs.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        file_type = InventoryDocument.str_to_file_type(request.data.get('file_type', 'Unknown'))
+
+        # retrieve property ID from property_view
+        org_id = self.get_organization(request)
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        # Save File
+        try:
+            InventoryDocument.objects.create(
+                file=the_file,
+                filename=the_file.name,
+                file_type=file_type,
+                property_id=property_id
+            )
+
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                },
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['DELETE'])
+    @has_perm_class('can_modify_data')
+    def delete_inventory_document(self, request, pk):
+        """
+        Deletes an inventory document from a property
+        """
+
+        file_id = request.query_params.get('file_id')
+
+        # retrieve property ID from property_view
+        org_id = int(self.get_organization(request))
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        try:
+            doc_file = InventoryDocument.objects.get(
+                pk=file_id,
+                property_id=property_id
+            )
+
+        except InventoryDocument.DoesNotExist:
+
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find inventory document with pk=' + str(
+                    file_id)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check permissions
+        d = Property.objects.filter(
+            organization_id=org_id,
+            pk=property_id)
+
+        if not d.exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'user does not have permission to delete the inventory document',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # delete file
+        doc_file.delete()
+        return JsonResponse({'status': 'success'})
 
 
 def diffupdate(old, new):

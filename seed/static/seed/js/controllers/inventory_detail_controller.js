@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'pairing_service',
     'derived_columns_service',
     'organization_service',
+    'dataset_service',
     'inventory_payload',
     'analyses_payload',
     'users_payload',
@@ -33,6 +34,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
+    'audit_template_service',
     function (
       $http,
       $state,
@@ -54,6 +56,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       pairing_service,
       derived_columns_service,
       organization_service,
+      dataset_service,
       inventory_payload,
       analyses_payload,
       users_payload,
@@ -62,7 +65,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       profiles,
       current_profile,
       labels_payload,
-      organization_payload
+      organization_payload,
+      audit_template_service
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -81,10 +85,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
+      $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
+      $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
@@ -101,10 +107,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       } else {
         $scope.item_parent = inventory_payload.taxlot;
       }
-
-      // Detail Column List Profile
-      $scope.profiles = profiles;
-      $scope.currentProfile = current_profile;
 
       if (analyses_payload.analyses) {
         $scope.analysis = analyses_payload.analyses.sort(function (a, b) {
@@ -148,16 +150,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
           if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
         });
 
-        // add derived columns
-        _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
-          if (foundCol) {
-            foundCol.displayName = foundCol.name;
-            foundCol.column_name = foundCol.name;
-            foundCol.is_derived_column = true;
-            $scope.columns.push(foundCol);
-          }
-        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(columns, 'is_extra_data');
@@ -249,6 +241,39 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       }
 
+      $scope.open_doc_upload_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/document_upload_modal.html',
+          controller: 'document_upload_modal_controller',
+          resolve: {
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            }
+          }
+        });
+      };
+
+      $scope.confirm_delete = function (file) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_document_modal.html',
+          controller: 'delete_document_modal_controller',
+          resolve: {
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            file: file
+          }
+        });
+
+        modalInstance.result.finally(function () {
+          init();
+        });
+      };
+
+
       $scope.isDisabledField = function (name) {
         return _.includes([
           'geocoding_confidence',
@@ -335,7 +360,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
        * is_valid_key: checks to see if the key or attribute should be excluded
        *   from being copied from parent to master building
        *
-       *    TODO Update these for v2...I've removed keys that were obviously old (e.g. canonical)
+       *    TODO Update these for v2...I've removed keys that were obviously old (e.g., canonical)
        */
       $scope.is_valid_data_column_key = function (key) {
         var known_invalid_keys = [
@@ -553,6 +578,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_data_upload_audit_template_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_audit_template_modal.html',
+          controller: 'data_upload_audit_template_modal_controller',
+          resolve: {
+            audit_template_building_id: () => $scope.audit_template_building_id,
+            organization: () => $scope.organization,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id
+          },
+          backdrop: 'static',
+        });
+      };
+
       $scope.export_building_sync = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_buildingsync_modal.html',
@@ -739,7 +779,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.displayValue = function (dataType, value) {
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a');
-        } else if (dataType === 'eui' || dataType === 'area') {
+        } else if (['area', 'eui', 'float', 'number'].includes(dataType)) {
           return $filter('number')(value, $scope.organization.display_decimal_places);
         }
         return value;
@@ -747,8 +787,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       // evaluate all derived columns and store the results
       var evaluate_derived_columns = function () {
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
-        const all_evaluation_results = visible_derived_columns.map(col => {
+        const visible_columns_with_derived_columns = $scope.columns.filter(col => col.derived_column);
+        const derived_column_ids = visible_columns_with_derived_columns.map(col => col.derived_column);
+        const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
+        column_name_lookup = {}
+        visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
+
+        const all_evaluation_results = attatched_derived_columns.map(col => {
           return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id])
             .then(res => {
               return {
@@ -760,7 +805,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
         $q.all(all_evaluation_results).then(results => {
           results.forEach(result => {
-            $scope.item_derived_values[result.derived_column_id] = result.value;
+            col_id = $scope.columns.find(col => col.derived_column == result.derived_column_id).id
+            $scope.item_derived_values[col_id] = result.value;
           });
         });
       };

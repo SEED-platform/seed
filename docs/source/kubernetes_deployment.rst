@@ -10,7 +10,7 @@ Cluster
 ^^^^^^^
 In order to deploy the SEED platform on a Kubernetes you will need "cluster" which will be configured by your cloud service of choice.  Each installation will be slightly different depending on the service.
 Below are links to quick-start guides for provisioning a cluster and connecting. These instructions are specifically for AWS, but after the Kubernetes cluster is launched, the helm commands can be used in
-the same way. 
+the same way.
 
 * Amazon Web Services (`AWS`_)
 * Google Cloud Platform (`GCP`_)
@@ -33,7 +33,7 @@ Kubectl
 Download and install Kubectl:
 
 - `Windows <https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows>`_
-- Mac (with Homebrew) :code:`brew install kubectl` 
+- Mac (with Homebrew) :code:`brew install kubectl`
     ```
     brew install kubectl
     ```
@@ -193,8 +193,8 @@ You will be able to see SEED coming online with statuses like container creating
 
 Once all of the pods are running you will be able to hit the external ingress through the URL listed in the web service information. It should look something like
 
-.. code-block:: bash 
-  
+.. code-block:: bash
+
   service/web           LoadBalancer   10.100.154.227   <my-unique-url>   80:32291/TCP
 
 Managing Existing Clusters

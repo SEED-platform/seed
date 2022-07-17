@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import datetime
@@ -12,12 +12,12 @@ from celery import chain, shared_task
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
-    task_create_analysis_property_views,
-    analysis_pipeline_task
+    analysis_pipeline_task,
+    task_create_analysis_property_views
 )
 from seed.analysis_pipelines.utils import (
-    get_days_in_reading,
-    SimpleMeterReading
+    SimpleMeterReading,
+    get_days_in_reading
 )
 from seed.models import (
     Analysis,
@@ -209,21 +209,31 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     progress_data.step('Calculating EUI')
     analysis = Analysis.objects.get(id=analysis_id)
 
-    # make sure we have the extra data columns we need
-    Column.objects.get_or_create(
+    # make sure we have the extra data columns we need, don't set the
+    # displayname and description if the column already exists because
+    # the user might have changed them which would re-create new columns
+    # here.
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_eui',
-        display_name='Fractional EUI (kBtu/sqft)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
-    Column.objects.get_or_create(
+    if created:
+        column.display_name = 'Fractional EUI (kBtu/sqft)'
+        column.column_description = 'Fractional EUI (kBtu/sqft)'
+        column.save()
+
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_eui_coverage',
-        display_name='EUI Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
+    if created:
+        column.display_name = 'EUI Coverage (% of the year)'
+        column.column_description = 'EUI Coverage (% of the year)'
+        column.save()
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {

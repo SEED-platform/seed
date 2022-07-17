@@ -1,22 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import datetime
 import logging
+
 from celery import chain, shared_task
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
-    task_create_analysis_property_views,
-    analysis_pipeline_task
+    analysis_pipeline_task,
+    task_create_analysis_property_views
 )
 from seed.analysis_pipelines.utils import (
-    get_days_in_reading,
-    SimpleMeterReading
+    SimpleMeterReading,
+    get_days_in_reading
 )
 from seed.models import (
     Analysis,
@@ -233,13 +234,13 @@ def _get_valid_meters(property_view_ids):
 
 def _calculate_co2(meter_readings, region_code):
     """Calculate CO2 emissions for the meter readings. Raises an exception if it's
-    unable to calculate the emissions (e.g. unable to find eGRID region code for
+    unable to calculate the emissions (e.g., unable to find eGRID region code for
     a year)
 
     :param meter_readings: List[SimpleMeterReading | MeterReading], the `.reading`
         value must be in kBtu!
         Assumes the time span of meter_readings is less than or equal to TIME_PERIOD,
-        i.e. that they are supposed to be representative of a year.
+        i.e., that they are supposed to be representative of a year.
     :region_code: str, an eGRID Subregion Code
     :return: dict
     """
@@ -345,21 +346,31 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     progress_data.step('Calculating Average Annual CO2')
     analysis = Analysis.objects.get(id=analysis_id)
 
-    # make sure we have the extra data columns we need
-    Column.objects.get_or_create(
+    # make sure we have the extra data columns we need, don't set the
+    # displayname and description if the column already exists because
+    # the user might have changed them which would re-create new columns
+    # here.
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2',
-        display_name='Average Annual CO2 (kgCO2e)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
-    Column.objects.get_or_create(
+    if created:
+        column.display_name = 'Average Annual CO2 (kgCO2e)',
+        column.column_description = 'Average Annual CO2 (kgCO2e)',
+        column.save()
+
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2_coverage',
-        display_name='Average Annual CO2 Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
+    if created:
+        column.display_name = 'Average Annual CO2 Coverage (% of the year)'
+        column.column_description = 'Average Annual CO2 Coverage (% of the year)'
+        column.save()
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {
@@ -374,6 +385,9 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         .prefetch_related('property', 'cycle', 'property_state')
     )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
+
+    # should we save data to the property?
+    save_co2_results = analysis.configuration.get('save_co2_results', False)
 
     # create and save emissions for each property view
     for analysis_property_view in analysis_property_views:
@@ -412,12 +426,15 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average_annual_kgco2e'],
             'Annual Coverage %': co2['annual_coverage_percent'],
-            'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh']
+            'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh'],
+            'Total GHG Emissions Intensity (kgCO2e/ft\u00b2/year)': co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
-        property_view.state.extra_data.update({'analysis_co2': co2['average_annual_kgco2e']})
-        property_view.state.extra_data.update({'analysis_co2_coverage': co2['annual_coverage_percent']})
-        property_view.state.save()
+        if save_co2_results:
+            # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
+            property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
+            property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
+            property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()

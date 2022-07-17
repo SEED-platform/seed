@@ -5,27 +5,43 @@ import ast
 import copy
 import json
 import os
+import pathlib
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import get_current_timezone
-import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tests.util import (FAKE_EXTRA_DATA, FAKE_MAPPINGS,
-                                           FAKE_ROW)
-from seed.data_importer.views import (ImportFileViewSet,
-                                      convert_first_five_rows_to_list)
+from seed.data_importer.tests.util import (
+    FAKE_EXTRA_DATA,
+    FAKE_MAPPINGS,
+    FAKE_ROW
+)
+from seed.data_importer.views import (
+    ImportFileViewSet,
+    convert_first_five_rows_to_list
+)
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (ASSESSED_RAW, DATA_STATE_MAPPING, DATA_STATE_MATCHING,
-                         MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, PORTFOLIO_RAW,
-                         Column, PropertyState, PropertyView)
-from seed.test_helpers.fake import (FakeCycleFactory, FakePropertyFactory,
-                                    FakePropertyStateFactory)
+from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    PORTFOLIO_RAW,
+    Column,
+    PropertyState,
+    PropertyView
+)
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory
+)
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -99,11 +115,11 @@ class TestSensorViewSet(DataMappingBaseTestCase):
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
-            {'display_name': 'my charisma sensor', 'type': 'charisma', 'location_identifier': 'level C', 'units': 'finger guns', 'column_name': 'charisma_sensor_1', 'description': ''},
-            {'display_name': 'my dex sensor', 'type': 'dex', 'location_identifier': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
-            {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_identifier': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
-            {'display_name': 'my coolness sensor', 'type': 'cool', 'location_identifier': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
-            {'display_name': 'my intelligence', 'type': 'intl', 'location_identifier': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
+            {'display_name': 'my charisma sensor', 'type': 'charisma', 'location_description': 'level C', 'units': 'finger guns', 'column_name': 'charisma_sensor_1', 'description': ''},
+            {'display_name': 'my dex sensor', 'type': 'dex', 'location_description': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
+            {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_description': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
+            {'display_name': 'my coolness sensor', 'type': 'cool', 'location_description': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
+            {'display_name': 'my intelligence', 'type': 'intl', 'location_description': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
         ]
 
         self.assertCountEqual(result_dict.get("proposed_imports"), expectation)

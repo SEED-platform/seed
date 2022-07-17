@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import unicode_literals
@@ -10,8 +10,8 @@ import logging
 
 from django.db import models
 
-from seed.models.property_measures import PropertyMeasure
 from seed.models.properties import PropertyView
+from seed.models.property_measures import PropertyMeasure
 
 _log = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class Scenario(models.Model):
             property_ = PropertyView.objects.get(state=self.property_state).property
         except PropertyView.DoesNotExist:
             # possible that the state does not yet have a canonical property
-            # e.g. when processing BuildingFiles, it's 'promoted' after this merging
+            # e.g., when processing BuildingFiles, it's 'promoted' after this merging
             property_ = None
 
         for source_meter in source_scenario.meter_set.all():

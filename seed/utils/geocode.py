@@ -1,18 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-import requests
 import json
 import re
+from numbers import Number
 
+import requests
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
-from numbers import Number
+from shapely import geometry, wkt
 
 
 class MapQuestAPIKeyError(Exception):
     """Your MapQuest API Key is either invalid or at its limit."""
-    pass
 
 
 def long_lat_wkt(state):
@@ -23,6 +23,11 @@ def long_lat_wkt(state):
     """
     if state.long_lat:
         return GEOSGeometry(state.long_lat, srid=4326).wkt
+
+
+def wkt_to_polygon(wkt_to_translate):
+    """Translate WKT to a bounding box polygon."""
+    return geometry.mapping(wkt.loads(wkt_to_translate))
 
 
 def bounding_box_wkt(state):

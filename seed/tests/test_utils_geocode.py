@@ -10,33 +10,23 @@ intercepted/mocked by VCR. To execute an actual HTTP request/response
 """
 
 import vcr
-
 from django.conf import settings
-
-from django.contrib.gis.geos import (
-    Point,
-    Polygon,
-)
-
+from django.contrib.gis.geos import Point, Polygon
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
-
 from seed.utils.geocode import (
+    MapQuestAPIKeyError,
     bounding_box_wkt,
     geocode_buildings,
-    long_lat_wkt,
-    MapQuestAPIKeyError,
+    long_lat_wkt
 )
-
 from seed.utils.organizations import create_organization
 
 

@@ -1,11 +1,13 @@
 .DS_Store
 .cache
 .env
+.hypothesis
 .idea
 .project
 .pydevproject
 .python-version
 .coverage
+.vscode
 coverage.protractor.json
 .noseids
 .vscode
@@ -74,6 +76,7 @@ docs/build/
 docs/scripts/Gemfile.lock
 docs/scripts/.python-version
 docs/scripts/seed_issues.csv
+docs/htmlout
 
 lokalise.cfg
 lokalise.yml
@@ -87,4 +90,3 @@ docker-compose.*.yml
 
 # generated files
 /auto*.csv
-

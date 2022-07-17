@@ -99,19 +99,19 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     }];
 
     $scope.decimal_places_options = [{
-      label: '0 (e.g. 0)',
+      label: '0 (e.g., 0)',
       value: 0
     }, {
-      label: '1 (e.g. 0.1)',
+      label: '1 (e.g., 0.1)',
       value: 1
     }, {
-      label: '2 (e.g. 0.12)',
+      label: '2 (e.g., 0.12)',
       value: 2
     }, {
-      label: '3 (e.g. 0.123)',
+      label: '3 (e.g., 0.123)',
       value: 3
     }, {
-      label: '4 (e.g. 0.1234)',
+      label: '4 (e.g., 0.1234)',
       value: 4
     }];
 

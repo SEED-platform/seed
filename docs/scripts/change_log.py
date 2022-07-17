@@ -16,14 +16,14 @@ parser.add_argument('-k', '--github-key', required=True, help='Github API Key')
 parser.add_argument(
     '-s', '--start-date',
     required=False,
-    help='Start of data (e.g. 2020-12-29)',
+    help='Start of data (e.g., 2020-12-29)',
     type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
     default=datetime.datetime.now() + datetime.timedelta(-90)
 )
 parser.add_argument(
     '-e', '--end-date',
     required=False,
-    help='Start of data (e.g. 2020-12-29)',
+    help='Start of data (e.g., 2020-12-29)',
     type=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'),
     default=datetime.datetime.now()
 )
@@ -113,7 +113,7 @@ for issue in repo.issues(state='closed'):
             if 'stale' in labels:
                 # issue closed due to staleness, it was not really addressed
                 continue
-            
+
             if 'Milestone' in labels:
                 # these are milestone tracking tickets and should not show up in changelog
                 continue
@@ -146,6 +146,8 @@ for issue in repo.issues(state='open', labels='Include Before Closure'):
             add_issue(closed_issues, naming_lookup['Maintenance'][False], issue)
         elif 'Enhancement' in labels:
             add_issue(closed_issues, naming_lookup['Enhancement'][False], issue)
+        elif 'Project Tracking' in labels:
+            continue
         else:
             add_issue(closed_issues, naming_lookup['Issue'][False], issue)
 
@@ -162,6 +164,8 @@ for issue in repo.issues(state='open'):
                 add_issue(new_issues, naming_lookup['Maintenance'][True], issue)
             elif 'Enhancement' in labels:
                 add_issue(new_issues, naming_lookup['Enhancement'][True], issue)
+            elif 'Project Tracking' in labels:
+                continue
             else:
                 add_issue(new_issues, naming_lookup['Issue'][True], issue)
 

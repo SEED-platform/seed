@@ -4,51 +4,44 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 import csv
 import datetime
 import io
-from collections import OrderedDict
+import logging
 import math
+from collections import OrderedDict
 from random import randint
 
 import xlsxwriter
-from django.http import JsonResponse, HttpResponse
-
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-
 from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    ColumnListProfile,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
-    ColumnListProfile,
+    TaxLotView
 )
-from seed.models.meters import (
-    Meter,
-    MeterReading
-)
-from seed.models.property_measures import (
-    PropertyMeasure
-)
-from seed.models.scenarios import (
-    Scenario
-)
-from seed.serializers.tax_lot_properties import (
-    TaxLotPropertySerializer
-)
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.models.meters import Meter, MeterReading
+from seed.models.property_measures import PropertyMeasure
+from seed.models.scenarios import Scenario
+from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
+from seed.tasks import update_inventory_metadata
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
+
+_log = logging.getLogger(__name__)
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
@@ -580,3 +573,30 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                                            for i in related)]
 
         return unique
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['GET'])
+    def start_refresh_metadata(self, request):
+        """
+        Generate a ProgressData object that will be used to monitor property and tax lot metadata refresh
+        """
+        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        return progress_data.result()
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['POST'])
+    def refresh_metadata(self, request):
+        """
+        Kick off celery task to refresh metadata of selected inventory
+        """
+        ids = request.data.get('ids')
+        states = request.data.get('states')
+        inventory_type = request.data.get('inventory_type')
+        progress_key = request.data.get('progress_key')
+
+        update_inventory_metadata.subtask([ids, states, inventory_type, progress_key]).apply_async()
+        return

@@ -1,9 +1,10 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from rest_framework import serializers
+
 from seed.models import Organization
 
 
@@ -29,6 +30,9 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     new_user_email_subject = serializers.CharField(max_length=128)
     new_user_email_content = serializers.CharField(max_length=1024)
     new_user_email_signature = serializers.CharField(max_length=128)
+    at_organization_token = serializers.CharField(max_length=128)
+    audit_template_user = serializers.CharField(max_length=128)
+    audit_template_password = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

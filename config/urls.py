@@ -1,35 +1,38 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from django.conf import settings
 from django.conf.urls import include, re_path
-from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done
+from seed.landing.views import (
+    password_reset_complete,
+    password_reset_confirm,
+    password_reset_done
+)
 from seed.views.main import angular_js_tests, version
 
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-
 schema_view = get_schema_view(
-   openapi.Info(
-      title="SEED API",
-      default_version='v3',
-      description="Test description",
-      # terms_of_service="https://www.google.com/policies/terms/",
-      # contact=openapi.Contact(email="contact@snippets.local"),
-      # license=openapi.License(name="BSD License"),
-   ),
-   public=False,
-   permission_classes=(permissions.AllowAny,),
+    openapi.Info(
+        title="SEED API",
+        default_version='v3',
+        description="Test description",
+        # terms_of_service="https://www.google.com/policies/terms/",
+        # contact=openapi.Contact(email="contact@snippets.local"),
+        # license=openapi.License(name="BSD License"),
+    ),
+    public=False,
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
@@ -64,6 +67,12 @@ urlpatterns = [
 handler404 = 'seed.views.main.error404'
 handler500 = 'seed.views.main.error500'
 
+
+def trigger_error(request):
+    """Endpoint for testing sentry with a divide by zero"""
+    1 / 0
+
+
 if settings.DEBUG:
     from django.contrib import admin
 
@@ -77,4 +86,7 @@ if settings.DEBUG:
 
         # admin
         re_path(r'^admin/', admin.site.urls),
+
+        # test sentry error
+        path('sentry-debug/', trigger_error)
     ]

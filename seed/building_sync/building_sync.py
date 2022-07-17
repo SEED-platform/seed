@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 """
 
@@ -9,24 +9,25 @@ import copy
 import logging
 import os
 import re
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 
-from django.core.exceptions import FieldDoesNotExist
-from quantityfield.units import ureg
-from lxml import etree
 import xmlschema
+from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from django.core.exceptions import FieldDoesNotExist
+from lxml import etree
+from quantityfield.units import ureg
 
 from config.settings.common import BASE_DIR
-from seed.models.meters import Meter
 from seed.building_sync.mappings import (
     BASE_MAPPING_V2,
     BUILDINGSYNC_URI,
     NAMESPACES,
-    merge_mappings,
     apply_mapping,
-    update_tree,
+    merge_mappings,
     table_mapping_to_buildingsync_mapping,
+    update_tree
 )
+from seed.models.meters import Meter
 
 _log = logging.getLogger(__name__)
 
@@ -66,6 +67,10 @@ class BuildingSync(object):
         """
         parser = etree.XMLParser(remove_blank_text=True)
         etree.set_default_parser(parser)
+
+        # save filename
+        self.source_filename = source
+
         # save element tree
         if isinstance(source, str):
             if not os.path.isfile(source):
@@ -162,12 +167,15 @@ class BuildingSync(object):
             xml_element_xpath = mapping['from_field']
             xml_element_value = mapping['from_field_value']
             seed_value = None
-            try:
-                property_state._meta.get_field(field)
-                seed_value = getattr(property_state, field)
-            except FieldDoesNotExist:
-                _log.debug("Field {} is not a db field, trying read from extra data".format(field))
-                seed_value = property_state.extra_data.get(field, None)
+            if mapping['to_field'] != mapping['from_field']:
+                # only do this for non BAE assets
+                try:
+                    property_state._meta.get_field(field)
+                    seed_value = getattr(property_state, field)
+                except FieldDoesNotExist:
+                    _log.debug("Field {} is not a db field, trying read from extra data".format(field))
+                    seed_value = property_state.extra_data.get(field, None)
+                    continue
 
             if seed_value is None:
                 continue
@@ -265,7 +273,7 @@ class BuildingSync(object):
                         # readings for the same time period in SEED currently
                         # NOTE: to future reader, this problem seems to arise from the
                         # fact that SEED is unaware of the _type_ of reading,
-                        # e.g. see BuildingSync's ReadingType (point, median, average, peak, etc)
+                        # e.g., see BuildingSync's ReadingType (point, median, average, peak, etc)
 
                         # if the meter doesn't exist yet, copy it
                         original_meter = meters[meter_reading['source_id']]
@@ -369,6 +377,7 @@ class BuildingSync(object):
             'gross_floor_area': property_['gross_floor_area'],
             'net_floor_area': property_['net_floor_area'],
             'footprint_floor_area': property_['footprint_floor_area'],
+            'audit_template_building_id': property_['audit_template_building_id'],
         }
 
         return res
@@ -380,12 +389,22 @@ class BuildingSync(object):
         :param custom_mapping: dict, another mapping object which is given higher priority over base_mapping
         :return: list, [dict, dict], [results, dict of errors and warnings]
         """
+
         merged_mappings = merge_mappings(base_mapping, custom_mapping)
         messages = {'warnings': [], 'errors': []}
         result = apply_mapping(self.element_tree, merged_mappings, messages, NAMESPACES)
 
         # turn result into SEED structure
         seed_result = self.restructure_mapped_result(result, messages)
+
+        # BuildingSync Asset Extractor
+        bae = BAE(self.source_filename)
+        bae.extract()
+        assets = bae.get_assets()
+
+        # add to data and column headers
+        for item in assets:
+            seed_result[item['name']] = item['value']
 
         return seed_result, messages
 

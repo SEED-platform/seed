@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 
 :author Fable Turas <fable@raintechpdx.com>
 """
@@ -30,6 +30,7 @@ class ColumnSerializer(serializers.ModelSerializer):
             'id', 'name', 'organization_id', 'table_name', 'merge_protection', 'shared_field_type',
             'column_name', 'is_extra_data', 'unit_name', 'unit_type', 'display_name', 'data_type',
             'is_matching_criteria', 'geocoding_order', 'recognize_empty', 'comstock_mapping',
+            'column_description', 'derived_column',
         )
 
     def concat_name(self, obj):

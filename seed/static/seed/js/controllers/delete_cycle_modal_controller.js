@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
        * in_progress: bool - when true: shows the progress bar and hides the
        *  upload button. when false: hides the progress bar and shows the upload
        *  button.
-       * progress: int or float - the progress bar value, i.e. percentage complete
+       * progress: int or float - the progress bar value, i.e., percentage complete
        * complete: bool - true when the upload has finished
        * status_message: str - status of the task
        * progress_last_updated: null | int - when not null it indicates the last time the progress bar changed (UNIX Epoch in ms)

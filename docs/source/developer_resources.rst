@@ -4,6 +4,13 @@ Developer Resources
 General Notes
 -------------
 
+Pre-commit
+^^^^^^^^^^^^^^
+We use precommit commits for formatting. Set it up locally with
+```
+pre-commit install
+```
+
 Flake Settings
 ^^^^^^^^^^^^^^
 
@@ -62,7 +69,7 @@ your own IDE, we recommend the following extensions:
 
 - VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
 
-To run the same typechecking applied in CI (i.e. using mypy) you can run the following
+To run the same typechecking applied in CI (i.e., using mypy) you can run the following
 
 .. code-block:: console
 
@@ -97,11 +104,13 @@ fields. Follow the steps below to add new fields to the SEED database:
                     'column_name': 'geocoding_confidence',
                     'table_name': 'PropertyState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }, {
                     'column_name': 'geocoding_confidence',
                     'table_name': 'TaxLotState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }
             ]
@@ -120,12 +129,16 @@ fields. Follow the steps below to add new fields to the SEED database:
                         new_db_field['organization_id'] = org.id
                         Column.objects.create(**new_db_field)
                     elif columns.count() == 1:
-                        # If the column exists, then just update the display_name and data_type if empty
+                        # If the column exists, then update the display_name and data_type if empty
                         c = columns.first()
                         if c.display_name is None or c.display_name == '':
                             c.display_name = new_db_field['display_name']
                         if c.data_type is None or c.data_type == '' or c.data_type == 'None':
                             c.data_type = new_db_field['data_type']
+                                for col in columns:
+                        # If the column exists, then update the column_description if empty
+                        if c.column_description is None or c.column_description == '':
+                            c.column_description = new_db_field['column_description']
                         c.save()
                     else:
                         print("  More than one column returned")
@@ -400,6 +413,19 @@ Best Practices
 8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
 9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.
 
+Building Documentation
+----------------------
+
+Older versions of the source code documentation is on read the docs; however, newer versions need to be built and pushed to the seed-website repository manually. To build the documentation follow the script below:
+
+.. code-block:: console
+
+        cd docs
+        rm -rf htmlout
+        sphinx-build -b html source htmlout
+
+For releasing, copy the ``htmlout`` directory into the seed-platform's website repository under ``docs/code_documentation/<new_version>``. Make sure to add the new documentation to the table in the ``docs/developer_resources.md``.
+
 
 Release Instructions
 --------------------
@@ -412,12 +438,12 @@ To make a release do the following:
 
 .. code-block:: console
 
-    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2021-12-27 –e 2022-03-31
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2022-03-31 –e 2022-05-29
 
 4. Paste the results (remove unneeded Accepted Pull Requests and the new issues) into the CHANGELOG.md. Cleanup the formatting (if needed).
 5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
 6. Once develop passes, then create a new PR from develop to main.
 7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
-8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
+8. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
 9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-10. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)
+10. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).

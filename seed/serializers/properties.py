@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 :author Nicholas Long  <nicholas.long@nrel.gov>
 """
@@ -21,17 +21,18 @@ from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
     GreenAssessmentProperty,
-    PropertyAuditLog,
     Property,
+    PropertyAuditLog,
     PropertyState,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
+    TaxLotView
 )
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.inventory_document import InventoryDocumentSerializer
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
@@ -108,6 +109,8 @@ class PropertySerializer(serializers.ModelSerializer):
     created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
     updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
 
+    inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
+
     class Meta:
         model = Property
         fields = '__all__'
@@ -148,6 +151,10 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     source_eui = PintQuantitySerializerField(allow_null=True)
     source_eui_modeled = PintQuantitySerializerField(allow_null=True)
     site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
+    total_ghg_emissions = PintQuantitySerializerField(allow_null=True)
+    total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True)
+    total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
+    total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True)
 
     # support naive datetime objects
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
@@ -239,6 +246,10 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     source_eui = PintQuantitySerializerField(allow_null=True, required=False)
     source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
     site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
 
     class Meta:
         fields = '__all__'
@@ -602,16 +613,16 @@ def conv_value(val):
 def unflatten_values(vdict, fkeys):
     """
     Takes a dicts produced by values() that traverses foreign relationships
-    (e.g. contains foreign_key__field) and converts them into a nested dict.
+    (e.g., contains foreign_key__field) and converts them into a nested dict.
     so vdict[foreign_key__field] becomes vdict[foreign_key][field]
 
-    It assumes values has been provided with foreignkey__field  e.g. state__city
+    It assumes values has been provided with foreignkey__field  e.g., state__city
 
     {'id':1,  'state__city': 'London'} -> {'id': 1, 'state':{'city': 'London'}}
 
-    :param vdict: dict from list returned by e.g. Model.objects.all().values()
+    :param vdict: dict from list returned by e.g., Model.objects.all().values()
     :type vdict: dict
-    :param fkeys: field names for foreign key (e.g. state for state__city)
+    :param fkeys: field names for foreign key (e.g., state for state__city)
     :type fkeys: list
     """
     assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict,

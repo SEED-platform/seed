@@ -1,0 +1,63 @@
+<div class="modal-header">
+    <h4 class="modal-title" translate>CREATE_DATA_LOGGER</h4>
+</div>
+
+<div class="modal-body">
+    <div class="data_upload_steps container-fluid">
+        <div class="alert alert-danger" ng-show="data_logger_display_name_not_entered_alert" style="margin-bottom: 18px;" translate="NO_DATA_LOGGER_DISPLAY_NAME"></div>
+        <div class="alert alert-danger" ng-show="data_logger_display_name_not_unique_alert" style="margin-bottom: 18px;" translate="NON_UNIQUE_DATA_LOGGER_DISPLAY_NAME"></div>
+        <div class="row" style="display: flex; flex-direction: column; gap: 15px">
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Display Name</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.display_name">
+                </div>
+            </div>
+
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Datalogger ID</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.identifier">
+                </div>
+            </div>
+
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Location Description</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.location_description">
+                </div>
+            </div>
+
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Manufacturer Name</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.manufacturer_name">
+                </div>
+            </div>
+
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Model Name</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.model_name">
+                </div>
+            </div>
+
+            <div>
+                <label class="col-sm-3 col-sm-offset-1 control-label" translate>Serial Number</label>
+                <div class="col-sm-7">
+                    <input type="text" class="form-control" ng-model="data_logger.serial_number">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer container-fluid">
+    <div class="row text-center">
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="create_data_logger()"><span translate>Confirm</span></button>
+    </div>
+
+    <div class="row text-center">
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+    </div>
+</div>

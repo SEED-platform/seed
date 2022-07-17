@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 
@@ -14,10 +14,10 @@ from django.db.models import Subquery
 from seed.lib.merging import merging
 from seed.models import (
     AUDIT_IMPORT,
-    Column,
     DATA_STATE_MATCHING,
     MERGE_STATE_MERGED,
     MERGE_STATE_UNKNOWN,
+    Column,
     Note,
     Property,
     PropertyAuditLog,
@@ -26,9 +26,9 @@ from seed.models import (
     StatusLabel,
     TaxLot,
     TaxLotAuditLog,
-    TaxLotState,
     TaxLotProperty,
-    TaxLotView,
+    TaxLotState,
+    TaxLotView
 )
 
 

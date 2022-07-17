@@ -1,20 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 """
 import logging
 
 from django.utils.decorators import method_decorator
-
-from drf_yasg.utils import swagger_auto_schema, no_body
-
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import (
-    ListModelMixin,
-    DestroyModelMixin,
     CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin
 )
 
 from seed.decorators import ajax_request_class
@@ -64,7 +62,7 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     authz_org_id_kwarg = 'nested_organization_id'
 
     def get_queryset(self):
-        # Handle the anonymous case (e.g. Swagger page load)
+        # Handle the anonymous case (e.g., Swagger page load)
         if not self.kwargs:
             return Rule.objects.none()
 

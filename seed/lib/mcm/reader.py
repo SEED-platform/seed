@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 """
@@ -14,16 +14,16 @@ import json
 import mmap
 import operator
 import re
-import xmltodict
-
 from builtins import str
 from csv import DictReader, Sniffer
 
+import xmltodict
 from past.builtins import basestring
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from unidecode import unidecode
-from xlrd import xldate, XLRDError, open_workbook, empty_cell
+from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
+
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 (
     XL_CELL_EMPTY,
@@ -63,7 +63,6 @@ def clean_fieldnames(fieldnames):
 
 class SheetDoesNotExist(Exception):
     """Exception when parsing an Excel workbook and the specified sheet does not exist"""
-    pass
 
 
 class GreenButtonParser(object):

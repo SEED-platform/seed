@@ -55,11 +55,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
+  'BE.seed.controller.data_upload_audit_template_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
   'BE.seed.controller.delete_cycle_modal',
   'BE.seed.controller.delete_dataset_modal',
+  'BE.seed.controller.delete_document_modal',
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_org_modal',
@@ -71,9 +73,12 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
+  'BE.seed.controller.refresh_metadata_modal',
+  'BE.seed.controller.document_upload_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
-  'BE.seed.controller.sensor_upload_modal',
+  'BE.seed.controller.data_logger_upload_modal',
+  'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
@@ -85,7 +90,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_list',
-  'BE.seed.controller.inventory_list_beta',
+  'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -140,6 +145,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.audit_template',
   'BE.seed.service.analyses',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
@@ -746,7 +752,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
-          }]
+          }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
         }
       })
       .state({
@@ -1356,6 +1366,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
 
             return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
           }],
+          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
+            const organization_id = user_service.get_organization().id;
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
           property_columns_payload: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id, false, false);
           }],
@@ -1378,10 +1392,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list',
-        url: '/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list.html',
-        controller: 'inventory_list_controller',
+        name: 'inventory_list_legacy',
+        url: '/legacy/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list_legacy.html',
+        controller: 'inventory_list_legacy_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
@@ -1424,27 +1438,30 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list_beta',
-        url: '/beta/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list_beta.html',
-        controller: 'inventory_list_beta_controller',
+        name: 'inventory_list',
+        url: '/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list.html',
+        controller: 'inventory_list_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Profile', inventory_type, brief=true);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
             var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
             if (_.includes(validProfileIds, lastProfileId)) {
-              return _.find(profiles, {id: lastProfileId});
+              return inventory_service.get_column_list_profile(lastProfileId);
             }
-            var currentProfile = _.first(profiles);
-            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
-            return currentProfile;
+            var currentProfileId = _.first(profiles)?.id;
+            if (currentProfileId) {
+              inventory_service.save_last_profile(currentProfileId, $stateParams.inventory_type)
+              return inventory_service.get_column_list_profile(currentProfileId);
+            }
+            return null;
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
@@ -1453,12 +1470,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return inventory_service.get_taxlot_columns();
             }
           }],
-          derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id;
-            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
-          }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
-            return organization_service.get_organization(user_service.get_organization().id);
+            return organization_service.get_organization_brief(user_service.get_organization().id);
+          }],
+          derived_columns_payload: ['$stateParams', 'derived_columns_service', 'organization_payload', function ($stateParams, derived_columns_service, organization_payload) {
+            return derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type);
           }]
         }
       })
@@ -1760,6 +1776,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           sensors: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
             var organization_id = user_service.get_organization().id;
             return sensor_service.get_sensors($stateParams.view_id, organization_id);
+          }],
+          data_loggers: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
+            var organization_id = user_service.get_organization().id;
+            return sensor_service.get_data_loggers($stateParams.view_id, organization_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from django.conf.urls import re_path, include
 from django.conf import settings
+from django.conf.urls import include, re_path
 
 from seed.api.v1.urls import urlpatterns as apiv1
 from seed.api.v2.urls import urlpatterns as apiv2

@@ -55,7 +55,7 @@
                     class="form-control"
                 ></select>
                 <span></span>
- 
+
                 <!-- parameters -->
                 <h3>Parameter name</h3>
                 <h3>Source column</h3>
@@ -95,6 +95,7 @@
                     >
                     <div ng-if="parameter.errors.invalid_source_column" class="text-danger">Column name is invalid. Please select one of the provided choices.</div>
                     <div ng-if="parameter.errors.duplicate_source_column" class="text-danger">Column is duplicated. Please change or remove one of the duplicate columns.</div>
+                    <div ng-if="parameter.errors.circular_source_column" class="text-danger">Source Column causes a circular definition. Please change or remove the Source Column.</div>
                 </div>
                 <div ng-repeat-end>
                     <button ng-if="parameters.length > 1" ng-click="delete_parameter($index)" class="btn btn-danger" aria-label="Delete">

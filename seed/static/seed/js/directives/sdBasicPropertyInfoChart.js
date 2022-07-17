@@ -31,7 +31,7 @@ angular.module('sdBasicPropertyInfoChart', [])
          chartData :       An array of objects to serve as actual chart data
          xAxisTitle :      A string value for the x axis title
          yAxisTitle :      A string value for the y axis title
-         yAxisType:        A string value indicating the type of axis (Dimple value, e.g. 'Measure')
+         yAxisType:        A string value indicating the type of axis (Dimple value, e.g., 'Measure')
          yAxisMin:         An integer value for the minimum value on the y axis
          xAxisTickFormat:  A string value for the y axis tick format  (Dimple value)
          yAxisTickFormat:  A string value for the y axis tick format  (Dimple value)
@@ -240,10 +240,3 @@ angular.module('sdBasicPropertyInfoChart', [])
       }]
     };
   }]);
-
-
-
-
-
-
-

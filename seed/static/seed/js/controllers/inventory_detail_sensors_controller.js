@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
     'inventory_service',
     'inventory_payload',
     'sensors',
+    'data_loggers',
     'sensor_service',
     'property_sensor_usage',
     'spinner_utility',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       inventory_service,
       inventory_payload,
       sensors,
+      data_loggers,
       sensor_service,
       property_sensor_usage,
       spinner_utility,
@@ -35,75 +37,140 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
       $scope.property_sensor_usage = property_sensor_usage;
+      $scope.usage_pagination = property_sensor_usage.pagination;
       $scope.filler_cycle = cycles.cycles[0].id;
+      $scope.showOnlyOccupiedReadings = false;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
 
       var getSensorLabel = function (sensor) {
-        return sensor.display_name;
+        return sensor.display_name + " (" + sensor.data_logger + ")";
       };
 
       var resetSelections = function () {
-        $scope.sensor_selections = _.map(sorted_sensors, function (sensor) {
+        $scope.data_logger_selections = _.map(sorted_data_loggers, function (data_logger) {
           return {
             selected: true,
-            label: getSensorLabel(sensor),
-            value: sensor.id
+            label: data_logger.display_name,
+            value: data_logger.id
           };
         });
+
+        var sensorTypes = new Set(_.map(sorted_sensors, s => s.type))
+        $scope.sensor_type_selections = [...sensorTypes].map(t => {
+          return {
+            selected: true,
+            label: t,
+            value: t
+          };
+        })
       };
 
-      $scope.data = property_sensor_usage.readings.map(reading => {
-        const readings = _.omit(reading, 'timestamp');
-        const readings_by_sensor = Object.keys(readings).map(function (key) {
-          return {
-            sensor: key,
-            value: readings[key]
-          };
-        });
-
-        return {
-          timestamp: reading.timestamp,
-          readings: readings_by_sensor
-        };
-      });
-
       // On page load, all sensors and readings
-      $scope.has_sensor_readings = $scope.data.length > 0;
+      $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
       $scope.has_sensors = sensors.length > 0;
+      $scope.has_data_loggers = data_loggers.length > 0;
+
+      var sorted_data_loggers = _.sortBy(data_loggers, ['id']);
+      resetSelections();
 
       var sorted_sensors = _.sortBy(sensors, ['id']);
       resetSelections();
 
-      $scope.sensor_selection_toggled = function (is_open) {
+      $scope.data_logger_selection_toggled = function (is_open) {
         if (!is_open) {
           $scope.applyFilters();
         }
       };
 
-      var base_sensor_col_defs = [{
-        field: 'display_name',
-        enableHiding: false,
-        type: 'string'
-      }, {
-        field: 'type',
-        enableHiding: false
-      }, {
-        field: 'location_identifier',
-        displayName: 'location identifier',
-        enableHiding: false
-      }, {
-        field: 'units',
-        enableHiding: false
-      }, {
-        field: 'column_name',
-        enableHiding: false
-      }, {
-        field: 'description',
-        enableHiding: false
+      $scope.sensor_type_selection_toggled = function (is_open) {
+        if (!is_open) {
+          $scope.applyFilters();
+        }
+      };
+
+      var base_data_logger_col_defs = [{
+          field: 'display_name',
+          enableHiding: false,
+          type: 'string'
+        }, {
+          field: 'identifier',
+          displayName: 'Datalogger ID',
+          enableHiding: false
+        },{
+          field: 'location_description',
+          displayName: 'Location Description',
+          enableHiding: false
+        },{
+          field: 'manufacturer_name',
+          displayName: 'Manufacturer Name',
+          enableHiding: false
+        },{
+          field: 'model_name',
+          displayName: 'Model Name',
+          enableHiding: false
+        },{
+          field: 'serial_number',
+          displayName: 'Serial Number',
+          enableHiding: false
+        }, {
+          name: 'actions',
+          field: 'actions',
+          displayName: 'Actions',
+          enableHiding: false,
+          cellTemplate: '<div style="display: flex; justify-content: space-around; align-content: center">' +
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' +
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 300
       }];
+
+      var base_sensor_col_defs = [{
+          field: 'display_name',
+          enableHiding: false,
+          type: 'string'
+        },{
+          field: 'data_logger',
+          displayName: 'Data Logger',
+          enableHiding: false
+        }, {
+          field: 'type',
+          enableHiding: false
+        }, {
+          field: 'location_description',
+          displayName: 'Location Description',
+          enableHiding: false
+        },{
+          field: 'units',
+          enableHiding: false
+        }, {
+          field: 'column_name',
+          enableHiding: false
+        },{
+          field: 'description',
+          enableHiding: false
+      }];
+
+      $scope.dataloggerGridOptions = {
+        data: sorted_data_loggers,
+        columnDefs: base_data_logger_col_defs,
+        enableColumnResizing: true,
+        enableFiltering: true,
+        flatEntityAccess: true,
+        fastWatch: true,
+        minRowsToShow: Math.min(data_loggers.length, 10),
+      };
 
       $scope.sensorGridOptions = {
         data: sensors,
@@ -111,16 +178,27 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true
+        fastWatch: true,
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'sensors.csv',
+        enableGridMenu: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        minRowsToShow: Math.min(sensors.length, 10),
       };
 
       $scope.usageGridOptions = {
-        data: property_sensor_usage.readings,
-        columnDefs: property_sensor_usage.column_defs,
+        data: $scope.property_sensor_usage.readings,
+        columnDefs: $scope.property_sensor_usage.column_defs,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true
+        fastWatch: true,
+        exporterCsvFilename: window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ') + 'sensor readings.csv',
+        enableGridMenu: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        enableFiltering: false,
+        minRowsToShow: Math.min($scope.property_sensor_usage.readings.length, 10),
       };
 
       $scope.apply_column_settings = function () {
@@ -153,6 +231,11 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         selected: 'Exact'
       };
 
+      $scope.toggled_show_only_occupied_reading = function (b) {
+        $scope.showOnlyOccupiedReadings = b
+        $scope.refresh_readings(1, $scope.usage_pagination.per_page);
+      };
+
       // given a list of sensor labels, it returns the filtered readings and column defs
       // This is used by the primary filterBy... functions
       var filterBySensorLabels = function filterBySensorLabels (readings, columnDefs, sensorLabels) {
@@ -181,13 +264,16 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       // given the sensor selections, it returns the filtered readings and column defs
-      var filterBySensorSelections = function (readings, columnDefs, sensorSelections) {
+      var filterBySensorSelections = function (readings, columnDefs, dataLoggerSelections, sensor_type_selections) {
+        var selectedDataLoggerDisplayNames = dataLoggerSelections.filter((dl) => dl.selected).map((dl) => dl.label);
+        var selectedSensorType = sensor_type_selections.filter((t) => t.selected).map((t) => t.label);
+
         // filter according to sensor selections
-        var selectedSensorLabels = sensorSelections.filter(function (selection) {
-          return selection.selected;
+        var selectedSensorLabels = sensors.filter(function (sensor) {
+          return selectedDataLoggerDisplayNames.includes(sensor.data_logger) & selectedSensorType.includes(sensor.type)
         })
-          .map(function (selection) {
-            return selection.label;
+          .map(function (sensor) {
+            return getSensorLabel(sensor);
           });
 
         return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
@@ -195,40 +281,66 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
       // filters the sensor readings by selected sensors and updates the table
       $scope.applyFilters = function () {
-        const results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.sensor_selections);
+        const results = filterBySensorSelections(
+          $scope.property_sensor_usage.readings,
+          $scope.property_sensor_usage.column_defs,
+          $scope.data_logger_selections,
+          $scope.sensor_type_selections
+        );
         const readings = results.readings;
         const columnDefs = results.columnDefs;
 
-        $scope.data = readings;
         $scope.usageGridOptions.columnDefs = columnDefs;
         $scope.usageGridOptions.data = readings;
-        $scope.has_sensor_readings = $scope.data.length > 0;
+        $scope.has_sensor_readings = readings.length > 0;
         $scope.apply_column_settings();
       };
 
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
-      $scope.refresh_readings = function () {
+      $scope.refresh_readings = function (page, per_page) {
         spinner_utility.show();
         sensor_service.property_sensor_usage(
           $scope.inventory.view_id,
           $scope.organization.id,
           $scope.interval.selected,
-          [] // Not excluding any sensors from the query
+          $scope.showOnlyOccupiedReadings,
+          [], // Not excluding any sensors from the query
+          page,
+          per_page,
         ).then(function (usage) {
           // update the base data and reset filters
-          property_sensor_usage = usage;
+          $scope.property_sensor_usage = usage;
+          $scope.usage_pagination = usage.pagination;
 
-          resetSelections();
           $scope.applyFilters();
           spinner_utility.hide();
         });
       };
 
-      $scope.open_sensor_upload_modal = function () {
+      $scope.open_data_logger_upload_modal = function (data_logger) {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/sensor_upload_modal.html',
-          controller: 'sensor_upload_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/data_logger_upload_modal.html',
+          controller: 'data_logger_upload_modal_controller',
+          resolve: {
+            filler_cycle: function () {
+              return $scope.filler_cycle;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            sensor_service: sensor_service,
+          }
+        });
+      };
+
+      $scope.open_sensors_upload_modal = function (data_logger) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sensors_upload_modal.html',
+          controller: 'sensors_upload_modal_controller',
           resolve: {
             filler_cycle: function () {
               return $scope.filler_cycle;
@@ -243,12 +355,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
               return dataset_service.get_datasets().then(function (result) {
                 return result.datasets;
               });
-            }
+            },
+            data_logger: function () {
+              return data_logger?? {
+                  display_name: null,
+                  location_description: "",
+                  id: null,
+              };
+            },
+            sensor_service: sensor_service,
           }
         });
       };
 
-      $scope.open_sensor_readings_upload_modal = function () {
+      $scope.open_sensor_readings_upload_modal = function (data_logger) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/sensor_readings_upload_modal.html',
           controller: 'sensor_readings_upload_modal_controller',
@@ -266,6 +386,9 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
               return dataset_service.get_datasets().then(function (result) {
                 return result.datasets;
               });
+            },
+            data_logger_id: function () {
+              return data_logger.id
             }
           }
         });

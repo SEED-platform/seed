@@ -358,7 +358,7 @@
                 <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
                     <div ng-if="proposed_imports_options.data.length">
                         <div translate><b>METER_READING_COUNTS_TITLE</b></div>
-                        <ul class="meter-count" ng-if="proposed_properties_count">    
+                        <ul class="meter-count" ng-if="proposed_properties_count">
                             <li>{$ proposed_meters_count_string $} from {$ proposed_properties_count_string $}</li>
                         </ul>
                         <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
@@ -428,13 +428,17 @@
     <div ng-switch-when="7"></div>
     <div ng-switch-when="8">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" ng-disabled="preparing_pm_meters_preview" translate>Add another file</button>
         </div>
-        <div class="row text-center" ng-if="import_file_reusable_for_meters">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" translate>Import Meters from the same file</button>
+        <div class="row text-center" ng-if="import_file_reusable_for_meters !== false">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" ng-disabled="!import_file_reusable_for_meters || preparing_pm_meters_preview"><span translate>Import Meters from the same file</span>
+                <uib-progress class="progress-striped active" style="margin-bottom: 0" ng-if="!import_file_reusable_for_meters || preparing_pm_meters_preview">
+                    <uib-bar value="100" type="info"></uib-bar>
+                </uib-progress>
+            </button>
         </div>
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" ng-disabled="preparing_pm_meters_preview" translate>View my properties</button>
         </div>
     </div>
     <div ng-switch-when="9">
@@ -443,14 +447,18 @@
         </div>
     </div>
     <div ng-switch-when="10">
-        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error" >
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" ng-disabled="preparing_pm_meters_preview" translate>Add another file</button>
         </div>
         <div class="row text-center" ng-hide="step_10_mapquest_api_error">
-            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+            <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" ng-disabled="preparing_pm_meters_preview" translate>View my properties</button>
         </div>
-        <div class="row text-center" ng-if="import_file_reusable_for_meters">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" translate>Import Meters from the same file</button>
+        <div class="row text-center" ng-if="import_file_reusable_for_meters !== false">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reuse_import_file_to_import_meters(file_id)" ng-disabled="!import_file_reusable_for_meters || preparing_pm_meters_preview" ><span translate>Import Meters from the same file</span>
+                <uib-progress class="progress-striped active" style="margin-bottom: 0" ng-if="!import_file_reusable_for_meters || preparing_pm_meters_preview">
+                    <uib-bar value="100" type="info"></uib-bar>
+                </uib-progress>
+            </button>
         </div>
         <div class="row text-center" ng-if="step_10_mapquest_api_error">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reset_mapquest_api_key()" translate>Update MapQuest API key</button>

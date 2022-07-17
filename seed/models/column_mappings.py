@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -12,9 +12,7 @@ from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models.models import (
-    SEED_DATA_SOURCES,
-)
+from seed.models.models import SEED_DATA_SOURCES
 
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.
@@ -122,7 +120,7 @@ class ColumnMapping(models.Model):
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
 
-    # This field is the database column which allows checks for delimited values (e.g. a;b;c;d)
+    # This field is the database column which allows checks for delimited values (e.g., a;b;c;d)
     DELIMITED_FIELD = ('TaxLotState', 'jurisdiction_tax_lot_id', 'Jurisdiction Tax Lot ID', False)
 
     def is_direct(self):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
@@ -16,9 +16,9 @@ from seed.models import (
     Measure,
     Meter,
     MeterReading,
-    PropertyState,
     PropertyMeasure,
-    Scenario,
+    PropertyState,
+    Scenario
 )
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
@@ -73,6 +73,7 @@ class StateFieldsTest(TestCase):
 
         expected = (('address_line_1', 'address_line_1'),
                     ('address_line_2', 'address_line_2'),
+                    ('audit_template_building_id', 'audit_template_building_id'),
                     ('building_certification', 'building_certification'),
                     ('building_count', 'building_count'),
                     ('city', 'city'),
@@ -103,6 +104,7 @@ class StateFieldsTest(TestCase):
                     ('property_footprint', 'property_footprint'),
                     ('property_name', 'property_name'),
                     ('property_notes', 'property_notes'),
+                    ('property_timezone', 'property_timezone'),
                     ('property_type', 'property_type'),
                     ('recent_sale_date', 'recent_sale_date'),
                     ('release_date', 'release_date'),
@@ -114,6 +116,10 @@ class StateFieldsTest(TestCase):
                     ('source_eui_weather_normalized', 'source_eui_weather_normalized'),
                     ('space_alerts', 'space_alerts'),
                     ('state', 'state'),
+                    ('total_ghg_emissions', 'total_ghg_emissions'),
+                    ('total_ghg_emissions_intensity', 'total_ghg_emissions_intensity'),
+                    ('total_marginal_ghg_emissions', 'total_marginal_ghg_emissions'),
+                    ('total_marginal_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity'),
                     ('ubid', 'ubid'),
                     ('use_description', 'use_description'),
                     ('year_built', 'year_built'),

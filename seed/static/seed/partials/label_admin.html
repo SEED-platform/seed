@@ -36,6 +36,7 @@
                                 </ul>
                             </div>
                         </div>
+                        <span style="white-space: nowrap; margin-right: 20px;" >{$ 'Show in List' | translate $} <input type="checkbox" style="margin-left: 5px;" name="show_in_list" ng-model="new_label.show_in_list" /></span>
                         <button id="btnCreateLabel" class="btn btn-primary" ng-disabled="newLabelForm.$invalid" translate>Create label</button>
                         <div class="help-block">
                             <span class="has-error" ng-show="newLabelForm.name.$error.sdCheckLabelExists" translate>This label name is already taken.</span>
@@ -70,7 +71,6 @@
                             </td>
                             <td style="border-right: 0 none;">
                                 <span editable-checkbox="label.show_in_list" e-title="{$:: 'Show in List' | translate $}" e-name="show_in_list" e-form="rowform">{$:: label.show_in_list ? 'Show in List' : '' | translate $}</span>
-                           
                             </td>
                             <td style="white-space: nowrap" align="right">
                                 <form editable-form name="rowform" onbeforesave="saveLabel($data, label.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == label">

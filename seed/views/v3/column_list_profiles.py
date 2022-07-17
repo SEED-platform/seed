@@ -4,29 +4,32 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 """
+import json
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import status
 from rest_framework.response import Response
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
-    ColumnListProfile,
-    Organization,
-    Column,
     VIEW_LIST,
     VIEW_LIST_INVENTORY_TYPE,
     VIEW_LIST_PROPERTY,
     VIEW_LOCATION_TYPES,
+    Column,
+    ColumnListProfile,
+    Organization
 )
 from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.utils.api import OrgValidateMixin
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -116,6 +119,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
     )
     def list(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
+        brief = json.loads(request.query_params.get('brief', 'false'))
 
         try:
             org = Organization.objects.get(pk=org_id)
@@ -127,29 +131,25 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
         inventory_type = request.query_params.get('inventory_type')
         profile_location = request.query_params.get('profile_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
-            return super(ColumnListProfileViewSet, self).list(request, args, kwargs)
-
         queryset = self.filter_queryset(self.get_queryset())
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        if brief:
+            results = queryset.values("id", "name", "profile_location", "inventory_type")
+        else:
+            results = list(queryset)
+            results = self.get_serializer(results, many=True).data
 
-        results = list(queryset)
-        base_profiles = self.get_serializer(results, many=True).data
+        if org.comstock_enabled and not inventory_type == 'Tax Lot' and not profile_location == 'Detail View Profile':
+            # Add ComStock columns
+            results.append({
+                "id": None,
+                "name": "ComStock",
+                "profile_location": profile_location,
+                "inventory_type": inventory_type,
+                "columns": None if brief else self.list_comstock_columns(org_id)
+            })
 
-        # Add ComStock columns
-        base_profiles.append({
-            "id": None,
-            "name": "ComStock",
-            "profile_location": profile_location,
-            "inventory_type": inventory_type,
-            "columns": self.list_comstock_columns(org_id)
-        })
-
-        return Response(base_profiles)
+        return Response(results)
 
     @staticmethod
     def list_comstock_columns(org_id):

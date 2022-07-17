@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -12,23 +12,24 @@ import copy
 import hashlib
 import json
 import os
+import tempfile
 import traceback
-from _csv import Error
+import zipfile
+from bisect import bisect_left
 from builtins import str
 from collections import namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
-import zipfile
-import tempfile
 
-from celery import chord, shared_task, group
+from _csv import Error
 from celery import chain as celery_chain
+from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
+from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import IntegrityError, DataError
-from django.db import connection, transaction
+from django.db import DataError, IntegrityError, connection, transaction
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
@@ -39,55 +40,53 @@ from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
-    match_and_link_incoming_properties_and_taxlots,
+    match_and_link_incoming_properties_and_taxlots
 )
 from seed.data_importer.meters_parser import MetersParser
-from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord,
     STATUS_READY_TO_MERGE,
+    ImportFile,
+    ImportRecord
 )
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
-from seed.lib.xml_mapping import reader as xml_reader
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
+from seed.lib.xml_mapping import reader as xml_reader
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    PORTFOLIO_BS,
-    PORTFOLIO_RAW,
     BUILDINGSYNC_RAW,
-    Column,
-    ColumnMapping,
-    Meter,
-    Property,
-    PropertyState,
-    PropertyView,
-    TaxLotView,
-    TaxLotState,
-    Sensor,
+    DATA_STATE_DELETE,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
-    DATA_STATE_DELETE,
-    DATA_STATE_UNKNOWN)
-from seed.models import BuildingFile
-from seed.models import PropertyAuditLog
-from seed.models import TaxLotAuditLog
-from seed.models import TaxLotProperty
-from seed.models.auditlog import AUDIT_IMPORT
-from seed.models.data_quality import (
-    DataQualityCheck,
-    Rule,
+    DATA_STATE_UNKNOWN,
+    PORTFOLIO_BS,
+    PORTFOLIO_RAW,
+    BuildingFile,
+    Column,
+    ColumnMapping,
+    DataLogger,
+    Meter,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    Sensor,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
 )
+from seed.models.auditlog import AUDIT_IMPORT
+from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import geocode_buildings, MapQuestAPIKeyError
-from seed.utils.ubid import decode_unique_ids
+from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
 from seed.utils.match import update_sub_progress_total
+from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
@@ -289,7 +288,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     # *** BREAK OUT INTO SEPARATE METHOD ***
     # figure out which import field is defined as the unique field that may have a delimiter of
-    # individual values (e.g. tax lot ids). The definition of the delimited field is currently
+    # individual values (e.g., tax lot ids). The definition of the delimited field is currently
     # hard coded
     try:
         delimited_fields = {}
@@ -841,8 +840,8 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    property_id = import_file.matching_results_data['property_id']
-    sensor_property = Property.objects.get(id=property_id)
+    data_logger_id = import_file.matching_results_data['data_logger_id']
+    data_logger = DataLogger.objects.get(id=data_logger_id)
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}
@@ -855,10 +854,10 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     for sensor_datum in sensor_data:
         s, _ = Sensor.objects.get_or_create(**{
             "column_name": sensor_datum["column_name"],
-            "sensor_property": sensor_property
+            "data_logger": data_logger
         })
         s.display_name = sensor_datum["display_name"]
-        s.location_identifier = sensor_datum["location_identifier"]
+        s.location_description = sensor_datum["location_description"]
         s.description = sensor_datum["description"]
         s.sensor_type = sensor_datum["type"]
         s.units = sensor_datum["units"]
@@ -879,7 +878,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
-    property_id = import_file.matching_results_data['property_id']
+    data_logger_id = import_file.matching_results_data['data_logger_id']
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}
@@ -888,7 +887,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     parser = SensorsReadingsParser.factory(
         import_file.local_file,
         org_id,
-        property_id=property_id
+        data_logger_id=data_logger_id
     )
     sensor_readings_data = parser.sensor_readings_details
 
@@ -897,7 +896,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     for sensor_column_name, readings in sensor_readings_data.items():
         readings_tuples = [t for t in readings.items()]
         for batch_readings in batch(readings_tuples, chunk_size):
-            tasks.append(_save_sensor_readings_task.s(batch_readings, sensor_column_name, progress_data.key))
+            tasks.append(_save_sensor_readings_task.s(batch_readings, data_logger_id, sensor_column_name, progress_data.key))
 
     progress_data.total = len(tasks)
     progress_data.save()
@@ -906,12 +905,12 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 
 
 @shared_task
-def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
+def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_name, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     result = {}
     try:
-        sensor = Sensor.objects.get(column_name=sensor_column_name)
+        sensor = Sensor.objects.get(data_logger_id=data_logger_id, column_name=sensor_column_name)
 
     except Sensor.DoesNotExist:
         result[sensor_column_name] = {'error': 'No such sensor.'}
@@ -919,13 +918,17 @@ def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key
     else:
         try:
             with transaction.atomic():
-                reading_strings = [
-                    f"({sensor.id}, '{timestamp}', '{value}')"
-                    for timestamp, value
-                    in readings_tuples
-                ]
+                is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
+                [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
+                occupied_timestamps = [datetime.fromisoformat(t) for t in occupied_timestamps]
+
+                reading_strings = []
+                for timestamp, value in readings_tuples:
+                    is_occupied = is_occupied_arr[bisect_left(occupied_timestamps, parser.parse(timestamp)) - 1]
+                    reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
+
                 sql = (
-                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading)' +
+                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)' +
                     ' VALUES ' + ', '.join(reading_strings) +
                     ' ON CONFLICT (sensor_id, timestamp)' +
                     ' DO UPDATE SET reading = EXCLUDED.reading' +
@@ -1168,7 +1171,7 @@ def _append_sensor_import_results_to_summary(import_results):
         {
             "display_name": sensor.display_name,
             "type": sensor.sensor_type,
-            "location_identifier": sensor.location_identifier,
+            "location_description": sensor.location_description,
             "units": sensor.units,
             "column_name": sensor.column_name,
             "description": sensor.description,

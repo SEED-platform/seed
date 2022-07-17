@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import csv
@@ -10,11 +10,11 @@ import os
 import pathlib
 import pprint
 import time
+from http.client import RemoteDisconnected
 
 import psutil
 import requests
 import urllib3
-from http.client import RemoteDisconnected
 
 
 def report_memory():
@@ -53,14 +53,17 @@ def upload_file(upload_header, organization_id, upload_filepath, main_url, uploa
     """
     upload_url = "%s/api/v3/upload/?organization_id=%s" % (main_url, organization_id)
     params = {
-        'qqfile': upload_filepath,
         'import_record': upload_dataset_id,
         'source_type': upload_datatype
     }
-    return requests.post(upload_url,
-                         params=params,
-                         files={'file': pathlib.Path(upload_filepath).read_bytes()},
-                         headers=upload_header)
+    return requests.post(
+        upload_url,
+        params=params,
+        files=[
+            ('file', (pathlib.Path(upload_filepath).name, pathlib.Path(upload_filepath).read_bytes())),
+        ],
+        headers=upload_header
+    )
 
 
 def check_status(result_out, part_msg, log, piid_flag=None):

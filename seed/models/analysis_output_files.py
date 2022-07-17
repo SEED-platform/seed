@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from django.db import models
@@ -28,12 +28,12 @@ class AnalysisOutputFile(models.Model):
 
     # An output file can be linked to one or more properties
     # Case 1: an output file is relevant to only one property
-    #   e.g. the analysis returns a file containing property-specific coefficients
+    #   e.g., the analysis returns a file containing property-specific coefficients
     #
     #   output+--->property_1
     #
     # Case 2: an output file is relevant to multiple properties
-    #   e.g. the analysis returns a file of aggregated values for all properties
+    #   e.g., the analysis returns a file of aggregated values for all properties
     #
     #         +--->property_1
     #         |

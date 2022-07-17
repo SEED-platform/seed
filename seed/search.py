@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 
 Search methods pertaining to buildings.
@@ -9,31 +9,31 @@ Search methods pertaining to buildings.
 """
 from __future__ import annotations
 
-from datetime import datetime
 import json
 import logging
 import operator
-from typing import Any, Callable, Union
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-
 from functools import reduce
+from typing import Any, Callable, Union
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, Replace, NullIf
-from django.http.request import RawPostDataException, QueryDict
+from django.db.models.functions import Cast, NullIf, Replace
+from django.http.request import QueryDict, RawPostDataException
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
+
 from .models import (
+    Column,
     Property,
     PropertyState,
     PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotView,
-    Column,
+    TaxLotView
 )
 
 _log = logging.getLogger(__name__)
@@ -244,7 +244,7 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     :param other_orgs: list of other orgs to ``or`` the query
     """
     # return immediately if no inventory type
-    # i.e. when called by get_serializer in LabelViewSet
+    # i.e., when called by get_serializer in LabelViewSet
     # as there should be no inventory
     if not inventory_type:
         return []
@@ -423,10 +423,10 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
-                              Django field lookup suffix (e.g. `__gt`, `__icontains`, etc)
+                              Django field lookup suffix (e.g., `__gt`, `__icontains`, etc)
                               https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
                               One custom field lookup suffix is allowed, `__ne`,
-                              which negates the expression (i.e. column_name != filter_value)
+                              which negates the expression (i.e., column_name != filter_value)
     :param filter_value: the value evaluated against the filter_expression
     :param columns_by_name: mapping of Column.column_name to dict representation of Column
     :return: query object
@@ -527,7 +527,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     This function basically does the following:
     - Ignore any filter/sort that doesn't have a corresponding column
     - Handle cases for extra data
-    - Convert filtering values into their proper types (e.g. str -> int)
+    - Convert filtering values into their proper types (e.g., str -> int)
 
     :param filters: QueryDict from a request
     :param columns: list of all valid Columns in dict format

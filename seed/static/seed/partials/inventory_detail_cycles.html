@@ -21,10 +21,10 @@
                 <span>
                     <h2>
                         <span ng-if="::inventory_type==='properties'">
-                            <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                            <i class="fa fa-building-o"></i><span translate>Property</span> :
                         </span>
                         <span ng-if="::inventory_type==='taxlots'">
-                            <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                            <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                         </span>
                         <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
                     </h2>
@@ -73,10 +73,10 @@
 
                         <!-- Column values for each record -->
                         <td ng-repeat="state in states" class="ellipsis" ng-class="{highlight: col.changed}">
-                            <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state[col.column_name] $}">
+                            <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state[col.column_description] $}">
                                 <span>{$:: displayValue(col.data_type, state[col.column_name]) $}</span>
                             </span>
-                            <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state.extra_data[col.column_name] $}">
+                            <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state.extra_data[col.column_description] $}">
                                 <span>{$:: displayValue(col.data_type, state.extra_data[col.column_name]) $}</span>
                             </span>
                         </td>

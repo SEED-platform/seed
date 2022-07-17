@@ -1,0 +1,28 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="exportModalLabel" translate>Refresh Metadata of Selected Properties and Tax Lots</h4>
+</div>
+<div class="modal-body form-horizontal" style="padding-bottom: 0;">
+    <div class="section">
+
+        <div ng-if="!refreshing" class="section_content_container">
+            <div class="section_content with_padding">
+                <p>Refresh Metadata for {$ id_count $} selected {$ inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties'$}?</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="progress_bar_container export_progress" ng-if="refreshing">
+    <div class="progress_bar_copy_top">Progress: </div>
+    <uib-progressbar class="progress-striped active" value="refresh_progress.progress" type="success">
+    </uib-progressbar>
+    <div class="progress_bar_copy_bottom">{$ refresh_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+        refresh_progress.status_message ? ': ' + refresh_progress.status_message : '' $}</div>
+</div>
+<div>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-if="!refreshing" ng-click="refresh_metadata()" translate>Refresh Metadata</button>
+    <button type="button" class="btn btn-default" ng-if="!refreshing" ng-click="cancel()" translate>Close</button>
+</div>

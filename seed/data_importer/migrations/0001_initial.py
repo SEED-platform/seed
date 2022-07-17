@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('deleted', models.BooleanField(default=False)),
                 ('name', models.CharField(default=b'Unnamed Dataset', max_length=255, null=True, verbose_name=b'Name Your Dataset', blank=True)),
-                ('app', models.CharField(default=b'seed', help_text=b'The application (e.g. BPD or SEED) for this dataset', max_length=64, verbose_name=b'Destination App')),
+                ('app', models.CharField(default=b'seed', help_text=b'The application (e.g., BPD or SEED) for this dataset', max_length=64, verbose_name=b'Destination App')),
                 ('start_time', models.DateTimeField(null=True, blank=True)),
                 ('finish_time', models.DateTimeField(null=True, blank=True)),
                 ('created_at', models.DateTimeField(null=True, blank=True)),

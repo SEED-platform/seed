@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
@@ -208,8 +208,11 @@ class Organization(models.Model):
 
     comstock_enabled = models.BooleanField(default=False)
 
-    # API Token for communicating with BETTER
+    # API Tokens
     better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
+    at_organization_token = models.CharField(blank=True, max_length=128, default='')
+    audit_template_user = models.EmailField(blank=True, max_length=128, default='')
+    audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

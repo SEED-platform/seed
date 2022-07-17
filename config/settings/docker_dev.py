@@ -1,16 +1,20 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
+
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
 import os
 import sys
 
-from config.settings.common import *  # noqa
-
 from celery.utils import LOG_LEVELS
+from kombu import Exchange, Queue
+
+from config.settings.common import *  # noqa
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = '/media/'
@@ -40,20 +44,23 @@ ALLOWED_HOSTS = ['*']
 # LBNL's BETTER tool host
 BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
+# Audit Template Production Host
+AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
+
 # PostgreSQL DB config
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB,
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWORD,
+        'NAME': POSTGRES_DB, # noqa F405
+        'USER': POSTGRES_USER, # noqa F405
+        'PASSWORD': POSTGRES_PASSWORD, # noqa F405
         'HOST': "db-postgres",
-        'PORT': POSTGRES_PORT,
+        'PORT': POSTGRES_PORT, # noqa F405
     }
 }
 
 if SEED_TESTING:
-    INSTALLED_APPS += (
+    INSTALLED_APPS += (  # noqa F405
         "django_nose",
     )
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -126,8 +133,6 @@ LOGGING = {
     },
 }
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:

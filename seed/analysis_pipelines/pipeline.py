@@ -4,15 +4,14 @@ import inspect
 import json
 import logging
 
-from seed.decorators import get_prog_key
-from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import Analysis, AnalysisPropertyView, AnalysisMessage
-
+from celery import shared_task
 from django.db import transaction
 from django.db.utils import OperationalError
 from django.utils import timezone as tz
 
-from celery import shared_task
+from seed.decorators import get_prog_key
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +66,7 @@ def analysis_pipeline_task(expected_status):
 
     The benefit of this functionality is to
     1. guard tasks from starting when an analysis has already been stopped, deleted, etc.
-    2. handling some unhandled exceptions gracefully (e.g. a database error when someone else deletes the analysis)
+    2. handling some unhandled exceptions gracefully (e.g., a database error when someone else deletes the analysis)
 
     :param expected_status: int, one of Analysis.STATUS_TYPES
     :returns: function, a decorator
@@ -239,14 +238,12 @@ def analysis_pipeline_task(expected_status):
 
 class AnalysisPipelineException(Exception):
     """An analysis pipeline specific exception"""
-    pass
 
 
 class StopAnalysisTaskChain(Exception):
     """Analysis pipeline tasks should raise this exception to stop the celery task
     chain.
     """
-    pass
 
 
 class AnalysisPipeline(abc.ABC):
@@ -263,13 +260,13 @@ class AnalysisPipeline(abc.ABC):
         """Factory method for constructing pipelines for a given analysis.
 
         :param analysis: Analysis
-        :returns: An implementation of AnalysisPipeline, e.g. BsyncrPipeline
+        :returns: An implementation of AnalysisPipeline, e.g., BsyncrPipeline
         """
         # import here to avoid circular dependencies
-        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.better import BETTERPipeline
-        from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
+        from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
@@ -495,7 +492,7 @@ class AnalysisPipeline(abc.ABC):
             analysis.status is Analysis.PENDING_CREATION
             # READY doesn't have progress data b/c it's waiting for the user to kick it off
             or analysis.status is Analysis.READY
-            # Terminal states (e.g. Failed, Stopped, Complete) don't have progress data
+            # Terminal states (e.g., Failed, Stopped, Complete) don't have progress data
             or analysis.in_terminal_state()
         ):
             return None
@@ -517,7 +514,7 @@ class AnalysisPipeline(abc.ABC):
     @abc.abstractmethod
     def _prepare_analysis(self, property_view_ids, start_analysis):
         """Abstract method which should do the work necessary for preparing
-        an analysis, e.g. creating input file(s)
+        an analysis, e.g., creating input file(s)
 
         :param property_view_ids: list[int]
         :param start_analysis: bool, if true, the pipeline should be started immediately
@@ -525,13 +522,11 @@ class AnalysisPipeline(abc.ABC):
             implementation to make sure this happens by calling `pipeline.start_analysis()`
         :returns: None
         """
-        pass
 
     @abc.abstractmethod
     def _start_analysis(self):
-        """Abstract method which should start the analysis, e.g. make HTTP requests
+        """Abstract method which should start the analysis, e.g., make HTTP requests
         to the analysis service.
 
         :returns: None
         """
-        pass

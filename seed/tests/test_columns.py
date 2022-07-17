@@ -1,32 +1,31 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 import os.path
 
-from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.test import TestCase
+from quantityfield.units import ureg
 
 from seed import models as seed_models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     DATA_STATE_MATCHING,
-    PropertyState,
     Column,
     ColumnMapping,
-
+    PropertyState
 )
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.utils.organizations import create_organization
-from quantityfield.units import ureg
 
 
 class TestColumns(TestCase):
@@ -242,6 +241,15 @@ class TestColumns(TestCase):
         rextra_data_column = Column.objects.get(pk=extra_data_column.id)
         self.assertTrue(rextra_data_column.is_extra_data)
         self.assertFalse(rextra_data_column.is_matching_criteria)
+
+    def test_column_has_description(self):
+        org1 = Organization.objects.create()
+        # Raw columns don't have a table name!
+        raw_column = seed_models.Column.objects.create(
+            column_name='site_eui',
+            organization=org1
+        )
+        self.assertEqual(raw_column.column_name, raw_column.column_description)
 
 
 class TestRenameColumns(TestCase):
@@ -859,6 +867,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'Column A',
             'display_name': 'Column A',
+            'column_description': 'Column A',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -870,6 +879,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -878,6 +888,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': "Apostrophe's Field",
             'display_name': "Apostrophe's Field",
+            'column_description': "Apostrophe's Field",
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -889,6 +900,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -897,6 +909,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'id',
             'display_name': 'id',
+            'column_description': 'id',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
@@ -908,6 +921,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -916,6 +930,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'PropertyState',
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
+            'column_description': 'PM Property ID',
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
@@ -928,6 +943,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': True,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -936,6 +952,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'state',
             'display_name': 'State (Tax Lot)',
+            'column_description': 'State',
             'data_type': 'string',
             'geocoding_order': 4,
             'is_extra_data': False,
@@ -947,6 +964,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -954,6 +972,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area (Tax Lot)',
+            'column_description': 'Gross Floor Area',
             'data_type': 'None',
             'geocoding_order': 0,
             'is_extra_data': True,
@@ -965,6 +984,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -983,6 +1003,7 @@ class TestColumnsByInventory(TestCase):
             'table_name': 'TaxLotState',
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area',
+            'column_description': 'Gross Floor Area',
             'data_type': 'None',
             'geocoding_order': 0,
             'is_extra_data': True,
@@ -994,6 +1015,7 @@ class TestColumnsByInventory(TestCase):
             'is_matching_criteria': False,
             'recognize_empty': False,
             'comstock_mapping': None,
+            'derived_column': None,
         }
         self.assertIn(c, columns)
 
@@ -1020,6 +1042,7 @@ class TestColumnsByInventory(TestCase):
             "types": {
                 "address_line_1": "string",
                 "address_line_2": "string",
+                "audit_template_building_id": "string",
                 "block_number": "string",
                 "building_certification": "string",
                 "building_count": "integer",
@@ -1057,6 +1080,7 @@ class TestColumnsByInventory(TestCase):
                 "property_name": "string",
                 "property_notes": "string",
                 "property_type": "string",
+                "property_timezone": "string",
                 "recent_sale_date": "datetime",
                 "release_date": "datetime",
                 "site_eui": "float",
@@ -1068,6 +1092,10 @@ class TestColumnsByInventory(TestCase):
                 "space_alerts": "string",
                 "state": "string",
                 "taxlot_footprint": "geometry",
+                "total_marginal_ghg_emissions": "float",
+                "total_marginal_ghg_emissions_intensity": "float",
+                "total_ghg_emissions": "float",
+                "total_ghg_emissions_intensity": "float",
                 "ubid": "string",
                 "ulid": "string",
                 "updated": "datetime",
@@ -1083,7 +1111,7 @@ class TestColumnsByInventory(TestCase):
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields(self.fake_org.pk)
 
-        data = ['address_line_1', 'address_line_2', 'block_number',
+        data = ['address_line_1', 'address_line_2', 'audit_template_building_id', 'block_number',
                 'building_certification', 'building_count', 'campus', 'city',
                 'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts',
                 'energy_score', 'generation_date', 'geocoding_confidence', 'gross_floor_area',
@@ -1092,10 +1120,12 @@ class TestColumnsByInventory(TestCase):
                 'occupied_floor_area', 'owner', 'owner_address', 'owner_city_state', 'owner_email',
                 'owner_postal_code', 'owner_telephone', 'pm_parent_property_id', 'pm_property_id',
                 'postal_code', 'property_footprint', 'property_name', 'property_notes',
-                'property_type',
+                'property_type', 'property_timezone',
                 'recent_sale_date', 'release_date', 'site_eui', 'site_eui_modeled',
                 'site_eui_weather_normalized', 'source_eui', 'source_eui_modeled',
                 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
+                'total_ghg_emissions', 'total_ghg_emissions_intensity',
+                'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
                 'ubid', 'ulid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
@@ -1103,7 +1133,7 @@ class TestColumnsByInventory(TestCase):
 
     def test_retrieve_db_field_name_from_db_tables(self):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""
-        expected = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
+        expected = ['address_line_1', 'address_line_2', 'audit_template_building_id', 'block_number', 'building_certification',
                     'building_count', 'city', 'conditioned_floor_area',
                     'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts', 'energy_score', 'generation_date',
                     'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
@@ -1111,11 +1141,11 @@ class TestColumnsByInventory(TestCase):
                     'number_properties', 'occupied_floor_area', 'owner', 'owner_address',
                     'owner_city_state', 'owner_email', 'owner_postal_code', 'owner_telephone',
                     'pm_parent_property_id', 'pm_property_id', 'postal_code', 'property_footprint',
-                    'property_name',
-                    'property_notes', 'property_type', 'recent_sale_date', 'release_date',
-                    'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
+                    'property_name', 'property_notes', 'property_timezone', 'property_type', 'recent_sale_date',
+                    'release_date', 'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
-                    'taxlot_footprint',
+                    'taxlot_footprint', 'total_ghg_emissions', 'total_ghg_emissions_intensity',
+                    'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
                     'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()

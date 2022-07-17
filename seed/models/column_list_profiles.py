@@ -1,20 +1,18 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from collections import OrderedDict
-from seed.models.derived_columns import DerivedColumn
 
 from django.apps import apps
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models import (
-    Column,
-)
+from seed.models import Column
+from seed.models.derived_columns import DerivedColumn
 
 VIEW_LIST = 0
 VIEW_DETAIL = 1
@@ -50,7 +48,7 @@ class ColumnListProfile(models.Model):
     def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
         """
         Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it
-        will return the list of raw database fields for the organization (i.e. all the fields).
+        will return the list of raw database fields for the organization (i.e., all the fields).
 
         :param organization_id: int, ID of the organization
         :param profile_id: int, ID of the profile id to retrieve

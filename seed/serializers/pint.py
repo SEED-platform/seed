@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 """
@@ -10,8 +10,8 @@ that's where the display preference lives.
 """
 
 import re
-
 from builtins import str
+
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers
@@ -28,9 +28,13 @@ ureg.define('year = 365.25 * day = _ = yr = julian_year')
 
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
+GHG_DIMENSIONALITY = '[mass] / [time]'
+GHG_INTENSITY_DIMENSIONALITY = '[mass] / [length] ** 2 / [time]'
 
 AREA_DEFAULT_UNITS = 'ft**2'
 EUI_DEFAULT_UNITS = 'kBtu/ft**2/year'
+GHG_DEFAULT_UNITS = 'MtCO2e/year'
+GHG_INTENSITY_DEFAULT_UNITS = 'kgCO2e/ft**2/year'
 
 
 def to_raw_magnitude(obj):
@@ -52,7 +56,9 @@ def collapse_unit(org, x):
     # enforced separately by the django pint column type
     pint_specs = {
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,
-        AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS
+        AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
+        GHG_DIMENSIONALITY: GHG_DEFAULT_UNITS,
+        GHG_INTENSITY_DIMENSIONALITY: GHG_INTENSITY_DEFAULT_UNITS
     }
 
     if isinstance(x, ureg.Quantity):
@@ -173,6 +179,12 @@ class PintQuantitySerializerField(serializers.Field):
                 data = float(data) * ureg(org.display_units_eui)
             elif field.base_units == 'ft**2':
                 data = float(data) * ureg(org.display_units_area)
+            elif field.base_units == 'kgCO2/ft**2/year':
+                # not sure that this is used anywhere, but it's here just in case
+                data = float(data) * ureg(org.base_units)
+            elif field.base_units == 'MtCO2e/year':
+                # not sure that this is used anywhere, but it's here just in case
+                data = float(data) * ureg(org.base_units)
             else:
                 # This shouldn't happen unless we're supporting a new pints_unit QuantityField.
                 data = float(data) * ureg(field.base_units)

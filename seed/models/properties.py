@@ -1,11 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from __future__ import absolute_import
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import copy
 import logging
@@ -14,16 +13,18 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
-from django.db import (
-    models,
-    transaction,
-    IntegrityError,
+from django.db import IntegrityError, models, transaction
+from django.db.models.signals import (
+    m2m_changed,
+    post_save,
+    pre_delete,
+    pre_save
 )
-from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from past.builtins import basestring
 from quantityfield.fields import QuantityField
+from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
@@ -31,29 +32,32 @@ from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
-    StatusLabel,
     DATA_STATE,
-    DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
+    DATA_STATE_UNKNOWN,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
+    StatusLabel
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
-    split_model_fields,
     obj_to_dict,
+    split_model_fields
 )
-from seed.utils.time import convert_datestr
-from seed.utils.time import convert_to_js_timestamp
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
+from seed.utils.time import convert_datestr, convert_to_js_timestamp
+
+from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
 # Oops! we override a builtin in some of the models
 property_decorator = property
+
+# new units used by properties
+ureg.define('@alias metric_ton = MtCO2e')
+ureg.define('@alias kilogram = kgCO2e')
 
 
 class Property(models.Model):
@@ -67,7 +71,7 @@ class Property(models.Model):
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
-    # Handle properties that may have multiple properties (e.g. buildings)
+    # Handle properties that may have multiple properties (e.g., buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 
@@ -127,7 +131,23 @@ class Property(models.Model):
 
 
 class PropertyState(models.Model):
-    """Store a single property. This contains all the state information about the property"""
+    """Store a single property. This contains all the state information about the property
+
+    For property_timezone, use the pytz timezone strings. The US has the following and a full
+    list can be created by calling pytz.all_timezones in Python:
+        * US/Alaska
+        * US/Aleutian
+        * US/Arizona
+        * US/Central
+        * US/East-Indiana
+        * US/Eastern
+        * US/Hawaii
+        * US/Indiana-Starke
+        * US/Michigan
+        * US/Mountain
+        * US/Pacific
+        * US/Samoa
+    """
 
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
@@ -143,11 +163,14 @@ class PropertyState(models.Model):
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
+    # Audit Template has their own building id
+    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True)
+
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
     ubid = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The master campus record (campus=True on Property model) will
+    # for all the properties. The main campus record (campus=True on Property model) will
     # have the pm_property_id set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     pm_property_id = models.CharField(max_length=255, null=True, blank=True)
@@ -177,7 +200,9 @@ class PropertyState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
 
-    # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
+    # Store the timezone of the property
+    property_timezone = models.CharField(max_length=255, null=True, blank=True)
+
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     # EPA's eGRID Subregion Code (https://www.epa.gov/egrid)
@@ -248,6 +273,10 @@ class PropertyState(models.Model):
     source_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
+    total_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
+    total_marginal_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
+    total_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
+    total_marginal_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
@@ -381,7 +410,7 @@ class PropertyState(models.Model):
         Return the history of the property state by parsing through the auditlog. Returns only the ids
         of the parent states and some descriptions.
 
-              master
+              main
               /   \
              /     \
           parent1  parent2
@@ -389,12 +418,12 @@ class PropertyState(models.Model):
         In the records, parent2 is most recent, so make sure to navigate parent two first since we
         are returning the data in reverse over (that is most recent changes first)
 
-        :return: list, history as a list, and the master record
+        :return: list, history as a list, and the main record
         """
 
         """Return history in reverse order."""
         history = []
-        master = {
+        main = {
             'state_id': self.id,
             'state_data': self,
             'date_edited': None,
@@ -428,7 +457,7 @@ class PropertyState(models.Model):
         ).order_by('-id').first()
 
         if log:
-            master = {
+            main = {
                 'state_id': log.state.id,
                 'state_data': log.state,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -489,7 +518,7 @@ class PropertyState(models.Model):
                 record = record_dict(log)
                 history.append(record)
 
-        return history, master
+        return history, main
 
     @classmethod
     def coparent(cls, state_id):
@@ -529,6 +558,7 @@ class PropertyState(models.Model):
                     ps.pm_property_id,
                     ps.pm_parent_property_id,
                     ps.custom_id_1,
+                    ps.audit_template_building_id,
                     ps.ubid,
                     ps.address_line_1,
                     ps.address_line_2,
@@ -544,6 +574,10 @@ class PropertyState(models.Model):
                     ps.energy_score,
                     ps.site_eui,
                     ps.site_eui_modeled,
+                    ps.total_ghg_emissions,
+                    ps.total_marginal_ghg_emissions,
+                    ps.total_ghg_emissions_intensity,
+                    ps.total_marginal_ghg_emissions_intensity,
                     ps.property_notes,
                     ps.property_type,
                     ps.year_ending,
@@ -580,12 +614,14 @@ class PropertyState(models.Model):
         # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
-        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
-                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
-                       'longitude', 'latitude',
+        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
+                       'audit_template_building_id', 'ubid', 'address_line_1', 'address_line_2',
+                       'city', 'state', 'postal_code', 'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'site_eui_modeled', 'property_notes', 'property_type',
-                       'year_ending', 'owner', 'owner_email', 'owner_telephone', 'building_count',
+                       'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',
+                       'total_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity',
+                       'property_notes', 'property_type', 'year_ending', 'owner',
+                       'owner_email', 'owner_telephone', 'building_count',
                        'year_built', 'recent_sale_date', 'conditioned_floor_area',
                        'occupied_floor_area', 'owner_address', 'owner_postal_code',
                        'home_energy_score_id', 'generation_date', 'release_date',
@@ -605,12 +641,11 @@ class PropertyState(models.Model):
         :param state1: *State
         :param state2: *State - given priority over state1
         """
-        from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure
         from seed.models.scenarios import Scenario
+        from seed.models.simulations import Simulation
 
         # TODO: get some items off of this property view - labels and eventually notes
-
         # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
         building_files = [x for x in state2.building_files.all()]

@@ -1,21 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import absolute_import
 
+import math
 import sys
+from datetime import datetime
 
-from celery import chord, chain
-from celery import shared_task
+import pytz
+from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.template import Context, Template, loader
 from django.urls import reverse_lazy
-from django.template import Template, Context, loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -24,10 +26,10 @@ from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    DATA_STATE_MATCHING,
     Column,
     ColumnMapping,
     Cycle,
-    DATA_STATE_MATCHING,
     Property,
     PropertyState,
     PropertyView,
@@ -35,7 +37,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
-
 
 logger = get_task_logger(__name__)
 
@@ -60,7 +61,7 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
     context = {
         'email': email_address,
         'domain': domain,
-        'protocol': 'https',
+        'protocol': settings.PROTOCOL,
         'first_name': first_name,
         'signup_url': signup_url
     }
@@ -92,7 +93,8 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     Returns: nothing
     """
-    sign_up_url = Template("https://{{domain}}{{sign_up_url}}").render(Context({
+    sign_up_url = Template("{{protocol}}://{{domain}}{{sign_up_url}}").render(Context({
+        'protocol': settings.PROTOCOL,
         'domain': domain,
         'sign_up_url': reverse_lazy('landing:signup', kwargs={
             'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
@@ -135,7 +137,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         'new_user': new_user,
         'first_name': new_user.first_name,
         'domain': domain,
-        'protocol': 'https',
+        'protocol': settings.PROTOCOL,
         'new_org': new_org,
         'requested_by': requested_by,
     }
@@ -407,3 +409,38 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
+
+
+@shared_task
+def update_inventory_metadata(ids, states, inventory_type, progress_key):
+    now = datetime.now(pytz.UTC)
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.total = 100
+    id_count = len(ids)
+    batch_size = math.ceil(id_count / 100)
+
+    # Find related Properties and PropertyStates
+    if inventory_type == 'properties':
+        properties = Property.objects.filter(id__in=ids)
+        states = PropertyState.objects.filter(id__in=states)
+        inventory = list(properties) + list(states)
+
+    elif inventory_type == 'taxlots':
+        taxlots = TaxLot.objects.filter(id__in=ids)
+        states = TaxLotState.objects.filter(id__in=states)
+        inventory = list(taxlots) + list(states)
+
+    else:
+        return
+
+    # Iterates across Properties (or Taxlots) and -States and refreshes each 'updated' attribute
+    # Updating Properties (or Taxlots) for OEP Connection
+    # Updating -States for UI feedack on inventory list
+    for idx, state in enumerate(inventory):
+        state.updated = now
+        state.save()
+        if batch_size > 0 and idx % batch_size == 0:
+            progress_data.step(f'Refreshing ({idx}/{id_count})')
+
+    progress_data.finish_with_success()
+    return progress_data.result()['progress']

@@ -1,13 +1,14 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import absolute_import
 
-import sys
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
+import os
+
 from config.settings.common import *  # noqa
-from kombu import Exchange, Queue
-from django.conf import settings
 
 DEBUG = True
 compress = False
@@ -32,7 +33,7 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE
+MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE # noqa F405
 
 LOGGING = {
     'version': 1,
@@ -73,10 +74,11 @@ REQUIRE_UNIQUE_EMAIL = False
 # LBNL's BETTER tool host
 BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
+# Audit Template Production Host
+AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
+
 ALLOWED_HOSTS = ['*']
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:

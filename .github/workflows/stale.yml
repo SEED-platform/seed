@@ -1,7 +1,7 @@
-name: 'Close stale issues and PRs'
+name: "Close stale issues and PRs"
 on:
   schedule:
-    - cron: '30 1 * * *'
+    - cron: "30 1 * * *"
 permissions:
   issues: write
 
@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/stale@v4
         with:
-          stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity within 60 days. It will be closed if no further activity occurs. Thank you for your contributions.'
-          close-issue-message: 'This issue has been closed automatically. If this still affects you please re-open this issue with a comment or contact us so we can look into resolving it.'
-          exempt-issue-labels: 'P-1,Impact-1,Milestone'
+          stale-issue-message: "This issue has been automatically marked as stale because it has not had recent activity within 60 days. It will be closed if no further activity occurs. Thank you for your contributions."
+          close-issue-message: "This issue has been closed automatically. If this still affects you please re-open this issue with a comment or contact us so we can look into resolving it."
+          exempt-issue-labels: "P-1,P-2,Impact-1,Milestone"
           operations-per-run: 500
