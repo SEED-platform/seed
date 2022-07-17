@@ -2,6 +2,7 @@
 
 Date Range: 03/31/22 - 07/16/22
 
+Closed Issues and Features (Total: 58):
 - Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Improve performance moving between different views (Detail to List, etc)
 - Feature [#1754]( https://github.com/SEED-platform/seed/issues/1754 ), Attach PDF (or other files) to a building record
 - Fixed [#2685]( https://github.com/SEED-platform/seed/issues/2685 ), Meter data can't be shown by month
