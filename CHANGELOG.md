@@ -1,8 +1,8 @@
 # SEED Version 2.15.0
 
-Date Range: 03/31/22 - 07/16/22
+Date Range: 03/31/22 - 07/17/22
 
-Closed Issues and Features (Total: 58):
+Closed Issues and Features (Total: 61):
 - Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Improve performance moving between different views (Detail to List, etc)
 - Feature [#1754]( https://github.com/SEED-platform/seed/issues/1754 ), Attach PDF (or other files) to a building record
 - Fixed [#2685]( https://github.com/SEED-platform/seed/issues/2685 ), Meter data can't be shown by month
@@ -46,6 +46,7 @@ Closed Issues and Features (Total: 58):
 - Feature [#3280]( https://github.com/SEED-platform/seed/issues/3280 ), Sensors: Add more fields to Data Loggers section
 - Fixed [#3281]( https://github.com/SEED-platform/seed/issues/3281 ), Sensor Export: Data Logger field is missing + field name tweaks
 - Feature [#3287]( https://github.com/SEED-platform/seed/issues/3287 ), Add ability to API to filter property/labels by label names
+- Feature [#3291]]( https://github.com/SEED-platform/seed/issues/3291 ), Add "Show in List" to Inventory List view
 - Feature [#3295]( https://github.com/SEED-platform/seed/issues/3295 ), Column Description Field: Make larger, maybe memo box
 - Feature [#3300]( https://github.com/SEED-platform/seed/issues/3300 ), Add Emmissions Intensity to Analysis Results
 - Feature [#3308]( https://github.com/SEED-platform/seed/issues/3308 ), Add Audit Template Building ID to Audit Template Building Sync import
@@ -58,6 +59,7 @@ Closed Issues and Features (Total: 58):
 - Fixed [#3338]( https://github.com/SEED-platform/seed/issues/3338 ), Sensors: Can't dismiss Create a Data Logger modal when it's empty
 - Fixed [#3343]( https://github.com/SEED-platform/seed/issues/3343 ), Analysis results slow to load when connected to lots of properties
 - Maintenance [#3352]( https://github.com/SEED-platform/seed/issues/3352 ), Bump version of lxml to 4.9.1
+- Fixed [#3357]( https://github.com/SEED-platform/seed/issues/3357 ), Data Quality displays duplicate derived columns
 - Maintenance [#3362]( https://github.com/SEED-platform/seed/issues/3362 ), Upgrade to Django 3.2.14
 - Fixed [#3366]( https://github.com/SEED-platform/seed/issues/3366 ), Make beta properties list page the default (and move previous to Legacy)
 - Fixed [#3382]( https://github.com/SEED-platform/seed/issues/3382 ), Replace Raven with Sentry-sdk
