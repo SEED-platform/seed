@@ -313,7 +313,7 @@ class TestInventoryViewSearchParsers(TestCase):
         )
 
         # just to prove that we can't do numeric filtering on these string values in extra data
-        # i.e. the whole reason we are making these annotations which cast the
+        # i.e., the whole reason we are making these annotations which cast the
         # extra_data values
         uncast_property_views = PropertyView.objects.filter(state__extra_data__test_number__gte=10)
         self.assertEqual(uncast_property_views.count(), 0)

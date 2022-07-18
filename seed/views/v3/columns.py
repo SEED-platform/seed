@@ -78,7 +78,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 name='only_used',
                 required=False,
                 description='Determine whether or not to show only the used fields '
-                            '(i.e. only columns that have been mapped)'
+                            '(i.e., only columns that have been mapped)'
                             '\nDefault: "false"'
             ),
             AutoSchemaHelper.query_boolean_field(

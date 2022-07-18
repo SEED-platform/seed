@@ -66,8 +66,9 @@ services:
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
-      - SENTRY_JS_DSN
+      # Pass the Sentry config to the containers
       - SENTRY_RAVEN_DSN
+      - SENTRY_JS_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       # Recaptcha for testing:
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do

@@ -391,7 +391,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertFalse(rule.maximum_valid(150))
         self.assertFalse(rule.maximum_valid('150'))
 
-        # All of these should value since they are less than 10 (e.g. 5 kbtu/m2/year =~ 0.5 kbtu/ft2/year)
+        # All of these should value since they are less than 10 (e.g., 5 kbtu/m2/year =~ 0.5 kbtu/ft2/year)
         # different units on check data
         self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
         self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))  # ~ 0.5 kbtu/ft2/year

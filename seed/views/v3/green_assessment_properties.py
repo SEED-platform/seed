@@ -26,7 +26,7 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
                 'data': [
                     {
                         'id': Green Assessment primary key,
-                        'source': Source of this certification e.g. assessor,
+                        'source': Source of this certification e.g., assessor,
                         'status': Status for multi-step processes,
                         'status_date': date status first applied,
                         'metric': score if value is numeric,

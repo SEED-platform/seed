@@ -15,7 +15,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * checks against the auth backend to determine if the requesting user is
      * authorized for a given action. This should happen once per page view.
      *
-     * e.g. from the route dispatcher:
+     * e.g., from the route dispatcher:
      *  auth_service.is_authorized(org_id, ['can_invite_member', 'can_remove_member'])
      *    .then(function(data) {
      *      auth = data.auth; // auth === {'can_invite_member': true, 'can_remove_member': true}

@@ -30,6 +30,7 @@ _log = logging.getLogger(__name__)
 
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
+    debug = settings.DEBUG
     return render(request, 'seed/jasmine_tests/AngularJSTests.html', locals())
 
 
@@ -42,7 +43,7 @@ def _get_default_org(user):
     :returns: tuple (Organization id, Organization name, OrganizationUser role)
     """
     org = user.default_organization
-    # check if user is still in the org, i.e. s/he wasn't removed from his/her
+    # check if user is still in the org, i.e., they weren't removed from their
     # default org or did not have a set org and try to set the first one
     if not org or not user.orgs.exists():
         org = user.orgs.first()
@@ -67,13 +68,11 @@ def home(request):
         * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
         * **username**: the request user's username (first and last name)
     """
-
     username = request.user.first_name + " " + request.user.last_name
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
     debug = settings.DEBUG
-
     return render(request, 'seed/index.html', locals())
 
 

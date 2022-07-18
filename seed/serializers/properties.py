@@ -613,16 +613,16 @@ def conv_value(val):
 def unflatten_values(vdict, fkeys):
     """
     Takes a dicts produced by values() that traverses foreign relationships
-    (e.g. contains foreign_key__field) and converts them into a nested dict.
+    (e.g., contains foreign_key__field) and converts them into a nested dict.
     so vdict[foreign_key__field] becomes vdict[foreign_key][field]
 
-    It assumes values has been provided with foreignkey__field  e.g. state__city
+    It assumes values has been provided with foreignkey__field  e.g., state__city
 
     {'id':1,  'state__city': 'London'} -> {'id': 1, 'state':{'city': 'London'}}
 
-    :param vdict: dict from list returned by e.g. Model.objects.all().values()
+    :param vdict: dict from list returned by e.g., Model.objects.all().values()
     :type vdict: dict
-    :param fkeys: field names for foreign key (e.g. state for state__city)
+    :param fkeys: field names for foreign key (e.g., state for state__city)
     :type fkeys: list
     """
     assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict,

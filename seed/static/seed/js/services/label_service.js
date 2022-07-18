@@ -36,7 +36,7 @@ angular.module('BE.seed.service.label', [])
        id {integer}            The id of the label.
        name {string}           The text that appears in the label.
        text {string}           Same as name, needed for ngTagsInput control.
-       color {string}          The text description of the label's color (e.g. 'blue').
+       color {string}          The text description of the label's color (e.g., 'blue').
        label {string}          The css class, usually in bootstrap, used to generate
        the color style (poorly named, needs refactoring).
        is_applied {boolean}    If a search object was passed in, this boolean

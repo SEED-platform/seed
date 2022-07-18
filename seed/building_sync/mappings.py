@@ -28,7 +28,7 @@ A BuildingSync mapping is expected to be structured like this
 xpath: the xpath to the target element (relative to the parent mapping if there is one)
 type: determines what's returned from the mapping.
   - 'value' returns a simple value (string, int)
-  - 'list' indicates this is an element with multiple instances (e.g. auc:Scenario), and will return a mapping for each one. these list 'items' are indicated by the 'items' array
+  - 'list' indicates this is an element with multiple instances (e.g., auc:Scenario), and will return a mapping for each one. these list 'items' are indicated by the 'items' array
   - 'object' returns a dict. the dict properties come from the 'properties' field
 properties: a dict of mapping objects used for the 'object' type. If the type is 'object', this field must be defined.
   - the key will be used in the resulting dict to point to the mapped value
@@ -38,10 +38,10 @@ items: a dict of mapping objects used for the 'list' type. If the type is 'list'
   - the value is the mapped result for a single element
 value: a string indicating what value to grab from the element
   - 'text' returns the text content
-  - '@<attribute>' returns the value of an attribute. e.g. if we wanted IDref, we'd use '@IDref'
+  - '@<attribute>' returns the value of an attribute. e.g., if we wanted IDref, we'd use '@IDref'
   - 'exist' returns a boolean as to whether or not the targeted element exists
   - 'tag' returns the tag of the element
-formatter: a function which takes a string and returns another value. e.g. parsing a datetime string
+formatter: a function which takes a string and returns another value. e.g., parsing a datetime string
 """
 
 
@@ -388,8 +388,8 @@ def parse_xpath_part(xpath_part):
     """parses a single part of an xpath into its parts: primary tag, conditional
     child tag name, and conditional child value. Namespaces are stripped from the tags
 
-    e.g. 'auc:FloorArea[auc:FloorAreaType="Net"]' returns "FloorArea", "FloorAreaType", "Net"
-    e.g. 'auc:FloorArea' returns "FloorArea", None, None
+    e.g., 'auc:FloorArea[auc:FloorAreaType="Net"]' returns "FloorArea", "FloorAreaType", "Net"
+    e.g., 'auc:FloorArea' returns "FloorArea", None, None
 
     :param xpath_part: string, a single part of an xpath
     :returns: tuple, [string, string | None, string | None]
@@ -505,7 +505,7 @@ def update_tree(schema, tree, xpath, target, value, namespaces):
 
     :param schema: xmlschema.XmlSchema, schema for determining sequence ordering
     :param tree: lxml.ElementTree, tree to update
-    :param xpath: string, absolute xpath to the element to update (i.e. starts with /auc:BuildingSync/...)
+    :param xpath: string, absolute xpath to the element to update (i.e., starts with /auc:BuildingSync/...)
     :param target: string, an attribute, "@<attribute>", or "text" to indicate what to update on the element
     :param value: string, the value to set for that node
     """
