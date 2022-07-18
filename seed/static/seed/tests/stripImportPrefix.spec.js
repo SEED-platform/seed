@@ -16,7 +16,7 @@ describe('The stripImportPrefix filter', function () {
   });
 
   it('Strips out the import prefix from building ids', function () {
-    // e.g. remove the 'IMP12-' from the id 'IMP12-1321/123'
+    // e.g., remove the 'IMP12-' from the id 'IMP12-1321/123'
     // normal cases
     expect(stripImportPrefixFilter('IMP134-134')).toBe('134');
     expect(stripImportPrefixFilter('IMP134555-134')).toBe('134');

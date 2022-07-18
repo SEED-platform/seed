@@ -37,7 +37,7 @@ angular.module('BE.seed.service.simple_modal', [])
     function ($uibModal, urls) {
 
       // Define types of modals allowed.
-      // TODO:    Create more configurations for different types of modals, e.g. standard, error
+      // TODO:    Create more configurations for different types of modals, e.g., standard, error
       //          Adding each new type to the validModalTypes array
       // TODO :   turn vars into const when we move to ES6
       var TYPE_DEFAULT = 'default';

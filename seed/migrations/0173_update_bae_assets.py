@@ -39,7 +39,7 @@ def update_bae_fields(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0170_column_derived_column'),
+        ('seed', '0172_update_at_building_id_target'),
     ]
 
     operations = [

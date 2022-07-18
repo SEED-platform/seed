@@ -64,7 +64,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.form_string_field(
                 name='source_type',
                 required=True,
-                description='the type of file (e.g. "Portfolio Raw" or "Assessed Raw")'
+                description='the type of file (e.g., "Portfolio Raw" or "Assessed Raw")'
             ),
             AutoSchemaHelper.form_string_field(
                 name='source_program_version',

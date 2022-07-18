@@ -34,7 +34,7 @@ good_floats = st.floats(allow_nan=False, allow_infinity=False, width=32)
 
 @st.composite
 def pow_st(draw, base_st=good_floats, exponent_st=good_floats.filter(lambda x: abs(x) < 10)):
-    """Strategy for creating pythonic exponentiation, e.g. 1**2, 3**4, etc
+    """Strategy for creating pythonic exponentiation, e.g., 1**2, 3**4, etc
     Avoids divide by zero by default
 
     :param base_st: Strategy, should return valid exponent bases
@@ -113,7 +113,7 @@ def arithmetic_st(
 
 @st.composite
 def parameter_name_st(draw):
-    """Strategy for creating valid parameter names. e.g. _hello, test123, etc
+    """Strategy for creating valid parameter names. e.g., _hello, test123, etc
 
     :return: str
     """

@@ -86,7 +86,7 @@ class MetersParser(object):
         :param meters_file: File
         :param org_id: int
         :param source_type: int, type of meter data
-        :param property_id: int, id of property - required if meter data is for a specific property (e.g. GreenButton)
+        :param property_id: int, id of property - required if meter data is for a specific property (e.g., GreenButton)
         :return: MetersParser
         """
         if source_type == Meter.GREENBUTTON:
@@ -445,7 +445,7 @@ class MetersParser(object):
             return []
 
         # check which (if any) meter readings are provided
-        # there can be more than one reading type per row (e.g. both electricity
+        # there can be more than one reading type per row (e.g., both electricity
         # and natural gas in the same row)
         provided_reading_types = []
         for field in raw_data[0].keys():
