@@ -145,7 +145,8 @@ class ExpressionEvaluator:
             parameters = {}
 
         self._transformer.set_params(parameters)
-        return self._parser.parse(self._expression)  # type: ignore[return-value]
+        value = self._parser.parse(self._expression)  # type: ignore[return-value]
+        return round(value, 2)
 
 
 class InvalidExpression(Exception):
