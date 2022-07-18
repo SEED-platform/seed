@@ -798,7 +798,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .then(res => {
               return {
                 derived_column_id: col.id,
-                value: res.results[0].value
+                value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
               };
             });
         });
