@@ -138,7 +138,7 @@ class TaxLotProperty(models.Model):
         :param show_columns: columns (as defined by backend), Pass None to default
                              to all columns excluding extra data
         :param columns_from_database: columns from the database as list of dict
-        :param include_related: if False, the related data is NOT included (i.e.
+        :param include_related: if False, the related data is NOT included (i.e.,
                                 only the object_list is serialized) - optional (default is True)
         """
         if len(object_list) == 0:

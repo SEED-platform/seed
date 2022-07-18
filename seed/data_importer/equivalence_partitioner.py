@@ -26,7 +26,7 @@ class EquivalencePartitioner(object):
     objects (typically PropertyState and TaxLotState objects) and
     returns a partition of the objects (a collection of lists, where
     each object is a member of exactly one of the lists), where each
-    list represents a "definitely distinct" element (i.e. two
+    list represents a "definitely distinct" element (i.e., two
     PropertyState objects with no values for pm_property_id,
     custom_id, etc may very well represent the same building, but we
     can't say that for certain).
@@ -35,9 +35,9 @@ class EquivalencePartitioner(object):
 
     - special treatment for matching based on multiple fields
 
-    - Allowing one Field to hold "canonical" information (e.g. a
-      building_id) and others (e.g. a custom_id) to hold potential
-      information: when an alternate field (e.g. custom_id_1) is used,
+    - Allowing one Field to hold "canonical" information (e.g., a
+      building_id) and others (e.g., a custom_id) to hold potential
+      information: when an alternate field (e.g., custom_id_1) is used,
       the logic does not necessarily assume the custom_id_1 means the
       portfolio manager id, unless p1.pm_property_id==p2.custom_id_1,
       etc.

@@ -438,6 +438,14 @@ def _process_results(self, analysis_id):
             'better_seed_analysis_id'
         ),
         ExtraDataColumnPath(
+            # we will manually add this to the data later (it's not part of BETTER's results)
+            # Provides info so user knows which SEED analysis last updated these stored values
+            'better_seed_run_id',
+            'BETTER Run Id',
+            1,
+            'better_seed_run_id'
+        ),
+        ExtraDataColumnPath(
             'better_min_model_r_squared',
             'BETTER Min Model R^2',
             1,
@@ -482,7 +490,7 @@ def _process_results(self, analysis_id):
     for analysis_property_view in analysis_property_views:
         raw_better_results = copy.deepcopy(analysis_property_view.parsed_results)
         raw_better_results.update({'better_seed_analysis_id': analysis_id})
-
+        raw_better_results.update({'better_seed_run_id': analysis_property_view.id})
         simplified_results = {}
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
@@ -513,7 +521,7 @@ def _process_results(self, analysis_id):
         # do some extra cleanup of the results:
         #  - round decimal places of floats
         #  - for fuel-type specific fields, set values to null if the model for
-        #    that fuel type wasn't valid (e.g. if electricity model is invalid,
+        #    that fuel type wasn't valid (e.g., if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
             value = value if not isinstance(value, float) else round(value, 2)

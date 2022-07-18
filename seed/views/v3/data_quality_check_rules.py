@@ -62,7 +62,7 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     authz_org_id_kwarg = 'nested_organization_id'
 
     def get_queryset(self):
-        # Handle the anonymous case (e.g. Swagger page load)
+        # Handle the anonymous case (e.g., Swagger page load)
         if not self.kwargs:
             return Rule.objects.none()
 

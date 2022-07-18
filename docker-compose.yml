@@ -42,6 +42,9 @@ services:
       - SEED_ADMIN_ORG=default
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      # Sentry configuration if you want to use it (make sure to enable on web-celery container too)
+      # - SENTRY_RAVEN_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
+      # - SENTRY_JS_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       # Recaptcha for testing:
       # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
       - GOOGLE_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
@@ -72,6 +75,9 @@ services:
       # - REDIS_PASSWORD=optional-need-to-configure-redis
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      # Sentry configuration if you want to use it (make sure to enable on web container too)
+      # - SENTRY_RAVEN_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
+      # - SENTRY_JS_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       - NUMBER_OF_WORKERS
     depends_on:
       - db-redis

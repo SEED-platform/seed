@@ -78,7 +78,7 @@ angular.module('BE.seed.service.inventory_reports',
          "chart_data": [{
            "x": value for x var,
            "y": value for secondary grouping
-                (e.g. '1990-1999' for decade when getting data
+                (e.g., '1990-1999' for decade when getting data
                 where y_var = year_built),
          }, {
            ...

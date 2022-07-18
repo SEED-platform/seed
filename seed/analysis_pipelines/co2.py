@@ -234,13 +234,13 @@ def _get_valid_meters(property_view_ids):
 
 def _calculate_co2(meter_readings, region_code):
     """Calculate CO2 emissions for the meter readings. Raises an exception if it's
-    unable to calculate the emissions (e.g. unable to find eGRID region code for
+    unable to calculate the emissions (e.g., unable to find eGRID region code for
     a year)
 
     :param meter_readings: List[SimpleMeterReading | MeterReading], the `.reading`
         value must be in kBtu!
         Assumes the time span of meter_readings is less than or equal to TIME_PERIOD,
-        i.e. that they are supposed to be representative of a year.
+        i.e., that they are supposed to be representative of a year.
     :region_code: str, an eGRID Subregion Code
     :return: dict
     """

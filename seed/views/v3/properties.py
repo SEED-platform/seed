@@ -402,7 +402,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Tax Lot data) is not added to the response (default is True)'
             ),
         ]
     )
@@ -473,7 +473,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_boolean_field(
                 'include_related',
                 required=False,
-                description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
+                description='If False, related data (i.e., Tax Lot data) is not added to the response (default is True)'
             ),
             AutoSchemaHelper.query_boolean_field(
                 'ids_only',

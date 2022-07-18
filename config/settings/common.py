@@ -98,7 +98,6 @@ DJANGO_CORE_APPS = (
 
     'compressor',
     'django_extensions',
-    'raven.contrib.django.raven_compat',
     'django_filters',
     'rest_framework',
     'drf_yasg',

@@ -39,7 +39,7 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     """calls Selection Tool's validation API
 
     :param file_: File, the file to validate; can be single xml or zip
-    :param filename: string, (optional) name of the file, useful if file_.name is not user friendly (e.g. a Django SimpleUploadedFile). Not used if file_ is a zip
+    :param filename: string, (optional) name of the file, useful if file_.name is not user friendly (e.g., a Django SimpleUploadedFile). Not used if file_ is a zip
     :param schema_version: string
     :param use_case_name: string
     :return: tuple, (bool, list), bool indicates if the file passes validation,

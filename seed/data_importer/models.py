@@ -89,7 +89,7 @@ class ImportRecord(NotDeletableModel):
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name='Name Your Dataset',
                             default='Unnamed Dataset')
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
-                           help_text='The application (e.g. BPD or SEED) for this dataset',
+                           help_text='The application (e.g., BPD or SEED) for this dataset',
                            default='seed')
     owner = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, blank=True, null=True)
     start_time = models.DateTimeField(blank=True, null=True)
