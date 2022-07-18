@@ -186,11 +186,6 @@ class TaxLotProperty(models.Model):
             state_id__in=models.Subquery(states_qs.values('state_id'))
         ).values_list('state_id', flat=True)
 
-        # gather meter counts
-        # Meter = apps.get_model('seed', 'Meter')
-        # obj_meter_counts = {x[0]: x[1] for x in Meter.objects.filter(**{lookups['obj_query_in']: ids})
-        #                     .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
-
         # gather all columns - separate the 'related' columns
         related_columns = []
         obj_columns = []
