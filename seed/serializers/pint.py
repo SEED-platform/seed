@@ -15,6 +15,7 @@ from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers
+from seed.models import PropertyState
 
 # Update the registry's definition for year
 # Updating pint from 0.9 resulted in a change in the symbol from 'year' to 'a'
@@ -105,13 +106,23 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
     ft.)', using the organization's unit preferences.
     """
 
-    def format_column_name(column_name, unit_spec):
+    def format_column_name_unit_spec(column_name, unit_spec):
+        # Used for backward compatibility with /views/properties.py and /views/taxlots.py
         display_units = pretty_units_from_spec(unit_spec)
         # strip the suffix; shouldn't have to do this when we've swapped over
         # the columns. The mere presence of a unit suffix will tell us in the UI
         # that this is a Pint-aware column
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + ' ({})'.format(display_units)
+
+    def format_column_name(column_name, display_name): 
+        # Formats column name using units defined on the PropertyState model
+        if PropertyState.unit_lookup.get(column_name): 
+            stripped_name = re.sub(r' \(pint\)$', '', display_name, flags=re.IGNORECASE)
+            return stripped_name + ' ({})'.format(PropertyState.unit_lookup[column_name])
+        else: 
+            return display_name
+            
 
     if data_key not in column:
         data_key = "dataType"
@@ -120,11 +131,13 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
 
     try:
         if column[data_key] == 'area':
-            column[display_key] = format_column_name(
+            column[display_key] = format_column_name_unit_spec(
                 column[display_key], organization.display_units_area)
         elif column[data_key] == 'eui':
-            column[display_key] = format_column_name(
+            column[display_key] = format_column_name_unit_spec(
                 column[display_key], organization.display_units_eui)
+        else:
+            column[display_key] = format_column_name(column['column_name'], column['display_name'])
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 
