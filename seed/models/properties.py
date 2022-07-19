@@ -262,8 +262,25 @@ class PropertyState(models.Model):
     source_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
     source_eui_modeled_orig = models.FloatField(null=True, blank=True)
 
-    # new Quantity columns
 
+    # Used to return formatted QuantityField units when displaying column names
+    unit_lookup = {
+        'gross_floor_area': 'ft²',
+        'conditioned_floor_area': 'ft²',
+        'occupied_floor_area': 'ft²',
+        'site_eui': 'kBtu/ft²/year',
+        'site_eui_weather_normalized': 'kBtu/ft²/year',
+        'site_eui_modeled': 'kBtu/ft²/year',
+        'source_eui': 'kBtu/ft²/year',
+        'source_eui_weather_normalized': 'kBtu/ft²/year',
+        'source_eui_modeled': 'kBtu/ft²/year',
+        'total_ghg_emissions': 'MtCO2e/year',
+        'total_marginal_ghg_emissions': 'MtCO2e/year',
+        'total_ghg_emissions_intensity': 'kgCO2e/ft²/year',
+        'total_marginal_ghg_emissions_intensity': 'kgCO2e/ft²/year',
+    }
+
+    # new Quantity columns
     gross_floor_area = QuantityField('ft**2', null=True, blank=True)
     conditioned_floor_area = QuantityField('ft**2', null=True, blank=True)
     occupied_floor_area = QuantityField('ft**2', null=True, blank=True)
@@ -275,8 +292,8 @@ class PropertyState(models.Model):
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     total_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
     total_marginal_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
-    total_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
-    total_marginal_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
+    total_ghg_emissions_intensity = QuantityField('MtCO2e/year', null=True, blank=True)
+    total_marginal_ghg_emissions_intensity = QuantityField('MtCO2e/year', null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
