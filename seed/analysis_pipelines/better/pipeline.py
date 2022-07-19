@@ -438,6 +438,14 @@ def _process_results(self, analysis_id):
             'better_seed_analysis_id'
         ),
         ExtraDataColumnPath(
+            # we will manually add this to the data later (it's not part of BETTER's results)
+            # Provides info so user knows which SEED analysis last updated these stored values
+            'better_seed_run_id',
+            'BETTER Run Id',
+            1,
+            'better_seed_run_id'
+        ),
+        ExtraDataColumnPath(
             'better_min_model_r_squared',
             'BETTER Min Model R^2',
             1,
@@ -457,16 +465,23 @@ def _process_results(self, analysis_id):
         ),
     ] + ee_measure_column_data_paths
 
-    # create columns if they don't already exist
     for column_data_path in column_data_paths:
-        Column.objects.get_or_create(
+        # check if the column exists with the bare minimum required pieces of data. For example,
+        # don't check column_description and display_name because they may be changed by
+        # the user at a later time.
+        column, created = Column.objects.get_or_create(
             is_extra_data=True,
             column_name=column_data_path.column_name,
-            display_name=column_data_path.column_display_name,
-            column_description=column_data_path.column_display_name,
             organization=analysis.organization,
             table_name='PropertyState',
         )
+
+        # add in the other fields of the columns only if it is a new column.
+        if created:
+            column.display_name = column_data_path.column_display_name
+            column.column_description = column_data_path.column_display_name
+
+        column.save()
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -475,7 +490,7 @@ def _process_results(self, analysis_id):
     for analysis_property_view in analysis_property_views:
         raw_better_results = copy.deepcopy(analysis_property_view.parsed_results)
         raw_better_results.update({'better_seed_analysis_id': analysis_id})
-
+        raw_better_results.update({'better_seed_run_id': analysis_property_view.id})
         simplified_results = {}
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
@@ -506,7 +521,7 @@ def _process_results(self, analysis_id):
         # do some extra cleanup of the results:
         #  - round decimal places of floats
         #  - for fuel-type specific fields, set values to null if the model for
-        #    that fuel type wasn't valid (e.g. if electricity model is invalid,
+        #    that fuel type wasn't valid (e.g., if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
             value = value if not isinstance(value, float) else round(value, 2)

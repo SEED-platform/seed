@@ -35,10 +35,10 @@ class AnalysisMessage(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     # if the message is relevant to a specific property then it should be linked
     # to an AnalysisPropertyView in addition to being linked to the analysis.
-    # e.g. if the AnalysisPropertyView is missing some required data
+    # e.g., if the AnalysisPropertyView is missing some required data
     # if the message is generic and applies to the entire analysis, analysis_property_view
     # should be None/NULL
-    # e.g. the service request returned a non-200 response
+    # e.g., the service request returned a non-200 response
     analysis_property_view = models.ForeignKey(AnalysisPropertyView, on_delete=models.CASCADE, null=True, blank=True)
     type = models.IntegerField(choices=MESSAGE_TYPES)
     # human-readable message which is presented on the frontend

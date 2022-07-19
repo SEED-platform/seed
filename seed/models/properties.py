@@ -71,7 +71,7 @@ class Property(models.Model):
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
-    # Handle properties that may have multiple properties (e.g. buildings)
+    # Handle properties that may have multiple properties (e.g., buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 

@@ -48,7 +48,7 @@ class ColumnListProfile(models.Model):
     def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
         """
         Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it
-        will return the list of raw database fields for the organization (i.e. all the fields).
+        will return the list of raw database fields for the organization (i.e., all the fields).
 
         :param organization_id: int, ID of the organization
         :param profile_id: int, ID of the profile id to retrieve

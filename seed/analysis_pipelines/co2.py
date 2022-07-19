@@ -234,13 +234,13 @@ def _get_valid_meters(property_view_ids):
 
 def _calculate_co2(meter_readings, region_code):
     """Calculate CO2 emissions for the meter readings. Raises an exception if it's
-    unable to calculate the emissions (e.g. unable to find eGRID region code for
+    unable to calculate the emissions (e.g., unable to find eGRID region code for
     a year)
 
     :param meter_readings: List[SimpleMeterReading | MeterReading], the `.reading`
         value must be in kBtu!
         Assumes the time span of meter_readings is less than or equal to TIME_PERIOD,
-        i.e. that they are supposed to be representative of a year.
+        i.e., that they are supposed to be representative of a year.
     :region_code: str, an eGRID Subregion Code
     :return: dict
     """
@@ -346,23 +346,31 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     progress_data.step('Calculating Average Annual CO2')
     analysis = Analysis.objects.get(id=analysis_id)
 
-    # make sure we have the extra data columns we need
-    Column.objects.get_or_create(
+    # make sure we have the extra data columns we need, don't set the
+    # displayname and description if the column already exists because
+    # the user might have changed them which would re-create new columns
+    # here.
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2',
-        display_name='Average Annual CO2 (kgCO2e)',
-        column_description='Average Annual CO2 (kgCO2e)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
-    Column.objects.get_or_create(
+    if created:
+        column.display_name = 'Average Annual CO2 (kgCO2e)',
+        column.column_description = 'Average Annual CO2 (kgCO2e)',
+        column.save()
+
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_co2_coverage',
-        display_name='Average Annual CO2 Coverage (% of the year)',
-        column_description='Average Annual CO2 Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
+    if created:
+        column.display_name = 'Average Annual CO2 Coverage (% of the year)'
+        column.column_description = 'Average Annual CO2 Coverage (% of the year)'
+        column.save()
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {
@@ -423,6 +431,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         }
         analysis_property_view.save()
         if save_co2_results:
+            # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
             property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
             property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
             property_view.state.save()

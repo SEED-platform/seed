@@ -48,7 +48,7 @@ def get_lock_time(name):
 
 def chunk_iterable(iterlist, chunk_size):
     """
-    Breaks an iterable (e.g. list) into smaller chunks,
+    Breaks an iterable (e.g., list) into smaller chunks,
     returning a generator of the chunk.
     """
     assert hasattr(iterlist, "__iter__"), "iter is not an iterable"

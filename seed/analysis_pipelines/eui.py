@@ -209,23 +209,31 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     progress_data.step('Calculating EUI')
     analysis = Analysis.objects.get(id=analysis_id)
 
-    # make sure we have the extra data columns we need
-    Column.objects.get_or_create(
+    # make sure we have the extra data columns we need, don't set the
+    # displayname and description if the column already exists because
+    # the user might have changed them which would re-create new columns
+    # here.
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_eui',
-        display_name='Fractional EUI (kBtu/sqft)',
-        column_description='Fractional EUI (kBtu/sqft)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
-    Column.objects.get_or_create(
+    if created:
+        column.display_name = 'Fractional EUI (kBtu/sqft)'
+        column.column_description = 'Fractional EUI (kBtu/sqft)'
+        column.save()
+
+    column, created = Column.objects.get_or_create(
         is_extra_data=True,
         column_name='analysis_eui_coverage',
-        display_name='EUI Coverage (% of the year)',
-        column_description='EUI Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
+    if created:
+        column.display_name = 'EUI Coverage (% of the year)'
+        column.column_description = 'EUI Coverage (% of the year)'
+        column.save()
 
     # fix the meter readings dict b/c celery messes with it when serializing
     meter_readings_by_analysis_property_view = {

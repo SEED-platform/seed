@@ -1009,7 +1009,7 @@ class Column(models.Model):
             if organization_column:
                 return [organization_column]
             else:
-                # Try for "global" column definitions, e.g. BEDES. - Note the BEDES are not
+                # Try for "global" column definitions, e.g., BEDES. - Note the BEDES are not
                 # loaded into the database as of 9/8/2016 so not sure if this code is ever
                 # exercised
                 obj = Column.objects.filter(organization=None, column_name=column_name).first()
@@ -1389,7 +1389,7 @@ class Column(models.Model):
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
-        :param include_related: Include related columns (e.g. if inventory type is Property, include Taxlot columns)
+        :param include_related: Include related columns (e.g., if inventory type is Property, include Taxlot columns)
         """
         from seed.serializers.columns import ColumnSerializer
 

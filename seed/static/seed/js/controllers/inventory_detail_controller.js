@@ -360,7 +360,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
        * is_valid_key: checks to see if the key or attribute should be excluded
        *   from being copied from parent to master building
        *
-       *    TODO Update these for v2...I've removed keys that were obviously old (e.g. canonical)
+       *    TODO Update these for v2...I've removed keys that were obviously old (e.g., canonical)
        */
       $scope.is_valid_data_column_key = function (key) {
         var known_invalid_keys = [
@@ -798,7 +798,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .then(res => {
               return {
                 derived_column_id: col.id,
-                value: res.results[0].value
+                value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
               };
             });
         });

@@ -142,7 +142,7 @@ class TestMatching(DataMappingBaseTestCase):
         matches = self.query_property_matches(property_states, '2342', None, None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
-        # should return both properties, the first one should be the pm match, i.e. the first prop
+        # should return both properties, the first one should be the pm match, i.e., the first prop
         matches = self.query_property_matches(property_states, '481516', '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)

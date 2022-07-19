@@ -16,6 +16,8 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+PROTOCOL = os.environ.get('PROTOCOL', 'https')
+
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
@@ -96,7 +98,6 @@ DJANGO_CORE_APPS = (
 
     'compressor',
     'django_extensions',
-    'raven.contrib.django.raven_compat',
     'django_filters',
     'rest_framework',
     'drf_yasg',

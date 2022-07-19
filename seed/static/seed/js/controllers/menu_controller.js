@@ -99,7 +99,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.wide_controller = !isNavExpanded;
       }
 
-      // returns true if menu toggle has never been clicked, i.e. first run, else returns false
+      // returns true if menu toggle has never been clicked, i.e., first run, else returns false
       $scope.menu_toggle_has_never_been_clicked = function () {
         return $scope.expanded_controller === $scope.collapsed_controller;
       };

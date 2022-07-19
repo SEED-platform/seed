@@ -153,7 +153,7 @@ class GreenAssessmentProperty(models.Model):
     view = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
     # Describes certification
     assessment = models.ForeignKey(GreenAssessment, on_delete=models.PROTECT)
-    # Source of this certification e.g. assessor
+    # Source of this certification e.g., assessor
     source = models.CharField(max_length=50, null=True, blank=True)
     # optional field  to indicate status for multi-step processes
     status = models.CharField(max_length=50, null=True, blank=True)
@@ -327,7 +327,7 @@ class GreenAssessmentProperty(models.Model):
         """
         Return a dict where keys are RESO Green Verification compatible names.
         RESO Green Verification field names may optionally contain the type
-        (i.e. name). e.g. GreenVerification[Type]Body
+        (i.e., name). e.g., GreenVerification[Type]Body
         :param sub_name: add name to key
         :type sub_name: bool
         """

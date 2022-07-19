@@ -50,7 +50,7 @@ class MappingColumns(object):
                 previous_mapping('example field', *map_args) ->
                     ('field_1', 0.93)
 
-        :param map_args: Arguments to pass into the previous_mapping method (e.g. Organization ID)
+        :param map_args: Arguments to pass into the previous_mapping method (e.g., Organization ID)
         :param default_mappings: dict of mappings. Use these mappings if the column is not found in the previous mapping call
         :param threshold: int, Minimum value of the matching confidence to allow for matching.
         :return dict: {'raw_column': ('dest_column', score), 'raw_column_2': ('dest_column_2',...)}
@@ -79,7 +79,7 @@ class MappingColumns(object):
                 raw_test = raw.replace(' ', '_')
 
                 # try some alternatives to the raw column in specific cases
-                # (e.g. zip => postal code). Hack for now, but should make this some global
+                # (e.g., zip => postal code). Hack for now, but should make this some global
                 # config or organization specific config
                 if raw_test.lower() == 'zip' or raw_test.lower() == 'zip_code':
                     raw_test = 'postal_code'
@@ -222,7 +222,7 @@ class MappingColumns(object):
         """
         Set the initial_mapping_cmp helper item in the self.data hash. This is used to detect
         if there are any duplicates. The initial mapping cmp will be the first match in the list
-        (i.e. the one with the highest confidence).
+        (i.e., the one with the highest confidence).
 
         :param raw_column: String, name of the raw column to set the initial_mapping_cmp
         :return: None
