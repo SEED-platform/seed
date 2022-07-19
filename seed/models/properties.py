@@ -262,7 +262,6 @@ class PropertyState(models.Model):
     source_eui_weather_normalized_orig = models.FloatField(null=True, blank=True)
     source_eui_modeled_orig = models.FloatField(null=True, blank=True)
 
-
     # Used to return formatted QuantityField units when displaying column names
     unit_lookup = {
         'gross_floor_area': 'ft²',

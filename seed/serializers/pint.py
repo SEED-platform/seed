@@ -15,6 +15,7 @@ from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers
+
 from seed.models import PropertyState
 
 # Update the registry's definition for year
@@ -115,14 +116,13 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + ' ({})'.format(display_units)
 
-    def format_column_name(column_name, display_name): 
+    def format_column_name(column_name, display_name):
         # Formats column name using units defined on the PropertyState model
-        if PropertyState.unit_lookup.get(column_name): 
+        if PropertyState.unit_lookup.get(column_name):
             stripped_name = re.sub(r' \(pint\)$', '', display_name, flags=re.IGNORECASE)
             return stripped_name + ' ({})'.format(PropertyState.unit_lookup[column_name])
-        else: 
+        else:
             return display_name
-            
 
     if data_key not in column:
         data_key = "dataType"
