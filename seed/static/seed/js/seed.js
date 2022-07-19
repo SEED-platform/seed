@@ -1788,6 +1788,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return organization_service.get_organization(user_service.get_organization().id);
           }]
         }
+      })
+      .state({
+        name: 'data_view',
+        url: '/{inventory_type:properties|taxlots}/data',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
       });
   }]);
 
