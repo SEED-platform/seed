@@ -387,7 +387,6 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     cleaned_column_name = cleaned_column_name.replace("'", '-')
     cleaned_column_name = cleaned_column_name.replace('"', '-')
     cleaned_column_name = cleaned_column_name.replace('`', '-')
-    cleaned_column_name = cleaned_column_name.replace('`', '-')
     cleaned_column_name = cleaned_column_name.replace(';', '-')
     text_field_name = f'_{cleaned_column_name}_to_text'
     stripped_field_name = f'_{cleaned_column_name}_stripped'
