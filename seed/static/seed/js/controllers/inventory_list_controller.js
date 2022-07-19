@@ -741,7 +741,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           exclude_ids,
           true,
           $scope.organization.id,
-          false,
+          true,
           $scope.column_filters,
           $scope.column_sorts
         ).then(function (data) {
