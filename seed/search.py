@@ -382,10 +382,17 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
               a dict of annotations
     """
     full_field_name = f'state__extra_data__{column_name}'
-    text_field_name = f'_{column_name}_to_text'
-    stripped_field_name = f'_{column_name}_stripped'
-    cleaned_field_name = f'_{column_name}_cleaned'
-    final_field_name = f'_{column_name}_final'
+
+    # annotations require a few characters to be removed...
+    cleaned_column_name = column_name.replace(' ', '_')
+    cleaned_column_name = cleaned_column_name.replace("'", '-')
+    cleaned_column_name = cleaned_column_name.replace('"', '-')
+    cleaned_column_name = cleaned_column_name.replace('`', '-')
+    cleaned_column_name = cleaned_column_name.replace(';', '-')
+    text_field_name = f'_{cleaned_column_name}_to_text'
+    stripped_field_name = f'_{cleaned_column_name}_stripped'
+    cleaned_field_name = f'_{cleaned_column_name}_cleaned'
+    final_field_name = f'_{cleaned_column_name}_final'
 
     annotations: AnnotationDict = {
         text_field_name: Cast(full_field_name, output_field=models.TextField()),

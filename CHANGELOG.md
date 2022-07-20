@@ -1,6 +1,19 @@
+# SEED Version 2.15.1
+
+This is a quick patch release to address a few issues experienced by users after rolling onto production.
+
+Date Range: 07/18/22 - 07/19/22
+
+Closed Issues and Features (Total: 5):
+- Fixed [#3390]( https://github.com/SEED-platform/seed/issues/3390 ), Fix the Tax Lot tab not displaying data from Property List and Property Tab not displaying Tax Lot data
+- Feature [#3393]( https://github.com/SEED-platform/seed/issues/3393 ), Control the number of decimal points being displayed in derived columns
+- Fixed [#3394]( https://github.com/SEED-platform/seed/issues/3394 ), Fix when selecting delete doesn't delete records in new view
+- Fixed [#3401]( https://github.com/SEED-platform/seed/issues/3401 ), Fix breaking query on Property List
+- Feature [#3402]( https://github.com/SEED-platform/seed/issues/3402 ), Make "From" address in password-reset emails configurable when using Docker
+
 # SEED Version 2.15.0
 
-Date Range: 03/31/22 - 07/17/22
+Date Range: 04/01/22 - 07/17/22
 
 Closed Issues and Features (Total: 61):
 - Fixed [#1601]( https://github.com/SEED-platform/seed/issues/1601 ), Improve performance moving between different views (Detail to List, etc)
