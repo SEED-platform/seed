@@ -1,0 +1,23 @@
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+"""
+
+from django.db import models
+
+from seed.models import (
+    VIEW_LIST_INVENTORY_TYPE,
+    VIEW_LIST_PROPERTY,
+    Organization
+)
+
+
+class FilterGroup(models.Model):
+
+    name = models.CharField(max_length=255)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='filter_groups', null=False)
+    inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
+    query_dict = models.JSONField(null=False, default=dict)
+
+    class Meta:
+        unique_together = ('name', 'organization')
