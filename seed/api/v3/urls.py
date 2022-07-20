@@ -5,7 +5,6 @@ from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.main import celery_queue
-
 from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet

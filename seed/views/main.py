@@ -14,19 +14,17 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
 
 from seed import tasks
+from seed.celery import app
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm, requires_superuser
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
-
-from seed.celery import app
 
 _log = logging.getLogger(__name__)
 
