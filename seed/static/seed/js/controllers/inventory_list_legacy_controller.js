@@ -806,7 +806,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
-                return {derived_column_id: col.id, results: res.results};
+                formatted_results = res.results.map(x => typeof (x.value) == 'number' ? ({ ...x, 'value': _.round(x.value, $scope.organization.display_decimal_places) }) : x)
+                return {derived_column_id: col.id, results: formatted_results};
               });
           }));
         }
