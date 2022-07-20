@@ -101,8 +101,12 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-
+    import logging
+    # logging.error('>>> annotations %s', annotations)
+    # logging.error('>>> filters %s', filters)
+    # import remote_pdb; remote_pdb.set_trace()
     views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    # logging.error('>>> len(views_list) %s', len(views_list))
 
     # return property views limited to the 'include_view_ids' list if not empty
     if 'include_view_ids' in request.data and request.data['include_view_ids']:
