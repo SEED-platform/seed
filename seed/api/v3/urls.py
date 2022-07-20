@@ -4,6 +4,8 @@ from django.conf.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
+from seed.views.main import celery_queue
+
 from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
@@ -124,5 +126,6 @@ urlpatterns = [
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
+    re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
 ]

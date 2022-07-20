@@ -14,6 +14,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -21,9 +22,11 @@ from rest_framework.decorators import api_view
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm, requires_superuser
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
+
+from seed.celery import app
 
 _log = logging.getLogger(__name__)
 
@@ -74,6 +77,52 @@ def home(request):
     )
     debug = settings.DEBUG
     return render(request, 'seed/index.html', locals())
+
+
+@api_endpoint
+@ajax_request
+@api_view(['GET'])
+def celery_queue(request):
+    """
+    Returns the number of running and queued celery tasks. This action can only be performed by superusers
+
+    Returns::
+
+        {
+            'active': {'total': n, 'tasks': []}, // Tasks that are currently being executed
+            'reserved': {'total': n, 'tasks': []}, // Tasks waiting to be executed
+            'scheduled': {'total': n, 'tasks': []}, // Tasks reserved by the worker when they have an eta or countdown
+            'maxConcurrency': The maximum number of active tasks
+        }
+    """
+    if not requires_superuser(request):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'request is restricted to superusers'
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    celery_tasks = app.control.inspect()
+    results = {}
+
+    methods = ('active', 'reserved', 'scheduled', 'stats')
+    for method in methods:
+        result = getattr(celery_tasks, method)()
+        if result is None or 'error' in result:
+            results[method] = 'Error'
+            return
+        for worker, response in result.items():
+            if method == 'stats':
+                results['maxConcurrency'] = response['pool']['max-concurrency']
+            else:
+                if response is not None:
+                    total = len(response)
+                    results[method] = {'total': total}
+                    if total > 0:
+                        results[method]['tasks'] = list(set([t['name'] for t in response]))
+                else:
+                    results[method] = {'total': 0}
+
+    return JsonResponse(results)
 
 
 @api_endpoint
