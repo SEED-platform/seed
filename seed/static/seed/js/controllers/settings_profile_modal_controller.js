@@ -40,22 +40,12 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
 
       $scope.new_profile = function () {
         if (!$scope.disabled()) {
-          let columns = [];
-          let derived_columns = [];
-          for (let i in $scope.data) {
-            column = $scope.data[i];
-            if (column.derived_column) {
-              derived_columns.push(column);
-            } else {
-              columns.push(column);
-            }
-          }
           inventory_service.new_column_list_profile({
             name: $scope.newName,
             profile_location: $scope.profile_location,
             inventory_type: $scope.inventory_type,
-            columns: columns,
-            derived_columns: derived_columns
+            columns: $scope.data.columns,
+            derived_columns: $scope.data.derived_columns
           }).then(function (result) {
             result.columns = _.sortBy(result.columns, ['order', 'column_name']);
             result.derived_columns = _.sortBy(result.derived_columns, ['column_name']);
