@@ -220,7 +220,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
                 id: row.entity.id,
                 order: columns.length + 1,
                 pinned: Boolean(row.entity.pinnedLeft),
-                table_name: row.entity.table_name
+                table_name: row.entity.table_name,
+                derived_column: row.entity.derived_column
               });
           }
         });
