@@ -191,9 +191,9 @@ class Organization(models.Model):
                                          blank=False,
                                          default='MtCO2e/year')
     display_units_ghg_intensity = models.CharField(max_length=32,
-                                         choices=MEASUREMENT_CHOICES_GHG_INTENSITY,
-                                         blank=False,
-                                         default='kgCO2e/ft**2/year')
+                                                   choices=MEASUREMENT_CHOICES_GHG_INTENSITY,
+                                                   blank=False,
+                                                   default='kgCO2e/ft**2/year')
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
