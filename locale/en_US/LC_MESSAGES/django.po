@@ -1156,6 +1156,9 @@ msgstr "Getting Started Guide"
 msgid "Go to Detail Page"
 msgstr "Go to Detail Page"
 
+msgid "Go to Meters"
+msgstr "Go to Meters"
+
 msgid "Go to Notes"
 msgstr "Go to Notes"
 
