@@ -76,13 +76,13 @@ angular.module('BE.seed.controller.inventory_plots', [])
         },
         {
           "chartName": "CO2 vs Gross Floor Area (ft²)",
-          "xDisplayName": "CO2",
+          "xDisplayName": "Total GHG Emissions",
           "yDisplayName": "Gross Floor Area (ft²)"
         },
         {
-          "chartName": "Better Score vs ECI",
-          "xDisplayName": "BETTER Energy Savings (BTU or kWh)",
-          "yDisplayName": "ECI"
+          "chartName": "Better Savings vs ECI",
+          "yDisplayName": "BETTER Potential Energy Savings (kWh)",
+          "xDisplayName": "ECI"
         },
         {
           "chartName": "CO2/sqft vs Year Built",
@@ -106,7 +106,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
         chartInfo["populated"] = Boolean(!!x_column & !!y_column);
       });
 
-      var createChart = function (elementId, xAxisKey, yAxisKey, onHover) {
+      var createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
         var canvas = document.getElementById(elementId);
         var ctx = canvas.getContext("2d");
 
@@ -126,18 +126,22 @@ angular.module('BE.seed.controller.inventory_plots', [])
                 display: true,
                 title: {
                   display: true,
-                  text: xAxisKey,
+                  text: xDisplayName,
                 },
               },
               y: {
                 display: true,
                 title: {
                   display: true,
-                  text: yAxisKey
+                  text: yDisplayName,
                 }
               }
             },
             plugins: {
+              title: {
+                display: true,
+                text: elementId
+              },
               zoom: {
                 limits: {
                   x: { min: 'original', max: 'original', minRange: 50 },
@@ -212,7 +216,9 @@ angular.module('BE.seed.controller.inventory_plots', [])
           return createChart(
             elementId = chartInfo["chartName"],
             xAxisKey = chartInfo["xName"],
+            xAxisName = chartInfo["xDisplayName"],
             yAxisKey = chartInfo["yName"],
+            yAxisName = chartInfo["yDisplayName"],
             onHover = hoverOnAllCharts
           )
         })
