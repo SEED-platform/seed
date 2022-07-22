@@ -3769,6 +3769,28 @@ $pairedCellWidth: 60px;
   }
 }
 
+.meters-exist-indicator {
+  font-size: 9px;
+  text-decoration: none !important;
+
+  i.fa {
+    font-size: 17px;
+    padding-left: 6px;
+
+    &.text-muted {
+      color: #222;
+      opacity: 0.1;
+    }
+  }
+
+  div {
+    position: relative;
+    text-align: right;
+    top: -2px;
+    width: 20px;
+  }
+}
+
 .merged-indicator {
   -webkit-transform: scaleY(-1);
   transform: scaleY(-1);
