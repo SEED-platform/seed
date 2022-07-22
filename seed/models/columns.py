@@ -1212,7 +1212,9 @@ class Column(models.Model):
             'date': 'date',
             'boolean': 'boolean',
             'area': 'float',
-            'eui': 'float'
+            'eui': 'float',
+            'ghg': 'float',
+            'ghg_intensity': 'float'
         }
 
         types = OrderedDict()

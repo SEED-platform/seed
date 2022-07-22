@@ -57,8 +57,8 @@ def collapse_unit(org, x):
     pint_specs = {
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
-        GHG_DIMENSIONALITY: GHG_DEFAULT_UNITS,
-        GHG_INTENSITY_DIMENSIONALITY: GHG_INTENSITY_DEFAULT_UNITS
+        GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
+        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg or GHG_INTENSITY_DEFAULT_UNITS
     }
 
     if isinstance(x, ureg.Quantity):
