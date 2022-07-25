@@ -305,12 +305,12 @@ angular.module('BE.seed.controller.mapping', [])
       var ghg_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg'});
       $scope.is_ghg_column = function (col) {
         return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, {column_name: col.suggestion_column_name}))
-      }
+      };
 
       var ghg_intensity_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg_intensity'});
       $scope.is_ghg_intensity_column = function (col) {
         return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, {column_name: col.suggestion_column_name}))
-      }
+      };
 
       var get_default_quantity_units = function (col) {
         // TODO - hook up to org preferences / last mapping in DB
@@ -319,9 +319,9 @@ angular.module('BE.seed.controller.mapping', [])
         } else if ($scope.is_area_column(col)) {
           return 'ft**2';
         } else if ($scope.is_ghg_column(col)) {
-          return 'MtCO2e/year'
+          return 'MtCO2e/year';
         } else if ($scope.is_ghg_intensity_column(col)) {
-          return 'kgCO2e/ft**2/year'
+          return 'kgCO2e/ft**2/year';
         }
         return null;
       };
