@@ -101,7 +101,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-    import logging
+
     views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
     # return property views limited to the 'include_view_ids' list if not empty
