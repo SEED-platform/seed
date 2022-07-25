@@ -1167,6 +1167,9 @@ msgstr "Guide de Démarrage"
 msgid "Go to Detail Page"
 msgstr "Accéder à la page Détail"
 
+msgid "Go to Meters"
+msgstr "Aller aux compteurs"
+
 msgid "Go to Notes"
 msgstr "Accéder aux Notes"
 
