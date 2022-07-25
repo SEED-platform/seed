@@ -111,6 +111,82 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       }
 
+      // Filter Groups
+      $scope.new_filter_group = function () {
+        var filterGroupData = JSON.parse(JSON.stringify($scope.current_filter_group));
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant(filterGroupData),
+            org_id: _.constant($scope.org.id)
+          }
+        });
+
+        modalInstance.result.then(function (new_filter_group) {
+          $scope.filter_groups.push(new_filter_group);
+          $scope.dropdown_selected_filter_group = $scope.current_filter_group = _.last($scope.filter_groups);
+
+          $scope.changes_possible = false;
+          Notification.primary('Saved ' + $scope.current_filter_group.name);
+        });
+      };
+
+      $scope.rename_filter_group = function () {
+        var old_name = $scope.current_filter_group.name;
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.current_filter_group),
+            org_id: _.constant($scope.org.id)
+          }
+        });
+
+        modalInstance.result.then(function (new_name) {
+          var filter_group_index = _.findIndex($scope.filter_groups, ['id', $scope.dropdown_selected_filter_group.id]);
+          $scope.filter_groups[filter_group_index].name = new_name;
+
+          Notification.primary('Renamed ' + old_name + ' to ' + new_name);
+        });
+      };
+
+      $scope.remove_filter_group = function () {
+        var old_filter_group = angular.copy($scope.current_filter_group);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group.html',
+          controller: 'filter_group_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.current_filter_group),
+            org_id: _.constant($scope.org.id)
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.filter_group, old_filter_group);
+          $scope.dropdown_selected_filter_group = $scope.current_filter_group = $scope.filter_groups[0] || {};
+          $scope.changes_possible = false;
+        });
+      };
+
+      $scope.save_filter_group = function () {
+
+        filter_groups_service.update_filter_group($scope.org.id, $scope.current_filter_group.id, updated_data).then(function (result) {
+
+          var filter_group_id = $scope.current_filter_group.id;
+          _.find($scope.filter_groups, ['id', filter_group_id]).mappings = $scope.current_filter_group.mappings;
+
+          $scope.changes_possible = false;
+          Notification.primary('Saved ' + $scope.current_filter_group.name);
+        });
+      };
+
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
       // The problem occurs due to retriggering of data reload, summarized by this issue:

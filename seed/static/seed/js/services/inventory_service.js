@@ -1169,6 +1169,38 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_filter_group = function (id) {
+      return $http.get('/api/v3/filter_group/' + id, {
+        params: {
+          organization_id: user_service.get_organization().id,
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    inventory_service.get_filter_groups = function (inventory_type) {
+      return $http.get('/api/v3/filter_group/', {
+        params: {
+          organization_id: user_service.get_organization().id,
+          inventory_type: inventory_type,
+        }
+      }).then(function (response) {
+        var filter_groups = response.data.data.sort(function (a, b) {
+          return naturalSort(a.name, b.name);
+        });
+
+        _.forEach(filter_groups, function (filter_group) {
+          // Remove exact duplicates - this shouldn't be necessary, but it has occurred and will avoid errors and cleanup the database at the same time
+          filter_group.columns = _.uniqWith(filter_group.columns, _.isEqual);
+
+          filter_group.columns = _.sortBy(filter_group.columns, ['order', 'column_name']);
+        });
+
+        return filter_groups;
+      });
+    };
+
     inventory_service.refresh_metadata = function (ids, states, inventory_type, progress_key) {
       return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
         ids: ids,
