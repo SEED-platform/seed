@@ -241,6 +241,10 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
+            # This is only applicable to Properties since Tax Lots don't have meters
+            if this_cls == 'Property':
+                obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
+
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
             obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
