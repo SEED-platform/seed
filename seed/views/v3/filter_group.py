@@ -4,7 +4,8 @@
 """
 
 from django.http import JsonResponse
-from rest_framework import status, viewsets
+from django.utils.decorators import method_decorator
+from rest_framework import status
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -23,15 +24,30 @@ from seed.models import (
     PropertyView,
     TaxLotView
 )
-from seed.utils.api import OrgMixin
+from seed.serializers.filter_groups import FilterGroupSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 def _get_inventory_type_int(inventory_type: str) -> int:
     return next(k for k, v in VIEW_LIST_INVENTORY_TYPE if v == inventory_type)
 
 
-class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema_org_query_param)
+class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    model = FilterGroup
+    serializer_class = FilterGroupSerializer
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
@@ -41,8 +57,27 @@ class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
         body = dict(request.data)
         name = body.get('name')
         inventory_type = body.get('inventory_type')
-        inventory_type_int = None if inventory_type is None else _get_inventory_type_int(inventory_type)
         query_dict = body.get('query_dict', {})
+
+        if not name:
+            return JsonResponse({
+                'success': False,
+                'message': 'name is missing'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not inventory_type:
+            return JsonResponse({
+                'success': False,
+                'message': 'inventory_type is missing'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            inventory_type_int = _get_inventory_type_int(inventory_type)
+        except StopIteration:
+            return JsonResponse({
+                'success': False,
+                'message': 'invalid "inventory_type" must be "Property" or "Tax Lot"'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         filter_group = FilterGroup(
             name=name,
@@ -52,7 +87,13 @@ class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
 
         )
 
-        filter_group.save()
+        try:
+            filter_group.save()
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(
             {
@@ -64,17 +105,3 @@ class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
             },
             status=status.HTTP_201_CREATED
         )
-
-    @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    def retrieve(self, request, pk=None):
-
-        filter_group = FilterGroup.objects.get(pk=pk)
-
-        return JsonResponse({
-            "id": filter_group.id,
-            "name": filter_group.name,
-            "organization_id": filter_group.organization_id,
-            "inventory_type": VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1],
-            "query_dict": filter_group.query_dict,
-        })
