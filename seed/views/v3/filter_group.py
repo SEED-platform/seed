@@ -4,7 +4,7 @@
 """
 
 from django.http import JsonResponse
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -54,12 +54,16 @@ class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
 
         filter_group.save()
 
-        return {
-            "name": filter_group.name,
-            "organization_id": filter_group.organization_id,
-            "inventory_type": VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1],
-            "query_dict": filter_group.query_dict,
-        }
+        return JsonResponse(
+            {
+                "name": filter_group.name,
+                "id": filter_group.id,
+                "organization_id": filter_group.organization_id,
+                "inventory_type": VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1],
+                "query_dict": filter_group.query_dict,
+            },
+            status=status.HTTP_201_CREATED
+        )
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
@@ -68,6 +72,7 @@ class FilterGroupViewSet(viewsets.ViewSet, OrgMixin):
         filter_group = FilterGroup.objects.get(pk=pk)
 
         return JsonResponse({
+            "id": filter_group.id,
             "name": filter_group.name,
             "organization_id": filter_group.organization_id,
             "inventory_type": VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1],

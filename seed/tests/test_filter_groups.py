@@ -53,16 +53,12 @@ class FilterGroupsTests(TestCase):
             **self.headers,
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            response.json(),
-            {
-                "name": "test_filter_group",
-                "organization_id": self.org.id,
-                "inventory_type": "Tax Lot",
-                "query_dict": {},
-            }
-        )
+        self.assertEqual(response.status_code, 201)
+        self.assertIsInstance(response.json()["id"], int)
+        self.assertEqual(response.json()["name"], "test_filter_group")
+        self.assertEqual(response.json()["organization_id"], self.org.id)
+        self.assertEqual(response.json()["inventory_type"], "Tax Lot")
+        self.assertEqual(response.json()["query_dict"], {})
 
     def test_get_filter_group(self):
         filter_group = FilterGroup(
@@ -81,11 +77,11 @@ class FilterGroupsTests(TestCase):
             **self.headers
         )
 
-        print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             response.json(),
             {
+                "id": filter_group.id,
                 "name": "test_filter_group",
                 "organization_id": self.org.id,
                 "inventory_type": "Tax Lot",
