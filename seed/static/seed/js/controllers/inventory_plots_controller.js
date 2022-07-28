@@ -86,20 +86,23 @@ angular.module('BE.seed.controller.inventory_plots', [])
         },
         {
           "chartName": "CO2/sqft vs Year Built",
-          "xDisplayName": "CO2/sqft",
+          "xDisplayName": "co2/sqft",
           "yDisplayName": "Year Built"
         },
       ];
 
       const property_name_column = all_columns.find(c => c["column_name"] == "property_name");
       neededColumns = new Set([property_name_column["id"]]);
+      neededDerivedColumns = [];
 
       $scope.chartsInfo.forEach(chartInfo => {
         x_column = all_columns.find(c => c["displayName"] == chartInfo["xDisplayName"])
         y_column = all_columns.find(c => c["displayName"] == chartInfo["yDisplayName"])
 
-        if (!!x_column) neededColumns.add(x_column["id"])
-        if (!!y_column) neededColumns.add(y_column["id"])
+        if (!!x_column && !!x_column["derived_column"]) neededDerivedColumns.push(x_column["derived_column"])
+        else if (!!x_column) neededColumns.add(x_column["id"])
+        if (!!y_column && !!y_column["derived_column"]) neededDerivedColumns.push(y_column["derived_column"])
+        else if (!!y_column) neededColumns.add(y_column["id"])
 
         chartInfo["xName"] = x_column? x_column["name"]: null;
         chartInfo["yName"] = y_column? y_column["name"]: null;
@@ -241,6 +244,25 @@ angular.module('BE.seed.controller.inventory_plots', [])
 
       var populate_charts = function (data) {
         labels = data.map(property => property[property_name_column["name"]]);
+
+        dataIndexById = data.reduce((acc, curr, i) => {
+          acc[curr["id"]] = i;
+          return acc
+        }, {})
+        for (const column of neededDerivedColumns){
+          derived_columns_service.evaluate(
+            organization_payload.organization.id,
+            column,
+            $scope.cycle.selected_cycle.id,
+            data.map(d => d["id"])
+          ).then(derived_columns_data => {
+            for( const d of derived_columns_data.results){
+              data[dataIndexById[d["id"]]]["co2/sqft_168"] = d["value"]
+            }
+          });
+        }
+
+        console.log(data)
 
         for (const chart of charts) {
           chart.data.datasets[0].data = data
