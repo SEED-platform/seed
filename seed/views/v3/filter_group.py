@@ -79,7 +79,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 'message': 'invalid "inventory_type" must be "Property" or "Tax Lot"'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        filter_group = FilterGroup(
+        filter_group = FilterGroup.objects.create(
             name=name,
             organization_id=org_id,
             inventory_type=inventory_type_int,
