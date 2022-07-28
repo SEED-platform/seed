@@ -79,7 +79,7 @@ class FilterGroupsTests(TestCase):
 
     def test_create_filter_group_bad_name(self):
         # Setup
-        filter_group = FilterGroup(
+        filter_group = FilterGroup.objects.create(
             name="taken name",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
@@ -135,7 +135,7 @@ class FilterGroupsTests(TestCase):
 
     def test_get_filter_group(self):
         # Setup
-        filter_group = FilterGroup(
+        filter_group = FilterGroup.objects.create(
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
@@ -169,14 +169,14 @@ class FilterGroupsTests(TestCase):
 
     def test_get_all_filter_group(self):
         # Setup
-        filter_group = FilterGroup(
+        filter_group = FilterGroup.objects.create(
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
         filter_group.save()
-        second_filter_group = FilterGroup(
+        second_filter_group = FilterGroup.objects.create(
             name="second_test_filter_group",
             organization_id=self.org.id,
             inventory_type=0,  # Property
@@ -227,7 +227,7 @@ class FilterGroupsTests(TestCase):
 
     def test_delete_filter_group(self):
         # Setup
-        filter_group = FilterGroup(
+        filter_group = FilterGroup.objects.create(
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
