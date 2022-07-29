@@ -59,6 +59,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.data_aggregation_modal',
+  'BE.seed.controller.data_aggregations',
+  'BE.seed.controller.data_aggregation_editor',
   'BE.seed.controller.delete_column_modal',
   'BE.seed.controller.delete_cycle_modal',
   'BE.seed.controller.delete_dataset_modal',
@@ -599,6 +601,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return user_service.get_shared_buildings();
           }]
         }
+      })
+      .state({
+        name: 'data_aggregations',
+        url: '/{inventory_type:properties|taxlots}/data_aggregations',
+        templateUrl: static_url + 'seed/partials/data_aggregations.html',
+        controller: 'data_aggregations_controller',
+        resolve: {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_property_columns();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }]
+        }
+
+
+        
       })
       .state({
         name: 'detail_column_list_profiles',
