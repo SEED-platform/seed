@@ -152,6 +152,7 @@ def _dict_org(request, organizations):
             'at_organization_token': o.at_organization_token,
             'audit_template_user': o.audit_template_user,
             'audit_template_password': o.audit_template_password,
+            'at_host_url': settings.AUDIT_TEMPLATE_HOST,
         }
         orgs.append(org)
 
