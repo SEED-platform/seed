@@ -416,7 +416,7 @@ Best Practices
 Building Documentation
 ----------------------
 
-Older versions of the source code documentation is on read the docs; however, newer versions need to be built and pushed to the seed-website repository manually. To build the documentation follow the script below:
+Older versions of the source code documentation are (still) on readthedocs; however, newer versions are built and pushed to the seed-website repository manually. To build the documentation follow the script below:
 
 .. code-block:: console
 

@@ -1,8 +1,6 @@
 ## Standard Energy Efficiency Data (SEED) Platform™
 
 [![Build Status][build-img]][build-url] [![Coverage Status][coveralls-img]][coveralls-url]
-[![](http://readthedocs.org/projects/seed-platform/badge/?version=stable)](http://seed-platform.readthedocs.io/en/stable/)
-[![](http://readthedocs.org/projects/seed-platform/badge/?version=latest)](http://seed-platform.readthedocs.io/en/latest/)
 
 The SEED Platform is a web-based application that helps organizations easily
 manage data on the energy performance of large groups of buildings. Users can
@@ -48,6 +46,7 @@ celery -A seed worker -l info -c 4 --max-tasks-per-child 1000 --events
 
 ### Developer Resources
 
+- Source code documentation is on the [SEED website][code-documentation] and there are links to [older versions][code-documentations-links] as needed.
 - Several notes regarding Django and AngularJS integration: See [Developer Resources][developer-resources]
 
 #### Testing
@@ -61,15 +60,13 @@ Lawrence Berkeley National Laboratory (subject to receipt of any required
 approvals from the U.S. Department of Energy) and contributors. All rights
 reserved.
 
+[code-documentation]: https://seed-platform.org/code_documentation/latest/
+[code-documentation-links]: https://seed-platform.org/developer_resources/
 [development-docker]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_docker.rst
 [development-mac-osx]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_osx.rst
 [production-aws-url]: http://www.github.com/seed-platform/seed/wiki/Installation
 [developer-resources]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst
-[developer-testing-notes]: https://github.com/SEED-platform/seed/blob/39bc55b846f0c1dc4c8d1574272cac50378de651/docs/source/developer_resources.rst#testing
-[read-the-docs-stable]: http://seed-platform.readthedocs.io/en/stable
-[read-the-docs-stable-img]: https://readthedocs.io/projects/seed-platform/badge/?version=stable
-[read-the-docs-latest]: http://seed-platform.readthedocs.io/en/latest/
-[read-the-docs-latest-img]: https://readthedocs.io/projects/seed-platform/badge/?version=latest
+[developer-testing-notes]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst#testing
 [build-img]: https://github.com/SEED-platform/seed/workflows/CI/badge.svg?branch=develop
 [build-url]: https://github.com/SEED-platform/seed/actions?query=branch%3Adevelop
 [coveralls-img]: https://coveralls.io/repos/github/SEED-platform/seed/badge.svg?branch=HEAD

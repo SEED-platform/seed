@@ -35,19 +35,23 @@ jobs:
       - name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:develop --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
       - name: Start the stack
+        env:
+          DJANGO_LOG_LEVEL: ERROR
         run: |
           docker volume create --name=seed_pgdata
           docker volume create --name=seed_media
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       - name: Migrate
+        env:
+          DJANGO_LOG_LEVEL: ERROR
         run: |
           # verify no migrations need to be made...
           docker exec seed_web python manage.py makemigrations --check --dry-run
 
           # run migrations
-          docker exec seed_web ./manage.py migrate
-          docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
-          docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
+          docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
+          docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
+          docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v1
       - name: Install dependencies
         run: |
@@ -63,9 +67,10 @@ jobs:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          DJANGO_LOG_LEVEL: ERROR
         run: |
           docker exec seed_web touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web coverage run manage.py test seed --settings=config.settings.docker_dev
+          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL seed_web coverage run manage.py test seed --settings=config.settings.docker_dev
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
             docker exec --env COVERALLS_REPO_TOKEN seed_web coveralls
           else

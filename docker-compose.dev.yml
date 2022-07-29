@@ -21,6 +21,7 @@ services:
     command: python3 manage.py runserver --settings=config.settings.docker_dev 0.0.0.0:80
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
+      - DJANGO_LOG_LEVEL
     volumes:
       - ref_seed_media:/seed/media
       - ./seed/:/seed/seed/
@@ -34,6 +35,7 @@ services:
     command: watchmedo auto-restart --directory=/seed/seed/ --pattern=*.py --recursive -- /seed/docker/start_celery_docker.sh
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
+      - DJANGO_LOG_LEVEL
     volumes:
       - ref_seed_media:/seed/media
       - ./seed:/seed/seed
