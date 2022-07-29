@@ -52,6 +52,39 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         'GENERATE'
       ];
 
+      // Datepickers
+      $scope.startDatePickerOpen = false;
+      $scope.endDatePickerOpen = false;
+      $scope.invalidDates = false; // set this to true when startDate >= endDate;
+
+      // Handle datepicker open/close events
+      $scope.openStartDatePicker = function ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
+      };
+      $scope.openEndDatePicker = function ($event) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
+      };
+
+      $scope.$watch('new_analysis.configuration.meter.start_date', function () {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.$watch('new_analysis.configuration.meter.end_date', function ( ) {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.checkInvalidDate = function () {
+        $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
+      };
+
+      // TODO:
+      // if it's BETTER and selectMeters is 1
+      // need to find start date and end date of meters data for first inventory?
+
       $scope.initializeAnalysisConfig = () => {
         switch ($scope.new_analysis.service) {
 
@@ -77,7 +110,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               benchmark_data: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
-              preprocess_meters: false
+              preprocess_meters: false,
+              select_meters: 'all',
+              meter: {
+                start_date: null,
+                end_date: null
+              }
             };
             break;
 
@@ -94,6 +132,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           return;
         }
         $scope.waiting_for_server = true;
+
         analyses_service.create_analysis(
           $scope.new_analysis.name,
           $scope.new_analysis.service,
