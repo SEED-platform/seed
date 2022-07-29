@@ -1220,7 +1220,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             inventory_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
-            }
+            },
+            current_cycle: _.constant($scope.cycle.selected_cycle),
           }
         });
         modalInstance.result.then(function (data) {

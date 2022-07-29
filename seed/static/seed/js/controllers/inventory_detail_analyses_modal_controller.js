@@ -16,13 +16,15 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     'Notification',
     'analyses_service',
     'inventory_ids',
+    'current_cycle',
     function (
       $scope,
       $log,
       $uibModalInstance,
       Notification,
       analyses_service,
-      inventory_ids
+      inventory_ids,
+      current_cycle
     ) {
       $scope.inventory_count = inventory_ids.length;
       // used to disable buttons on submit
@@ -61,24 +63,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       $scope.openStartDatePicker = function ($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
+        $scope.startDatePickerOpen = true;
       };
       $scope.openEndDatePicker = function ($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
-      };
-
-      $scope.$watch('new_analysis.configuration.meter.start_date', function () {
-        $scope.checkInvalidDate();
-      });
-
-      $scope.$watch('new_analysis.configuration.meter.end_date', function ( ) {
-        $scope.checkInvalidDate();
-      });
-
-      $scope.checkInvalidDate = function () {
-        $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
+        $scope.endDatePickerOpen = true;
       };
 
       // TODO:
@@ -117,6 +107,11 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
                 end_date: null
               }
             };
+            // if a cycle is selected, default inputs to cycle start/end
+            if (('start' in current_cycle) && ('end' in current_cycle)) {
+              $scope.new_analysis.configuration.meter.start_date = new Date(current_cycle.start);
+              $scope.new_analysis.configuration.meter.end_date = new Date(current_cycle.end);
+            }
             break;
 
           default:
@@ -154,6 +149,18 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       $scope.cancel = function () {
         //don't do anything, just close modal.
         $uibModalInstance.dismiss('cancel');
+      };
+
+      $scope.$watch('new_analysis.configuration.meter.start_date', function () {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.$watch('new_analysis.configuration.meter.end_date', function ( ) {
+        $scope.checkInvalidDate();
+      });
+
+      $scope.checkInvalidDate = function () {
+        $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
       };
 
     }]);
