@@ -615,9 +615,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return organization_service.get_organization(user_service.get_organization().id);
           }]
         }
-
-
-        
+      })
+      .state({
+        name: 'data_aggregation_editor',
+        url: '/{inventory_type:properties|taxlots}/data_aggregations_editor',
+        templateUrl: static_url + 'seed/partials/data_aggregation_editor.html',
+        controller: 'data_aggregation_editor_controller',
       })
       .state({
         name: 'detail_column_list_profiles',

@@ -49,9 +49,9 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
         const get_data_aggregations = () => {
             data_aggregation_service.get_data_aggregations($scope.organization.id)
                 .then(response => {
-                    response.message.forEach(da => {
-                        column = all_columns.find(c => c.id == da.column)
-                        da.column_id_name = column.id + ' / ' + column.displayName
+                    response.message.forEach(data_aggregation => {
+                        column = all_columns.find(column => column.id == data_aggregation.column)
+                        data_aggregation.column_id_name = column.id + ' / ' + column.displayName
                     })
                     $scope.data_aggregations = response.message
                     return $scope.data_aggregations
@@ -69,6 +69,14 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
                 'type': 'Average',
                 'column': null,
             };
+        }
+
+        const evaluate = (data_aggregation_id) => {
+            return data_aggregation_service.evaluate($scope.organization.id, data_aggregation_id)
+                .then(response => {
+                    return response.data
+                })
+
         }
 
         const init = () => {
