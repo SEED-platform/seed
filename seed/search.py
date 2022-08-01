@@ -453,7 +453,9 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
 
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
-    if column is None:
+    _log.error(f'--- column: {column}')
+    if column is None or column['related'] is True:
+        _log.error('--- skipped')
         return Q(), {}
 
     updated_filter = None
@@ -548,6 +550,8 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
+        _log.error(f'--- filter_expression: {filter_expression}')
+        _log.error(f'--- filter_value: {filter_value}')
         parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)
