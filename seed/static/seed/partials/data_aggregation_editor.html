@@ -31,7 +31,7 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
             <div class="crud-detail detail-outline" >
-                <div style="display: grid; gap:1rem;">
+                <div style="display: grid; gap:1rem; width: 50em">
                     Aggregation Name
                     <div>
                         <input type="text" ng-model="data_aggregation.name" ng-change="validate_new_data_aggregation()"
@@ -54,13 +54,11 @@
                             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                             aria-label="Source column name">
                     </div>
+                    <div>
+                        <button type="button" class="btn btn-info" style="float: right" ng-disabled="!validate_data_aggregation()" ng-click="create_or_update_data_aggregation()" autofocus>{$ !data_aggregation.id ? 'Create' : 'Save' $}</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="modal-footer">
-    <button type="button" class="btn btn-info" ng-disabled="!validate_data_aggregation()" ng-click="create_or_update_data_aggregation()" autofocus>{$ !data_aggregation.id ? 'Create' : 'Save' $}</button>
-    <button type="button" class="btn btn-info" ng-if="crud_selection == 'update'" ng-click="update_data_aggregation(data_aggregation.id)" autofocus>Update</button>
 </div>
