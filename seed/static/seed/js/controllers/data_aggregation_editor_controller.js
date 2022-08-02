@@ -72,10 +72,8 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
                 console.log('>>> CREATE')
                 api_call = () => $scope.create_data_aggregation();
             } else {
-                api_call = () => {
-                    console.log('>>> UPDATE')
-                    return null;
-                }
+                console.log('>>> UPDATE')
+                api_call = () => $scope.update_data_aggregation();
             };
 
             api_call()
@@ -126,19 +124,18 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
         //     $scope.crud_select('update')
         // }
 
-        // $scope.update_data_aggregation = (data_aggregation_id) => {
-        //     let { name, type, column } = $scope.data_aggregation
-        //     data_aggregation_service.update_data_aggregation($scope.organization.id, data_aggregation_id, { name, type, column })
-        //         .then(response => {
-        //             $scope.crud_select('post_action')
-        //             get_data_aggregations()
-        //             if (response.status == 'success') {
-        //                 $scope.message = `Successfully Updated Data Aggregation id:${response.data_aggregation.id} name: ${response.data_aggregation.name}`
-        //             } else {
-        //                 $scope.message = `Error`
-        //             }
-        //         })
-        // }
+        $scope.update_data_aggregation = () => {
+            let { name, type, column } = $scope.data_aggregation
+            return data_aggregation_service.update_data_aggregation($scope.organization.id, $scope.data_aggregation.id, { name, type, column })
+                // .then(response => {
+                //     return get_data_aggregations()
+                //     if (response.status == 'success') {
+                //         $scope.message = `Successfully Updated Data Aggregation id:${response.data_aggregation.id} name: ${response.data_aggregation.name}`
+                //     } else {
+                //         $scope.message = `Error`
+                //     }
+                // })
+        }
 
 
         // $scope.cancel = () => {
@@ -153,6 +150,7 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
                         da.column_id_name = column.id + ' / ' + column.displayName
                     })
                     $scope.data_aggregations = response.message
+                    $scope.data_aggregation = $scope.data_aggregations.find(da => da.id == $stateParams.data_aggregation_id)
                     return $scope.data_aggregations
                 }).then(data_aggregations => {
                     data_aggregations.forEach(data_aggregation => {
@@ -162,12 +160,17 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
                             })
                     })
                 })
+            
+                
 
-            $scope.data_aggregation = {
-                'name': null,
-                'type': 'Average',
-                'column': null,
-            };
+                $scope.data_aggregation ? null :
+                    $scope.data_aggregation = {
+                        'name': null,
+                        'type': 'Average',
+                        'column': null,
+                    };
+
+                console.log('data_aggregation', $scope.data_aggregation)
         }
 
         // const evaluate = (data_aggregation_id) => {
@@ -180,8 +183,6 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
 
         const init = () => {
             get_data_aggregations()
-            console.log('data aggregation editor')
-            console.log('stateparams', $stateParams)
         };
 
         init();

@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggregations_controller', [
     '$scope',
     '$stateParams',
+    '$state',
     'all_columns',
     '$uibModal',
     'urls',
@@ -15,6 +16,7 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
     function (
         $scope,
         $stateParams,
+        $state,
         all_columns,
         $uibModal,
         urls,
@@ -72,12 +74,14 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
                 .then(response => {
                     return response.data
                 })
-
         }
+
+        $scope.edit_data_aggregation = function (data_aggregation_id) {
+            $state.go('data_aggregation_editor', { inventory_type: $scope.inventory_type, data_aggregation_id });
+        };
 
 
         $scope.delete_data_aggregation = function (data_aggregation_id) {
-            console.log('>>> DELETE')
             const data_aggregation = $scope.data_aggregations.find(da => da.id == data_aggregation_id);
 
             const modalOptions = {

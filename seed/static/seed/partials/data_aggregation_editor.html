@@ -59,6 +59,6 @@
 </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-info" ng-disabled="!validate_data_aggregation()" ng-click="create_or_update_data_aggregation()" autofocus>Create</button>
+    <button type="button" class="btn btn-info" ng-disabled="!validate_data_aggregation()" ng-click="create_or_update_data_aggregation()" autofocus>{$ !data_aggregation.id ? 'Create' : 'Save' $}</button>
     <button type="button" class="btn btn-info" ng-if="crud_selection == 'update'" ng-click="update_data_aggregation(data_aggregation.id)" autofocus>Update</button>
 </div>
