@@ -1,3 +1,8 @@
+<script type="text/ng-template" id="typeahead.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container">
@@ -21,20 +26,39 @@
             <div class="section_action_container left_40">
                 <h2><i class="fa fa-calculator"></i> <span translate>Data Aggregations</span></h2>
             </div>
-            <div class="section_action_container right_40 section_action_btn pull-right">
-                <!-- <a ui-sref="organization_data_aggregation_editor(::{organization_id: org.id, data_aggregation_id: null})"> -->
-                <button type="button" class="btn btn-primary" ng-click="open_data_aggregation_modal()">
-                    Create Data Aggregation
-                </button>
-                <!-- </a> -->
-            </div>
         </div>
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
-            <div class="table_list_container has_borders">
-                TEST
+            <div class="crud-detail detail-outline" >
+                <div style="display: grid; gap:1rem;">
+                    Aggregation Name
+                    <div>
+                        <input type="text" ng-model="data_aggregation.name" ng-change="validate_new_data_aggregation()"
+                            class="form-control" placeholder="Data Aggregation Name">
+                    </div>
+                    Aggregation Type
+                    <select type="text" ng-model="data_aggregation.type"
+                        ng-options="option for option in data_aggregation_type_options" ng-change="validate_new_data_aggregation()"
+                        class="form-control">
+                    </select>
+                    Aggregation Source Column
+                    <div>
+                        <input type="text" ng-model="data_aggregation.column" ng-blur="validate_new_data_aggregation()"
+                            class="form-control" placeholder="Source column name"
+                            uib-typeahead="column as column.displayName for column in all_columns | filter:{displayName:$viewValue}"
+                            typeahead-template-url="typeahead.html" typeahead-editable="false" typeahead-show-hint="true"
+                            typeahead-min-length="0" typeahead-select-on-exact="true" typeahead-select-on-blur="true"
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            aria-label="Source column name">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-info" ng-disabled="!validate_data_aggregation()" ng-click="create_or_update_data_aggregation()" autofocus>Create</button>
+    <button type="button" class="btn btn-info" ng-if="crud_selection == 'update'" ng-click="update_data_aggregation(data_aggregation.id)" autofocus>Update</button>
 </div>

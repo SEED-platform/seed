@@ -618,9 +618,28 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'data_aggregation_editor',
-        url: '/{inventory_type:properties|taxlots}/data_aggregations_editor',
+        url: '/{inventory_type:properties|taxlots}/data_aggregations_editor/:data_aggregation_id',
         templateUrl: static_url + 'seed/partials/data_aggregation_editor.html',
         controller: 'data_aggregation_editor_controller',
+        resolve: {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }],
+          data_aggregation_payload: ['data_aggregation_service', '$stateParams', function (data_aggregation_service, $stateParams) {
+            if ($stateParams.data_aggregation_id) {
+              return {}
+            }
+            return {}
+            return data_aggregation_service.get_data_aggregation($stateParams.organization_id, $stateParams.data_aggregation_id)
+          }],
+        }
       })
       .state({
         name: 'detail_column_list_profiles',
@@ -1387,7 +1406,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.derived_column_id === undefined) {
               return {};
             }
-
             return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
           }],
           derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {

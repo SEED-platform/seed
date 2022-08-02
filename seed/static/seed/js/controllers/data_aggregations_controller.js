@@ -10,9 +10,8 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
     'urls',
     'organization_payload',
     'data_aggregation_service',
-
-    
-
+    'simple_modal_service',
+    'Notification',
     function (
         $scope,
         $stateParams,
@@ -21,14 +20,11 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
         urls,
         organization_payload,
         data_aggregation_service,
-
-
+        simple_modal_service,
+        Notification,
     ) {
-        $scope.organization = organization_payload.organization
-
-
+        $scope.organization = organization_payload.organization;
         $scope.inventory_type = $stateParams.inventory_type;
-
         $scope.open_data_aggregation_modal = function () {
             console.log('data agg click')
             $uibModal.open({
@@ -78,6 +74,38 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
                 })
 
         }
+
+
+        $scope.delete_data_aggregation = function (data_aggregation_id) {
+            console.log('>>> DELETE')
+            const data_aggregation = $scope.data_aggregations.find(da => da.id == data_aggregation_id);
+
+            const modalOptions = {
+                type: 'default',
+                okButtonText: 'Yes',
+                cancelButtonText: 'Cancel',
+                headerText: 'Are you sure?',
+                bodyText: `You're about to permanently delete the data aggregation "${data_aggregation.name}". Would you like to continue?`
+            };
+            simple_modal_service.showModal(modalOptions).then(() => {
+                //user confirmed, delete it
+                data_aggregation_service.delete_data_aggregation($scope.organization.id, data_aggregation_id)
+                    .then(() => {
+                        Notification.success(`Deleted "${data_aggregation.name}"`);
+                        get_data_aggregations().then(location.reload())
+                    })
+                    .catch(err => {
+                        $log.error(err);
+                        if (err.data.detail == 'Cannot delete protected objects while related objects still exist') {
+                            Notification.error(`Cannot delete Data Aggregation "${data_aggregation.name}".`);
+                        } else {
+                            Notification.error(`Error attempting to delete "${data_aggregation.name}". Please refresh the page and try again.`);
+                        }
+                    });
+            }, () => {
+                //user doesn't want to
+            });
+        };
 
         const init = () => {
             get_data_aggregations()
