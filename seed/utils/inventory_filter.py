@@ -214,7 +214,7 @@ def get_filter_group_results(query_dict: QueryDict, inventory_type: Literal['Pro
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(property__organization_id=org_id)
         )
-    elif inventory_type == 'Tax lot':
+    elif inventory_type == 'Tax Lot':
         views_list = (
             TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
             .filter(taxlot__organization_id=org_id)

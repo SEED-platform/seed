@@ -1170,7 +1170,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_filter_group = function (id) {
-      return $http.get('/api/v3/filter_group/' + id, {
+      return $http.get('/api/v3/filter_groups/' + id, {
         params: {
           organization_id: user_service.get_organization().id,
         }
@@ -1180,7 +1180,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_filter_groups = function (inventory_type) {
-      return $http.get('/api/v3/filter_group/', {
+      return $http.get('/api/v3/filter_groups/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
