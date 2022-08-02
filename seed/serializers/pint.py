@@ -57,8 +57,8 @@ def collapse_unit(org, x):
     pint_specs = {
         EUI_DIMENSIONALITY: org.display_units_eui or EUI_DEFAULT_UNITS,
         AREA_DIMENSIONALITY: org.display_units_area or AREA_DEFAULT_UNITS,
-        GHG_DIMENSIONALITY: GHG_DEFAULT_UNITS,
-        GHG_INTENSITY_DIMENSIONALITY: GHG_INTENSITY_DEFAULT_UNITS
+        GHG_DIMENSIONALITY: org.display_units_ghg or GHG_DEFAULT_UNITS,
+        GHG_INTENSITY_DIMENSIONALITY: org.display_units_ghg_intensity or GHG_INTENSITY_DEFAULT_UNITS
     }
 
     if isinstance(x, ureg.Quantity):
@@ -125,6 +125,12 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         elif column[data_key] == 'eui':
             column[display_key] = format_column_name(
                 column[display_key], organization.display_units_eui)
+        elif column[data_key] == 'ghg':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_ghg)
+        elif column[data_key] == 'ghg_intensity':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_ghg_intensity)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 
@@ -181,10 +187,10 @@ class PintQuantitySerializerField(serializers.Field):
                 data = float(data) * ureg(org.display_units_area)
             elif field.base_units == 'kgCO2/ft**2/year':
                 # not sure that this is used anywhere, but it's here just in case
-                data = float(data) * ureg(org.base_units)
+                data = float(data) * ureg(org.display_units_ghg_intensity)
             elif field.base_units == 'MtCO2e/year':
                 # not sure that this is used anywhere, but it's here just in case
-                data = float(data) * ureg(org.base_units)
+                data = float(data) * ureg(org.dispaly_units_ghg)
             else:
                 # This shouldn't happen unless we're supporting a new pints_unit QuantityField.
                 data = float(data) * ureg(field.base_units)
