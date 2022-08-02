@@ -8,7 +8,6 @@ from typing import Literal, Optional
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
-import logging
 from rest_framework import status
 from rest_framework.request import Request
 
@@ -27,8 +26,6 @@ from seed.models import (
 )
 from seed.search import FilterException, build_view_filters_and_sorts
 from seed.serializers.pint import apply_display_unit_preferences
-
-_log = logging.getLogger(__name__)
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
@@ -71,41 +68,31 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     page = page or 1
     per_page = per_page or 1
-    include_related = str(request.query_params.get('include_related', 'true')).lower() == 'true'
 
-    # grab the propery and taxlot views and states
-    property_views_list = (
-        PropertyView.objects.select_related('property', 'state', 'cycle')
-        .filter(property__organization_id=org_id, cycle=cycle)
-    )
-    taxlot_views_list = (
-        TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
-        .filter(taxlot__organization_id=org_id, cycle=cycle)
+    if inventory_type == 'property':
+        views_list = (
+            PropertyView.objects.select_related('property', 'state', 'cycle')
+            .filter(property__organization_id=org_id, cycle=cycle)
+        )
+    elif inventory_type == 'taxlot':
+        views_list = (
+            TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
+            .filter(taxlot__organization_id=org_id, cycle=cycle)
+        )
+
+    include_related = (
+        str(request.query_params.get('include_related', 'true')).lower() == 'true'
     )
 
     # Retrieve all the columns that are in the db for this organization
-    property_columns_from_database = Column.retrieve_all(
+    columns_from_database = Column.retrieve_all(
         org_id=org_id,
-        inventory_type='property',
+        inventory_type=inventory_type,
         only_used=False,
         include_related=include_related
     )
-    taxlot_columns_from_database = Column.retrieve_all(
-        org_id=org_id,
-        inventory_type='taxlot',
-        only_used=False,
-        include_related=include_related
-    )
-
     try:
-        property_filters, property_annotations, property_order_by = build_view_filters_and_sorts(request.query_params, property_columns_from_database)
-        _log.error(f'--- property_filters: {property_filters}')
-        _log.error(f'--- property_annotations: {property_annotations}')
-        _log.error(f'--- property_order_by: {property_order_by}')
-        taxlot_filters, taxlot_annotations, taxlot_order_by = build_view_filters_and_sorts(request.query_params, taxlot_columns_from_database)
-        _log.error(f'--- taxlot_filters: {taxlot_filters}')
-        _log.error(f'--- taxlot_annotations: {taxlot_annotations}')
-        _log.error(f'--- taxlot_order_by: {taxlot_order_by}')
+        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
     except FilterException as e:
         return JsonResponse(
             {
@@ -115,29 +102,15 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    property_views_list = property_views_list.annotate(**property_annotations).filter(property_filters).order_by(*property_order_by)
-    taxlot_views_list = taxlot_views_list.annotate(**taxlot_annotations).filter(taxlot_filters).order_by(*taxlot_order_by)
+    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
     # return property views limited to the 'include_view_ids' list if not empty
     if 'include_view_ids' in request.data and request.data['include_view_ids']:
-        if inventory_type == 'property':
-            property_views_list = property_views_list.filter(id__in=request.data['include_view_ids'])
-        else:
-            taxlot_views_list = taxlot_views_list.filter(id__in=request.data['include_view_ids'])
+        views_list = views_list.filter(id__in=request.data['include_view_ids'])
 
     # exclude property views limited to the 'exclude_view_ids' list if not empty
     if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
-        if inventory_type == 'property':
-            property_views_list = property_views_list.exclude(id__in=request.data['exclude_view_ids'])
-        else:
-            taxlot_views_list = taxlot_views_list.exclude(id__in=request.data['exclude_view_ids'])
-
-    _log.error(f'--- property_views_list.query: {property_views_list.query}')
-    _log.error(f'--- taxlot_views_list.query: {taxlot_views_list.query}')
-    _log.error(f'--- property_views_list: {list(property_views_list.values())}')
-    _log.error(f'--- taxlot_views_list: {list(taxlot_views_list.values())}')
-    views_list = list(property_views_list) + list(taxlot_views_list)
-    _log.error(f'--- views_list: {views_list}')
+        views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
 
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))
@@ -169,10 +142,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     # This uses an old method of returning the show_columns. There is a new method that
     # is prefered in v2.1 API with the ProfileIdMixin.
     if inventory_type == 'property':
-        columns_from_database = property_columns_from_database
         profile_inventory_type = VIEW_LIST_PROPERTY
     elif inventory_type == 'taxlot':
-        columns_from_database = taxlot_columns_from_database
         profile_inventory_type = VIEW_LIST_TAXLOT
 
     show_columns: Optional[list[int]] = None
