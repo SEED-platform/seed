@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.data_aggregations', []).controller('data_aggr
                 .then(response => {
                     response.message.forEach(data_aggregation => {
                         column = all_columns.find(column => column.id == data_aggregation.column)
-                        data_aggregation.column_id_name = column.id + ' / ' + column.displayName
+                        data_aggregation.column_display_name = column.displayName
                     })
                     $scope.data_aggregations = response.message
                     return $scope.data_aggregations

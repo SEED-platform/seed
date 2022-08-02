@@ -36,7 +36,9 @@
                     <div>
                         <input type="text" ng-model="data_aggregation.name" ng-change="validate_new_data_aggregation()"
                             class="form-control" placeholder="Data Aggregation Name">
+                        <div ng-if="name_error_message" class="text-danger">{$ name_error_message $}</div>
                     </div>
+
                     Aggregation Type
                     <select type="text" ng-model="data_aggregation.type"
                         ng-options="option for option in data_aggregation_type_options" ng-change="validate_new_data_aggregation()"

@@ -13,7 +13,7 @@ from seed.models import Column, PropertyState
 
 
 class DataAggregation(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     column = models.ForeignKey(Column, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
