@@ -75,6 +75,16 @@ msgstr "Documentation de l'API"
 msgid "API Key"
 msgstr "Clé API"
 
+msgid "AT_EMAIL_TEXT"
+msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+msgid "AT_PASS_TEXT"
+msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+#. Helper text for the Audit Template token in organization settings.
+msgid "AT_TOKEN_TEXT"
+msgstr "Veuillez consulter la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Remarque, ne préfixez pas le jeton avec \"Jeton \", incluez uniquement le jeton lui-même."
+
 msgid "About"
 msgstr "À Propos"
 
