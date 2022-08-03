@@ -62,7 +62,7 @@ def _validate_better_config(analysis):
     if not isinstance(config, dict):
         return ['Analysis configuration must be a dictionary/JSON']
 
-    print(f"ANALYSIS CONFIG IN PIPELINE: {config}")
+    # print(f"ANALYSIS CONFIG IN PIPELINE: {config}")
 
     REQUIRED_CONFIG_PROPERTIES = [
         'min_model_r_squared',
