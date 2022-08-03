@@ -11,6 +11,7 @@ from seed.models import (
     AnalysisOutputFile,
     BuildingFile,
     ImportFile,
+    InventoryDocument,
     Organization
 )
 from seed.utils.api import OrgMixin
@@ -70,6 +71,13 @@ def check_file_permission(user, filepath):
         except AnalysisOutputFile.DoesNotExist:
             raise ModelForFileNotFound('AnalysisOutputFile not found')
         organization = analysis_property_view.cycle.organization
+
+    elif base_dir == 'inventory_documents':
+        try:
+            inventory_document = InventoryDocument.objects.get(file__in=[absolute_filepath, filepath])
+        except InventoryDocument.DoesNotExist:
+            raise ModelForFileNotFound('InventoryDocument not found')
+        organization = inventory_document.property.organization
     else:
         raise ModelForFileNotFound(f'Base directory for media file is not currently handled: "{base_dir}"')
 
