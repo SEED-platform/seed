@@ -1468,19 +1468,25 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             // var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return filter_groups_service.get_filter_groups();
           }],
-          // current_filter_group: ['$stateParams', 'inventory_service', 'filter_groups', function ($stateParams, inventory_service, filter_groups) {
-          //   var validFilterGroupIds = _.map(filter_groups, 'id');
-          //   var lastFilterGroupId = inventory_service.get_last_filter_group($stateParams.inventory_type);
-          //   if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
-          //     return inventory_service.get_filter_group(lastFilterGroupId);
-          //   }
-          //   var currentFilterGroupId = _.first(filter_groups)?.id;
-          //   if (currentFilterGroupId) {
-          //     inventory_service.save_last_filter_group(currentFilterGroupId, $stateParams.inventory_type)
-          //     return inventory_service.get_filter_group(currentFilterGroupId);
-          //   }
-          //   return null;
-          // }],
+          current_filter_group: ['$stateParams', 'filter_groups_service', 'filter_groups', function ($stateParams, filter_groups_service, filter_groups) {
+            var validFilterGroupIds = _.map(filter_groups, 'id');
+            var lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
+            if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
+              return filter_groups_service.get_filter_group(lastFilterGroupId);
+            }
+            var currentFilterGroupId = _.first(filter_groups)?.id;
+            if (currentFilterGroupId) {
+              filter_groups_service.save_last_filter_group(currentFilterGroupId, $stateParams.inventory_type)
+              return filter_groups_service.get_filter_group(currentFilterGroupId);
+            }
+            return null;
+            var currentFilterGroup = _.first(filter_groups)?.id;
+            if (currentFilterGroupId) {
+              filter_groups_service.save_last_filter_group(currentFilterGroupId, $stateParams.inventory_type)
+              return filter_groups_service.get_filter_group(currentFilterGroupId);
+            }
+            return null;
+          }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns();

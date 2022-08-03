@@ -80,7 +80,7 @@
         </div>
         <div class="row">
             <label>{$:: 'Filter Group' | translate $}:</label>
-            <select class="form-control input-sm grow" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+            <select class="form-control input-sm grow" ng-model="currentFilterGroup" ng-options="option.name for option in filter_groups track by option.id"></select>
             <div class="btn-group">
                 <span class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !isModified() || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>

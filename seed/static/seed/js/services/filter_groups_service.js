@@ -14,7 +14,7 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     };
 
     filter_groups_factory.get_filter_groups_for_org = function (org_id) {
-      return $http.get('/api/v3/cycles/', {
+      return $http.get('/api/v3/filter_groups/', {
         params: {
           organization_id: org_id
         }
