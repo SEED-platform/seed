@@ -19,8 +19,8 @@ from seed.models import (
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeAnalysisPropertyViewFactory,
-    FakePropertyStateFactory,
-    FakePropertyFactory
+    FakePropertyFactory,
+    FakePropertyStateFactory
 )
 from seed.views.v3.media import ModelForFileNotFound, check_file_permission
 from seed.views.v3.uploads import get_upload_path
