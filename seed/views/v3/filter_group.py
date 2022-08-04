@@ -3,26 +3,15 @@
 :author
 """
 
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework.mixins import (
-    CreateModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    UpdateModelMixin
-)
 
 from seed.decorators import ajax_request_class
 from seed.models import (
     VIEW_LIST_INVENTORY_TYPE,
-    VIEW_LIST_PROPERTY,
-    Column,
-    DataLogger,
     FilterGroup,
-    Organization,
-    PropertyView,
-    TaxLotView
 )
 from seed.serializers.filter_groups import FilterGroupSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -79,17 +68,14 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 'message': 'invalid "inventory_type" must be "Property" or "Tax Lot"'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        filter_group = FilterGroup.objects.create(
-            name=name,
-            organization_id=org_id,
-            inventory_type=inventory_type_int,
-            query_dict=query_dict,
-
-        )
-
         try:
-            filter_group.save()
-        except Exception as e:
+            filter_group = FilterGroup.objects.create(
+                name=name,
+                organization_id=org_id,
+                inventory_type=inventory_type_int,
+                query_dict=query_dict,
+            )
+        except IntegrityError as e:
             return JsonResponse({
                 'success': False,
                 'message': str(e)

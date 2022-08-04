@@ -8,7 +8,7 @@
 import base64
 import json
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
@@ -16,7 +16,7 @@ from seed.models import FilterGroup
 from seed.utils.organizations import create_organization
 
 
-class FilterGroupsTests(TestCase):
+class FilterGroupsTests(TransactionTestCase):
 
     def setUp(self):
         user_details = {
@@ -74,17 +74,16 @@ class FilterGroupsTests(TestCase):
 
     def test_create_filter_group_bad_name(self):
         # Setup
-        filter_group = FilterGroup.objects.create(
+        FilterGroup.objects.create(
             name="taken name",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
-        filter_group.save()
 
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "taken name",
                 "inventory_type": "Tax Lot",
@@ -95,7 +94,7 @@ class FilterGroupsTests(TestCase):
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(400, response.status_code)
 
     def test_create_filter_group_no_inventory_type(self):
         # Action
