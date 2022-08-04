@@ -9,14 +9,9 @@ import base64
 import json
 
 from django.test import TestCase
+from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    OrganizationUser
-)
 from seed.models import FilterGroup
 from seed.utils.organizations import create_organization
 
@@ -233,18 +228,19 @@ class FilterGroupsTests(TestCase):
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
-        filter_group.save()
+
+        filter_group_id = filter_group.id
 
         # Action
         response = self.client.delete(
-            f"/api/v3/filter_groups/{filter_group.id}",
-            follow=True,
+            reverse('api:v3:filter_groups-detail', args=[filter_group_id]),
             **self.headers
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(FilterGroup.objects.filter(id=filter_group.id).exists())
+        self.assertEqual(204, response.status_code)
+        result = FilterGroup.objects.filter(id=filter_group_id)
+        self.assertFalse(result.exists())
 
     def test_delete_filter_group_does_not_exist(self):
         # Action
