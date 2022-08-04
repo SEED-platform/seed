@@ -20,4 +20,5 @@ class FilterGroup(models.Model):
     query_dict = models.JSONField(null=False, default=dict)
 
     class Meta:
+        ordering = ['id']
         unique_together = ('name', 'organization')

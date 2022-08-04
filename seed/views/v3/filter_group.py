@@ -3,7 +3,7 @@
 :author
 """
 
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
