@@ -454,7 +454,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
 
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
-    if column is None:
+    if column is None or column['related']:
         return Q(), {}
 
     updated_filter = None
@@ -495,7 +495,9 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
         return f'property__{sort_expression}', {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
-        if column['is_extra_data']:
+        if column['related']:
+            return None, {}
+        elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
             return f'{direction}{new_field_name}', annotations
         else:
