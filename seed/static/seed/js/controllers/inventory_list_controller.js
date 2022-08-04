@@ -756,9 +756,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         let column = $scope.columns[i];
         if (column['related']) {
           column['enableSorting'] = false;
-          title = "Filtering disabled for taxlot columns on the property list."
-          if ($scope.inventory_type == 'property') {
-            title = "Filtering disabled for property columns on the taxlot list."
+          title = "Filtering disabled for property columns on the taxlot list.";
+          if ($scope.inventory_type == 'properties') {
+            title = "Filtering disabled for taxlot columns on the property list.";
           }
           column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
         }
