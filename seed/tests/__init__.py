@@ -6,4 +6,5 @@
 """
 # suppress some logging on faker -- only show warnings or greater
 import logging
+
 logging.disable(logging.DEBUG)

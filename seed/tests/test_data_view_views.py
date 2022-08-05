@@ -5,30 +5,12 @@
 :author
 """
 import json
-from datetime import datetime
-import unittest
-from django.http import JsonResponse
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils.timezone import get_current_timezone
 
-from seed.models import (
-    Column,
-    Cycle,
-    DataAggregation,
-    DataView,
-    DerivedColumn,
-    PropertyView,
-    User
-)
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakeDerivedColumnFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory
-)
+from seed.models import Column, DataAggregation, DataView, User
+from seed.test_helpers.fake import FakeCycleFactory
 from seed.utils.organizations import create_organization
 
 
@@ -56,7 +38,7 @@ class DataViewViewTests(TestCase):
         self.column1 = Column.objects.create(column_name='column 1',organization=self.org,)
         self.column2 = Column.objects.create(column_name='column 2',organization=self.org,)
         self.column3 = Column.objects.create(column_name='column 3',organization=self.org,)
-        
+
         self.data_aggregation1 = DataAggregation.objects.create(
             name='column1 max',
             column=self.column1,
@@ -102,7 +84,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual(3, len(data_view2.data_aggregations.all()))
         self.assertEqual([5, 6, 7, 8], data_view2.filter_group)
 
-
     def test_data_view_create_endpoint(self):
         self.assertEqual(2, len(DataView.objects.all()))
 
@@ -121,7 +102,7 @@ class DataViewViewTests(TestCase):
                 "columns": [self.column1.id, self.column2.id, self.column3.id],
                 "cycles": [self.cycle1.id, self.cycle2.id, self.cycle3.id],
                 "data_aggregations":[self.data_aggregation1.id, self.data_aggregation2.id]
-                
+
             }),
             content_type='application/json'
         )
@@ -157,7 +138,6 @@ class DataViewViewTests(TestCase):
             data=json.dumps({
                 "name": "data_view3",
                 "filter_group": [11, 12, 13, 14],
-                
             }),
             content_type='application/json'
         )
@@ -167,7 +147,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual(expected, data['message'])
 
     def test_data_view_retreive_endpoint(self):
-
         response = self.client.get(
             reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
         )
@@ -183,3 +162,46 @@ class DataViewViewTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
         self.assertEqual('DataView with id 99999999 does not exist', data['message'])
+
+    def test_data_view_update_endpoint(self):
+        self.assertEqual('data view 1', self.data_view1.name)
+        self.assertEqual(2, len(self.data_view1.columns.all()))
+
+        response = self.client.put(
+            reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "name": "updated name",
+            }),
+            content_type='application/json'
+        )
+
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+        self.assertEqual('updated name', data['data_view']['name'])
+
+        data_view1 = DataView.objects.get(id=self.data_view1.id)
+        self.assertEqual('updated name', data_view1.name)
+
+        response = self.client.put(
+            reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "columns": [self.column1.id, self.column2.id, self.column3.id],
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        data_view1 = DataView.objects.get(id=self.data_view1.id)
+        self.assertEqual('updated name', data_view1.name)
+        self.assertEqual(3, len(data_view1.columns.all()))
+
+
+        response = self.client.put(
+            reverse('api:v3:data_views-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "columns": [self.column1.id, self.column2.id, self.column3.id],
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        self.assertEqual('error', data.status)
+        self.assertEqual('DataView with id 99999 does not exist', data.status)

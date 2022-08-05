@@ -8,7 +8,7 @@
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Column, PropertyState, Cycle, DataAggregation
+from seed.models import Column, Cycle, DataAggregation
 
 
 class DataView(models.Model):

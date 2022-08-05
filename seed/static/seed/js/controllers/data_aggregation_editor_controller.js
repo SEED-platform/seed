@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
                         throw Error(`Something unexpectedly went wrong: ${err}`);
                     }
                 });
-            
+
         }
 
         $scope.update_data_aggregation = () => {
@@ -107,7 +107,7 @@ angular.module('BE.seed.controller.data_aggregation_editor', []).controller('dat
                     $scope.data_aggregations = response.message
                     const data_aggregation = $scope.data_aggregations.find(da => da.id == $stateParams.data_aggregation_id)
                     if (data_aggregation) {
-                        $scope.data_aggregation = data_aggregation 
+                        $scope.data_aggregation = data_aggregation
                         $scope.data_aggregation.column = all_columns.find(col => col.id == $scope.data_aggregation.column).displayName
                     } else {
                         $scope.data_aggregation = {'name': null, 'type': 'Average', 'column': null}

@@ -15,10 +15,10 @@ from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_aggregations import DataAggregationViewSet
-from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
+from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
