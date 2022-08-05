@@ -30,14 +30,14 @@ class DataViewViewTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.client.login(**user_details)
-        self.cycle1 = FakeCycleFactory(organization=self.org,user=self.user).get_cycle(name="Cycle A")
-        self.cycle2 = FakeCycleFactory(organization=self.org,user=self.user).get_cycle(name="Cycle B")
-        self.cycle3 = FakeCycleFactory(organization=self.org,user=self.user).get_cycle(name="Cycle C")
-        self.cycle4 = FakeCycleFactory(organization=self.org,user=self.user).get_cycle(name="Cycle D")
+        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A")
+        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B")
+        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C")
+        self.cycle4 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle D")
 
-        self.column1 = Column.objects.create(column_name='column 1',organization=self.org,)
-        self.column2 = Column.objects.create(column_name='column 2',organization=self.org,)
-        self.column3 = Column.objects.create(column_name='column 3',organization=self.org,)
+        self.column1 = Column.objects.create(column_name='column 1', organization=self.org,)
+        self.column2 = Column.objects.create(column_name='column 2', organization=self.org,)
+        self.column3 = Column.objects.create(column_name='column 3', organization=self.org,)
 
         self.data_aggregation1 = DataAggregation.objects.create(
             name='column1 max',
@@ -58,13 +58,13 @@ class DataViewViewTests(TestCase):
             organization=self.org
         )
 
-        self.data_view1 = DataView.objects.create(name='data view 1', filter_group=[1,2,3,4], organization=self.org)
+        self.data_view1 = DataView.objects.create(name='data view 1', filter_group=[1, 2, 3, 4], organization=self.org)
         self.data_view1.columns.set([self.column1, self.column2])
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
         self.data_view1.data_aggregations.set([self.data_aggregation2, self.data_aggregation3])
 
-        self.data_view2 = DataView.objects.create(name='data view 2', filter_group=[5,6,7,8], organization=self.org)
-        self.data_view2.columns.set([self.column1, self.column2 , self.column3])
+        self.data_view2 = DataView.objects.create(name='data view 2', filter_group=[5, 6, 7, 8], organization=self.org)
+        self.data_view2.columns.set([self.column1, self.column2, self.column3])
         self.data_view2.cycles.set([self.cycle2, self.cycle4])
         self.data_view2.data_aggregations.set([self.data_aggregation1, self.data_aggregation2, self.data_aggregation3])
 
@@ -101,7 +101,7 @@ class DataViewViewTests(TestCase):
                 "filter_group": [11, 12, 13, 14],
                 "columns": [self.column1.id, self.column2.id, self.column3.id],
                 "cycles": [self.cycle1.id, self.cycle2.id, self.cycle3.id],
-                "data_aggregations":[self.data_aggregation1.id, self.data_aggregation2.id]
+                "data_aggregations": [self.data_aggregation1.id, self.data_aggregation2.id]
 
             }),
             content_type='application/json'
@@ -110,7 +110,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual(data['data_view']['name'], 'data_view3')
         self.assertEqual(data['data_view']['organization'], self.org.id)
         self.assertTrue(bool(data['data_view']['id']))
-
 
         response = self.client.get(
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
@@ -155,7 +154,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual('success', data['status'])
         self.assertEqual('data view 1', data['data_view']['name'])
 
-
         response = self.client.get(
             reverse('api:v3:data_views-detail', args=[99999999]) + '?organization_id=' + str(self.org.id)
         )
@@ -193,7 +191,6 @@ class DataViewViewTests(TestCase):
         data_view1 = DataView.objects.get(id=self.data_view1.id)
         self.assertEqual('updated name', data_view1.name)
         self.assertEqual(3, len(data_view1.columns.all()))
-
 
         response = self.client.put(
             reverse('api:v3:data_views-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
