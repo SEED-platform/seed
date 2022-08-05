@@ -9,10 +9,9 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 
 from seed.decorators import ajax_request_class
-from seed.models import (
-    VIEW_LIST_INVENTORY_TYPE,
-    FilterGroup,
-)
+from seed.models import VIEW_LIST_INVENTORY_TYPE, FilterGroup
+from seed.models.filter_group import LABEL_LOGIC_TYPE
+from seed.models.models import StatusLabel
 from seed.serializers.filter_groups import FilterGroupSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
@@ -20,6 +19,10 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 def _get_inventory_type_int(inventory_type: str) -> int:
     return next(k for k, v in VIEW_LIST_INVENTORY_TYPE if v == inventory_type)
+
+
+def _get_label_logic_int(label_logic: str) -> int:
+    return next(k for k, v in LABEL_LOGIC_TYPE if v == label_logic)
 
 
 @method_decorator(
@@ -47,6 +50,8 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         name = body.get('name')
         inventory_type = body.get('inventory_type')
         query_dict = body.get('query_dict', {})
+        label_logic = body.get('label_logic', "and")
+        label_ids = body.get('labels', [])
 
         if not name:
             return JsonResponse({
@@ -69,11 +74,20 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            label_logic_int = _get_label_logic_int(label_logic)
+        except StopIteration:
+            return JsonResponse({
+                'success': False,
+                'message': 'invalid "label_logic" must be "and", "or", or "exclude"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
             filter_group = FilterGroup.objects.create(
                 name=name,
                 organization_id=org_id,
                 inventory_type=inventory_type_int,
                 query_dict=query_dict,
+                label_logic=label_logic_int,
             )
         except IntegrityError as e:
             return JsonResponse({
@@ -81,13 +95,29 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 'message': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        return JsonResponse(
-            {
-                "name": filter_group.name,
-                "id": filter_group.id,
-                "organization_id": filter_group.organization_id,
-                "inventory_type": VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1],
-                "query_dict": filter_group.query_dict,
-            },
-            status=status.HTTP_201_CREATED
-        )
+        good_label_ids, bad_label_ids = self._get_labels(label_ids)
+        filter_group.labels.add(*good_label_ids)
+        filter_group.save()
+
+        result = {
+            "status": 'success',
+            "data": FilterGroupSerializer(filter_group).data,
+        }
+
+        if len(bad_label_ids) > 0:
+            result["warnings"] = f"labels with ids do not exist: {', '.join([str(id) for id in bad_label_ids])}"
+
+        return JsonResponse(result, status=status.HTTP_201_CREATED)
+
+    def _get_labels(self, label_ids):
+        good_label_ids = []
+        bad_label_ids = []
+        for id in label_ids:
+            label = StatusLabel.objects.filter(id=id)
+
+            if label.exists():
+                good_label_ids.append(id)
+            else:
+                bad_label_ids.append(id)
+
+        return good_label_ids, bad_label_ids

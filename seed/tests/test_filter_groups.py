@@ -12,7 +12,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.models import FilterGroup
+from seed.models import FilterGroup, StatusLabel
 from seed.utils.organizations import create_organization
 
 
@@ -36,6 +36,10 @@ class FilterGroupsTests(TransactionTestCase):
         self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
         self.headers = {'Authorization': self.auth_string}
 
+        self.status_label = StatusLabel.objects.create(
+            name='test', super_organization=self.org
+        )
+
     def test_create_filter_group(self):
         # Action
         response = self.client.post(
@@ -44,6 +48,8 @@ class FilterGroupsTests(TransactionTestCase):
                 "name": "test_filter_group",
                 "inventory_type": "Tax Lot",
                 "query_dict": {},
+                "label_logic": "exclude",
+                "labels": [self.status_label.id]
             }),
             content_type='application/json',
             **self.headers,
@@ -51,11 +57,16 @@ class FilterGroupsTests(TransactionTestCase):
 
         # Assertion
         self.assertEqual(201, response.status_code)
-        self.assertIsInstance(response.json()["id"], int)
-        self.assertEqual("test_filter_group", response.json()["name"])
-        self.assertEqual(self.org.id, response.json()["organization_id"])
-        self.assertEqual("Tax Lot", response.json()["inventory_type"])
-        self.assertEqual({}, response.json()["query_dict"])
+        self.assertEqual(response.json()["status"], 'success')
+
+        data = response.json()["data"]
+        self.assertIsInstance(data["id"], int)
+        self.assertEqual("test_filter_group", data["name"])
+        self.assertEqual(self.org.id, data["organization_id"])
+        self.assertEqual("Tax Lot", data["inventory_type"])
+        self.assertEqual({}, data["query_dict"])
+        self.assertEqual("exclude", data["label_logic"])
+        self.assertEqual([self.status_label.id], data["labels"])
 
     def test_create_filter_group_no_name(self):
         # Action
@@ -127,6 +138,44 @@ class FilterGroupsTests(TransactionTestCase):
         # Assertion
         self.assertEqual(400, response.status_code)
 
+    def test_create_filter_group_bad_label_logic(self):
+        # Action
+        response = self.client.post(
+            reverse('api:v3:filter_groups-list'),
+            data=json.dumps({
+                "name": "test_filter_group",
+                "inventory_type": "Tax Lot",
+                "query_dict": {},
+                "label_logic": "bad label logic",
+            }),
+            content_type='application/json',
+            **self.headers,
+        )
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+
+    def test_create_filter_group_label_doesnt_exist(self):
+        # Action
+        response = self.client.post(
+            reverse('api:v3:filter_groups-list'),
+            data=json.dumps({
+                "name": "test_filter_group",
+                "inventory_type": "Tax Lot",
+                "labels": [-1, -2, self.status_label.id]
+            }),
+            content_type='application/json',
+            **self.headers,
+        )
+
+        # Assertion
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(response.json()["status"], 'success')
+        self.assertEqual(response.json()["warnings"], 'labels with ids do not exist: -1, -2')
+
+        data = response.json()["data"]
+        self.assertEqual([self.status_label.id], data["labels"])
+
     def test_get_filter_group(self):
         # Setup
         filter_group = FilterGroup.objects.create(
@@ -154,6 +203,8 @@ class FilterGroupsTests(TransactionTestCase):
                     "organization_id": self.org.id,
                     "inventory_type": "Tax Lot",
                     "query_dict": {},
+                    "labels": [],
+                    "label_logic": "and",
                 }
             },
             response.json(),
@@ -190,14 +241,18 @@ class FilterGroupsTests(TransactionTestCase):
                         'inventory_type': 'Tax Lot',
                         'name': 'test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {}
+                        'query_dict': {},
+                        "labels": [],
+                        "label_logic": "and",
                     },
                     {
                         'id': second_filter_group.id,
                         'inventory_type': 'Property',
                         'name': 'second_test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {}
+                        'query_dict': {},
+                        "labels": [],
+                        "label_logic": "and",
                     }
                 ],
                 'pagination': {
