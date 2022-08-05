@@ -59,7 +59,7 @@ api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, 
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
 api_v3_router.register(r'data_aggregations', DataAggregationViewSet, basename='data_aggregations')
-api_v3_router.register(r'data_viewss', DataAggregationViewSet, basename='data_viewss')
+api_v3_router.register(r'data_views', DataViewViewSet, basename='data_views')
 api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')

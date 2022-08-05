@@ -6,6 +6,8 @@
 """
 import json
 from datetime import datetime
+import unittest
+from django.http import JsonResponse
 
 from django.test import TestCase
 from django.urls import reverse
@@ -74,69 +76,110 @@ class DataViewViewTests(TestCase):
             organization=self.org
         )
 
-        self.data_view_1 = DataView.objects.create(name='data view 1', filter_group=[1,2,3,4], organization=self.org)
-        self.data_view_1.columns.set([self.column1, self.column2])
-        self.data_view_1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
-        self.data_view_1.data_aggregations.set([self.data_aggregation2, self.data_aggregation3])
+        self.data_view1 = DataView.objects.create(name='data view 1', filter_group=[1,2,3,4], organization=self.org)
+        self.data_view1.columns.set([self.column1, self.column2])
+        self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
+        self.data_view1.data_aggregations.set([self.data_aggregation2, self.data_aggregation3])
 
-        self.data_view_2 = DataView.objects.create(name='data view 2', filter_group=[5,6,7,8], organization=self.org)
-        self.data_view_2.columns.set([self.column1, self.column2 , self.column3])
-        self.data_view_2.cycles.set([self.cycle2, self.cycle4])
-        self.data_view_2.data_aggregations.set([self.data_aggregation1, self.data_aggregation2, self.data_aggregation3])
-
-    # Test not needed
-    def test_SetUp(self):
-        cycles = Cycle.objects.all()
-        self.assertEqual(6, len(cycles))
-
-        columns = Column.objects.all()
-        self.assertEqual(77, len(columns))
-
-        data_aggs = DataAggregation.objects.all()
-        self.assertEqual(3, len(data_aggs))
-
-        data_views = DataView.objects.all()
-        self.assertEqual(2, len(data_views))
-        data_view = data_views[0]
-        self.assertEqual(2, len(data_view.columns.all()))
-        self.assertEqual(3, len(data_view.cycles.all()))
-        self.assertEqual(2, len(data_view.data_aggregations.all()))
-        self.assertEqual([1,2,3,4], data_view.filter_group)
+        self.data_view2 = DataView.objects.create(name='data view 2', filter_group=[5,6,7,8], organization=self.org)
+        self.data_view2.columns.set([self.column1, self.column2 , self.column3])
+        self.data_view2.cycles.set([self.cycle2, self.cycle4])
+        self.data_view2.data_aggregations.set([self.data_aggregation1, self.data_aggregation2, self.data_aggregation3])
 
     def test_data_view_model(self):
         data_views = DataView.objects.all()
         self.assertEqual(2, len(data_views))
 
-        data_view_1 = data_views[0]
-        self.assertEqual(2, len(data_view_1.columns.all()))
-        self.assertEqual(3, len(data_view_1.cycles.all()))
-        self.assertEqual(2, len(data_view_1.data_aggregations.all()))
-        self.assertEqual([1, 2, 3, 4], data_view_1.filter_group)
+        data_view1 = data_views[0]
+        self.assertEqual(2, len(data_view1.columns.all()))
+        self.assertEqual(3, len(data_view1.cycles.all()))
+        self.assertEqual(2, len(data_view1.data_aggregations.all()))
+        self.assertEqual([1, 2, 3, 4], data_view1.filter_group)
 
-        data_view_2 = data_views[1]
-        self.assertEqual(3, len(data_view_2.columns.all()))
-        self.assertEqual(2, len(data_view_2.cycles.all()))
-        self.assertEqual(3, len(data_view_2.data_aggregations.all()))
-        self.assertEqual([5, 6, 7, 8], data_view_2.filter_group)
+        data_view2 = data_views[1]
+        self.assertEqual(3, len(data_view2.columns.all()))
+        self.assertEqual(2, len(data_view2.cycles.all()))
+        self.assertEqual(3, len(data_view2.data_aggregations.all()))
+        self.assertEqual([5, 6, 7, 8], data_view2.filter_group)
+
 
     def test_data_view_create_endpoint(self):
         self.assertEqual(2, len(DataView.objects.all()))
 
-        api_res = self.client.get(
-            reverse('api:v3:data_view-list') + '?organization_id=' + str(self.org.id),
+        response = self.client.get(
+            reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-        breakpoint()
 
-        self.client.post(
-            reverse('api:v3:data_view-list') + '?organization_id=' + str(self.org.id),
+        self.assertEqual(2, len(json.loads(response.content)['message']))
+
+        response = self.client.post(
+            reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 "name": "data_view3",
                 "filter_group": [11, 12, 13, 14],
-                "columns": [self.column1, self.column2, self.column3],
-                "cycles": [self.cycle1, self.cycle2, self.cycle3],
-                "data_aggregations":[self.data_aggregation1, self.data_aggregation2]
+                "columns": [self.column1.id, self.column2.id, self.column3.id],
+                "cycles": [self.cycle1.id, self.cycle2.id, self.cycle3.id],
+                "data_aggregations":[self.data_aggregation1.id, self.data_aggregation2.id]
                 
             }),
             content_type='application/json'
         )
+        data = json.loads(response.content)
+        self.assertEqual(data['data_view']['name'], 'data_view3')
+        self.assertEqual(data['data_view']['organization'], self.org.id)
+        self.assertTrue(bool(data['data_view']['id']))
+
+
+        response = self.client.get(
+            reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+
+        self.assertEqual(3, len(json.loads(response.content)['message']))
+
+        data_view = DataView.objects.get(name='data_view3')
+        response = self.client.delete(
+            reverse('api:v3:data_views-detail', args=[data_view.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+
+        response = self.client.get(
+            reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+
+        self.assertEqual(2, len(json.loads(response.content)['message']))
+
+    def test_data_view_create_bad_data(self):
+        response = self.client.post(
+            reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "name": "data_view3",
+                "filter_group": [11, 12, 13, 14],
+                
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        self.assertEqual('error', data['status'])
+        expected = 'Data Validation Error'
+        self.assertEqual(expected, data['message'])
+
+    def test_data_view_retreive_endpoint(self):
+
+        response = self.client.get(
+            reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
+        )
+
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+        self.assertEqual('data view 1', data['data_view']['name'])
+
+
+        response = self.client.get(
+            reverse('api:v3:data_views-detail', args=[99999999]) + '?organization_id=' + str(self.org.id)
+        )
+        data = json.loads(response.content)
+        self.assertEqual('error', data['status'])
+        self.assertEqual('DataView with id 99999999 does not exist', data['message'])
