@@ -8,7 +8,6 @@ from collections import namedtuple
 
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
-from django.http.request import QueryDict
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -28,13 +27,11 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-    VIEW_LIST_INVENTORY_TYPE,
     BuildingFile,
     Column,
     ColumnMappingProfile,
     Cycle,
     DataLogger,
-    FilterGroup,
     InventoryDocument,
     Meter,
     Note,
@@ -62,10 +59,7 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
-from seed.utils.inventory_filter import (
-    get_filter_group_results,
-    get_filtered_results
-)
+from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
@@ -520,26 +514,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     pass
 
         return get_filtered_results(request, 'property', profile_id=profile_id)
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
-    def filter_group(self, request):
-        """
-        List all the properties
-        """
-        filter_group_pk = request.data.get('filter_group_id')
-        filter_group = FilterGroup.objects.get(pk=filter_group_pk)
-        query_dict = QueryDict('', mutable=True)
-        query_dict.update(filter_group.query_dict)
-
-        inventory_type = VIEW_LIST_INVENTORY_TYPE[filter_group.inventory_type][1]
-
-        logger.info("++++++")
-        logger.info(inventory_type)
-        logger.info("++++++")
-        return get_filter_group_results(query_dict, inventory_type, filter_group.organization.id)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
