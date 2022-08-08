@@ -139,11 +139,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
           resolve: {
             inventory_ids: function () {
               return [$scope.inventory.view_id];
-            }
-            //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-            //   var organization_id = user_service.get_organization().id;
-            //   return meter_service.get_meters($stateParams.view_id, organization_id);
-            // }],
+            },
+            current_cycle: {},
           }
         }).result.then(function (data) {
           if (data) {
