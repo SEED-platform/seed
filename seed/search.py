@@ -322,6 +322,7 @@ class QueryFilterOperator(Enum):
     GT = 'gt'
     GTE = 'gte'
     CONTAINS = 'icontains'
+    ISNULL = 'isnull'
 
 
 @dataclass
@@ -381,10 +382,17 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
               a dict of annotations
     """
     full_field_name = f'state__extra_data__{column_name}'
-    text_field_name = f'_{column_name}_to_text'
-    stripped_field_name = f'_{column_name}_stripped'
-    cleaned_field_name = f'_{column_name}_cleaned'
-    final_field_name = f'_{column_name}_final'
+
+    # annotations require a few characters to be removed...
+    cleaned_column_name = column_name.replace(' ', '_')
+    cleaned_column_name = cleaned_column_name.replace("'", '-')
+    cleaned_column_name = cleaned_column_name.replace('"', '-')
+    cleaned_column_name = cleaned_column_name.replace('`', '-')
+    cleaned_column_name = cleaned_column_name.replace(';', '-')
+    text_field_name = f'_{cleaned_column_name}_to_text'
+    stripped_field_name = f'_{cleaned_column_name}_stripped'
+    cleaned_field_name = f'_{cleaned_column_name}_cleaned'
+    final_field_name = f'_{cleaned_column_name}_final'
 
     annotations: AnnotationDict = {
         text_field_name: Cast(full_field_name, output_field=models.TextField()),
@@ -419,7 +427,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
+def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -446,7 +454,7 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
 
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
-    if column is None:
+    if column is None or column['related']:
         return Q(), {}
 
     updated_filter = None
@@ -487,7 +495,9 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
         return f'property__{sort_expression}', {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
-        if column['is_extra_data']:
+        if column['related']:
+            return None, {}
+        elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
             return f'{direction}{new_field_name}', annotations
         else:
@@ -541,6 +551,9 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
+        if filter_expression[-4:] == '__ne' and filter_value == '':
+            filter_expression = filter_expression.replace('__ne', '__isnull')
+            filter_value = False
         parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)
