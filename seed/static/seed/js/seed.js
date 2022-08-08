@@ -56,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.data_upload_audit_template_modal',
+  'BE.seed.controller.data_view',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
@@ -414,7 +415,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/analyses',
+        url: '/metrics/analyses',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
@@ -446,7 +447,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/analyses/{analysis_id:int}',
+        url: '/metrics/analyses/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
@@ -481,7 +482,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/metrics/analyses/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
@@ -1791,7 +1792,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'data_view',
-        url: '/{inventory_type:properties|taxlots}/data',
+        url: '/metrics',
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {
