@@ -104,6 +104,7 @@
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
+                                <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
                                 <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
@@ -117,6 +118,7 @@
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
+                                <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
                                 <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
@@ -130,6 +132,7 @@
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
+                                <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
                                 <input type="text" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
