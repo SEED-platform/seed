@@ -827,6 +827,19 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
+      // disable sorting and filtering on related data until the backend can filter/sort over two models
+      for (i in $scope.columns) {
+        let column = $scope.columns[i];
+        if (column['related']) {
+          column['enableSorting'] = false;
+          title = "Filtering disabled for property columns on the taxlot list.";
+          if ($scope.inventory_type == 'properties') {
+            title = "Filtering disabled for taxlot columns on the property list.";
+          }
+          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
+        }
+      }
+
       var findColumn = _.memoize(function (name) {
         return _.find(all_columns, {name: name});
       });
@@ -1296,7 +1309,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             inventory_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
-            }
+            },
+            current_cycle: _.constant($scope.cycle.selected_cycle),
           }
         });
         modalInstance.result.then(function (data) {
