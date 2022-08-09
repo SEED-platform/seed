@@ -127,18 +127,17 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': message_dict
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
     @swagger_auto_schema(
-            manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-            request_body=AutoSchemaHelper.schema_factory(
-                {
-                    'name': 'string',
-                    'columns': ['integer'],
-                    'cycles': ['integer'],
-                    'data_aggregations': ['integer'],
-                },
-            )
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': 'string',
+                'columns': ['integer'],
+                'cycles': ['integer'],
+                'data_aggregations': ['integer'],
+            },
         )
+    )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
