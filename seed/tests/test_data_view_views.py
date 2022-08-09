@@ -200,5 +200,5 @@ class DataViewViewTests(TestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        self.assertEqual('error', data.status)
-        self.assertEqual('DataView with id 99999 does not exist', data.status)
+        self.assertEqual('error', data['status'])
+        self.assertEqual('DataView with id 99999 does not exist', data['message'])
