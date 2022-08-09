@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-import logging
 from copy import deepcopy
 
 import django.core.exceptions
@@ -62,7 +61,6 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'DataView with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
     @api_endpoint_class
@@ -83,7 +81,6 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             'status': 'success',
             'message': f'Successfully deleted DataView ID {pk}'
         }, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -107,7 +104,6 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         serializer = DataViewSerializer(data=data)
 
         if not serializer.is_valid():
-            logging.error('SERIALIZER IS NOT VALID')
             error_response = {
                 'status': 'error',
                 'message': 'Data Validation Error',
@@ -123,7 +119,6 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'data_view': serializer.data
             }, status=status.HTTP_200_OK)
         except django.core.exceptions.ValidationError as e:
-            logging.error('SERIALIZER.SAVE FAIL')
 
             message_dict = e.message_dict
             return JsonResponse({
