@@ -8,20 +8,15 @@
 import base64
 import json
 
-from django.test import TestCase
+from django.test import TransactionTestCase
+from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER,
-    OrganizationUser
-)
-from seed.models import FilterGroup
+from seed.models import FilterGroup, StatusLabel
 from seed.utils.organizations import create_organization
 
 
-class FilterGroupsTests(TestCase):
+class FilterGroupsTests(TransactionTestCase):
 
     def setUp(self):
         user_details = {
@@ -41,31 +36,42 @@ class FilterGroupsTests(TestCase):
         self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
         self.headers = {'Authorization': self.auth_string}
 
+        self.status_label = StatusLabel.objects.create(
+            name='test', super_organization=self.org
+        )
+
     def test_create_filter_group(self):
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "test_filter_group",
                 "inventory_type": "Tax Lot",
                 "query_dict": {},
+                "label_logic": "exclude",
+                "labels": [self.status_label.id]
             }),
             content_type='application/json',
             **self.headers,
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 201)
-        self.assertIsInstance(response.json()["id"], int)
-        self.assertEqual(response.json()["name"], "test_filter_group")
-        self.assertEqual(response.json()["organization_id"], self.org.id)
-        self.assertEqual(response.json()["inventory_type"], "Tax Lot")
-        self.assertEqual(response.json()["query_dict"], {})
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(response.json()["status"], 'success')
+
+        data = response.json()["data"]
+        self.assertIsInstance(data["id"], int)
+        self.assertEqual("test_filter_group", data["name"])
+        self.assertEqual(self.org.id, data["organization_id"])
+        self.assertEqual("Tax Lot", data["inventory_type"])
+        self.assertEqual({}, data["query_dict"])
+        self.assertEqual("exclude", data["label_logic"])
+        self.assertEqual([self.status_label.id], data["labels"])
 
     def test_create_filter_group_no_name(self):
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "inventory_type": "Tax Lot",
                 "query_dict": {},
@@ -75,21 +81,20 @@ class FilterGroupsTests(TestCase):
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(400, response.status_code)
 
     def test_create_filter_group_bad_name(self):
         # Setup
-        filter_group = FilterGroup.objects.create(
+        FilterGroup.objects.create(
             name="taken name",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
-        filter_group.save()
 
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "taken name",
                 "inventory_type": "Tax Lot",
@@ -100,12 +105,12 @@ class FilterGroupsTests(TestCase):
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(400, response.status_code)
 
     def test_create_filter_group_no_inventory_type(self):
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "test_filter_group",
                 "query_dict": {},
@@ -115,12 +120,12 @@ class FilterGroupsTests(TestCase):
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(400, response.status_code)
 
     def test_create_filter_group_bad_inventory_type(self):
         # Action
         response = self.client.post(
-            "/api/v3/filter_groups/",
+            reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "test_filter_group",
                 "inventory_type": "bad inventory type",
@@ -131,7 +136,45 @@ class FilterGroupsTests(TestCase):
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(400, response.status_code)
+
+    def test_create_filter_group_bad_label_logic(self):
+        # Action
+        response = self.client.post(
+            reverse('api:v3:filter_groups-list'),
+            data=json.dumps({
+                "name": "test_filter_group",
+                "inventory_type": "Tax Lot",
+                "query_dict": {},
+                "label_logic": "bad label logic",
+            }),
+            content_type='application/json',
+            **self.headers,
+        )
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+
+    def test_create_filter_group_label_doesnt_exist(self):
+        # Action
+        response = self.client.post(
+            reverse('api:v3:filter_groups-list'),
+            data=json.dumps({
+                "name": "test_filter_group",
+                "inventory_type": "Tax Lot",
+                "labels": [-1, -2, self.status_label.id]
+            }),
+            content_type='application/json',
+            **self.headers,
+        )
+
+        # Assertion
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(response.json()["status"], 'success')
+        self.assertEqual(response.json()["warnings"], 'labels with ids do not exist: -1, -2')
+
+        data = response.json()["data"]
+        self.assertEqual([self.status_label.id], data["labels"])
 
     def test_get_filter_group(self):
         # Setup
@@ -145,16 +188,13 @@ class FilterGroupsTests(TestCase):
 
         # Action
         response = self.client.get(
-            f"/api/v3/filter_groups/{filter_group.id}",
-            follow=True,
-            data={},
+            reverse('api:v3:filter_groups-detail', args=[filter_group.id]),
             **self.headers
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
         self.assertDictEqual(
-            response.json(),
             {
                 'status': 'success',
                 'data': {
@@ -163,8 +203,11 @@ class FilterGroupsTests(TestCase):
                     "organization_id": self.org.id,
                     "inventory_type": "Tax Lot",
                     "query_dict": {},
+                    "labels": [],
+                    "label_logic": "and",
                 }
-            }
+            },
+            response.json(),
         )
 
     def test_get_all_filter_group(self):
@@ -175,27 +218,22 @@ class FilterGroupsTests(TestCase):
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
-        filter_group.save()
         second_filter_group = FilterGroup.objects.create(
             name="second_test_filter_group",
             organization_id=self.org.id,
             inventory_type=0,  # Property
             query_dict={},
         )
-        second_filter_group.save()
 
         # Action
         response = self.client.get(
-            "/api/v3/filter_groups",
-            follow=True,
-            data={},
+            reverse('api:v3:filter_groups-list'),
             **self.headers
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(200, response.status_code)
         self.assertDictEqual(
-            response.json(),
             {
                 'data': [
                     {
@@ -203,14 +241,18 @@ class FilterGroupsTests(TestCase):
                         'inventory_type': 'Tax Lot',
                         'name': 'test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {}
+                        'query_dict': {},
+                        "labels": [],
+                        "label_logic": "and",
                     },
                     {
                         'id': second_filter_group.id,
                         'inventory_type': 'Property',
                         'name': 'second_test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {}
+                        'query_dict': {},
+                        "labels": [],
+                        "label_logic": "and",
                     }
                 ],
                 'pagination': {
@@ -222,7 +264,9 @@ class FilterGroupsTests(TestCase):
                     'start': 1,
                     'total': 2
                 },
-                'status': 'success'}
+                'status': 'success'
+            },
+            response.json(),
         )
 
     def test_delete_filter_group(self):
@@ -233,26 +277,26 @@ class FilterGroupsTests(TestCase):
             inventory_type=1,  # Tax Lot
             query_dict={},
         )
-        filter_group.save()
+
+        filter_group_id = filter_group.id
 
         # Action
         response = self.client.delete(
-            f"/api/v3/filter_groups/{filter_group.id}",
-            follow=True,
+            reverse('api:v3:filter_groups-detail', args=[filter_group_id]),
             **self.headers
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(FilterGroup.objects.filter(id=filter_group.id).exists())
+        self.assertEqual(204, response.status_code)
+        result = FilterGroup.objects.filter(id=filter_group_id)
+        self.assertFalse(result.exists())
 
     def test_delete_filter_group_does_not_exist(self):
         # Action
         response = self.client.delete(
-            f"/api/v3/filter_groups/not_a_valid_id",
-            follow=True,
+            reverse('api:v3:filter_groups-detail', args=['not_a_valid_id']),
             **self.headers
         )
 
         # Assertion
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(404, response.status_code)
