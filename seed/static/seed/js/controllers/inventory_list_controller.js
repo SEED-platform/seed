@@ -304,6 +304,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.loadLabelsForFilter = function (query) {
+        console.log('query >>>', query, '<<<')
         return _.filter($scope.labels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
