@@ -76,7 +76,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
         },
         {
           "chartName": "CO2 vs Gross Floor Area (ft²)",
-          "xDisplayName": "Total GHG Emissions",
+          "xDisplayName": "Total GHG Emissions (t/year)",
           "yDisplayName": "Gross Floor Area (ft²)"
         },
         {
@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
         },
         {
           "chartName": "CO2/sqft vs Year Built",
-          "xDisplayName": "co2/sqft",
+          "xDisplayName": "Total GHG Emissions/sqft",
           "yDisplayName": "Year Built"
         },
       ];
@@ -108,6 +108,8 @@ angular.module('BE.seed.controller.inventory_plots', [])
         chartInfo["yName"] = y_column? y_column["name"]: null;
         chartInfo["populated"] = Boolean(!!x_column & !!y_column);
       });
+
+      console.log($scope.chartsInfo)
 
       var createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
         var canvas = document.getElementById(elementId);
@@ -257,7 +259,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
             data.map(d => d["id"])
           ).then(derived_columns_data => {
             for( const d of derived_columns_data.results){
-              data[dataIndexById[d["id"]]]["co2/sqft_168"] = d["value"]
+              data[dataIndexById[d["id"]]]["Total GHG Emissions/sqft_149"] = d["value"]
             }
           });
         }
