@@ -47,7 +47,7 @@ class FilterGroupsTests(TransactionTestCase):
             data=json.dumps({
                 "name": "test_filter_group",
                 "inventory_type": "Tax Lot",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
                 "label_logic": "exclude",
                 "labels": [self.status_label.id]
             }),
@@ -64,7 +64,7 @@ class FilterGroupsTests(TransactionTestCase):
         self.assertEqual("test_filter_group", data["name"])
         self.assertEqual(self.org.id, data["organization_id"])
         self.assertEqual("Tax Lot", data["inventory_type"])
-        self.assertEqual({}, data["query_dict"])
+        self.assertEqual({'year_built__lt': ['1950']}, data["query_dict"])
         self.assertEqual("exclude", data["label_logic"])
         self.assertEqual([self.status_label.id], data["labels"])
 
@@ -74,7 +74,7 @@ class FilterGroupsTests(TransactionTestCase):
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "inventory_type": "Tax Lot",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
             }),
             content_type='application/json',
             **self.headers,
@@ -98,7 +98,7 @@ class FilterGroupsTests(TransactionTestCase):
             data=json.dumps({
                 "name": "taken name",
                 "inventory_type": "Tax Lot",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
             }),
             content_type='application/json',
             **self.headers,
@@ -113,7 +113,7 @@ class FilterGroupsTests(TransactionTestCase):
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
                 "name": "test_filter_group",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
             }),
             content_type='application/json',
             **self.headers,
@@ -129,7 +129,7 @@ class FilterGroupsTests(TransactionTestCase):
             data=json.dumps({
                 "name": "test_filter_group",
                 "inventory_type": "bad inventory type",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
             }),
             content_type='application/json',
             **self.headers,
@@ -145,7 +145,7 @@ class FilterGroupsTests(TransactionTestCase):
             data=json.dumps({
                 "name": "test_filter_group",
                 "inventory_type": "Tax Lot",
-                "query_dict": {},
+                "query_dict": {'year_built__lt': ['1950']},
                 "label_logic": "bad label logic",
             }),
             content_type='application/json',
@@ -182,7 +182,7 @@ class FilterGroupsTests(TransactionTestCase):
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
-            query_dict={},
+            query_dict={'year_built__lt': ['1950']},
         )
         filter_group.save()
 
@@ -202,7 +202,7 @@ class FilterGroupsTests(TransactionTestCase):
                     "name": "test_filter_group",
                     "organization_id": self.org.id,
                     "inventory_type": "Tax Lot",
-                    "query_dict": {},
+                    "query_dict": {'year_built__lt': ['1950']},
                     "labels": [],
                     "label_logic": "and",
                 }
@@ -216,13 +216,13 @@ class FilterGroupsTests(TransactionTestCase):
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
-            query_dict={},
+            query_dict={'year_built__lt': ['1950']},
         )
         second_filter_group = FilterGroup.objects.create(
             name="second_test_filter_group",
             organization_id=self.org.id,
             inventory_type=0,  # Property
-            query_dict={},
+            query_dict={'year_built__lt': ['1950']},
         )
 
         # Action
@@ -241,7 +241,7 @@ class FilterGroupsTests(TransactionTestCase):
                         'inventory_type': 'Tax Lot',
                         'name': 'test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {},
+                        'query_dict': {'year_built__lt': ['1950']},
                         "labels": [],
                         "label_logic": "and",
                     },
@@ -250,7 +250,7 @@ class FilterGroupsTests(TransactionTestCase):
                         'inventory_type': 'Property',
                         'name': 'second_test_filter_group',
                         'organization_id': self.org.id,
-                        'query_dict': {},
+                        'query_dict': {'year_built__lt': ['1950']},
                         "labels": [],
                         "label_logic": "and",
                     }
@@ -275,7 +275,7 @@ class FilterGroupsTests(TransactionTestCase):
             name="test_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
-            query_dict={},
+            query_dict={'year_built__lt': ['1950']},
         )
 
         filter_group_id = filter_group.id
