@@ -66,7 +66,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            _get_inventory_type_int(inventory_type)
+            inventory_type_int = _get_inventory_type_int(inventory_type)
         except StopIteration:
             return JsonResponse({
                 'success': False,
@@ -85,7 +85,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             filter_group = FilterGroup.objects.create(
                 name=name,
                 organization_id=org_id,
-                inventory_type=inventory_type,
+                inventory_type=inventory_type_int,
                 query_dict=query_dict,
                 label_logic=label_logic_int,
             )
