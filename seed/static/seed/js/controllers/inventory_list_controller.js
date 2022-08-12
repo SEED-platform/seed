@@ -22,6 +22,8 @@ angular.module('BE.seed.controller.inventory_list', [])
     'cycles',
     'profiles',
     'current_profile',
+    'filter_groups',
+    'current_filter_group',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -52,6 +54,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       cycles,
       profiles,
       current_profile,
+      filter_groups,
+      current_filter_group,
       all_columns,
       derived_columns_payload,
       urls,
@@ -112,8 +116,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       // Filter Groups
+      $scope.filterGroups = filter_groups;
+      $scope.currentFilterGroup = current_filter_group;
+
+
       $scope.new_filter_group = function () {
-        var filterGroupData = JSON.parse(JSON.stringify($scope.current_filter_group));
+        var filterGroupData = JSON.parse(JSON.stringify($scope.currentFilterGroup));
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
@@ -126,11 +134,11 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
 
         modalInstance.result.then(function (new_filter_group) {
-          $scope.filter_groups.push(new_filter_group);
-          $scope.dropdown_selected_filter_group = $scope.current_filter_group = _.last($scope.filter_groups);
+          $scope.filterGroups.push(new_filter_group);
+          $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
 
           $scope.changes_possible = false;
-          Notification.primary('Saved ' + $scope.current_filter_group.name);
+          Notification.primary('Saved ' + $scope.currentFilterGroup.name);
         });
       };
 
@@ -159,8 +167,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         var old_filter_group = angular.copy($scope.current_filter_group);
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/filter_group.html',
-          controller: 'filter_group_controller',
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
           resolve: {
             action: _.constant('remove'),
             data: _.constant($scope.current_filter_group),
@@ -185,6 +193,21 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.changes_possible = false;
           Notification.primary('Saved ' + $scope.current_filter_group.name);
         });
+      };
+
+      $scope.check_for_changes = function () {
+        if ($scope.changes_possible) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
+          }).result.then(function () {
+            $scope.changes_possible = false;
+          }).catch(function () {
+            $scope.dropdown_selected_filter_group = $scope.current_filter_group;
+            return;
+          });
+        }
+
+        $scope.current_filter_group = $scope.dropdown_selected_filter_group;
       };
 
       // restore_response is a state tracker for avoiding multiple reloads

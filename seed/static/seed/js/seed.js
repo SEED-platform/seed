@@ -1465,7 +1465,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return null;
           }],
           filter_groups: ['filter_groups_service', function (filter_groups_service) {
-            // var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return filter_groups_service.get_filter_groups();
           }],
           current_filter_group: ['$stateParams', 'filter_groups_service', 'filter_groups', function ($stateParams, filter_groups_service, filter_groups) {
