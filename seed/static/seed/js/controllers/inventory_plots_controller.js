@@ -99,17 +99,15 @@ angular.module('BE.seed.controller.inventory_plots', [])
         x_column = all_columns.find(c => c["displayName"] == chartInfo["xDisplayName"])
         y_column = all_columns.find(c => c["displayName"] == chartInfo["yDisplayName"])
 
-        if (!!x_column && !!x_column["derived_column"]) neededDerivedColumns.push(x_column["derived_column"])
+        if (!!x_column && !!x_column["derived_column"]) neededDerivedColumns.push(x_column)
         else if (!!x_column) neededColumns.add(x_column["id"])
-        if (!!y_column && !!y_column["derived_column"]) neededDerivedColumns.push(y_column["derived_column"])
+        if (!!y_column && !!y_column["derived_column"]) neededDerivedColumns.push(y_column)
         else if (!!y_column) neededColumns.add(y_column["id"])
 
         chartInfo["xName"] = x_column? x_column["name"]: null;
         chartInfo["yName"] = y_column? y_column["name"]: null;
         chartInfo["populated"] = Boolean(!!x_column & !!y_column);
       });
-
-      console.log($scope.chartsInfo)
 
       var createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
         var canvas = document.getElementById(elementId);
@@ -254,17 +252,15 @@ angular.module('BE.seed.controller.inventory_plots', [])
         for (const column of neededDerivedColumns){
           derived_columns_service.evaluate(
             organization_payload.organization.id,
-            column,
+            column["derived_column"],
             $scope.cycle.selected_cycle.id,
             data.map(d => d["id"])
           ).then(derived_columns_data => {
             for( const d of derived_columns_data.results){
-              data[dataIndexById[d["id"]]]["Total GHG Emissions/sqft_149"] = d["value"]
+              data[dataIndexById[d["id"]]][column["name"]] = d["value"]
             }
           });
         }
-
-        console.log(data)
 
         for (const chart of charts) {
           chart.data.datasets[0].data = data
