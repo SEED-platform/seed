@@ -43,14 +43,12 @@ class DataView(models.Model):
             states = PropertyState.objects.filter(propertyview__in=cycle.propertyview_set.all())
             
             for column in columns:
-                data[end_date][column.column_name] = {}
-
+                data[end_date][column.column_name] = {'views_by_id': {}}
                 for state in states: 
                     if not data[end_date][column.column_name].get('units'):
-                        data[end_date][column.column_name]['units'] = "{:P~}".format(getattr(state, column.column_name).u),
-                    data[end_date][column.column_name][state.id] = {
-                        'value': getattr(state, column.column_name).m
-                        }
+                        data[end_date][column.column_name]['units'] = "{:P~}".format(getattr(state, column.column_name).u)
+                    breakpoint()
+                    data[end_date][column.column_name]['views_by_id'][state.propertyview_set.first().id] = getattr(state, column.column_name).m
 
                 for data_agg in [data_agg for data_agg in data_aggregations if data_agg.column == column]:
                     data[end_date][column.column_name][data_agg.name] = data_agg.evaluate(states)

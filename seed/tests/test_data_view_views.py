@@ -399,6 +399,7 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
         )
 
+
         # self.assertEqual(['meta', 'data'], list(response.keys()))
 
 
