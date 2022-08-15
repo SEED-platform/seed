@@ -10,6 +10,8 @@ import django.core.exceptions
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
+
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -182,3 +184,26 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Bad request',
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['GET'])
+    def evaluate(self, request, pk):
+        organization = self.get_organization(request)
+        deepcopy(request.data)
+
+        try:
+            data_view = DataView.objects.get(id=pk, organization=organization)
+        except DataView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'DataView with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        response = data_view.evaluate()
+        return JsonResponse({
+            'status': 'success',
+            'data': response
+        })
+

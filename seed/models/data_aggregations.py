@@ -32,28 +32,31 @@ class DataAggregation(models.Model):
 
     type = models.IntegerField(choices=AGGREGATION_TYPES)
 
-    def evaluate(self):
+    def evaluate(self, states):
         column = self.column
 
         if column.is_extra_data:
-            return self.evaluate_extra_data()
+            return self.evaluate_extra_data(states)
         elif column.derived_column:
-            return self.evaluate_derived_column()
+            return self.evaluate_derived_column(states)
         else:
             type_lookup = {0: Avg, 1: Count, 2: Max, 3: Min, 4: Sum}
             # PropertyState must be associated with the current org and a valid PropertyView
-            aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
+            aggregation = states.aggregate(value=type_lookup[self.type](column.column_name))
+            # aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
 
             if aggregation.get('value') or aggregation.get('value') == 0:
                 value = aggregation['value']
                 if type(value) is int or type(value) is float:
                     return {"value": round(value, 2), "units": None}
 
-                return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
+                return {"value": round(value.m, 2)}
+                # return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
 
-    def evaluate_extra_data(self):
+    def evaluate_extra_data(self, states):
         extra_data_col = 'extra_data__' + self.column.column_name
-        q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
+        q_set = states.values(extra_data_col)
+        # q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
         values = []
         for val in list(q_set):
             try:
@@ -63,11 +66,13 @@ class DataAggregation(models.Model):
 
         if values:
             type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
-            return {"value": round(type_to_aggregate[self.type], 2), "units": None}
+            return {"value": round(type_to_aggregate[self.type], 2)}
+            # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
 
-    def evaluate_derived_column(self):
+    def evaluate_derived_column(self, states):
         # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
-        property_states = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False)
+        property_states = states
+        # property_states = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False)
         values = []
 
         for state in property_states:
@@ -77,4 +82,5 @@ class DataAggregation(models.Model):
 
         if values:
             type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
-            return {"value": round(type_to_aggregate[self.type], 2), "units": None}
+            return {"value": round(type_to_aggregate[self.type], 2)}
+            # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
