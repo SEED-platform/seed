@@ -32,9 +32,6 @@ def _get_label_logic_int(label_logic: str) -> int:
     name='retrieve',
     decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
-    name='update',
-    decorator=swagger_auto_schema_org_query_param)
-@method_decorator(
     name='destroy',
     decorator=swagger_auto_schema_org_query_param)
 class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -108,6 +105,51 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             result["warnings"] = f"labels with ids do not exist: {', '.join([str(id) for id in bad_label_ids])}"
 
         return JsonResponse(result, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    def update(self, request, pk=None):
+        filter_group = FilterGroup.objects.get(pk=pk)
+
+        if "name" in request.data:
+            filter_group.name = request.data["name"]
+
+        if "query_dict" in request.data:
+            filter_group.query_dict = request.data["query_dict"]
+
+        if "inventory_type" in request.data:
+            try:
+                inventory_type_int = _get_inventory_type_int(request.data["inventory_type"])
+            except StopIteration:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'invalid "inventory_type" must be "Property" or "Tax Lot"'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                filter_group.inventory_type = inventory_type_int
+
+        if "label_logic" in request.data:
+            try:
+                label_logic_int = _get_label_logic_int(request.data["label_logic"])
+            except StopIteration:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'invalid "label_logic" must be "and", "or", or "exclude"'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                filter_group.label_logic = label_logic_int
+
+        if "labels" in request.data:
+            filter_group.labels.set(request.data["labels"])
+
+        filter_group.save()
+
+        result = {
+            "status": 'success',
+            "data": FilterGroupSerializer(filter_group).data,
+        }
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
 
     def _get_labels(self, label_ids):
         good_label_ids = []
