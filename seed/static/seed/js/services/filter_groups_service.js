@@ -37,20 +37,12 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     };
 
     filter_groups_factory.get_filter_group = function (id) {
-      var data;
-      var params = {
-        id: id
-      };
-      // if (filter_profile_types != null) {
-      //   data = {
-      //     profile_type: filter_profile_types
-      //   };
-      // }
-      return $http.get('/api/v3/filter_groups/' + id + '/', {
+      return $http.get('/api/v3/filter_groups/' + id, {
         params: {
-          organization_id: org_id
-        }).then(function (response) {
-        return response.data;
+          organization_id: user_service.get_organization().id,
+        }
+      }).then(function (response) {
+        return response.data.data;
       });
     };
 
@@ -63,8 +55,6 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     //     return response.data;
     //   });
     // };
-
-    // It appears that views/v3/filter_group.py needs to add the following methods
 
     // filter_groups_factory.get_header_suggestions = function (headers) {
     //   return filter_groups_factory.get_header_suggestions_for_org(user_service.get_organization().id, headers);
@@ -82,20 +72,20 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     //   });
     // };
 
-    // filter_groups_factory.update_filter_group = function (org_id, id, data) {
-    //   return $http.put('/api/v3/filter_groups/' + id + '/', data, {
-    //     params: {
-    //       organization_id: org_id
-    //     }
-    //   }).then(function (response) {
-    //     return response.data;
-    //   });
-    // };
+    filter_groups_factory.update_filter_group = function (id, data) {
+      return $http.put('/api/v3/filter_groups/' + id + '/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
-    filter_groups_factory.delete_filter_group = function (org_id, id) {
+    filter_groups_factory.remove_filter_group = function (id) {
       return $http.delete('/api/v3/filter_groups/' + id + '/', {
         params: {
-          organization_id: org_id
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;

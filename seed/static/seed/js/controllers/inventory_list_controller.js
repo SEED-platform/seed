@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'current_profile',
     'filter_groups',
     'current_filter_group',
+    'filter_groups_service',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -56,6 +57,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       current_profile,
       filter_groups,
       current_filter_group,
+      filter_groups_service,
       all_columns,
       derived_columns_payload,
       urls,
@@ -118,82 +120,86 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Filter Groups
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
+      $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = $scope.filterGroups[0] || {};
 
 
-      $scope.new_filter_group = function () {
-        var filterGroupData = JSON.parse(JSON.stringify($scope.currentFilterGroup));
+      // $scope.new_filter_group = function () {
+      //   var filterGroupData = JSON.parse(JSON.stringify($scope.currentFilterGroup));
 
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
-          controller: 'filter_group_modal_controller',
-          resolve: {
-            action: _.constant('new'),
-            data: _.constant(filterGroupData),
-            org_id: _.constant($scope.org.id)
-          }
-        });
+      //   var modalInstance = $uibModal.open({
+      //     templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+      //     controller: 'filter_group_modal_controller',
+      //     resolve: {
+      //       action: _.constant('new'),
+      //       data: _.constant(filterGroupData),
+      //       org_id: _.constant($scope.organization.id)
+      //     }
+      //   });
 
-        modalInstance.result.then(function (new_filter_group) {
-          $scope.filterGroups.push(new_filter_group);
-          $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
+      //   modalInstance.result.then(function (new_filter_group) {
+      //     $scope.filterGroups.push(new_filter_group);
+      //     $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
 
-          $scope.changes_possible = false;
-          Notification.primary('Saved ' + $scope.currentFilterGroup.name);
-        });
-      };
+      //     $scope.changes_possible = false;
+      //     Notification.primary('Saved ' + $scope.currentFilterGroup.name);
+      //   });
+      // };
 
-      $scope.rename_filter_group = function () {
-        var old_name = $scope.current_filter_group.name;
+      // $scope.rename_filter_group = function () {
+      //   var old_name = $scope.currentFilterGroup.name;
 
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
-          controller: 'filter_group_modal_controller',
-          resolve: {
-            action: _.constant('rename'),
-            data: _.constant($scope.current_filter_group),
-            org_id: _.constant($scope.org.id)
-          }
-        });
+      //   var modalInstance = $uibModal.open({
+      //     templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+      //     controller: 'filter_group_modal_controller',
+      //     resolve: {
+      //       action: _.constant('rename'),
+      //       data: _.constant($scope.currentFilterGroup),
+      //       org_id: _.constant($scope.organization.id)
+      //     }
+      //   });
 
-        modalInstance.result.then(function (new_name) {
-          var filter_group_index = _.findIndex($scope.filter_groups, ['id', $scope.dropdown_selected_filter_group.id]);
-          $scope.filter_groups[filter_group_index].name = new_name;
+      //   modalInstance.result.then(function (new_name) {
+      //     var filter_group_index = _.findIndex($scope.filterGroups, ['id', $scope.dropdown_selected_filter_group.id]);
+      //     $scope.filterGroups[filter_group_index].name = new_name;
 
-          Notification.primary('Renamed ' + old_name + ' to ' + new_name);
-        });
-      };
+      //     Notification.primary('Renamed ' + old_name + ' to ' + new_name);
+      //   });
+      // };
 
       $scope.remove_filter_group = function () {
-        var old_filter_group = angular.copy($scope.current_filter_group);
+        var old_filter_group = angular.copy($scope.currentFilterGroup);
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
           controller: 'filter_group_modal_controller',
           resolve: {
             action: _.constant('remove'),
-            data: _.constant($scope.current_filter_group),
-            org_id: _.constant($scope.org.id)
+            data: _.constant($scope.currentFilterGroup)
+            // organization_payload: _.constant($scope.organization.id)
           }
         });
 
         modalInstance.result.then(function () {
-          _.remove($scope.filter_group, old_filter_group);
-          $scope.dropdown_selected_filter_group = $scope.current_filter_group = $scope.filter_groups[0] || {};
-          $scope.changes_possible = false;
+          _.remove($scope.profiles, old_filter_group);
+          modified_service.resetModified();
+          $scope.currentFilterGroup = _.first($scope.filterGroups);
+          Notification.primary('Removed ' + old_filter_group.name);
         });
       };
 
-      $scope.save_filter_group = function () {
+      // $scope.save_filter_group = function () {
 
-        filter_groups_service.update_filter_group($scope.org.id, $scope.current_filter_group.id, updated_data).then(function (result) {
+      //   filter_groups_service.update_filter_group($scope.organization.id, $scope.currentFilterGroup.id, updated_data).then(function (result) {
 
-          var filter_group_id = $scope.current_filter_group.id;
-          _.find($scope.filter_groups, ['id', filter_group_id]).mappings = $scope.current_filter_group.mappings;
+      //     $scope.currentFilterGroup.updated = result.data.updated;
 
-          $scope.changes_possible = false;
-          Notification.primary('Saved ' + $scope.current_filter_group.name);
-        });
-      };
+      //     var filter_group_id = $scope.currentFilterGroup.id;
+      //     _.find($scope.filterGroups, ['id', filter_group_id]).mappings = $scope.currentFilterGroup.mappings;
+
+      //     $scope.changes_possible = false;
+      //     Notification.primary('Saved ' + $scope.currentFilterGroup.name);
+      //   });
+      // };
 
       $scope.check_for_changes = function () {
         if ($scope.changes_possible) {
@@ -202,12 +208,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           }).result.then(function () {
             $scope.changes_possible = false;
           }).catch(function () {
-            $scope.dropdown_selected_filter_group = $scope.current_filter_group;
+            $scope.dropdown_selected_filter_group = $scope.currentFilterGroup;
             return;
           });
         }
 
-        $scope.current_filter_group = $scope.dropdown_selected_filter_group;
+        $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
       };
 
       // restore_response is a state tracker for avoiding multiple reloads
