@@ -4,9 +4,10 @@
  */
 angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_service', [
   '$http',
+  '$q',
   'user_service',
   'naturalSort',
-  function ($http, user_service, naturalSort) {
+  function ($http, $q, user_service, naturalSort) {
 
     var filter_groups_factory = {};
 
@@ -73,12 +74,16 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     // };
 
     filter_groups_factory.update_filter_group = function (id, data) {
+      if (id === null) {
+        Notification.error('This filter group is protected from modifications');
+        return $q.reject();
+      }
       return $http.put('/api/v3/filter_groups/' + id + '/', data, {
         params: {
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        return response.data;
+        return response.data.data;
       });
     };
 

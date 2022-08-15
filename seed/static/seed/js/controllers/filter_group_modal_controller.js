@@ -20,18 +20,18 @@
     //  $scope.organization = organization_payload.organization;
 
 
-    //  $scope.rename_filter_group = function () {
-    //    if (!$scope.disabled()) {
-    //      var id = $scope.data.id;
-    //      var filter_group = _.omit($scope.data, 'id');
-    //      filter_group.name = $scope.newName;
-    //      filter_groups_service.update_column_list_filter_group(id, filter_group).then(function (result) {
-    //        $uibModalInstance.close(result.name);
-    //      }).catch(function () {
-    //        $uibModalInstance.dismiss();
-    //      });
-    //    }
-    //  };
+     $scope.rename_filter_group = function () {
+       if (!$scope.disabled()) {
+         var id = $scope.data.id;
+         var filter_group = _.omit($scope.data, 'id');
+         filter_group.name = $scope.newName;
+         filter_groups_service.update_filter_group(id, filter_group).then(function (result) {
+           $uibModalInstance.close(result.name);
+         }).catch(function () {
+           $uibModalInstance.dismiss();
+         });
+       }
+     };
 
      $scope.remove_filter_group = function () {
        filter_groups_service.remove_filter_group($scope.data.id).then(function () {

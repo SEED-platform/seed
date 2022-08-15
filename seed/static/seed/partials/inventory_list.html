@@ -85,9 +85,9 @@
                 <span class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!dropdown_selected_filter_group || !isModified() || dropdown_selected_filter_group.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </span>
-                <span class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!dropdown_selected_filter_group || dropdown_selected_filter_group.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
+                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!dropdown_selected_filter_group || dropdown_selected_filter_group.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
                     <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-                </span>
+                </button>
                 <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-disabled="!dropdown_selected_filter_group || dropdown_selected_filter_group.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>

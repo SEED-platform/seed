@@ -145,29 +145,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       //   });
       // };
 
-      // $scope.rename_filter_group = function () {
-      //   var old_name = $scope.currentFilterGroup.name;
-
-      //   var modalInstance = $uibModal.open({
-      //     templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
-      //     controller: 'filter_group_modal_controller',
-      //     resolve: {
-      //       action: _.constant('rename'),
-      //       data: _.constant($scope.currentFilterGroup),
-      //       org_id: _.constant($scope.organization.id)
-      //     }
-      //   });
-
-      //   modalInstance.result.then(function (new_name) {
-      //     var filter_group_index = _.findIndex($scope.filterGroups, ['id', $scope.dropdown_selected_filter_group.id]);
-      //     $scope.filterGroups[filter_group_index].name = new_name;
-
-      //     Notification.primary('Renamed ' + old_name + ' to ' + new_name);
-      //   });
-      // };
-
       $scope.remove_filter_group = function () {
-        var old_filter_group = angular.copy($scope.currentFilterGroup);
+        var oldFilterGroup = angular.copy($scope.currentFilterGroup);
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
@@ -175,15 +154,33 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             action: _.constant('remove'),
             data: _.constant($scope.currentFilterGroup)
-            // organization_payload: _.constant($scope.organization.id)
           }
         });
 
         modalInstance.result.then(function () {
-          _.remove($scope.profiles, old_filter_group);
+          _.remove($scope.filterGroups, oldFilterGroup);
           modified_service.resetModified();
           $scope.currentFilterGroup = _.first($scope.filterGroups);
-          Notification.primary('Removed ' + old_filter_group.name);
+          Notification.primary('Removed ' + oldFilterGroup.name);
+        });
+      };
+
+      $scope.rename_filter_group = function () {
+        var oldFilterGroup = angular.copy($scope.currentFilterGroup);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.currentFilterGroup),
+          }
+        });
+
+        modalInstance.result.then(function (newName) {
+          $scope.currentFilterGroup.name = newName;
+          _.find($scope.filterGroups, {id: $scope.currentFilterGroup.id}).name = newName;
+          Notification.primary('Renamed ' + oldFilterGroup.name + ' to ' + newName);
         });
       };
 
