@@ -40,12 +40,21 @@ class FilterGroupsTests(TransactionTestCase):
             name='test', super_organization=self.org
         )
 
+        self.filter_group = FilterGroup.objects.create(
+            name="test_filter_group",
+            organization_id=self.org.id,
+            inventory_type=1,  # Tax Lot
+            query_dict={'year_built__lt': ['1950']},
+        )
+        self.filter_group.labels.add(self.status_label.id)
+        self.filter_group.save()
+
     def test_create_filter_group(self):
         # Action
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "test_filter_group",
+                "name": "new_filter_group",
                 "inventory_type": "Tax Lot",
                 "query_dict": {'year_built__lt': ['1950']},
                 "label_logic": "exclude",
@@ -61,7 +70,7 @@ class FilterGroupsTests(TransactionTestCase):
 
         data = response.json()["data"]
         self.assertIsInstance(data["id"], int)
-        self.assertEqual("test_filter_group", data["name"])
+        self.assertEqual("new_filter_group", data["name"])
         self.assertEqual(self.org.id, data["organization_id"])
         self.assertEqual("Tax Lot", data["inventory_type"])
         self.assertEqual({'year_built__lt': ['1950']}, data["query_dict"])
@@ -84,19 +93,11 @@ class FilterGroupsTests(TransactionTestCase):
         self.assertEqual(400, response.status_code)
 
     def test_create_filter_group_bad_name(self):
-        # Setup
-        FilterGroup.objects.create(
-            name="taken name",
-            organization_id=self.org.id,
-            inventory_type=1,  # Tax Lot
-            query_dict={},
-        )
-
         # Action
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "taken name",
+                "name": self.filter_group.name,
                 "inventory_type": "Tax Lot",
                 "query_dict": {'year_built__lt': ['1950']},
             }),
@@ -112,7 +113,7 @@ class FilterGroupsTests(TransactionTestCase):
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "test_filter_group",
+                "name": "new_filter_group",
                 "query_dict": {'year_built__lt': ['1950']},
             }),
             content_type='application/json',
@@ -127,7 +128,7 @@ class FilterGroupsTests(TransactionTestCase):
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "test_filter_group",
+                "name": "new_filter_group",
                 "inventory_type": "bad inventory type",
                 "query_dict": {'year_built__lt': ['1950']},
             }),
@@ -143,7 +144,7 @@ class FilterGroupsTests(TransactionTestCase):
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "test_filter_group",
+                "name": "new_filter_group",
                 "inventory_type": "Tax Lot",
                 "query_dict": {'year_built__lt': ['1950']},
                 "label_logic": "bad label logic",
@@ -160,7 +161,7 @@ class FilterGroupsTests(TransactionTestCase):
         response = self.client.post(
             reverse('api:v3:filter_groups-list'),
             data=json.dumps({
-                "name": "test_filter_group",
+                "name": "new_filter_group",
                 "inventory_type": "Tax Lot",
                 "labels": [-1, -2, self.status_label.id]
             }),
@@ -177,18 +178,9 @@ class FilterGroupsTests(TransactionTestCase):
         self.assertEqual([self.status_label.id], data["labels"])
 
     def test_get_filter_group(self):
-        # Setup
-        filter_group = FilterGroup.objects.create(
-            name="test_filter_group",
-            organization_id=self.org.id,
-            inventory_type=1,  # Tax Lot
-            query_dict={'year_built__lt': ['1950']},
-        )
-        filter_group.save()
-
         # Action
         response = self.client.get(
-            reverse('api:v3:filter_groups-detail', args=[filter_group.id]),
+            reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]),
             **self.headers
         )
 
@@ -198,12 +190,12 @@ class FilterGroupsTests(TransactionTestCase):
             {
                 'status': 'success',
                 'data': {
-                    "id": filter_group.id,
+                    "id": self.filter_group.id,
                     "name": "test_filter_group",
                     "organization_id": self.org.id,
                     "inventory_type": "Tax Lot",
                     "query_dict": {'year_built__lt': ['1950']},
-                    "labels": [],
+                    "labels": [self.status_label.id],
                     "label_logic": "and",
                 }
             },
@@ -212,12 +204,7 @@ class FilterGroupsTests(TransactionTestCase):
 
     def test_get_all_filter_group(self):
         # Setup
-        filter_group = FilterGroup.objects.create(
-            name="test_filter_group",
-            organization_id=self.org.id,
-            inventory_type=1,  # Tax Lot
-            query_dict={'year_built__lt': ['1950']},
-        )
+        # second, as self.filter_group is the first
         second_filter_group = FilterGroup.objects.create(
             name="second_test_filter_group",
             organization_id=self.org.id,
@@ -237,12 +224,12 @@ class FilterGroupsTests(TransactionTestCase):
             {
                 'data': [
                     {
-                        'id': filter_group.id,
+                        'id': self.filter_group.id,
                         'inventory_type': 'Tax Lot',
                         'name': 'test_filter_group',
                         'organization_id': self.org.id,
                         'query_dict': {'year_built__lt': ['1950']},
-                        "labels": [],
+                        "labels": [self.status_label.id],
                         "label_logic": "and",
                     },
                     {
@@ -269,10 +256,112 @@ class FilterGroupsTests(TransactionTestCase):
             response.json(),
         )
 
+    def test_update_filter_group_name(self):
+        # Action
+        response = self.client.put(
+            reverse(
+                'api:v3:filter_groups-detail',
+                args=[self.filter_group.id]
+            ),
+            data=json.dumps({"name": "new_name"}),
+            content_type='application/json',
+            **self.headers
+        )
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+        self.assertDictEqual(
+            {
+                'status': 'success',
+                'data': {
+                    "id": self.filter_group.id,
+                    "name": "new_name",
+                    "organization_id": self.org.id,
+                    "inventory_type": "Tax Lot",
+                    "query_dict": {'year_built__lt': ['1950']},
+                    "labels": [self.status_label.id],
+                    "label_logic": "and",
+                }
+            },
+            response.json(),
+        )
+
+    def test_update_filter_group_labels(self):
+        # Setup
+        first_label = StatusLabel.objects.create(
+            name='1', super_organization=self.org
+        )
+        second_label = StatusLabel.objects.create(
+            name='2', super_organization=self.org
+        )
+
+        # Action
+        response = self.client.put(
+            reverse(
+                'api:v3:filter_groups-detail',
+                args=[self.filter_group.id]
+            ),
+            data=json.dumps({
+                "labels": [first_label.id, second_label.id],
+            }),
+            content_type='application/json',
+            **self.headers
+        )
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+        self.assertDictEqual(
+            {
+                'status': 'success',
+                'data': {
+                    "id": self.filter_group.id,
+                    "name": "test_filter_group",
+                    "organization_id": self.org.id,
+                    "inventory_type": "Tax Lot",
+                    "query_dict": {'year_built__lt': ['1950']},
+                    "labels": [first_label.id, second_label.id],
+                    "label_logic": "and",
+                }
+            },
+            response.json(),
+        )
+
+    def test_update_filter_group_label_logic(self):
+        # Action
+        response = self.client.put(
+            reverse(
+                'api:v3:filter_groups-detail',
+                args=[self.filter_group.id]
+            ),
+            data=json.dumps({
+                "label_logic": "or",
+            }),
+            content_type='application/json',
+            **self.headers
+        )
+
+        # Assertion
+        self.assertEqual(200, response.status_code)
+        self.assertDictEqual(
+            {
+                'status': 'success',
+                'data': {
+                    "id": self.filter_group.id,
+                    "name": "test_filter_group",
+                    "organization_id": self.org.id,
+                    "inventory_type": "Tax Lot",
+                    "query_dict": {'year_built__lt': ['1950']},
+                    "labels": [self.status_label.id],
+                    "label_logic": "or",
+                }
+            },
+            response.json(),
+        )
+
     def test_delete_filter_group(self):
         # Setup
         filter_group = FilterGroup.objects.create(
-            name="test_filter_group",
+            name="new_filter_group",
             organization_id=self.org.id,
             inventory_type=1,  # Tax Lot
             query_dict={'year_built__lt': ['1950']},

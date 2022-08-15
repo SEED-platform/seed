@@ -25,5 +25,6 @@ class FilterGroupSerializer(serializers.ModelSerializer):
 
         ret["inventory_type"] = VIEW_LIST_INVENTORY_TYPE[ret["inventory_type"]][1]
         ret["label_logic"] = LABEL_LOGIC_TYPE[ret["label_logic"]][1]
+        ret["labels"] = sorted(ret["labels"])
 
         return ret
