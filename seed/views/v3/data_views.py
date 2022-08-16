@@ -204,6 +204,6 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         response = data_view.evaluate()
         return JsonResponse({
             'status': 'success',
-            'data': response
+            'message': response
         })
 

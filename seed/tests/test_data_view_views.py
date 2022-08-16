@@ -9,6 +9,7 @@ import json
 from django.test import TestCase
 from django.urls import reverse
 from datetime import datetime
+import pytz
 
 from seed.models import (
     Column,
@@ -235,10 +236,10 @@ class DataViewEvaluationTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.client.login(**user_details)
-        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A", end=datetime(2022, 1, 1))
-        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B", end=datetime(2021, 1, 1))
-        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C", end=datetime(2020, 1, 1))
-        self.cycle4 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle D", end=datetime(2019, 1, 1))
+        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC))
+        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B", end=datetime(2021, 1, 1, tzinfo=pytz.UTC))
+        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C", end=datetime(2020, 1, 1, tzinfo=pytz.UTC))
+        self.cycle4 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle D", end=datetime(2019, 1, 1, tzinfo=pytz.UTC))
 
         self.site_eui = Column.objects.get(column_name='site_eui')
         self.ghg = Column.objects.get(column_name='total_ghg_emissions')
@@ -399,11 +400,22 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
         )
 
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
 
-        # self.assertEqual(['meta', 'data'], list(response.keys()))
+        data = data['message']
+        self.assertEqual(['meta', 'data'], list(data.keys()))
+        self.assertEqual(1, data['meta']['data_view'])
+        self.assertEqual(1, data['meta']['organization'])
 
+        data = data['data']
+        self.assertEqual(['2019-01-01', '2020-01-01', '2022-01-01'], list(data.keys()))
 
+        data = data['2019-01-01']
+        self.assertEqual(['site_eui', 'total_ghg_emissions'], list(data.keys()))
 
+        data = data['site_eui']
+        self.assertEqual(['views_by_id', 'units', 'eui avg', 'eui sum'], list(data.keys()))
 
-
-        breakpoint()
+        expected = {'13': 40.0, '14': 41.0, '15': 42.0, '16': 43.0}
+        self.assertEqual(expected, data['views_by_id'])
