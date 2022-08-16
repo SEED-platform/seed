@@ -17,6 +17,7 @@ from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
+from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
@@ -58,6 +59,7 @@ api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
 api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
+api_v3_router.register(r'data_views', DataViewViewSet, basename='data_views')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
 api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename="properties")
