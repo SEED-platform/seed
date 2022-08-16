@@ -1791,8 +1791,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'data_view',
+        name: 'metrics',
         url: '/metrics',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'data_view',
+        url: '/metrics/{id:int}',
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {
