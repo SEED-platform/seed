@@ -211,6 +211,16 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
+        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+        $scope.selected_labels = _.filter($scope.labels, function (label) {
+          return _.includes($scope.currentFilterGroup.labels, label.id);
+        });
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $stateParams.inventory_type)
+
+        console.log("+++")
+        console.log($scope.column_filters)       
+        console.log("+++")
+        console.log($scope.currentFilterGroup)
       };
 
       // restore_response is a state tracker for avoiding multiple reloads
