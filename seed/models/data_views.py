@@ -19,6 +19,8 @@ class DataView(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     filter_group = models.JSONField()
+    column1_aggregations = models.JSONField(default=None)
+    column2_aggregations = models.JSONField(default=None)
     cycles = models.ManyToManyField(Cycle)
     columns = models.ManyToManyField(Column)
     # aggregations : just return all options and let the user decide
