@@ -12,54 +12,106 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle
 from seed.models.columns import Column
 from seed.models.properties import PropertyState
+from django.db.models import Avg, Count, Max, Min, Sum
+
 
 
 class DataView(models.Model):
     name = models.CharField(max_length=255, unique=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-
-    filter_group = models.JSONField()
-    column1_aggregations = models.JSONField(default=None)
-    column2_aggregations = models.JSONField(default=None)
     cycles = models.ManyToManyField(Cycle)
-    columns = models.ManyToManyField(Column)
-    # aggregations : just return all options and let the user decide
-    # how to save selections?
-    # data_aggregations = models.ManyToManyField(DataAggregation)
+    filter_group = models.JSONField()
 
-    # def evaluate(self):
-    #     columns = self.columns.all()
-    #     cycles = self.cycles.all()
-    #     # data_aggregations = self.data_aggregations.all()
-    #     filter_group = self.filter_group 
-    #     # filter group is not built out yet, for now, use all propertyview.states on the cycle
 
-    #     response = {
-    #         'meta': {
-    #             'organization': self.organization.id,
-    #             'data_view': self.id,
-    #         },
-    #         'data': {}
-    #         }
+    def evaluate(self):
+        columns = self.columns.all()
+        cycles = self.cycles.all()
+        # data_aggregations = self.data_aggregations.all()
+        filter_group = self.filter_group 
+        # filter group is not built out yet, for now, use all propertyview.states on the cycle
 
-    #     data = response['data']
-    #     for cycle in cycles:
-    #         end_date = cycle.end.strftime("%Y-%m-%d")
-    #         data[end_date] = {}
-    #         views = cycle.propertyview_set.all()
-    #         states = PropertyState.objects.filter(propertyview__in=views)
+        response = {
+            'meta': {
+                'organization': self.organization.id,
+                'data_view': self.id,
+            },
+            'data': {}
+            }
+
+        data = response['data']
+        for cycle in cycles:
+            end_date = cycle.end.strftime("%Y-%m-%d")
+            data[end_date] = {}
+            views = cycle.propertyview_set.all()
+            states = PropertyState.objects.filter(propertyview__in=views)
             
-    #         for column in columns:
-    #             data[end_date][column.column_name] = {'views_by_id': {}}
-    #             for view in views: 
-    #                 if not data[end_date][column.column_name].get('units'):
-    #                     data[end_date][column.column_name]['units'] = "{:P~}".format(getattr(view.state, column.column_name).u)
-    #                 data[end_date][column.column_name]['views_by_id'][view.id] = getattr(view.state, column.column_name).m
+            for column in columns:
+                data[end_date][column.column_name] = {'views_by_id': {}}
+                for view in views: 
+                    if not data[end_date][column.column_name].get('units'):
+                        data[end_date][column.column_name]['units'] = "{:P~}".format(getattr(view.state, column.column_name).u)
+                    data[end_date][column.column_name]['views_by_id'][view.id] = getattr(view.state, column.column_name).m
 
-    #             # for data_agg in [data_agg for data_agg in data_aggregations if data_agg.column == column]:
-    #             #     data[end_date][column.column_name][data_agg.name] = data_agg.evaluate(states)
+                # if self.column1_aggregations:
+                #     data[end_date][column.column_name]
 
-    #     return response
+                # for data_agg in [data_agg for data_agg in data_aggregations if data_agg.column == column]:
+                #     data[end_date][column.column_name][data_agg.name] = data_agg.evaluate(states)
+
+        return response
+
+    def evaluate_column(self, states):
+        column = self.column
+
+        if column.is_extra_data:
+            return self.evaluate_extra_data(states)
+        elif column.derived_column:
+            return self.evaluate_derived_column(states)
+        else:
+            type_lookup = {0: Avg, 1: Count, 2: Max, 3: Min, 4: Sum}
+            # PropertyState must be associated with the current org and a valid PropertyView
+            aggregation = states.aggregate(value=type_lookup[self.type](column.column_name))
+            # aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
+
+            if aggregation.get('value') or aggregation.get('value') == 0:
+                value = aggregation['value']
+                if type(value) is int or type(value) is float:
+                    return {"value": round(value, 2), "units": None}
+
+                return {"value": round(value.m, 2)}
+                # return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
+
+    def evaluate_extra_data(self, states):
+        extra_data_col = 'extra_data__' + self.column.column_name
+        q_set = states.values(extra_data_col)
+        # q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
+        values = []
+        for val in list(q_set):
+            try:
+                values.append(float(val[extra_data_col]))
+            except (ValueError, TypeError):
+                pass
+
+        if values:
+            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
+            return {"value": round(type_to_aggregate[self.type], 2)}
+            # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
+
+    def evaluate_derived_column(self, states):
+        # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
+        property_states = states
+        # property_states = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False)
+        values = []
+
+        for state in property_states:
+            val = self.column.derived_column.evaluate(state)
+            if val is not None:
+                values.append(val)
+
+        if values:
+            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
+            return {"value": round(type_to_aggregate[self.type], 2)}
+            # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
 
         # expected output 
         # output = {
@@ -76,3 +128,11 @@ class DataView(models.Model):
         #     cylce2 : {...},
         #     cylce3 : {...},
         # }
+
+class DataViewParameter(models.Model):
+    data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name='parameters')
+    column = models.ForeignKey(Column, on_delete=models.CASCADE)
+    location = models.CharField(max_length=255)
+    aggregations = models.JSONField()
+    # target field is undetermined, this is a stand in
+    target = models.CharField(max_length=255, blank=True)
