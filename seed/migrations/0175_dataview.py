@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, unique=True)),
                 ('filter_group', models.JSONField()),
+                ('column1_aggregations', models.JSONField(default=None)),
+                ('column2_aggregations', models.JSONField(default=None)),
                 ('columns', models.ManyToManyField(to='seed.Column')),
                 ('cycles', models.ManyToManyField(to='seed.Cycle')),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
