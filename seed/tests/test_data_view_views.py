@@ -123,6 +123,7 @@ class DataViewViewTests(TestCase):
 
     def test_data_view_create_endpoint(self):
         self.assertEqual(2, len(DataView.objects.all()))
+        self.assertEqual(3, len(DataViewParameter.objects.all()))
 
         response = self.client.get(
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
@@ -167,6 +168,9 @@ class DataViewViewTests(TestCase):
         self.assertEqual('axis 2', data['data_view']['parameters'][1]['location'])
         self.assertEqual('abc', data['data_view']['parameters'][1]['target'])
 
+        self.assertEqual(3, len(DataView.objects.all()))
+        self.assertEqual(5, len(DataViewParameter.objects.all()))
+
         response = self.client.get(
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
@@ -186,6 +190,9 @@ class DataViewViewTests(TestCase):
         )
 
         self.assertEqual(2, len(json.loads(response.content)['message']))
+        self.assertEqual(2, len(DataView.objects.all()))
+        self.assertEqual(3, len(DataViewParameter.objects.all()))
+
 
     def test_data_view_create_bad_data(self):
         response = self.client.post(
@@ -222,6 +229,7 @@ class DataViewViewTests(TestCase):
     def test_data_view_update_endpoint(self):
         self.assertEqual('data view 1', self.data_view1.name)
         self.assertEqual(2, len(self.data_view1.parameters.all()))
+        self.assertEqual(3, len(DataViewParameter.objects.all()))
         self.assertEqual('axis1', self.data_view1.parameters.first().location)
 
         response = self.client.put(
@@ -249,6 +257,8 @@ class DataViewViewTests(TestCase):
         self.assertEqual('updated name', data_view1.name)
         self.assertEqual(1, len(data_view1.parameters.all()))
         self.assertEqual('new location', data_view1.parameters.first().location)
+
+        self.assertEqual(2, len(DataViewParameter.objects.all()))
 
         response = self.client.put(
             reverse('api:v3:data_views-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
