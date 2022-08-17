@@ -218,16 +218,23 @@ class DataViewViewTests(TestCase):
         self.assertEqual('error', data['status'])
         self.assertEqual('DataView with id 99999999 does not exist', data['message'])
 
-    @unittest.skip
+
     def test_data_view_update_endpoint(self):
         self.assertEqual('data view 1', self.data_view1.name)
-        self.assertEqual(2, len(self.data_view1.columns.all()))
+        self.assertEqual(2, len(self.data_view1.parameters.all()))
+        self.assertEqual('axis1', self.data_view1.parameters.first().location)
 
         response = self.client.put(
             reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 "name": "updated name",
-                "column1_aggregations": ["Max", "Min", "Sum"]
+                "parameters": [
+                    {
+                        "column": self.column3.id,
+                        "location": 'new location',
+                        "aggregations": ['Sum'],
+                    }
+                ]
             }),
             content_type='application/json'
         )
@@ -235,22 +242,13 @@ class DataViewViewTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
         self.assertEqual('updated name', data['data_view']['name'])
+        self.assertEqual(1, len(data['data_view']['parameters']))
+        self.assertEqual('new location', data['data_view']['parameters'][0]['location'])
 
         data_view1 = DataView.objects.get(id=self.data_view1.id)
         self.assertEqual('updated name', data_view1.name)
-        self.assertEqual(["Max", "Min", "Sum"], data_view1.column1_aggregations)
-
-        response = self.client.put(
-            reverse('api:v3:data_views-detail', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps({
-                "columns": [self.column1.id, self.column2.id, self.column3.id],
-            }),
-            content_type='application/json'
-        )
-        data = json.loads(response.content)
-        data_view1 = DataView.objects.get(id=self.data_view1.id)
-        self.assertEqual('updated name', data_view1.name)
-        self.assertEqual(3, len(data_view1.columns.all()))
+        self.assertEqual(1, len(data_view1.parameters.all()))
+        self.assertEqual('new location', data_view1.parameters.first().location)
 
         response = self.client.put(
             reverse('api:v3:data_views-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
