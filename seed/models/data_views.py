@@ -116,14 +116,6 @@ class DataView(models.Model):
                             value_dict = {'cycle': cycle.name, 'value': value}
                             data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
 
-
-
-
-
-                        
-                        
-        breakpoint()
-
         return response
         # views = {}
         # for cycle in self.cycles.all():
