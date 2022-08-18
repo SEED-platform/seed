@@ -1465,8 +1465,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
             return null;
           }],
-          filter_groups: ['filter_groups_service', function (filter_groups_service) {
-            return filter_groups_service.get_filter_groups();
+          filter_groups: ['$stateParams', 'filter_groups_service', function ($stateParams, filter_groups_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
           }],
           current_filter_group: ['$stateParams', 'filter_groups_service', 'filter_groups', function ($stateParams, filter_groups_service, filter_groups) {
             var validFilterGroupIds = _.map(filter_groups, 'id');
@@ -1474,16 +1475,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
               return filter_groups_service.get_filter_group(lastFilterGroupId);
             }
-            var currentFilterGroupId = _.first(filter_groups)?.id;
-            if (currentFilterGroupId) {
-              filter_groups_service.save_last_filter_group(currentFilterGroupId, $stateParams.inventory_type)
-              return filter_groups_service.get_filter_group(currentFilterGroupId);
-            }
-            return null;
-            var currentFilterGroup = _.first(filter_groups)?.id;
-            if (currentFilterGroupId) {
-              filter_groups_service.save_last_filter_group(currentFilterGroupId, $stateParams.inventory_type)
-              return filter_groups_service.get_filter_group(currentFilterGroupId);
+            var currentFilterGroup = _.first(filter_groups);
+            if (currentFilterGroup) {
+              filter_groups_service.save_last_filter_group(currentFilterGroup.id, $stateParams.inventory_type)
+              return currentFilterGroup;
             }
             return null;
           }],

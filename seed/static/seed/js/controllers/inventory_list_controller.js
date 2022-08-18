@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'geocode_service',
     'user_service',
     'derived_columns_service',
+    'modified_service',
     'Notification',
     'cycles',
     'profiles',
@@ -51,6 +52,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       geocode_service,
       user_service,
       derived_columns_service,
+      modified_service,
       Notification,
       cycles,
       profiles,
@@ -121,29 +123,42 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
       $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = $scope.filterGroups[0] || {};
+      
+      $scope.Modified = false;
 
+      $scope.new_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+            label_ids.push($scope.selected_labels[label].id);
+        };
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+  
+        var filterGroupData = {
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
 
-      // $scope.new_filter_group = function () {
-      //   var filterGroupData = JSON.parse(JSON.stringify($scope.currentFilterGroup));
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant(filterGroupData),
+          }
+        });
 
-      //   var modalInstance = $uibModal.open({
-      //     templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
-      //     controller: 'filter_group_modal_controller',
-      //     resolve: {
-      //       action: _.constant('new'),
-      //       data: _.constant(filterGroupData),
-      //       org_id: _.constant($scope.organization.id)
-      //     }
-      //   });
+        modalInstance.result.then(function (new_filter_group) {
+          $scope.filterGroups.push(new_filter_group);
+          $scope.Modified=false;
+          $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
 
-      //   modalInstance.result.then(function (new_filter_group) {
-      //     $scope.filterGroups.push(new_filter_group);
-      //     $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
-
-      //     $scope.changes_possible = false;
-      //     Notification.primary('Saved ' + $scope.currentFilterGroup.name);
-      //   });
-      // };
+          // $scope.changes_possible = false;
+          Notification.primary('Created ' + $scope.currentFilterGroup.name);
+        });
+      };
 
       $scope.remove_filter_group = function () {
         var oldFilterGroup = angular.copy($scope.currentFilterGroup);
@@ -159,7 +174,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         modalInstance.result.then(function () {
           _.remove($scope.filterGroups, oldFilterGroup);
-          modified_service.resetModified();
+          $scope.Modified=false;
           $scope.currentFilterGroup = _.first($scope.filterGroups);
           Notification.primary('Removed ' + oldFilterGroup.name);
         });
@@ -184,34 +199,69 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      // $scope.save_filter_group = function () {
+      $scope.save_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+            label_ids.push($scope.selected_labels[label].id);
+        };
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+        var filterGroupData = {
+          "name": $scope.currentFilterGroup.name,
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
+        filter_groups_service.update_filter_group($scope.currentFilterGroup.id, filterGroupData).then(function (result) {
+          $scope.currentFilterGroup = result;
+          // $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
 
-      //   filter_groups_service.update_filter_group($scope.organization.id, $scope.currentFilterGroup.id, updated_data).then(function (result) {
-
-      //     $scope.currentFilterGroup.updated = result.data.updated;
-
-      //     var filter_group_id = $scope.currentFilterGroup.id;
-      //     _.find($scope.filterGroups, ['id', filter_group_id]).mappings = $scope.currentFilterGroup.mappings;
-
-      //     $scope.changes_possible = false;
-      //     Notification.primary('Saved ' + $scope.currentFilterGroup.name);
-      //   });
-      // };
-
-      $scope.check_for_changes = function () {
-        if ($scope.changes_possible) {
-          $uibModal.open({
-            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
-          }).result.then(function () {
-            $scope.changes_possible = false;
-          }).catch(function () {
-            $scope.dropdown_selected_filter_group = $scope.currentFilterGroup;
-            return;
-          });
-        }
-
-        $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
+          // $scope.changes_possible = false;
+          $scope.Modified=false;
+          Notification.primary('Saved ' + $scope.currentFilterGroup.name);
+        });
       };
+
+
+      // compare filters if different then true, then compare labels, and finally label_logic. All must be the same to return false
+      $scope.isModified = function () {
+        current_filters = {};
+        current_filters = inventory_service.get_format_column_filters($scope.column_filters);
+        saved_filters = $scope.currentFilterGroup.query_dict;
+        current_labels = [];
+        for (label in $scope.selected_labels) {
+          current_labels.push($scope.selected_labels[label].id);
+        };
+        saved_labels = $scope.currentFilterGroup.labels;
+        current_label_logic = $scope.labelLogic;
+        saved_label_logic = $scope.currentFilterGroup.label_logic;
+        if (!_.isEqual(current_filters, saved_filters)) {
+          $scope.Modified = true
+        } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
+          $scope.Modified = true
+        } else if (current_label_logic !== saved_label_logic) {
+          $scope.Modified = true
+        } else {
+          $scope.Modified = false
+        }
+        return $scope.Modified;
+      };
+
+      // $scope.check_for_changes = function () {
+      //   if ($scope.changes_possible) {
+      //     $uibModal.open({
+      //       template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
+      //     }).result.then(function () {
+      //       $scope.changes_possible = false;
+      //     }).catch(function () {
+      //       $scope.dropdown_selected_filter_group = $scope.currentFilterGroup;
+      //       return;
+      //     });
+      //   }
+
+      //   $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
+      // };
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
@@ -455,6 +505,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.load_inventory(1);
         });
       };
+
 
       /**
        Opens the postoffice modal for sending emails.

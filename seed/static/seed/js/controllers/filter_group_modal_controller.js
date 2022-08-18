@@ -17,7 +17,6 @@
     ) {
      $scope.action = action;
      $scope.data = data;
-    //  $scope.organization = organization_payload.organization;
 
 
      $scope.rename_filter_group = function () {
@@ -41,21 +40,19 @@
        });
      };
 
-    //  $scope.new_filter_group = function () {
-    //    if (!$scope.disabled()) {
-    //      filter_groups_service.new_column_list_filter_group({
-    //        name: $scope.newName,
-    //        profile_location: $scope.profile_location,
-    //        inventory_type: $scope.inventory_type,
-    //        columns: $scope.data.columns,
-    //        derived_columns: $scope.data.derived_columns
-    //      }).then(function (result) {
-    //        result.columns = _.sortBy(result.columns, ['order', 'column_name']);
-    //        result.derived_columns = _.sortBy(result.derived_columns, ['column_name']);
-    //        $uibModalInstance.close(result);
-    //      });
-    //    }
-    //  };
+     $scope.new_filter_group = function () {
+       if (!$scope.disabled()) {
+         filter_groups_service.new_filter_group({
+           name: $scope.newName,
+           query_dict: $scope.data.query_dict,
+           inventory_type: $scope.data.inventory_type,
+           labels: $scope.data.labels,
+           label_logic: $scope.data.label_logic
+         }).then(function (result) {
+           $uibModalInstance.close(result);
+         });
+       }
+     };
 
      $scope.disabled = function () {
        if ($scope.action === 'rename') {

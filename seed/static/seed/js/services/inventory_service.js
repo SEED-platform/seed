@@ -34,6 +34,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return filters;
     };
 
+    inventory_service.get_format_column_filters = format_column_filters;
+    
     const format_column_sorts = function (column_sorts) {
       // turn column sort objects into usable query parameter
       if (!column_sorts) {
@@ -1166,38 +1168,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         params: {
           organization_id: user_service.get_organization().id
         }
-      });
-    };
-
-    inventory_service.get_filter_group = function (id) {
-      return $http.get('/api/v3/filter_groups/' + id, {
-        params: {
-          organization_id: user_service.get_organization().id,
-        }
-      }).then(function (response) {
-        return response.data.data;
-      });
-    };
-
-    inventory_service.get_filter_groups = function (inventory_type) {
-      return $http.get('/api/v3/filter_groups/', {
-        params: {
-          organization_id: user_service.get_organization().id,
-          inventory_type: inventory_type,
-        }
-      }).then(function (response) {
-        var filter_groups = response.data.data.sort(function (a, b) {
-          return naturalSort(a.name, b.name);
-        });
-
-        _.forEach(filter_groups, function (filter_group) {
-          // Remove exact duplicates - this shouldn't be necessary, but it has occurred and will avoid errors and cleanup the database at the same time
-          filter_group.columns = _.uniqWith(filter_group.columns, _.isEqual);
-
-          filter_group.columns = _.sortBy(filter_group.columns, ['order', 'column_name']);
-        });
-
-        return filter_groups;
       });
     };
 

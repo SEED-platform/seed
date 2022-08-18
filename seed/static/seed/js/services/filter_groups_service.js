@@ -11,10 +11,11 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
 
     var filter_groups_factory = {};
 
-    filter_groups_factory.get_filter_groups = function () {
+    filter_groups_factory.get_filter_groups = function (inventory_type) {
       return $http.get('/api/v3/filter_groups/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: 1,
         }
       }).then(function (response) {
         var filter_groups = response.data.data.sort(function (a, b) {
@@ -25,16 +26,16 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
       });
     };
 
-    filter_groups_factory.get_last_filter_group = function (key) {
+    filter_groups_factory.get_last_filter_group = function (inventory_type) {
       var organization_id = user_service.get_organization().id;
-      return (JSON.parse(localStorage.getItem('filter_groups.' + key)) || {})[organization_id];
+      return (JSON.parse(localStorage.getItem('filter_groups.' + inventory_type)) || {})[organization_id];
     };
 
-    filter_groups_factory.save_last_filter_group = function (pk, key) {
+    filter_groups_factory.save_last_filter_group = function (id, inventory_type) {
       var organization_id = user_service.get_organization().id,
-        filter_groups = JSON.parse(localStorage.getItem('filter_groups.' + key)) || {};
-        filter_groups[organization_id] = _.toInteger(pk);
-      localStorage.setItem('filter_groups.' + key, JSON.stringify(filter_groups));
+        filter_groups = JSON.parse(localStorage.getItem('filter_groups.' + inventory_type)) || {};
+        filter_groups[organization_id] = _.toInteger(id);
+      localStorage.setItem('filter_groups.' + inventory_type, JSON.stringify(filter_groups));
     };
 
     filter_groups_factory.get_filter_group = function (id) {
@@ -47,31 +48,15 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
       });
     };
 
-    // filter_groups_factory.new_filter_group_for_org = function (org_id, data) {
-    //   return $http.post('/api/v3/filter_groups/', data, {
-    //     params: {
-    //       organization_id: org_id
-    //     }
-    //   }).then(function (response) {
-    //     return response.data;
-    //   });
-    // };
-
-    // filter_groups_factory.get_header_suggestions = function (headers) {
-    //   return filter_groups_factory.get_header_suggestions_for_org(user_service.get_organization().id, headers);
-    // };
-
-    // filter_groups_factory.get_header_suggestions_for_org = function (org_id, headers) {
-    //   return $http.post('/api/v3/filter_groups/suggestions/', {
-    //     headers: headers
-    //   }, {
-    //     params: {
-    //       organization_id: org_id
-    //     }
-    //   }).then(function (response) {
-    //     return response.data;
-    //   });
-    // };
+    filter_groups_factory.new_filter_group = function (data) {
+      return $http.post('/api/v3/filter_groups/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
 
     filter_groups_factory.update_filter_group = function (id, data) {
       if (id === null) {
@@ -88,6 +73,10 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     };
 
     filter_groups_factory.remove_filter_group = function (id) {
+      if (id === null) {
+        Notification.error('This filter group is protected from modifications');
+        return $q.reject();
+      }
       return $http.delete('/api/v3/filter_groups/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id
