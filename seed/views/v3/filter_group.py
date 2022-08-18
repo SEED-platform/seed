@@ -3,6 +3,7 @@
 :author
 """
 
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -25,9 +26,6 @@ def _get_label_logic_int(label_logic: str) -> int:
     return next(k for k, v in LABEL_LOGIC_TYPE if v == label_logic)
 
 
-@method_decorator(
-    name='list',
-    decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema_org_query_param)
@@ -150,6 +148,55 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         }
 
         return JsonResponse(result, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema_org_query_param
+    def list(self, request):
+        page = request.query_params.get('page', 1)
+        per_page = request.query_params.get('per_page', 1000)
+        org_id = self.get_organization(request)
+
+        filter_groups = FilterGroup.objects.filter(organization_id=org_id)
+
+        if "inventory_type" in request.query_params:
+            inventory_type = request.query_params.get("inventory_type")
+
+            try:
+                inventory_type_int = _get_inventory_type_int(inventory_type)
+            except StopIteration:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'invalid "inventory_type" must be "Property" or "Tax Lot"'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                filter_groups = filter_groups.filter(inventory_type=inventory_type_int)
+
+        paginator = Paginator(filter_groups, per_page)
+        try:
+            filter_groups = paginator.page(page).object_list
+            page = int(page)
+        except PageNotAnInteger:
+            filter_groups = paginator.page(1).object_list
+            page = 1
+        except EmptyPage:
+            filter_groups = paginator.page(paginator.num_pages).object_list
+            page = paginator.num_pages
+
+        return JsonResponse(
+            {
+                "status": 'success',
+                'pagination': {
+                    'page': page,
+                    'start': paginator.page(page).start_index(),
+                    'end': paginator.page(page).end_index(),
+                    'num_pages': paginator.num_pages,
+                    'has_next': paginator.page(page).has_next(),
+                    'has_previous': paginator.page(page).has_previous(),
+                    'total': paginator.count
+                },
+                "data": FilterGroupSerializer(filter_groups, many=True).data
+            },
+            status=status.HTTP_200_OK
+        )
 
     def _get_labels(self, label_ids):
         good_label_ids = []

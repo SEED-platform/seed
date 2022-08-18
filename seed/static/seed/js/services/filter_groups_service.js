@@ -15,7 +15,7 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
       return $http.get('/api/v3/filter_groups/', {
         params: {
           organization_id: user_service.get_organization().id,
-          inventory_type: 1,
+          inventory_type: inventory_type,
         }
       }).then(function (response) {
         var filter_groups = response.data.data.sort(function (a, b) {

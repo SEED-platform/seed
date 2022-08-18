@@ -29,6 +29,7 @@ class FilterGroupsTests(TransactionTestCase):
         self.user = User.objects.create_user(**user_details)
         self.user.generate_key()
         self.org, _, _ = create_organization(self.user)
+        self.other_org, _, _ = create_organization(self.user)
 
         auth_string = base64.urlsafe_b64encode(bytes(
             '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
@@ -208,13 +209,30 @@ class FilterGroupsTests(TransactionTestCase):
         second_filter_group = FilterGroup.objects.create(
             name="second_test_filter_group",
             organization_id=self.org.id,
+            inventory_type=1,  # Taxlot
+            query_dict={'year_built__lt': ['1950']},
+        )
+
+        # wrong org, shouldn't show up
+        FilterGroup.objects.create(
+            name="wrong org",
+            organization_id=self.other_org.id,
+            inventory_type=1,  # Taxlot
+            query_dict={'year_built__lt': ['1950']},
+        )
+
+        # wrong inventory type, shouldn't show up
+        FilterGroup.objects.create(
+            name="wrong inventory type",
+            organization_id=self.org.id,
             inventory_type=0,  # Property
             query_dict={'year_built__lt': ['1950']},
         )
 
         # Action
         response = self.client.get(
-            reverse('api:v3:filter_groups-list'),
+            reverse('api:v3:filter_groups-list') +
+            "?inventory_type=Tax Lot",
             **self.headers
         )
 
@@ -234,7 +252,7 @@ class FilterGroupsTests(TransactionTestCase):
                     },
                     {
                         'id': second_filter_group.id,
-                        'inventory_type': 'Property',
+                        'inventory_type': 'Tax Lot',
                         'name': 'second_test_filter_group',
                         'organization_id': self.org.id,
                         'query_dict': {'year_built__lt': ['1950']},
