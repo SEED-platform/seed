@@ -100,7 +100,17 @@ class DataView(models.Model):
                         if aggregation == 'views_by_id':
 
                             for view in views:
-                                data[column_name]['filter_groups'][filter_name][aggregation][view.id] = []
+                                data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
+                                state_dict = state_dict = {'cycle': cycle.name}
+                                value = getattr(view.state, parameter.column.column_name)
+
+                                if type(value) == str or type(value) == int:
+                                   state_dict['value'] = value
+                                else:
+                                    state_dict['value'] = round(value.m, 2)
+                                    data[column_name]['unit'] = data[column_name].get('unit', value.u)
+                                # breakpoint()
+                                data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
                         else: 
                             value = self.evaluate_aggregation(states, aggregation, parameter.column)
                             value_dict = {'cycle': cycle.name, 'value': value}
