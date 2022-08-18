@@ -24,7 +24,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
-from seed.search import FilterException, build_view_filters_and_sorts
+from seed.utils.search import FilterException, build_view_filters_and_sorts
 from seed.serializers.pint import apply_display_unit_preferences
 
 
