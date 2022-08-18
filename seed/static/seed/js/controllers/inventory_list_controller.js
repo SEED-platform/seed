@@ -79,6 +79,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
       }
 
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
       var lastCycleId = inventory_service.get_last_cycle();
@@ -120,7 +121,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Filter Groups
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
-      $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = $scope.filterGroups[0] || {};
+      $scope.dropdown_selected_filter_group = $scope.currentFilterGroup;
 
 
       // $scope.new_filter_group = function () {
@@ -210,18 +211,58 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
         }
 
-        $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
+        updateCurrentFilterGroup($scope.dropdown_selected_filter_group)
+      };
+
+      updateCurrentFilterGroup = (filterGroup) => {
+        // Set current filter group
+        $scope.currentFilterGroup = filterGroup;
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $stateParams.inventory_type)
+
+        // Update labels
         $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
         $scope.selected_labels = _.filter($scope.labels, function (label) {
           return _.includes($scope.currentFilterGroup.labels, label.id);
         });
-        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $stateParams.inventory_type)
 
-        console.log("+++")
-        console.log($scope.column_filters)       
-        console.log("+++")
-        console.log($scope.currentFilterGroup)
-      };
+        // clear table filters
+        $scope.gridApi.grid.columns.forEach(column =>{
+          column.filters[0] = {
+            term: null
+          };
+        })
+
+        // write new filter in table
+        for (const key in $scope.currentFilterGroup["query_dict"]) {
+          const value = $scope.currentFilterGroup["query_dict"][key]
+          const [column_name, operator] = key.split('__');
+
+          const column = $scope.gridApi.grid.columns.find(column => column["colDef"]["column_name"] == column_name)
+
+          if (column.filters[0]["term"] == null) {
+            column.filters[0]["term"] = getTableFilter(value, operator);
+          } else{
+            column.filters[0]["term"] += ", " + getTableFilter(value, operator)
+          }
+        };
+
+        // update filtering
+        updateColumnFilterSort()
+      }
+
+      getTableFilter = (value, operator) => {
+        switch (operator) {
+          case 'exact': return `"${value}"`;
+          case 'icontains':return value;
+          case 'gt': return `>${value}`;
+          case 'gte': return `>=${value}`;
+          case 'lt': return `<${value}`;
+          case 'lte': return `<=${value}`;
+          case 'ne': return `!="${value}"`;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
+        }
+      }
+
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
