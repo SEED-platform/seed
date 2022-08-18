@@ -18,7 +18,6 @@ angular.module('BE.seed.controller.inventory_list', [])
     'geocode_service',
     'user_service',
     'derived_columns_service',
-    'modified_service',
     'Notification',
     'cycles',
     'profiles',
@@ -52,7 +51,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       geocode_service,
       user_service,
       derived_columns_service,
-      modified_service,
       Notification,
       cycles,
       profiles,
@@ -244,14 +242,27 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else {
           $scope.Modified = false
         }
+        return $scope.Modified;
+      };
 
-        updateCurrentFilterGroup($scope.dropdown_selected_filter_group)
+      $scope.check_for_changes = function () {
+        if ($scope.Modified) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
+          }).result.then(function () {
+            $scope.Modified = false;
+          }).catch(function () {
+            $scope.currentFilterGroup = $scope.currentFilterGroup;
+            return;
+          });
+        }
+
+        updateCurrentFilterGroup($scope.currentFilterGroup)
       };
 
       updateCurrentFilterGroup = (filterGroup) => {
         // Set current filter group
-        $scope.currentFilterGroup = filterGroup;
-        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $stateParams.inventory_type)
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type);
 
         // Update labels
         $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
