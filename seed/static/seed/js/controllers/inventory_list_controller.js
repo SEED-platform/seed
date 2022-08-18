@@ -262,7 +262,8 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       updateCurrentFilterGroup = (filterGroup) => {
         // Set current filter group
-        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type);
+        $scope.currentFilterGroup = filterGroup;
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
 
         // Update labels
         $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
