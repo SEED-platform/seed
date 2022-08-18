@@ -320,12 +320,12 @@ class DataViewEvaluationTests(TestCase):
         # generate property states that are either 'Office' or 'Retail' for filter groups
         # generate property views that are attatched to a property and a property-state
         self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=10*ureg.eui, total_ghg_emissions=100)
-        self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=11*ureg.eui, total_ghg_emissions=110)
+        self.st_office11 = self.property_state_factory.get_property_state(property_name='st_office11', property_type='office', site_eui=11*ureg.eui, total_ghg_emissions=110)
         self.st_retail12 = self.property_state_factory.get_property_state(property_name='st_retail12', property_type='retail', site_eui=12*ureg.eui, total_ghg_emissions=120)
         self.st_retail13 = self.property_state_factory.get_property_state(property_name='st_retail13', property_type='retail', site_eui=13*ureg.eui, total_ghg_emissions=130)
 
         self.vw_office10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.st_office10)
-        self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office10)
+        self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office11)
         self.vw_retail13 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
         self.vw_retail14 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
 
