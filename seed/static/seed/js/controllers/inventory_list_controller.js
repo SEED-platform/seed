@@ -122,7 +122,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Filter Groups
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
-      $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = $scope.filterGroups[0] || {};
+      $scope.currentFilterGroup = $scope.filterGroups[0] || {};
       
       $scope.Modified = false;
 
@@ -153,9 +153,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function (new_filter_group) {
           $scope.filterGroups.push(new_filter_group);
           $scope.Modified=false;
-          $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
 
-          // $scope.changes_possible = false;
           Notification.primary('Created ' + $scope.currentFilterGroup.name);
         });
       };
@@ -168,14 +167,16 @@ angular.module('BE.seed.controller.inventory_list', [])
           controller: 'filter_group_modal_controller',
           resolve: {
             action: _.constant('remove'),
-            data: _.constant($scope.currentFilterGroup)
+            data: _.constant(oldFilterGroup)
           }
         });
 
         modalInstance.result.then(function () {
           _.remove($scope.filterGroups, oldFilterGroup);
           $scope.Modified=false;
-          $scope.currentFilterGroup = _.first($scope.filterGroups);
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
+
+          // $scope.currentFilterGroup = _.first($scope.filterGroups);
           Notification.primary('Removed ' + oldFilterGroup.name);
         });
       };
@@ -215,9 +216,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         };
         filter_groups_service.update_filter_group($scope.currentFilterGroup.id, filterGroupData).then(function (result) {
           $scope.currentFilterGroup = result;
-          // $scope.dropdown_selected_filter_group = $scope.currentFilterGroup = _.last($scope.filterGroups);
-
-          // $scope.changes_possible = false;
           $scope.Modified=false;
           Notification.primary('Saved ' + $scope.currentFilterGroup.name);
         });
@@ -255,12 +253,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       //     }).result.then(function () {
       //       $scope.changes_possible = false;
       //     }).catch(function () {
-      //       $scope.dropdown_selected_filter_group = $scope.currentFilterGroup;
       //       return;
       //     });
       //   }
-
-      //   $scope.currentFilterGroup = $scope.dropdown_selected_filter_group;
       // };
 
       // restore_response is a state tracker for avoiding multiple reloads
