@@ -5,6 +5,7 @@
 :author
 """
 from copy import deepcopy
+import logging 
 
 import django.core.exceptions
 from django.http import JsonResponse
@@ -22,6 +23,9 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
+from seed.search import build_view_filters_and_sorts
+from seed.models import Column, PropertyView
+from django.http import QueryDict
 
 
 class DataViewViewSet(viewsets.ViewSet, OrgMixin):
@@ -201,8 +205,38 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'DataView with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
+        views = {}
+        for cycle in data_view.cycles.all():
+            views[cycle.name] = {}
+            for filter_group in data_view.filter_groups:
+                query_dict = QueryDict(mutable=True)
+                query_dict.update(filter_group['query_dict'])
+                views[cycle.name][filter_group['name']] = self.get_filter_group_views(organization, cycle, query_dict)
+        breakpoint()
         response = data_view.evaluate()
         return JsonResponse({
             'status': 'success',
-            'message': response
+            'data': response
         })
+
+
+    def get_filter_group_views(self, org_id, cycle, query_dict):
+        columns = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type='property',
+            only_used=False,
+            include_related=False
+        )
+        annotations=''
+        try:
+            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+        except:
+            logging.error('error with filter group')
+
+        views_list = (
+                PropertyView.objects.select_related('property', 'state', 'cycle')
+                .filter(property__organization_id=org_id, cycle=cycle)
+            )
+
+        views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+        return views_list
