@@ -1472,6 +1472,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           current_filter_group: ['$stateParams', 'filter_groups_service', 'filter_groups', function ($stateParams, filter_groups_service, filter_groups) {
             var validFilterGroupIds = _.map(filter_groups, 'id');
             var lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
+            console.log("+ lastFilterGroupId +")
+            console.log(lastFilterGroupId)
             if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
               return filter_groups_service.get_filter_group(lastFilterGroupId);
             }

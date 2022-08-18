@@ -81,6 +81,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
       }
 
+
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
       var lastCycleId = inventory_service.get_last_cycle();
@@ -243,20 +244,59 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else {
           $scope.Modified = false
         }
-        return $scope.Modified;
+
+        updateCurrentFilterGroup($scope.dropdown_selected_filter_group)
       };
 
-      // $scope.check_for_changes = function () {
-      //   if ($scope.changes_possible) {
-      //     $uibModal.open({
-      //       template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
-      //     }).result.then(function () {
-      //       $scope.changes_possible = false;
-      //     }).catch(function () {
-      //       return;
-      //     });
-      //   }
-      // };
+      updateCurrentFilterGroup = (filterGroup) => {
+        // Set current filter group
+        $scope.currentFilterGroup = filterGroup;
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $stateParams.inventory_type)
+
+        // Update labels
+        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+        $scope.selected_labels = _.filter($scope.labels, function (label) {
+          return _.includes($scope.currentFilterGroup.labels, label.id);
+        });
+
+        // clear table filters
+        $scope.gridApi.grid.columns.forEach(column =>{
+          column.filters[0] = {
+            term: null
+          };
+        })
+
+        // write new filter in table
+        for (const key in $scope.currentFilterGroup["query_dict"]) {
+          const value = $scope.currentFilterGroup["query_dict"][key]
+          const [column_name, operator] = key.split('__');
+
+          const column = $scope.gridApi.grid.columns.find(column => column["colDef"]["column_name"] == column_name)
+
+          if (column.filters[0]["term"] == null) {
+            column.filters[0]["term"] = getTableFilter(value, operator);
+          } else{
+            column.filters[0]["term"] += ", " + getTableFilter(value, operator)
+          }
+        };
+
+        // update filtering
+        updateColumnFilterSort()
+      }
+
+      getTableFilter = (value, operator) => {
+        switch (operator) {
+          case 'exact': return `"${value}"`;
+          case 'icontains':return value;
+          case 'gt': return `>${value}`;
+          case 'gte': return `>=${value}`;
+          case 'lt': return `<${value}`;
+          case 'lte': return `<=${value}`;
+          case 'ne': return `!="${value}"`;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
+        }
+      }
+
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
