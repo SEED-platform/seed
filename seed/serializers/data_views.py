@@ -21,7 +21,7 @@ class DataViewSerializer(serializers.ModelSerializer):
     parameters = DataViewParameterSerializer(many=True)
     class Meta:
         model = DataView
-        fields = ['id', 'cycles', 'filter_group', 'name', 'organization', 'parameters']
+        fields = ['id', 'cycles', 'filter_groups', 'name', 'organization', 'parameters']
         # fields = '__all__'
 
     def create(self, validated_data):
@@ -41,7 +41,7 @@ class DataViewSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             instance.organization = validated_data.get('organization', instance.organization)
             instance.name = validated_data.get('name', instance.name)
-            instance.filter_group = validated_data.get('filter_group', instance.filter_group)
+            instance.filter_groups = validated_data.get('filter_groups', instance.filter_groups)
             if validated_data.get('cycles'):
                 instance.cycles.set(validated_data['cycles'])
 
