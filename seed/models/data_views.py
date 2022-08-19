@@ -86,7 +86,6 @@ class DataView(models.Model):
             data = response['data']
             column_name = parameter.column.column_name
             data[column_name] = {
-                'unit': None,
                 'filter_groups': {}
             }
 
@@ -123,7 +122,7 @@ class DataView(models.Model):
                                    state_dict['value'] = value
                                 else:
                                     state_dict['value'] = round(value.m, 2)
-                                    data[column_name]['unit'] = data[column_name].get('unit', value.u)
+                                    data[column_name]['unit'] = data[column_name].get('unit', '{:P~}'.format(value.u))
 
                                 data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
                                 

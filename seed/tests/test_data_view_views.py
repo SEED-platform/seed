@@ -326,8 +326,8 @@ class DataViewEvaluationTests(TestCase):
 
         self.vw_office10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.st_office10)
         self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office11)
-        self.vw_retail13 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
-        self.vw_retail14 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
+        self.vw_retail12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
+        self.vw_retail13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
 
 
         self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20*ureg.eui, total_ghg_emissions=200, extra_data={'extra_col':200})
@@ -337,7 +337,7 @@ class DataViewEvaluationTests(TestCase):
 
         self.vw_office20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.st_office20)
         self.vw_office21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.st_office21)
-        self.vw_retial22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.st_retail22)
+        self.vw_retail22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.st_retail22)
         self.vw_retail23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.st_retail23)
 
         self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30*ureg.eui, total_ghg_emissions=300, extra_data={'extra_col':300})
@@ -411,24 +411,89 @@ class DataViewEvaluationTests(TestCase):
 
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
-        breakpoint()
 
         data = data['data']
-        self.assertEqual(['meta', 'data'], list(data.keys()))
-        self.assertEqual(1, data['meta']['data_view'])
-        self.assertEqual(1, data['meta']['organization'])
+        self.assertEqual(['meta', 'filter_group_view_ids', 'data'], list(data.keys()))
+
+        self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
+
+        self.assertEqual(['office', 'retail'], list(data['filter_group_view_ids']))
+        self.assertEqual(['Cycle D', 'Cycle C', 'Cycle A'], list(data['filter_group_view_ids']['office'].keys()))
+        self.assertEqual(['Cycle D', 'Cycle C', 'Cycle A'], list(data['filter_group_view_ids']['retail'].keys()))
+        office = data['filter_group_view_ids']['office']
+        retail = data['filter_group_view_ids']['retail']
+
+        self.assertEqual([self.vw_office10.id, self.vw_office11.id], office['Cycle A'])
+        self.assertEqual([self.vw_office30.id, self.vw_office31.id], office['Cycle C'])
+        self.assertEqual([self.vw_office40.id, self.vw_office41.id], office['Cycle D'])
+        self.assertEqual([self.vw_retail12.id, self.vw_retail13.id], retail['Cycle A'])
+        self.assertEqual([self.vw_retail32.id, self.vw_retail33.id], retail['Cycle C'])
+        self.assertEqual([self.vw_retail42.id, self.vw_retail43.id], retail['Cycle D'])
 
         data = data['data']
-        self.assertEqual(['2019-01-01', '2020-01-01', '2022-01-01'], list(data.keys()))
-
-        data = data['2019-01-01']
         self.assertEqual(['site_eui', 'total_ghg_emissions'], list(data.keys()))
+        self.assertEqual(['filter_groups', 'unit'], list(data['site_eui'].keys()))
+        self.assertEqual('kBtu/ft²/year', data['site_eui']['unit'])
+        self.assertEqual('t/year', data['total_ghg_emissions']['unit'])
 
-        data = data['site_eui']
-        self.assertEqual(['views_by_id', 'units', 'eui avg', 'eui sum'], list(data.keys()))
+        office = data['site_eui']['filter_groups']['office']
+        retail = data['site_eui']['filter_groups']['retail']
+        self.assertEqual(['Avg', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(office.keys()))
+        self.assertEqual(['Avg', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(retail.keys()))
 
-        expected = {'13': 40.0, '14': 41.0, '15': 42.0, '16': 43.0}
-        self.assertEqual(expected, data['views_by_id'])
+        for cycle in office['Avg']:
+            self.assertTrue(isinstance(cycle['cycle'], str))
+            self.assertTrue(isinstance(cycle['value'], (int, float)))
+
+        self.assertEqual(10.5, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(30.5, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(40.5, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(11, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(31, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(41, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(10, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(30, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(40, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(21, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(61, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(81, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        exp_ids = [self.vw_office40.id, self.vw_office41.id, self.vw_office30.id, self.vw_office31.id, self.vw_office10.id, self.vw_office11.id]
+        exp_ids = [str(id) for id in exp_ids]
+        self.assertEqual(exp_ids, list(office['views_by_id'].keys()))
+
+        self.assertEqual(10, office['views_by_id'][str(self.vw_office10.id)][0]['value'])
+        self.assertEqual(41, office['views_by_id'][str(self.vw_office41.id)][0]['value'])
+        self.assertEqual(12, retail['views_by_id'][str(self.vw_retail12.id)][0]['value'])
+        self.assertEqual(42, retail['views_by_id'][str(self.vw_retail42.id)][0]['value'])
+
+        office = data['total_ghg_emissions']['filter_groups']['office']
+        self.assertEqual(105, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(305, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(405, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(110, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(310, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(410, [cycle for cycle in office['Max'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(100, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(300, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(400, [cycle for cycle in office['Min'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(210, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(610, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(810, [cycle for cycle in office['Sum'] if cycle['cycle'] == 'Cycle D'][0]['value'])
+
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(2, [cycle for cycle in office['Count'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
     @unittest.skip
     def test_evaluation_endpoint_extra_col(self):
