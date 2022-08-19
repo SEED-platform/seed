@@ -82,7 +82,7 @@
             <label>{$:: 'Filter Group' | translate $}:</label>
             <select class="form-control input-sm grow" ng-model="currentFilterGroup" ng-change="check_for_changes()" ng-options="option.name for option in filterGroups track by option.id"></select>
             <div class="btn-group">
-                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !isModified() || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
                 <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Rename">

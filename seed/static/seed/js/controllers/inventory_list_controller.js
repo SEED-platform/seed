@@ -235,12 +235,16 @@ angular.module('BE.seed.controller.inventory_list', [])
         saved_label_logic = $scope.currentFilterGroup.label_logic;
         if (!_.isEqual(current_filters, saved_filters)) {
           $scope.Modified = true
+          console.log("filters are different");
         } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
           $scope.Modified = true
+          console.log("labels are different");
         } else if (current_label_logic !== saved_label_logic) {
           $scope.Modified = true
+          console.log("label_logic is different");
         } else {
           $scope.Modified = false
+          console.log("no changes");
         }
         return $scope.Modified;
       };
@@ -252,7 +256,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           }).result.then(function () {
             $scope.Modified = false;
           }).catch(function () {
-            $scope.currentFilterGroup = $scope.currentFilterGroup;
             return;
           });
         }
@@ -517,6 +520,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
         $scope.load_inventory(1);
+        $scope.isModified();
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
@@ -525,6 +529,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
+        $scope.isModified();
       };
 
       /**
@@ -1662,6 +1667,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.column_sorts.sort((a, b) => (a.priority > b.priority));
           }
         }
+        $scope.isModified();
       };
 
       const restoreGridSettings = function () {
