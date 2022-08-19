@@ -20,13 +20,15 @@ from seed.models import (
     User,
     Property,
     PropertyState,
-    PropertyView
+    PropertyView,
+    DerivedColumn,
     )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
+    FakeDerivedColumnFactory,
 )
 from seed.utils.organizations import create_organization
 from django.http import QueryDict
@@ -397,7 +399,40 @@ class DataViewEvaluationTests(TestCase):
             location='axis1', 
         )
 
-    # @unittest.skip
+
+        # Generate derived column for testing
+        self.derived_column = DerivedColumn.objects.create(
+            name='dc',
+            expression='$a + 10',
+            organization=self.org,
+            inventory_type=0,
+        )
+        self.derived_column.source_columns.add(self.site_eui.id)
+        self.dcp = self.derived_column.derivedcolumnparameter_set.first()
+        self.dcp.parameter_name = 'a'
+        self.dcp.save()
+
+        self.derived_col_factory = FakeDerivedColumnFactory(
+            organization=self.org,
+            inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        self.dc_column = Column.objects.get(column_name='dc')
+
+        self.data_view3 = DataView.objects.create(
+            name='data view 3', 
+            filter_groups=[
+                {'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
+                ], 
+            organization=self.org)
+        self.data_view3.cycles.set([self.cycle1, self.cycle2])
+        self.data_view3_parameter1 = DataViewParameter.objects.create(
+            data_view = self.data_view3,
+            column = self.dc_column,
+            aggregations = ['Avg'],
+            location='axis1', 
+        )
+
+
     def test_evaluation_endpoint_canonical_col(self):
 
         self.assertEqual(4, len(self.cycle1.propertyview_set.all()))
@@ -554,3 +589,41 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle B'][0]['value'])
         self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle C'][0]['value'])
         self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle D'][0]['value'])
+
+
+    def test_evaluation_endpoint_derived_col(self):
+        response = self.client.get(
+            reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
+        )
+        data = json.loads(response.content)
+        data = data['data']['data'][self.dc_column.column_name]['filter_groups'][self.data_view3.filter_groups[0]['name']]
+
+        # ex: 
+        # Cycle A
+        # site_eui = 10, 11, 12, 13
+        # dc       = 20, 21, 22, 23
+        # Cycle B
+        # site_eui = 20, 21, 22, 23
+        # dc       = 30, 31, 32, 33
+        self.assertEqual(21.5, [cycle for cycle in data['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(31.5, [cycle for cycle in data['Avg'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+
+        self.assertEqual(23, [cycle for cycle in data['Max'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(33, [cycle for cycle in data['Max'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+
+        self.assertEqual(20, [cycle for cycle in data['Min'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(30, [cycle for cycle in data['Min'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+
+        self.assertEqual(86, [cycle for cycle in data['Sum'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(126, [cycle for cycle in data['Sum'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+
+        self.assertEqual(4, [cycle for cycle in data['Count'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(4, [cycle for cycle in data['Count'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+
+        self.assertEqual(20, data['views_by_id'][str(self.vw_office10.id)][0]['value'])
+        self.assertEqual(31, data['views_by_id'][str(self.vw_office21.id)][0]['value'])
+        self.assertEqual(22, data['views_by_id'][str(self.vw_retail12.id)][0]['value'])
+        self.assertEqual(32, data['views_by_id'][str(self.vw_retail22.id)][0]['value'])
+
+        
+

@@ -54,7 +54,7 @@ class DataView(models.Model):
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
 
-    def views_by_filter(self, response):
+    def _views_by_filter(self, response):
         views_by_filter = {}
         for filter_group in self.filter_groups:
             response['filter_group_view_ids'][filter_group['name']] = {}
@@ -78,7 +78,7 @@ class DataView(models.Model):
             'filter_group_view_ids':{},
             'data': {}
         }
-        response, views_by_filter = self.views_by_filter(response)
+        response, views_by_filter = self._views_by_filter(response)
 
 
         # assign data based on source column name
@@ -124,10 +124,12 @@ class DataView(models.Model):
                 state_dict = state_dict = {'cycle': cycle.name}
                 if parameter.column.is_extra_data:
                     value = view.state.extra_data[parameter.column.column_name]
+                elif parameter.column.derived_column:
+                    value = parameter.column.derived_column.evaluate(view.state)
                 else:
                     value = getattr(view.state, parameter.column.column_name)
 
-                if type(value) == str or type(value) == int:
+                if isinstance(value, (str, int, float, bool)):
                     state_dict['value'] = value
                 else:
                     state_dict['value'] = round(value.m, 2)
@@ -144,11 +146,10 @@ class DataView(models.Model):
             data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
 
     def _evaluate_aggregation(self, states, aggregation, column):
-
         if column.is_extra_data:
             return self._evaluate_extra_data(states, aggregation, column)
         elif column.derived_column:
-            return self._evaluate_derived_column(states)
+            return self._evaluate_derived_column(states, aggregation, column)
         else:
             aggregation = states.aggregate(value=aggregation(column.column_name))
 
@@ -171,20 +172,21 @@ class DataView(models.Model):
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)
 
-    def _evaluate_derived_column(self, states):
+    def _evaluate_derived_column(self, states, aggregation, column):
         # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
-        property_states = states
+        # property_states = states
         # property_states = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False)
         values = []
-
-        for state in property_states:
-            val = self.column.derived_column.evaluate(state)
+        
+        for state in states:
+            val = column.derived_column.evaluate(state)
             if val is not None:
                 values.append(val)
 
+
         if values:
-            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
-            return {"value": round(type_to_aggregate[self.type], 2)}
+            type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
+            return  round(type_to_aggregate[aggregation], 2)
             # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
 
 class DataViewParameter(models.Model):
