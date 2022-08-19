@@ -81,7 +81,7 @@ class DataView(models.Model):
         response, views_by_filter = self.views_by_filter(response)
 
 
-        # key 1: source column name
+        # assign data based on source column name
         for parameter in self.parameters.all():
             data = response['data']
             column_name = parameter.column.column_name
@@ -89,15 +89,13 @@ class DataView(models.Model):
                 'filter_groups': {}
             }
 
-            # key 2: 'filter_groups'
+            # assign data based on filter_groups
             for filter_group in self.filter_groups:
                 filter_name = filter_group['name']
                 data[column_name]['filter_groups'][filter_name] = {}
 
                 # each filter group will contain list[dict] for each aggregation type and disaggregated property views values by view id
-                
                 # and disaggregated property views values by view id
-                
                 for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
                     if aggregation == 'views_by_id':
                         data[column_name]['filter_groups'][filter_name][aggregation] = {}
@@ -108,31 +106,61 @@ class DataView(models.Model):
                         views = views_by_filter[filter_name][cycle.name]
                         states = PropertyState.objects.filter(propertyview__in=views)
 
+                        self.assign_aggregation_dicts(aggregation, views, data, column_name, filter_name, cycle, parameter, states)
+
                         # view_id: [{'cycle': cycle.name, 'value': value}]       
-                        if aggregation == 'views_by_id':
-                            for view in views:
-                                data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
-                                state_dict = state_dict = {'cycle': cycle.name}
-                                if parameter.column.is_extra_data:
-                                    value = view.state.extra_data[parameter.column.column_name]
-                                else:
-                                    value = getattr(view.state, parameter.column.column_name)
+                        # if aggregation == 'views_by_id':
+                        #     for view in views:
+                        #         data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
+                        #         state_dict = state_dict = {'cycle': cycle.name}
+                        #         if parameter.column.is_extra_data:
+                        #             value = view.state.extra_data[parameter.column.column_name]
+                        #         else:
+                        #             value = getattr(view.state, parameter.column.column_name)
 
-                                if type(value) == str or type(value) == int:
-                                   state_dict['value'] = value
-                                else:
-                                    state_dict['value'] = round(value.m, 2)
-                                    data[column_name]['unit'] = data[column_name].get('unit', '{:P~}'.format(value.u))
+                        #         if type(value) == str or type(value) == int:
+                        #            state_dict['value'] = value
+                        #         else:
+                        #             state_dict['value'] = round(value.m, 2)
+                        #             data[column_name]['unit'] = data[column_name].get('unit', '{:P~}'.format(value.u))
 
-                                data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
+                        #         data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
                                 
-                        # each dict: aggregation_type: {'cycle': cycle.name, 'value': value}
-                        else: 
-                            value = self.evaluate_aggregation(states, aggregation, parameter.column)
-                            value_dict = {'cycle': cycle.name, 'value': value}
-                            data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
+                        # # each dict: aggregation_type: {'cycle': cycle.name, 'value': value}
+                        # else: 
+                        #     value = self.evaluate_aggregation(states, aggregation, parameter.column)
+                        #     value_dict = {'cycle': cycle.name, 'value': value}
+                        #     data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
 
         return response
+
+    # given a cycle and aggregation, return the cycle name and its associated aggregation value
+    def assign_aggregation_dicts(self, aggregation, views, data, column_name, filter_name, cycle, parameter, states):
+        # view_id: [{'cycle': cycle.name, 'value': value}]       
+        if aggregation == 'views_by_id':
+            for view in views:
+                data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
+                state_dict = state_dict = {'cycle': cycle.name}
+                if parameter.column.is_extra_data:
+                    value = view.state.extra_data[parameter.column.column_name]
+                else:
+                    value = getattr(view.state, parameter.column.column_name)
+
+                if type(value) == str or type(value) == int:
+                    state_dict['value'] = value
+                else:
+                    state_dict['value'] = round(value.m, 2)
+                    data[column_name]['unit'] = data[column_name].get('unit', '{:P~}'.format(value.u))
+
+                data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
+                
+        # each dict: aggregation_type: {'cycle': cycle.name, 'value': value}
+        else: 
+            value = self.evaluate_aggregation(states, aggregation, parameter.column)
+            value_dict = {'cycle': cycle.name, 'value': value}
+            data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
+
+
 
 
     def evaluate_aggregation(self, states, aggregation, column):
