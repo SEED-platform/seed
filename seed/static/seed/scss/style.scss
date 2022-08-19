@@ -4385,13 +4385,10 @@ ul.r-list {
   }
 }
 
-.r-selectable {
-  
-  > li:not(.r-list-header):not(.r-no-select):hover {
-    cursor: pointer;
-    font-weight: bold;
-    background-color: $infoBackground;
-  }
+.r-selectable:hover {
+  cursor: pointer;
+  font-weight: bold;
+  background-color: $infoBackground;
 }
 
 .r-selected, {

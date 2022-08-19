@@ -31,27 +31,28 @@ angular.module('BE.seed.controller.data_view', [])
       // load aggregations
       // todo: load in controller  
       $scope.aggregations = [
-        {id: 1, name: 'Average', display: 'avg'},
-        {id: 2, name: 'Minimum', display: 'min'},
-        {id: 3, name: 'Maximum', display: 'max'},
-        {id: 4, name: 'Sum', display: 'sum'}
+        {id: 1, name: 'Average'},
+        {id: 2, name: 'Minimum'},
+        {id: 3, name: 'Maximum'},
+        {id: 4, name: 'Sum'},
+        {id: 5, name: 'Count'}
       ];
 
       // load data views
       // todo: load in controller
       $scope.data_views = [
-         {id: 1, name: 'Data View #1', filter_groups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], cycles: [427], first_axis_source_column: 1, first_axis_aggregations: [1]},
+         {id: 1, name: 'Data View #1', filter_groups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], cycles: [427, 428, 429], first_axis_source_column: 1, first_axis_aggregations: [1]},
          {id: 2, name: 'Data View #2', filter_groups: [1, 2], cycles: [427], first_axis_source_column: 2, first_axis_aggregations: [2]},
          {id: 3, name: 'Data View #3', filter_groups: [2, 4], cycles: [428], first_axis_source_column: 3, first_axis_aggregations: [3]},
          {id: 4, name: 'Data View #4', filter_groups: [1, 2, 3, 4], cycles: [427, 428], first_axis_source_column: 4, first_axis_aggregations: [4]},
-         {id: 1, name: 'Data View #5', filter_groups: [1], cycles: [427], first_axis_source_column: 1, first_axis_aggregations: [1]},
-         {id: 2, name: 'Data View #6', filter_groups: [1, 2], cycles: [427], first_axis_source_column: 2, first_axis_aggregations: [2]},
-         {id: 3, name: 'Data View #7', filter_groups: [2, 4], cycles: [428], first_axis_source_column: 3, first_axis_aggregations: [3]},
-         {id: 4, name: 'Data View #8', filter_groups: [1, 2, 3, 4], cycles: [427, 428], first_axis_source_column: 4, first_axis_aggregations: [4]},
-         {id: 1, name: 'Data View #9', filter_groups: [1], cycles: [427], first_axis_source_column: 1, first_axis_aggregations: [1]},
-         {id: 2, name: 'Data View #10', filter_groups: [1, 2], cycles: [427], first_axis_source_column: 2, first_axis_aggregations: [2]},
-         {id: 3, name: 'Data View #11', filter_groups: [2, 4], cycles: [428], first_axis_source_column: 3, first_axis_aggregations: [3]},
-         {id: 4, name: 'Data View #12', filter_groups: [1, 2, 3, 4], cycles: [427, 428], first_axis_source_column: 4, first_axis_aggregations: [4]}
+         {id: 5, name: 'Data View #5', filter_groups: [1], cycles: [427], first_axis_source_column: 1, first_axis_aggregations: [1]},
+         {id: 6, name: 'Data View #6', filter_groups: [1, 2], cycles: [427], first_axis_source_column: 2, first_axis_aggregations: [2]},
+         {id: 7, name: 'Data View #7', filter_groups: [2, 4], cycles: [428], first_axis_source_column: 3, first_axis_aggregations: [3]},
+         {id: 8, name: 'Data View #8', filter_groups: [1, 2, 3, 4], cycles: [427, 428], first_axis_source_column: 4, first_axis_aggregations: [4]},
+         {id: 9, name: 'Data View #9', filter_groups: [1], cycles: [427], first_axis_source_column: 1, first_axis_aggregations: [1]},
+         {id: 10, name: 'Data View #10', filter_groups: [1, 2], cycles: [427], first_axis_source_column: 2, first_axis_aggregations: [2]},
+         {id: 11, name: 'Data View #11', filter_groups: [2, 4], cycles: [428], first_axis_source_column: 3, first_axis_aggregations: [3]},
+         {id: 12, name: 'Data View #12', filter_groups: [1, 2, 3, 4], cycles: [427, 428], first_axis_source_column: 4, first_axis_aggregations: [4]}
       ];
       $scope.selected_data_view = $scope.id ? $scope.data_views.find(item => item.id === $scope.id) : null;
 
@@ -63,6 +64,7 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
       }
       $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
+      $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
 
       // load filter groups
       // todo: load in controller
@@ -72,18 +74,18 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 2, name: 'Filter Group #2'},
         {id: 3, name: 'Filter Group #3'},
         {id: 4, name: 'Filter Group #4'},
-        {id: 5, name: 'Filter Group #6'},
-        {id: 6, name: 'Filter Group #7'},
-        {id: 7, name: 'Filter Group #8'},
-        {id: 8, name: 'Filter Group #9'},
-        {id: 9, name: 'Filter Group #10'},
-        {id: 10, name: 'Filter Group #11'},
-        {id: 11, name: 'Filter Group #12'},
-        {id: 12, name: 'Filter Group #13'},
-        {id: 13, name: 'Filter Group #14'},
-        {id: 14, name: 'Filter Group #15'},
-        {id: 15, name: 'Filter Group #16'},
-        {id: 16, name: 'Filter Group #17'}
+        {id: 5, name: 'Filter Group #5'},
+        {id: 6, name: 'Filter Group #6'},
+        {id: 7, name: 'Filter Group #7'},
+        {id: 8, name: 'Filter Group #8'},
+        {id: 9, name: 'Filter Group #9'},
+        {id: 10, name: 'Filter Group #10'},
+        {id: 11, name: 'Filter Group #11'},
+        {id: 12, name: 'Filter Group #12'},
+        {id: 13, name: 'Filter Group #13'},
+        {id: 14, name: 'Filter Group #14'},
+        {id: 15, name: 'Filter Group #15'},
+        {id: 16, name: 'Filter Group #16'}
       ];
       $scope.used_filter_groups = {};
       if ($scope.selected_data_view) {
@@ -101,9 +103,11 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 4, name: 'Source Column #4', units: 'kg'}
       ];
       $scope.source_column_by_location = {
-        'first_axis': $scope.source_columns[0]['id'],
+        'first_axis': Object.assign({}, $scope.source_columns[0]),
         'second_axis': null
       };
+      $scope.selected_table_location = 'first_axis';
+      $scope.selected_table_aggregation = 1;
 
       $scope.object_has_key = function (a, b) {
         return Object.keys(a).includes(String(b));
@@ -126,6 +130,7 @@ angular.module('BE.seed.controller.data_view', [])
         } else {
           $scope.selected_cycles[cycle_id] = Object.assign({}, $scope.used_cycles[cycle_id]);
         }
+        $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
       };
 
       $scope.toggle_aggregation = function (location, aggregation_id) {
@@ -152,7 +157,11 @@ angular.module('BE.seed.controller.data_view', [])
       };
 
       $scope.select_source_column = function (location, source_column_id) {
-        $scope.source_column_by_location[location] = source_column_id;
+        if (source_column_id) {
+          $scope.source_column_by_location[location] = Object.assign({}, $scope.source_columns.find(item => item.id == source_column_id));
+        } else {
+          $scope.source_column_by_location[location] = null;
+        }
         switch (location) {
           case 'first_axis':
             $scope.selected_data_view.first_axis_aggregations = [];
@@ -161,6 +170,7 @@ angular.module('BE.seed.controller.data_view', [])
             $scope.selected_data_view.second_axis_aggregations = [];
             break;
          default:
+
            return;
         }
       };
