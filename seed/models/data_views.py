@@ -17,6 +17,7 @@ from seed.models.properties import PropertyState, PropertyView
 from django.db.models import Avg, Count, Max, Min, Sum
 from django.http import QueryDict
 
+
 # This causes a circular import.
 from seed.utils.search import build_view_filters_and_sorts
 # Work around: passing build_view_filters_and_sorts as an argument from views/v3/data_views
@@ -41,6 +42,7 @@ class DataView(models.Model):
         annotations=''
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+
         except:
             logging.error('error with filter group')
 
@@ -52,28 +54,34 @@ class DataView(models.Model):
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
 
-    def evaluate(self):
-        response = {
-            'meta': {
-                'organization': self.organization.id,
-                'data_view': self.id,
-            },
-            'filter_groups':{},
-            'data': {}
-        }
-
+    def views_by_filter(self, response):
         views_by_filter = {}
         for filter_group in self.filter_groups:
-            response['filter_groups'][filter_group['name']] = {}
+            response['filter_group_view_ids'][filter_group['name']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
             views_by_filter[filter_group['name']] = {}
             for cycle in self.cycles.all():
                 views = self.get_filter_group_views(cycle, query_dict)
                 views_by_filter[filter_group['name']][cycle.name] = views
-                response['filter_groups'][filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
+                response['filter_group_view_ids'][filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
+        
+        return response, views_by_filter
 
-        # source columns
+
+    def evaluate(self):
+        response = {
+            'meta': {
+                'organization': self.organization.id,
+                'data_view': self.id,
+            },
+            'filter_group_view_ids':{},
+            'data': {}
+        }
+        response, views_by_filter = self.views_by_filter(response)
+
+
+        # key 1: source column name
         for parameter in self.parameters.all():
             data = response['data']
             column_name = parameter.column.column_name
@@ -82,11 +90,15 @@ class DataView(models.Model):
                 'filter_groups': {}
             }
 
+            # key 2: 'filter_groups'
             for filter_group in self.filter_groups:
                 filter_name = filter_group['name']
                 data[column_name]['filter_groups'][filter_name] = {}
 
-
+                # each filter group will contain list[dict] for each aggregation type and disaggregated property views values by view id
+                
+                # and disaggregated property views values by view id
+                
                 for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
                     if aggregation == 'views_by_id':
                         data[column_name]['filter_groups'][filter_name][aggregation] = {}
@@ -97,100 +109,60 @@ class DataView(models.Model):
                         views = views_by_filter[filter_name][cycle.name]
                         states = PropertyState.objects.filter(propertyview__in=views)
 
+                        # view_id: [{'cycle': cycle.name, 'value': value}]       
                         if aggregation == 'views_by_id':
-
                             for view in views:
                                 data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
                                 state_dict = state_dict = {'cycle': cycle.name}
-                                value = getattr(view.state, parameter.column.column_name)
+                                if parameter.column.is_extra_data:
+                                    value = view.state.extra_data[parameter.column.column_name]
+                                else:
+                                    value = getattr(view.state, parameter.column.column_name)
 
                                 if type(value) == str or type(value) == int:
                                    state_dict['value'] = value
                                 else:
                                     state_dict['value'] = round(value.m, 2)
                                     data[column_name]['unit'] = data[column_name].get('unit', value.u)
-                                # breakpoint()
+
                                 data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_dict)
+                                
+                        # each dict: aggregation_type: {'cycle': cycle.name, 'value': value}
                         else: 
                             value = self.evaluate_aggregation(states, aggregation, parameter.column)
                             value_dict = {'cycle': cycle.name, 'value': value}
                             data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
 
         return response
-        # views = {}
-        # for cycle in self.cycles.all():
-        #     views[cycle.name] = {}
-            # for filter_group in self.filter_groups: 
-            #     views = self.get_filter_group_views(cycle, filter_group.query_dict)
-            #     views[cycle.name][filter_group.name] = views
 
-
-        # data = response['cycles']
-        # for cycle in cycles:
-        #     end_date = cycle.end.strftime("%Y-%m-%d")
-        #     data[end_date] = {}
-        #     # THIS IS WHERE FILTER_GROUP IS APPLIED 
-        #     views = cycle.propertyview_set.all()
-        #     states = PropertyState.objects.filter(propertyview__in=views)
-            
-        #     for parameter in parameters:
-        #         column = parameter.column
-        #         data[end_date][column.column_name] = {'views_by_id': {}}
-        #         for view in views: 
-        #             if not data[end_date][column.column_name].get('units'):
-        #                 data[end_date][column.column_name]['units'] = "{:P~}".format(getattr(view.state, column.column_name).u)
-        #             data[end_date][column.column_name]['views_by_id'][view.id] = getattr(view.state, column.column_name).m
-
-        #         for aggregation in parameter.aggregations:
-        #             value = self.evaluate_aggregation(aggregation, states, column)
-        #             data[end_date][column.column_name][aggregation] = value
-
-                # if self.column1_aggregations:
-                #     data[end_date][column.column_name]
-
-                # for data_agg in [data_agg for data_agg in data_aggregations if data_agg.column == column]:
-                #     data[end_date][column.column_name][data_agg.name] = data_agg.evaluate(states)
-
-        # return response
 
     def evaluate_aggregation(self, states, aggregation, column):
-        # column = self.column
 
         if column.is_extra_data:
-            return self.evaluate_extra_data(states)
+            return self.evaluate_extra_data(states, aggregation, column)
         elif column.derived_column:
             return self.evaluate_derived_column(states)
         else:
-            # type_lookup = {'Avg': Avg, 'Max': Max, 'Min': Min, 'Sum': Sum}
-            # PropertyState must be associated with the current org and a valid PropertyView
             aggregation = states.aggregate(value=aggregation(column.column_name))
-
-            # aggregation = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).aggregate(value=type_lookup[self.type](column.column_name))
 
             if aggregation.get('value') or aggregation.get('value') == 0:
                 value = aggregation['value']
                 if type(value) is int or type(value) is float:
                     return round(value, 2)
-                    # return {"value": round(value, 2), "units": None}
-
                 return round(value.m, 2)
-                # return {"value": round(value.m, 2), "units": "{:P~}".format(value.u)}
 
-    def evaluate_extra_data(self, states):
-        extra_data_col = 'extra_data__' + self.column.column_name
+    def evaluate_extra_data(self, states, aggregation, column):
+        extra_data_col = 'extra_data__' + column.column_name
         q_set = states.values(extra_data_col)
-        # q_set = PropertyState.objects.filter(organization=self.organization.id, propertyview__isnull=False).values(extra_data_col)
         values = []
         for val in list(q_set):
             try:
                 values.append(float(val[extra_data_col]))
             except (ValueError, TypeError):
                 pass
-
         if values:
-            type_to_aggregate = {0: sum(values) / len(values), 1: len(values), 2: max(values), 3: min(values), 4: sum(values)}
-            return {"value": round(type_to_aggregate[self.type], 2)}
-            # return {"value": round(type_to_aggregate[self.type], 2), "units": None}
+            type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
+            return round(type_to_aggregate[aggregation], 2)
 
     def evaluate_derived_column(self, states):
         # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
