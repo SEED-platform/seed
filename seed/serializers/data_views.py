@@ -17,9 +17,11 @@ class DataViewParameterSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['data_view']
 
+
 class DataViewSerializer(serializers.ModelSerializer):
 
     parameters = DataViewParameterSerializer(many=True)
+
     class Meta:
         model = DataView
         fields = ['id', 'cycles', 'filter_groups', 'name', 'organization', 'parameters']

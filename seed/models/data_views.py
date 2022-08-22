@@ -24,14 +24,13 @@ class DataView(models.Model):
     cycles = models.ManyToManyField(Cycle)
     filter_groups = models.JSONField()
 
-
     def evaluate(self):
         response = {
             'meta': {
                 'organization': self.organization.id,
                 'data_view': self.id,
             },
-            'filter_group_view_ids':{},
+            'filter_group_view_ids': {},
             'data': {}
         }
         response, views_by_filter = self._views_by_filter(response)
@@ -76,13 +75,11 @@ class DataView(models.Model):
 
         return response
 
-
     def _format_filter_group_data(self, data, column_name, filter_name, aggregation):
         if aggregation == 'views_by_id':
             data[column_name]['filter_groups'][filter_name][aggregation] = {}
-        else :
+        else:
             data[column_name]['filter_groups'][filter_name][aggregation.name] = []
-
 
     def _format_view_state_data(self, cycle, parameter, view):
         state_data = {'cycle': cycle.name}
@@ -103,7 +100,6 @@ class DataView(models.Model):
 
         return state_data, unit
 
-
     def _evaluate_aggregation(self, states, aggregation, column):
         if column.is_extra_data:
             return self._evaluate_extra_data(states, aggregation, column)
@@ -117,7 +113,6 @@ class DataView(models.Model):
                 if type(value) is int or type(value) is float:
                     return round(value, 2)
                 return round(value.m, 2)
-
 
     def _evaluate_extra_data(self, states, aggregation, column):
         extra_data_col = 'extra_data__' + column.column_name
@@ -143,8 +138,7 @@ class DataView(models.Model):
 
         if values:
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
-            return  round(type_to_aggregate[aggregation], 2)
-
+            return round(type_to_aggregate[aggregation], 2)
 
     def _get_filter_group_views(self, cycle, query_dict):
         org_id = self.organization.id
@@ -154,21 +148,20 @@ class DataView(models.Model):
             only_used=False,
             include_related=False
         )
-        annotations=''
+        annotations = ''
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
 
-        except:
+        except Exception:
             logging.error('error with filter group')
 
         views_list = (
-                PropertyView.objects.select_related('property', 'state', 'cycle')
-                .filter(property__organization_id=org_id, cycle=cycle)
-            )
+            PropertyView.objects.select_related('property', 'state', 'cycle')
+            .filter(property__organization_id=org_id, cycle=cycle)
+        )
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
-
 
     def _views_by_filter(self, response):
         views_by_filter = {}

@@ -206,6 +206,7 @@ class QueryFilterOperator(Enum):
     CONTAINS = 'icontains'
     ISNULL = 'isnull'
 
+
 @dataclass
 class QueryFilter:
     field_name: str
@@ -246,6 +247,7 @@ class QueryFilter:
 # represents a dictionary usable with a QuerySet annotation:
 #   `QuerySet.annotation(**AnnotationDict)`
 AnnotationDict = dict[str, models.Func]
+
 
 def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str, AnnotationDict]:
     """Creates a dictionary of annotations which will cast the extra data column_name
@@ -305,6 +307,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         }
 
     return final_field_name, annotations
+
 
 def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object

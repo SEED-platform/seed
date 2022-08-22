@@ -60,20 +60,20 @@ class DataViewViewTests(TestCase):
             name='data view 1',
             organization=self.org,
             filter_groups=[1, 2, 3, 4],
-            )
+        )
         # self.data_view1.columns.set([self.column1, self.column2])
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
 
         self.data_view1_parameter1 = DataViewParameter.objects.create(
-            data_view = self.data_view1,
-            column = self.column1,
-            aggregations = ['Avg', 'Sum'],
+            data_view=self.data_view1,
+            column=self.column1,
+            aggregations=['Avg', 'Sum'],
             location='axis1',
         )
         self.data_view1_parameter2 = DataViewParameter.objects.create(
-            data_view = self.data_view1,
-            column = self.column2,
-            aggregations = ['Max', 'Min'],
+            data_view=self.data_view1,
+            column=self.column2,
+            aggregations=['Max', 'Min'],
             location='axis2',
         )
 
@@ -81,13 +81,13 @@ class DataViewViewTests(TestCase):
             name='data view 2',
             organization=self.org,
             filter_groups=[5, 6, 7, 8],
-            )
+        )
         # self.data_view2.columns.set([self.column1, self.column2, self.column3])
         self.data_view2.cycles.set([self.cycle2, self.cycle4])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
-            data_view = self.data_view2,
-            column = self.column3,
-            aggregations = ['Avg', 'Max', 'Sum'],
+            data_view=self.data_view2,
+            column=self.column3,
+            aggregations=['Avg', 'Max', 'Sum'],
             location='axis1',
             target='col_3_target'
         )
@@ -110,11 +110,9 @@ class DataViewViewTests(TestCase):
         self.assertEqual(['Max', 'Min'], parameter2.aggregations)
         self.assertEqual('axis2', parameter2.location)
 
-
         data_view2 = data_views[1]
         self.assertEqual([1, 2, 3, 4], data_view1.filter_groups)
         self.assertEqual(1, len(data_view2.parameters.all()))
-
 
         parameter3 = data_view2.parameters.first()
         self.assertEqual(self.column3, parameter3.column)
@@ -194,7 +192,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual(2, len(DataView.objects.all()))
         self.assertEqual(3, len(DataViewParameter.objects.all()))
 
-
     def test_data_view_create_bad_data(self):
         response = self.client.post(
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
@@ -225,7 +222,6 @@ class DataViewViewTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
         self.assertEqual('DataView with id 99999999 does not exist', data['message'])
-
 
     def test_data_view_update_endpoint(self):
         self.assertEqual('data view 1', self.data_view1.name)
@@ -273,7 +269,6 @@ class DataViewViewTests(TestCase):
         self.assertEqual('DataView with id 99999 does not exist', data['message'])
 
 
-
 class DataViewEvaluationTests(TestCase):
     """
     Test DataView model's ability to evaluate propertystate values based on attributes
@@ -316,41 +311,40 @@ class DataViewEvaluationTests(TestCase):
 
         # generate property states that are either 'Office' or 'Retail' for filter groups
         # generate property views that are attatched to a property and a property-state
-        self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=10*ureg.eui, total_ghg_emissions=100, extra_data={'extra_col':1000})
-        self.st_office11 = self.property_state_factory.get_property_state(property_name='st_office11', property_type='office', site_eui=11*ureg.eui, total_ghg_emissions=110, extra_data={'extra_col':1100})
-        self.st_retail12 = self.property_state_factory.get_property_state(property_name='st_retail12', property_type='retail', site_eui=12*ureg.eui, total_ghg_emissions=120, extra_data={'extra_col':1200})
-        self.st_retail13 = self.property_state_factory.get_property_state(property_name='st_retail13', property_type='retail', site_eui=13*ureg.eui, total_ghg_emissions=130, extra_data={'extra_col':0})
+        self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
+        self.st_office11 = self.property_state_factory.get_property_state(property_name='st_office11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
+        self.st_retail12 = self.property_state_factory.get_property_state(property_name='st_retail12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
+        self.st_retail13 = self.property_state_factory.get_property_state(property_name='st_retail13', property_type='retail', site_eui=13 * ureg.eui, total_ghg_emissions=130, extra_data={'extra_col': 0})
 
         self.vw_office10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.st_office10)
         self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office11)
         self.vw_retail12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
         self.vw_retail13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
 
-
-        self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20*ureg.eui, total_ghg_emissions=200, extra_data={'extra_col':2000})
-        self.st_office21 = self.property_state_factory.get_property_state(property_name='st_office21', property_type='office', site_eui=21*ureg.eui, total_ghg_emissions=210, extra_data={'extra_col':2100})
-        self.st_retail22 = self.property_state_factory.get_property_state(property_name='st_retail22', property_type='retail', site_eui=22*ureg.eui, total_ghg_emissions=220, extra_data={'extra_col':2200})
-        self.st_retail23 = self.property_state_factory.get_property_state(property_name='st_retail23', property_type='retail', site_eui=23*ureg.eui, total_ghg_emissions=230, extra_data={'extra_col':0})
+        self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
+        self.st_office21 = self.property_state_factory.get_property_state(property_name='st_office21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
+        self.st_retail22 = self.property_state_factory.get_property_state(property_name='st_retail22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
+        self.st_retail23 = self.property_state_factory.get_property_state(property_name='st_retail23', property_type='retail', site_eui=23 * ureg.eui, total_ghg_emissions=230, extra_data={'extra_col': 0})
 
         self.vw_office20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.st_office20)
         self.vw_office21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.st_office21)
         self.vw_retail22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.st_retail22)
         self.vw_retail23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.st_retail23)
 
-        self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30*ureg.eui, total_ghg_emissions=300, extra_data={'extra_col':3000})
-        self.st_office31 = self.property_state_factory.get_property_state(property_name='st_office31', property_type='office', site_eui=31*ureg.eui, total_ghg_emissions=310, extra_data={'extra_col':3100})
-        self.st_retail32 = self.property_state_factory.get_property_state(property_name='st_retail32', property_type='retail', site_eui=32*ureg.eui, total_ghg_emissions=320, extra_data={'extra_col':3200})
-        self.st_retail33 = self.property_state_factory.get_property_state(property_name='st_retail33', property_type='retail', site_eui=33*ureg.eui, total_ghg_emissions=330, extra_data={'extra_col':0})
+        self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
+        self.st_office31 = self.property_state_factory.get_property_state(property_name='st_office31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
+        self.st_retail32 = self.property_state_factory.get_property_state(property_name='st_retail32', property_type='retail', site_eui=32 * ureg.eui, total_ghg_emissions=320, extra_data={'extra_col': 3200})
+        self.st_retail33 = self.property_state_factory.get_property_state(property_name='st_retail33', property_type='retail', site_eui=33 * ureg.eui, total_ghg_emissions=330, extra_data={'extra_col': 0})
 
         self.vw_office30 = PropertyView.objects.create(property=self.office1, cycle=self.cycle3, state=self.st_office30)
         self.vw_office31 = PropertyView.objects.create(property=self.office2, cycle=self.cycle3, state=self.st_office31)
         self.vw_retail32 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle3, state=self.st_retail32)
         self.vw_retail33 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle3, state=self.st_retail33)
 
-        self.st_office40 = self.property_state_factory.get_property_state(property_name='st_office40', property_type='office', site_eui=40*ureg.eui, total_ghg_emissions=400, extra_data={'extra_col':4000})
-        self.st_office41 = self.property_state_factory.get_property_state(property_name='st_office41', property_type='office', site_eui=41*ureg.eui, total_ghg_emissions=410, extra_data={'extra_col':4100})
-        self.st_retail42 = self.property_state_factory.get_property_state(property_name='st_retail42', property_type='retail', site_eui=42*ureg.eui, total_ghg_emissions=420, extra_data={'extra_col':4200})
-        self.st_retail43 = self.property_state_factory.get_property_state(property_name='st_retail43', property_type='retail', site_eui=43*ureg.eui, total_ghg_emissions=430, extra_data={'extra_col':0})
+        self.st_office40 = self.property_state_factory.get_property_state(property_name='st_office40', property_type='office', site_eui=40 * ureg.eui, total_ghg_emissions=400, extra_data={'extra_col': 4000})
+        self.st_office41 = self.property_state_factory.get_property_state(property_name='st_office41', property_type='office', site_eui=41 * ureg.eui, total_ghg_emissions=410, extra_data={'extra_col': 4100})
+        self.st_retail42 = self.property_state_factory.get_property_state(property_name='st_retail42', property_type='retail', site_eui=42 * ureg.eui, total_ghg_emissions=420, extra_data={'extra_col': 4200})
+        self.st_retail43 = self.property_state_factory.get_property_state(property_name='st_retail43', property_type='retail', site_eui=43 * ureg.eui, total_ghg_emissions=430, extra_data={'extra_col': 0})
 
         self.vw_office40 = PropertyView.objects.create(property=self.office1, cycle=self.cycle4, state=self.st_office40)
         self.vw_office41 = PropertyView.objects.create(property=self.office2, cycle=self.cycle4, state=self.st_office41)
@@ -362,19 +356,19 @@ class DataViewEvaluationTests(TestCase):
             filter_groups=[
                 {'name': 'office', 'query_dict': QueryDict('property_type__exact=office&site_eui__gt=1')},
                 {'name': 'retail', 'query_dict': QueryDict('property_type__exact=retail&site_eui__gt=1')}
-                ],
+            ],
             organization=self.org)
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
         self.data_view1_parameter1 = DataViewParameter.objects.create(
-            data_view = self.data_view1,
-            column = self.site_eui,
-            aggregations = ['Avg', 'Sum'],
+            data_view=self.data_view1,
+            column=self.site_eui,
+            aggregations=['Avg', 'Sum'],
             location='axis1',
         )
         self.data_view1_parameter2 = DataViewParameter.objects.create(
-            data_view = self.data_view1,
-            column = self.ghg,
-            aggregations = ['Max', 'Min'],
+            data_view=self.data_view1,
+            column=self.ghg,
+            aggregations=['Max', 'Min'],
             location='axis2',
             target='test'
         )
@@ -384,13 +378,13 @@ class DataViewEvaluationTests(TestCase):
             filter_groups=[
                 {'name': 'three_properties', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1')},
                 {'name': 'four_properties', 'query_dict': QueryDict('site_eui__gt=1')}
-                ],
+            ],
             organization=self.org)
         self.data_view2.cycles.set([self.cycle1, self.cycle2, self.cycle3, self.cycle4])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
-            data_view = self.data_view2,
-            column = self.extra_col,
-            aggregations = ['Avg'],
+            data_view=self.data_view2,
+            column=self.extra_col,
+            aggregations=['Avg'],
             location='axis1',
         )
 
@@ -416,16 +410,15 @@ class DataViewEvaluationTests(TestCase):
             name='data view 3',
             filter_groups=[
                 {'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
-                ],
+            ],
             organization=self.org)
         self.data_view3.cycles.set([self.cycle1, self.cycle2])
         self.data_view3_parameter1 = DataViewParameter.objects.create(
-            data_view = self.data_view3,
-            column = self.dc_column,
-            aggregations = ['Avg'],
+            data_view=self.data_view3,
+            column=self.dc_column,
+            aggregations=['Avg'],
             location='axis1',
         )
-
 
     def test_evaluation_endpoint_canonical_col(self):
 
@@ -532,58 +525,57 @@ class DataViewEvaluationTests(TestCase):
         data = data['data']['data']['extra_col']
         three_properties = data['filter_groups']['three_properties']
 
-        self.assertEqual(1100, [cycle for cycle in three_properties['Avg'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(2100, [cycle for cycle in three_properties['Avg'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(3100, [cycle for cycle in three_properties['Avg'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(4100, [cycle for cycle in three_properties['Avg'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(1100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(3100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(4100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(1200, [cycle for cycle in three_properties['Max'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(2200, [cycle for cycle in three_properties['Max'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(3200, [cycle for cycle in three_properties['Max'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(4200, [cycle for cycle in three_properties['Max'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(1200, [cycle for cycle in three_properties['Max'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2200, [cycle for cycle in three_properties['Max'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(3200, [cycle for cycle in three_properties['Max'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(4200, [cycle for cycle in three_properties['Max'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(1000, [cycle for cycle in three_properties['Min'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(2000, [cycle for cycle in three_properties['Min'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(3000, [cycle for cycle in three_properties['Min'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(4000, [cycle for cycle in three_properties['Min'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(1000, [cycle for cycle in three_properties['Min'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2000, [cycle for cycle in three_properties['Min'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(3000, [cycle for cycle in three_properties['Min'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(4000, [cycle for cycle in three_properties['Min'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(3300, [cycle for cycle in three_properties['Sum'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(6300, [cycle for cycle in three_properties['Sum'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(9300, [cycle for cycle in three_properties['Sum'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(12300, [cycle for cycle in three_properties['Sum'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(3300, [cycle for cycle in three_properties['Sum'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(6300, [cycle for cycle in three_properties['Sum'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(9300, [cycle for cycle in three_properties['Sum'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(12300, [cycle for cycle in three_properties['Sum'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(3, [cycle for cycle in three_properties['Count'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
         four_properties = data['filter_groups']['four_properties']
 
-        self.assertEqual(825, [cycle for cycle in four_properties['Avg'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(1575, [cycle for cycle in four_properties['Avg'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(2325, [cycle for cycle in four_properties['Avg'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(3075, [cycle for cycle in four_properties['Avg'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(825, [cycle for cycle in four_properties['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(1575, [cycle for cycle in four_properties['Avg'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(2325, [cycle for cycle in four_properties['Avg'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(3075, [cycle for cycle in four_properties['Avg'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(1200, [cycle for cycle in four_properties['Max'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(2200, [cycle for cycle in four_properties['Max'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(3200, [cycle for cycle in four_properties['Max'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(4200, [cycle for cycle in four_properties['Max'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(1200, [cycle for cycle in four_properties['Max'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(2200, [cycle for cycle in four_properties['Max'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(3200, [cycle for cycle in four_properties['Max'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(4200, [cycle for cycle in four_properties['Max'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(0, [cycle for cycle in four_properties['Min'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(3300, [cycle for cycle in four_properties['Sum'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(6300, [cycle for cycle in four_properties['Sum'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(9300, [cycle for cycle in four_properties['Sum'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(12300, [cycle for cycle in four_properties['Sum'] if cycle['cycle']=='Cycle D'][0]['value'])
+        self.assertEqual(3300, [cycle for cycle in four_properties['Sum'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(6300, [cycle for cycle in four_properties['Sum'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(9300, [cycle for cycle in four_properties['Sum'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(12300, [cycle for cycle in four_properties['Sum'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
-        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle A'][0]['value'])
-        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle B'][0]['value'])
-        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle C'][0]['value'])
-        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle']=='Cycle D'][0]['value'])
-
+        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle'] == 'Cycle A'][0]['value'])
+        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle'] == 'Cycle B'][0]['value'])
+        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle'] == 'Cycle C'][0]['value'])
+        self.assertEqual(4, [cycle for cycle in four_properties['Count'] if cycle['cycle'] == 'Cycle D'][0]['value'])
 
     def test_evaluation_endpoint_derived_col(self):
         response = self.client.get(
