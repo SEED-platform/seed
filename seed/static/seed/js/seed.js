@@ -56,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.data_upload_audit_template_modal',
+  'BE.seed.controller.data_view',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
@@ -414,7 +415,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/analyses',
+        url: '/metrics/analyses',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
@@ -446,7 +447,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/analyses/{analysis_id:int}',
+        url: '/metrics/analyses/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
@@ -481,7 +482,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/metrics/analyses/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
@@ -1786,6 +1787,28 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
+          }]
+        }
+      })
+      .state({
+        name: 'metrics',
+        url: '/metrics',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'data_view',
+        url: '/metrics/{id:int}',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }]
         }
       });

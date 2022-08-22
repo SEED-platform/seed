@@ -4289,3 +4289,139 @@ iframe.analysis-results {
     right: 0;
   }
 }
+
+// "namespacing" with "r-" until css cleanup
+
+.r-columns {
+  display: flex;
+  column-gap: 10px;
+  align-items: start;
+  margin: 10px;
+
+  .r-column {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+}
+
+.r-row {
+    display: flex;
+    margin: 0 0;
+    flex-grow: 1;
+    align-items: center;
+
+    & .r-shrink {
+      flex-grow: 0;
+      flex-shrink: 1;
+    }
+
+    > input[type=checkbox] {
+      margin: 0;
+    }
+
+    > label {
+      margin: 0;
+      padding: 0;
+    }
+}
+
+.r-grow {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.r-shrink {
+  flex-shrink: 1;
+  flex-grow: 0 !important;
+}
+
+ul.r-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  > li {
+    border-bottom: 1px solid #b3b3b3;
+    padding: 5px;
+  }
+
+  > li.r-row {
+
+    > input[type=checkbox] {
+      padding: 0;
+      margin: 0;
+    }
+
+    > label {
+      margin: 0;
+      font-weight: normal;
+    }
+  }
+
+  > li > a {
+    margin: -5px;
+    display: block;
+    padding: 5px;
+    text-decoration: none !important;
+  }
+
+  > li > a:hover {
+    font-weight: bold;
+    background-color: $infoBackground;
+  }
+  
+  > .r-list-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: #cdcdcd;
+    text-shadow: 0 1px 0 white;
+    border-bottom: 1px solid #b3b3b3;
+  }
+
+  &.r-scrollable {
+    max-height: 200px;
+    overflow-y: scroll;
+  }
+}
+
+.r-selectable:hover {
+  cursor: pointer;
+  font-weight: bold;
+  background-color: $infoBackground;
+}
+
+.r-selected, {
+  background-color: $successBackground;
+}
+
+.r-info {
+  background-color: $infoBackground;
+}
+
+.r-panel {
+  border: 1px solid #eee;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+  background-color: #f1f1f1;
+}
+
+.r-no-margin {
+  margin: 0 !important;
+}
+
+.r-pad-left-5 {
+  padding-left: 5px !important;
+}
+
+.r-pad-right-5 {
+  padding-right: 5px !important;
+}
+
+.r-margin-left-5 {
+  margin-left: 5px !important;
+}
+
+.r-margin-right-5 {
+  margin-right: 5px !important;
+}
