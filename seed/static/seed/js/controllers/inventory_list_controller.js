@@ -122,7 +122,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
       $scope.currentFilterGroup = $scope.filterGroups[0] || {};
-      
+
       $scope.Modified = false;
 
       $scope.new_filter_group = function () {
@@ -132,7 +132,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         };
         filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
         var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
-  
+
         var filterGroupData = {
           "query_dict": query_dict,
           "inventory_type": filter_group_inventory_type,
