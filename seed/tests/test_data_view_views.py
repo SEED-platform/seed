@@ -10,7 +10,6 @@ from django.test import TestCase
 from django.urls import reverse
 from datetime import datetime
 import pytz
-import unittest
 from pint import UnitRegistry
 
 from seed.models import (
@@ -18,8 +17,6 @@ from seed.models import (
     DataView,
     DataViewParameter,
     User,
-    Property,
-    PropertyState,
     PropertyView,
     DerivedColumn,
     )
@@ -302,7 +299,6 @@ class DataViewEvaluationTests(TestCase):
         self.site_eui = Column.objects.get(column_name='site_eui')
         self.ghg = Column.objects.get(column_name='total_ghg_emissions')
         self.extra_col = Column.objects.create(column_name='extra_col', organization=self.org, is_extra_data=True, table_name='PropertyState')
-
         
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -313,7 +309,6 @@ class DataViewEvaluationTests(TestCase):
         self.office2 = self.property_factory.get_property()
         self.retail3 = self.property_factory.get_property()
         self.retail4 = self.property_factory.get_property()
-
 
         # define some eui values
         ureg = UnitRegistry()
@@ -398,7 +393,6 @@ class DataViewEvaluationTests(TestCase):
             aggregations = ['Avg'],
             location='axis1', 
         )
-
 
         # Generate derived column for testing
         self.derived_column = DerivedColumn.objects.create(
@@ -624,6 +618,3 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(31, data['views_by_id'][str(self.vw_office21.id)][0]['value'])
         self.assertEqual(22, data['views_by_id'][str(self.vw_retail12.id)][0]['value'])
         self.assertEqual(32, data['views_by_id'][str(self.vw_retail22.id)][0]['value'])
-
-        
-
