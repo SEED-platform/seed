@@ -4,11 +4,12 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-import logging
-from rest_framework import serializers
+
 from django.db import transaction
+from rest_framework import serializers
 
 from seed.models.data_views import DataView, DataViewParameter
+
 
 class DataViewParameterSerializer(serializers.ModelSerializer):
     class Meta:

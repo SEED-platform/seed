@@ -24,8 +24,8 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
-from seed.utils.search import FilterException, build_view_filters_and_sorts
 from seed.serializers.pint import apply_display_unit_preferences
+from seed.utils.search import FilterException, build_view_filters_and_sorts
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:

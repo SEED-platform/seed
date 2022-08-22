@@ -205,4 +205,3 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             'status': 'success',
             'data': response
         })
-

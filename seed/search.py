@@ -29,7 +29,6 @@ from .models import (
     TaxLotState,
     TaxLotView
 )
-import seed.utils.search
 
 _log = logging.getLogger(__name__)
 
@@ -304,4 +303,3 @@ def inventory_search_filter_sort(inventory_type, params, user):
         )
 
     return inventory
-

@@ -5,30 +5,30 @@
 :author
 """
 import json
+from datetime import datetime
 
+import pytz
+from django.http import QueryDict
 from django.test import TestCase
 from django.urls import reverse
-from datetime import datetime
-import pytz
 from pint import UnitRegistry
 
 from seed.models import (
     Column,
     DataView,
     DataViewParameter,
-    User,
-    PropertyView,
     DerivedColumn,
-    )
+    PropertyView,
+    User
+)
 from seed.test_helpers.fake import (
     FakeCycleFactory,
+    FakeDerivedColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
-    FakeDerivedColumnFactory,
+    FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
-from django.http import QueryDict
 
 
 class DataViewViewTests(TestCase):
@@ -57,9 +57,9 @@ class DataViewViewTests(TestCase):
         self.column3 = Column.objects.create(column_name='column 3', organization=self.org,)
 
         self.data_view1 = DataView.objects.create(
-            name='data view 1', 
-            organization=self.org, 
-            filter_groups=[1, 2, 3, 4], 
+            name='data view 1',
+            organization=self.org,
+            filter_groups=[1, 2, 3, 4],
             )
         # self.data_view1.columns.set([self.column1, self.column2])
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
@@ -68,19 +68,19 @@ class DataViewViewTests(TestCase):
             data_view = self.data_view1,
             column = self.column1,
             aggregations = ['Avg', 'Sum'],
-            location='axis1', 
+            location='axis1',
         )
         self.data_view1_parameter2 = DataViewParameter.objects.create(
             data_view = self.data_view1,
             column = self.column2,
             aggregations = ['Max', 'Min'],
-            location='axis2', 
+            location='axis2',
         )
 
         self.data_view2 = DataView.objects.create(
-            name='data view 2', 
+            name='data view 2',
             organization=self.org,
-            filter_groups=[5, 6, 7, 8], 
+            filter_groups=[5, 6, 7, 8],
             )
         # self.data_view2.columns.set([self.column1, self.column2, self.column3])
         self.data_view2.cycles.set([self.cycle2, self.cycle4])
@@ -89,7 +89,7 @@ class DataViewViewTests(TestCase):
             column = self.column3,
             aggregations = ['Avg', 'Max', 'Sum'],
             location='axis1',
-            target='col_3_target' 
+            target='col_3_target'
         )
 
     def test_data_view_model(self):
@@ -115,7 +115,7 @@ class DataViewViewTests(TestCase):
         self.assertEqual([1, 2, 3, 4], data_view1.filter_groups)
         self.assertEqual(1, len(data_view2.parameters.all()))
 
-        
+
         parameter3 = data_view2.parameters.first()
         self.assertEqual(self.column3, parameter3.column)
         self.assertEqual(['Avg', 'Max', 'Sum'], parameter3.aggregations)
@@ -299,10 +299,10 @@ class DataViewEvaluationTests(TestCase):
         self.site_eui = Column.objects.get(column_name='site_eui')
         self.ghg = Column.objects.get(column_name='total_ghg_emissions')
         self.extra_col = Column.objects.create(column_name='extra_col', organization=self.org, is_extra_data=True, table_name='PropertyState')
-        
+
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)     
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
         # generate two different types of properties
         self.office1 = self.property_factory.get_property()
@@ -358,40 +358,40 @@ class DataViewEvaluationTests(TestCase):
         self.vw_retail43 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle4, state=self.st_retail43)
 
         self.data_view1 = DataView.objects.create(
-            name='data view 1', 
+            name='data view 1',
             filter_groups=[
                 {'name': 'office', 'query_dict': QueryDict('property_type__exact=office&site_eui__gt=1')},
                 {'name': 'retail', 'query_dict': QueryDict('property_type__exact=retail&site_eui__gt=1')}
-                ], 
+                ],
             organization=self.org)
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
         self.data_view1_parameter1 = DataViewParameter.objects.create(
             data_view = self.data_view1,
             column = self.site_eui,
             aggregations = ['Avg', 'Sum'],
-            location='axis1', 
+            location='axis1',
         )
         self.data_view1_parameter2 = DataViewParameter.objects.create(
             data_view = self.data_view1,
             column = self.ghg,
             aggregations = ['Max', 'Min'],
-            location='axis2', 
+            location='axis2',
             target='test'
         )
 
         self.data_view2 = DataView.objects.create(
-            name='data view 2', 
+            name='data view 2',
             filter_groups=[
                 {'name': 'three_properties', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1')},
                 {'name': 'four_properties', 'query_dict': QueryDict('site_eui__gt=1')}
-                ], 
+                ],
             organization=self.org)
         self.data_view2.cycles.set([self.cycle1, self.cycle2, self.cycle3, self.cycle4])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
             data_view = self.data_view2,
             column = self.extra_col,
             aggregations = ['Avg'],
-            location='axis1', 
+            location='axis1',
         )
 
         # Generate derived column for testing
@@ -413,17 +413,17 @@ class DataViewEvaluationTests(TestCase):
         self.dc_column = Column.objects.get(column_name='dc')
 
         self.data_view3 = DataView.objects.create(
-            name='data view 3', 
+            name='data view 3',
             filter_groups=[
                 {'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
-                ], 
+                ],
             organization=self.org)
         self.data_view3.cycles.set([self.cycle1, self.cycle2])
         self.data_view3_parameter1 = DataViewParameter.objects.create(
             data_view = self.data_view3,
             column = self.dc_column,
             aggregations = ['Avg'],
-            location='axis1', 
+            location='axis1',
         )
 
 
@@ -592,7 +592,7 @@ class DataViewEvaluationTests(TestCase):
         data = json.loads(response.content)
         data = data['data']['data'][self.dc_column.column_name]['filter_groups'][self.data_view3.filter_groups[0]['name']]
 
-        # ex: 
+        # ex:
         # Cycle A
         # site_eui = 10, 11, 12, 13
         # dc       = 20, 21, 22, 23

@@ -6,14 +6,15 @@
 """
 
 import logging
-from django.db import models
 
-from seed.lib.superperms.orgs.models import Organization
-from seed.models.cycles import Cycle
-from seed.models.columns import Column
-from seed.models.properties import PropertyState, PropertyView
+from django.db import models
 from django.db.models import Avg, Count, Max, Min, Sum
 from django.http import QueryDict
+
+from seed.lib.superperms.orgs.models import Organization
+from seed.models.columns import Column
+from seed.models.cycles import Cycle
+from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
 
@@ -55,7 +56,7 @@ class DataView(models.Model):
                         views = views_by_filter[filter_name][cycle.name]
                         states = PropertyState.objects.filter(propertyview__in=views)
 
-                        # view_id: [{'cycle': cycle.name, 'value': value}]       
+                        # view_id: [{'cycle': cycle.name, 'value': value}]
                         if aggregation == 'views_by_id':
                             for view in views:
                                 # Default assignment on first pass
@@ -66,9 +67,9 @@ class DataView(models.Model):
                                     data[column_name]['unit'] = unit
 
                                 data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_data)
-                                
+
                         # aggregation_type: {'cycle': cycle.name, 'value': value}
-                        else: 
+                        else:
                             value = self._evaluate_aggregation(states, aggregation, parameter.column)
                             value_dict = {'cycle': cycle.name, 'value': value}
                             data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
@@ -134,7 +135,7 @@ class DataView(models.Model):
     def _evaluate_derived_column(self, states, aggregation, column):
         # to evluate a derived_column: DerivedColumn.evaluate(propertyState)
         values = []
-        
+
         for state in states:
             val = column.derived_column.evaluate(state)
             if val is not None:
@@ -180,7 +181,7 @@ class DataView(models.Model):
                 views = self._get_filter_group_views(cycle, query_dict)
                 views_by_filter[filter_group['name']][cycle.name] = views
                 response['filter_group_view_ids'][filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
-        
+
         return response, views_by_filter
 
 

@@ -6,17 +6,17 @@
 """
 import operator
 import re
-from functools import reduce
-
-from django.db.models import Q
-from past.builtins import basestring
-from django.db import models
-from datetime import datetime
 from dataclasses import dataclass
-from typing import Any, Callable, Union
+from datetime import datetime
 from enum import Enum
+from functools import reduce
+from typing import Any, Callable, Union
+
+from django.db import models
+from django.db.models import Q
 from django.db.models.functions import Cast, NullIf, Replace
 from django.http.request import QueryDict
+from past.builtins import basestring
 
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
 DATE_FIELDS = ['year_ending']
