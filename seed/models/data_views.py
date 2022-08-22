@@ -182,6 +182,6 @@ class DataViewParameter(models.Model):
     data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name='parameters')
     column = models.ForeignKey(Column, on_delete=models.CASCADE)
     location = models.CharField(max_length=255)
-    aggregations = models.JSONField()
+    aggregations = models.JSONField(blank=True)
     # target field is undetermined, this is a stand in
     target = models.CharField(max_length=255, blank=True)
