@@ -781,6 +781,7 @@ class DataViewInventoryTests(TestCase):
         self.assertEqual([self.vw_office11.id, self.vw_retail12.id], sorted(data['fg_or']['Cycle A']))
         self.assertEqual([self.vw_office20.id, self.vw_office21.id, self.vw_retail22.id], sorted(data['fg_or']['Cycle B']))
         self.assertEqual([], data['fg_or']['Cycle C'])
-        
 
-        breakpoint()
+        self.assertEqual([self.vw_office10.id, self.vw_office11.id], sorted(data['fg_exc']['Cycle A']))
+        self.assertEqual([self.vw_office21.id, self.vw_retail22.id], sorted(data['fg_exc']['Cycle B']))
+        self.assertEqual([self.vw_office30.id, self.vw_office31.id, self.vw_retail32.id], sorted(data['fg_exc']['Cycle C']))

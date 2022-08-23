@@ -189,8 +189,6 @@ class DataView(models.Model):
         elif logic == 'exclude':
             return list(cycle.propertyview_set.exclude(labels__in=labels))
 
-        return None
-
     def _get_filter_group_views(self, cycle, query_dict):
         org_id = self.organization.id
         columns = Column.retrieve_all(
