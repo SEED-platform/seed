@@ -511,6 +511,12 @@ class PropertyState(models.Model):
                         done_searching = True
                     else:
                         log = tree
+
+                    # ony get 10 histories at max
+                    if len(history) > 10:
+                        history = history[:10]
+                        break
+
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
