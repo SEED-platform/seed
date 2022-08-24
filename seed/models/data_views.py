@@ -55,25 +55,25 @@ class DataView(models.Model):
                 'data_view': self.id,
             },
             'filter_group_view_ids': {},
-            'data': {}
+            'columns_by_id': {}
         }
         response['filter_group_view_ids'], views_by_filter = self.views_by_filter()
 
-        # assign data based on source column name
+        # assign data based on source column id
         for parameter in self.parameters.all():
-            data = response['data']
-            column_name = parameter.column.column_name
-            data[column_name] = {'filter_groups': {}, 'unit': None}
+            data = response['columns_by_id']
+            column_id = parameter.column.id
+            data[column_id] = {'filter_groups': {}, 'unit': None}
 
-            # self._assign_data_based_on_filter_groups(data, column_name, views_by_filter, parameter)
+            # self._assign_data_based_on_filter_groups(data, column_id, views_by_filter, parameter)
             for filter_group in self.filter_groups:
                 filter_name = filter_group['name']
-                data[column_name]['filter_groups'][filter_name] = {}
+                data[column_id]['filter_groups'][filter_name] = {}
 
                 # each filter group will contain list[dict] for each aggregation type and disaggregated property views values by view id
                 # and disaggregated property views values by view id
                 for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
-                    self._format_filter_group_data(data, column_name, filter_name, aggregation)
+                    self._format_filter_group_data(data, column_id, filter_name, aggregation)
 
                     for cycle in self.cycles.all():
                         views = views_by_filter[filter_name][cycle.name]
@@ -83,27 +83,27 @@ class DataView(models.Model):
                         if aggregation == 'views_by_id':
                             for view in views:
                                 # Default assignment on first pass
-                                data[column_name]['filter_groups'][filter_name][aggregation][view.id] = data[column_name]['filter_groups'][filter_name][aggregation].get(view.id, [])
+                                data[column_id]['filter_groups'][filter_name][aggregation][view.id] = data[column_id]['filter_groups'][filter_name][aggregation].get(view.id, [])
                                 state_data, unit = self._format_view_state_data(cycle, parameter, view)
 
-                                if not data[column_name].get('unit'):
-                                    data[column_name]['unit'] = unit
+                                if not data[column_id].get('unit'):
+                                    data[column_id]['unit'] = unit
 
-                                data[column_name]['filter_groups'][filter_name][aggregation][view.id].append(state_data)
+                                data[column_id]['filter_groups'][filter_name][aggregation][view.id].append(state_data)
 
                         # aggregation_type: {'cycle': cycle.name, 'value': value}
                         else:
                             value = self._evaluate_aggregation(states, aggregation, parameter.column)
                             value_dict = {'cycle': cycle.name, 'value': value}
-                            data[column_name]['filter_groups'][filter_name][aggregation.name].append(value_dict)
+                            data[column_id]['filter_groups'][filter_name][aggregation.name].append(value_dict)
 
         return response
 
-    def _format_filter_group_data(self, data, column_name, filter_name, aggregation):
+    def _format_filter_group_data(self, data, coumn_id, filter_name, aggregation):
         if aggregation == 'views_by_id':
-            data[column_name]['filter_groups'][filter_name][aggregation] = {}
+            data[coumn_id]['filter_groups'][filter_name][aggregation] = {}
         else:
-            data[column_name]['filter_groups'][filter_name][aggregation.name] = []
+            data[coumn_id]['filter_groups'][filter_name][aggregation.name] = []
 
     def _format_view_state_data(self, cycle, parameter, view):
         state_data = {'cycle': cycle.name}
@@ -199,7 +199,6 @@ class DataView(models.Model):
         annotations = ''
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
-
         except Exception:
             logging.error('error with filter group')
 
@@ -210,7 +209,6 @@ class DataView(models.Model):
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
-
 
 class DataViewParameter(models.Model):
     data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name='parameters')

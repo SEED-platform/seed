@@ -436,7 +436,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual('success', data['status'])
 
         data = data['data']
-        self.assertEqual(['meta', 'filter_group_view_ids', 'data'], list(data.keys()))
+        self.assertEqual(['meta', 'filter_group_view_ids', 'columns_by_id'], list(data.keys()))
 
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
@@ -454,13 +454,13 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual([self.vw_retail42.id, self.vw_retail43.id], retail['Cycle D'])
 
         data = data['data']
-        self.assertEqual(['site_eui', 'total_ghg_emissions'], list(data.keys()))
-        self.assertEqual(['filter_groups', 'unit'], list(data['site_eui'].keys()))
-        self.assertEqual('kBtu/ft²/year', data['site_eui']['unit'])
-        self.assertEqual('t/year', data['total_ghg_emissions']['unit'])
+        self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
+        self.assertEqual(['filter_groups', 'unit'], list(data[str(self.site_eui.id)].keys()))
+        self.assertEqual('kBtu/ft²/year', data[str(self.site_eui.id)]['unit'])
+        self.assertEqual('t/year', data[str(self.ghg.id)]['unit'])
 
-        office = data['site_eui']['filter_groups']['office']
-        retail = data['site_eui']['filter_groups']['retail']
+        office = data[str(self.site_eui.id)]['filter_groups']['office']
+        retail = data[str(self.site_eui.id)]['filter_groups']['retail']
         self.assertEqual(['Avg', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(office.keys()))
         self.assertEqual(['Avg', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(retail.keys()))
 
@@ -497,7 +497,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(12, retail['views_by_id'][str(self.vw_retail12.id)][0]['value'])
         self.assertEqual(42, retail['views_by_id'][str(self.vw_retail42.id)][0]['value'])
 
-        office = data['total_ghg_emissions']['filter_groups']['office']
+        office = data[str(self.ghg.id)]['filter_groups']['office']
         self.assertEqual(105, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
         self.assertEqual(305, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle C'][0]['value'])
         self.assertEqual(405, [cycle for cycle in office['Avg'] if cycle['cycle'] == 'Cycle D'][0]['value'])
@@ -523,7 +523,7 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view2.id]) + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
-        data = data['data']['data']['extra_col']
+        data = data['data']['columns_by_id'][str(self.extra_col.id)]
         three_properties = data['filter_groups']['three_properties']
 
         self.assertEqual(1100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
@@ -583,7 +583,7 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
-        data = data['data']['data'][self.dc_column.column_name]['filter_groups'][self.data_view3.filter_groups[0]['name']]
+        data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups'][self.data_view3.filter_groups[0]['name']]
 
         # ex:
         # Cycle A
