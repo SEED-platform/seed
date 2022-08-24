@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.data_view', [])
     'data_views',
     'data_view_service',
     'property_columns',
+    'spinner_utility',
     'taxlot_columns',
     'valid_column_data_types',
     function (
@@ -23,41 +24,22 @@ angular.module('BE.seed.controller.data_view', [])
       data_views,
       data_view_service,
       property_columns,
+      spinner_utility,
       taxlot_columns,
       valid_column_data_types
     ) {
+      spinner_utility.show();
       $scope.id = $stateParams.id;
       $scope.valid_column_data_types = valid_column_data_types;
       $scope.editing = false;
       $scope.create_errors = [];
       $scope.data_views_error = null;
+      $scope.cycles = cycles.cycles;
       $scope.fields = {
         'filter_group_checkboxes': {},
         'cycle_checkboxes': {},
         'name': ''
       };
-
-      let _init_fields = function () {
-        for (let i in $scope.filter_groups) {
-          $scope.fields.filter_group_checkboxes[$scope.filter_groups[i].id] = false;
-        }
-        for (let i in $scope.cycles) {
-          $scope.fields.cycle_checkboxes[$scope.cycles[i].id] = false;
-        }
-        $scope.source_column_by_location['first_axis'] = null;
-        $scope.source_column_by_location['second_axis'] = null;
-      };
-
-      let _collect_array_as_object = function (array) {
-        ret = {};
-        for (let i in array) {
-          ret[array[i]['id']] = array[i];
-        }
-        return ret;
-      };
-
-      // load aggregations
-      // todo: load in controller
       $scope.aggregations = [
         {id: 1, name: 'Average'},
         {id: 2, name: 'Minimum'},
@@ -65,31 +47,6 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 4, name: 'Sum'},
         {id: 5, name: 'Count'}
       ];
-
-      // load data views
-      // todo: load in controller
-      $scope.data_views = data_views;
-      if (data_views.status == 'error') {
-        $scope.data_views_error = data_views.message;
-      }
-      $scope.has_data_views = $scope.data_views.length > 0;
-      console.log($scope.data_views);
-      $scope.selected_data_view = $scope.id ? Object.assign({}, $scope.data_views.find(item => item.id === $scope.id)) : null;
-      console.log($scope.selected_data_view);
-
-      // load cycles
-      // todo: load selected_cycles from memory
-      $scope.cycles = cycles.cycles;
-      $scope.used_cycles = {};
-      if ($scope.selected_data_view) {
-        $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
-      }
-      $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
-      $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
-
-      // load filter groups
-      // todo: load in controller
-      // todo: load selected_filter_groups from memory
       $scope.filter_groups = [
         {id: 1, name: 'Filter Group #1'},
         {id: 2, name: 'Filter Group #2'},
@@ -108,26 +65,78 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 15, name: 'Filter Group #15'},
         {id: 16, name: 'Filter Group #16'}
       ];
-      $scope.used_filter_groups = {};
-      if ($scope.selected_data_view) {
-        $scope.used_filter_groups = _collect_array_as_object($scope.filter_groups.filter(item => $scope.selected_data_view.filter_groups.includes(item.id)));
-      }
-      $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
 
-      // load source columns
-      // todo: load based on filter groups returned properties
-      // todo: load source_column_by_location from memory
-      $scope.source_columns = {
-        'property': property_columns,
-        'taxlot': taxlot_columns,
-        'by_id': Object.assign(_collect_array_as_object(property_columns), _collect_array_as_object(taxlot_columns))
+      let _collect_array_as_object = function (array) {
+        ret = {};
+        for (let i in array) {
+          ret[array[i]['id']] = array[i];
+        }
+        return ret;
       };
-      $scope.source_column_by_location = {
-        'first_axis': Object.assign({}, $scope.source_columns['property'][0]),
-        'second_axis': null
+
+      let _init_fields = function () {
+        for (let i in $scope.filter_groups) {
+          $scope.fields.filter_group_checkboxes[$scope.filter_groups[i].id] = false;
+        }
+        for (let i in $scope.cycles) {
+          $scope.fields.cycle_checkboxes[$scope.cycles[i].id] = false;
+        }
+        $scope.source_column_by_location = {'first_axis': null, 'second_axis': null};
       };
-      $scope.selected_table_location = 'first_axis';
-      $scope.selected_table_aggregation = 1;
+
+      let _init_data = function () {
+
+        // load data views
+        $scope.data_views = data_views;
+        if (data_views.status == 'error') {
+          $scope.data_views_error = data_views.message;
+        }
+        $scope.has_data_views = $scope.data_views.length > 0;
+        $scope.selected_data_view = $scope.id ? Object.assign({}, $scope.data_views.find(item => item.id === $scope.id)) : null;
+        console.log($scope.selected_data_view);
+
+        // load cycles
+        $scope.used_cycles = {};
+        if ($scope.selected_data_view) {
+          $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
+        }
+        $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
+        $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
+
+        // load source columns
+        $scope.source_columns = {
+          'property': property_columns,
+          'taxlot': taxlot_columns,
+          'by_id': Object.assign(_collect_array_as_object(property_columns), _collect_array_as_object(taxlot_columns))
+        };
+
+        // load axis'
+        if ($scope.selected_data_view) {
+          let first_axis_aggregations = $scope.selected_data_view.parameters.find(item => item.location == 'first_axis');
+          if (first_axis_aggregations) {
+            $scope.selected_table_location = 'first_axis';
+            $scope.selected_table_aggregation = first_axis_aggregations['aggregations'][0];
+            $scope.select_source_column('first_axis', first_axis_aggregations.column);
+            for (let i in first_axis_aggregations['aggregations']) {
+              $scope.toggle_aggregation('first_axis', first_axis_aggregations['aggregations'][i]);
+            }
+          }
+          let second_axis_aggregations = $scope.selected_data_view.parameters.find(item => item.location == 'second_axis');
+          if (second_axis_aggregations) {
+            $scope.select_source_column('second_axis', second_axis_aggregations.column);
+            for (let i in second_axis_aggregations['aggregations']) {
+              $scope.toggle_aggregation('second_axis', second_axis_aggregations['aggregations'][i]);
+            }
+          }
+        }
+
+        // load filter groups
+        $scope.used_filter_groups = {};
+        if ($scope.selected_data_view) {
+          $scope.used_filter_groups = _collect_array_as_object($scope.filter_groups.filter(item => $scope.selected_data_view.filter_groups.includes(item.id)));
+        }
+        $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
+      };
 
       $scope.object_has_key = function (a, b) {
         return Object.keys(a).includes(String(b));
@@ -177,25 +186,31 @@ angular.module('BE.seed.controller.data_view', [])
       };
 
       $scope.select_source_column = function (location, source_column_id) {
+        console.log(location, source_column_id, $scope.source_columns.by_id[source_column_id]);
         if (source_column_id) {
+          console.log($scope.source_column_by_location[location])
           $scope.source_column_by_location[location] = Object.assign({}, $scope.source_columns.by_id[source_column_id]);
+          console.log(1, $scope.source_column_by_location[location])
         } else {
           $scope.source_column_by_location[location] = null;
         }
         if ($scope.editing) {
           return;
         }
+        console.log(2, $scope.source_column_by_location[location])
         switch (location) {
           case 'first_axis':
             $scope.selected_data_view.first_axis_aggregations = [];
+            console.log(3, $scope.source_column_by_location[location])
             break;
           case 'second_axis':
             $scope.selected_data_view.second_axis_aggregations = [];
             break;
          default:
-
            return;
         }
+        console.log(4, $scope.source_column_by_location[location])
+        console.log($scope.source_column_by_location)
       };
 
       $scope.click_new_data_view = function() {
@@ -254,7 +269,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         // create data view
-        let filter_groups = {'name': 'fg_name', 'query_dict': {'site_eui__gt': 1}};
+        let filter_groups = [{'name': 'fg_name', 'query_dict': {'site_eui__gt': 1}}];
         let aggregations = [];
         if ($scope.source_column_by_location['first_axis']) {
           aggregations.push({
@@ -278,13 +293,15 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.editing = false;
       };
 
-      _init_fields();
-
       $scope.click_cancel = function() {
         $scope.selected_data_view = null;
         $scope.create_errors = [];
         _init_fields();
         $scope.editing = false;
       };
+
+      _init_fields();
+      _init_data();
+      spinner_utility.hide();
     }
   ]);
