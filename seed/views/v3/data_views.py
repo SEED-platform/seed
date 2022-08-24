@@ -184,6 +184,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
 
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
@@ -206,6 +207,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             'data': response
         })
 
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
