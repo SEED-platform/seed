@@ -205,3 +205,25 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             'status': 'success',
             'data': response
         })
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['GET'])
+    def inventory(self, request, pk):
+        organization = self.get_organization(request)
+        deepcopy(request.data)
+
+        try:
+            data_view = DataView.objects.get(id=pk, organization=organization)
+        except DataView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'DataView with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        response = data_view.get_inventory()
+        return JsonResponse({
+            'status': 'success',
+            'data': response
+        })

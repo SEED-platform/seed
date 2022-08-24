@@ -14,6 +14,7 @@ from django.http import QueryDict
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
+from seed.models.models import StatusLabel as Label
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
@@ -24,6 +25,29 @@ class DataView(models.Model):
     cycles = models.ManyToManyField(Cycle)
     filter_groups = models.JSONField()
 
+    def get_inventory(self):
+        filter_group_view_ids, _ = self.views_by_filter()
+        return filter_group_view_ids
+
+    def views_by_filter(self):
+        filter_group_views = {}
+        filter_group_view_ids = {}
+        for filter_group in self.filter_groups:
+            filter_group_view_ids[filter_group['name']] = {}
+            filter_group_views[filter_group['name']] = {}
+            query_dict = QueryDict(mutable=True)
+            query_dict.update(filter_group['query_dict'])
+            for cycle in self.cycles.all():
+                filter_views = self._get_filter_group_views(cycle, query_dict)
+                label_views = self._get_label_views(cycle, filter_group)
+                views = self._combine_views(filter_views, label_views)
+                # views = filter_views
+                filter_group_views[filter_group['name']][cycle.name] = views
+                filter_group_view_ids[filter_group['name']][cycle.name] = [view.id for view in views]
+                # filter_group_view_ids[filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
+
+        return filter_group_view_ids, filter_group_views
+
     def evaluate(self):
         response = {
             'meta': {
@@ -33,7 +57,7 @@ class DataView(models.Model):
             'filter_group_view_ids': {},
             'data': {}
         }
-        response, views_by_filter = self._views_by_filter(response)
+        response['filter_group_view_ids'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column name
         for parameter in self.parameters.all():
@@ -140,6 +164,30 @@ class DataView(models.Model):
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)
 
+    def _combine_views(self, filter_views, label_views):
+        if label_views or label_views == []:
+            return list(set.intersection(*map(set, [label_views, filter_views])))
+        else:
+            return list(filter_views)
+
+    def _get_label_views(self, cycle, filter_group):
+        if not filter_group.get('labels') or not filter_group.get('label_logic'):
+            return None
+
+        logic = filter_group['label_logic']
+        labels = Label.objects.filter(id__in=filter_group['labels'])
+
+        if logic == 'and':
+            views_all = []
+            for label in labels:
+                views = cycle.propertyview_set.filter(labels__in=[label])
+                views_all.append(views)
+            return list(set.intersection(*map(set, views_all)))
+        elif logic == 'or':
+            return list(cycle.propertyview_set.filter(labels__in=labels))
+        elif logic == 'exclude':
+            return list(cycle.propertyview_set.exclude(labels__in=labels))
+
     def _get_filter_group_views(self, cycle, query_dict):
         org_id = self.organization.id
         columns = Column.retrieve_all(
@@ -162,20 +210,6 @@ class DataView(models.Model):
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
-
-    def _views_by_filter(self, response):
-        views_by_filter = {}
-        for filter_group in self.filter_groups:
-            response['filter_group_view_ids'][filter_group['name']] = {}
-            query_dict = QueryDict(mutable=True)
-            query_dict.update(filter_group['query_dict'])
-            views_by_filter[filter_group['name']] = {}
-            for cycle in self.cycles.all():
-                views = self._get_filter_group_views(cycle, query_dict)
-                views_by_filter[filter_group['name']][cycle.name] = views
-                response['filter_group_view_ids'][filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
-
-        return response, views_by_filter
 
 
 class DataViewParameter(models.Model):

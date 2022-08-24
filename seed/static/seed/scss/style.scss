@@ -4306,6 +4306,7 @@ iframe.analysis-results {
 }
 
 .r-row {
+<<<<<<< HEAD
     display: flex;
     margin: 0 0;
     flex-grow: 1;
@@ -4326,11 +4327,26 @@ iframe.analysis-results {
     > input[type=checkbox] {
       margin: 0;
     }
+=======
+  display: flex;
+  margin: 0 0;
+  flex-grow: 1;
+  align-items: center;
 
-    > label {
-      margin: 0;
-      padding: 0;
-    }
+  & .r-shrink {
+    flex-grow: 0;
+    flex-shrink: 1;
+  }
+
+  > input[type="checkbox"] {
+    margin: 0;
+  }
+>>>>>>> ee47caf6b9764a3a18a70ef56999fd60655b7ad8
+
+  > label {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .r-grow {
@@ -4351,6 +4367,7 @@ ul.r-list {
   > li {
     border-bottom: 1px solid #b3b3b3;
     padding: 5px;
+<<<<<<< HEAD
     
     &.r-row {
 
@@ -4358,6 +4375,15 @@ ul.r-list {
         padding: 0;
         margin: 0;
       }
+=======
+  }
+
+  > li.r-row {
+    > input[type="checkbox"] {
+      padding: 0;
+      margin: 0;
+    }
+>>>>>>> ee47caf6b9764a3a18a70ef56999fd60655b7ad8
 
       > label {
         margin: 0;
@@ -4377,7 +4403,7 @@ ul.r-list {
     font-weight: bold;
     background-color: $infoBackground;
   }
-  
+
   > .r-list-header {
     font-weight: bold;
     text-transform: uppercase;
@@ -4398,7 +4424,7 @@ ul.r-list {
   background-color: $infoBackground;
 }
 
-.r-selected, {
+.r-selected {
   background-color: $successBackground;
 }
 
