@@ -4309,11 +4309,18 @@ iframe.analysis-results {
     display: flex;
     margin: 0 0;
     flex-grow: 1;
-    align-items: center;
 
-    & .r-shrink {
+    &.r-shrink {
       flex-grow: 0;
       flex-shrink: 1;
+    }
+
+    &.r-pull-right {
+      justify-content: right;
+    }
+
+    &.r-row-centered {
+      align-items: center;
     }
 
     > input[type=checkbox] {
@@ -4344,18 +4351,18 @@ ul.r-list {
   > li {
     border-bottom: 1px solid #b3b3b3;
     padding: 5px;
-  }
+    
+    &.r-row {
 
-  > li.r-row {
+      > input[type=checkbox] {
+        padding: 0;
+        margin: 0;
+      }
 
-    > input[type=checkbox] {
-      padding: 0;
-      margin: 0;
-    }
-
-    > label {
-      margin: 0;
-      font-weight: normal;
+      > label {
+        margin: 0;
+        font-weight: normal;
+      }
     }
   }
 
@@ -4401,9 +4408,21 @@ ul.r-list {
 
 .r-panel {
   border: 1px solid #eee;
-  padding: 10px 10px 5px 10px;
+  padding: 10px;
   border-radius: 5px;
   background-color: #f1f1f1;
+
+  &.r-warning {
+    color: $warningText;
+    background-color: $warningBackground;
+    border: 1px solid $warningBorder;
+  }
+
+  &.r-error {
+    color: $errorText;
+    background-color: $errorBackground;
+    border: 1px solid $errorBorder;
+  }
 }
 
 .r-no-margin {
@@ -4424,4 +4443,12 @@ ul.r-list {
 
 .r-margin-right-5 {
   margin-right: 5px !important;
+}
+
+.r-margin-top-10 {
+  margin-top: 10px !important;
+}
+
+.r-margin-bottom-10 {
+  margin-bottom: 10px !important;
 }

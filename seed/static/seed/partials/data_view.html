@@ -22,37 +22,40 @@
                 <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end><a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a></li>
             </ul>
             <ul class="r-list">
-                <li><button class="btn btn-success r-grow"><i class="fa fa-plus-circle r-pad-right-5"></i>New Data View</button></li>
+                <li><button class="btn btn-success r-grow" ng-click="click_new_data_view()" ng-disabled="editing"><i class="fa fa-plus-circle r-pad-right-5"></i>New Data View</button></li>
             </ul>
         </div>
 
-        <div ng-if="!selected_data_view" class="r-panel r-grow">
-            <b ng-if="data_views.length < 1" translate>No Data Views Created</b>
-            <p ng-if="data_views.length < 1"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Data View to get started!</span></p>
-            <b ng-if="data_views.length > 0" translate>No Data View Selected</b>
-            <p ng-if="data_views.length > 0"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Data View to get started!</span></p>
+        <div ng-if="!selected_data_view && !editing" class="r-panel r-column r-grow">
+            <div ng-if="data_views_error" class="r-panel r-error r-margin-bottom-10">{$ data_views_error $}</div>
+            <b ng-if="!has_data_views" translate>No Data Views Created</b>
+            <p ng-if="!has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Data View to get started!</span></p>
+            <b ng-if="has_data_views" translate>No Data View Selected</b>
+            <p ng-if="has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Data View to get started!</span></p>
             <b translate>What is a Data View?</b>
             <p translate>A Data View allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time.</p>
         </div>
 
-        <div ng-if="selected_data_view" class="r-panel r-columns r-grow r-no-margin">
+        <div ng-if="selected_data_view || editing" class="r-panel r-columns r-grow r-no-margin">
             <div class="r-column">
                 <ul class="r-list">
                     <li class="r-list-header" translate>Filter Groups</li>
                 </ul>
-                <ul class="r-list r-scrollable">
-                    <li ng-if="editing" ng-repeat-start="filter_group in used_filter_groups" ng-repeat-end class="r-row r-selectable">
-                        <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" checked="true" class="r-margin-right-5"/>
+                <ul class="r-list">
+                    <li ng-if="editing && fields.filter_group_checkboxes[filter_group.id]" ng-repeat-start="filter_group in filter_groups" ng-repeat-end class="r-row r-selected">
+                        <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.filter_group_checkboxes[filter_group.id]"/>
                         <label for="input-filter-group-{$:: filter_group.id $}">{$:: filter_group.name $}</label>
                     </li>
-                    <li ng-if="editing && !selected_data_view.filter_groups.includes(filter_group.id)" ng-repeat-start="filter_group in filter_groups" ng-repeat-end class="r-row r-selectable">
-                        <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5"/>
+                </ul>
+                <ul class="r-list r-scrollable">
+                    <li ng-if="editing && !fields.filter_group_checkboxes[filter_group.id]" ng-repeat-start="filter_group in filter_groups" ng-repeat-end class="r-row">
+                        <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.filter_group_checkboxes[filter_group.id]"/>
                         <label for="input-filter-group-{$:: filter_group.id $}">{$:: filter_group.name $}</label>
                     </li>
                     <li ng-if="!editing" ng-repeat-start="filter_group in used_filter_groups" ng-repeat-end ng-class="object_has_key(selected_filter_groups, filter_group.id) ? 'r-selected' : ''" class="r-row r-selectable" ng-click="toggle_filter_group(filter_group.id)">{$:: filter_group.name $}</li>
                 </ul>
                 <ul class="r-list">
-                    <li ng-if="!object_has_any_key(selected_filter_groups)" class="r-info">
+                    <li ng-if="!object_has_any_key(selected_filter_groups) || editing" class="r-info">
                         <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select one or more filter groups to load your inventory.</span>
                     </li>
                 </ul>
@@ -62,19 +65,21 @@
                 <ul class="r-list">
                     <li class="r-list-header" translate>Cycles</li>
                 </ul>
-                <ul class="r-list r-scrollable">
-                    <li ng-if="editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end class="r-row r-selectable">
-                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" checked="true" class="r-margin-right-5"/>
-                        <label for="input-cycle-{$:: cycle.id $}">{$:: cycle.name $}</label>
-                    </li>
-                    <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.id) ? 'r-selected' : ''" class="r-row r-selectable" ng-click="toggle_cycle(cycle.id)">{$:: cycle.name $}</li>
-                    <li ng-if="editing && !selected_data_view.cycles.includes(cycle.id)" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row r-selectable">
-                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5"/>
+                <ul class="r-list">
+                    <li ng-if="editing && fields.cycle_checkboxes[cycle.id]" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row r-selected">
+                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
                         <label for="input-cycle-{$:: cycle.id $}">{$:: cycle.name $}</label>
                     </li>
                 </ul>
+                <ul class="r-list r-scrollable">
+                    <li ng-if="editing && !fields.cycle_checkboxes[cycle.id]" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row">
+                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
+                        <label for="input-cycle-{$:: cycle.id $}">{$:: cycle.name $}</label>
+                    </li>
+                    <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.id) ? 'r-selected' : ''" class="r-row r-selectable" ng-click="toggle_cycle(cycle.id)">{$:: cycle.name $}</li>
+                </ul>
                 <ul class="r-list">
-                    <li ng-if="!object_has_any_key(selected_cycles)" class="r-info">
+                    <li ng-if="!object_has_any_key(selected_cycles) || editing" class="r-info">
                         <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select one or more cycles to populate the horizontal axis.</span>
                     </li>
                 </ul>
@@ -83,16 +88,22 @@
             <div class="r-column table_list_container">
                 <ul class="r-list">
                     <li class="r-list-header" translate>First Axis</li>
-                    <li class="r-row">
+                    <li class="r-row r-row-centered">
                         <label for="select-first-axis" class="r-pad-right-5" translate>Column</label>
                         <select id="select-first-axis" class="form-control" ng-change="select_source_column('first_axis', source_column_by_location['first_axis']['id'])" ng-model="source_column_by_location['first_axis']['id']">
                             <option value=""></option>
-                            <option ng-if="source_column.id != source_column_by_location['second_axis']['id']" ng-repeat="source_column in source_columns" ng-value="source_column.id">{$:: source_column.name $} ({$:: source_column.units $})</option>
+                            <optgroup label="Property Columns">
+                                <option ng-if="source_column.id != source_column_by_location['second_axis']['id']" ng-repeat="source_column in source_columns['property']" ng-value="source_column.id">{$:: source_column.displayName $} ({$:: source_column.data_type $})</option>
+                            </optgroup>
+                            <optgroup label="Taxlot Columns">
+                                <option ng-if="source_column.id != source_column_by_location['second_axis']['id']" ng-repeat="source_column in source_columns['taxlot']" ng-value="source_column.id">{$:: source_column.displayName $} ({$:: source_column.data_type $})</option>
+                            </optgroup>
                         </select>
                     </li>
                     <li ng-if="source_column_by_location['first_axis']['id']" ng-repeat-start="aggregation in aggregations" ng-repeat-end ng-class="selected_data_view.first_axis_aggregations.includes(aggregation.id) ? 'r-selected' : ''" class="r-row r-selectable" ng-click="toggle_aggregation('first_axis', aggregation.id)">{$:: aggregation.name $}</li>
                     <li ng-if="!source_column_by_location['first_axis']['id']" class="r-info">
-                        <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select a column to show data on this axis.</span>
+                        <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select a column to show data on this axis.  Only columns with one of these data types will be listed: </span>
+                        <span ng-repeat="type in valid_column_data_types">{$ type $}{$ $last ? '' : ', ' $}</span>
                     </li>
                     <li ng-if="source_column_by_location['first_axis']['id'] && selected_data_view.first_axis_aggregations.length < 1" class="r-info">
                         <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select one or more aggregation methods to show data on this axis.</span>
@@ -103,28 +114,47 @@
             <div class="r-column table_list_container">
                 <ul class="r-list">
                     <li class="r-list-header" translate>Second Axis</li>
-                    <li class="r-row">
+                    <li class="r-row r-row-centered">
                         <label for="select-second-axis" class="r-pad-right-5" translate>Column</label>
                         <select id="select-second-axis" class="form-control" ng-change="select_source_column('second_axis', source_column_by_location['second_axis']['id'])" ng-model="source_column_by_location['second_axis']['id']">
                             <option value=""></option>
-                            <option ng-if="source_column.id != source_column_by_location['first_axis']['id']" ng-repeat="source_column in source_columns" ng-value="source_column.id">{$:: source_column.name $} ({$:: source_column.units $})</option>
+                            <optgroup label="Property Columns">
+                                <option ng-if="source_column.id != source_column_by_location['first_axis']['id']" ng-repeat="source_column in source_columns['property']" ng-value="source_column.id">{$:: source_column.displayName $} ({$:: source_column.data_type $})</option>
+                            </optgroup>
+                            <optgroup label="Taxlot Columns">
+                                <option ng-if="source_column.id != source_column_by_location['first_axis']['id']" ng-repeat="source_column in source_columns['taxlot']" ng-value="source_column.id">{$:: source_column.displayName $} ({$:: source_column.data_type $})</option>
+                            </optgroup>
                         </select>
                     </li>
                     <li ng-if="source_column_by_location['second_axis']['id']" ng-repeat-start="aggregation in aggregations" ng-repeat-end ng-class="selected_data_view.second_axis_aggregations.includes(aggregation.id) ? 'r-selected' : ''" class="r-row r-selectable" ng-click="toggle_aggregation('second_axis', aggregation.id)">{$:: aggregation.name $}</li>
                     <li ng-if="!source_column_by_location['second_axis']['id']" class="r-info">
-                        <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select a column to show data on this axis.</span>
+                        <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select a column to show data on this axis.  Only columns with one of these data types will be listed: </span>
+                        <span ng-repeat="type in valid_column_data_types">{$ type $}{$ $last ? '' : ', ' $}</span>
                     </li>
                     <li ng-if="source_column_by_location['second_axis']['id'] && selected_data_view.second_axis_aggregations.length < 1" class="r-info">
                         <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select one or more aggregation methods to show data on this axis.</span>
                     </li>
                 </ul>
             </div>
+        </div>
 
+        <div ng-if="editing" class="column">
+            <div ng-if="create_errors.length > 0" class="r-panel r-error r-margin-bottom-10">
+                <ul class="r-list"><li ng-repeat="error in create_errors">{$ error $}</li></ul>
+            </div>
+            <div class="r-row r-row-centered r-margin-bottom-10">
+                <label for="input-name" class="r-pad-right-5" translate>Name</label>
+                <input id="input-name" class="form-control" type="text" ng-model="fields.name"/>
+            </div>
+            <div class="r-row">
+                <button class="btn btn-info r-margin-right-5" ng-click="click_cancel()" translate>Cancel</button>
+                <button class="btn btn-primary" ng-click="click_save_changes()" translate>Save Changes</button>
+            </div>
         </div>
 
     </div>
 </div>
-<div class="section_content_container" ng-if="selected_data_view">
+<div class="section_content_container" ng-if="selected_data_view && !editing">
     <div class="section_content r-columns">
 
         <div class="r-column r-shrink table_list_container">
@@ -133,7 +163,7 @@
                     <tr>
                         <th rowspan="2" translate>Filter Group</th>
                         <th colspan="{$ selected_cycles_length $}">
-                            <div class="r-row">
+                            <div class="r-row r-row-centered">
                                 <select id="select-table-axis" class="form-control r-margin-right-5" ng-model="selected_table_location">
                                     <option ng-if="source_column_by_location['first_axis']" value="first_axis">{$ source_column_by_location['first_axis']['name'] $} ({$ source_column_by_location['first_axis']['units'] $})</option>
                                     <option ng-if="source_column_by_location['second_axis']" value="second_axis">{$ source_column_by_location['second_axis']['name'] $} ({$ source_column_by_location['second_axis']['units'] $})</option>

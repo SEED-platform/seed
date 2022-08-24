@@ -38,7 +38,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({
             'status': 'success',
-            'message': DataViewSerializer(data_view_queryset, many=True).data
+            'data_views': DataViewSerializer(data_view_queryset, many=True).data
         }, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
@@ -59,7 +59,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         except DataView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': f'DataView with id {pk} does not exist'
+                'message': f'Data View with id {pk} does not exist!'
             }, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema_org_query_param
