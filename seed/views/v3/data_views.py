@@ -5,7 +5,6 @@
 :author
 """
 from copy import deepcopy
-from traceback import print_tb
 
 import django.core.exceptions
 from django.http import JsonResponse

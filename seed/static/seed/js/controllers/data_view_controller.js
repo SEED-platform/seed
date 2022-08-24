@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.data_view', [])
       };
 
       // load aggregations
-      // todo: load in controller  
+      // todo: load in controller
       $scope.aggregations = [
         {id: 1, name: 'Average'},
         {id: 2, name: 'Minimum'},

@@ -4306,24 +4306,24 @@ iframe.analysis-results {
 }
 
 .r-row {
-    display: flex;
-    margin: 0 0;
-    flex-grow: 1;
-    align-items: center;
+  display: flex;
+  margin: 0 0;
+  flex-grow: 1;
+  align-items: center;
 
-    & .r-shrink {
-      flex-grow: 0;
-      flex-shrink: 1;
-    }
+  & .r-shrink {
+    flex-grow: 0;
+    flex-shrink: 1;
+  }
 
-    > input[type=checkbox] {
-      margin: 0;
-    }
+  > input[type="checkbox"] {
+    margin: 0;
+  }
 
-    > label {
-      margin: 0;
-      padding: 0;
-    }
+  > label {
+    margin: 0;
+    padding: 0;
+  }
 }
 
 .r-grow {
@@ -4347,8 +4347,7 @@ ul.r-list {
   }
 
   > li.r-row {
-
-    > input[type=checkbox] {
+    > input[type="checkbox"] {
       padding: 0;
       margin: 0;
     }
@@ -4370,7 +4369,7 @@ ul.r-list {
     font-weight: bold;
     background-color: $infoBackground;
   }
-  
+
   > .r-list-header {
     font-weight: bold;
     text-transform: uppercase;
@@ -4391,7 +4390,7 @@ ul.r-list {
   background-color: $infoBackground;
 }
 
-.r-selected, {
+.r-selected {
   background-color: $successBackground;
 }
 

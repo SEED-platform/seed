@@ -14,8 +14,8 @@ from django.http import QueryDict
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
-from seed.models.properties import PropertyState, PropertyView
 from seed.models.models import StatusLabel as Label
+from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
 
@@ -47,7 +47,6 @@ class DataView(models.Model):
                 # filter_group_view_ids[filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
 
         return filter_group_view_ids, filter_group_views
-
 
     def evaluate(self):
         response = {
@@ -211,7 +210,6 @@ class DataView(models.Model):
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
-
 
 
 class DataViewParameter(models.Model):

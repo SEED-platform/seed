@@ -18,10 +18,10 @@ from seed.models import (
     DataView,
     DataViewParameter,
     DerivedColumn,
-    PropertyView,
-    User,
-    StatusLabel as Label
+    PropertyView
 )
+from seed.models import StatusLabel as Label
+from seed.models import User
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeDerivedColumnFactory,
@@ -612,6 +612,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(22, data['views_by_id'][str(self.vw_retail12.id)][0]['value'])
         self.assertEqual(32, data['views_by_id'][str(self.vw_retail22.id)][0]['value'])
 
+
 class DataViewInventoryTests(TestCase):
     """
     Test DataView model's ability to return property views based on filter groups
@@ -672,7 +673,6 @@ class DataViewInventoryTests(TestCase):
         self.vw_retail12.labels.set([self.label1, self.label2, self.label3])
         self.vw_retail13.labels.set([self.label3])
 
-
         self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
         self.st_office21 = self.property_state_factory.get_property_state(property_name='st_office21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
         self.st_retail22 = self.property_state_factory.get_property_state(property_name='st_retail22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
@@ -686,7 +686,6 @@ class DataViewInventoryTests(TestCase):
         self.vw_office21.labels.set([self.label1, self.label2])
         self.vw_retail22.labels.set([self.label1, self.label2])
         self.vw_retail23.labels.set([self.label1, self.label2])
-
 
         self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
         self.st_office31 = self.property_state_factory.get_property_state(property_name='st_office31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
@@ -716,8 +715,8 @@ class DataViewInventoryTests(TestCase):
         self.data_view2 = DataView.objects.create(
             name='data view 2',
             filter_groups=[
-                {'name': 'fg1', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1'),},
-                {'name': 'fg2', 'query_dict': QueryDict('site_eui__gt=1'),}
+                {'name': 'fg1', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1')},
+                {'name': 'fg2', 'query_dict': QueryDict('site_eui__gt=1')}
             ],
             organization=self.org)
         self.data_view2.cycles.set([self.cycle1, self.cycle2, self.cycle3])
@@ -759,7 +758,6 @@ class DataViewInventoryTests(TestCase):
         data = data['data']
         exp_filter_group_names = [fg['name'] for fg in self.data_view2.filter_groups]
         self.assertEqual(list(data.keys()), exp_filter_group_names)
-
 
         self.assertEqual(data['fg1']['Cycle A'], [self.vw_office10.id, self.vw_office11.id, self.vw_retail12.id])
         self.assertEqual(data['fg1']['Cycle B'], [self.vw_office20.id, self.vw_office21.id, self.vw_retail22.id])
