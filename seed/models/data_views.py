@@ -55,13 +55,13 @@ class DataView(models.Model):
                 'data_view': self.id,
             },
             'filter_group_view_ids': {},
-            'data': {}
+            'columns_by_id': {}
         }
         response['filter_group_view_ids'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column id
         for parameter in self.parameters.all():
-            data = response['data']
+            data = response['columns_by_id']
             column_id = parameter.column.id
             data[column_id] = {'filter_groups': {}, 'unit': None}
 

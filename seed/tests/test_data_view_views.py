@@ -436,7 +436,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual('success', data['status'])
 
         data = data['data']
-        self.assertEqual(['meta', 'filter_group_view_ids', 'data'], list(data.keys()))
+        self.assertEqual(['meta', 'filter_group_view_ids', 'columns_by_id'], list(data.keys()))
 
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
@@ -523,7 +523,7 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view2.id]) + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
-        data = data['data']['data'][str(self.extra_col.id)]
+        data = data['data']['columns_by_id'][str(self.extra_col.id)]
         three_properties = data['filter_groups']['three_properties']
 
         self.assertEqual(1100, [cycle for cycle in three_properties['Avg'] if cycle['cycle'] == 'Cycle A'][0]['value'])
@@ -583,7 +583,7 @@ class DataViewEvaluationTests(TestCase):
             reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
-        data = data['data']['data'][str(self.dc_column.id)]['filter_groups'][self.data_view3.filter_groups[0]['name']]
+        data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups'][self.data_view3.filter_groups[0]['name']]
 
         # ex:
         # Cycle A
