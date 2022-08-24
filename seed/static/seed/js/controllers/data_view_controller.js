@@ -41,35 +41,20 @@ angular.module('BE.seed.controller.data_view', [])
         'name': ''
       };
       $scope.aggregations = [
-        {id: 1, name: 'Average'},
-        {id: 2, name: 'Minimum'},
-        {id: 3, name: 'Maximum'},
-        {id: 4, name: 'Sum'},
-        {id: 5, name: 'Count'}
+        {id: 1, name: 'Average', key: 'Avg'},
+        {id: 2, name: 'Minimum', key: 'Min'},
+        {id: 3, name: 'Maximum', key: 'Max'},
+        {id: 4, name: 'Sum', key: 'Sum'},
+        {id: 5, name: 'Count', key: 'Count'}
       ];
       $scope.filter_groups = [
-        {id: 1, name: 'Filter Group #1'},
-        {id: 2, name: 'Filter Group #2'},
-        {id: 3, name: 'Filter Group #3'},
-        {id: 4, name: 'Filter Group #4'},
-        {id: 5, name: 'Filter Group #5'},
-        {id: 6, name: 'Filter Group #6'},
-        {id: 7, name: 'Filter Group #7'},
-        {id: 8, name: 'Filter Group #8'},
-        {id: 9, name: 'Filter Group #9'},
-        {id: 10, name: 'Filter Group #10'},
-        {id: 11, name: 'Filter Group #11'},
-        {id: 12, name: 'Filter Group #12'},
-        {id: 13, name: 'Filter Group #13'},
-        {id: 14, name: 'Filter Group #14'},
-        {id: 15, name: 'Filter Group #15'},
-        {id: 16, name: 'Filter Group #16'}
+        {name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}}
       ];
 
-      let _collect_array_as_object = function (array) {
+      let _collect_array_as_object = function (array, key="id") {
         ret = {};
         for (let i in array) {
-          ret[array[i]['id']] = array[i];
+          ret[array[i][key]] = array[i];
         }
         return ret;
       };
@@ -138,9 +123,19 @@ angular.module('BE.seed.controller.data_view', [])
         // load filter groups
         $scope.used_filter_groups = {};
         if ($scope.selected_data_view) {
-          $scope.used_filter_groups = _collect_array_as_object($scope.filter_groups.filter(item => $scope.selected_data_view.filter_groups.includes(item.id)));
+          $scope.used_filter_groups = _collect_array_as_object($scope.selected_data_view.filter_groups, 'name');
         }
         $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
+      };
+
+      $scope.data = {};
+      let _load_data = function () {
+        if (!$scope.selected_data_view) {
+          return;
+        }
+        let data = data_view_service.evaluate_data_view($scope.selected_data_view.id).then((data) => {
+          $scope.data = data;
+        });
       };
 
       $scope.object_has_key = function (a, b) {
@@ -270,8 +265,8 @@ angular.module('BE.seed.controller.data_view', [])
           return;
         }
 
-        // create data view
-        let filter_groups = [{'name': 'fg_name', 'query_dict': {'site_eui__gt': 1}}];
+        // create/update data view
+        let filter_groups = $scope.filter_groups;
         let aggregations = [];
         if ($scope.source_column_by_location['first_axis']) {
           aggregations.push({
@@ -287,11 +282,23 @@ angular.module('BE.seed.controller.data_view', [])
             "aggregations": $scope.selected_data_view.second_axis_aggregations
           });
         }
-        let new_data_view = data_view_service.create_data_view($scope.fields.name, filter_groups, checked_cycles, aggregations).then((data) => {
-          if (data.status == 'success') {
-            window.location = '#/metrics/' + data.data_view.id;
-          }
-        });
+
+        let _done = function (data) {
+            if (data.status == 'success') {
+              window.location = '#/metrics/' + data.data_view.id;
+              return;
+            }
+            $scope.create_errors.push(data.message);
+            for (let i in data.errors) {
+              $scope.create_errors.push(data.errors[i]);
+            }
+        };
+
+        if ($scope.selected_data_view.id) {
+          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, filter_groups, checked_cycles, aggregations).then(_done);
+        } else {
+          let new_data_view = data_view_service.create_data_view($scope.fields.name, filter_groups, checked_cycles, aggregations).then(_done);
+        };
       };
 
       $scope.click_cancel = function () {
@@ -310,15 +317,10 @@ angular.module('BE.seed.controller.data_view', [])
           let delete_data_view = data_view_service.delete_data_view($scope.selected_data_view.id).then((data) => {
             if (data.status == 'success') {
               window.location = '#/metrics';
+            } else {
+
             }
           });
-          // $scope.data_views.filter(item => item.id == $scope.selected_data_view.id);
-          // $scope.selected_data_view = null;
-          // $scope.id = null;
-          // $scope.create_errors = [];
-          // _init_fields();
-          // _init_data();
-          // $scope.editing = false;
         }
         spinner_utility.hide();
       };
@@ -335,6 +337,7 @@ angular.module('BE.seed.controller.data_view', [])
 
       _init_fields();
       _init_data();
+      _load_data();
       spinner_utility.hide();
     }
   ]);

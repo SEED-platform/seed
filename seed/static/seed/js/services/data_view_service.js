@@ -21,7 +21,6 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
         return response.data.data_view;
       }).catch(function (response) {
         return response.data;
-      }).finally(function () {
       });
     };
 
@@ -34,7 +33,6 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
         return response.data.data_views;
       }).catch(function (response) {
         return response.data;
-      }).finally(function () {
       });
     };
 
@@ -50,6 +48,25 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
         }
       }).then(function (response) {
         return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
+    const update_data_view = function (id, name, filter_groups, cycles, data_aggregations) {
+      return $http.put('/api/v3/data_views/' + id + '/', {
+        'name': name,
+        'filter_groups': filter_groups,
+        'cycles': cycles,
+        'parameters': data_aggregations
+      }, {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data;
       });
     };
 
@@ -64,14 +81,30 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
         }
       }).then(function (response) {
         return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
+    const evaluate_data_view = function (data_view_id) {
+      return $http.get('/api/v3/data_views/' + data_view_id + '/evaluate', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      }).catch(function (response) {
+        return response.data;
       });
     };
 
     const data_view_factory = {
       'create_data_view': create_data_view,
       'delete_data_view': delete_data_view,
+      'evaluate_data_view': evaluate_data_view,
       'get_data_view': get_data_view,
-      'get_data_views': get_data_views
+      'get_data_views': get_data_views,
+      'update_data_view': update_data_view
     };
 
     return data_view_factory;

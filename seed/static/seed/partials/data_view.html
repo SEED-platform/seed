@@ -52,7 +52,7 @@
                         <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.filter_group_checkboxes[filter_group.id]"/>
                         <label for="input-filter-group-{$:: filter_group.id $}" class="r-no-wrap">{$:: filter_group.name $}</label>
                     </li>
-                    <li ng-if="!editing" ng-repeat-start="filter_group in used_filter_groups" ng-repeat-end ng-class="object_has_key(selected_filter_groups, filter_group.id) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_filter_group(filter_group.id)">{$:: filter_group.name $}</li>
+                    <li ng-if="!editing" ng-repeat-start="filter_group in used_filter_groups" ng-repeat-end ng-class="object_has_key(selected_filter_groups, filter_group.name) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_filter_group(filter_group.id)">{$:: filter_group.name $}</li>
                 </ul>
                 <ul class="r-list">
                     <li ng-if="!object_has_any_key(selected_filter_groups) || editing" class="r-info">
@@ -191,10 +191,10 @@
                     <tr ng-repeat="filter_group in selected_filter_groups">
                         <td class="r-selectable r-selected">{$:: filter_group.name $}</td>
                         <td ng-if="selected_table_location == 'first_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">1{$:: aggregation.name $}</span>
+                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">{$ data['columns_by_id'][source_column_by_location.first_axis.id]['filter_groups'][filter_group.name][aggregation.key] $}</span>
                         </td>
                         <td ng-if="selected_table_location == 'second_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">2{$:: aggregation.name $}</span>
+                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">{$ data['columns_by_id'][source_column_by_location.second_axis.id]['filter_groups'][filter_group.name][aggregation.key] $}</span>
                         </td>
                     </tr>
                 </tbody>
