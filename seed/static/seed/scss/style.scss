@@ -4338,9 +4338,22 @@ iframe.analysis-results {
   width: 100%;
 }
 
+.r-no-grow {
+  flex-grow: 0;
+  width: auto !important;
+}
+
 .r-shrink {
   flex-shrink: 1;
   flex-grow: 0 !important;
+}
+
+.r-no-shrink {
+  flex-shrink: 0;
+}
+
+.r-no-wrap {
+  white-space: nowrap;
 }
 
 ul.r-list {
@@ -4378,18 +4391,18 @@ ul.r-list {
     background-color: $infoBackground;
   }
 
-  > .r-list-header {
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color: #cdcdcd;
-    text-shadow: 0 1px 0 white;
-    border-bottom: 1px solid #b3b3b3;
-  }
-
   &.r-scrollable {
     max-height: 200px;
     overflow-y: scroll;
   }
+}
+
+.r-list-header {
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: #cdcdcd;
+  text-shadow: 0 1px 0 white;
+  border-bottom: 1px solid #b3b3b3;
 }
 
 .r-selectable:hover {
