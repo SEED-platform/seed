@@ -277,7 +277,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
         if ($scope.source_column_by_location['second_axis']) {
           aggregations.push({
-            "column": $scope.source_column_by_location['second_axis'][id],
+            "column": $scope.source_column_by_location['second_axis']['id'],
             "location": 'second_axis',
             "aggregations": $scope.selected_data_view.second_axis_aggregations
           });
@@ -285,7 +285,13 @@ angular.module('BE.seed.controller.data_view', [])
 
         let _done = function (data) {
             if (data.status == 'success') {
-              window.location = '#/metrics/' + data.data_view.id;
+              if (!$scope.selected_data_view.id) {
+                window.location = '#/metrics/' + data.data_view.id;
+                return;
+              }
+              _load_data();
+              spinner_utility.hide();
+              $scope.editing = false;
               return;
             }
             $scope.create_errors.push(data.message);
