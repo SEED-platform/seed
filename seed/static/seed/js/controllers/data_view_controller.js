@@ -326,6 +326,9 @@ angular.module('BE.seed.controller.data_view', [])
       $scope.click_edit = function () {
         spinner_utility.show();
         $scope.fields.name = $scope.selected_data_view.name;
+        for (let i in $scope.selected_data_view.cycles) {
+          $scope.fields.cycle_checkboxes[$scope.selected_data_view.cycles[i]] = true;
+        }
         $scope.editing = true;
         spinner_utility.hide();
       };

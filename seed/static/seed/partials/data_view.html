@@ -67,7 +67,7 @@
                 </ul>
                 <ul class="r-list">
                     <li ng-if="editing && fields.cycle_checkboxes[cycle.id]" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row r-selected">
-                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
+                        <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]" value="cycle.id"/>
                         <label for="input-cycle-{$:: cycle.id $}">{$:: cycle.name $}</label>
                     </li>
                 </ul>
