@@ -16,7 +16,7 @@
         <div class="r-column r-shrink">
             <ul class="r-list">
                 <li class="r-list-header" translate>Data View</li>
-                <li ng-if="selected_data_view" class="r-selected">{$:: selected_data_view.name $}</li>
+                <li ng-if="selected_data_view" class="r-selected">{$ selected_data_view.name $}</li>
             </ul>
             <ul class="r-list r-scrollable">
                 <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end><a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a></li>
@@ -135,6 +135,13 @@
                         <i class="fa fa-arrow-up r-pad-right-5"></i><span translate>Select one or more aggregation methods to show data on this axis.</span>
                     </li>
                 </ul>
+            </div>
+        </div>
+
+        <div ng-if="!editing && selected_data_view" class="column">
+            <div class="r-row">
+                <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+                <button class="btn btn-primary" ng-click="click_edit()" translate>Edit</button>
             </div>
         </div>
 

@@ -1,11 +1,11 @@
 angular.module('BE.seed.service.audit_template', []).factory('data_view_service', [
   '$http',
   '$log',
-  'spinner_utility',
+  'user_service',
   function (
     $http,
     $log,
-    spinner_utility
+    user_service
   ) {
 
     const get_data_view = function (data_view_id) {
@@ -49,13 +49,27 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
           'organization_id': user_service.get_organization().id
         }
       }).then(function (response) {
-        console.log(response);
+        return response.data;
+      });
+    };
+
+    const delete_data_view = function (data_view_id) {
+      if (_.isNil(data_view_id)) {
+        $log.error('#data_view_service.get_data_view(): data_view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+      return $http.delete('/api/v3/data_views/' + data_view_id + '/', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
         return response.data;
       });
     };
 
     const data_view_factory = {
       'create_data_view': create_data_view,
+      'delete_data_view': delete_data_view,
       'get_data_view': get_data_view,
       'get_data_views': get_data_views
     };
