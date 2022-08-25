@@ -187,14 +187,22 @@
                         <th ng-repeat="cycle in selected_cycles">{$:: cycle.name $}</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr ng-repeat="filter_group in selected_filter_groups">
-                        <td class="r-selectable r-selected">{$:: filter_group.name $}</td>
-                        <td ng-if="selected_table_location == 'first_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations"><span ng-repeat="item in data['columns_by_id'][source_column_by_location.first_axis.id]['filter_groups'][filter_group.name][aggregation.key]" ng-if="item.cycle == cycle.name">{$ item.value $}</span></span>
+                <tbody ng-repeat="filter_group in selected_filter_groups">
+                    <tr>
+                        <td class="r-selectable r-selected" ng-click="show_properties_for_filter_group[filter_group.id] = !show_properties_for_filter_group[filter_group.id]">{$:: filter_group.name $}</td>
+                        <td ng-repeat="cycle in selected_cycles">
+                            <span ng-if="selected_table_location == 'first_axis' && selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">
+                                {$ data.columns_by_id[source_column_by_location.first_axis.id].filter_groups_by_id[filter_group.id].cycles_by_id[cycle.id][aggregation.name] $}
+                            </span>
+                            <span ng-if="selected_table_location == 'second_axis' && selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">
+                                {$ data.columns_by_id[source_column_by_location.second_axis.id].filter_groups_by_id[filter_group.id].cycles_by_id[cycle.id][aggregation.name] $}
+                            </span>
                         </td>
-                        <td ng-if="selected_table_location == 'second_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations"><span ng-repeat="item in data['columns_by_id'][source_column_by_location.second_axis.id]['filter_groups'][filter_group.name][aggregation.key]" ng-if="item.cycle == cycle.name">{$ item.value $}</span></span>
+                    </tr>
+                    <tr ng-if="selected_table_location == 'first_axis'" ng-repeat="view in data.views_by_filter_group_id[filter_group.id]" ng-show="show_properties_for_filter_group[filter_group.id]">
+                        <td>Property #{$ view $}</td>
+                        <td ng-repeat="cycle in selected_cycles">
+                            {$ data.columns_by_id[source_column_by_location.first_axis.id].filter_groups_by_id[filter_group.id].cycles_by_id[cycle.id].views_by_id[view] $}
                         </td>
                     </tr>
                 </tbody>
