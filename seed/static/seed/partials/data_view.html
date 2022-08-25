@@ -191,10 +191,10 @@
                     <tr ng-repeat="filter_group in selected_filter_groups">
                         <td class="r-selectable r-selected">{$:: filter_group.name $}</td>
                         <td ng-if="selected_table_location == 'first_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">{$ data['columns_by_id'][source_column_by_location.first_axis.id]['filter_groups'][filter_group.name][aggregation.key] $}</span>
+                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations"><span ng-repeat="item in data['columns_by_id'][source_column_by_location.first_axis.id]['filter_groups'][filter_group.name][aggregation.key]" ng-if="item.cycle == cycle.name">{$ item.value $}</span></span>
                         </td>
                         <td ng-if="selected_table_location == 'second_axis'" ng-repeat="cycle in selected_cycles">
-                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations">{$ data['columns_by_id'][source_column_by_location.second_axis.id]['filter_groups'][filter_group.name][aggregation.key] $}</span>
+                            <span ng-if="selected_table_aggregation == aggregation.id" ng-repeat="aggregation in aggregations"><span ng-repeat="item in data['columns_by_id'][source_column_by_location.second_axis.id]['filter_groups'][filter_group.name][aggregation.key]" ng-if="item.cycle == cycle.name">{$ item.value $}</span></span>
                         </td>
                     </tr>
                 </tbody>

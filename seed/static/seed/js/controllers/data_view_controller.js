@@ -131,10 +131,12 @@ angular.module('BE.seed.controller.data_view', [])
       $scope.data = {};
       let _load_data = function () {
         if (!$scope.selected_data_view) {
+          spinner_utility.hide();
           return;
         }
         let data = data_view_service.evaluate_data_view($scope.selected_data_view.id).then((data) => {
           $scope.data = data;
+          spinner_utility.hide();
         });
       };
 
@@ -287,10 +289,18 @@ angular.module('BE.seed.controller.data_view', [])
             if (data.status == 'success') {
               if (!$scope.selected_data_view.id) {
                 window.location = '#/metrics/' + data.data_view.id;
+                spinner_utility.hide();
                 return;
               }
+              data_views = data_views.map(data_view => {
+                if (data_view.id == data.data_view.id) {
+                  return Object.assign({}, data.data_view);
+                }
+                return data_view;
+              });
+              $scope.selected_data_view = Object.assign({}, data.data_view);
+              _init_data();
               _load_data();
-              spinner_utility.hide();
               $scope.editing = false;
               return;
             }
@@ -298,6 +308,7 @@ angular.module('BE.seed.controller.data_view', [])
             for (let i in data.errors) {
               $scope.create_errors.push(data.errors[i]);
             }
+            spinner_utility.hide();
         };
 
         if ($scope.selected_data_view.id) {
@@ -344,6 +355,5 @@ angular.module('BE.seed.controller.data_view', [])
       _init_fields();
       _init_data();
       _load_data();
-      spinner_utility.hide();
     }
   ]);
