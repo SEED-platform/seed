@@ -200,7 +200,7 @@
                         </td>
                     </tr>
                     <tr ng-if="selected_table_location == 'first_axis'" ng-repeat="view in data.views_by_filter_group_id[filter_group.id]" ng-show="show_properties_for_filter_group[filter_group.id]">
-                        <td>Property #{$ view $}</td>
+                        <td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: view})">Property {$ view $}</a></td>
                         <td ng-repeat="cycle in selected_cycles">
                             {$ data.columns_by_id[source_column_by_location.first_axis.id].filter_groups_by_id[filter_group.id].cycles_by_id[cycle.id].views_by_id[view] $}
                         </td>
