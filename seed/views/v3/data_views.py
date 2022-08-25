@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.data_views import DataView
+from seed.models.columns import Column
 from seed.serializers.data_views import DataViewSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -184,14 +185,23 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'columns': ['integer'],
+            },
+        )
+    )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['PUT'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
         deepcopy(request.data)
+        data = deepcopy(request.data)
 
         try:
             data_view = DataView.objects.get(id=pk, organization=organization)
@@ -201,7 +211,15 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'DataView with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        response = data_view.evaluate()
+        columns = Column.objects.filter(id__in=data['columns'])
+        if len(columns) != len(data['columns']):
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Columns with ids {data["columns"]} do not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+        response = data_view.evaluate(columns)
         return JsonResponse({
             'status': 'success',
             'data': response

@@ -33,8 +33,8 @@ class DataView(models.Model):
         filter_group_views = {}
         filter_group_view_ids = {}
         for filter_group in self.filter_groups:
-            filter_group_view_ids[filter_group['name']] = {}
-            filter_group_views[filter_group['name']] = {}
+            filter_group_view_ids[filter_group['id']] = {}
+            filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
             for cycle in self.cycles.all():
@@ -42,13 +42,13 @@ class DataView(models.Model):
                 label_views = self._get_label_views(cycle, filter_group)
                 views = self._combine_views(filter_views, label_views)
                 # views = filter_views
-                filter_group_views[filter_group['name']][cycle.name] = views
-                filter_group_view_ids[filter_group['name']][cycle.name] = [view.id for view in views]
-                # filter_group_view_ids[filter_group['name']][cycle.name] = [view['id'] for view in list(views.values('id'))]
+                filter_group_views[filter_group['id']][cycle.id] = views
+                filter_group_view_ids[filter_group['id']][cycle.id] = [view.id for view in views]
+                # filter_group_view_ids[filter_group['id']][cycle.name] = [view['id'] for view in list(views.values('id'))]
 
         return filter_group_view_ids, filter_group_views
 
-    def evaluate(self):
+    def evaluate(self, columns):
         response = {
             'meta': {
                 'organization': self.organization.id,
@@ -60,69 +60,64 @@ class DataView(models.Model):
         response['filter_group_view_ids'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column id
-        for parameter in self.parameters.all():
+        for column in columns:
             data = response['columns_by_id']
-            column_id = parameter.column.id
-            data[column_id] = {'filter_groups': {}, 'unit': None}
+            column_id = column.id
+            data[column_id] = {'filter_groups_by_id': {}, 'unit': None}
 
-            # self._assign_data_based_on_filter_groups(data, column_id, views_by_filter, parameter)
             for filter_group in self.filter_groups:
-                filter_name = filter_group['name']
-                data[column_id]['filter_groups'][filter_name] = {}
+                filter_id = filter_group['id']
+                data[column_id]['filter_groups_by_id'][filter_id] = {'cycles_by_id':{}}
 
-                # each filter group will contain list[dict] for each aggregation type and disaggregated property views values by view id
-                # and disaggregated property views values by view id
-                for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
-                    self._format_filter_group_data(data, column_id, filter_name, aggregation)
+                for cycle in self.cycles.all():
+                    data_cycles = data[column_id]['filter_groups_by_id'][filter_id]['cycles_by_id']
+                    data_cycles[cycle.id] = {}
+                    views = views_by_filter[filter_id][cycle.id]
+                    states = PropertyState.objects.filter(propertyview__in=views)
 
-                    for cycle in self.cycles.all():
-                        views = views_by_filter[filter_name][cycle.name]
-                        states = PropertyState.objects.filter(propertyview__in=views)
+                    for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
+                        if aggregation == Avg:
+                                aggregation.name = 'Average'
+                       
+                        self._format_filter_group_data(data_cycles, cycle.id, aggregation)
 
-                        # view_id: [{'cycle': cycle.name, 'value': value}]
                         if aggregation == 'views_by_id':
-                            for view in views:
-                                # Default assignment on first pass
-                                data[column_id]['filter_groups'][filter_name][aggregation][view.id] = data[column_id]['filter_groups'][filter_name][aggregation].get(view.id, [])
-                                state_data, unit = self._format_view_state_data(cycle, parameter, view)
-
-                                if not data[column_id].get('unit'):
-                                    data[column_id]['unit'] = unit
-
-                                data[column_id]['filter_groups'][filter_name][aggregation][view.id].append(state_data)
-
-                        # aggregation_type: {'cycle': cycle.name, 'value': value}
+                            self._assign_views_by_id_values(views, data, data_cycles, column, cycle.id, aggregation)
                         else:
-                            value = self._evaluate_aggregation(states, aggregation, parameter.column)
-                            value_dict = {'cycle': cycle.name, 'value': value}
-                            data[column_id]['filter_groups'][filter_name][aggregation.name].append(value_dict)
+                            value = self._evaluate_aggregation(states, aggregation, column)
+                            data_cycles[cycle.id][aggregation.name] = value 
 
         return response
 
-    def _format_filter_group_data(self, data, coumn_id, filter_name, aggregation):
+    def _assign_views_by_id_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
+        for view in views:
+            # Default assignment on first pass
+            data_cycles[cycle_id][aggregation][view.id] = data_cycles[cycle_id][aggregation].get(view.id, [])
+            
+            if column.is_extra_data:
+                state_value = view.state.extra_data[column.column_name]
+            elif column.derived_column:
+                state_value = column.derived_column.evaluate(view.state)
+            else:
+                state_value = getattr(view.state, column.column_name)
+
+            try:
+                value = round(state_value.m, 2)
+                unit = '{:P~}'.format(state_value.u)
+            except AttributeError: 
+                value = state_value
+                unit = None            
+#
+            if not data[column.id].get('unit'):
+                data[column.id]['unit'] = unit
+
+            data_cycles[cycle_id][aggregation][view.id] = value
+
+    def _format_filter_group_data(self, data_cycles, cycle_id, aggregation):
         if aggregation == 'views_by_id':
-            data[coumn_id]['filter_groups'][filter_name][aggregation] = {}
+           data_cycles[cycle_id][aggregation] = {}
         else:
-            data[coumn_id]['filter_groups'][filter_name][aggregation.name] = []
-
-    def _format_view_state_data(self, cycle, parameter, view):
-        state_data = {'cycle': cycle.name}
-
-        if parameter.column.is_extra_data:
-            value = view.state.extra_data[parameter.column.column_name]
-        elif parameter.column.derived_column:
-            value = parameter.column.derived_column.evaluate(view.state)
-        else:
-            value = getattr(view.state, parameter.column.column_name)
-
-        try:
-            state_data['value'] = round(value.m, 2)
-            unit = '{:P~}'.format(value.u)
-        except AttributeError: 
-            state_data['value'] = value
-            unit = None
-    
-        return state_data, unit
+           data_cycles[cycle_id][aggregation.name] = []
 
     def _evaluate_aggregation(self, states, aggregation, column):
         if column.is_extra_data:
