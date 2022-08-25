@@ -125,11 +125,11 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.used_filter_groups = {};
         if ($scope.selected_data_view) {
           $scope.used_filter_groups = _collect_array_as_object($scope.selected_data_view.filter_groups, 'name');
+          for (let i in $scope.selected_data_view.filter_groups) {
+            $scope.show_properties_for_filter_group[$scope.selected_data_view.filter_groups[i].id] = false;
+          }
         }
         $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
-        for (let i in $scope.selected_data_view.filter_groups) {
-          $scope.show_properties_for_filter_group[$scope.selected_data_view.filter_groups[i].id] = false;
-        }
       };
 
       $scope.data = {};
