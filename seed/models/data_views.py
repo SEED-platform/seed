@@ -26,14 +26,14 @@ class DataView(models.Model):
     filter_groups = models.JSONField()
 
     def get_inventory(self):
-        filter_group_view_ids, _ = self.views_by_filter()
-        return filter_group_view_ids
+        views_by_filter_group_id, _ = self.views_by_filter()
+        return views_by_filter_group_id
 
     def views_by_filter(self):
         filter_group_views = {}
-        filter_group_view_ids = {}
+        views_by_filter_group_id = {}
         for filter_group in self.filter_groups:
-            filter_group_view_ids[filter_group['id']] = {}
+            views_by_filter_group_id[filter_group['id']] = {}
             filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
@@ -43,10 +43,9 @@ class DataView(models.Model):
                 views = self._combine_views(filter_views, label_views)
                 # views = filter_views
                 filter_group_views[filter_group['id']][cycle.id] = views
-                filter_group_view_ids[filter_group['id']][cycle.id] = [view.id for view in views]
-                # filter_group_view_ids[filter_group['id']][cycle.name] = [view['id'] for view in list(views.values('id'))]
+                views_by_filter_group_id[filter_group['id']][cycle.id] = [view.id for view in views]
 
-        return filter_group_view_ids, filter_group_views
+        return views_by_filter_group_id, filter_group_views
 
     def evaluate(self, columns):
         response = {
@@ -54,10 +53,10 @@ class DataView(models.Model):
                 'organization': self.organization.id,
                 'data_view': self.id,
             },
-            'filter_group_view_ids': {},
+            'views_by_filter_group_id': {},
             'columns_by_id': {}
         }
-        response['filter_group_view_ids'], views_by_filter = self.views_by_filter()
+        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column id
         for column in columns:
@@ -76,9 +75,7 @@ class DataView(models.Model):
                     states = PropertyState.objects.filter(propertyview__in=views)
 
                     for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
-                        if aggregation == Avg:
-                                aggregation.name = 'Average'
-                       
+                        self._format_aggregation_name(aggregation)
                         self._format_filter_group_data(data_cycles, cycle.id, aggregation)
 
                         if aggregation == 'views_by_id':
@@ -89,11 +86,19 @@ class DataView(models.Model):
 
         return response
 
+    def _format_aggregation_name(self, aggregation):
+        if aggregation == Avg:
+            aggregation.name = 'Average'
+        elif aggregation == Max:
+            aggregation.name = 'Maximum'
+        elif aggregation == Min:
+            aggregation.name = 'Minimum'
+
     def _assign_views_by_id_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
         for view in views:
             # Default assignment on first pass
             data_cycles[cycle_id][aggregation][view.id] = data_cycles[cycle_id][aggregation].get(view.id, [])
-            
+
             if column.is_extra_data:
                 state_value = view.state.extra_data[column.column_name]
             elif column.derived_column:
@@ -107,7 +112,7 @@ class DataView(models.Model):
             except AttributeError: 
                 value = state_value
                 unit = None            
-#
+
             if not data[column.id].get('unit'):
                 data[column.id]['unit'] = unit
 

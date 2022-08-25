@@ -446,15 +446,15 @@ class DataViewEvaluationTests(TestCase):
         data = data['data']
         fg_office_id = str(self.data_view1.filter_groups[0]['id'])
         fg_retail_id = str(self.data_view1.filter_groups[1]['id'])
-        self.assertEqual(['meta', 'filter_group_view_ids', 'columns_by_id'], list(data.keys()))
+        self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id'], list(data.keys()))
 
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
-        self.assertEqual([fg_office_id, fg_retail_id], list(data['filter_group_view_ids']))
-        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(data['filter_group_view_ids'][fg_office_id].keys()))
-        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(data['filter_group_view_ids'][fg_retail_id].keys()))
-        office = data['filter_group_view_ids'][fg_office_id]
-        retail = data['filter_group_view_ids'][fg_retail_id]
+        self.assertEqual([fg_office_id, fg_retail_id], list(data['views_by_filter_group_id']))
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(data['views_by_filter_group_id'][fg_office_id].keys()))
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(data['views_by_filter_group_id'][fg_retail_id].keys()))
+        office = data['views_by_filter_group_id'][fg_office_id]
+        retail = data['views_by_filter_group_id'][fg_retail_id]
 
         self.assertEqual([self.vw_office10.id, self.vw_office11.id], office[str(self.cycle1.id)])
         self.assertEqual([self.vw_office30.id, self.vw_office31.id], office[str(self.cycle3.id)])
@@ -477,26 +477,26 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual([str(self.cycle4.id),str(self.cycle3.id),str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
         self.assertEqual([str(self.cycle4.id),str(self.cycle3.id),str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
 
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle1.id)]))
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle4.id)]))
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle4.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
 
         office_cycle1 = office['cycles_by_id'][str(self.cycle1.id)]
         office_cycle4 = office['cycles_by_id'][str(self.cycle4.id)]
 
         self.assertEqual(10.5, office_cycle1['Average'])
         self.assertEqual(2, office_cycle1['Count'])
-        self.assertEqual(11, office_cycle1['Max'])
-        self.assertEqual(10, office_cycle1['Min'])
+        self.assertEqual(11, office_cycle1['Maximum'])
+        self.assertEqual(10, office_cycle1['Minimum'])
         self.assertEqual(21, office_cycle1['Sum'])
         exp = {str(self.vw_office10.id): 10.0, str(self.vw_office11.id): 11.0}
         self.assertEqual(exp, office_cycle1['views_by_id'])
 
         self.assertEqual(40.5, office_cycle4['Average'])
         self.assertEqual(2, office_cycle4['Count'])
-        self.assertEqual(41, office_cycle4['Max'])
-        self.assertEqual(40, office_cycle4['Min'])
+        self.assertEqual(41, office_cycle4['Maximum'])
+        self.assertEqual(40, office_cycle4['Minimum'])
         self.assertEqual(81, office_cycle4['Sum'])
         exp = {str(self.vw_office40.id): 40.0, str(self.vw_office41.id): 41.0}
         self.assertEqual(exp, office_cycle4['views_by_id'])
@@ -506,16 +506,16 @@ class DataViewEvaluationTests(TestCase):
 
         self.assertEqual(12.5, retail_cycle1['Average'])
         self.assertEqual(2, retail_cycle1['Count'])
-        self.assertEqual(13, retail_cycle1['Max'])
-        self.assertEqual(12, retail_cycle1['Min'])
+        self.assertEqual(13, retail_cycle1['Maximum'])
+        self.assertEqual(12, retail_cycle1['Minimum'])
         self.assertEqual(25, retail_cycle1['Sum'])
         exp = {str(self.vw_retail12.id): 12.0, str(self.vw_retail13.id): 13.0}
         self.assertEqual(exp, retail_cycle1['views_by_id'])
 
         self.assertEqual(42.5, retail_cycle4['Average'])
         self.assertEqual(2, retail_cycle4['Count'])
-        self.assertEqual(43, retail_cycle4['Max'])
-        self.assertEqual(42, retail_cycle4['Min'])
+        self.assertEqual(43, retail_cycle4['Maximum'])
+        self.assertEqual(42, retail_cycle4['Minimum'])
         self.assertEqual(85, retail_cycle4['Sum'])
         exp = {str(self.vw_retail42.id): 42.0, str(self.vw_retail43.id): 43.0}
         self.assertEqual(exp, retail_cycle4['views_by_id'])
@@ -536,33 +536,38 @@ class DataViewEvaluationTests(TestCase):
         fg_4_id = str(self.data_view2.filter_groups[1]['id'])
 
         fg3_cycle1 = data['filter_groups_by_id'][fg_3_id]['cycles_by_id'][cycle1_id]
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(fg3_cycle1.keys()))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(fg3_cycle1.keys()))
         self.assertEqual(1100, fg3_cycle1['Average'])
         self.assertEqual(3, fg3_cycle1['Count'])
-        self.assertEqual(1200, fg3_cycle1['Max'])
-        self.assertEqual(1000, fg3_cycle1['Min'])
+        self.assertEqual(1200, fg3_cycle1['Maximum'])
+        self.assertEqual(1000, fg3_cycle1['Minimum'])
         self.assertEqual(3300, fg3_cycle1['Sum'])
         exp = {str(self.vw_office10.id): 1000, str(self.vw_office11.id): 1100, str(self.vw_retail12.id): 1200}
         self.assertEqual(exp, fg3_cycle1['views_by_id'])
 
         fg4_cycle4 = data['filter_groups_by_id'][fg_4_id]['cycles_by_id'][cycle4_id]
-        self.assertEqual(['Average', 'Max', 'Min', 'Sum', 'Count', 'views_by_id'], list(fg4_cycle4.keys()))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(fg4_cycle4.keys()))
         self.assertEqual(3075, fg4_cycle4['Average'])
         self.assertEqual(4, fg4_cycle4['Count'])
-        self.assertEqual(4200, fg4_cycle4['Max'])
-        self.assertEqual(0, fg4_cycle4['Min'])
+        self.assertEqual(4200, fg4_cycle4['Maximum'])
+        self.assertEqual(0, fg4_cycle4['Minimum'])
         self.assertEqual(12300, fg4_cycle4['Sum'])
         exp = {str(self.vw_office40.id): 4000, str(self.vw_office41.id): 4100, str(self.vw_retail42.id): 4200, str(self.vw_retail43.id): 0}
         self.assertEqual(exp, fg4_cycle4['views_by_id'])
        
 
-    @unittest.skip
+
     def test_evaluation_endpoint_derived_col(self):
-        response = self.client.get(
-            reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.put(
+            reverse('api:v3:data_views-evaluate', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "columns": [self.dc_column.id],
+            }),
+            content_type='application/json'
         )
         data = json.loads(response.content)
-        data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.data_view3.filter_groups[0]['id'])]
+        cycle1_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.data_view3.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle1.id)]
+        cycle2_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.data_view3.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle2.id)]
 
         # ex:
         # Cycle A
@@ -571,26 +576,21 @@ class DataViewEvaluationTests(TestCase):
         # Cycle B
         # site_eui = 20, 21, 22, 23
         # dc       = 30, 31, 32, 33
-        self.assertEqual(21.5, [cycle for cycle in data['Avg'] if cycle['cycle'] == self.cycle1.id][0]['value'])
-        self.assertEqual(31.5, [cycle for cycle in data['Avg'] if cycle['cycle'] == self.cycle2.id][0]['value'])
+        self.assertEqual(21.5, cycle1_data['Average'])
+        self.assertEqual(4, cycle1_data['Count'])
+        self.assertEqual(23, cycle1_data['Maximum'])
+        self.assertEqual(20, cycle1_data['Minimum'])
+        self.assertEqual(86, cycle1_data['Sum'])
+        exp = {str(self.vw_office10.id): 20.0,str(self.vw_office11.id): 21.0,str(self.vw_retail12.id): 22.0,str(self.vw_retail13.id): 23.0}
+        self.assertEqual(exp, cycle1_data['views_by_id'])
 
-        self.assertEqual(23, [cycle for cycle in data['Max'] if cycle['cycle'] == self.cycle1.id][0]['value'])
-        self.assertEqual(33, [cycle for cycle in data['Max'] if cycle['cycle'] == self.cycle2.id][0]['value'])
-
-        self.assertEqual(20, [cycle for cycle in data['Min'] if cycle['cycle'] == self.cycle1.id][0]['value'])
-        self.assertEqual(30, [cycle for cycle in data['Min'] if cycle['cycle'] == self.cycle2.id][0]['value'])
-
-        self.assertEqual(86, [cycle for cycle in data['Sum'] if cycle['cycle'] == self.cycle1.id][0]['value'])
-        self.assertEqual(126, [cycle for cycle in data['Sum'] if cycle['cycle'] == self.cycle2.id][0]['value'])
-
-        self.assertEqual(4, [cycle for cycle in data['Count'] if cycle['cycle'] == self.cycle1.id][0]['value'])
-        self.assertEqual(4, [cycle for cycle in data['Count'] if cycle['cycle'] == self.cycle2.id][0]['value'])
-
-        self.assertEqual(20, data['views_by_id'][str(self.vw_office10.id)][0]['value'])
-        self.assertEqual(31, data['views_by_id'][str(self.vw_office21.id)][0]['value'])
-        self.assertEqual(22, data['views_by_id'][str(self.vw_retail12.id)][0]['value'])
-        self.assertEqual(32, data['views_by_id'][str(self.vw_retail22.id)][0]['value'])
-
+        self.assertEqual(31.5, cycle2_data['Average'])
+        self.assertEqual(4, cycle2_data['Count'])
+        self.assertEqual(33, cycle2_data['Maximum'])
+        self.assertEqual(30, cycle2_data['Minimum'])
+        self.assertEqual(126, cycle2_data['Sum'])
+        exp = {str(self.vw_office20.id): 30.0,str(self.vw_office21.id): 31.0,str(self.vw_retail22.id): 32.0,str(self.vw_retail23.id): 33.0}
+        self.assertEqual(exp, cycle2_data['views_by_id'])
 
 class DataViewInventoryTests(TestCase):
     """
