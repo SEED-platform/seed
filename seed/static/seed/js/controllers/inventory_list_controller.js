@@ -215,6 +215,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         };
         filter_groups_service.update_filter_group($scope.currentFilterGroup.id, filterGroupData).then(function (result) {
           $scope.currentFilterGroup = result;
+          const currentFilterGroupIndex = $scope.filterGroups.findIndex(fg => fg.id == result.id)
+          $scope.filterGroups[currentFilterGroupIndex] = result;
           $scope.Modified=false;
           Notification.primary('Saved ' + $scope.currentFilterGroup.name);
         });
