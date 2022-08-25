@@ -80,7 +80,7 @@
         </div>
         <div class="row">
             <label>{$:: 'Filter Group' | translate $}:</label>
-            <select class="form-control input-sm grow" ng-model="currentFilterGroup" ng-change="check_for_changes()" ng-options="option.name for option in filterGroups"></select>
+            <select class="form-control input-sm grow" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes()" ng-options="option.name for option in filterGroups"></select>
             <div class="btn-group">
                 <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
@@ -88,7 +88,7 @@
                 <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
                     <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
+                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
                 <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">

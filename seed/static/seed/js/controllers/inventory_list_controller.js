@@ -121,7 +121,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Filter Groups
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
-      $scope.currentFilterGroup = $scope.filterGroups[0] || {};
 
       $scope.Modified = false;
 
@@ -159,24 +158,24 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.remove_filter_group = function () {
-        var oldFilterGroup = angular.copy($scope.currentFilterGroup);
+        var oldFilterGroupName = $scope.currentFilterGroup.name;
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
           controller: 'filter_group_modal_controller',
           resolve: {
             action: _.constant('remove'),
-            data: _.constant(oldFilterGroup)
+            data: _.constant($scope.currentFilterGroup)
           }
         });
 
         modalInstance.result.then(function () {
-          _.remove($scope.filterGroups, oldFilterGroup);
+          _.remove($scope.filterGroups, $scope.currentFilterGroup);
           $scope.Modified=false;
           $scope.currentFilterGroup = _.last($scope.filterGroups);
 
-          // $scope.currentFilterGroup = _.first($scope.filterGroups);
-          Notification.primary('Removed ' + oldFilterGroup.name);
+          Notification.primary('Removed ' + oldFilterGroupName);
+          updateCurrentFilterGroup($scope.currentFilterGroup);
         });
       };
 
@@ -225,33 +224,33 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // compare filters if different then true, then compare labels, and finally label_logic. All must be the same to return false
       $scope.isModified = function () {
-        current_filters = {};
-        current_filters = inventory_service.get_format_column_filters($scope.column_filters);
-        saved_filters = $scope.currentFilterGroup.query_dict;
-        current_labels = [];
-        for (label in $scope.selected_labels) {
-          current_labels.push($scope.selected_labels[label].id);
-        };
-        saved_labels = $scope.currentFilterGroup.labels;
-        current_label_logic = $scope.labelLogic;
-        saved_label_logic = $scope.currentFilterGroup.label_logic;
-        if (!_.isEqual(current_filters, saved_filters)) {
-          $scope.Modified = true
-          console.log("filters are different");
-        } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
-          $scope.Modified = true
-          console.log("labels are different");
-        } else if (current_label_logic !== saved_label_logic) {
-          $scope.Modified = true
-          console.log("label_logic is different");
-        } else {
-          $scope.Modified = false
-          console.log("no changes");
+        if ($scope.filterGroups.length > 0) {
+          current_filters = {};
+          current_filters = inventory_service.get_format_column_filters($scope.column_filters);
+          saved_filters = $scope.currentFilterGroup.query_dict;
+          current_labels = [];
+          for (label in $scope.selected_labels) {
+            current_labels.push($scope.selected_labels[label].id);
+          };
+          saved_labels = $scope.currentFilterGroup.labels;
+          current_label_logic = $scope.labelLogic;
+          saved_label_logic = $scope.currentFilterGroup.label_logic;
+          if (!_.isEqual(current_filters, saved_filters)) {
+            $scope.Modified = true
+          } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
+            $scope.Modified = true
+          } else if (current_label_logic !== saved_label_logic) {
+            $scope.Modified = true
+          } else {
+            $scope.Modified = false
+          }
         }
+          
+        
         return $scope.Modified;
       };
 
-      $scope.check_for_changes = function () {
+      $scope.check_for_filter_group_changes = function () {
         if ($scope.Modified) {
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
