@@ -59,7 +59,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         except DataView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': f'Data View with id {pk} does not exist!'
+                'message': f'DataView with id {pk} does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema_org_query_param

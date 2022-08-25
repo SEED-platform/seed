@@ -129,8 +129,8 @@ class DataViewViewTests(TestCase):
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-
-        self.assertEqual(2, len(json.loads(response.content)['message']))
+        data = json.loads(response.content)
+        self.assertEqual(2, len(data['data_views']))
 
         response = self.client.post(
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
@@ -175,8 +175,8 @@ class DataViewViewTests(TestCase):
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-
-        self.assertEqual(3, len(json.loads(response.content)['message']))
+        data = json.loads(response.content)
+        self.assertEqual(3, len(data['data_views']))
 
         data_view = DataView.objects.get(name='data_view3')
         response = self.client.delete(
@@ -188,8 +188,8 @@ class DataViewViewTests(TestCase):
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-
-        self.assertEqual(2, len(json.loads(response.content)['message']))
+        data = json.loads(response.content)
+        self.assertEqual(2, len(data['data_views']))
         self.assertEqual(2, len(DataView.objects.all()))
         self.assertEqual(3, len(DataViewParameter.objects.all()))
 
@@ -453,7 +453,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual([self.vw_retail32.id, self.vw_retail33.id], retail['Cycle C'])
         self.assertEqual([self.vw_retail42.id, self.vw_retail43.id], retail['Cycle D'])
 
-        data = data['data']
+        data = data['columns_by_id']
         self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
         self.assertEqual(['filter_groups', 'unit'], list(data[str(self.site_eui.id)].keys()))
         self.assertEqual('kBtu/ft²/year', data[str(self.site_eui.id)]['unit'])

@@ -115,13 +115,13 @@ class DataView(models.Model):
         else:
             value = getattr(view.state, parameter.column.column_name)
 
-        if isinstance(value, (str, int, float, bool)):
-            state_data['value'] = value
-            unit = None
-        else:
+        try:
             state_data['value'] = round(value.m, 2)
             unit = '{:P~}'.format(value.u)
-
+        except AttributeError: 
+            state_data['value'] = value
+            unit = None
+    
         return state_data, unit
 
     def _evaluate_aggregation(self, states, aggregation, column):
