@@ -33,7 +33,7 @@ class DataView(models.Model):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups:
-            views_by_filter_group_id[filter_group['id']] = {}
+            views_by_filter_group_id[filter_group['id']] = []
             filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
@@ -43,7 +43,8 @@ class DataView(models.Model):
                 views = self._combine_views(filter_views, label_views)
                 # views = filter_views
                 filter_group_views[filter_group['id']][cycle.id] = views
-                views_by_filter_group_id[filter_group['id']][cycle.id] = [view.id for view in views]
+                for view in views:
+                    views_by_filter_group_id[filter_group['id']].append(view.id)
 
         return views_by_filter_group_id, filter_group_views
 
