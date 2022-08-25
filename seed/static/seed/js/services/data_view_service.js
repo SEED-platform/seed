@@ -1,4 +1,4 @@
-angular.module('BE.seed.service.audit_template', []).factory('data_view_service', [
+angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
   '$http',
   '$log',
   'user_service',

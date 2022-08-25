@@ -155,6 +155,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.cycle',
   'BE.seed.service.postoffice',
   'BE.seed.service.dataset',
+  'BE.seed.service.data_view',
   'BE.seed.service.derived_columns',
   'BE.seed.service.meter',
   'BE.seed.service.flippers',
