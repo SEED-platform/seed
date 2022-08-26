@@ -245,19 +245,23 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.Modified = false
           }
         }
-          
-        
+
+
         return $scope.Modified;
       };
 
-      $scope.check_for_filter_group_changes = function () {
+      $scope.check_for_filter_group_changes = function (currentFilteGroup, oldFilterGroup) {
+        console.log(currentFilteGroup)
+        console.log(oldFilterGroup)
         if ($scope.Modified) {
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
           }).result.then(function () {
             $scope.Modified = false;
           }).catch(function () {
-            return;
+            console.log("go back!")
+            $scope.currentFilterGroup = oldFilterGroup
+            console.log($scope.currentFilterGroup)
           });
         }
 
@@ -265,6 +269,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       updateCurrentFilterGroup = (filterGroup) => {
+        console.log(filterGroup)
         // Set current filter group
         $scope.currentFilterGroup = filterGroup;
         filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
