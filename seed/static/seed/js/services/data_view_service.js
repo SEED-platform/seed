@@ -1,4 +1,4 @@
-angular.module('BE.seed.service.audit_template', []).factory('data_view_service', [
+angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
   '$http',
   '$log',
   'user_service',
@@ -86,8 +86,10 @@ angular.module('BE.seed.service.audit_template', []).factory('data_view_service'
       });
     };
 
-    const evaluate_data_view = function (data_view_id) {
-      return $http.get('/api/v3/data_views/' + data_view_id + '/evaluate', {
+    const evaluate_data_view = function (data_view_id, columns) {
+      return $http.put('/api/v3/data_views/' + data_view_id + '/evaluate/', {
+        'columns': columns
+      }, {
         params: {
           'organization_id': user_service.get_organization().id
         }
