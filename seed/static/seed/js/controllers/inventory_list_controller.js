@@ -250,8 +250,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         return $scope.Modified;
       };
 
-      $scope.check_for_filter_group_changes = function (currentFilteGroup, oldFilterGroup) {
-        console.log(currentFilteGroup)
+      $scope.check_for_filter_group_changes = function (currentFilterGroup, oldFilterGroup) {
+        console.log(currentFilterGroup)
         console.log(oldFilterGroup)
         if ($scope.Modified) {
           $uibModal.open({
@@ -260,8 +260,12 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.Modified = false;
           }).catch(function () {
             console.log("go back!")
-            $scope.currentFilterGroup = oldFilterGroup
-            console.log($scope.currentFilterGroup)
+            // console.log($scope.currentFilterGroup)
+            // console.log(oldFilterGroup)
+            // spreading for $$hashKey
+            $scope.currentFilterGroup = {...$scope.currentFilterGroup, ...oldFilterGroup}
+            // console.log($scope.currentFilterGroup)
+
           });
         }
 
@@ -269,7 +273,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       updateCurrentFilterGroup = (filterGroup) => {
-        console.log(filterGroup)
+        // console.log(filterGroup)
         // Set current filter group
         $scope.currentFilterGroup = filterGroup;
         filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
