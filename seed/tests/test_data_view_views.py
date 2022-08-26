@@ -314,45 +314,45 @@ class DataViewEvaluationTests(TestCase):
 
         # generate property states that are either 'Office' or 'Retail' for filter groups
         # generate property views that are attatched to a property and a property-state
-        self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
-        self.st_office11 = self.property_state_factory.get_property_state(property_name='st_office11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
-        self.st_retail12 = self.property_state_factory.get_property_state(property_name='st_retail12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
-        self.st_retail13 = self.property_state_factory.get_property_state(property_name='st_retail13', property_type='retail', site_eui=13 * ureg.eui, total_ghg_emissions=130, extra_data={'extra_col': 0})
+        self.state10 = self.property_state_factory.get_property_state(property_name='state10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
+        self.state11 = self.property_state_factory.get_property_state(property_name='state11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
+        self.state12 = self.property_state_factory.get_property_state(property_name='state12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
+        self.state13 = self.property_state_factory.get_property_state(property_name='state13', property_type='retail', site_eui=13 * ureg.eui, total_ghg_emissions=130, extra_data={'extra_col': 0})
 
-        self.vw_office10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.st_office10)
-        self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office11)
-        self.vw_retail12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
-        self.vw_retail13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
+        self.view10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.state10)
+        self.view11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.state11)
+        self.view12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.state12)
+        self.view13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.state13)
 
-        self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
-        self.st_office21 = self.property_state_factory.get_property_state(property_name='st_office21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
-        self.st_retail22 = self.property_state_factory.get_property_state(property_name='st_retail22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
-        self.st_retail23 = self.property_state_factory.get_property_state(property_name='st_retail23', property_type='retail', site_eui=23 * ureg.eui, total_ghg_emissions=230, extra_data={'extra_col': 0})
+        self.state20 = self.property_state_factory.get_property_state(property_name='state20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
+        self.state21 = self.property_state_factory.get_property_state(property_name='state21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
+        self.state22 = self.property_state_factory.get_property_state(property_name='state22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
+        self.state23 = self.property_state_factory.get_property_state(property_name='state23', property_type='retail', site_eui=23 * ureg.eui, total_ghg_emissions=230, extra_data={'extra_col': 0})
 
-        self.vw_office20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.st_office20)
-        self.vw_office21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.st_office21)
-        self.vw_retail22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.st_retail22)
-        self.vw_retail23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.st_retail23)
+        self.view20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.state20)
+        self.view21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.state21)
+        self.view22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.state22)
+        self.view23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.state23)
 
-        self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
-        self.st_office31 = self.property_state_factory.get_property_state(property_name='st_office31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
-        self.st_retail32 = self.property_state_factory.get_property_state(property_name='st_retail32', property_type='retail', site_eui=32 * ureg.eui, total_ghg_emissions=320, extra_data={'extra_col': 3200})
-        self.st_retail33 = self.property_state_factory.get_property_state(property_name='st_retail33', property_type='retail', site_eui=33 * ureg.eui, total_ghg_emissions=330, extra_data={'extra_col': 0})
+        self.state30 = self.property_state_factory.get_property_state(property_name='state30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
+        self.state31 = self.property_state_factory.get_property_state(property_name='state31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
+        self.state32 = self.property_state_factory.get_property_state(property_name='state32', property_type='retail', site_eui=32 * ureg.eui, total_ghg_emissions=320, extra_data={'extra_col': 3200})
+        self.state33 = self.property_state_factory.get_property_state(property_name='state33', property_type='retail', site_eui=33 * ureg.eui, total_ghg_emissions=330, extra_data={'extra_col': 0})
 
-        self.vw_office30 = PropertyView.objects.create(property=self.office1, cycle=self.cycle3, state=self.st_office30)
-        self.vw_office31 = PropertyView.objects.create(property=self.office2, cycle=self.cycle3, state=self.st_office31)
-        self.vw_retail32 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle3, state=self.st_retail32)
-        self.vw_retail33 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle3, state=self.st_retail33)
+        self.view30 = PropertyView.objects.create(property=self.office1, cycle=self.cycle3, state=self.state30)
+        self.view31 = PropertyView.objects.create(property=self.office2, cycle=self.cycle3, state=self.state31)
+        self.view32 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle3, state=self.state32)
+        self.view33 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle3, state=self.state33)
 
-        self.st_office40 = self.property_state_factory.get_property_state(property_name='st_office40', property_type='office', site_eui=40 * ureg.eui, total_ghg_emissions=400, extra_data={'extra_col': 4000})
-        self.st_office41 = self.property_state_factory.get_property_state(property_name='st_office41', property_type='office', site_eui=41 * ureg.eui, total_ghg_emissions=410, extra_data={'extra_col': 4100})
-        self.st_retail42 = self.property_state_factory.get_property_state(property_name='st_retail42', property_type='retail', site_eui=42 * ureg.eui, total_ghg_emissions=420, extra_data={'extra_col': 4200})
-        self.st_retail43 = self.property_state_factory.get_property_state(property_name='st_retail43', property_type='retail', site_eui=43 * ureg.eui, total_ghg_emissions=430, extra_data={'extra_col': 0})
+        self.state40 = self.property_state_factory.get_property_state(property_name='state40', property_type='office', site_eui=40 * ureg.eui, total_ghg_emissions=400, extra_data={'extra_col': 4000})
+        self.state41 = self.property_state_factory.get_property_state(property_name='state41', property_type='office', site_eui=41 * ureg.eui, total_ghg_emissions=410, extra_data={'extra_col': 4100})
+        self.state42 = self.property_state_factory.get_property_state(property_name='state42', property_type='retail', site_eui=42 * ureg.eui, total_ghg_emissions=420, extra_data={'extra_col': 4200})
+        self.state43 = self.property_state_factory.get_property_state(property_name='state43', property_type='retail', site_eui=43 * ureg.eui, total_ghg_emissions=430, extra_data={'extra_col': 0})
 
-        self.vw_office40 = PropertyView.objects.create(property=self.office1, cycle=self.cycle4, state=self.st_office40)
-        self.vw_office41 = PropertyView.objects.create(property=self.office2, cycle=self.cycle4, state=self.st_office41)
-        self.vw_retail42 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle4, state=self.st_retail42)
-        self.vw_retail43 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle4, state=self.st_retail43)
+        self.view40 = PropertyView.objects.create(property=self.office1, cycle=self.cycle4, state=self.state40)
+        self.view41 = PropertyView.objects.create(property=self.office2, cycle=self.cycle4, state=self.state41)
+        self.view42 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle4, state=self.state42)
+        self.view43 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle4, state=self.state43)
 
         self.data_view1 = DataView.objects.create(
             name='data view 1',
@@ -454,8 +454,8 @@ class DataViewEvaluationTests(TestCase):
         office = data['views_by_filter_group_id'][fg_office_id]
         retail = data['views_by_filter_group_id'][fg_retail_id]
 
-        office_view_ids = [self.vw_office10.id, self.vw_office11.id, self.vw_office30.id, self.vw_office31.id, self.vw_office40.id, self.vw_office41.id]
-        retail_view_ids = [self.vw_retail12.id, self.vw_retail13.id, self.vw_retail32.id, self.vw_retail33.id, self.vw_retail42.id, self.vw_retail43.id]
+        office_view_ids = [self.view10.id, self.view11.id, self.view30.id, self.view31.id, self.view40.id, self.view41.id]
+        retail_view_ids = [self.view12.id, self.view13.id, self.view32.id, self.view33.id, self.view42.id, self.view43.id]
 
         self.assertEqual(office_view_ids, sorted(data['views_by_filter_group_id'][fg_office_id]))
         self.assertEqual(retail_view_ids, sorted(data['views_by_filter_group_id'][fg_retail_id]))
@@ -487,7 +487,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(11, office_cycle1['Maximum'])
         self.assertEqual(10, office_cycle1['Minimum'])
         self.assertEqual(21, office_cycle1['Sum'])
-        exp = {str(self.vw_office10.id): 10.0, str(self.vw_office11.id): 11.0}
+        exp = {str(self.view10.id): 10.0, str(self.view11.id): 11.0}
         self.assertEqual(exp, office_cycle1['views_by_id'])
 
         self.assertEqual(40.5, office_cycle4['Average'])
@@ -495,7 +495,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(41, office_cycle4['Maximum'])
         self.assertEqual(40, office_cycle4['Minimum'])
         self.assertEqual(81, office_cycle4['Sum'])
-        exp = {str(self.vw_office40.id): 40.0, str(self.vw_office41.id): 41.0}
+        exp = {str(self.view40.id): 40.0, str(self.view41.id): 41.0}
         self.assertEqual(exp, office_cycle4['views_by_id'])
 
         retail_cycle1 = retail['cycles_by_id'][str(self.cycle1.id)]
@@ -506,7 +506,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(13, retail_cycle1['Maximum'])
         self.assertEqual(12, retail_cycle1['Minimum'])
         self.assertEqual(25, retail_cycle1['Sum'])
-        exp = {str(self.vw_retail12.id): 12.0, str(self.vw_retail13.id): 13.0}
+        exp = {str(self.view12.id): 12.0, str(self.view13.id): 13.0}
         self.assertEqual(exp, retail_cycle1['views_by_id'])
 
         self.assertEqual(42.5, retail_cycle4['Average'])
@@ -514,7 +514,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(43, retail_cycle4['Maximum'])
         self.assertEqual(42, retail_cycle4['Minimum'])
         self.assertEqual(85, retail_cycle4['Sum'])
-        exp = {str(self.vw_retail42.id): 42.0, str(self.vw_retail43.id): 43.0}
+        exp = {str(self.view42.id): 42.0, str(self.view43.id): 43.0}
         self.assertEqual(exp, retail_cycle4['views_by_id'])
 
     def test_evaluation_endpoint_extra_col(self):
@@ -539,7 +539,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(1200, fg3_cycle1['Maximum'])
         self.assertEqual(1000, fg3_cycle1['Minimum'])
         self.assertEqual(3300, fg3_cycle1['Sum'])
-        exp = {str(self.vw_office10.id): 1000, str(self.vw_office11.id): 1100, str(self.vw_retail12.id): 1200}
+        exp = {str(self.view10.id): 1000, str(self.view11.id): 1100, str(self.view12.id): 1200}
         self.assertEqual(exp, fg3_cycle1['views_by_id'])
 
         fg4_cycle4 = data['filter_groups_by_id'][fg_4_id]['cycles_by_id'][cycle4_id]
@@ -549,7 +549,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(4200, fg4_cycle4['Maximum'])
         self.assertEqual(0, fg4_cycle4['Minimum'])
         self.assertEqual(12300, fg4_cycle4['Sum'])
-        exp = {str(self.vw_office40.id): 4000, str(self.vw_office41.id): 4100, str(self.vw_retail42.id): 4200, str(self.vw_retail43.id): 0}
+        exp = {str(self.view40.id): 4000, str(self.view41.id): 4100, str(self.view42.id): 4200, str(self.view43.id): 0}
         self.assertEqual(exp, fg4_cycle4['views_by_id'])
        
 
@@ -578,7 +578,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(23, cycle1_data['Maximum'])
         self.assertEqual(20, cycle1_data['Minimum'])
         self.assertEqual(86, cycle1_data['Sum'])
-        exp = {str(self.vw_office10.id): 20.0,str(self.vw_office11.id): 21.0,str(self.vw_retail12.id): 22.0,str(self.vw_retail13.id): 23.0}
+        exp = {str(self.view10.id): 20.0,str(self.view11.id): 21.0,str(self.view12.id): 22.0,str(self.view13.id): 23.0}
         self.assertEqual(exp, cycle1_data['views_by_id'])
 
         self.assertEqual(31.5, cycle2_data['Average'])
@@ -586,7 +586,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(33, cycle2_data['Maximum'])
         self.assertEqual(30, cycle2_data['Minimum'])
         self.assertEqual(126, cycle2_data['Sum'])
-        exp = {str(self.vw_office20.id): 30.0,str(self.vw_office21.id): 31.0,str(self.vw_retail22.id): 32.0,str(self.vw_retail23.id): 33.0}
+        exp = {str(self.view20.id): 30.0,str(self.view21.id): 31.0,str(self.view22.id): 32.0,str(self.view23.id): 33.0}
         self.assertEqual(exp, cycle2_data['views_by_id'])
 
 class DataViewInventoryTests(TestCase):
@@ -635,43 +635,43 @@ class DataViewInventoryTests(TestCase):
 
         # generate property states that are either 'Office' or 'Retail' for filter groups
         # generate property views that are attatched to a property and a property-state
-        self.st_office10 = self.property_state_factory.get_property_state(property_name='st_office10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
-        self.st_office11 = self.property_state_factory.get_property_state(property_name='st_office11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
-        self.st_retail12 = self.property_state_factory.get_property_state(property_name='st_retail12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
-        self.st_retail13 = self.property_state_factory.get_property_state(property_name='st_retail13', property_type='retail', site_eui=13 * ureg.eui, total_ghg_emissions=130, extra_data={'extra_col': 0})
+        self.state10 = self.property_state_factory.get_property_state(property_name='state10', property_type='office', site_eui=10 * ureg.eui, total_ghg_emissions=100, extra_data={'extra_col': 1000})
+        self.state11 = self.property_state_factory.get_property_state(property_name='state11', property_type='office', site_eui=11 * ureg.eui, total_ghg_emissions=110, extra_data={'extra_col': 1100})
+        self.state12 = self.property_state_factory.get_property_state(property_name='state12', property_type='retail', site_eui=12 * ureg.eui, total_ghg_emissions=120, extra_data={'extra_col': 1200})
+        self.state13 = self.property_state_factory.get_property_state(property_name='state13', property_type='retail', site_eui=13 * ureg.eui, total_ghg_emissions=130, extra_data={'extra_col': 0})
 
-        self.vw_office10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.st_office10)
-        self.vw_office11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.st_office11)
-        self.vw_retail12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.st_retail12)
-        self.vw_retail13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.st_retail13)
-        self.vw_office10.labels.set([self.label1])
-        self.vw_office11.labels.set([self.label1, self.label2])
-        self.vw_retail12.labels.set([self.label1, self.label2, self.label3])
-        self.vw_retail13.labels.set([self.label3])
+        self.view10 = PropertyView.objects.create(property=self.office1, cycle=self.cycle1, state=self.state10)
+        self.view11 = PropertyView.objects.create(property=self.office2, cycle=self.cycle1, state=self.state11)
+        self.view12 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle1, state=self.state12)
+        self.view13 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle1, state=self.state13)
+        self.view10.labels.set([self.label1])
+        self.view11.labels.set([self.label1, self.label2])
+        self.view12.labels.set([self.label1, self.label2, self.label3])
+        self.view13.labels.set([self.label3])
 
-        self.st_office20 = self.property_state_factory.get_property_state(property_name='st_office20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
-        self.st_office21 = self.property_state_factory.get_property_state(property_name='st_office21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
-        self.st_retail22 = self.property_state_factory.get_property_state(property_name='st_retail22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
-        self.st_retail23 = self.property_state_factory.get_property_state(property_name='st_retail23', property_type='retail', site_eui=23 * ureg.eui, total_ghg_emissions=230, extra_data={'extra_col': 0})
+        self.state20 = self.property_state_factory.get_property_state(property_name='state20', property_type='office', site_eui=20 * ureg.eui, total_ghg_emissions=200, extra_data={'extra_col': 2000})
+        self.state21 = self.property_state_factory.get_property_state(property_name='state21', property_type='office', site_eui=21 * ureg.eui, total_ghg_emissions=210, extra_data={'extra_col': 2100})
+        self.state22 = self.property_state_factory.get_property_state(property_name='state22', property_type='retail', site_eui=22 * ureg.eui, total_ghg_emissions=220, extra_data={'extra_col': 2200})
+        self.state23 = self.property_state_factory.get_property_state(property_name='state23', property_type='retail', site_eui=23 * ureg.eui, total_ghg_emissions=230, extra_data={'extra_col': 0})
 
-        self.vw_office20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.st_office20)
-        self.vw_office21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.st_office21)
-        self.vw_retail22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.st_retail22)
-        self.vw_retail23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.st_retail23)
-        self.vw_office20.labels.set([self.label1, self.label2, self.label3])
-        self.vw_office21.labels.set([self.label1, self.label2])
-        self.vw_retail22.labels.set([self.label1, self.label2])
-        self.vw_retail23.labels.set([self.label1, self.label2])
+        self.view20 = PropertyView.objects.create(property=self.office1, cycle=self.cycle2, state=self.state20)
+        self.view21 = PropertyView.objects.create(property=self.office2, cycle=self.cycle2, state=self.state21)
+        self.view22 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle2, state=self.state22)
+        self.view23 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle2, state=self.state23)
+        self.view20.labels.set([self.label1, self.label2, self.label3])
+        self.view21.labels.set([self.label1, self.label2])
+        self.view22.labels.set([self.label1, self.label2])
+        self.view23.labels.set([self.label1, self.label2])
 
-        self.st_office30 = self.property_state_factory.get_property_state(property_name='st_office30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
-        self.st_office31 = self.property_state_factory.get_property_state(property_name='st_office31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
-        self.st_retail32 = self.property_state_factory.get_property_state(property_name='st_retail32', property_type='retail', site_eui=32 * ureg.eui, total_ghg_emissions=320, extra_data={'extra_col': 3200})
-        self.st_retail33 = self.property_state_factory.get_property_state(property_name='st_retail33', property_type='retail', site_eui=33 * ureg.eui, total_ghg_emissions=330, extra_data={'extra_col': 0})
+        self.state30 = self.property_state_factory.get_property_state(property_name='state30', property_type='office', site_eui=30 * ureg.eui, total_ghg_emissions=300, extra_data={'extra_col': 3000})
+        self.state31 = self.property_state_factory.get_property_state(property_name='state31', property_type='office', site_eui=31 * ureg.eui, total_ghg_emissions=310, extra_data={'extra_col': 3100})
+        self.state32 = self.property_state_factory.get_property_state(property_name='state32', property_type='retail', site_eui=32 * ureg.eui, total_ghg_emissions=320, extra_data={'extra_col': 3200})
+        self.state33 = self.property_state_factory.get_property_state(property_name='state33', property_type='retail', site_eui=33 * ureg.eui, total_ghg_emissions=330, extra_data={'extra_col': 0})
 
-        self.vw_office30 = PropertyView.objects.create(property=self.office1, cycle=self.cycle3, state=self.st_office30)
-        self.vw_office31 = PropertyView.objects.create(property=self.office2, cycle=self.cycle3, state=self.st_office31)
-        self.vw_retail32 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle3, state=self.st_retail32)
-        self.vw_retail33 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle3, state=self.st_retail33)
+        self.view30 = PropertyView.objects.create(property=self.office1, cycle=self.cycle3, state=self.state30)
+        self.view31 = PropertyView.objects.create(property=self.office2, cycle=self.cycle3, state=self.state31)
+        self.view32 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle3, state=self.state32)
+        self.view33 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle3, state=self.state33)
 
         # no filter, no labels
         self.data_view1 = DataView.objects.create(
@@ -732,18 +732,24 @@ class DataViewInventoryTests(TestCase):
     #     )
     #     data = json.loads(response.content)
     #     data = data['data']
+
     #     fg_1_id = str(self.data_view2.filter_groups[0]['id'])
     #     fg_2_id = str(self.data_view2.filter_groups[1]['id'])
     #     exp_filter_group_names = [str(fg['id']) for fg in self.data_view2.filter_groups]
     #     self.assertEqual(list(data.keys()), exp_filter_group_names)
-    #     breakpoint()
-    #     self.assertEqual(data[fg_1_id][str(self.cycle1.id)], [self.vw_office10.id, self.vw_office11.id, self.vw_retail12.id])
-    #     self.assertEqual(data[fg_1_id][str(self.cycle2.id)], [self.vw_office20.id, self.vw_office21.id, self.vw_retail22.id])
-    #     self.assertEqual(data[fg_1_id][str(self.cycle3.id)], [self.vw_office30.id, self.vw_office31.id, self.vw_retail32.id])
 
-    #     self.assertEqual(data[fg_2_id][str(self.cycle1.id)], [self.vw_office10.id, self.vw_office11.id, self.vw_retail12.id, self.vw_retail13.id])
-    #     self.assertEqual(data[fg_2_id][str(self.cycle2.id)], [self.vw_office20.id, self.vw_office21.id, self.vw_retail22.id, self.vw_retail23.id])
-    #     self.assertEqual(data[fg_2_id][str(self.cycle3.id)], [self.vw_office30.id, self.vw_office31.id, self.vw_retail32.id, self.vw_retail33.id])
+    #     # check correct views attached to filter group keys 
+    #     # exp_views = 
+
+
+    #     breakpoint()
+    #     self.assertEqual(data[fg_1_id][str(self.cycle1.id)], [self.view10.id, self.view11.id, self.view12.id])
+    #     self.assertEqual(data[fg_1_id][str(self.cycle2.id)], [self.view20.id, self.view21.id, self.view22.id])
+    #     self.assertEqual(data[fg_1_id][str(self.cycle3.id)], [self.view30.id, self.view31.id, self.view32.id])
+
+    #     self.assertEqual(data[fg_2_id][str(self.cycle1.id)], [self.view10.id, self.view11.id, self.view12.id, self.view13.id])
+    #     self.assertEqual(data[fg_2_id][str(self.cycle2.id)], [self.view20.id, self.view21.id, self.view22.id, self.view23.id])
+    #     self.assertEqual(data[fg_2_id][str(self.cycle3.id)], [self.view30.id, self.view31.id, self.view32.id, self.view33.id])
 
     #     response = self.client.get(
     #         reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
@@ -755,14 +761,14 @@ class DataViewInventoryTests(TestCase):
     #     fg_or_id = str(self.data_view3.filter_groups[1]['id'])
     #     fg_exc_id = str(self.data_view3.filter_groups[2]['id'])
 
-    #     self.assertEqual([self.vw_retail12.id], data[fg_and_id][str(self.cycle1.id)])
-    #     self.assertEqual([self.vw_office20.id], data[fg_and_id][str(self.cycle2.id)])
+    #     self.assertEqual([self.view12.id], data[fg_and_id][str(self.cycle1.id)])
+    #     self.assertEqual([self.view20.id], data[fg_and_id][str(self.cycle2.id)])
     #     self.assertEqual([], data[fg_and_id][str(self.cycle3.id)])
 
-    #     self.assertEqual([self.vw_office11.id, self.vw_retail12.id], sorted(data[fg_or_id][str(self.cycle1.id)]))
-    #     self.assertEqual([self.vw_office20.id, self.vw_office21.id, self.vw_retail22.id], sorted(data[fg_or_id][str(self.cycle2.id)]))
+    #     self.assertEqual([self.view11.id, self.view12.id], sorted(data[fg_or_id][str(self.cycle1.id)]))
+    #     self.assertEqual([self.view20.id, self.view21.id, self.view22.id], sorted(data[fg_or_id][str(self.cycle2.id)]))
     #     self.assertEqual([], data[fg_or_id][str(self.cycle3.id)])
 
-    #     self.assertEqual([self.vw_office10.id, self.vw_office11.id], sorted(data[fg_exc_id][str(self.cycle1.id)]))
-    #     self.assertEqual([self.vw_office21.id, self.vw_retail22.id], sorted(data[fg_exc_id][str(self.cycle2.id)]))
-    #     self.assertEqual([self.vw_office30.id, self.vw_office31.id, self.vw_retail32.id], sorted(data[fg_exc_id][str(self.cycle3.id)]))
+    #     self.assertEqual([self.view10.id, self.view11.id], sorted(data[fg_exc_id][str(self.cycle1.id)]))
+    #     self.assertEqual([self.view21.id, self.view22.id], sorted(data[fg_exc_id][str(self.cycle2.id)]))
+    #     self.assertEqual([self.view30.id, self.view31.id, self.view32.id], sorted(data[fg_exc_id][str(self.cycle3.id)]))
