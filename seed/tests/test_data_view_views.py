@@ -6,8 +6,6 @@
 """
 import json
 from datetime import datetime
-from weakref import ProxyType
-import unittest
 
 import pytz
 from django.http import QueryDict
@@ -441,7 +439,6 @@ class DataViewEvaluationTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
 
-
         data = data['data']
         fg_office_id = str(self.data_view1.filter_groups[0]['id'])
         fg_retail_id = str(self.data_view1.filter_groups[1]['id'])
@@ -471,8 +468,8 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(['cycles_by_id'], list(office.keys()))
         self.assertEqual(['cycles_by_id'], list(retail.keys()))
 
-        self.assertEqual([str(self.cycle4.id),str(self.cycle3.id),str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
-        self.assertEqual([str(self.cycle4.id),str(self.cycle3.id),str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
 
         self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle1.id)]))
         self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle4.id)]))
@@ -551,8 +548,6 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(12300, fg4_cycle4['Sum'])
         exp = {str(self.view40.id): 4000, str(self.view41.id): 4100, str(self.view42.id): 4200, str(self.view43.id): 0}
         self.assertEqual(exp, fg4_cycle4['views_by_id'])
-       
-
 
     def test_evaluation_endpoint_derived_col(self):
         response = self.client.put(
@@ -578,7 +573,7 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(23, cycle1_data['Maximum'])
         self.assertEqual(20, cycle1_data['Minimum'])
         self.assertEqual(86, cycle1_data['Sum'])
-        exp = {str(self.view10.id): 20.0,str(self.view11.id): 21.0,str(self.view12.id): 22.0,str(self.view13.id): 23.0}
+        exp = {str(self.view10.id): 20.0, str(self.view11.id): 21.0, str(self.view12.id): 22.0, str(self.view13.id): 23.0}
         self.assertEqual(exp, cycle1_data['views_by_id'])
 
         self.assertEqual(31.5, cycle2_data['Average'])
@@ -586,8 +581,9 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(33, cycle2_data['Maximum'])
         self.assertEqual(30, cycle2_data['Minimum'])
         self.assertEqual(126, cycle2_data['Sum'])
-        exp = {str(self.view20.id): 30.0,str(self.view21.id): 31.0,str(self.view22.id): 32.0,str(self.view23.id): 33.0}
+        exp = {str(self.view20.id): 30.0, str(self.view21.id): 31.0, str(self.view22.id): 32.0, str(self.view23.id): 33.0}
         self.assertEqual(exp, cycle2_data['views_by_id'])
+
 
 class DataViewInventoryTests(TestCase):
     """
@@ -736,7 +732,7 @@ class DataViewInventoryTests(TestCase):
         exp_filter_group_names = [str(fg['id']) for fg in self.data_view2.filter_groups]
         self.assertEqual(list(data.keys()), exp_filter_group_names)
 
-        # check correct views attached to filter group keys 
+        # check correct views attached to filter group keys
         fg1_id = str(self.data_view2.filter_groups[0]['id'])
         fg2_id = str(self.data_view2.filter_groups[1]['id'])
 
@@ -752,6 +748,7 @@ class DataViewInventoryTests(TestCase):
         data = json.loads(response.content)
         data = data['data']
 
+        # check correct views attached to filter group keys
         fg_and_id = str(self.data_view3.filter_groups[0]['id'])
         fg_or_id = str(self.data_view3.filter_groups[1]['id'])
         fg_exc_id = str(self.data_view3.filter_groups[2]['id'])
@@ -764,4 +761,3 @@ class DataViewInventoryTests(TestCase):
 
         exp = [self.view10.id, self.view11.id, self.view21.id, self.view22.id, self.view30.id, self.view31.id, self.view32.id]
         self.assertEqual(exp, sorted(data[fg_exc_id]))
-

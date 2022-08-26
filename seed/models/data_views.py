@@ -67,7 +67,7 @@ class DataView(models.Model):
 
             for filter_group in self.filter_groups:
                 filter_id = filter_group['id']
-                data[column_id]['filter_groups_by_id'][filter_id] = {'cycles_by_id':{}}
+                data[column_id]['filter_groups_by_id'][filter_id] = {'cycles_by_id': {}}
 
                 for cycle in self.cycles.all():
                     data_cycles = data[column_id]['filter_groups_by_id'][filter_id]['cycles_by_id']
@@ -83,7 +83,7 @@ class DataView(models.Model):
                             self._assign_views_by_id_values(views, data, data_cycles, column, cycle.id, aggregation)
                         else:
                             value = self._evaluate_aggregation(states, aggregation, column)
-                            data_cycles[cycle.id][aggregation.name] = value 
+                            data_cycles[cycle.id][aggregation.name] = value
 
         return response
 
@@ -110,9 +110,9 @@ class DataView(models.Model):
             try:
                 value = round(state_value.m, 2)
                 unit = '{:P~}'.format(state_value.u)
-            except AttributeError: 
+            except AttributeError:
                 value = state_value
-                unit = None            
+                unit = None
 
             if not data[column.id].get('unit'):
                 data[column.id]['unit'] = unit
@@ -121,9 +121,9 @@ class DataView(models.Model):
 
     def _format_filter_group_data(self, data_cycles, cycle_id, aggregation):
         if aggregation == 'views_by_id':
-           data_cycles[cycle_id][aggregation] = {}
+            data_cycles[cycle_id][aggregation] = {}
         else:
-           data_cycles[cycle_id][aggregation.name] = []
+            data_cycles[cycle_id][aggregation.name] = []
 
     def _evaluate_aggregation(self, states, aggregation, column):
         if column.is_extra_data:
@@ -210,6 +210,7 @@ class DataView(models.Model):
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
         return views_list
+
 
 class DataViewParameter(models.Model):
     data_view = models.ForeignKey(DataView, on_delete=models.CASCADE, related_name='parameters')

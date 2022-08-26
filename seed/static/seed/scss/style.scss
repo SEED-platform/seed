@@ -4306,26 +4306,26 @@ iframe.analysis-results {
 }
 
 .r-row {
-    display: flex;
-    margin: 0 0;
-    flex-grow: 1;
+  display: flex;
+  margin: 0 0;
+  flex-grow: 1;
 
-    &.r-shrink {
-      flex-grow: 0;
-      flex-shrink: 1;
-    }
+  &.r-shrink {
+    flex-grow: 0;
+    flex-shrink: 1;
+  }
 
-    &.r-pull-right {
-      justify-content: right;
-    }
+  &.r-pull-right {
+    justify-content: right;
+  }
 
-    &.r-row-centered {
-      align-items: center;
-    }
+  &.r-row-centered {
+    align-items: center;
+  }
 
-    > input[type=checkbox] {
-      margin: 0;
-    }
+  > input[type="checkbox"] {
+    margin: 0;
+  }
 
   > label {
     margin: 0;
@@ -4364,10 +4364,9 @@ ul.r-list {
   > li {
     border-bottom: 1px solid #b3b3b3;
     padding: 5px;
-    
-    &.r-row {
 
-      > input[type=checkbox] {
+    &.r-row {
+      > input[type="checkbox"] {
         padding: 0;
         margin: 0;
       }
