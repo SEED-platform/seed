@@ -33,6 +33,7 @@ class DataView(models.Model):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups:
+            logging.error('>>> filter_group %s', filter_group)
             views_by_filter_group_id[filter_group['id']] = []
             filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
@@ -44,7 +45,9 @@ class DataView(models.Model):
                 # views = filter_views
                 filter_group_views[filter_group['id']][cycle.id] = views
                 for view in views:
-                    views_by_filter_group_id[filter_group['id']].append(view.id)
+                    view_key = self._format_property_display_field(view)
+                    views_by_filter_group_id[filter_group['id']].append(view_key)
+            views_by_filter_group_id[filter_group['id']] = sorted(list(set(views_by_filter_group_id[filter_group['id']])))
 
         return views_by_filter_group_id, filter_group_views
 
@@ -87,6 +90,12 @@ class DataView(models.Model):
 
         return response
 
+    def _format_property_display_field(self, view):
+        try:
+            return getattr(view.state, self.organization.property_display_field)
+        except AttributeError:
+            return view.id
+
     def _format_aggregation_name(self, aggregation):
         if aggregation == Avg:
             aggregation.name = 'Average'
@@ -98,7 +107,8 @@ class DataView(models.Model):
     def _assign_views_by_id_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
         for view in views:
             # Default assignment on first pass
-            data_cycles[cycle_id][aggregation][view.id] = data_cycles[cycle_id][aggregation].get(view.id, [])
+            view_key = self._format_property_display_field(view)
+            data_cycles[cycle_id][aggregation][view_key] = data_cycles[cycle_id][aggregation].get(view_key, [])
 
             if column.is_extra_data:
                 state_value = view.state.extra_data[column.column_name]
@@ -117,7 +127,8 @@ class DataView(models.Model):
             if not data[column.id].get('unit'):
                 data[column.id]['unit'] = unit
 
-            data_cycles[cycle_id][aggregation][view.id] = value
+            view_key = self._format_property_display_field(view)
+            data_cycles[cycle_id][aggregation][view_key] = value
 
     def _format_filter_group_data(self, data_cycles, cycle_id, aggregation):
         if aggregation == 'views_by_id':
@@ -197,7 +208,7 @@ class DataView(models.Model):
             only_used=False,
             include_related=False
         )
-        annotations = ''
+        annotations = {}
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
         except Exception:

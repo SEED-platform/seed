@@ -49,7 +49,10 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 5, name: 'Count'}
       ];
       $scope.filter_groups = [
-        {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}}
+        {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}},
+        {id:2, name: 'Energy Score > 50', query_dict: {'energy_score__gte': 50}},
+        {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
+
       ];
 
       let _collect_array_as_object = function (array, key="id") {
@@ -92,6 +95,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
         }
         $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
+        console.log('selected cycles', $scope.selected_cycles)
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
 
         // load source columns
@@ -141,6 +145,7 @@ angular.module('BE.seed.controller.data_view', [])
         spinner_utility.show();
         let data = data_view_service.evaluate_data_view($scope.selected_data_view.id, Object.values($scope.source_column_by_location).filter(item => item).map(item => item.id)).then((data) => {
           $scope.data = data;
+          console.log(data)
           spinner_utility.hide();
         });
       };
