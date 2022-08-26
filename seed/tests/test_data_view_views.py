@@ -720,55 +720,48 @@ class DataViewInventoryTests(TestCase):
             location='axis1',
         )
 
-    # def test_inventory_endpoint(self):
-    #     response = self.client.get(
-    #         reverse('api:v3:data_views-inventory', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
-    #     )
-    #     data = json.loads(response.content)
-    #     self.assertEqual({}, data['data'])
+    def test_inventory_endpoint(self):
+        response = self.client.get(
+            reverse('api:v3:data_views-inventory', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id)
+        )
+        data = json.loads(response.content)
+        self.assertEqual({}, data['data'])
 
-    #     response = self.client.get(
-    #         reverse('api:v3:data_views-inventory', args=[self.data_view2.id]) + '?organization_id=' + str(self.org.id)
-    #     )
-    #     data = json.loads(response.content)
-    #     data = data['data']
+        response = self.client.get(
+            reverse('api:v3:data_views-inventory', args=[self.data_view2.id]) + '?organization_id=' + str(self.org.id)
+        )
+        data = json.loads(response.content)
+        data = data['data']
 
-    #     fg_1_id = str(self.data_view2.filter_groups[0]['id'])
-    #     fg_2_id = str(self.data_view2.filter_groups[1]['id'])
-    #     exp_filter_group_names = [str(fg['id']) for fg in self.data_view2.filter_groups]
-    #     self.assertEqual(list(data.keys()), exp_filter_group_names)
+        exp_filter_group_names = [str(fg['id']) for fg in self.data_view2.filter_groups]
+        self.assertEqual(list(data.keys()), exp_filter_group_names)
 
-    #     # check correct views attached to filter group keys 
-    #     # exp_views = 
+        # check correct views attached to filter group keys 
+        fg1_id = str(self.data_view2.filter_groups[0]['id'])
+        fg2_id = str(self.data_view2.filter_groups[1]['id'])
 
+        exp = [self.view10.id, self.view11.id, self.view12.id, self.view20.id, self.view21.id, self.view22.id, self.view30.id, self.view31.id, self.view32.id]
+        self.assertEqual(exp, sorted(data[fg1_id]))
 
-    #     breakpoint()
-    #     self.assertEqual(data[fg_1_id][str(self.cycle1.id)], [self.view10.id, self.view11.id, self.view12.id])
-    #     self.assertEqual(data[fg_1_id][str(self.cycle2.id)], [self.view20.id, self.view21.id, self.view22.id])
-    #     self.assertEqual(data[fg_1_id][str(self.cycle3.id)], [self.view30.id, self.view31.id, self.view32.id])
+        exp = [self.view10.id, self.view11.id, self.view12.id, self.view13.id, self.view20.id, self.view21.id, self.view22.id, self.view23.id, self.view30.id, self.view31.id, self.view32.id, self.view33.id]
+        self.assertEqual(exp, sorted(data[fg2_id]))
 
-    #     self.assertEqual(data[fg_2_id][str(self.cycle1.id)], [self.view10.id, self.view11.id, self.view12.id, self.view13.id])
-    #     self.assertEqual(data[fg_2_id][str(self.cycle2.id)], [self.view20.id, self.view21.id, self.view22.id, self.view23.id])
-    #     self.assertEqual(data[fg_2_id][str(self.cycle3.id)], [self.view30.id, self.view31.id, self.view32.id, self.view33.id])
+        response = self.client.get(
+            reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
+        )
+        data = json.loads(response.content)
+        data = data['data']
 
-    #     response = self.client.get(
-    #         reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
-    #     )
-    #     data = json.loads(response.content)
-    #     data = data['data']
+        fg_and_id = str(self.data_view3.filter_groups[0]['id'])
+        fg_or_id = str(self.data_view3.filter_groups[1]['id'])
+        fg_exc_id = str(self.data_view3.filter_groups[2]['id'])
 
-    #     fg_and_id = str(self.data_view3.filter_groups[0]['id'])
-    #     fg_or_id = str(self.data_view3.filter_groups[1]['id'])
-    #     fg_exc_id = str(self.data_view3.filter_groups[2]['id'])
+        exp = [self.view12.id, self.view20.id]
+        self.assertEqual(exp, sorted(data[fg_and_id]))
 
-    #     self.assertEqual([self.view12.id], data[fg_and_id][str(self.cycle1.id)])
-    #     self.assertEqual([self.view20.id], data[fg_and_id][str(self.cycle2.id)])
-    #     self.assertEqual([], data[fg_and_id][str(self.cycle3.id)])
+        exp = [self.view11.id, self.view12.id, self.view20.id, self.view21.id, self.view22.id]
+        self.assertEqual(exp, sorted(data[fg_or_id]))
 
-    #     self.assertEqual([self.view11.id, self.view12.id], sorted(data[fg_or_id][str(self.cycle1.id)]))
-    #     self.assertEqual([self.view20.id, self.view21.id, self.view22.id], sorted(data[fg_or_id][str(self.cycle2.id)]))
-    #     self.assertEqual([], data[fg_or_id][str(self.cycle3.id)])
+        exp = [self.view10.id, self.view11.id, self.view21.id, self.view22.id, self.view30.id, self.view31.id, self.view32.id]
+        self.assertEqual(exp, sorted(data[fg_exc_id]))
 
-    #     self.assertEqual([self.view10.id, self.view11.id], sorted(data[fg_exc_id][str(self.cycle1.id)]))
-    #     self.assertEqual([self.view21.id, self.view22.id], sorted(data[fg_exc_id][str(self.cycle2.id)]))
-    #     self.assertEqual([self.view30.id, self.view31.id, self.view32.id], sorted(data[fg_exc_id][str(self.cycle3.id)]))
