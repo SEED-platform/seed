@@ -54,6 +54,11 @@ angular.module('BE.seed.controller.data_view', [])
         {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
 
       ];
+      $scope.show_config = true
+      $scope.toggle_config = () => {
+        console.log('toggle config')
+        $scope.show_config = !$scope.show_config
+      }
 
       let _collect_array_as_object = function (array, key="id") {
         ret = {};
