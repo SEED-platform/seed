@@ -439,7 +439,12 @@ angular.module('BE.seed.controller.data_view', [])
           options: {
             scales: {
               y: {
-                beginAtZero: true
+                beginAtZero: true,
+                title: {
+                  text: $scope.source_column_by_location.first_axis.displayName,
+                  display: true
+
+                }
               }
             }
           }
