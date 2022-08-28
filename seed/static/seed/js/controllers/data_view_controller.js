@@ -397,6 +397,7 @@ angular.module('BE.seed.controller.data_view', [])
         return
 
       }
+      console.log('test')
 
       const format_data = () => {
         const data = $scope.data
