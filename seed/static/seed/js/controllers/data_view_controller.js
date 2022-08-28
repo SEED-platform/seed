@@ -100,7 +100,6 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
         }
         $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
-        console.log('selected cycles', $scope.selected_cycles)
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
 
         // load source columns
@@ -150,8 +149,12 @@ angular.module('BE.seed.controller.data_view', [])
         spinner_utility.show();
         let data = data_view_service.evaluate_data_view($scope.selected_data_view.id, Object.values($scope.source_column_by_location).filter(item => item).map(item => item.id)).then((data) => {
           $scope.data = data;
-          console.log(data)
           spinner_utility.hide();
+        }).then(() => {
+          console.log('get chart data pre')
+          _get_chart2();
+          console.log('get chart data post')
+
         });
       };
 
@@ -280,6 +283,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         // any errors?
+        console.log($scope.create_errors)
         if ($scope.create_errors.length > 0) {
           spinner_utility.hide();
           return;
@@ -369,6 +373,62 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.editing = true;
         spinner_utility.hide();
       };
+
+      // CHARTS
+      const _get_chart2 = () => {
+        console.log('GET CHART DATA')
+        const datasets = format_data()
+        const canvas = document.getElementById('data-view-chart')
+        const ctx = canvas.getContext('2d')
+        const myChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Object.values($scope.selected_cycles).map(c => c.name),
+            datasets: datasets
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+        return
+
+      }
+
+      const format_data = () => {
+        const data = $scope.data
+        const data_view = $scope.selected_data_view
+        const aggregation_type = $scope.aggregations.find(agg => agg.id == data_view.parameters[0].aggregations[0]).name
+        const column_id = data_view.parameters[0].column
+        const column_name = property_columns.find(col => col.id == column_id).column_name
+        const generic_label = column_name + ' ' + aggregation_type
+
+        let datasets = []
+
+        colors = ['red', 'green', 'blue']
+
+        let i = 0
+        for (let [fg, cycles] of Object.entries(data.columns_by_id[column_id]['filter_groups_by_id'])) {
+          let filter_group_name = $scope.filter_groups.find(f => f.id == fg).name
+          let dataset = {
+            label: filter_group_name + ' ' + generic_label,
+            data: [],
+            backgroundColor: colors[i],
+            borderColor: colors[i],
+            tension: 0.1
+          }
+          for (let [cycle_id, aggregations] of Object.entries(cycles.cycles_by_id)) {
+            dataset.data.push(aggregations[aggregation_type])
+          }
+          datasets.push(dataset)
+          i ++
+        }
+        
+        return datasets
+      }
 
       _init_fields();
       _init_data();
