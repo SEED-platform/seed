@@ -152,7 +152,7 @@ angular.module('BE.seed.controller.data_view', [])
           spinner_utility.hide();
         }).then(() => {
           console.log('get chart data pre')
-          _get_chart2();
+          _build_chart();
           console.log('get chart data post')
 
         });
@@ -190,6 +190,8 @@ angular.module('BE.seed.controller.data_view', [])
         switch (location) {
           case 'first_axis':
             aggregations = $scope.selected_data_view.first_axis_aggregations;
+
+            console.log('TOGGLE FIRST')
             break;
           case 'second_axis':
             aggregations = $scope.selected_data_view.second_axis_aggregations;
@@ -202,6 +204,10 @@ angular.module('BE.seed.controller.data_view', [])
           aggregations.splice(i, 1);
         } else {
           aggregations.push(aggregation_id);
+        }
+        if ($scope.dataViewChart) {
+          console.log('aggregations', aggregations)
+          _assign_datasets()
         }
       };
 
@@ -373,18 +379,62 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.editing = true;
         spinner_utility.hide();
       };
-
       // CHARTS
-      const _get_chart2 = () => {
-        console.log('GET CHART DATA')
-        const datasets = format_data()
+      var colors = [
+        '#4477AA',
+        '#DDDD77',
+        '#77CCCC',
+        '#117744',
+        '#DD7788',
+        '#AA4455',
+        '#77AADD',
+        '#44AAAA',
+        '#AAAA44',
+        '#114477',
+        '#117777',
+        '#771122',
+        '#777711',
+        '#AA7744',
+        '#DDAA77',
+        '#771155',
+        '#AA4488',
+        '#CC99BB',
+        '#44AA77',
+        '#88CCAA',
+        '#774411',
+      ]
+
+      const _build_chart = () => {
+        console.log('BUILD CHART')
+        if (Object.keys($scope.data).length == 0) {
+          console.log('NO DATA')
+
+          return
+        }
         const canvas = document.getElementById('data-view-chart')
         const ctx = canvas.getContext('2d')
-        const myChart = new Chart(ctx, {
+        // xAxisLabels = $scope.data.graph_data.labels
+        // datasets = []
+        // selected_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
+        // first_column = $scope.source_column_by_location.first_axis.column_name
+        // let i = 0
+        // for (let aggregation of selected_aggregations) {
+        //   for (let dataset of $scope.data.graph_data.datasets) {
+        //     if (aggregation == dataset.aggregation && first_column == dataset.column) {
+        //       console.log(dataset.column)
+        //       dataset.label = `${dataset.filter_group} ${dataset.column} ${dataset.aggregation}`
+        //       dataset.backgroundColor = colors[i],
+        //       dataset.borderColor = colors[i],
+        //       dataset.tension = 0.1
+        //       datasets.push(dataset)
+        //       i = i > 19 ? 0 : i + 1
+        //     }
+        //   }
+        // }
+
+        $scope.dataViewChart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels: Object.values($scope.selected_cycles).map(c => c.name),
-            datasets: datasets
           },
           options: {
             scales: {
@@ -393,43 +443,95 @@ angular.module('BE.seed.controller.data_view', [])
               }
             }
           }
-        });
-        return
-
+        })
+        _assign_datasets()
       }
-      console.log('test')
-
-      const format_data = () => {
-        const data = $scope.data
-        const data_view = $scope.selected_data_view
-        const aggregation_type = $scope.aggregations.find(agg => agg.id == data_view.parameters[0].aggregations[0]).name
-        const column_id = data_view.parameters[0].column
-        const column_name = property_columns.find(col => col.id == column_id).column_name
-        const generic_label = column_name + ' ' + aggregation_type
-
-        let datasets = []
-
-        colors = ['red', 'green', 'blue']
-
+      
+      const _assign_datasets = () => {
+        xAxisLabels = $scope.data.graph_data.labels
+        datasets = []
+        selected_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
+        first_column = $scope.source_column_by_location.first_axis.column_name
         let i = 0
-        for (let [fg, cycles] of Object.entries(data.columns_by_id[column_id]['filter_groups_by_id'])) {
-          let filter_group_name = $scope.filter_groups.find(f => f.id == fg).name
-          let dataset = {
-            label: filter_group_name + ' ' + generic_label,
-            data: [],
-            backgroundColor: colors[i],
-            borderColor: colors[i],
-            tension: 0.1
+        for (let aggregation of selected_aggregations) {
+          for (let dataset of $scope.data.graph_data.datasets) {
+            if (aggregation == dataset.aggregation && first_column == dataset.column) {
+              console.log(dataset.column)
+              dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
+              dataset.backgroundColor = colors[i],
+                dataset.borderColor = colors[i],
+                dataset.tension = 0.1
+              datasets.push(dataset)
+              i = i > 19 ? 0 : i + 1
+            }
           }
-          for (let [cycle_id, aggregations] of Object.entries(cycles.cycles_by_id)) {
-            dataset.data.push(aggregations[aggregation_type])
-          }
-          datasets.push(dataset)
-          i ++
         }
-        
-        return datasets
+
+        $scope.dataViewChart.data.labels = xAxisLabels
+        $scope.dataViewChart.data.datasets = datasets
+        $scope.dataViewChart.update()
+
+
       }
+
+      // const _get_chart2 = () => {
+      //   console.log('GET CHART DATA')
+      //   const datasets = format_data()
+      //   const canvas = document.getElementById('data-view-chart')
+      //   const ctx = canvas.getContext('2d')
+      //   const myChart = new Chart(ctx, {
+      //     type: 'line',
+      //     data: {
+      //       labels: Object.values($scope.selected_cycles).map(c => c.name),
+      //       datasets: datasets
+      //     },
+      //     options: {
+      //       scales: {
+      //         y: {
+      //           beginAtZero: true
+      //         }
+      //       }
+      //     }
+      //   });
+      //   return
+
+      // }
+      // console.log('test')
+
+      // const format_data = () => {
+      //   const data = $scope.data
+      //   const data_view = $scope.selected_data_view
+      //   const aggregation_type = $scope.aggregations.find(agg => agg.id == data_view.parameters[0].aggregations[0]).name
+      //   const column_id = data_view.parameters[0].column
+      //   const column_name = property_columns.find(col => col.id == column_id).column_name
+      //   const generic_label = column_name + ' ' + aggregation_type
+
+      //   let datasets = []
+
+      //   colors = ['red', 'green', 'blue']
+
+      //   let i = 0
+      //   for (let [fg, cycles] of Object.entries(data.columns_by_id[column_id]['filter_groups_by_id'])) {
+      //     let filter_group_name = $scope.filter_groups.find(f => f.id == fg).name
+      //     let dataset = {
+      //       label: filter_group_name + ' ' + generic_label,
+      //       data: [],
+      //       backgroundColor: colors[i],
+      //       borderColor: colors[i],
+      //       tension: 0.1
+      //     }
+      //     for (let [cycle_id, aggregations] of Object.entries(cycles.cycles_by_id)) {
+      //       dataset.data.push(aggregations[aggregation_type])
+      //     }
+      //     datasets.push(dataset)
+      //     i ++
+      //   }
+        
+      //   return datasets
+      // }
+      $scope.$watch('selected_data_view.first_axis_aggregations', function () {
+        console.log("WATCH AGGS")
+      })
 
       _init_fields();
       _init_data();

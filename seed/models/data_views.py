@@ -58,8 +58,20 @@ class DataView(models.Model):
                 'data_view': self.id,
             },
             'views_by_filter_group_id': {},
-            'columns_by_id': {}
+            'columns_by_id': {},
+            'graph_data': {
+                'labels': [cycle.name for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name)],
+                'datasets': []
+            }
         }
+
+        # graph_data: {
+        #   x_axis_labels = [cycle_name, cycle_name, cycle_name],
+        #   datasets = [
+        #       {label: filter_group + 1st column + aggregation, data: [1,2,3]}, 
+        #       {label: filter_group + 1st column + aggregation, data: [4,5,6]}, 
+        #   ]
+        # }
         response['views_by_filter_group_id'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column id
@@ -87,8 +99,26 @@ class DataView(models.Model):
                         else:
                             value = self._evaluate_aggregation(states, aggregation, column)
                             data_cycles[cycle.id][aggregation.name] = value
-
+        
+        self._format_graph_data(response, columns, views_by_filter)
         return response
+
+    def _format_graph_data(self, response, columns, views_by_filter):
+        # {label: filter_group + 1st column + aggregation, data: [1,2,3]},
+        for filter_group in self.filter_groups:
+            filter_id = filter_group['id']
+            filter_name = filter_group['name']
+            for column in columns:
+                logging.error('>>> column %s', column)
+                for aggregation in [Avg, Max, Min, Sum, Count]: # NEED TO ADD 'views_by_label'
+                    self._format_aggregation_name(aggregation)
+                    dataset = {'data':[], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
+                    for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
+                        views = views_by_filter[filter_id][cycle.id]
+                        states = PropertyState.objects.filter(propertyview__in=views)
+                        value = self._evaluate_aggregation(states, aggregation, column)
+                        dataset['data'].append(value)
+                    response['graph_data']['datasets'].append(dataset)
 
     def _format_property_display_field(self, view):
         try:
