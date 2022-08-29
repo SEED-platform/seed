@@ -52,13 +52,13 @@ angular.module('BE.seed.controller.data_view', [])
         // {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}},
         // {id:2, name: 'Energy Score > 50', query_dict: {'energy_score__gte': 50}},
         // {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
-        // { id: 1, name: 'Small Officex', query_dict: {'property_type__exact': 'Office' }},
-        // { id: 2, name: 'Large Retailx', query_dict: {'property_type__exact': 'Retail' }},
-        { id: 1, name: 'Small Office', query_dict: { 'gross_floor_area__lt': 5000, 'property_type__exact': 'Office' }},
-        // { id: 2, name: 'Large Office', query_dict: { 'gross_floor_area__gt': 5000, 'property_type__exact': 'Office' }},
-        // { id: 3, name: 'Small Retail', query_dict: { 'gross_floor_area__lt': 10000, 'property_type__exact': 'Retail' }},
-        { id: 4, name: 'Large Retail', query_dict: { 'gross_floor_area__gt': 10000, 'property_type__exact': 'Retail' }},
+
+        { id: 1, name: 'Small Office', query_dict: { 'gross_floor_area__lt': 10000, 'property_type__exact': 'Office' }},
+        // { id: 2, name: 'Large Office', query_dict: { 'gross_floor_area__gt': 10000, 'property_type__exact': 'Office' }},
+        // { id: 3, name: 'Small Retail', query_dict: { 'gross_floor_area__lt': 50000, 'property_type__exact': 'Retail' }},
+        { id: 4, name: 'Large Retail', query_dict: { 'gross_floor_area__gt': 50000, 'property_type__exact': 'Retail' }},
       ];
+      console.log('filter_groups',$scope.filter_groups)
 
       $scope.show_config = true
       $scope.toggle_config = () => {
