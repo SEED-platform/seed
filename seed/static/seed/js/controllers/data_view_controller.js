@@ -49,11 +49,17 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 5, name: 'Count'}
       ];
       $scope.filter_groups = [
-        {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}},
-        {id:2, name: 'Energy Score > 50', query_dict: {'energy_score__gte': 50}},
-        {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
-
+        // {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}},
+        // {id:2, name: 'Energy Score > 50', query_dict: {'energy_score__gte': 50}},
+        // {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
+        // { id: 1, name: 'Small Officex', query_dict: {'property_type__exact': 'Office' }},
+        // { id: 2, name: 'Large Retailx', query_dict: {'property_type__exact': 'Retail' }},
+        { id: 1, name: 'Small Office', query_dict: { 'gross_floor_area__lt': 5000, 'property_type__exact': 'Office' }},
+        // { id: 2, name: 'Large Office', query_dict: { 'gross_floor_area__gt': 5000, 'property_type__exact': 'Office' }},
+        // { id: 3, name: 'Small Retail', query_dict: { 'gross_floor_area__lt': 10000, 'property_type__exact': 'Retail' }},
+        { id: 4, name: 'Large Retail', query_dict: { 'gross_floor_area__gt': 10000, 'property_type__exact': 'Retail' }},
       ];
+
       $scope.show_config = true
       $scope.toggle_config = () => {
         console.log('toggle config')
@@ -138,6 +144,7 @@ angular.module('BE.seed.controller.data_view', [])
           }
         }
         $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
+        console.log('selected filter groups', $scope.selected_filter_groups)
       };
 
       $scope.data = {};
@@ -166,11 +173,13 @@ angular.module('BE.seed.controller.data_view', [])
       };
 
       $scope.toggle_filter_group = function (filter_group_id) {
-        if (filter_group_id in $scope.selected_filter_groups) {
-          delete $scope.selected_filter_groups[filter_group_id];
+        filter_group = $scope.filter_groups.find(fg => fg.id == filter_group_id)
+        if (filter_group.name in $scope.selected_filter_groups) {
+          delete $scope.selected_filter_groups[filter_group.name];
         } else {
-          $scope.selected_filter_groups[filter_group_id] = Object.assign({}, $scope.used_filter_groups[filter_group_id]);
+          $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
+        _assign_datasets()
       };
 
       $scope.toggle_cycle = function (cycle_id) {
@@ -180,6 +189,8 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.selected_cycles[cycle_id] = Object.assign({}, $scope.used_cycles[cycle_id]);
         }
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
+        console.log('selected cycles', $scope.selected_cycles)
+        console.log('used cycles', $scope.used_cycles)
       };
 
       $scope.toggle_aggregation = function (location, aggregation_id) {
@@ -437,35 +448,71 @@ angular.module('BE.seed.controller.data_view', [])
           data: {
           },
           options: {
+            plugins: {
+              title: {
+                display: true,
+                text: 'SITE EUI vs CYCLE',
+              },
+              legend: {
+                position: 'right',
+                maxWidth: 500,
+              },
+            },
             scales: {
-              y: {
+              y1: {
                 beginAtZero: true,
+                position: 'left',
                 title: {
                   text: $scope.source_column_by_location.first_axis.displayName,
                   display: true
-
+                }
+              },
+              y2: {
+                beginAtZero: true,
+                position: 'right',
+                title: {
+                  text: $scope.source_column_by_location.second_axis.displayName,
+                  display: true
                 }
               }
             }
           }
         })
+
         _assign_datasets()
       }
       
       const _assign_datasets = () => {
         xAxisLabels = $scope.data.graph_data.labels
         datasets = []
-        selected_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
-        first_column = $scope.source_column_by_location.first_axis.column_name
+        axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
+        axis1_column = $scope.source_column_by_location.first_axis.column_name
+        axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
+        axis2_column = $scope.source_column_by_location.second_axis.column_name
         let i = 0
-        for (let aggregation of selected_aggregations) {
+        for (let aggregation of axis1_aggregations) {
           for (let dataset of $scope.data.graph_data.datasets) {
-            if (aggregation == dataset.aggregation && first_column == dataset.column) {
-              console.log(dataset.column)
+            if (aggregation == dataset.aggregation && axis1_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
               dataset.backgroundColor = colors[i],
-                dataset.borderColor = colors[i],
-                dataset.tension = 0.1
+              dataset.borderColor = colors[i],
+              dataset.tension = 0.1
+              dataset.yAxisID = 'y1'
+              datasets.push(dataset)
+              i = i > 19 ? 0 : i + 1
+            }
+          }
+        }
+
+        for (let aggregation of axis2_aggregations) {
+          for (let dataset of $scope.data.graph_data.datasets) {
+            if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
+              dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
+              dataset.backgroundColor = colors[i],
+              dataset.borderColor = colors[i],
+              dataset.tension = 0.1
+              dataset.yAxisID = 'y2'
+              dataset.borderDash = [10,15]
               datasets.push(dataset)
               i = i > 19 ? 0 : i + 1
             }
@@ -478,65 +525,6 @@ angular.module('BE.seed.controller.data_view', [])
 
 
       }
-
-      // const _get_chart2 = () => {
-      //   console.log('GET CHART DATA')
-      //   const datasets = format_data()
-      //   const canvas = document.getElementById('data-view-chart')
-      //   const ctx = canvas.getContext('2d')
-      //   const myChart = new Chart(ctx, {
-      //     type: 'line',
-      //     data: {
-      //       labels: Object.values($scope.selected_cycles).map(c => c.name),
-      //       datasets: datasets
-      //     },
-      //     options: {
-      //       scales: {
-      //         y: {
-      //           beginAtZero: true
-      //         }
-      //       }
-      //     }
-      //   });
-      //   return
-
-      // }
-      // console.log('test')
-
-      // const format_data = () => {
-      //   const data = $scope.data
-      //   const data_view = $scope.selected_data_view
-      //   const aggregation_type = $scope.aggregations.find(agg => agg.id == data_view.parameters[0].aggregations[0]).name
-      //   const column_id = data_view.parameters[0].column
-      //   const column_name = property_columns.find(col => col.id == column_id).column_name
-      //   const generic_label = column_name + ' ' + aggregation_type
-
-      //   let datasets = []
-
-      //   colors = ['red', 'green', 'blue']
-
-      //   let i = 0
-      //   for (let [fg, cycles] of Object.entries(data.columns_by_id[column_id]['filter_groups_by_id'])) {
-      //     let filter_group_name = $scope.filter_groups.find(f => f.id == fg).name
-      //     let dataset = {
-      //       label: filter_group_name + ' ' + generic_label,
-      //       data: [],
-      //       backgroundColor: colors[i],
-      //       borderColor: colors[i],
-      //       tension: 0.1
-      //     }
-      //     for (let [cycle_id, aggregations] of Object.entries(cycles.cycles_by_id)) {
-      //       dataset.data.push(aggregations[aggregation_type])
-      //     }
-      //     datasets.push(dataset)
-      //     i ++
-      //   }
-        
-      //   return datasets
-      // }
-      $scope.$watch('selected_data_view.first_axis_aggregations', function () {
-        console.log("WATCH AGGS")
-      })
 
       _init_fields();
       _init_data();

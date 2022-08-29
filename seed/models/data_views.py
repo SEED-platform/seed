@@ -38,6 +38,7 @@ class DataView(models.Model):
             filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
+            logging.error('>>> query_dict %s', query_dict)
             for cycle in self.cycles.all():
                 filter_views = self._get_filter_group_views(cycle, query_dict)
                 label_views = self._get_label_views(cycle, filter_group)

@@ -4466,8 +4466,9 @@ ul.r-list {
 }
 
 .rp-data-view {
-  .wrap-collabsible {
+  .wrap-collapsible {
     margin-bottom: 1.2rem 0;
+    border-bottom: 1px solid #cccccc;
   }
 
   input[type='checkbox'] {
@@ -4477,23 +4478,20 @@ ul.r-list {
   .lbl-toggle {
     display: block;
 
-    font-weight: bold;
-    font-size: 1.2rem;
     text-align: center;
-
+    margin-top: 5px;
+    margin-left: 5px;
     padding: 1rem;
-
-    // color: #A77B0E;
-    // background: #FAE042;
 
     cursor: pointer;
 
     border-radius: 7px;
+    border: 1px solid #cccccc;
     transition: all 0.25s ease-out;
   }
 
   .lbl-toggle:hover {
-    color: #033ec6;
+    background: #eeeeee;
   }
 
   .lbl-toggle::before {
@@ -4530,8 +4528,6 @@ ul.r-list {
   }
 
   .collapsible-content .content-inner {
-    // background: rgba(250, 224, 66, .2);
-    // border-bottom: 1px solid rgba(250, 224, 66, .45);
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
     padding: .5rem 1rem;
