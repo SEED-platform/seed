@@ -19,10 +19,16 @@
             <div class="r-column r-shrink r-panel">
                 <ul class="r-list">
                     <li class="r-list-header" translate>Data View</li>
-                    <li ng-if="selected_data_view" class="r-selected">{$ selected_data_view.name $}</li>
+                    <li ng-if="selected_data_view" class="r-selected" style="display: flex; justify-content: space-between">
+                        <span>{$ selected_data_view.name $}</span>
+                        <span class="glyphicon glyphicon-remove" ng-click="click_delete(data_view)" style="cursor: pointer; color: gray" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Delete"></span>
+                    </li>
                 </ul>
                 <ul class="r-list r-scrollable">
-                    <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end><a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a></li>
+                    <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end style="display: flex; justify-content: space-between">
+                        <a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a>
+                        <span class="glyphicon glyphicon-remove" ng-click="click_delete(data_view)" style="cursor: pointer; color: gray" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Delete"></span>
+                    </li>
                 </ul>
                 <ul class="r-list">
                     <li><button class="btn btn-success r-grow" ng-click="click_new_data_view()" ng-disabled="editing"><i class="fa fa-plus-circle r-pad-right-5"></i>New Data View</button></li>
