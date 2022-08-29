@@ -176,7 +176,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
         console.log('_assign_datasets toggle filter group')
-        spinner_utility.show()
+        _assign_datasets();
       };
 
       $scope.toggle_cycle = function (cycle_id) {
