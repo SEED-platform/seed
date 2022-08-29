@@ -144,7 +144,6 @@ angular.module('BE.seed.controller.data_view', [])
           }
         }
         $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
-        console.log('selected filter groups', $scope.selected_filter_groups)
       };
 
       $scope.data = {};
@@ -176,7 +175,8 @@ angular.module('BE.seed.controller.data_view', [])
         } else {
           $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
-        _assign_datasets()
+        console.log('_assign_datasets toggle filter group')
+        spinner_utility.show()
       };
 
       $scope.toggle_cycle = function (cycle_id) {
@@ -212,7 +212,7 @@ angular.module('BE.seed.controller.data_view', [])
           aggregations.push(aggregation_id);
         }
         if ($scope.dataViewChart) {
-          console.log('aggregations', aggregations)
+          console.log('_assign_datasets toggle agg')
           _assign_datasets()
         }
       };
@@ -231,6 +231,7 @@ angular.module('BE.seed.controller.data_view', [])
             $scope.selected_data_view.first_axis_aggregations = [];
             break;
           case 'second_axis':
+            console.log('set second axis [] 236')
             $scope.selected_data_view.second_axis_aggregations = [];
             break;
          default:
@@ -239,6 +240,7 @@ angular.module('BE.seed.controller.data_view', [])
         if (reload_data) {
           _load_data();
         }
+        console.log('_assign_datasets select source column')
         _assign_datasets();
       };
 
@@ -296,8 +298,8 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         // any errors?
-        console.log($scope.create_errors)
         if ($scope.create_errors.length > 0) {
+          console.log('errors', $scope.create_errors)
           spinner_utility.hide();
           return;
         }
@@ -363,10 +365,13 @@ angular.module('BE.seed.controller.data_view', [])
         spinner_utility.hide();
       };
 
-      $scope.click_delete = function () {
+      $scope.click_delete = function (data_view=null) {
         spinner_utility.show();
-        if (confirm('Are you sure to delete the data view "' + $scope.selected_data_view.name + '"?')) {
-          let delete_data_view = data_view_service.delete_data_view($scope.selected_data_view.id).then((data) => {
+        if (!data_view) {
+          data_view = $scope.selected_data_view
+        }
+        if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
+          let delete_data_view = data_view_service.delete_data_view(data_view.id).then((data) => {
             if (data.status == 'success') {
               window.location = '#/metrics';
             } else {
@@ -415,13 +420,14 @@ angular.module('BE.seed.controller.data_view', [])
         console.log('BUILD CHART')
         if (!$scope.data.graph_data) {
           console.log('NO DATA')
+          spinner_utility.hide()
           return
         }
         const canvas = document.getElementById('data-view-chart')
         const ctx = canvas.getContext('2d')
 
-        let first_axis_name = $scope.source_column_by_location.first_axis ? $scope.source_column_by_location.first_axis.displayName : ''
-        let second_axis_name = $scope.source_column_by_location.second_axis ? $scope.source_column_by_location.second_axis.displayName : ''
+        let first_axis_name = $scope.source_column_by_location.first_axis ? $scope.source_column_by_location.first_axis.displayName : 'y1'
+        let second_axis_name = $scope.source_column_by_location.second_axis ? $scope.source_column_by_location.second_axis.displayName : 'y2'
 
         $scope.dataViewChart = new Chart(ctx, {
           type: 'line',
@@ -458,18 +464,21 @@ angular.module('BE.seed.controller.data_view', [])
                 display: false,
                 title: {
                   text: second_axis_name,
-                  display: true
+                  display: false
                 }
-              }
+              },
+              
             }
           }
         })
-
+        console.log('_assign_datasets BUILD CHART')
         _assign_datasets()
       }
       
       const _assign_datasets = () => {
+        console.log('assgin dataset start')
         if (!$scope.data.graph_data) {
+          spinner_utility.hide()
           return
         }
         xAxisLabels = $scope.data.graph_data.labels
@@ -480,11 +489,6 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.dataViewChart.options.scales.y1.display = true
         } else {
           $scope.dataViewChart.options.scales.y1.display = false
-        }
-        if (axis2_aggregations.length > 0) {
-          $scope.dataViewChart.options.scales.y2.display = true
-        } else {
-          $scope.dataViewChart.options.scales.y2.display = false
         }
 
         axis1_column = $scope.source_column_by_location.first_axis.column_name
@@ -506,6 +510,8 @@ angular.module('BE.seed.controller.data_view', [])
 
         if ($scope.source_column_by_location.second_axis) {
           axis2_column = $scope.source_column_by_location.second_axis.column_name
+          $scope.dataViewChart.options.scales.y2.display = true
+          console.log('axis 2 aggs', axis2_aggregations)
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
               if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
@@ -526,7 +532,7 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
-
+        console.log('_assign_data COMPLETE ')
       }
 
       _init_fields();
