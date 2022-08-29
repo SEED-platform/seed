@@ -451,17 +451,23 @@ angular.module('BE.seed.controller.data_view', [])
             plugins: {
               title: {
                 display: true,
-                text: 'SITE EUI vs CYCLE',
+                // text: 'SITE EUI vs CYCLE',
+                align: 'start'
               },
               legend: {
                 position: 'right',
                 maxWidth: 500,
+                labels: {
+                  boxHeight: 0,
+                  boxWidth: 50,
+                },
               },
             },
             scales: {
               y1: {
                 beginAtZero: true,
                 position: 'left',
+                display: false,
                 title: {
                   text: $scope.source_column_by_location.first_axis.displayName,
                   display: true
@@ -470,6 +476,7 @@ angular.module('BE.seed.controller.data_view', [])
               y2: {
                 beginAtZero: true,
                 position: 'right',
+                display: false,
                 title: {
                   text: $scope.source_column_by_location.second_axis.displayName,
                   display: true
@@ -486,8 +493,19 @@ angular.module('BE.seed.controller.data_view', [])
         xAxisLabels = $scope.data.graph_data.labels
         datasets = []
         axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
-        axis1_column = $scope.source_column_by_location.first_axis.column_name
         axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
+        if (axis1_aggregations.length > 0) {
+          $scope.dataViewChart.options.scales.y1.display = true
+        } else {
+          $scope.dataViewChart.options.scales.y1.display = false
+        }
+        if (axis2_aggregations.length > 0) {
+          $scope.dataViewChart.options.scales.y2.display = true
+        } else {
+          $scope.dataViewChart.options.scales.y2.display = false
+        }
+
+        axis1_column = $scope.source_column_by_location.first_axis.column_name
         axis2_column = $scope.source_column_by_location.second_axis.column_name
         let i = 0
         for (let aggregation of axis1_aggregations) {
@@ -521,6 +539,7 @@ angular.module('BE.seed.controller.data_view', [])
 
         $scope.dataViewChart.data.labels = xAxisLabels
         $scope.dataViewChart.data.datasets = datasets
+        $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
 
 
