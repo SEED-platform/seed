@@ -201,8 +201,6 @@ angular.module('BE.seed.controller.data_view', [])
         switch (location) {
           case 'first_axis':
             aggregations = $scope.selected_data_view.first_axis_aggregations;
-
-            console.log('TOGGLE FIRST')
             break;
           case 'second_axis':
             aggregations = $scope.selected_data_view.second_axis_aggregations;
@@ -244,6 +242,7 @@ angular.module('BE.seed.controller.data_view', [])
         if (reload_data) {
           _load_data();
         }
+        _assign_datasets();
       };
 
       $scope.click_new_data_view = function () {
@@ -424,24 +423,6 @@ angular.module('BE.seed.controller.data_view', [])
         }
         const canvas = document.getElementById('data-view-chart')
         const ctx = canvas.getContext('2d')
-        // xAxisLabels = $scope.data.graph_data.labels
-        // datasets = []
-        // selected_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
-        // first_column = $scope.source_column_by_location.first_axis.column_name
-        // let i = 0
-        // for (let aggregation of selected_aggregations) {
-        //   for (let dataset of $scope.data.graph_data.datasets) {
-        //     if (aggregation == dataset.aggregation && first_column == dataset.column) {
-        //       console.log(dataset.column)
-        //       dataset.label = `${dataset.filter_group} ${dataset.column} ${dataset.aggregation}`
-        //       dataset.backgroundColor = colors[i],
-        //       dataset.borderColor = colors[i],
-        //       dataset.tension = 0.1
-        //       datasets.push(dataset)
-        //       i = i > 19 ? 0 : i + 1
-        //     }
-        //   }
-        // }
 
         $scope.dataViewChart = new Chart(ctx, {
           type: 'line',
@@ -451,7 +432,6 @@ angular.module('BE.seed.controller.data_view', [])
             plugins: {
               title: {
                 display: true,
-                // text: 'SITE EUI vs CYCLE',
                 align: 'start'
               },
               legend: {
@@ -490,6 +470,9 @@ angular.module('BE.seed.controller.data_view', [])
       }
       
       const _assign_datasets = () => {
+        if (!$scope.data.graph_data) {
+          return
+        }
         xAxisLabels = $scope.data.graph_data.labels
         datasets = []
         axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
@@ -506,7 +489,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         axis1_column = $scope.source_column_by_location.first_axis.column_name
-        axis2_column = $scope.source_column_by_location.second_axis.column_name
+
         let i = 0
         for (let aggregation of axis1_aggregations) {
           for (let dataset of $scope.data.graph_data.datasets) {
@@ -522,17 +505,20 @@ angular.module('BE.seed.controller.data_view', [])
           }
         }
 
-        for (let aggregation of axis2_aggregations) {
-          for (let dataset of $scope.data.graph_data.datasets) {
-            if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
-              dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
-              dataset.backgroundColor = colors[i],
-              dataset.borderColor = colors[i],
-              dataset.tension = 0.1
-              dataset.yAxisID = 'y2'
-              dataset.borderDash = [10,15]
-              datasets.push(dataset)
-              i = i > 19 ? 0 : i + 1
+        if ($scope.source_column_by_location.second_axis) {
+          axis2_column = $scope.source_column_by_location.second_axis.column_name
+          for (let aggregation of axis2_aggregations) {
+            for (let dataset of $scope.data.graph_data.datasets) {
+              if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
+                dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
+                dataset.backgroundColor = colors[i],
+                dataset.borderColor = colors[i],
+                dataset.tension = 0.1
+                dataset.yAxisID = 'y2'
+                dataset.borderDash = [10,15]
+                datasets.push(dataset)
+                i = i > 19 ? 0 : i + 1
+              }
             }
           }
         }
@@ -541,7 +527,6 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
-
 
       }
 
