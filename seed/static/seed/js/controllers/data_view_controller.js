@@ -158,10 +158,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.data = data;
           spinner_utility.hide();
         }).then(() => {
-          console.log('get chart data pre')
           _build_chart();
-          console.log('get chart data post')
-
         });
       };
 
@@ -416,13 +413,15 @@ angular.module('BE.seed.controller.data_view', [])
 
       const _build_chart = () => {
         console.log('BUILD CHART')
-        if (Object.keys($scope.data).length == 0) {
+        if (!$scope.data.graph_data) {
           console.log('NO DATA')
-
           return
         }
         const canvas = document.getElementById('data-view-chart')
         const ctx = canvas.getContext('2d')
+
+        let first_axis_name = $scope.source_column_by_location.first_axis ? $scope.source_column_by_location.first_axis.displayName : ''
+        let second_axis_name = $scope.source_column_by_location.second_axis ? $scope.source_column_by_location.second_axis.displayName : ''
 
         $scope.dataViewChart = new Chart(ctx, {
           type: 'line',
@@ -449,7 +448,7 @@ angular.module('BE.seed.controller.data_view', [])
                 position: 'left',
                 display: false,
                 title: {
-                  text: $scope.source_column_by_location.first_axis.displayName,
+                  text: first_axis_name,
                   display: true
                 }
               },
@@ -458,7 +457,7 @@ angular.module('BE.seed.controller.data_view', [])
                 position: 'right',
                 display: false,
                 title: {
-                  text: $scope.source_column_by_location.second_axis.displayName,
+                  text: second_axis_name,
                   display: true
                 }
               }
