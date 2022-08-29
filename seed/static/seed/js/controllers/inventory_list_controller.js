@@ -250,66 +250,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         return $scope.Modified;
       };
 
-      $scope.check_for_filter_group_changes = function (currentFilterGroup, oldFilterGroup) {
-        console.log(currentFilterGroup)
-        console.log(oldFilterGroup)
-        if ($scope.Modified) {
-          $uibModal.open({
-            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
-          }).result.then(function () {
-            $scope.Modified = false;
-          }).catch(function () {
-            console.log("go back!")
-            // console.log($scope.currentFilterGroup)
-            // console.log(oldFilterGroup)
-            // spreading for $$hashKey
-            $scope.currentFilterGroup = {...$scope.currentFilterGroup, ...oldFilterGroup}
-            // console.log($scope.currentFilterGroup)
-
-          });
-        }
-
-        updateCurrentFilterGroup($scope.currentFilterGroup)
-      };
-
-      updateCurrentFilterGroup = (filterGroup) => {
-        // console.log(filterGroup)
-        // Set current filter group
-        $scope.currentFilterGroup = filterGroup;
-        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
-
-        // Update labels
-        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
-        $scope.selected_labels = _.filter($scope.labels, function (label) {
-          return _.includes($scope.currentFilterGroup.labels, label.id);
-        });
-
-        // clear table filters
-        $scope.gridApi.grid.columns.forEach(column =>{
-          column.filters[0] = {
-            term: null
-          };
-        })
-
-        // write new filter in table
-        for (const key in $scope.currentFilterGroup["query_dict"]) {
-          const value = $scope.currentFilterGroup["query_dict"][key]
-          const [column_name, operator] = key.split('__');
-
-          const column = $scope.gridApi.grid.columns.find(column => column["colDef"]["column_name"] == column_name)
-
-          if (column.filters[0]["term"] == null) {
-            column.filters[0]["term"] = getTableFilter(value, operator);
-          } else{
-            column.filters[0]["term"] += ", " + getTableFilter(value, operator)
-          }
-        };
-
-        // update filtering
-        updateColumnFilterSort()
-      }
-
-      getTableFilter = (value, operator) => {
+      const getTableFilter = (value, operator) => {
         switch (operator) {
           case 'exact': return `"${value}"`;
           case 'icontains':return value;
@@ -320,8 +261,56 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'ne': return `!="${value}"`;
           default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
         }
-      }
+      };
 
+      const updateCurrentFilterGroup = (filterGroup) => {
+        // Set current filter group
+        $scope.currentFilterGroup = filterGroup;
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
+
+        // Update labels
+        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+        $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
+
+        // clear table filters
+        $scope.gridApi.grid.columns.forEach(column =>{
+          column.filters[0] = {
+            term: null
+          };
+        });
+
+        // write new filter in table
+        for (const key in $scope.currentFilterGroup.query_dict) {
+          const value = $scope.currentFilterGroup.query_dict[key];
+          const [column_name, operator] = key.split('__');
+
+          const column = $scope.gridApi.grid.columns.find(column => column.colDef.column_name === column_name);
+
+          if (column.filters[0].term == null) {
+            column.filters[0].term = getTableFilter(value, operator);
+          } else {
+            column.filters[0].term += `, ${getTableFilter(value, operator)}`;
+          }
+        }
+
+        // update filtering
+        updateColumnFilterSort();
+      };
+
+      $scope.check_for_filter_group_changes = (currentFilterGroup, oldFilterGroup) => {
+        if ($scope.Modified) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
+          }).result.then(() => {
+            $scope.Modified = false;
+            updateCurrentFilterGroup($scope.currentFilterGroup);
+          }).catch(() => {
+            $scope.currentFilterGroup = oldFilterGroup;
+          });
+        } else {
+          updateCurrentFilterGroup($scope.currentFilterGroup);
+        }
+      };
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
