@@ -5,25 +5,12 @@
                 <i class="fa fa-chevron-left"></i>{$:: 'Analysis' | translate $}: {$:: analysis.name $}
             </a>
         </div>
-        <div class="page_title"><h1 translate>Metrics</h1></div>
+        <div class="page_title"><h1 translate>{$:: analysis.name $}</a> - Run #{$:: view.id $}</h1></div>
         <div class="right page_action_container"></div>
     </div>
 </div>
 
-<div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/metrics_nav.html'"></div>
-</div>
-
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header fixed_height_short has_no_padding">
-            <div class="section_action_container left">
-                <span>
-                    <h2>{$:: 'Analysis' | translate $} - "{$:: analysis.name $}"</a> - Run #{$:: view.id $}</h2>
-                </span>
-            </div>
-        </div>
-    </div>
 
     <div class="section_content_container">
         <div class="section_content">

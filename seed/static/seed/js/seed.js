@@ -81,6 +81,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_logger_upload_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
+  'BE.seed.controller.insights_program',
+  'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_analyses',
@@ -416,7 +418,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/metrics/analyses',
+        url: '/analyses',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
@@ -448,7 +450,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/metrics/analyses/{analysis_id:int}',
+        url: '/analyses/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
@@ -483,7 +485,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/metrics/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/analyses/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
@@ -1792,8 +1794,36 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'metrics',
-        url: '/metrics',
+        name: 'insights_program',
+        url: '/insights',
+        templateUrl: static_url + 'seed/partials/insights_program.html',
+        controller: 'insights_program_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'insights_property',
+        url: '/insights/property',
+        templateUrl: static_url + 'seed/partials/insights_property.html',
+        controller: 'insights_property_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'custom_reports',
+        url: '/insights/custom',
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {
@@ -1830,7 +1860,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'data_view',
-        url: '/metrics/{id:int}',
+        url: '/insights/custom/{id:int}',
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {

@@ -325,7 +325,7 @@ angular.module('BE.seed.controller.data_view', [])
         let _done = function (data) {
             if (data.status == 'success') {
               if (!$scope.selected_data_view.id) {
-                window.location = '#/metrics/' + data.data_view.id;
+                window.location = '#/insights/custom/' + data.data_view.id;
                 spinner_utility.hide();
                 return;
               }
@@ -373,7 +373,7 @@ angular.module('BE.seed.controller.data_view', [])
         if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
           let delete_data_view = data_view_service.delete_data_view(data_view.id).then((data) => {
             if (data.status == 'success') {
-              window.location = '#/metrics';
+              window.location = '#/insights/custom/';
             } else {
 
             }
@@ -467,14 +467,14 @@ angular.module('BE.seed.controller.data_view', [])
                   display: false
                 }
               },
-              
+
             }
           }
         })
         console.log('_assign_datasets BUILD CHART')
         _assign_datasets()
       }
-      
+
       const _assign_datasets = () => {
         console.log('assgin dataset start')
         if (!$scope.data.graph_data) {

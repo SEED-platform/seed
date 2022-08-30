@@ -4290,6 +4290,49 @@ iframe.analysis-results {
   }
 }
 
+// program overview / compliance-setup
+.compliance-setup {
+  background-color: #eeeeee;
+  padding: 1.5em;
+}
+
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+.chart-legend {
+  margin: 2em;
+  .title {
+    padding: 1em;
+    font-size: 1.4em;
+  }
+
+  .legend-row {
+    //padding: 0.5em 1em 1em 0em;
+    margin: 0.5em 1em 1em 0em;
+  }
+  .box {
+    min-height: 2em;
+    max-height: 2em;
+    min-width: 2em;
+    max-width: 2em;
+  }
+  .blue-box {
+    background-color: #77cccb;
+  }
+  .red-box {
+    background-color: #a94455;
+  }
+  .gray-box {
+    background-color: #eeeeee;
+  }
+  .text {
+    padding-left: 2em;
+    padding-top: 2px;
+    font-size: 1.2em;
+  }
+}
+
 // "namespacing" with "r-" until css cleanup
 
 .r-columns {
@@ -4471,7 +4514,7 @@ ul.r-list {
     border-bottom: 1px solid #cccccc;
   }
 
-  input[type='checkbox'] {
+  input[type="checkbox"] {
     display: none;
   }
 
@@ -4495,34 +4538,34 @@ ul.r-list {
   }
 
   .lbl-toggle::before {
-    content: ' ';
+    content: " ";
     display: inline-block;
 
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
     border-left: 5px solid currentColor;
     vertical-align: middle;
-    margin-right: .7rem;
+    margin-right: 0.7rem;
     transform: translateY(-2px);
 
-    transition: transform .2s ease-out;
+    transition: transform 0.2s ease-out;
   }
 
-  .toggle:checked+.lbl-toggle::before {
+  .toggle:checked + .lbl-toggle::before {
     transform: rotate(90deg) translateX(-3px);
   }
 
   .collapsible-content {
     max-height: 0px;
     overflow: hidden;
-    transition: max-height .25s ease-in-out;
+    transition: max-height 0.25s ease-in-out;
   }
 
-  .toggle:checked+.lbl-toggle+.collapsible-content {
+  .toggle:checked + .lbl-toggle + .collapsible-content {
     max-height: 100vh;
   }
 
-  .toggle:checked+.lbl-toggle {
+  .toggle:checked + .lbl-toggle {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
   }
@@ -4530,6 +4573,6 @@ ul.r-list {
   .collapsible-content .content-inner {
     border-bottom-left-radius: 7px;
     border-bottom-right-radius: 7px;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
   }
 }
