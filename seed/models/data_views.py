@@ -41,7 +41,6 @@ class DataView(models.Model):
                 filter_views = self._get_filter_group_views(cycle, query_dict)
                 label_views = self._get_label_views(cycle, filter_group)
                 views = self._combine_views(filter_views, label_views)
-                # views = filter_views
                 filter_group_views[filter_group['id']][cycle.id] = views
                 for view in views:
                     view_key = self._format_property_display_field(view)
@@ -52,11 +51,12 @@ class DataView(models.Model):
 
     def evaluate(self, columns):
         # RETURN VALUE STRUCTURE
+
         # meta: {data_view: data_view.id, organization: organization.id},
         # views_by_filter_group_id: {
         #   filter_group.id: [
         #       view.state.default_field || state.id,
-        #       view.state.default_field || state.id, 
+        #       view.state.default_field || state.id,
         #       ...
         #   ]
         # },
@@ -83,13 +83,14 @@ class DataView(models.Model):
         #   }
         # },
         # graph_data: {
-        #   labels = [cycle.name, cycle.name, cycle.name, ...],
+        #   labels = [cycle1.name, cycle2.name, cycle3.name, ...],
         #   datasets = [
-        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]}, 
-        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]}, 
+        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [cycle1_value, cycle2_value, cycle3_value]},
+        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [cycle1_value, cycle2_value, cycle3_value]},
         #       ...
         #   ]
         # }
+
         response = {
             'meta': {
                 'organization': self.organization.id,
@@ -130,7 +131,7 @@ class DataView(models.Model):
                         else:
                             value = self._evaluate_aggregation(states, aggregation, column)
                             data_cycles[cycle.id][aggregation.name] = value
-        
+
         self._format_graph_data(response, columns, views_by_filter)
         return response
 
@@ -140,9 +141,9 @@ class DataView(models.Model):
             filter_id = filter_group['id']
             filter_name = filter_group['name']
             for column in columns:
-                for aggregation in [Avg, Max, Min, Sum, Count]: # NEED TO ADD 'views_by_label'
+                for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
-                    dataset = {'data':[], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
+                    dataset = {'data': [], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
                     for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)

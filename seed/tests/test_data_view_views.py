@@ -290,6 +290,7 @@ class DataViewEvaluationTests(TestCase):
         self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B", end=datetime(2021, 1, 1, tzinfo=pytz.UTC))
         self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C", end=datetime(2020, 1, 1, tzinfo=pytz.UTC))
         self.cycle4 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle D", end=datetime(2019, 1, 1, tzinfo=pytz.UTC))
+        self.cycle5 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle F", end=datetime(2018, 1, 1, tzinfo=pytz.UTC))
 
         # generate columns
         self.site_eui = Column.objects.get(column_name='site_eui')
@@ -417,6 +418,20 @@ class DataViewEvaluationTests(TestCase):
         self.data_view3_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view3,
             column=self.dc_column,
+            aggregations=['Avg'],
+            location='axis1',
+        )
+
+        self.data_view4 = DataView.objects.create(
+            name='data view 4',
+            filter_groups=[
+                {'id': 5, 'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
+            ],
+            organization=self.org)
+        self.data_view4.cycles.set([self.cycle1, self.cycle2, self.cycle5])
+        self.data_view4_parameter1 = DataViewParameter.objects.create(
+            data_view=self.data_view4,
+            column=self.site_eui,
             aggregations=['Avg'],
             location='axis1',
         )
@@ -614,6 +629,24 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(126, cycle2_data['Sum'])
         exp = {self.view20.state.address_line_1: 30.0, self.view21.state.address_line_1: 31.0, self.view22.state.address_line_1: 32.0, self.view23.state.address_line_1: 33.0}
         self.assertEqual(exp, cycle2_data['views_by_default_field'])
+
+    def test_empty_cycles(self):
+        response = self.client.put(
+            reverse('api:v3:data_views-evaluate', args=[self.data_view4.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "columns": [self.site_eui.id],
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        cycle5_data = data['data']['columns_by_id'][str(self.site_eui.id)]['filter_groups_by_id'][str(self.data_view4.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle5.id)]
+        # breakpoint()
+        self.assertIsNone(cycle5_data['Average'])
+        self.assertEqual(0, cycle5_data['Count'])
+        self.assertIsNone(cycle5_data['Minimum'])
+        self.assertIsNone(cycle5_data['Sum'])
+        self.assertIsNone(cycle5_data['Sum'])
+        self.assertEqual({}, cycle5_data['views_by_default_field'])
 
 
 class DataViewInventoryTests(TestCase):
