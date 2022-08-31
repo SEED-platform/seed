@@ -297,18 +297,19 @@ angular.module('BE.seed.controller.inventory_list', [])
         updateColumnFilterSort();
       };
 
-      $scope.check_for_filter_group_changes = (currentFilterGroup, oldFilterGroup) => {
+      $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroup) => {
+        const selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId)
         if ($scope.Modified) {
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>'
           }).result.then(() => {
             $scope.Modified = false;
-            updateCurrentFilterGroup($scope.currentFilterGroup);
+            updateCurrentFilterGroup(selectedFilterGroup);
           }).catch(() => {
             $scope.currentFilterGroup = oldFilterGroup;
           });
         } else {
-          updateCurrentFilterGroup($scope.currentFilterGroup);
+          updateCurrentFilterGroup(selectedFilterGroup);
         }
       };
 
