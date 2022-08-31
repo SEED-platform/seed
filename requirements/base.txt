@@ -1,5 +1,5 @@
 # Django
-django==3.2.14
+django==3.2.15
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
