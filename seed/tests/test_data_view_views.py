@@ -444,6 +444,8 @@ class DataViewEvaluationTests(TestCase):
         fg_retail_id = str(self.data_view1.filter_groups[1]['id'])
         self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id', 'graph_data'], list(data.keys()))
 
+        graph_data = data['graph_data']
+
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
         self.assertEqual([fg_office_id, fg_retail_id], list(data['views_by_filter_group_id']))
@@ -513,6 +515,35 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(85, retail_cycle4['Sum'])
         exp = {self.view42.state.address_line_1: 42.0, self.view43.state.address_line_1: 43.0}
         self.assertEqual(exp, retail_cycle4['views_by_default_field'])
+
+        # check graph_data
+        self.assertEqual(['labels', 'datasets'], list(graph_data.keys()))
+        # 2 filter groups * 2 columns * 5 aggregation types
+        self.assertEqual(20, len(graph_data['datasets']))
+
+        avg_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Average'])
+        max_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Maximum'])
+        min_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Minimum'])
+        sum_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Sum'])
+        count_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Count'])
+        self.assertEqual(4, avg_count)
+        self.assertEqual(4, max_count)
+        self.assertEqual(4, min_count)
+        self.assertEqual(4, sum_count)
+        self.assertEqual(4, count_count)
+
+        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'site_eui'])
+        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'total_ghg_emissions'])
+        self.assertEqual(10, site_eui_count)
+        self.assertEqual(10, ghg_count)
+
+        office_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'office'])
+        retail_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'retail'])
+        self.assertEqual(10, office_count)
+        self.assertEqual(10, retail_count)
+
+        for dataset in graph_data['datasets']:
+            self.assertEqual(3, len(dataset['data']))
 
     def test_evaluation_endpoint_extra_col(self):
         response = self.client.put(
