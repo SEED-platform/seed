@@ -477,8 +477,9 @@ class MetersParser(object):
             ) + timedelta(seconds=1)
 
             for reading_type in provided_reading_types:
-                if not raw_reading[reading_type].strip() or 'not available' in raw_reading[reading_type].lower():
-                    continue
+                if isinstance(raw_reading[reading_type], str):
+                    if not raw_reading[reading_type].strip() or 'not available' in raw_reading[reading_type].lower():
+                        continue
 
                 type_and_units_match = TYPE_AND_UNITS_REGEX.match(reading_type)
                 if type_and_units_match is None:
