@@ -56,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
   'BE.seed.controller.data_upload_audit_template_modal',
+  'BE.seed.controller.data_view',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
@@ -80,6 +81,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_logger_upload_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
+  'BE.seed.controller.insights_program',
+  'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_analyses',
@@ -154,6 +157,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.cycle',
   'BE.seed.service.postoffice',
   'BE.seed.service.dataset',
+  'BE.seed.service.data_view',
   'BE.seed.service.derived_columns',
   'BE.seed.service.meter',
   'BE.seed.service.flippers',
@@ -1786,6 +1790,108 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
+          }]
+        }
+      })
+      .state({
+        name: 'insights_program',
+        url: '/insights',
+        templateUrl: static_url + 'seed/partials/insights_program.html',
+        controller: 'insights_program_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'insights_property',
+        url: '/insights/property',
+        templateUrl: static_url + 'seed/partials/insights_property.html',
+        controller: 'insights_property_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }]
+        }
+      })
+      .state({
+        name: 'custom_reports',
+        url: '/insights/custom',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          taxlot_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_taxlot_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          data_views: ['data_view_service', function (data_view_service) {
+            return data_view_service.get_data_views();
+          }]
+        }
+      })
+      .state({
+        name: 'data_view',
+        url: '/insights/custom/{id:int}',
+        templateUrl: static_url + 'seed/partials/data_view.html',
+        controller: 'data_view_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+              return ['number', 'float', 'integer', 'area', 'eui'];
+          }],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          taxlot_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_taxlot_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          data_views: ['data_view_service', function (data_view_service) {
+            return data_view_service.get_data_views();
           }]
         }
       });
