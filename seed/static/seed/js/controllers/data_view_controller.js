@@ -510,7 +510,13 @@ angular.module('BE.seed.controller.data_view', [])
 
         if ($scope.source_column_by_location.second_axis) {
           axis2_column = $scope.source_column_by_location.second_axis.column_name
+          let second_axis_name = $scope.source_column_by_location.second_axis.displayName
+          console.log('second axis name', second_axis_name)
+
           $scope.dataViewChart.options.scales.y2.display = true
+          $scope.dataViewChart.options.scales.y2.title.text = second_axis_name
+          $scope.dataViewChart.options.scales.y2.title.display = true
+
           console.log('axis 2 aggs', axis2_aggregations)
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
@@ -526,6 +532,8 @@ angular.module('BE.seed.controller.data_view', [])
               }
             }
           }
+        } else {
+          $scope.dataViewChart.options.scales.y2.title.display = false
         }
 
         $scope.dataViewChart.data.labels = xAxisLabels
