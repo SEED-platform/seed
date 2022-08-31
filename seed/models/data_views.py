@@ -51,6 +51,45 @@ class DataView(models.Model):
         return views_by_filter_group_id, filter_group_views
 
     def evaluate(self, columns):
+        # RETURN VALUE STRUCTURE
+        # meta: {data_view: data_view.id, organization: organization.id},
+        # views_by_filter_group_id: {
+        #   filter_group.id: [
+        #       view.state.default_field || state.id,
+        #       view.state.default_field || state.id, 
+        #       ...
+        #   ]
+        # },
+        # columns_by_id: {
+        #   column.id: {
+        #       filter_groups_by_id: {
+        #           filer_group.id: {
+        #               cycles_by_id: {
+        #                   cycle.id: {
+        #                       'Average': 123,
+        #                       'Count': 123,
+        #                       'Maximum': 123,
+        #                       'Minumum': 123,
+        #                       'Sum': 123,
+        #                       'views_by_default_field: {
+        #                           view.state.default_field || state.id: 123,
+        #                           view.state.default_field || state.id: 123,
+        #                           ...
+        #                        }
+        #                   }
+        #               }
+        #           }
+        #       }
+        #   }
+        # },
+        # graph_data: {
+        #   labels = [cycle.name, cycle.name, cycle.name, ...],
+        #   datasets = [
+        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]}, 
+        #       {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]}, 
+        #       ...
+        #   ]
+        # }
         response = {
             'meta': {
                 'organization': self.organization.id,
@@ -64,13 +103,6 @@ class DataView(models.Model):
             }
         }
 
-        # graph_data: {
-        #   x_axis_labels = [cycle_name, cycle_name, cycle_name],
-        #   datasets = [
-        #       {label: filter_group + 1st column + aggregation, data: [1,2,3]}, 
-        #       {label: filter_group + 1st column + aggregation, data: [4,5,6]}, 
-        #   ]
-        # }
         response['views_by_filter_group_id'], views_by_filter = self.views_by_filter()
 
         # assign data based on source column id
@@ -103,7 +135,7 @@ class DataView(models.Model):
         return response
 
     def _format_graph_data(self, response, columns, views_by_filter):
-        # {label: filter_group + 1st column + aggregation, data: [1,2,3]},
+        # {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]},
         for filter_group in self.filter_groups:
             filter_id = filter_group['id']
             filter_name = filter_group['name']
