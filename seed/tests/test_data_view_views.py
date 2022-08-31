@@ -442,7 +442,7 @@ class DataViewEvaluationTests(TestCase):
         data = data['data']
         fg_office_id = str(self.data_view1.filter_groups[0]['id'])
         fg_retail_id = str(self.data_view1.filter_groups[1]['id'])
-        self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id'], list(data.keys()))
+        self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id', 'graph_data'], list(data.keys()))
 
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
@@ -451,11 +451,11 @@ class DataViewEvaluationTests(TestCase):
         office = data['views_by_filter_group_id'][fg_office_id]
         retail = data['views_by_filter_group_id'][fg_retail_id]
 
-        office_view_ids = [self.view10.id, self.view11.id, self.view30.id, self.view31.id, self.view40.id, self.view41.id]
-        retail_view_ids = [self.view12.id, self.view13.id, self.view32.id, self.view33.id, self.view42.id, self.view43.id]
+        office_view_ids = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view40.state.address_line_1, self.view41.state.address_line_1]
+        retail_view_ids = [self.view12.state.address_line_1, self.view13.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1, self.view42.state.address_line_1, self.view43.state.address_line_1]
 
-        self.assertEqual(office_view_ids, sorted(data['views_by_filter_group_id'][fg_office_id]))
-        self.assertEqual(retail_view_ids, sorted(data['views_by_filter_group_id'][fg_retail_id]))
+        self.assertEqual(sorted(office_view_ids), data['views_by_filter_group_id'][fg_office_id])
+        self.assertEqual(sorted(retail_view_ids), data['views_by_filter_group_id'][fg_retail_id])
 
         data = data['columns_by_id']
         self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
@@ -471,10 +471,10 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
         self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
 
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle1.id)]))
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(office['cycles_by_id'][str(self.cycle4.id)]))
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle4.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
 
         office_cycle1 = office['cycles_by_id'][str(self.cycle1.id)]
         office_cycle4 = office['cycles_by_id'][str(self.cycle4.id)]
@@ -484,16 +484,16 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(11, office_cycle1['Maximum'])
         self.assertEqual(10, office_cycle1['Minimum'])
         self.assertEqual(21, office_cycle1['Sum'])
-        exp = {str(self.view10.id): 10.0, str(self.view11.id): 11.0}
-        self.assertEqual(exp, office_cycle1['views_by_id'])
+        exp = {self.view10.state.address_line_1: 10.0, self.view11.state.address_line_1: 11.0}
+        self.assertEqual(exp, office_cycle1['views_by_default_field'])
 
         self.assertEqual(40.5, office_cycle4['Average'])
         self.assertEqual(2, office_cycle4['Count'])
         self.assertEqual(41, office_cycle4['Maximum'])
         self.assertEqual(40, office_cycle4['Minimum'])
         self.assertEqual(81, office_cycle4['Sum'])
-        exp = {str(self.view40.id): 40.0, str(self.view41.id): 41.0}
-        self.assertEqual(exp, office_cycle4['views_by_id'])
+        exp = {self.view40.state.address_line_1: 40.0, self.view41.state.address_line_1: 41.0}
+        self.assertEqual(exp, office_cycle4['views_by_default_field'])
 
         retail_cycle1 = retail['cycles_by_id'][str(self.cycle1.id)]
         retail_cycle4 = retail['cycles_by_id'][str(self.cycle4.id)]
@@ -503,16 +503,16 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(13, retail_cycle1['Maximum'])
         self.assertEqual(12, retail_cycle1['Minimum'])
         self.assertEqual(25, retail_cycle1['Sum'])
-        exp = {str(self.view12.id): 12.0, str(self.view13.id): 13.0}
-        self.assertEqual(exp, retail_cycle1['views_by_id'])
+        exp = {self.view12.state.address_line_1: 12.0, self.view13.state.address_line_1: 13.0}
+        self.assertEqual(exp, retail_cycle1['views_by_default_field'])
 
         self.assertEqual(42.5, retail_cycle4['Average'])
         self.assertEqual(2, retail_cycle4['Count'])
         self.assertEqual(43, retail_cycle4['Maximum'])
         self.assertEqual(42, retail_cycle4['Minimum'])
         self.assertEqual(85, retail_cycle4['Sum'])
-        exp = {str(self.view42.id): 42.0, str(self.view43.id): 43.0}
-        self.assertEqual(exp, retail_cycle4['views_by_id'])
+        exp = {self.view42.state.address_line_1: 42.0, self.view43.state.address_line_1: 43.0}
+        self.assertEqual(exp, retail_cycle4['views_by_default_field'])
 
     def test_evaluation_endpoint_extra_col(self):
         response = self.client.put(
@@ -530,24 +530,24 @@ class DataViewEvaluationTests(TestCase):
         fg_4_id = str(self.data_view2.filter_groups[1]['id'])
 
         fg3_cycle1 = data['filter_groups_by_id'][fg_3_id]['cycles_by_id'][cycle1_id]
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(fg3_cycle1.keys()))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(fg3_cycle1.keys()))
         self.assertEqual(1100, fg3_cycle1['Average'])
         self.assertEqual(3, fg3_cycle1['Count'])
         self.assertEqual(1200, fg3_cycle1['Maximum'])
         self.assertEqual(1000, fg3_cycle1['Minimum'])
         self.assertEqual(3300, fg3_cycle1['Sum'])
-        exp = {str(self.view10.id): 1000, str(self.view11.id): 1100, str(self.view12.id): 1200}
-        self.assertEqual(exp, fg3_cycle1['views_by_id'])
+        exp = {self.view10.state.address_line_1: 1000, self.view11.state.address_line_1: 1100, self.view12.state.address_line_1: 1200}
+        self.assertEqual(exp, fg3_cycle1['views_by_default_field'])
 
         fg4_cycle4 = data['filter_groups_by_id'][fg_4_id]['cycles_by_id'][cycle4_id]
-        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_id'], list(fg4_cycle4.keys()))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(fg4_cycle4.keys()))
         self.assertEqual(3075, fg4_cycle4['Average'])
         self.assertEqual(4, fg4_cycle4['Count'])
         self.assertEqual(4200, fg4_cycle4['Maximum'])
         self.assertEqual(0, fg4_cycle4['Minimum'])
         self.assertEqual(12300, fg4_cycle4['Sum'])
-        exp = {str(self.view40.id): 4000, str(self.view41.id): 4100, str(self.view42.id): 4200, str(self.view43.id): 0}
-        self.assertEqual(exp, fg4_cycle4['views_by_id'])
+        exp = {self.view40.state.address_line_1: 4000, self.view41.state.address_line_1: 4100, self.view42.state.address_line_1: 4200, self.view43.state.address_line_1: 0}
+        self.assertEqual(exp, fg4_cycle4['views_by_default_field'])
 
     def test_evaluation_endpoint_derived_col(self):
         response = self.client.put(
@@ -573,16 +573,16 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(23, cycle1_data['Maximum'])
         self.assertEqual(20, cycle1_data['Minimum'])
         self.assertEqual(86, cycle1_data['Sum'])
-        exp = {str(self.view10.id): 20.0, str(self.view11.id): 21.0, str(self.view12.id): 22.0, str(self.view13.id): 23.0}
-        self.assertEqual(exp, cycle1_data['views_by_id'])
+        exp = {self.view10.state.address_line_1: 20.0, self.view11.state.address_line_1: 21.0, self.view12.state.address_line_1: 22.0, self.view13.state.address_line_1: 23.0}
+        self.assertEqual(exp, cycle1_data['views_by_default_field'])
 
         self.assertEqual(31.5, cycle2_data['Average'])
         self.assertEqual(4, cycle2_data['Count'])
         self.assertEqual(33, cycle2_data['Maximum'])
         self.assertEqual(30, cycle2_data['Minimum'])
         self.assertEqual(126, cycle2_data['Sum'])
-        exp = {str(self.view20.id): 30.0, str(self.view21.id): 31.0, str(self.view22.id): 32.0, str(self.view23.id): 33.0}
-        self.assertEqual(exp, cycle2_data['views_by_id'])
+        exp = {self.view20.state.address_line_1: 30.0, self.view21.state.address_line_1: 31.0, self.view22.state.address_line_1: 32.0, self.view23.state.address_line_1: 33.0}
+        self.assertEqual(exp, cycle2_data['views_by_default_field'])
 
 
 class DataViewInventoryTests(TestCase):
@@ -736,11 +736,11 @@ class DataViewInventoryTests(TestCase):
         fg1_id = str(self.data_view2.filter_groups[0]['id'])
         fg2_id = str(self.data_view2.filter_groups[1]['id'])
 
-        exp = [self.view10.id, self.view11.id, self.view12.id, self.view20.id, self.view21.id, self.view22.id, self.view30.id, self.view31.id, self.view32.id]
-        self.assertEqual(exp, sorted(data[fg1_id]))
+        exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
+        self.assertEqual(sorted(exp), sorted(data[fg1_id]))
 
-        exp = [self.view10.id, self.view11.id, self.view12.id, self.view13.id, self.view20.id, self.view21.id, self.view22.id, self.view23.id, self.view30.id, self.view31.id, self.view32.id, self.view33.id]
-        self.assertEqual(exp, sorted(data[fg2_id]))
+        exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view13.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view23.state.address_line_1, self.view30.state.address_line_1, self.view31.id, self.view32.id, self.view33.id]
+        self.assertEqual(sorted(exp), sorted(data[fg2_id]))
 
         response = self.client.get(
             reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)

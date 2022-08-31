@@ -33,12 +33,10 @@ class DataView(models.Model):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups:
-            logging.error('>>> filter_group %s', filter_group)
             views_by_filter_group_id[filter_group['id']] = []
             filter_group_views[filter_group['id']] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group['query_dict'])
-            logging.error('>>> query_dict %s', query_dict)
             for cycle in self.cycles.all():
                 filter_views = self._get_filter_group_views(cycle, query_dict)
                 label_views = self._get_label_views(cycle, filter_group)
@@ -91,12 +89,12 @@ class DataView(models.Model):
                     views = views_by_filter[filter_id][cycle.id]
                     states = PropertyState.objects.filter(propertyview__in=views)
 
-                    for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_id']:
+                    for aggregation in [Avg, Max, Min, Sum, Count, 'views_by_default_field']:
                         self._format_aggregation_name(aggregation)
                         self._format_filter_group_data(data_cycles, cycle.id, aggregation)
 
-                        if aggregation == 'views_by_id':
-                            self._assign_views_by_id_values(views, data, data_cycles, column, cycle.id, aggregation)
+                        if aggregation == 'views_by_default_field':
+                            self._assign_views_by_default_field_values(views, data, data_cycles, column, cycle.id, aggregation)
                         else:
                             value = self._evaluate_aggregation(states, aggregation, column)
                             data_cycles[cycle.id][aggregation.name] = value
@@ -110,7 +108,6 @@ class DataView(models.Model):
             filter_id = filter_group['id']
             filter_name = filter_group['name']
             for column in columns:
-                logging.error('>>> column %s', column)
                 for aggregation in [Avg, Max, Min, Sum, Count]: # NEED TO ADD 'views_by_label'
                     self._format_aggregation_name(aggregation)
                     dataset = {'data':[], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
@@ -135,7 +132,7 @@ class DataView(models.Model):
         elif aggregation == Min:
             aggregation.name = 'Minimum'
 
-    def _assign_views_by_id_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
+    def _assign_views_by_default_field_values(self, views, data, data_cycles, column, cycle_id, aggregation, ):
         for view in views:
             # Default assignment on first pass
             view_key = self._format_property_display_field(view)
@@ -162,7 +159,7 @@ class DataView(models.Model):
             data_cycles[cycle_id][aggregation][view_key] = value
 
     def _format_filter_group_data(self, data_cycles, cycle_id, aggregation):
-        if aggregation == 'views_by_id':
+        if aggregation == 'views_by_default_field':
             data_cycles[cycle_id][aggregation] = {}
         else:
             data_cycles[cycle_id][aggregation.name] = []
