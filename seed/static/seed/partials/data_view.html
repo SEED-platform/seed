@@ -18,7 +18,7 @@
         <div class="section_content r-columns rp-data-view-config collapsible-content" >
             <div class="r-column r-shrink r-panel">
                 <ul class="r-list">
-                    <li class="r-list-header" translate>Data View</li>
+                    <li class="r-list-header" translate>Custom Report</li>
                     <li ng-if="selected_data_view" class="r-selected" style="display: flex; justify-content: space-between">
                         <span>{$ selected_data_view.name $}</span>
                         <span class="glyphicon glyphicon-remove" ng-click="click_delete(data_view)" style="cursor: pointer; color: gray" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Delete"></span>
@@ -31,18 +31,18 @@
                     </li>
                 </ul>
                 <ul class="r-list">
-                    <li><button class="btn btn-success r-grow" ng-click="click_new_data_view()" ng-disabled="editing"><i class="fa fa-plus-circle r-pad-right-5"></i>New Data View</button></li>
+                    <li><button class="btn btn-success r-grow" ng-click="click_new_data_view()" ng-disabled="editing"><i class="fa fa-plus-circle r-pad-right-5"></i>New Custom Report</button></li>
                 </ul>
             </div>
 
             <div ng-if="!selected_data_view && !editing" class="r-panel r-column r-grow">
                 <div ng-if="data_views_error" class="r-panel r-error r-margin-bottom-10">{$ data_views_error $}</div>
-                <b ng-if="!has_data_views" translate>No Data Views Created</b>
-                <p ng-if="!has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Data View to get started!</span></p>
-                <b ng-if="has_data_views" translate>No Data View Selected</b>
-                <p ng-if="has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Data View to get started!</span></p>
-                <b translate>What is a Data View?</b>
-                <p translate>A Data View allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time.</p>
+                <b ng-if="!has_data_views" translate>No Custom Reports Created</b>
+                <p ng-if="!has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Custom Report to get started!</span></p>
+                <b ng-if="has_data_views" translate>No Custom Reports Selected</b>
+                <p ng-if="has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Custom Report to get started!</span></p>
+                <b translate>What is a Custom Report?</b>
+                <p translate>A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time.</p>
             </div>
 
             <div ng-if="selected_data_view || editing" class="r-panel r-columns r-grow r-no-margin">
