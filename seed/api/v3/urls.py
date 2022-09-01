@@ -13,6 +13,7 @@ from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
+from seed.views.v3.compliance_metrics import ComplianceMetricViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
@@ -56,6 +57,7 @@ api_v3_router.register(r'building_files', BuildingFileViewSet, basename="buildin
 api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, basename='column_mapping_profiles')
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
+api_v3_router.register(r'compliance_metrics', ComplianceMetricViewSet, basename='compliance_metrics')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
 api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
