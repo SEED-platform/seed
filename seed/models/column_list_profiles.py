@@ -12,7 +12,7 @@ from django.apps import apps
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models import Column
+from seed.models.columns import Column
 from seed.models.derived_columns import DerivedColumn
 
 VIEW_LIST = 0

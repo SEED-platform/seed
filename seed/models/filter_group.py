@@ -5,12 +5,12 @@
 
 from django.db import models
 
-from seed.models import (
+from seed.lib.superperms.orgs.models import Organization
+from seed.models.column_list_profiles import (
     VIEW_LIST_INVENTORY_TYPE,
-    VIEW_LIST_PROPERTY,
-    Organization,
-    StatusLabel
+    VIEW_LIST_PROPERTY
 )
+from seed.models.models import StatusLabel
 
 AND = 0
 LABEL_LOGIC_TYPE = [

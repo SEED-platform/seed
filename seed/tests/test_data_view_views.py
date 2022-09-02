@@ -8,7 +8,6 @@ import json
 from datetime import datetime
 
 import pytz
-from django.http import QueryDict
 from django.test import TestCase
 from django.urls import reverse
 from pint import UnitRegistry
@@ -18,8 +17,10 @@ from seed.models import (
     DataView,
     DataViewParameter,
     DerivedColumn,
+    FilterGroup,
     PropertyView
 )
+from seed.models import StatusLabel
 from seed.models import StatusLabel as Label
 from seed.models import User
 from seed.test_helpers.fake import (
@@ -57,11 +58,28 @@ class DataViewViewTests(TestCase):
         self.column2 = Column.objects.create(column_name='column 2', organization=self.org,)
         self.column3 = Column.objects.create(column_name='column 3', organization=self.org,)
 
+        self.label_1 = StatusLabel.objects.create(
+            name='label 1', super_organization=self.org
+        )
+
+        self.filter_groups = []
+        for i in range(8):
+            filter_group = FilterGroup.objects.create(
+                name=f"filter group {i}",
+                organization_id=self.org.id,
+                inventory_type=1,  # Tax Lot
+                query_dict={'year_built__lt': ['1950']},
+            )
+            filter_group.labels.add(self.label_1.id)
+            filter_group.save()
+
+            self.filter_groups.append(filter_group)
+
         self.data_view1 = DataView.objects.create(
             name='data view 1',
             organization=self.org,
-            filter_groups=[1, 2, 3, 4],
         )
+        self.data_view1.filter_groups.set(self.filter_groups[0:4])
         # self.data_view1.columns.set([self.column1, self.column2])
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
 
@@ -81,8 +99,8 @@ class DataViewViewTests(TestCase):
         self.data_view2 = DataView.objects.create(
             name='data view 2',
             organization=self.org,
-            filter_groups=[5, 6, 7, 8],
         )
+        self.data_view2.filter_groups.set(self.filter_groups[4:8])
         # self.data_view2.columns.set([self.column1, self.column2, self.column3])
         self.data_view2.cycles.set([self.cycle2, self.cycle4])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
@@ -98,7 +116,7 @@ class DataViewViewTests(TestCase):
         self.assertEqual(2, len(data_views))
 
         data_view1 = data_views[0]
-        self.assertEqual([1, 2, 3, 4], data_view1.filter_groups)
+        self.assertEqual(set(self.filter_groups[0:4]), set(data_view1.filter_groups.all()))
         self.assertEqual(2, len(data_view1.parameters.all()))
 
         parameter1 = data_view1.parameters.first()
@@ -112,7 +130,7 @@ class DataViewViewTests(TestCase):
         self.assertEqual('axis2', parameter2.location)
 
         data_view2 = data_views[1]
-        self.assertEqual([1, 2, 3, 4], data_view1.filter_groups)
+        self.assertEqual(set(self.filter_groups[4:8]), set(data_view2.filter_groups.all()))
         self.assertEqual(1, len(data_view2.parameters.all()))
 
         parameter3 = data_view2.parameters.first()
@@ -136,7 +154,7 @@ class DataViewViewTests(TestCase):
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 "name": "data_view3",
-                "filter_groups": [11, 12, 13, 14],
+                "filter_groups": [fg.id for fg in self.filter_groups[3:5]],
                 "cycles": [self.cycle1.id, self.cycle2.id, self.cycle3.id],
                 "parameters": [
                     {
@@ -167,6 +185,7 @@ class DataViewViewTests(TestCase):
         self.assertEqual(['Max', 'Sum'], data['data_view']['parameters'][1]['aggregations'])
         self.assertEqual('axis 2', data['data_view']['parameters'][1]['location'])
         self.assertEqual('abc', data['data_view']['parameters'][1]['target'])
+        self.assertEqual({fg.id for fg in self.filter_groups[3:5]}, set(data['data_view']['filter_groups']))
 
         self.assertEqual(3, len(DataView.objects.all()))
         self.assertEqual(5, len(DataViewParameter.objects.all()))
@@ -198,7 +217,7 @@ class DataViewViewTests(TestCase):
             reverse('api:v3:data_views-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 "name": "data_view3",
-                "filter_groups": [11, 12, 13, 14]
+                "filter_groups": [fg.id for fg in self.filter_groups[3:5]]
             }),
             content_type='application/json'
         )
@@ -353,14 +372,27 @@ class DataViewEvaluationTests(TestCase):
         self.view42 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle4, state=self.state42)
         self.view43 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle4, state=self.state43)
 
+        self.office_filter_group = FilterGroup.objects.create(
+            name="office",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={'property_type__exact': 'office', "site_eui__gt": 1},
+        )
+        self.office_filter_group.save()
+
+        self.retail_filter_group = FilterGroup.objects.create(
+            name="retail",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={'property_type__exact': 'retail', "site_eui__gt": 1},
+        )
+        self.retail_filter_group.save()
+
         self.data_view1 = DataView.objects.create(
             name='data view 1',
-            filter_groups=[
-                {'id': 1, 'name': 'office', 'query_dict': QueryDict('property_type__exact=office&site_eui__gt=1')},
-                {'id': 2, 'name': 'retail', 'query_dict': QueryDict('property_type__exact=retail&site_eui__gt=1')}
-            ],
             organization=self.org)
         self.data_view1.cycles.set([self.cycle1, self.cycle3, self.cycle4])
+        self.data_view1.filter_groups.set([self.office_filter_group.id, self.retail_filter_group.id])
         self.data_view1_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view1,
             column=self.site_eui,
@@ -375,13 +407,25 @@ class DataViewEvaluationTests(TestCase):
             target='test'
         )
 
+        self.three_properties_filter_group = FilterGroup.objects.create(
+            name="three_properties",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={'extra_col__gt': '1', "site_eui__gt": 1},
+        )
+        self.three_properties_filter_group.save()
+        self.four_properties_filter_group = FilterGroup.objects.create(
+            name="four_properties",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"site_eui__gt": 1},
+        )
+        self.four_properties_filter_group.save()
+
         self.data_view2 = DataView.objects.create(
             name='data view 2',
-            filter_groups=[
-                {'id': 3, 'name': 'three_properties', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1')},
-                {'id': 4, 'name': 'four_properties', 'query_dict': QueryDict('site_eui__gt=1')}
-            ],
             organization=self.org)
+        self.data_view2.filter_groups.set([self.three_properties_filter_group.id, self.four_properties_filter_group.id])
         self.data_view2.cycles.set([self.cycle1, self.cycle2, self.cycle3, self.cycle4])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view2,
@@ -408,12 +452,17 @@ class DataViewEvaluationTests(TestCase):
         )
         self.dc_column = Column.objects.get(column_name='dc')
 
+        self.dc_filter_group = FilterGroup.objects.create(
+            name="dc_filter",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"site_eui__gt": 1},
+        )
+        self.dc_filter_group.save()
         self.data_view3 = DataView.objects.create(
             name='data view 3',
-            filter_groups=[
-                {'id': 5, 'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
-            ],
             organization=self.org)
+        self.data_view3.filter_groups.set([self.dc_filter_group.id])
         self.data_view3.cycles.set([self.cycle1, self.cycle2])
         self.data_view3_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view3,
@@ -424,10 +473,8 @@ class DataViewEvaluationTests(TestCase):
 
         self.data_view4 = DataView.objects.create(
             name='data view 4',
-            filter_groups=[
-                {'id': 5, 'name': 'dc_filter', 'query_dict': QueryDict('site_eui__gt=1')},
-            ],
             organization=self.org)
+        self.data_view4.filter_groups.set([self.dc_filter_group.id])
         self.data_view4.cycles.set([self.cycle1, self.cycle2, self.cycle5])
         self.data_view4_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view4,
@@ -455,24 +502,22 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual('success', data['status'])
 
         data = data['data']
-        fg_office_id = str(self.data_view1.filter_groups[0]['id'])
-        fg_retail_id = str(self.data_view1.filter_groups[1]['id'])
         self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id', 'graph_data'], list(data.keys()))
 
         graph_data = data['graph_data']
 
         self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
 
-        self.assertEqual([fg_office_id, fg_retail_id], list(data['views_by_filter_group_id']))
+        self.assertEqual({str(self.office_filter_group.id), str(self.retail_filter_group.id)}, set(data['views_by_filter_group_id']))
 
-        office = data['views_by_filter_group_id'][fg_office_id]
-        retail = data['views_by_filter_group_id'][fg_retail_id]
+        office = data['views_by_filter_group_id'][str(self.office_filter_group.id)]
+        retail = data['views_by_filter_group_id'][str(self.retail_filter_group.id)]
 
         office_view_ids = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view40.state.address_line_1, self.view41.state.address_line_1]
         retail_view_ids = [self.view12.state.address_line_1, self.view13.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1, self.view42.state.address_line_1, self.view43.state.address_line_1]
 
-        self.assertEqual(sorted(office_view_ids), data['views_by_filter_group_id'][fg_office_id])
-        self.assertEqual(sorted(retail_view_ids), data['views_by_filter_group_id'][fg_retail_id])
+        self.assertEqual(sorted(office_view_ids), data['views_by_filter_group_id'][str(self.office_filter_group.id)])
+        self.assertEqual(sorted(retail_view_ids), data['views_by_filter_group_id'][str(self.retail_filter_group.id)])
 
         data = data['columns_by_id']
         self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
@@ -480,8 +525,8 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual('kBtu/ft²/year', data[str(self.site_eui.id)]['unit'])
         self.assertEqual('t/year', data[str(self.ghg.id)]['unit'])
 
-        office = data[str(self.site_eui.id)]['filter_groups_by_id'][fg_office_id]
-        retail = data[str(self.site_eui.id)]['filter_groups_by_id'][fg_retail_id]
+        office = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.office_filter_group.id)]
+        retail = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.retail_filter_group.id)]
         self.assertEqual(['cycles_by_id'], list(office.keys()))
         self.assertEqual(['cycles_by_id'], list(retail.keys()))
 
@@ -572,10 +617,8 @@ class DataViewEvaluationTests(TestCase):
         data = data['data']['columns_by_id'][str(self.extra_col.id)]
         cycle1_id = str(self.cycle1.id)
         cycle4_id = str(self.cycle4.id)
-        fg_3_id = str(self.data_view2.filter_groups[0]['id'])
-        fg_4_id = str(self.data_view2.filter_groups[1]['id'])
 
-        fg3_cycle1 = data['filter_groups_by_id'][fg_3_id]['cycles_by_id'][cycle1_id]
+        fg3_cycle1 = data['filter_groups_by_id'][str(self.three_properties_filter_group.id)]['cycles_by_id'][cycle1_id]
         self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(fg3_cycle1.keys()))
         self.assertEqual(1100, fg3_cycle1['Average'])
         self.assertEqual(3, fg3_cycle1['Count'])
@@ -585,7 +628,7 @@ class DataViewEvaluationTests(TestCase):
         exp = {self.view10.state.address_line_1: 1000, self.view11.state.address_line_1: 1100, self.view12.state.address_line_1: 1200}
         self.assertEqual(exp, fg3_cycle1['views_by_default_field'])
 
-        fg4_cycle4 = data['filter_groups_by_id'][fg_4_id]['cycles_by_id'][cycle4_id]
+        fg4_cycle4 = data['filter_groups_by_id'][str(self.four_properties_filter_group.id)]['cycles_by_id'][cycle4_id]
         self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(fg4_cycle4.keys()))
         self.assertEqual(3075, fg4_cycle4['Average'])
         self.assertEqual(4, fg4_cycle4['Count'])
@@ -604,8 +647,8 @@ class DataViewEvaluationTests(TestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        cycle1_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.data_view3.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle1.id)]
-        cycle2_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.data_view3.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle2.id)]
+        cycle1_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.dc_filter_group.id)]['cycles_by_id'][str(self.cycle1.id)]
+        cycle2_data = data['data']['columns_by_id'][str(self.dc_column.id)]['filter_groups_by_id'][str(self.dc_filter_group.id)]['cycles_by_id'][str(self.cycle2.id)]
 
         # ex:
         # Cycle A
@@ -639,7 +682,7 @@ class DataViewEvaluationTests(TestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        cycle5_data = data['data']['columns_by_id'][str(self.site_eui.id)]['filter_groups_by_id'][str(self.data_view4.filter_groups[0]['id'])]['cycles_by_id'][str(self.cycle5.id)]
+        cycle5_data = data['data']['columns_by_id'][str(self.site_eui.id)]['filter_groups_by_id'][str(self.dc_filter_group.id)]['cycles_by_id'][str(self.cycle5.id)]
         # breakpoint()
         self.assertIsNone(cycle5_data['Average'])
         self.assertEqual(0, cycle5_data['Count'])
@@ -736,8 +779,6 @@ class DataViewInventoryTests(TestCase):
         # no filter, no labels
         self.data_view1 = DataView.objects.create(
             name='data view 1',
-            filter_groups=[
-            ],
             organization=self.org)
         self.data_view1.cycles.set([self.cycle1, self.cycle3])
         self.data_view1_parameter1 = DataViewParameter.objects.create(
@@ -747,14 +788,26 @@ class DataViewInventoryTests(TestCase):
             location='axis1',
         )
 
+        self.fg1 = FilterGroup.objects.create(
+            name="fg1",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={'extra_col__gt': '1', "site_eui__gt": 1},
+        )
+        self.fg1.save()
+        self.fg2 = FilterGroup.objects.create(
+            name="fg2",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"site_eui__gt": 1},
+        )
+        self.fg2.save()
+
         # filter, no labels
         self.data_view2 = DataView.objects.create(
             name='data view 2',
-            filter_groups=[
-                {'id': 6, 'name': 'fg1', 'query_dict': QueryDict('extra_col__gt=1&site_eui__gt=1')},
-                {'id': 7, 'name': 'fg2', 'query_dict': QueryDict('site_eui__gt=1')}
-            ],
             organization=self.org)
+        self.data_view2.filter_groups.set([self.fg1, self.fg2])
         self.data_view2.cycles.set([self.cycle1, self.cycle2, self.cycle3])
         self.data_view2_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view2,
@@ -763,15 +816,41 @@ class DataViewInventoryTests(TestCase):
             location='axis1',
         )
 
+        self.fg_and = FilterGroup.objects.create(
+            name="fg_and",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"extra_col__gt": 1},
+            label_logic=0  # and,
+        )
+        self.fg_and.labels.set([self.label2.id, self.label3.id])
+        self.fg_and.save()
+
+        self.fg_or = FilterGroup.objects.create(
+            name="fg_or",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"extra_col__gt": 1},
+            label_logic=1  # or,
+        )
+        self.fg_or.labels.set([self.label2.id, self.label3.id])
+        self.fg_or.save()
+
+        self.fg_exc = FilterGroup.objects.create(
+            name="fg_exc",
+            organization_id=self.org.id,
+            inventory_type=1,  # Property
+            query_dict={"extra_col__gt": 1},
+            label_logic=2,  # exclude
+        )
+        self.fg_exc.labels.set([self.label3.id, self.label4.id])
+        self.fg_exc.save()
+
         # filter, labels
         self.data_view3 = DataView.objects.create(
             name='data view 3',
-            filter_groups=[
-                {'id': 8, 'name': 'fg_and', 'query_dict': QueryDict('extra_col__gt=1'), 'labels': [self.label2.id, self.label3.id], 'label_logic': "and"},
-                {'id': 9, 'name': 'fg_or', 'query_dict': QueryDict('extra_col__gt=1'), 'labels': [self.label2.id, self.label3.id], 'label_logic': "or"},
-                {'id': 10, 'name': 'fg_exc', 'query_dict': QueryDict('extra_col__gt=1'), 'labels': [self.label3.id, self.label4.id], 'label_logic': "exclude"}
-            ],
             organization=self.org)
+        self.data_view3.filter_groups.set([self.fg_and, self.fg_or, self.fg_exc])
         self.data_view3.cycles.set([self.cycle1, self.cycle2, self.cycle3])
         self.data_view3_parameter1 = DataViewParameter.objects.create(
             data_view=self.data_view3,
@@ -793,18 +872,13 @@ class DataViewInventoryTests(TestCase):
         data = json.loads(response.content)
         data = data['data']
 
-        exp_filter_group_names = [str(fg['id']) for fg in self.data_view2.filter_groups]
-        self.assertEqual(list(data.keys()), exp_filter_group_names)
-
-        # check correct views attached to filter group keys
-        fg1_id = str(self.data_view2.filter_groups[0]['id'])
-        fg2_id = str(self.data_view2.filter_groups[1]['id'])
+        self.assertEqual(list(data.keys()), [str(self.fg1.id), str(self.fg2.id)])
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
-        self.assertEqual(sorted(exp), data[fg1_id])
+        self.assertEqual(sorted(exp), data[str(self.fg1.id)])
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view13.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view23.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1]
-        self.assertEqual(sorted(exp), data[fg2_id])
+        self.assertEqual(sorted(exp), data[str(self.fg2.id)])
 
         response = self.client.get(
             reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
@@ -812,16 +886,11 @@ class DataViewInventoryTests(TestCase):
         data = json.loads(response.content)
         data = data['data']
 
-        # check correct views attached to filter group keys
-        fg_and_id = str(self.data_view3.filter_groups[0]['id'])
-        fg_or_id = str(self.data_view3.filter_groups[1]['id'])
-        fg_exc_id = str(self.data_view3.filter_groups[2]['id'])
-
         exp = [self.view12.state.address_line_1, self.view20.state.address_line_1]
-        self.assertEqual(sorted(exp), data[fg_and_id])
+        self.assertEqual(sorted(exp), data[str(self.fg_and.id)])
 
         exp = [self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1]
-        self.assertEqual(sorted(exp), data[fg_or_id])
+        self.assertEqual(sorted(exp), data[str(self.fg_or.id)])
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
-        self.assertEqual(sorted(exp), data[fg_exc_id])
+        self.assertEqual(sorted(exp), data[str(self.fg_exc.id)])
