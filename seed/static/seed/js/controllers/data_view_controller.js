@@ -303,7 +303,6 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         // create/update data view
-        let filter_groups = $scope.filter_groups;
         let aggregations = [];
         if ($scope.source_column_by_location['first_axis']) {
           aggregations.push({
@@ -347,9 +346,9 @@ angular.module('BE.seed.controller.data_view', [])
         };
 
         if ($scope.selected_data_view.id) {
-          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, filter_groups.map(fg => fg.id), checked_cycles, aggregations).then(_done);
+          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
         } else {
-          let new_data_view = data_view_service.create_data_view($scope.fields.name, filter_groups.map(fg => fg.id), checked_cycles, aggregations).then(_done);
+          let new_data_view = data_view_service.create_data_view($scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
         };
       };
 
@@ -385,6 +384,10 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.fields.name = $scope.selected_data_view.name;
         for (let i in $scope.selected_data_view.cycles) {
           $scope.fields.cycle_checkboxes[$scope.selected_data_view.cycles[i]] = true;
+        }
+
+        for (let i in $scope.selected_data_view.filter_groups) {
+          $scope.fields.filter_group_checkboxes[$scope.selected_data_view.filter_groups[i]] = true;
         }
         $scope.editing = true;
         spinner_utility.hide();
