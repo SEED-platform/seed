@@ -1874,6 +1874,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           data_views: ['data_view_service', function (data_view_service) {
             return data_view_service.get_data_views();
+          }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
           }]
         }
       })
@@ -1911,6 +1915,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           data_views: ['data_view_service', function (data_view_service) {
             return data_view_service.get_data_views();
+          }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
           }]
         }
       });
