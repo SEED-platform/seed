@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+# Note that Projects have been "disabled" for a long time, but the code is still here. Remove this when we remove the Projects and Compliance models.
 # system imports
 import logging
 
