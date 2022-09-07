@@ -27,12 +27,12 @@ class ComplianceMetric(models.Model):
     end = models.DateTimeField()  # only care about year, but adding as a DateTime
     created = models.DateTimeField(auto_now_add=True)
     # TODO: could these be derived columns?
-    actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", blank=False, null=False, on_delete=models.CASCADE)
-    target_energy_column = models.ForeignKey(Column, related_name="target_energy_column", blank=True, null=True, on_delete=models.CASCADE)
-    energy_metric_type = models.IntegerField(choices=METRIC_TYPES)
-    actual_emission_column = models.ForeignKey(Column, related_name="actual_emission_column", blank=False, null=False, on_delete=models.CASCADE)
-    target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", blank=True, null=True, on_delete=models.CASCADE)
-    emission_metric_type = models.IntegerField(choices=METRIC_TYPES)
+    actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", null=True, on_delete=models.CASCADE)
+    target_energy_column = models.ForeignKey(Column, related_name="target_energy_column", null=True, on_delete=models.CASCADE)
+    energy_metric_type = models.IntegerField(choices=METRIC_TYPES, default=0)
+    actual_emission_column = models.ForeignKey(Column, related_name="actual_emission_column", null=True, on_delete=models.CASCADE)
+    target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", null=True, on_delete=models.CASCADE)
+    emission_metric_type = models.IntegerField(choices=METRIC_TYPES, default=0)
 
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
 
@@ -58,6 +58,17 @@ class ComplianceMetric(models.Model):
         ordering = ['-created']
         get_latest_by = 'created'
 
+        constraints = [
+            models.CheckConstraint(
+                name="at_least_one_compliance_metric_type",
+                check=(
+                    models.Q(actual_energy_column__isnull=False)
+                    | models.Q(actual_emission_column__isnull=False)
+
+                ),
+            )
+        ]
+
     # temporary until we have the metric setup page
     @classmethod
     def get_or_create_default(cls, organization):
@@ -67,8 +78,8 @@ class ComplianceMetric(models.Model):
             # TODO: make this more foolproof if these columns don't exist
             actual_column = Column.objects.filter(column_name='Site EUI', organization=organization).first()
             target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
-            actual_emission_column = Column.objects.filter(column_name='Total GHG Emissions', organization=organization).first()
-            target_emission_column = Column.objects.filter(column_name='Total Marginal GHG Emissions', organization=organization).first()
+            actual_emission_column = Column.objects.filter(column_name='Site EUI', organization=organization).first()
+            target_emission_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
             x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Conditioned Floor Area'], organization=organization).all()
 
             # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
