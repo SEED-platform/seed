@@ -6,12 +6,13 @@
 """
 
 from collections import OrderedDict
+from typing import List, Tuple
 
 from django.apps import apps
 from django.db import models
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models import Column
+from seed.models.columns import Column
 from seed.models.derived_columns import DerivedColumn
 
 VIEW_LIST = 0
@@ -23,7 +24,7 @@ VIEW_LOCATION_TYPES = [
 
 VIEW_LIST_PROPERTY = 0
 VIEW_LIST_TAXLOT = 1
-VIEW_LIST_INVENTORY_TYPE = [
+VIEW_LIST_INVENTORY_TYPE: List[Tuple[int, str]] = [
     (VIEW_LIST_PROPERTY, 'Property'),
     (VIEW_LIST_TAXLOT, 'Tax Lot'),
 ]
