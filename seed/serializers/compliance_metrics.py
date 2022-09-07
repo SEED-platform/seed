@@ -5,6 +5,7 @@
 :author
 """
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from seed.models.compliance_metrics import ComplianceMetric
@@ -12,10 +13,16 @@ from seed.serializers.base import ChoiceField
 
 
 class ComplianceMetricSerializer(serializers.ModelSerializer):
-    metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES)
+    energy_metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES)
+    emission_metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES)
     organization_id = serializers.IntegerField(read_only=True)
+
+    def to_representation(self, instance):
+        self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        return super().to_representation(instance)
 
     class Meta:
         model = ComplianceMetric
-        fields = ['id', 'name', 'organization_id', 'start', 'end', 'actual_column', 'target_column', 'metric_type', 'x_axis_columns']
+        fields = ['id', 'name', 'organization_id', 'start', 'end', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'x_axis_columns']
         # fields = '__all__'

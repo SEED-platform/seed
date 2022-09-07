@@ -44,19 +44,18 @@ angular.module('BE.seed.controller.insights_program', [])
 
       // override default if we have the data
       if ('start' in $scope.compliance_metric) {
-        const date = new Date($scope.compliance_metric['start']);
-        start = date.getFullYear();
+        console.log("START: ", $scope.compliance_metric['start']);
+        start = $scope.compliance_metric['start'].split('-')[0];
       }
       if ('end' in $scope.compliance_metric) {
-        const date = new Date($scope.compliance_metric['end']);
-        end = date.getFullYear();
+        end = $scope.compliance_metric['end'].split('-')[0];
       }
       console.log("START: ", start, " END: ", end)
 
       // TODO placeholder just showing # properties per cycle for this org (all unknown - metric not enabled)
       const labels = []
-      for (var i = start; i <= end;  i++) {
-        labels.push(i);
+      for (var i = Number(start); i <= Number(end);  i++) {
+        labels.push(String(i));
       }
       console.log("LABELS: ", labels);
 
