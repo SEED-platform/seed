@@ -8,7 +8,7 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     user_service
   ) {
 
-  	// for now assume there is only 1 metric (grab first)
+  	// get all compliance metrics defined
   	const get_compliance_metrics = function () {
       return $http.get('/api/v3/compliance_metrics/', {
         params: {
@@ -21,8 +21,36 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
       });
     };
 
+    // retrieve compliance metric
+    const get_compliance_metric = function (metric_id) {
+      return $http.get('/api/v3/compliance_metrics/' + metric_id + '/', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.compliance_metric;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
+    // evaluate
+    const evaluate_compliance_metric = function (metric_id) {
+      return $http.get('/api/v3/compliance_metrics/' + metric_id + '/evaluate/', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
    	const compliance_metric_factory = {
       'get_compliance_metrics': get_compliance_metrics,
+      'get_compliance_metric': get_compliance_metric,
+      'evaluate_compliance_metric': evaluate_compliance_metric
     };
 
 	return compliance_metric_factory;
