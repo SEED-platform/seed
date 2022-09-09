@@ -134,7 +134,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         queryset = self.filter_queryset(self.get_queryset())
 
         if brief:
-            results = queryset.values("id", "name", "profile_location", "inventory_type")
+            results = list(queryset.values("id", "name", "profile_location", "inventory_type"))
         else:
             results = list(queryset)
             results = self.get_serializer(results, many=True).data
