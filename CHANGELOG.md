@@ -2,7 +2,7 @@
 
 Date Range: 07/20/22 - 09/08/22
 
-Closed Issues and Features (Total: 16):
+Closed Issues and Features (Total: 15):
 - Fixed [#2843]( https://github.com/SEED-platform/seed/issues/2843 ), BETTER - GHG emission reduction units
 - Fixed [#2885]( https://github.com/SEED-platform/seed/issues/2885 ), Add indication of whether or not property has meters to inventory list
 - Fixed [#2953]( https://github.com/SEED-platform/seed/issues/2953 ), BETTER: allow user to specify meter data to use for analysis
@@ -14,11 +14,10 @@ Closed Issues and Features (Total: 16):
 - Fixed [#3392]( https://github.com/SEED-platform/seed/issues/3392 ), Fix error filtering doubles as strings
 - Fixed [#3425]( https://github.com/SEED-platform/seed/issues/3425 ), AT Validation Broken
 - Fixed [#3444]( https://github.com/SEED-platform/seed/issues/3444 ), Add "(Beta)" to summary tab
-- Fixed [#3454]( https://github.com/SEED-platform/seed/issues/3454 ), Refactor DataView to contain DataAggregation functionality
-- Fixed [#3470]( https://github.com/SEED-platform/seed/issues/3470 ), check return value when cycles do not contain relavent views
 - Fixed [#3484]( https://github.com/SEED-platform/seed/issues/3484 ), Fix meters import failing with non-string operation
 - Fixed [#3507]( https://github.com/SEED-platform/seed/issues/3507 ), Only return a max of 10 history on properties and taxlot details
 - Maintenance [#3508]( https://github.com/SEED-platform/seed/issues/3508 ), Upgrade to Django 3.2.15
+- Fixed [#3510]( https://github.com/SEED-platform/seed/issues/3510 ), New inventory list view breaks if ComStock functionality is enabled
 
 # SEED Version 2.15.1
 
