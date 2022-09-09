@@ -80,7 +80,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
           "yDisplayName": "Gross Floor Area (ft²)"
         },
         {
-          "chartName": "Better Savings vs ECI",
+          "chartName": "Potential Energy Savings vs ECI",
           "yDisplayName": "BETTER Potential Energy Savings (kWh)",
           "xDisplayName": "ECI"
         },
