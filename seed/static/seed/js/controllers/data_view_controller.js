@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.data_view', [])
     'urls',
     'cycles',
     'data_views',
+    'filter_groups',
     'data_view_service',
     'property_columns',
     'spinner_utility',
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.data_view', [])
       urls,
       cycles,
       data_views,
+      filter_groups,
       data_view_service,
       property_columns,
       spinner_utility,
@@ -48,16 +50,7 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 4, name: 'Sum'},
         {id: 5, name: 'Count'}
       ];
-      $scope.filter_groups = [
-        // {id:1, name: 'Site EUI > 1', query_dict: {'site_eui__gt': 1}},
-        // {id:2, name: 'Energy Score > 50', query_dict: {'energy_score__gte': 50}},
-        // {id:3, name: 'Energy Score < 50', query_dict: {'energy_score__lt': 50}},
-
-        { id: 1, name: 'Small Office', query_dict: { 'gross_floor_area__lt': 10000, 'property_type__exact': 'Office' }},
-        // { id: 2, name: 'Large Office', query_dict: { 'gross_floor_area__gt': 10000, 'property_type__exact': 'Office' }},
-        // { id: 3, name: 'Small Retail', query_dict: { 'gross_floor_area__lt': 50000, 'property_type__exact': 'Retail' }},
-        { id: 4, name: 'Large Retail', query_dict: { 'gross_floor_area__gt': 50000, 'property_type__exact': 'Retail' }},
-      ];
+      $scope.filter_groups = filter_groups
       console.log('filter_groups',$scope.filter_groups)
 
       $scope.show_config = true
@@ -138,9 +131,14 @@ angular.module('BE.seed.controller.data_view', [])
         // load filter groups
         $scope.used_filter_groups = {};
         if ($scope.selected_data_view) {
-          $scope.used_filter_groups = _collect_array_as_object($scope.selected_data_view.filter_groups, 'name');
+          $scope.used_filter_groups = $scope.filter_groups
+          .filter(fg => $scope.selected_data_view.filter_groups.includes(fg.id))
+          .reduce((acc, curr) => {
+            acc[curr.name] = curr
+            return acc
+          }, {})
           for (let i in $scope.selected_data_view.filter_groups) {
-            $scope.show_properties_for_filter_group[$scope.selected_data_view.filter_groups[i].id] = false;
+            $scope.show_properties_for_filter_group[$scope.selected_data_view.filter_groups[i]] = false;
           }
         }
         $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
@@ -305,7 +303,6 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         // create/update data view
-        let filter_groups = $scope.filter_groups;
         let aggregations = [];
         if ($scope.source_column_by_location['first_axis']) {
           aggregations.push({
@@ -349,9 +346,9 @@ angular.module('BE.seed.controller.data_view', [])
         };
 
         if ($scope.selected_data_view.id) {
-          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, filter_groups, checked_cycles, aggregations).then(_done);
+          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
         } else {
-          let new_data_view = data_view_service.create_data_view($scope.fields.name, filter_groups, checked_cycles, aggregations).then(_done);
+          let new_data_view = data_view_service.create_data_view($scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
         };
       };
 
@@ -387,6 +384,10 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.fields.name = $scope.selected_data_view.name;
         for (let i in $scope.selected_data_view.cycles) {
           $scope.fields.cycle_checkboxes[$scope.selected_data_view.cycles[i]] = true;
+        }
+
+        for (let i in $scope.selected_data_view.filter_groups) {
+          $scope.fields.filter_group_checkboxes[$scope.selected_data_view.filter_groups[i]] = true;
         }
         $scope.editing = true;
         spinner_utility.hide();

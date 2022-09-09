@@ -14,6 +14,7 @@ from django.http import QueryDict
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
+from seed.models.filter_group import FilterGroup
 from seed.models.models import StatusLabel as Label
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
@@ -23,7 +24,7 @@ class DataView(models.Model):
     name = models.CharField(max_length=255, unique=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     cycles = models.ManyToManyField(Cycle)
-    filter_groups = models.JSONField()
+    filter_groups = models.ManyToManyField(FilterGroup)
 
     def get_inventory(self):
         views_by_filter_group_id, _ = self.views_by_filter()
@@ -32,20 +33,20 @@ class DataView(models.Model):
     def views_by_filter(self):
         filter_group_views = {}
         views_by_filter_group_id = {}
-        for filter_group in self.filter_groups:
-            views_by_filter_group_id[filter_group['id']] = []
-            filter_group_views[filter_group['id']] = {}
+        for filter_group in self.filter_groups.all():
+            views_by_filter_group_id[filter_group.id] = []
+            filter_group_views[filter_group.id] = {}
             query_dict = QueryDict(mutable=True)
-            query_dict.update(filter_group['query_dict'])
+            query_dict.update(filter_group.query_dict)
             for cycle in self.cycles.all():
                 filter_views = self._get_filter_group_views(cycle, query_dict)
                 label_views = self._get_label_views(cycle, filter_group)
                 views = self._combine_views(filter_views, label_views)
-                filter_group_views[filter_group['id']][cycle.id] = views
+                filter_group_views[filter_group.id][cycle.id] = views
                 for view in views:
                     view_key = self._format_property_display_field(view)
-                    views_by_filter_group_id[filter_group['id']].append(view_key)
-            views_by_filter_group_id[filter_group['id']] = sorted(list(set(views_by_filter_group_id[filter_group['id']])))
+                    views_by_filter_group_id[filter_group.id].append(view_key)
+            views_by_filter_group_id[filter_group.id] = sorted(list(set(views_by_filter_group_id[filter_group.id])))
 
         return views_by_filter_group_id, filter_group_views
 
@@ -112,8 +113,8 @@ class DataView(models.Model):
             column_id = column.id
             data[column_id] = {'filter_groups_by_id': {}, 'unit': None}
 
-            for filter_group in self.filter_groups:
-                filter_id = filter_group['id']
+            for filter_group in self.filter_groups.all():
+                filter_id = filter_group.id
                 data[column_id]['filter_groups_by_id'][filter_id] = {'cycles_by_id': {}}
 
                 for cycle in self.cycles.all():
@@ -137,9 +138,9 @@ class DataView(models.Model):
 
     def _format_graph_data(self, response, columns, views_by_filter):
         # {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]},
-        for filter_group in self.filter_groups:
-            filter_id = filter_group['id']
-            filter_name = filter_group['name']
+        for filter_group in self.filter_groups.all():
+            filter_id = filter_group.id
+            filter_name = filter_group.name
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
@@ -244,21 +245,21 @@ class DataView(models.Model):
             return list(filter_views)
 
     def _get_label_views(self, cycle, filter_group):
-        if not filter_group.get('labels') or not filter_group.get('label_logic'):
+        if len(filter_group.labels.all()) == 0:
             return None
 
-        logic = filter_group['label_logic']
-        labels = Label.objects.filter(id__in=filter_group['labels'])
+        logic = filter_group.label_logic
+        labels = Label.objects.filter(id__in=filter_group.labels.all())
 
-        if logic == 'and':
+        if logic == 0:  # and
             views_all = []
             for label in labels:
                 views = cycle.propertyview_set.filter(labels__in=[label])
                 views_all.append(views)
             return list(set.intersection(*map(set, views_all)))
-        elif logic == 'or':
+        elif logic == 1:  # or
             return list(cycle.propertyview_set.filter(labels__in=labels))
-        elif logic == 'exclude':
+        elif logic == 2:  # exclude
             return list(cycle.propertyview_set.exclude(labels__in=labels))
 
     def _get_filter_group_views(self, cycle, query_dict):

@@ -30,9 +30,11 @@ class DataViewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():
             cycles = validated_data.pop('cycles')
+            filter_groups = validated_data.pop('filter_groups')
             parameters = validated_data.pop('parameters')
             data_view = DataView.objects.create(**validated_data)
             data_view.cycles.set(cycles)
+            data_view.filter_groups.set(filter_groups)
 
             for parameter in parameters:
                 DataViewParameter.objects.create(data_view=data_view, **parameter)
@@ -44,7 +46,8 @@ class DataViewSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             instance.organization = validated_data.get('organization', instance.organization)
             instance.name = validated_data.get('name', instance.name)
-            instance.filter_groups = validated_data.get('filter_groups', instance.filter_groups)
+            if validated_data.get('filter_groups'):
+                instance.filter_groups.set(validated_data['filter_groups'])
             if validated_data.get('cycles'):
                 instance.cycles.set(validated_data['cycles'])
 

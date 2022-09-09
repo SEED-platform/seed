@@ -47,6 +47,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
+  'BE.seed.controller.compliance_setup',
   'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_organization_modal',
   'BE.seed.controller.create_sub_organization_modal',
@@ -79,6 +80,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.data_logger_upload_modal',
+  'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.insights_program',
@@ -161,6 +163,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.data_view',
   'BE.seed.service.derived_columns',
   'BE.seed.service.meter',
+  'BE.seed.service.filter_groups',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
@@ -999,6 +1002,43 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'compliance_setup',
+        url: '/accounts/{organization_id:int}/compliance_setup',
+        templateUrl: static_url + 'seed/partials/compliance_setup.html',
+        controller: 'compliance_setup_controller',
+        resolve: {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var organization_id = $stateParams.organization_id;
+            return inventory_service.get_used_columns(organization_id);
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_query_threshold(organization_id);
+          }],
+          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_shared_fields(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
         name: 'organization_column_settings',
         url: '/accounts/{organization_id:int}/column_settings/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/column_settings.html',
@@ -1468,6 +1508,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
             return null;
           }],
+          filter_groups: ['$stateParams', 'filter_groups_service', function ($stateParams, filter_groups_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
+          }],
+          current_filter_group: ['$stateParams', 'filter_groups_service', 'filter_groups', function ($stateParams, filter_groups_service, filter_groups) {
+            var validFilterGroupIds = _.map(filter_groups, 'id');
+            var lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
+            if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
+              return filter_groups_service.get_filter_group(lastFilterGroupId);
+            }
+            var currentFilterGroup = _.first(filter_groups);
+            if (currentFilterGroup) {
+              filter_groups_service.save_last_filter_group(currentFilterGroup.id, $stateParams.inventory_type)
+              return currentFilterGroup;
+            }
+            return null;
+          }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns();
@@ -1859,6 +1916,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           data_views: ['data_view_service', function (data_view_service) {
             return data_view_service.get_data_views();
+          }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
           }]
         }
       })
@@ -1896,6 +1957,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           data_views: ['data_view_service', function (data_view_service) {
             return data_view_service.get_data_views();
+          }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
           }]
         }
       });
