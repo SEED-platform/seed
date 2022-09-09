@@ -32,6 +32,9 @@ angular.module('BE.seed.controller.insights_program', [])
       console.log("COMPLIANCE METRIC: ")
       console.log($scope.compliance_metric)
 
+      // table row toggles
+      $scope.show_properties_for_dataset = {'y': false, 'n': false, 'u': false};
+
       // chart data
       $scope.data = {};
       let _load_data = function () {

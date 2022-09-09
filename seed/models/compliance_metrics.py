@@ -75,6 +75,7 @@ class ComplianceMetric(models.Model):
 
         # get properties
         property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
+        # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         # print(property_response)
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
@@ -97,30 +98,30 @@ class ComplianceMetric(models.Model):
 
         for cyc in property_response:
 
-            print(f" CYCLE? {cyc}")
+            # print(f" CYCLE? {cyc}")
             properties = {}
             cnts = {'y': 0, 'n': 0, 'u': 0}
 
             for p in property_response[cyc]:
                 # initialize
-                properties[p['id']] = None
+                properties[p['property_view_id']] = None
                 # energy metric
                 if energy_metric:
-                    properties[p['id']] = self._calculate_compliance(p, energy_bool, 'energy')
+                    properties[p['property_view_id']] = self._calculate_compliance(p, energy_bool, 'energy')
                 # emission metric
-                if emission_metric and properties[p['id']] != 'u':
+                if emission_metric and properties[p['property_view_id']] != 'u':
                     temp_val = self._calculate_compliance(p, emission_bool, 'emission')
 
                     # reconcile
                     if temp_val == 'u':
                         # unknown stays unknown (missing data)
-                        properties[p['id']] = 'u'
-                    elif properties[p['id']] is None:
+                        properties[p['property_view_id']] = 'u'
+                    elif properties[p['property_view_id']] is None:
                         # only emission metric (not energy metric)
-                        properties[p['id']] = temp_val
+                        properties[p['property_view_id']] = temp_val
                     else:
                         # compliant if both are compliant
-                        properties[p['id']] = temp_val if temp_val == 'n' else properties[p['id']]
+                        properties[p['property_view_id']] = temp_val if temp_val == 'n' else properties[p['property_view_id']]
 
             # count compliant, non-compliant, unknown for each property with data
             for key in cnts:
@@ -128,7 +129,7 @@ class ComplianceMetric(models.Model):
                 # add to dataset
                 datasets[key]['data'].append(cnts[key])
 
-            print(f"COUNTS: {cnts}")
+            # print(f"COUNTS: {cnts}")
 
             # reshape and save
             results_by_cycles[cyc] = {}
@@ -171,7 +172,7 @@ class ComplianceMetric(models.Model):
     # retrieves column data by id substring
     def _get_column_data(self, data, substring):
         value = next(v for (k, v) in data.items() if k.endswith('_' + str(substring)))
-        print(f"value found for column ID {substring}: {value}")
+        # print(f"value found for column ID {substring}: {value}")
         return value
 
     class Meta:
