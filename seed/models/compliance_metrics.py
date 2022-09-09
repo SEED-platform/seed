@@ -80,7 +80,7 @@ class ComplianceMetric(models.Model):
             target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
             actual_emission_column = Column.objects.filter(column_name='Site EUI', organization=organization).first()
             target_emission_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
-            x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Conditioned Floor Area'], organization=organization).all()
+            x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Gross Floor Area'], organization=organization).all()
 
             # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
             # saving as 2,2 since we don't care about day/month

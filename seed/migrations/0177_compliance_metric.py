@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0023_auto_20220721_1851'),
-        ('seed', '0175_dataview_dataviewparameter'),
+        ('seed', '0176_dataview_dataviewparameter'),
     ]
 
     operations = [

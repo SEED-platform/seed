@@ -1,0 +1,174 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left">
+                <h2><i class="fa fa-tachometer"></i> {$:: 'Compliance Setup' | translate $}</h2>
+            </div>
+            <div class="section_action_container right section_action_btn">
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+                <div class="form-row">
+                    <h3> </h3>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="metric-name" translate>Metric Name</label>
+                    <div class="col-sm-4">
+                        <input id="metric-name" type="text" class="form-control" ng-model="$parent.metricName" ng-disabled="::!auth.requires_owner">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="startYear" translate>Compliance Period</label>
+                    <div class="col-sm-2">
+                        <select class="form-control" id="startYear">
+                            <option>2020</option>
+                            <option>2021</option>
+                            <option>2022</option>
+                            <option>2023</option>
+                            <option>2024</option>
+                        </select>
+                    </div>
+                    <label class="col-sm-1 col-form-label" for="endYear" translate>to</label>
+                    <div class="col-sm-2">
+                        <select class="form-control" id="endYear">
+                            <option>2020</option>
+                            <option>2021</option>
+                            <option>2022</option>
+                            <option>2023</option>
+                            <option>2024</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-5">
+                        <p class="h2" translate>Energy Metric</p>
+                    </div>
+                    <div class="col-sm-5">
+                        <p class="h2" translate>Emission Metric</p>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <label class="col-form-label" for="energyMetricActual" translate>Energy Metric Actual Column</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="energyMetricActual" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                    <div class="col-sm-2">
+                        <label class="col-form-label" for="emissionMetricActual" translate>Emission Metric Actual Column</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="emissionMetricActual" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <label class="col-form-label" for="energyMetricTarget" translate>Energy Metric Target Column</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="energyMetricTarget" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                    <div class="col-sm-2">
+                        <label class="col-form-label" for="emissionMetricTarget" translate>Emission Metric Target Column</label>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" id="emissionMetricTarget" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                </div>
+                <fieldset class="form-group">
+                    <div class="row">
+                        <legend class="col-form-label col-sm-2 pt-0">Energy Metric Type</legend>
+                        <div class="col-sm-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="energyMetricTypeLT" id="energyMetricType1" value="option1" checked>
+                                <label class="form-check-label" for="energyMetricType1">
+                                    Actual < Target for Compliance Actual
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="energyMetricTypeGT" id="energyMetricType2" value="option2">
+                                <label class="form-check-label" for="energyMetricType2">
+                                    Actual > Target for Compliance Actual
+                                </label>
+                            </div>
+                        </div>
+                        <legend class="col-form-label col-sm-2 pt-0">Emission Metric Type</legend>
+                        <div class="col-sm-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="emissionMetricTypeLT" id="emissionMetricType1" value="option1" checked>
+                                <label class="form-check-label" for="emissionMetricType1">
+                                    Actual < Target for Compliance Actual
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="emissionMetricTypeGT" id="emissionMetricType2" value="option2">
+                                <label class="form-check-label" for="emissionMetricType2">
+                                    Actual > Target for Compliance Actual
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-group row">
+                    <div class="col-sm-6">
+                        <p class="h3" translate>X Axis Column Types for Plotting:</p>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <p> </p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p class="h5" translate>Selections:</p>
+                    </div>
+                    <div class="col-sm-3">
+                        <p class="h5" translate>X Axis Column Selections:</p>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <p> </p>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                    <div class="col-sm-3">
+                        <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <p> </p>
+                    </div>
+                    <div class="col-sm-4">
+                        <p class="h4" translate>View Compliance Tracking</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -47,6 +47,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
+  'BE.seed.controller.compliance_setup',
   'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_organization_modal',
   'BE.seed.controller.create_sub_organization_modal',
@@ -968,6 +969,43 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         url: '/accounts/{organization_id:int}/sharing',
         templateUrl: static_url + 'seed/partials/organization_sharing.html',
         controller: 'organization_sharing_controller',
+        resolve: {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var organization_id = $stateParams.organization_id;
+            return inventory_service.get_used_columns(organization_id);
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          query_threshold_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_query_threshold(organization_id);
+          }],
+          shared_fields_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_shared_fields(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'compliance_setup',
+        url: '/accounts/{organization_id:int}/compliance_setup',
+        templateUrl: static_url + 'seed/partials/compliance_setup.html',
+        controller: 'compliance_setup_controller',
         resolve: {
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var organization_id = $stateParams.organization_id;
