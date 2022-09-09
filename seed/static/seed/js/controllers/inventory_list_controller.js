@@ -271,6 +271,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         // Update labels
         $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
         $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
+        $scope.filterUsingLabels();
 
         // clear table filters
         $scope.gridApi.grid.columns.forEach(column =>{
@@ -431,6 +432,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
+        $scope.filterUsingLabels();
       };
 
       var ignoreNextChange = true;
@@ -518,7 +520,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var filterUsingLabels = function () {
+      $scope.filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
         $scope.load_inventory(1);
         $scope.isModified();
@@ -529,7 +531,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.labelLogicUpdated = function (labelLogic) {
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
-        filterUsingLabels();
         $scope.isModified();
       };
 
@@ -1171,7 +1172,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.gridApi.core.raise.sortChanged();
       };
 
-      let watchingSelectedLabels = false;
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
@@ -1184,11 +1184,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             return _.includes(ids, label.id);
           });
 
-          // watch for changes
-          if (!watchingSelectedLabels) {
-            watchingSelectedLabels = true;
-            $scope.$watchCollection('selected_labels', filterUsingLabels);
-          }
+          $scope.filterUsingLabels();
           $scope.build_labels();
         });
       };
