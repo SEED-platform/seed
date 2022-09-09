@@ -214,40 +214,28 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'errors': message_dict,
             }, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema_org_query_param
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['PUT'])
-    def evaluate(self, request, pk=0):
+    @action(detail=True, methods=['GET'])
+    def evaluate(self, request, pk):
         organization = self.get_organization(request)
         deepcopy(request.data)
-        deepcopy(request.data)
 
-        if pk == 0:
-            try:
-                return JsonResponse({
-                    'status': 'success',
-                    'compliance_metric': ComplianceMetricSerializer(
-                        ComplianceMetric.objects.filter(organization=organization).first()
-                    ).data
-                }, status=status.HTTP_200_OK)
-            except Exception:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'No Compliance Metrics exist'
-                }, status=status.HTTP_404_NOT_FOUND)
-        else:
-            try:
-                compliance_metric = ComplianceMetric.objects.get(id=pk, organization=organization)
-            except ComplianceMetric.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'ComplianceMetric with id {pk} does not exist'
-                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            compliance_metric = ComplianceMetric.objects.get(id=pk, organization=organization)
+        except ComplianceMetric.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'ComplianceMetric with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
 
         response = compliance_metric.evaluate()
+        print(f" RESPONSE: {response}")
         return JsonResponse({
             'status': 'success',
             'data': response

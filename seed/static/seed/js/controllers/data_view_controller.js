@@ -373,7 +373,7 @@ angular.module('BE.seed.controller.data_view', [])
         if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
           let delete_data_view = data_view_service.delete_data_view(data_view.id).then((data) => {
             if (data.status == 'success') {
-              window.location = '#/insights/custom/';
+              window.location = '#/insights/custom';
             } else {
 
             }
