@@ -24,11 +24,33 @@
     </div>
 </div>
 
-<div id="charts" style="display: flex;  height: 100%; width: 100%; padding: 10px">
-    <div style="width: 50%">
-        <canvas id="myChart1"></canvas>
+<div id="charts">
+    <div style="display: flex;  height: 100%; width: 100%; padding: 10px">
+        <div style="width: 50%">
+            <canvas id="Year Built vs ECI"></canvas>
+            <div ng-show="!chartsInfo[0]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[0]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+        <div style="width: 50%">
+            <canvas id="CO2 vs Gross Floor Area (ft²)"></canvas>
+            <div ng-show="!chartsInfo[1]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[1]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
     </div>
-    <div style="width: 50%">
-        <canvas id="myChart2"></canvas>
+    <div style="display: flex;  height: 100%; width: 100%; padding: 10px">
+        <div style="width: 50%">
+            <canvas id="Better Savings vs ECI"></canvas>
+            <div ng-show="!chartsInfo[2]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[2]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+        <div style="width: 50%">
+            <canvas id="CO2/sqft vs Year Built"></canvas>
+            <div ng-show="!chartsInfo[3]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[3]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
     </div>
 </div>

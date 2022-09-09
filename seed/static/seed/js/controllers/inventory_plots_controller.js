@@ -68,8 +68,45 @@ angular.module('BE.seed.controller.inventory_plots', [])
         selected_cycle: _.find(cycles.cycles, { id: lastCycleId }) || _.first(cycles.cycles),
         cycles: cycles.cycles
       };
+      $scope.chartsInfo = [
+        {
+          "chartName": "Year Built vs ECI",
+          "xDisplayName": "Year Built",
+          "yDisplayName": "ECI"
+        },
+        {
+          "chartName": "CO2 vs Gross Floor Area (ft²)",
+          "xDisplayName": "Total GHG Emissions",
+          "yDisplayName": "Gross Floor Area (ft²)"
+        },
+        {
+          "chartName": "Better Savings vs ECI",
+          "yDisplayName": "BETTER Potential Energy Savings (kWh)",
+          "xDisplayName": "ECI"
+        },
+        {
+          "chartName": "CO2/sqft vs Year Built",
+          "xDisplayName": "CO2/sqft",
+          "yDisplayName": "Year Built"
+        },
+      ];
 
-      var createChart = function (elementId, xAxisKey, yAxisKey, onHover) {
+      const property_name_column = all_columns.find(c => c["column_name"] == "property_name");
+      neededColumns = new Set([property_name_column["id"]]);
+
+      $scope.chartsInfo.forEach(chartInfo => {
+        x_column = all_columns.find(c => c["displayName"] == chartInfo["xDisplayName"])
+        y_column = all_columns.find(c => c["displayName"] == chartInfo["yDisplayName"])
+
+        if (!!x_column) neededColumns.add(x_column["id"])
+        if (!!y_column) neededColumns.add(y_column["id"])
+
+        chartInfo["xName"] = x_column? x_column["name"]: null;
+        chartInfo["yName"] = y_column? y_column["name"]: null;
+        chartInfo["populated"] = Boolean(!!x_column & !!y_column);
+      });
+
+      var createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
         var canvas = document.getElementById(elementId);
         var ctx = canvas.getContext("2d");
 
@@ -89,18 +126,22 @@ angular.module('BE.seed.controller.inventory_plots', [])
                 display: true,
                 title: {
                   display: true,
-                  text: xAxisKey,
+                  text: xDisplayName,
                 },
               },
               y: {
                 display: true,
                 title: {
                   display: true,
-                  text: yAxisKey
+                  text: yDisplayName,
                 }
               }
             },
             plugins: {
+              title: {
+                display: true,
+                text: elementId
+              },
               zoom: {
                 limits: {
                   x: { min: 'original', max: 'original', minRange: 50 },
@@ -153,7 +194,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
       function hoverOnAllCharts(activePoints) {
         if (activePoints[0]) {
           var index = activePoints[0]["index"]
-          for (const [chartName, chart] of Object.entries(charts)) {
+          for (const chart of charts) {
             chart.setActiveElements([
               {
                 datasetIndex: 0,
@@ -163,27 +204,24 @@ angular.module('BE.seed.controller.inventory_plots', [])
             chart.update()
           }
         } else {
-          for (const [chartName, chart] of Object.entries(charts)) {
+          for (const chart of charts) {
             chart.setActiveElements([]);
             chart.update()
           }
         }
       }
 
-      charts = {
-        myChart1: createChart(
-          elementId = "myChart1",
-          xAxisKey = 'site_eui_56',
-          yAxisKey = 'gross_floor_area_36',
-          onHover = hoverOnAllCharts,
-        ),
-        myChart2: createChart(
-          elementId = "myChart2",
-          xAxisKey = 'id',
-          yAxisKey = 'gross_floor_area_36',
-          onHover = hoverOnAllCharts,
-        ),
-      }
+      charts = $scope.chartsInfo.filter(chartInfo => chartInfo["populated"])
+        .map(chartInfo => {
+          return createChart(
+            elementId = chartInfo["chartName"],
+            xAxisKey = chartInfo["xName"],
+            xAxisName = chartInfo["xDisplayName"],
+            yAxisKey = chartInfo["yName"],
+            yAxisName = chartInfo["yDisplayName"],
+            onHover = hoverOnAllCharts
+          )
+        })
 
       $scope.update_charts = function () {
         spinner_utility.show();
@@ -202,9 +240,9 @@ angular.module('BE.seed.controller.inventory_plots', [])
       };
 
       var populate_charts = function (data) {
-        labels = data.map(property => property["property_name_22"]);
+        labels = data.map(property => property[property_name_column["name"]]);
 
-        for (const [chartName, chart] of Object.entries(charts)) {
+        for (const chart of charts) {
           chart.data.datasets[0].data = data
           chart.data.datasets[0].labels = labels
           chart.update();
@@ -223,7 +261,16 @@ angular.module('BE.seed.controller.inventory_plots', [])
           page = 1,
           per_page = undefined,
           cycle = $scope.cycle.selected_cycle,
-          include_related = false
+          profile_id = null,
+          include_view_ids = null,
+          exclude_view_ids = null,
+          save_last_cycle = true,
+          organization_id = null,
+          include_related = true,
+          column_filters = null,
+          column_sorts = null,
+          ids_only = null,
+          shown_column_ids = Array.from(neededColumns).join() // makes set string, ie {1, 2} -> "1,2"
         ).then(function (data) {
           return data;
         });
