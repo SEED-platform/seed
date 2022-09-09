@@ -34,6 +34,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return filters;
     };
 
+    inventory_service.get_format_column_filters = format_column_filters;
+
     const format_column_sorts = function (column_sorts) {
       // turn column sort objects into usable query parameter
       if (!column_sorts) {

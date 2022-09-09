@@ -22,6 +22,9 @@ angular.module('BE.seed.controller.inventory_list', [])
     'cycles',
     'profiles',
     'current_profile',
+    'filter_groups',
+    'current_filter_group',
+    'filter_groups_service',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -52,6 +55,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       cycles,
       profiles,
       current_profile,
+      filter_groups,
+      current_filter_group,
+      filter_groups_service,
       all_columns,
       derived_columns_payload,
       urls,
@@ -72,6 +78,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       for (const i in all_columns) {
         $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
       }
+
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -110,6 +117,202 @@ angular.module('BE.seed.controller.inventory_list', [])
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       }
+
+      // Filter Groups
+      $scope.filterGroups = filter_groups;
+      $scope.currentFilterGroup = current_filter_group;
+
+      $scope.Modified = false;
+
+      $scope.new_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+            label_ids.push($scope.selected_labels[label].id);
+        };
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+
+        var filterGroupData = {
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant(filterGroupData),
+          }
+        });
+
+        modalInstance.result.then(function (new_filter_group) {
+          $scope.filterGroups.push(new_filter_group);
+          $scope.Modified=false;
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
+
+          Notification.primary('Created ' + $scope.currentFilterGroup.name);
+        });
+      };
+
+      $scope.remove_filter_group = function () {
+        var oldFilterGroupName = $scope.currentFilterGroup.name;
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.currentFilterGroup)
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.filterGroups, $scope.currentFilterGroup);
+          $scope.Modified=false;
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
+
+          Notification.primary('Removed ' + oldFilterGroupName);
+          updateCurrentFilterGroup($scope.currentFilterGroup);
+        });
+      };
+
+      $scope.rename_filter_group = function () {
+        var oldFilterGroup = angular.copy($scope.currentFilterGroup);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.currentFilterGroup),
+          }
+        });
+
+        modalInstance.result.then(function (newName) {
+          $scope.currentFilterGroup.name = newName;
+          _.find($scope.filterGroups, {id: $scope.currentFilterGroup.id}).name = newName;
+          Notification.primary('Renamed ' + oldFilterGroup.name + ' to ' + newName);
+        });
+      };
+
+      $scope.save_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+            label_ids.push($scope.selected_labels[label].id);
+        };
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+        var filterGroupData = {
+          "name": $scope.currentFilterGroup.name,
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
+        filter_groups_service.update_filter_group($scope.currentFilterGroup.id, filterGroupData).then(function (result) {
+          $scope.currentFilterGroup = result;
+          const currentFilterGroupIndex = $scope.filterGroups.findIndex(fg => fg.id == result.id)
+          $scope.filterGroups[currentFilterGroupIndex] = result;
+          $scope.Modified=false;
+          Notification.primary('Saved ' + $scope.currentFilterGroup.name);
+        });
+      };
+
+
+      // compare filters if different then true, then compare labels, and finally label_logic. All must be the same to return false
+      $scope.isModified = function () {
+        if ($scope.filterGroups.length > 0) {
+          current_filters = {};
+          current_filters = inventory_service.get_format_column_filters($scope.column_filters);
+          saved_filters = $scope.currentFilterGroup.query_dict;
+          current_labels = [];
+          for (label in $scope.selected_labels) {
+            current_labels.push($scope.selected_labels[label].id);
+          };
+          saved_labels = $scope.currentFilterGroup.labels;
+          current_label_logic = $scope.labelLogic;
+          saved_label_logic = $scope.currentFilterGroup.label_logic;
+          if (!_.isEqual(current_filters, saved_filters)) {
+            $scope.Modified = true
+          } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
+            $scope.Modified = true
+          } else if (current_label_logic !== saved_label_logic) {
+            $scope.Modified = true
+          } else {
+            $scope.Modified = false
+          }
+        }
+
+
+        return $scope.Modified;
+      };
+
+      const getTableFilter = (value, operator) => {
+        switch (operator) {
+          case 'exact': return `"${value}"`;
+          case 'icontains':return value;
+          case 'gt': return `>${value}`;
+          case 'gte': return `>=${value}`;
+          case 'lt': return `<${value}`;
+          case 'lte': return `<=${value}`;
+          case 'ne': return `!="${value}"`;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
+        }
+      };
+
+      const updateCurrentFilterGroup = (filterGroup) => {
+        // Set current filter group
+        $scope.currentFilterGroup = filterGroup;
+        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
+
+        // Update labels
+        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+        $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
+
+        // clear table filters
+        $scope.gridApi.grid.columns.forEach(column =>{
+          column.filters[0] = {
+            term: null
+          };
+        });
+
+        // write new filter in table
+        for (const key in $scope.currentFilterGroup.query_dict) {
+          const value = $scope.currentFilterGroup.query_dict[key];
+          const [column_name, operator] = key.split('__');
+
+          const column = $scope.gridApi.grid.columns.find(column => column.colDef.column_name === column_name);
+
+          if (column.filters[0].term == null) {
+            column.filters[0].term = getTableFilter(value, operator);
+          } else {
+            column.filters[0].term += `, ${getTableFilter(value, operator)}`;
+          }
+        }
+
+        // update filtering
+        updateColumnFilterSort();
+      };
+
+      $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroup) => {
+        const selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId)
+        if ($scope.Modified) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>',
+            backdrop: 'static'
+          }).result.then(() => {
+            $scope.Modified = false;
+            updateCurrentFilterGroup(selectedFilterGroup);
+          }).catch(() => {
+            $scope.currentFilterGroup = oldFilterGroup;
+          });
+        } else {
+          updateCurrentFilterGroup(selectedFilterGroup);
+        }
+      };
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
@@ -318,6 +521,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
         $scope.load_inventory(1);
+        $scope.isModified();
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
@@ -326,6 +530,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
+        $scope.isModified();
       };
 
       /**
@@ -353,6 +558,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.load_inventory(1);
         });
       };
+
 
       /**
        Opens the postoffice modal for sending emails.
@@ -1462,6 +1668,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.column_sorts.sort((a, b) => (a.priority > b.priority));
           }
         }
+        $scope.isModified();
       };
 
       const restoreGridSettings = function () {
