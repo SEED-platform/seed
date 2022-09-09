@@ -8,7 +8,7 @@ from dateutil import relativedelta
 
 def get_json_path(json_path, data):
     """very naive JSON path implementation. WARNING: it only handles key names that are dot separated
-    e.g. 'key1.key2.key3'
+    e.g., 'key1.key2.key3'
 
     :param json_path: str
     :param data: dict
@@ -35,12 +35,12 @@ def _split_reading(meter_reading, snap_intervals=True):
     start of each calendar month. This method is used to calendarize meter readings.
 
     If snap_intervals is enabled, all readings returned will begin and end on the
-    first of the month (e.g. January 01 to February 01)
+    first of the month (e.g., January 01 to February 01)
     If snap_intervals is not enabled, the original start and end are preserved in
     the first and last readings (respectively)
 
     Because we have to estimate the reading value (ie energy usage) when a reading
-    doesn't cleanly fit in a calendar month (e.g. when it straddles or spans months),
+    doesn't cleanly fit in a calendar month (e.g., when it straddles or spans months),
     the result will not always be perfectly accurate to how much energy was really
     used in a calendar month.
 
@@ -230,7 +230,7 @@ def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshol
 
 
 def reject_outliers(meter_readings, reject=1):
-    """Rejects readings whose z-score is greater than the `reject` arg (i.e. standard
+    """Rejects readings whose z-score is greater than the `reject` arg (i.e., standard
     deviations away from the mean).
     Useful if you aggregated meter readings and there are some 'artifacts' of
     partially covered periods.

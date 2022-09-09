@@ -4,9 +4,11 @@ from django.conf.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
+from seed.views.main import celery_queue
 from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
+from seed.views.v3.audit_template import AuditTemplateViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
@@ -48,6 +50,7 @@ from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r'analyses', AnalysisViewSet, basename='analyses')
+api_v3_router.register(r'audit_template', AuditTemplateViewSet, basename='audit_template')
 api_v3_router.register(r'building_files', BuildingFileViewSet, basename="building_files")
 api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, basename='column_mapping_profiles')
@@ -122,5 +125,6 @@ urlpatterns = [
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
+    re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
 ]

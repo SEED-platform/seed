@@ -308,7 +308,7 @@ class FakePropertyStateFactory(BaseFake):
             organization=self._get_attr('organization', self.organization),
             **property_details
         )
-        # make sure to create an audit log so that we can test various methods (e.g. updating properties)
+        # make sure to create an audit log so that we can test various methods (e.g., updating properties)
         PropertyAuditLog.objects.create(
             organization=self._get_attr('organization', self.organization),
             state=ps,

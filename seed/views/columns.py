@@ -92,7 +92,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
              required: true
              paramType: query
            - name: used_only
-             description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
+             description: Determine whether or not to show only the used fields (i.e., only columns that have been mapped)
              type: boolean
              required: false
              paramType: query

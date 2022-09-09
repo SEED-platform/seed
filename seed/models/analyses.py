@@ -172,7 +172,7 @@ class Analysis(models.Model):
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
 
     def in_terminal_state(self):
-        """Returns True if the analysis has finished, e.g. stopped, failed,
+        """Returns True if the analysis has finished, e.g., stopped, failed,
         completed, etc
 
         :returns: bool

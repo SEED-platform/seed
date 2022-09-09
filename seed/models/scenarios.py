@@ -89,7 +89,7 @@ class Scenario(models.Model):
             property_ = PropertyView.objects.get(state=self.property_state).property
         except PropertyView.DoesNotExist:
             # possible that the state does not yet have a canonical property
-            # e.g. when processing BuildingFiles, it's 'promoted' after this merging
+            # e.g., when processing BuildingFiles, it's 'promoted' after this merging
             property_ = None
 
         for source_meter in source_scenario.meter_set.all():

@@ -19,9 +19,10 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from seed import tasks
+from seed.celery import app
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.decorators import has_perm, requires_superuser
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
 
@@ -30,6 +31,7 @@ _log = logging.getLogger(__name__)
 
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
+    debug = settings.DEBUG
     return render(request, 'seed/jasmine_tests/AngularJSTests.html', locals())
 
 
@@ -42,7 +44,7 @@ def _get_default_org(user):
     :returns: tuple (Organization id, Organization name, OrganizationUser role)
     """
     org = user.default_organization
-    # check if user is still in the org, i.e. s/he wasn't removed from his/her
+    # check if user is still in the org, i.e., they weren't removed from their
     # default org or did not have a set org and try to set the first one
     if not org or not user.orgs.exists():
         org = user.orgs.first()
@@ -67,14 +69,58 @@ def home(request):
         * **app_urls**: a json object of all the URLs that is loaded in the JS global namespace
         * **username**: the request user's username (first and last name)
     """
-
     username = request.user.first_name + " " + request.user.last_name
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
     debug = settings.DEBUG
-
     return render(request, 'seed/index.html', locals())
+
+
+@api_endpoint
+@ajax_request
+@api_view(['GET'])
+def celery_queue(request):
+    """
+    Returns the number of running and queued celery tasks. This action can only be performed by superusers
+
+    Returns::
+
+        {
+            'active': {'total': n, 'tasks': []}, // Tasks that are currently being executed
+            'reserved': {'total': n, 'tasks': []}, // Tasks waiting to be executed
+            'scheduled': {'total': n, 'tasks': []}, // Tasks reserved by the worker when they have an eta or countdown
+            'maxConcurrency': The maximum number of active tasks
+        }
+    """
+    if not requires_superuser(request):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'request is restricted to superusers'
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    celery_tasks = app.control.inspect()
+    results = {}
+
+    methods = ('active', 'reserved', 'scheduled', 'stats')
+    for method in methods:
+        result = getattr(celery_tasks, method)()
+        if result is None or 'error' in result:
+            results[method] = 'Error'
+            return
+        for worker, response in result.items():
+            if method == 'stats':
+                results['maxConcurrency'] = response['pool']['max-concurrency']
+            else:
+                if response is not None:
+                    total = len(response)
+                    results[method] = {'total': total}
+                    if total > 0:
+                        results[method]['tasks'] = list(set([t['name'] for t in response]))
+                else:
+                    results[method] = {'total': 0}
+
+    return JsonResponse(results)
 
 
 @api_endpoint

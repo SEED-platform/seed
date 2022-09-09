@@ -55,6 +55,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_modal',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_upload_modal',
+  'BE.seed.controller.data_upload_audit_template_modal',
   'BE.seed.controller.dataset',
   'BE.seed.controller.dataset_detail',
   'BE.seed.controller.delete_column_modal',
@@ -89,7 +90,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_list',
-  'BE.seed.controller.inventory_list_beta',
+  'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
@@ -145,6 +146,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.audit_template',
   'BE.seed.service.analyses',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
@@ -1391,10 +1393,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list',
-        url: '/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list.html',
-        controller: 'inventory_list_controller',
+        name: 'inventory_list_legacy',
+        url: '/legacy/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list_legacy.html',
+        controller: 'inventory_list_legacy_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
@@ -1437,10 +1439,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_list_beta',
-        url: '/beta/{inventory_type:properties|taxlots}',
-        templateUrl: static_url + 'seed/partials/inventory_list_beta.html',
-        controller: 'inventory_list_beta_controller',
+        name: 'inventory_list',
+        url: '/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/inventory_list.html',
+        controller: 'inventory_list_controller',
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

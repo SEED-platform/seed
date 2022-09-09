@@ -61,7 +61,7 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
     context = {
         'email': email_address,
         'domain': domain,
-        'protocol': 'https',
+        'protocol': settings.PROTOCOL,
         'first_name': first_name,
         'signup_url': signup_url
     }
@@ -93,7 +93,8 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     Returns: nothing
     """
-    sign_up_url = Template("https://{{domain}}{{sign_up_url}}").render(Context({
+    sign_up_url = Template("{{protocol}}://{{domain}}{{sign_up_url}}").render(Context({
+        'protocol': settings.PROTOCOL,
         'domain': domain,
         'sign_up_url': reverse_lazy('landing:signup', kwargs={
             'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
@@ -136,7 +137,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         'new_user': new_user,
         'first_name': new_user.first_name,
         'domain': domain,
-        'protocol': 'https',
+        'protocol': settings.PROTOCOL,
         'new_org': new_org,
         'requested_by': requested_by,
     }

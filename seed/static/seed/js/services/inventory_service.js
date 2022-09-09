@@ -326,14 +326,19 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var params = {
         organization_id: organization_id,
-        page: page,
-        per_page: per_page || 999999999,
         include_related: include_related,
         ids_only: ids_only,
         shown_column_ids: shown_column_ids,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters)
       };
+
+      if (ids_only) {
+        params.ids_only = true;
+      } else {
+        params.page = page;
+        params.per_page = per_page || 999999999;
+      }
 
       return cycle_service.get_cycles().then(function (cycles) {
         var validCycleIds = _.map(cycles.cycles, 'id');

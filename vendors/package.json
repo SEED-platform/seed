@@ -39,7 +39,6 @@
     "ng-tags-input": "~3.2.0",
     "ng-wig": "~3.1.1",
     "ol-ext": "~3.2.22",
-    "raven-js": "~3.27.2",
     "spin.js": "=2.3.2",
     "terraformer": "~1.0.12",
     "terraformer-wkt-parser": "~1.2.1",

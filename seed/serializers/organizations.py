@@ -19,6 +19,8 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     public_fields = SaveSettingsOrgFieldSerializer(many=True)
     display_units_eui = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_EUI)
     display_units_area = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_AREA)
+    display_units_ghg = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_GHG)
+    display_units_ghg_intensity = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_GHG_INTENSITY)
     display_decimal_places = serializers.IntegerField(min_value=0)
     display_meter_units = serializers.JSONField()
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
@@ -30,6 +32,9 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     new_user_email_subject = serializers.CharField(max_length=128)
     new_user_email_content = serializers.CharField(max_length=1024)
     new_user_email_signature = serializers.CharField(max_length=128)
+    at_organization_token = serializers.CharField(max_length=128)
+    audit_template_user = serializers.CharField(max_length=128)
+    audit_template_password = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

@@ -138,7 +138,7 @@ class TaxLotProperty(models.Model):
         :param show_columns: columns (as defined by backend), Pass None to default
                              to all columns excluding extra data
         :param columns_from_database: columns from the database as list of dict
-        :param include_related: if False, the related data is NOT included (i.e.
+        :param include_related: if False, the related data is NOT included (i.e.,
                                 only the object_list is serialized) - optional (default is True)
         """
         if len(object_list) == 0:
@@ -240,6 +240,10 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_view_id']] = obj.id
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
+
+            # This is only applicable to Properties since Tax Lots don't have meters
+            if this_cls == 'Property':
+                obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)

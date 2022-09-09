@@ -6,7 +6,9 @@
 """
 import copy
 import logging
+from datetime import timedelta
 
+import dateutil.parser
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
@@ -59,6 +61,8 @@ def _validate_better_config(analysis):
     config = analysis.configuration
     if not isinstance(config, dict):
         return ['Analysis configuration must be a dictionary/JSON']
+
+    # print(f"ANALYSIS CONFIG IN PIPELINE: {config}")
 
     REQUIRED_CONFIG_PROPERTIES = [
         'min_model_r_squared',
@@ -138,7 +142,7 @@ class BETTERPipeline(AnalysisPipeline):
         ).apply_async()
 
 
-def get_meter_readings(property_id, preprocess_meters):
+def get_meter_readings(property_id, preprocess_meters, config):
     """Returns meters and readings which should meet BETTER's requirements
 
     :param property_id: int
@@ -156,9 +160,30 @@ def get_meter_readings(property_id, preprocess_meters):
             type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
         )
     )
+
+    # check if dates are ok
+    if 'select_meters' in config and config['select_meters'] == 'select':
+        try:
+            value1 = dateutil.parser.parse(config['meter']['start_date'])
+            value2 = dateutil.parser.parse(config['meter']['end_date'])
+            # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
+            value2 = value2 + timedelta(days=1)
+
+        except Exception as err:
+            raise AnalysisPipelineException(
+                f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+
     if preprocess_meters:
         for meter in meters:
-            meter_readings = meter.meter_readings
+            if 'select_meters' in config and config['select_meters'] == 'select':
+                try:
+                    meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
+                except Exception as err:
+                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                    # continue but analysis will fail
+                    continue
+            else:
+                meter_readings = meter.meter_readings
             if meter_readings.count() == 0:
                 continue
             monthly_readings = calendarize_and_extrapolate_meter_readings(meter_readings.all())
@@ -179,7 +204,17 @@ def get_meter_readings(property_id, preprocess_meters):
         )
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
-            readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+            readings = []
+            if 'select_meters' in config and config['select_meters'] == 'select':
+                try:
+                    readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
+                except Exception as err:
+                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                    # continute but analysis will fail
+                    continue
+            else:
+                readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+
             if readings.count() >= 12:
                 selected_meters_and_readings.append({
                     'meter_type': meter.type,
@@ -209,7 +244,8 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     for analysis_property_view in analysis_property_views:
         selected_meters_and_readings = get_meter_readings(
             analysis_property_view.property_id,
-            analysis.configuration.get('preprocess_meters', False)
+            analysis.configuration.get('preprocess_meters', False),
+            analysis.configuration
         )
 
         if len(selected_meters_and_readings) == 0:
@@ -438,6 +474,14 @@ def _process_results(self, analysis_id):
             'better_seed_analysis_id'
         ),
         ExtraDataColumnPath(
+            # we will manually add this to the data later (it's not part of BETTER's results)
+            # Provides info so user knows which SEED analysis last updated these stored values
+            'better_seed_run_id',
+            'BETTER Run Id',
+            1,
+            'better_seed_run_id'
+        ),
+        ExtraDataColumnPath(
             'better_min_model_r_squared',
             'BETTER Min Model R^2',
             1,
@@ -457,16 +501,23 @@ def _process_results(self, analysis_id):
         ),
     ] + ee_measure_column_data_paths
 
-    # create columns if they don't already exist
     for column_data_path in column_data_paths:
-        Column.objects.get_or_create(
+        # check if the column exists with the bare minimum required pieces of data. For example,
+        # don't check column_description and display_name because they may be changed by
+        # the user at a later time.
+        column, created = Column.objects.get_or_create(
             is_extra_data=True,
             column_name=column_data_path.column_name,
-            display_name=column_data_path.column_display_name,
-            column_description=column_data_path.column_display_name,
             organization=analysis.organization,
             table_name='PropertyState',
         )
+
+        # add in the other fields of the columns only if it is a new column.
+        if created:
+            column.display_name = column_data_path.column_display_name
+            column.column_description = column_data_path.column_display_name
+
+        column.save()
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
@@ -475,7 +526,7 @@ def _process_results(self, analysis_id):
     for analysis_property_view in analysis_property_views:
         raw_better_results = copy.deepcopy(analysis_property_view.parsed_results)
         raw_better_results.update({'better_seed_analysis_id': analysis_id})
-
+        raw_better_results.update({'better_seed_run_id': analysis_property_view.id})
         simplified_results = {}
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
@@ -506,7 +557,7 @@ def _process_results(self, analysis_id):
         # do some extra cleanup of the results:
         #  - round decimal places of floats
         #  - for fuel-type specific fields, set values to null if the model for
-        #    that fuel type wasn't valid (e.g. if electricity model is invalid,
+        #    that fuel type wasn't valid (e.g., if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
             value = value if not isinstance(value, float) else round(value, 2)

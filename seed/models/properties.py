@@ -71,7 +71,7 @@ class Property(models.Model):
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
-    # Handle properties that may have multiple properties (e.g. buildings)
+    # Handle properties that may have multiple properties (e.g., buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 
@@ -162,6 +162,9 @@ class PropertyState(models.Model):
     jurisdiction_property_id = models.TextField(null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+
+    # Audit Template has their own building id
+    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True)
 
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
     ubid = models.CharField(max_length=255, null=True, blank=True)
@@ -469,7 +472,7 @@ class PropertyState(models.Model):
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
-                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
@@ -508,6 +511,12 @@ class PropertyState(models.Model):
                         done_searching = True
                     else:
                         log = tree
+
+                    # only get 10 histories at max
+                    if len(history) >= 10:
+                        history = history[:10]
+                        break
+
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
@@ -555,6 +564,7 @@ class PropertyState(models.Model):
                     ps.pm_property_id,
                     ps.pm_parent_property_id,
                     ps.custom_id_1,
+                    ps.audit_template_building_id,
                     ps.ubid,
                     ps.address_line_1,
                     ps.address_line_2,
@@ -610,9 +620,9 @@ class PropertyState(models.Model):
         # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
-        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1', 'ubid',
-                       'address_line_1', 'address_line_2', 'city', 'state', 'postal_code',
-                       'longitude', 'latitude',
+        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
+                       'audit_template_building_id', 'ubid', 'address_line_1', 'address_line_2',
+                       'city', 'state', 'postal_code', 'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',
                        'total_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity',

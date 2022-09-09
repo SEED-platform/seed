@@ -123,6 +123,14 @@ class Organization(models.Model):
         ('kBtu/m**2/year', 'kBtu/m²/year'),  # really, Toronto?
     )
 
+    MEASUREMENT_CHOICES_GHG = (
+        ('MtCO2e/year', 'MtCO2e/year'),
+    )
+
+    MEASUREMENT_CHOICES_GHG_INTENSITY = (
+        ('kgCO2e/ft**2/year', 'kgCO2e/ft²/year'),
+    )
+
     US = 1
     CAN = 2
 
@@ -178,6 +186,14 @@ class Organization(models.Model):
                                           choices=MEASUREMENT_CHOICES_AREA,
                                           blank=False,
                                           default='ft**2')
+    display_units_ghg = models.CharField(max_length=32,
+                                         choices=MEASUREMENT_CHOICES_GHG,
+                                         blank=False,
+                                         default='MtCO2e/year')
+    display_units_ghg_intensity = models.CharField(max_length=32,
+                                                   choices=MEASUREMENT_CHOICES_GHG_INTENSITY,
+                                                   blank=False,
+                                                   default='kgCO2e/ft**2/year')
     display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
@@ -208,8 +224,11 @@ class Organization(models.Model):
 
     comstock_enabled = models.BooleanField(default=False)
 
-    # API Token for communicating with BETTER
+    # API Tokens
     better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
+    at_organization_token = models.CharField(blank=True, max_length=128, default='')
+    audit_template_user = models.EmailField(blank=True, max_length=128, default='')
+    audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

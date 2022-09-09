@@ -244,7 +244,7 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     :param other_orgs: list of other orgs to ``or`` the query
     """
     # return immediately if no inventory type
-    # i.e. when called by get_serializer in LabelViewSet
+    # i.e., when called by get_serializer in LabelViewSet
     # as there should be no inventory
     if not inventory_type:
         return []
@@ -322,6 +322,7 @@ class QueryFilterOperator(Enum):
     GT = 'gt'
     GTE = 'gte'
     CONTAINS = 'icontains'
+    ISNULL = 'isnull'
 
 
 @dataclass
@@ -381,10 +382,17 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
               a dict of annotations
     """
     full_field_name = f'state__extra_data__{column_name}'
-    text_field_name = f'_{column_name}_to_text'
-    stripped_field_name = f'_{column_name}_stripped'
-    cleaned_field_name = f'_{column_name}_cleaned'
-    final_field_name = f'_{column_name}_final'
+
+    # annotations require a few characters to be removed...
+    cleaned_column_name = column_name.replace(' ', '_')
+    cleaned_column_name = cleaned_column_name.replace("'", '-')
+    cleaned_column_name = cleaned_column_name.replace('"', '-')
+    cleaned_column_name = cleaned_column_name.replace('`', '-')
+    cleaned_column_name = cleaned_column_name.replace(';', '-')
+    text_field_name = f'_{cleaned_column_name}_to_text'
+    stripped_field_name = f'_{cleaned_column_name}_stripped'
+    cleaned_field_name = f'_{cleaned_column_name}_cleaned'
+    final_field_name = f'_{cleaned_column_name}_final'
 
     annotations: AnnotationDict = {
         text_field_name: Cast(full_field_name, output_field=models.TextField()),
@@ -419,14 +427,14 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
+def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
-                              Django field lookup suffix (e.g. `__gt`, `__icontains`, etc)
+                              Django field lookup suffix (e.g., `__gt`, `__icontains`, etc)
                               https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
                               One custom field lookup suffix is allowed, `__ne`,
-                              which negates the expression (i.e. column_name != filter_value)
+                              which negates the expression (i.e., column_name != filter_value)
     :param filter_value: the value evaluated against the filter_expression
     :param columns_by_name: mapping of Column.column_name to dict representation of Column
     :return: query object
@@ -446,7 +454,7 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
 
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
-    if column is None:
+    if column is None or column['related']:
         return Q(), {}
 
     updated_filter = None
@@ -487,7 +495,9 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
         return f'property__{sort_expression}', {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
-        if column['is_extra_data']:
+        if column['related']:
+            return None, {}
+        elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
             return f'{direction}{new_field_name}', annotations
         else:
@@ -527,7 +537,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     This function basically does the following:
     - Ignore any filter/sort that doesn't have a corresponding column
     - Handle cases for extra data
-    - Convert filtering values into their proper types (e.g. str -> int)
+    - Convert filtering values into their proper types (e.g., str -> int)
 
     :param filters: QueryDict from a request
     :param columns: list of all valid Columns in dict format
@@ -541,6 +551,9 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
+        if filter_expression[-4:] == '__ne' and filter_value == '':
+            filter_expression = filter_expression.replace('__ne', '__isnull')
+            filter_value = False
         parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)

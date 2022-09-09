@@ -76,6 +76,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.pm_buttons_enabled = true;
       $scope.pm_error_alert = false;
+      // Initial value is 0, after a response is returned it will be set to true or false
+      $scope.import_file_reusable_for_meters = 0;
       /**
        * dataset: holds the state of the data set
        * name: string - the data set name
@@ -107,7 +109,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * in_progress: bool - when true: shows the progress bar and hides the
        *  upload button. when false: hides the progress bar and shows the upload
        *  button.
-       * progress: int or float - the progress bar value, i.e. percentage complete
+       * progress: int or float - the progress bar value, i.e., percentage complete
        * complete: bool - true when the upload has finished
        * status_message: str - status of the task
        * progress_last_updated: null | int - when not null it indicates the last time the progress bar changed (UNIX Epoch in ms)
@@ -146,7 +148,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       /**
-       * goto_step: changes the step of the modal, i.e. name dataset -> upload ...
+       * goto_step: changes the step of the modal, i.e., name dataset -> upload ...
        * step: int - used with the `ng-switch` in the DOM to change state
        */
       $scope.goto_step = function (step) {
@@ -182,7 +184,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.cancel = function () {
         // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
-        if ($scope.step.number == 15) {
+        if ($scope.step.number == 15 && $scope.file_id) {
           dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
             $uibModalInstance.dismiss('cancel');
           });
@@ -192,7 +194,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       /**
        * create_dataset: uses the `uploader_service` to create a new data set. If
-       *  there is an error, i.e. the request fails or the data set name is
+       *  there is an error, i.e., the request fails or the data set name is
        *  already taken, then the bootstrap alert is shown
        */
       $scope.create_dataset = function (dataset_name) {
@@ -573,6 +575,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.reuse_import_file_to_import_meters = function () {
+        $scope.preparing_pm_meters_preview = true
         dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
           $scope.dataset.import_file_id = data.import_file_id;
           $scope.uploader.progress = 50;
@@ -580,6 +583,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           uploader_service
             .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
             .then(present_parsed_meters_confirmation)
+            .then(function () {
+              $scope.preparing_pm_meters_preview = false
+            })
             .catch(present_meter_import_error);
         });
       };
