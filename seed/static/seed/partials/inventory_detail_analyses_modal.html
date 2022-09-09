@@ -32,7 +32,7 @@
 
                 <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
                     <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
-                    <div class="form-group" style="padding-top: 1em">
+                    <div class="form-group" style="padding-top: 1em;">
                         <div class="form-row">
                             <div class="col-md-6">
                                 <label class="control-label sectionLabel text-muted">
@@ -58,26 +58,55 @@
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em">
+                            <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em;">
                                 <label class="control-label sectionLabel text-muted">
                                     Minimum Model R Squared
                                     <i class="ui-grid-icon-info-circled" uib-tooltip-html="'R² is a value from 0 to 1 that represents the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"></i>
                                 </label>
                                 <input ng-model="new_analysis.configuration.min_model_r_squared" type="number" class="form-control" ng-init="new_analysis.configuration.min_model_r_squared=0.6" ng-value="0.6" step=".01" min="0" max="1">
                             </div>
-                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em;">
                                 <label class="control-label sectionLabel text-muted">
                                     Preprocess Meters
                                     <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
                                 </label>
                                 <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
                             </div>
-                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em;">
                                 <label class="control-label sectionLabel text-muted">
                                     Run Portfolio Analysis
                                     <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>
                                 </label>
                                 <input ng-model="new_analysis.configuration.portfolio_analysis" ng-disabled="inventory_count == 1" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
+                            </div>
+                        </div>
+                        <div class="form-row" style="padding-top: 1em; padding-bottom: 1em;">
+                            <div class="btn-group">
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select'">Select Meter Data Range</label>
+                            </div>
+                        </div>
+                        <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'select'" style="padding-bottom: 1em;">
+
+                            <div class="col-md-6" ng-class="{'has-error' : invalidDates }" style="padding-bottom: 1em;">
+                                <label for="from-date">{$:: 'From date' | translate $}:</label>
+
+                                <div class="input-group date-input" style="padding-right:20px;">
+                                    <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_analysis.configuration.meter.start_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                                    </span>
+
+                                </div>
+                            </div>
+                            <div class="col-md-6" style="padding-bottom: 1em;">
+                                <label for="to-date">{$:: 'To date' | translate $}:</label>
+                                <div class="input-group date-input" style="padding-right:20px;">
+                                    <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_analysis.configuration.meter.end_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                    <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

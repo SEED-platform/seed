@@ -472,7 +472,7 @@ class PropertyState(models.Model):
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
-                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
@@ -511,6 +511,12 @@ class PropertyState(models.Model):
                         done_searching = True
                     else:
                         log = tree
+
+                    # only get 10 histories at max
+                    if len(history) >= 10:
+                        history = history[:10]
+                        break
+
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
