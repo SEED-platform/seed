@@ -59,12 +59,15 @@
                 </div> <!-- ./container -->
             </div>
 
+            <!-- new chart library! -->
             <div class="content_block row" style="padding:0 20px;">
 
                 <div class="col-sm-6">
                     <h4 class="chartTitle">{$ chart1Title | translate $}&nbsp;</h4>
                     <div class="chart-holder">
-                        <sd-basic-property-info-chart id="chart" data="chartData" autoresize="true" chart-type="scatter" height="400" onchartrendered="chartRendered()"></sd-basic-property-info-chart>
+                        <div style="height:400px">
+                            <canvas id="chartNew"></canvas>
+                        </div>
                         <div ng-show="chartStatusMessage" class="status-message">
                             {$ chartStatusMessage | translate $}
                             <div class="progress progress-striped active" ng-show="chartIsLoading">
@@ -97,17 +100,17 @@
                 <div class="col-sm-6">
                     <h4 class="chartTitle">{$ chart2Title | translate $}&nbsp;</h4>
                     <div class="chart-holder">
-                        <sd-basic-property-info-chart id="aggChart" data="aggChartData" autoresize="true" chart-type="bar" height="400" onchartrendered="aggChartRendered()"></sd-basic-property-info-chart>
+                        <div style="height:400px">
+                            <canvas id="aggChartNew"></canvas>
+                        </div>
                         <div ng-show="aggChartStatusMessage" class="status-message">
                             <div>{$ aggChartStatusMessage | translate $}
                                 <div class="progress progress-striped active" ng-show="aggChartIsLoading">
                                     <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-
 
                     <div class="reportingTableHolder">
                         <table class="table">
