@@ -31,10 +31,10 @@ class ComplianceMetric(models.Model):
     # TODO: could these be derived columns?
     actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", null=True, on_delete=models.CASCADE)
     target_energy_column = models.ForeignKey(Column, related_name="target_energy_column", null=True, on_delete=models.CASCADE)
-    energy_metric_type = models.IntegerField(choices=METRIC_TYPES, default=0)
+    energy_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
     actual_emission_column = models.ForeignKey(Column, related_name="actual_emission_column", null=True, on_delete=models.CASCADE)
     target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", null=True, on_delete=models.CASCADE)
-    emission_metric_type = models.IntegerField(choices=METRIC_TYPES, default=0)
+    emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
 
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
 

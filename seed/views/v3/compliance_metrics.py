@@ -123,9 +123,16 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     @has_perm_class('requires_owner')
     def create(self, request):
-        org_id = self.get_organization(request)
+
+        org_id = int(self.get_organization(request))
+        try:
+            Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'bad organization_id'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
         data = deepcopy(request.data)
-        data.update({'organization': org_id})
+        data.update({'organization_id': org_id})
         serializer = ComplianceMetricSerializer(data=data)
 
         if not serializer.is_valid():
