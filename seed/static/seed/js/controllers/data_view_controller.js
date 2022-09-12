@@ -67,6 +67,14 @@ angular.module('BE.seed.controller.data_view', [])
         return ret;
       };
 
+      let _collect_array_as_object_sorted = function (array, key="start") {
+        ret = {};
+        for (let i in array) {
+          ret[array[i][key]] = array[i];
+        }
+        return ret;
+      };
+
       let _init_fields = function () {
         for (let i in $scope.filter_groups) {
           $scope.fields.filter_group_checkboxes[$scope.filter_groups[i].id] = false;
@@ -96,7 +104,7 @@ angular.module('BE.seed.controller.data_view', [])
         // load cycles
         $scope.used_cycles = {};
         if ($scope.selected_data_view) {
-          $scope.used_cycles = _collect_array_as_object($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
+          $scope.used_cycles = _collect_array_as_object_sorted($scope.cycles.filter(item => $scope.selected_data_view.cycles.includes(item.id)));
         }
         $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
