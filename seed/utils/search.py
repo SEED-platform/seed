@@ -434,7 +434,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
             continue
         columns_by_name[column['column_name']] = column
 
-
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
