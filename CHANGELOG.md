@@ -1,3 +1,24 @@
+# SEED Version 2.15.2
+
+Date Range: 07/20/22 - 09/08/22
+
+Closed Issues and Features (Total: 15):
+- Fixed [#2843]( https://github.com/SEED-platform/seed/issues/2843 ), BETTER - GHG emission reduction units
+- Fixed [#2885]( https://github.com/SEED-platform/seed/issues/2885 ), Add indication of whether or not property has meters to inventory list
+- Fixed [#2953]( https://github.com/SEED-platform/seed/issues/2953 ), BETTER: allow user to specify meter data to use for analysis
+- Feature [#3299]( https://github.com/SEED-platform/seed/issues/3299 ), Include Units for CO2 Analysis Results
+- Feature [#3315]( https://github.com/SEED-platform/seed/issues/3315 ), Create manage.py task to report backlog of celery tasks on an instance of SEED
+- Fixed [#3327]( https://github.com/SEED-platform/seed/issues/3327 ), Resolve Cloudflare error when loading Sensor data by moving to background task
+- Feature [#3373]( https://github.com/SEED-platform/seed/issues/3373 ), Enable customizable Postgres host in Docker files
+- Improved [#3374]( https://github.com/SEED-platform/seed/issues/3374 ), Add helper text to Audit Template settings
+- Fixed [#3392]( https://github.com/SEED-platform/seed/issues/3392 ), Fix error filtering doubles as strings
+- Fixed [#3425]( https://github.com/SEED-platform/seed/issues/3425 ), AT Validation Broken
+- Fixed [#3444]( https://github.com/SEED-platform/seed/issues/3444 ), Add "(Beta)" to summary tab
+- Fixed [#3484]( https://github.com/SEED-platform/seed/issues/3484 ), Fix meters import failing with non-string operation
+- Fixed [#3507]( https://github.com/SEED-platform/seed/issues/3507 ), Only return a max of 10 history on properties and taxlot details
+- Maintenance [#3508]( https://github.com/SEED-platform/seed/issues/3508 ), Upgrade to Django 3.2.15
+- Fixed [#3510]( https://github.com/SEED-platform/seed/issues/3510 ), New inventory list view breaks if ComStock functionality is enabled
+
 # SEED Version 2.15.1
 
 This is a quick patch release to address a few issues experienced by users after rolling onto production.

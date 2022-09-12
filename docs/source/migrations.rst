@@ -47,6 +47,10 @@ local_untracked.py file
         ),
     )
 
+Version 2.15.2
+-----------------------
+- There are no migrations needed for this version.
+
 Version 2.15.1
 -----------------------
 - There are no migrations needed for this version.
