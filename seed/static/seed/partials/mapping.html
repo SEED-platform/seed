@@ -176,9 +176,13 @@
                                 </select>
                                 <select ng-model="col.from_units" ng-if="is_ghg_column(col)" ng-change="flag_mappings_change()">
                                     <option value="MtCO2e/year" translate>MtCO2e/year</option>
+                                    <option value="kgCO2e/year" translate>kgCO2e/year</option>
                                 </select>
                                 <select ng-model="col.from_units" ng-if="is_ghg_intensity_column(col)" ng-change="flag_mappings_change()">
+                                    <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
                                     <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
+                                    <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
+                                    <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
                                 </select>
                             </td>
                             <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}">
