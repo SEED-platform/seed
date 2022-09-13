@@ -193,31 +193,32 @@ class ComplianceMetric(models.Model):
     # temporary until we have the metric setup page
     @classmethod
     def get_or_create_default(cls, organization):
-        metric = ComplianceMetric.objects.filter(organization=organization).first()
-        if not metric:
-            name = 'Combined Site EUI and GHG Emissions Compliance'
-            # TODO: make this more foolproof if these columns don't exist
-            actual_column = Column.objects.filter(column_name='site_eui', organization=organization).first()
-            target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
-            actual_emission_column = Column.objects.filter(column_name='total_ghg_emissions', organization=organization).first()
-            target_emission_column = Column.objects.filter(column_name='Target Total GHG Emissions', organization=organization).first()
-            x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Conditioned Floor Area'], organization=organization).all()
+        metric = "default compliance metric"
+        # metric = ComplianceMetric.objects.filter(organization=organization).first()
+        # if not metric:
+        #     name = 'Combined Site EUI and GHG Emissions Compliance'
+        #     # TODO: make this more foolproof if these columns don't exist
+        #     actual_column = Column.objects.filter(column_name='site_eui', organization=organization).first()
+        #     target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
+        #     actual_emission_column = Column.objects.filter(column_name='total_ghg_emissions', organization=organization).first()
+        #     target_emission_column = Column.objects.filter(column_name='Target Total GHG Emissions', organization=organization).first()
+        #     x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Conditioned Floor Area'], organization=organization).all()
 
-            # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
-            # saving as 2,2 since we don't care about day/month
+        #     # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
+        #     # saving as 2,2 since we don't care about day/month
 
-            metric = ComplianceMetric.objects.create(
-                name=name,
-                organization=organization,
-                start=datetime(2017, 1, 1, tzinfo=timezone.utc),
-                end=datetime(2021, 12, 31, tzinfo=timezone.utc),
-                actual_energy_column=actual_column,
-                target_energy_column=target_column,
-                energy_metric_type=0,
-                actual_emission_column=actual_emission_column,
-                target_emission_column=target_emission_column,
-                emission_metric_type=0
-            )
-            metric.x_axis_columns.set(x_axes)
+        #     metric = ComplianceMetric.objects.create(
+        #         name=name,
+        #         organization=organization,
+        #         start=datetime(2017, 1, 1, tzinfo=timezone.utc),
+        #         end=datetime(2021, 12, 31, tzinfo=timezone.utc),
+        #         actual_energy_column=actual_column,
+        #         target_energy_column=target_column,
+        #         energy_metric_type=0,
+        #         actual_emission_column=actual_emission_column,
+        #         target_emission_column=target_emission_column,
+        #         emission_metric_type=0
+        #     )
+        #     metric.x_axis_columns.set(x_axes)
 
         return metric

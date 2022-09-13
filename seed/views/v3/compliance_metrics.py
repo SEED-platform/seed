@@ -37,8 +37,8 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
         organization_id = self.get_organization(request)
 
         # temporary: get or create default metric first, then retrieve all to put in correct format
-        the_org = Organization.objects.get(id=organization_id)
-        ComplianceMetric.get_or_create_default(the_org)
+        # the_org = Organization.objects.get(id=organization_id)
+        # ComplianceMetric.get_or_create_default(the_org)
         compliance_metric_queryset = ComplianceMetric.objects.filter(organization=organization_id)
 
         return JsonResponse({
