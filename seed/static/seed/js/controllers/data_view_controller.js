@@ -451,6 +451,10 @@ angular.module('BE.seed.controller.data_view', [])
               legend: {
                 position: 'right',
                 maxWidth: 500,
+                title: {
+                  display: true,
+                  text: "Solid Line (Left Axis) - Dashed Line (Right Axis)",
+                },
                 labels: {
                   boxHeight: 0,
                   boxWidth: 50,
@@ -464,7 +468,7 @@ angular.module('BE.seed.controller.data_view', [])
                 display: false,
                 title: {
                   text: first_axis_name,
-                  display: true
+                  display: true,
                 }
               },
               y2: {
@@ -473,7 +477,7 @@ angular.module('BE.seed.controller.data_view', [])
                 display: false,
                 title: {
                   text: second_axis_name,
-                  display: false
+                  display: false,
                 }
               },
 
@@ -509,6 +513,7 @@ angular.module('BE.seed.controller.data_view', [])
               dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
               dataset.backgroundColor = colors[i],
               dataset.borderColor = colors[i],
+              dataset.fonColor = 'rgb(0, 0, 255)'
               dataset.tension = 0.1
               dataset.yAxisID = 'y1'
               datasets.push(dataset)
