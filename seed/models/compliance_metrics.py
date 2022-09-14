@@ -63,20 +63,8 @@ class ComplianceMetric(models.Model):
         # needed?
         response['cycles'] = list(cycles.values('id', 'name'))
 
-        # which column IDs to retrieve?
-        # metric_columns = list(self.x_axis_columns.all())
-        # for c in [self.actual_energy_column, self.target_energy_column, self.actual_emission_column, self.target_emission_column]:
-        #     if c is not None:
-        #         metric_columns.append(c)
-
-        # print(f"~!!!!!!!! METRIC COLUMN IDS:{metric_columns}")
-        # column_ids = [ sub.id for sub in metric_columns ]
-        # print(f"COLUMN IDS: {column_ids}")
-
         # get properties
         property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
-        # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        # print(property_response)
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
         results_by_cycles = {}
@@ -173,7 +161,6 @@ class ComplianceMetric(models.Model):
     # retrieves column data by id substring
     def _get_column_data(self, data, substring):
         value = next(v for (k, v) in data.items() if k.endswith('_' + str(substring)))
-        # print(f"value found for column ID {substring}: {value}")
         return value
 
     class Meta:

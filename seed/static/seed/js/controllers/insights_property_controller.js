@@ -90,11 +90,9 @@ angular.module('BE.seed.controller.insights_property', [])
         // console.log('chart_cycle is now: ', $scope.chart_cycle)
         // console.log('xaxis is now: ', $scope.chart_xaxis)
         // console.log('Metric is now: ', $scope.chart_metric)
-        console.log("$scope.chart_Cycle: ", $scope.chart_cycle);
         let record = _.find($scope.cycles, function(o) {
           return o.id == $scope.chart_cycle;
         });
-        console.log("RECORD: ", record);
         $scope.chart_cycle_name = record.name;
 
         // redraw dataset
