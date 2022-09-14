@@ -33,29 +33,17 @@
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label" for="metric-name" translate>Metric Name</label>
                     <div class="col-sm-4">
-                        <input id="metric-name" type="text" class="form-control" ng-model="$parent.metricName" ng-disabled="::!auth.requires_owner">
+                        <input id="metric-name" type="text" class="form-control" ng-model="new_compliance_metric.name">
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label" for="startYear" translate>Compliance Period</label>
                     <div class="col-sm-2">
-                        <select class="form-control" id="startYear">
-                            <option>2020</option>
-                            <option>2021</option>
-                            <option>2022</option>
-                            <option>2023</option>
-                            <option>2024</option>
-                        </select>
+                        <input type="text" class="form-control" id="startYear" placeholder="YYYY" ng-model="$parent.startYearValue">
                     </div>
                     <label class="col-sm-1 col-form-label" for="endYear" translate>to</label>
                     <div class="col-sm-2">
-                        <select class="form-control" id="endYear">
-                            <option>2020</option>
-                            <option>2021</option>
-                            <option>2022</option>
-                            <option>2023</option>
-                            <option>2024</option>
-                        </select>
+                        <input type="text" class="form-control" id="endYear" placeholder="YYYY" ng-model="endYearValue">
                     </div>
                 </div>
                 <div class="form-group row">

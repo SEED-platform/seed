@@ -47,10 +47,34 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
       });
     };
 
-   	const compliance_metric_factory = {
+    // update
+    const update_compliance_metric = function (metric_id, data) {
+      return $http.put('/api/v3/compliance_metrics/' + metric_id + '/', data, {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
+    // create
+    const new_compliance_metric = function (data) {
+      return $http.post('/api/v3/compliance_metrics/', data, {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    const compliance_metric_factory = {
       'get_compliance_metrics': get_compliance_metrics,
       'get_compliance_metric': get_compliance_metric,
-      'evaluate_compliance_metric': evaluate_compliance_metric
+      'evaluate_compliance_metric': evaluate_compliance_metric,
+      'update_compliance_metric': update_compliance_metric,
+      'new_compliance_metric': new_compliance_metric
     };
 
 	return compliance_metric_factory;
