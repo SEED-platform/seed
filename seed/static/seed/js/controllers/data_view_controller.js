@@ -513,7 +513,6 @@ angular.module('BE.seed.controller.data_view', [])
               dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
               dataset.backgroundColor = colors[i],
               dataset.borderColor = colors[i],
-              dataset.fonColor = 'rgb(0, 0, 255)'
               dataset.tension = 0.1
               dataset.yAxisID = 'y1'
               datasets.push(dataset)
