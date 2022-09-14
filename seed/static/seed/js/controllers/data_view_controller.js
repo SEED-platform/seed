@@ -245,7 +245,7 @@ angular.module('BE.seed.controller.data_view', [])
       $scope.click_new_data_view = function () {
         spinner_utility.show();
         $scope.selected_data_view = {
-          name: 'New Data View',
+          name: 'New Custom Report',
           first_axis_aggregations: [],
           second_axis_aggregations: []
         };
