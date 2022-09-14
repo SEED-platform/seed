@@ -1,0 +1,56 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls columns">
+    <div class="row">
+        <label>{$:: 'Cycle' | translate $}:</label>
+        <select class="form-control input-sm grow" ng-model="cycle.selected_cycle"
+            ng-change="update_cycle(cycle.selected_cycle)"
+            ng-options="option.name for option in ::cycle.cycles track by option.id">
+        </select>
+    </div>
+</div>
+
+<div id="charts">
+    <div style="display: flex;  height: 100%; width: 100%; padding: 10px">
+        <div style="width: 50%">
+            <canvas id="Year Built vs ECI"></canvas>
+            <div ng-show="!chartsInfo[0]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[0]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+        <div style="width: 50%">
+            <canvas id="CO2 vs Gross Floor Area (ft²)"></canvas>
+            <div ng-show="!chartsInfo[1]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[1]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+    </div>
+    <div style="display: flex;  height: 100%; width: 100%; padding: 10px">
+        <div style="width: 50%">
+            <canvas id="Better Savings vs ECI"></canvas>
+            <div ng-show="!chartsInfo[2]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[2]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+        <div style="width: 50%">
+            <canvas id="CO2/sqft vs Year Built"></canvas>
+            <div ng-show="!chartsInfo[3]['populated']" style="text-align:center; margin: 0px 20%;">
+                Cannot display {$chartsInfo[3]["chartName"]$} as one or both of the columns are absent.
+            </div>
+        </div>
+    </div>
+</div>
