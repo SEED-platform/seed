@@ -425,10 +425,11 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     :param columns: list of all valid Columns in dict format
     :return: filters, annotations and sorts
     """
-    columns_by_name = {
-        c['column_name']: c
-        for c in columns
-    }
+    columns_by_name = {}
+    for column in columns:
+        if (column['related']):
+            continue
+        columns_by_name[column['column_name']] = column
 
     new_filters = Q()
     annotations = {}
