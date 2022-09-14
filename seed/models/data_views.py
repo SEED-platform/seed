@@ -34,7 +34,7 @@ class DataView(models.Model):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups.all():
-            views_by_filter_group_id[filter_group.id] = []
+            views_by_filter_group_id[filter_group.id] = {}
             filter_group_views[filter_group.id] = {}
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group.query_dict)
@@ -44,9 +44,9 @@ class DataView(models.Model):
                 views = self._combine_views(filter_views, label_views)
                 filter_group_views[filter_group.id][cycle.id] = views
                 for view in views:
-                    view_key = self._format_property_display_field(view)
-                    views_by_filter_group_id[filter_group.id].append(view_key)
-            views_by_filter_group_id[filter_group.id] = sorted(list(set(views_by_filter_group_id[filter_group.id])))
+                    view_name = self._format_property_display_field(view)
+                    views_by_filter_group_id[filter_group.id][view.id] = view_name
+            # views_by_filter_group_id[filter_group.id] = sorted(list(set(views_by_filter_group_id[filter_group.id])))
 
         return views_by_filter_group_id, filter_group_views
 
