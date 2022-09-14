@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.insights_property', [])
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
       }
-      console.log("COMPLIANCE METRIC: ", $scope.compliance_metric);
+      // console.log("COMPLIANCE METRIC: ", $scope.compliance_metric);
 
       // chart data
       $scope.data = {};
@@ -38,6 +38,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       // default settings / dropdowns
       $scope.chart_cycle = _.last($scope.cycles).id;
+      $scope.chart_cycle_name = _.last($scope.cycles).name;
       $scope.chart_metric = null;
       $scope.chart_xaxis = null;
       $scope.x_axis_options = [];
@@ -86,16 +87,20 @@ angular.module('BE.seed.controller.insights_property', [])
 
       $scope.update = function() {
         spinner_utility.show();
-
-        console.log('chart_cycle is now: ', $scope.chart_cycle)
-        console.log('xaxis is now: ', $scope.chart_xaxis)
-        console.log('Metric is now: ', $scope.chart_metric)
+        // console.log('chart_cycle is now: ', $scope.chart_cycle)
+        // console.log('xaxis is now: ', $scope.chart_xaxis)
+        // console.log('Metric is now: ', $scope.chart_metric)
+        console.log("$scope.chart_Cycle: ", $scope.chart_cycle);
+        let record = _.find($scope.cycles, function(o) {
+          return o.id == $scope.chart_cycle;
+        });
+        console.log("RECORD: ", record);
+        $scope.chart_cycle_name = record.name;
 
         // redraw dataset
         _rebuild_datasets();
         // update chart
         _update_chart();
-
         spinner_utility.hide();
       }
 
@@ -108,9 +113,30 @@ angular.module('BE.seed.controller.insights_property', [])
         {'data': [], 'label': 'non-compliant', 'pointStyle': 'triangle', 'radius': 7},
         {'data': [], 'label': 'unknown', 'pointStyle': 'rect'}]
 
+        let annotation =  {
+          type: 'line',
+          xMin: 0,
+          xMax: 0,
+          yMin: 0,
+          yMax: 0,
+          backgroundColor: '#333',
+          borderWidth: 1,
+          arrowHeads: {
+            end: {
+              display: true,
+              width: 9,
+              length: 0
+            }
+          }
+        }
+
+        $scope.annotations = {};
+
         _.forEach($scope.data.properties_by_cycles[$scope.chart_cycle], function(prop) {
-          //console.log("PROP: ", prop.property_view_id)
-          item = {}
+          item = {'id': prop.property_view_id}
+          item['name'] = _.find(prop, function(v,k) {
+            return _.startsWith(k, 'property_name')
+          });
           // x axis is easy
           item['x'] = _.find(prop, function(v, k) {
             return _.endsWith(k, '_' + String($scope.chart_xaxis));
@@ -147,22 +173,54 @@ angular.module('BE.seed.controller.insights_property', [])
 
           // place in appropriate dataset
           if (_.includes($scope.data.results_by_cycles[$scope.chart_cycle]['y'], prop.property_view_id)) {
+            // compliant dataset
             datasets[0]['data'].push(item);
           } else if (_.includes($scope.data.results_by_cycles[$scope.chart_cycle]['n'], prop.property_view_id)) {
+            // non-compliant dataset
             datasets[1]['data'].push(item);
+
+            // add whisker annotation
+            // only when we are displaying the non-compliant metric (energy or emission)
+            // don't add whisker if data is in range for that metric or it looks bad
+            let add = false
+            metric_type = $scope.chart_metric == 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
+
+            if ((metric_type == 0 && (item['target'] < item['y'])) || (metric_type == 1 && (item['target'] > item['y']))) {
+              add = true
+            }
+
+            if (add && item['target']) {
+              // add it
+              let anno = Object.assign({},annotation)
+              anno.xMin = item['x']
+              anno.xMax = item['x']
+              anno.yMin = item['y']
+              anno.yMax = item['target']
+              $scope.annotations['prop' + prop.property_view_id] = anno
+            }
+
           } else {
+            // unknown dataset
             datasets[2]['data'].push(item);
           }
         });
 
         console.log("DATASETS BUILT: ", datasets);
-        console.log("CATEGORICAL X axis? ", $scope.x_categorical);
         $scope.chart_datasets = datasets;
-
+        //console.log("ANNOTATIONS: ", $scope.annotations);
       }
 
       // CHARTS
       var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#EEEEEE'}
+
+      const tooltip_footer = (tooltipItems) => {
+        let text = ''
+        tooltipItems.forEach(function(tooltipItem) {
+          text = 'ID: ' + tooltipItem.raw.id + '\n' + 'name: ' + tooltipItem.raw.name;
+        });
+
+        return text;
+      };
 
       const _build_chart = () => {
         console.log('BUILD CHART')
@@ -192,6 +250,31 @@ angular.module('BE.seed.controller.insights_property', [])
               legend: {
                 display: false
               },
+              tooltip: {
+                callbacks: {
+                  footer: tooltip_footer,
+                }
+              },
+              annotation: {
+                annotations: {
+                  box1: {
+                    // Indicates the type of annotation
+                    type: 'line',
+                    xMin: 1990,
+                    xMax: 1990,
+                    yMin: 60,
+                    yMax: 40,
+                    backgroundColor: '#333',
+                    arrowHeads: {
+                      end: {
+                        display: true,
+                        width: 9,
+                        length: 0
+                      }
+                    }
+                  }
+                }
+              }
             },
             scales: {
               x: {
@@ -244,20 +327,19 @@ angular.module('BE.seed.controller.insights_property', [])
         $scope.insightsChart.options.scales.y.title.text = y_axis_name;
 
         // check if x-axis is categorical
-        console.log("HEY: ")
         $scope.insightsChart.options.scales.x.type = $scope.x_categorical == true ? 'category' : 'linear'
 
-        // update chart datasets
+        // update annotations
+        $scope.insightsChart.options.plugins.annotation.annotations = $scope.annotations;
 
+        // update chart datasets
         $scope.insightsChart.data.datasets = $scope.chart_datasets;
         _.forEach($scope.insightsChart.data.datasets, function(ds) {
           ds['backgroundColor'] = colors[ds['label']]
         });
 
-        //labels needed for categorical?
-        //$scope.insightsChart.options.scales.x.labels = [];
+        // labels needed for categorical?
         $scope.insightsChart.data.labels = [];
-
         if ($scope.x_categorical) {
           let labels = [];
           _.forEach($scope.chart_datasets, function(ds) {
@@ -266,15 +348,12 @@ angular.module('BE.seed.controller.insights_property', [])
           labels = labels.filter(function( element ) {
              return element !== undefined;
           });
-          //$scope.insightsChart.options.scales.x.labels = labels;
           $scope.insightsChart.data.labels = labels;
         }
-        //console.log("LABELS: ", $scope.insightsChart.options.scales.x.labels)
 
         console.log("REFRESH CHART");
         $scope.insightsChart.update()
-        console.log("HEY HEY")
-        console.log($scope.insightsChart.data.labels)
+
       }
 
       _load_data();
