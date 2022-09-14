@@ -297,15 +297,15 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       var ghg_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg'});
-      $scope.is_ghg_column = function (col) {
+      $scope.is_ghg_column = function (mapping) {
         // All of these are on the PropertyState table
-        return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, {column_name: col.suggestion_column_name}))
+        return mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, {column_name: mapping.to_field}))
       };
 
       var ghg_intensity_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg_intensity'});
-      $scope.is_ghg_intensity_column = function (col) {
+      $scope.is_ghg_intensity_column = function (mapping) {
         // All of these are on the PropertyState table
-        return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, {column_name: col.suggestion_column_name}))
+        return mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, {column_name: mapping.to_field}))
       };
 
       var get_default_quantity_units = function (col) {
