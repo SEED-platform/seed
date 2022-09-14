@@ -1877,6 +1877,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           valid_column_data_types: [function () {
               return ['number', 'float', 'integer', 'area', 'eui'];
           }],
+          compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
+            return compliance_metric_service.get_compliance_metrics();
+          }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }]

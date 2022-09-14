@@ -242,7 +242,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             }, status=status.HTTP_404_NOT_FOUND)
 
         response = compliance_metric.evaluate()
-        print(f" RESPONSE: {response}")
+        # print(f" RESPONSE: {response}")
         return JsonResponse({
             'status': 'success',
             'data': response

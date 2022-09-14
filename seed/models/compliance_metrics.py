@@ -80,25 +80,26 @@ class ComplianceMetric(models.Model):
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
         results_by_cycles = {}
+#        property_datasets = {}
         # figure out what kind of metric it is (energy? emission? combo? bool?)
-        energy_bool = False
-        emission_bool = False
-        energy_metric = False
-        emission_metric = False
+        metric = {'energy_metric': False, 'emission_metric': False, 'energy_bool': False, 'emission_bool': False,
+                  'actual_energy_column': self.actual_energy_column.id, 'actual_energy_column_name': self.actual_energy_column.display_name, 'target_energy_column': self.target_energy_column.id,
+                  'energy_metric_type': self.energy_metric_type, 'actual_emission_column': self.actual_emission_column.id, 'actual_emission_column_name': self.actual_emission_column.display_name,
+                  'target_emission_column': self.target_emission_column.id, 'emission_metric_type': self.emission_metric_type,
+                  'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:
-            energy_metric = True
+            metric['energy_metric'] = True
             if self.target_energy_column is None:
-                energy_bool = True
+                metric['energy_bool'] = True
 
         if self.actual_emission_column is not None:
-            emission_metric = True
+            metric['emission_metric'] = True
             if self.target_emission_column is None:
-                emission_bool = True
+                metric['emission_bool'] = True
 
         for cyc in property_response:
 
-            # print(f" CYCLE? {cyc}")
             properties = {}
             cnts = {'y': 0, 'n': 0, 'u': 0}
 
@@ -106,11 +107,11 @@ class ComplianceMetric(models.Model):
                 # initialize
                 properties[p['property_view_id']] = None
                 # energy metric
-                if energy_metric:
-                    properties[p['property_view_id']] = self._calculate_compliance(p, energy_bool, 'energy')
+                if metric['energy_metric']:
+                    properties[p['property_view_id']] = self._calculate_compliance(p, metric['energy_bool'], 'energy')
                 # emission metric
-                if emission_metric and properties[p['property_view_id']] != 'u':
-                    temp_val = self._calculate_compliance(p, emission_bool, 'emission')
+                if metric['emission_metric'] and properties[p['property_view_id']] != 'u':
+                    temp_val = self._calculate_compliance(p, metric['emission_bool'], 'emission')
 
                     # reconcile
                     if temp_val == 'u':
@@ -129,8 +130,6 @@ class ComplianceMetric(models.Model):
                 # add to dataset
                 datasets[key]['data'].append(cnts[key])
 
-            # print(f"COUNTS: {cnts}")
-
             # reshape and save
             results_by_cycles[cyc] = {}
             for key in cnts:
@@ -138,6 +137,8 @@ class ComplianceMetric(models.Model):
 
         # save to response
         response['results_by_cycles'] = results_by_cycles
+        response['properties_by_cycles'] = property_response
+        response['metric'] = metric
         for key in datasets:
             response['graph_data']['datasets'].append(datasets[key])
 
@@ -201,7 +202,7 @@ class ComplianceMetric(models.Model):
             target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
             actual_emission_column = Column.objects.filter(column_name='total_ghg_emissions', organization=organization).first()
             target_emission_column = Column.objects.filter(column_name='Target Total GHG Emissions', organization=organization).first()
-            x_axes = Column.objects.filter(column_name__in=['Year Built', 'Property Type', 'Conditioned Floor Area'], organization=organization).all()
+            x_axes = Column.objects.filter(column_name__in=['year_built', 'property_type', 'conditioned_floor_area'], organization=organization).all()
 
             # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
             # saving as 2,2 since we don't care about day/month

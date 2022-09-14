@@ -4,18 +4,18 @@ angular.module('BE.seed.controller.insights_program', [])
     '$stateParams',
     '$uibModal',
     'urls',
-    'inventory_service',
     'compliance_metrics',
     'compliance_metric_service',
+    'spinner_utility',
     'cycles',
     function (
       $scope,
       $stateParams,
       $uibModal,
       urls,
-      inventory_service,
       compliance_metrics,
       compliance_metric_service,
+      spinner_utility,
       cycles
     ) {
 
@@ -39,13 +39,13 @@ angular.module('BE.seed.controller.insights_program', [])
       $scope.data = {};
       let _load_data = function () {
         if (!$scope.compliance_metric) {
-          // spinner_utility.hide();
+          spinner_utility.hide();
           return;
         }
-        // spinner_utility.show();
+        spinner_utility.show();
         let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
-          //spinner_utility.hide();
+          spinner_utility.hide();
         }).then(() => {
           console.log( "DATA: ", $scope.data)
           _build_chart();
