@@ -36,6 +36,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     ids_only = request.query_params.get('ids_only', 'false').lower() == 'true'
     # check if there is a query paramater for the profile_id. If so, then use that one
     profile_id = request.query_params.get('profile_id', profile_id)
+    shown_column_ids = request.query_params.get('shown_column_ids')
 
     if not org_id:
         return JsonResponse(
@@ -147,7 +148,21 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         profile_inventory_type = VIEW_LIST_TAXLOT
 
     show_columns: Optional[list[int]] = None
-    if profile_id is None:
+    if shown_column_ids and profile_id:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'recommended_action': 'update_column_settings',
+                'message': 'Error filtering - "shown_column_ids" and "profile_id" are mutually excusive.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    elif shown_column_ids is not None:
+        shown_column_ids = shown_column_ids.split(",")
+        show_columns = list(Column.objects.filter(
+            organization_id=org_id, id__in=shown_column_ids
+        ).values_list('id', flat=True))
+    elif profile_id is None:
         show_columns = None
     elif profile_id == -1:
         show_columns = list(Column.objects.filter(
