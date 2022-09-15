@@ -1014,6 +1014,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
           }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            return organization_service.get_organization($stateParams.organization_id);
+          }],
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
                 columns = _.reject(columns, (item) => {
