@@ -7,15 +7,17 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'organization_payload',
   'property_columns',
   function (
     $scope,
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    organization_payload,
     property_columns,
   ) {
-
+    $scope.org = organization_payload.organization;
     $scope.complianceMetrics = compliance_metrics;
     console.log("compliancemetrics: ", $scope.complianceMetrics);
     $scope.new_compliance_metric = {};
