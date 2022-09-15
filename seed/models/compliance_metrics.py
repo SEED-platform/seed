@@ -16,9 +16,11 @@ from seed.utils.properties import properties_across_cycles
 
 class ComplianceMetric(models.Model):
 
-    TARGET_GT_ACTUAL = 0  # example: GHG, Site EUI
-    TARGET_LT_ACTUAL = 1  # example: EnergyStar Score
+    TARGET_NONE = 0
+    TARGET_GT_ACTUAL = 1  # example: GHG, Site EUI
+    TARGET_LT_ACTUAL = 2  # example: EnergyStar Score
     METRIC_TYPES = (
+        (TARGET_NONE, ''),
         (TARGET_GT_ACTUAL, 'Target > Actual for Compliance'),
         (TARGET_LT_ACTUAL, 'Actual > Target for Compliance'),
     )
