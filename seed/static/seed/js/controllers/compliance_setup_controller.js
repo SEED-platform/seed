@@ -91,7 +91,7 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
         console.log("creating new metric...", $scope.new_compliance_metric)
         compliance_metric_service.new_compliance_metric($scope.new_compliance_metric).then(data => {
               console.log(data)
-              if ('status' in data and data.status == 'error') {
+              if ('status' in data && data.status == 'error') {
                 console.log("ERROR saving...")
               } else {
                 console.log("metric saved!")
