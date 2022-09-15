@@ -7,7 +7,7 @@ angular.module('BE.seed.controller.insights_program', [])
     'compliance_metrics',
     'compliance_metric_service',
     'spinner_utility',
-    'organization_id',
+    'organization_payload',
     'cycles',
     function (
       $scope,
@@ -17,13 +17,13 @@ angular.module('BE.seed.controller.insights_program', [])
       compliance_metrics,
       compliance_metric_service,
       spinner_utility,
-      organization_id,
+      organization_payload,
       cycles
     ) {
 
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
-      $scope.organization_id = organization_id;
+      $scope.organization = organization_payload.organization;
 
       // compliance metric
       $scope.compliance_metric = {};
@@ -32,8 +32,8 @@ angular.module('BE.seed.controller.insights_program', [])
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
       }
-      console.log("COMPLIANCE METRIC: ")
-      console.log($scope.compliance_metric)
+      console.log("COMPLIANCE METRIC: ", $scope.compliance_metric)
+      console.log("ORG: ", organization_payload)
 
       // table row toggles
       $scope.show_properties_for_dataset = {'y': false, 'n': false, 'u': false};
@@ -55,6 +55,18 @@ angular.module('BE.seed.controller.insights_program', [])
 
         })
       };
+
+      $scope.get_display_field_value = function(cycle_id, prop_id) {
+        let name = null
+        let record = _.find($scope.data.properties_by_cycles[cycle_id], {'property_view_id': prop_id})
+        if (record) {
+          name = _.find(record, function(v,k) {
+            return _.startsWith(k, $scope.organization.property_display_field)
+          });
+        }
+
+        return name ? name : prop_id
+      }
 
       // CHARTS
       var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#EEEEEE'}

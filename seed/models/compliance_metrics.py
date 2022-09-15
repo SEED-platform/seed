@@ -92,6 +92,7 @@ class ComplianceMetric(models.Model):
             cnts = {'y': 0, 'n': 0, 'u': 0}
 
             for p in property_response[cyc]:
+
                 # initialize
                 properties[p['property_view_id']] = None
                 # energy metric
@@ -183,7 +184,7 @@ class ComplianceMetric(models.Model):
     def get_or_create_default(cls, organization):
         metric = ComplianceMetric.objects.filter(organization=organization).first()
         if not metric:
-            name = 'Combined Site EUI and GHG Emissions Compliance'
+            name = 'Combined Site EUI and GHG Emissions'
             # TODO: make this more foolproof if these columns don't exist
             actual_column = Column.objects.filter(column_name='site_eui', organization=organization).first()
             target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()

@@ -1879,9 +1879,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
-          organization_id: ['user_service', function (user_service) {
-            return user_service.get_organization().id;
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }]
+
         }
       })
       .state({
@@ -1895,6 +1896,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }]
         }
       })

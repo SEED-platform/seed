@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.insights_property', [])
     'urls',
     'compliance_metrics',
     'compliance_metric_service',
+    'organization_payload',
     'spinner_utility',
     'cycles',
     function (
@@ -15,6 +16,7 @@ angular.module('BE.seed.controller.insights_property', [])
       urls,
       compliance_metrics,
       compliance_metric_service,
+      organization_payload,
       spinner_utility,
       cycles
     ) {
@@ -22,6 +24,7 @@ angular.module('BE.seed.controller.insights_property', [])
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
       // console.log("CYCLES: ", $scope.cycles);
+      $scope.organization =  organization_payload.organization;
 
       // compliance metric
       $scope.compliance_metric = {};
@@ -84,6 +87,19 @@ angular.module('BE.seed.controller.insights_property', [])
 
         })
       };
+
+      // display link with "org display field value" listed in table
+      $scope.get_display_field_value = function(cycle_id, prop_id) {
+        let name = null
+        let record = _.find($scope.data.properties_by_cycles[cycle_id], {'property_view_id': prop_id})
+        if (record) {
+          name = _.find(record, function(v,k) {
+            return _.startsWith(k, $scope.organization.property_display_field)
+          });
+        }
+
+        return name ? name : prop_id
+      }
 
       $scope.update = function() {
         spinner_utility.show();

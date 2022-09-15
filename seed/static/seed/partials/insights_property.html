@@ -18,8 +18,8 @@
         <h2 style="font-size:18px;"> {$:: 'Property Insights' | translate $}</h2>
       </div>
     </div>
-    <div class="content_block row">
-    	<div class="col-md-3">
+    <div class="content_block row less_pad">
+    	<div class="col-md-2">
     			<!-- chart setup form-->
 				  <div class="form-group">
 				    <label for="cycleSelect">Cycle</label>
@@ -54,12 +54,12 @@
     				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
     			</div>
     	</div>
-    	<div class="col-md-9">
+    	<div class="col-md-10">
             <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
               <canvas id="property-insights-chart"></canvas>
             </div>
             <div class="section_content r-columns" style="display:unset !important;" >
-                <div class="r-column r-shrink table_list_container" style="margin-top:2vw; margin-right: 5vw">
+                <div class="r-column r-shrink table_list_container" ngIf="data" style="margin-top:2vw; margin-right: 5vw">
 
                     <table>
                         <thead>
@@ -79,7 +79,7 @@
                                 <td></td>
                                 <td>
                                     <div ng-repeat="item in data.results_by_cycles[chart_cycle]['y']">
-                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$ item $}</a></td>
+                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
                                     </div>
                                 </td>
                             </tr>
@@ -92,7 +92,7 @@
                                 <td></td>
                                 <td>
                                     <div ng-repeat="item in data.results_by_cycles[chart_cycle]['n']">
-                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$ item $}</a></td>
+                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
                                     </div>
                                 </td>
                             </tr>
@@ -106,7 +106,7 @@
                                 <td></td>
                                 <td>
                                     <div ng-repeat="item in data.results_by_cycles[chart_cycle]['u']">
-                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$ item $}</a></td>
+                                        <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
                                     </div>
                                 </td>
                             </tr>

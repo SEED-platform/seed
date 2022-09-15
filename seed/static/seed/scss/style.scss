@@ -4293,7 +4293,7 @@ iframe.analysis-results {
 // program overview / compliance-setup
 .compliance-setup {
   background-color: #eeeeee;
-  padding: 1.5em;
+  padding: 2em;
 }
 
 .margin-top-20 {
@@ -4303,7 +4303,7 @@ iframe.analysis-results {
 .chart-legend {
   margin: 2em;
   margin-top: 4em;
-  margin-left: 4em;
+  margin-left: 2em;
   .title {
     padding: 1em;
     font-size: 1.4em;
@@ -4508,6 +4508,10 @@ ul.r-list {
 
 .r-margin-bottom-10 {
   margin-bottom: 10px !important;
+}
+
+.less_pad {
+  padding-left: 30px !important;
 }
 
 .rp-data-view {
