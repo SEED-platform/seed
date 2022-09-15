@@ -13,13 +13,16 @@
 
 <div class="section_content_container">
   <div class="section_content container-fluid">
-    <div class="content_block row" style="padding:20px 20px 10px 20px">
+    <!-- <div class="content_block row" style="padding:20px 20px 0px 20px">
       <div class="col-md-12">
         <h2 style="font-size:18px;"> {$:: 'Property Insights' | translate $}</h2>
       </div>
-    </div>
+    </div> -->
     <div class="content_block row less_pad">
     	<div class="col-md-2">
+    		<div class="title-row">
+        	<h2 style="font-size:18px;"> {$:: 'Property Insights' | translate $}</h2>
+      	</div>
     			<!-- chart setup form-->
 				  <div class="form-group">
 				    <label for="cycleSelect">Cycle</label>
@@ -47,11 +50,21 @@
     			<div class="chart-legend">
     				<div class="title">Chart Legend</div>
     				<div class="legend-row row">
-    					<div class="col-md-3 box blue-box"></div>
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker"></img></div>
     					<div class="col-md-9 text">Compliant</div>
     				</div>
-    				<div class="legend-row row"><div class="col-md-3 box red-box"></div><div class="col-md-9 text">Not Compliant</div></div>
-    				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
+    				<div class="legend-row row">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker"></img></div>
+    					<div class="col-md-9 text">Not Compliant</div>
+    				</div>
+    				<div class="legend-row row">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker"></img></div>
+    					<div class="col-md-9 text">Unknown</div>
+    				</div>
+    				<div class="legend-row row">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker"></img></div>
+    					<div class="col-md-9 text">Distance to Target</div>
+    				</div>
     			</div>
     	</div>
     	<div class="col-md-10">

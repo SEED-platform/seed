@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.insights_property', [])
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
       // console.log("CYCLES: ", $scope.cycles);
+      $scope.static_url = urls.static_url;
       $scope.organization =  organization_payload.organization;
 
       // compliance metric
@@ -225,7 +226,7 @@ angular.module('BE.seed.controller.insights_property', [])
       }
 
       // CHARTS
-      var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#EEEEEE'}
+      var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#DDDDDD'}
 
       const tooltip_footer = (tooltipItems) => {
         let text = ''
