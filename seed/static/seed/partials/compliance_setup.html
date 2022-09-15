@@ -17,7 +17,7 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa fa-tachometer"></i> {$:: 'Compliance Setup' | translate $}</h2>
+                <h2><i class="fa fa-tachometer"></i> {$:: 'Program Metric Configuration' | translate $}</h2>
             </div>
             <div class="section_action_container right section_action_btn">
                 <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
@@ -79,7 +79,7 @@
                     <div class="col-sm-3">
                         <select class="form-control" id="energyMetricTarget" ng-model="new_compliance_metric.target_energy_column">
                             <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
-                        </select>                       
+                        </select>
                     </div>
                     <div class="col-sm-2">
                         <label class="col-form-label" for="emissionMetricTarget" translate>Emission Metric Target Column</label>
@@ -126,7 +126,7 @@
                 </fieldset>
                 <div class="form-group row">
                     <div class="col-sm-6">
-                        <p class="h3" translate>X Axis Column Types for Plotting:</p>
+                        <p class="h3" translate>X-Axis Column Types for Plotting:</p>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -158,7 +158,7 @@
                         <p> </p>
                     </div>
                     <div class="col-sm-4">
-                        <a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>View Compliance Tracking</a>
+                        <a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>View Program Metric Tracking</a>
                     </div>
                 </div>
             </form>
