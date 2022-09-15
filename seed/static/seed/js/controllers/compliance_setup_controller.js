@@ -38,6 +38,24 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
       }
     };
 
+    $scope.x_axis_selection = '';
+
+    $scope.select_x_axis = function () {
+      let selection = $scope.x_axis_selection;
+      $scope.x_axis_selection = '';
+      if (!$scope.new_compliance_metric.x_axis_columns) {
+        $scope.new_compliance_metric.x_axis_columns = [];
+      }
+      if ($scope.new_compliance_metric.x_axis_columns.includes(selection)) {
+        return;
+      }
+      $scope.new_compliance_metric.x_axis_columns.push(selection);
+    };
+
+    $scope.click_remove_x_axis = function (id) {
+      $scope.new_compliance_metric.x_axis_columns = $scope.new_compliance_metric.x_axis_columns.filter(item => item != id);
+    };
+
     // $scope.energyMetricType = energyMetricType;
     /**
      * saves the updates settings

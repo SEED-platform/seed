@@ -4493,6 +4493,12 @@ ul.r-list {
     background-color: $errorBackground;
     border: 1px solid $errorBorder;
   }
+
+  &.r-info {
+    color: $infoText;
+    background-color: $infoBackground;
+    border: 1px solid $infoBorder;
+  }
 }
 
 .r-no-margin {
