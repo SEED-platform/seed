@@ -75,7 +75,6 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
         // update the compliance metric
         console.log('updating...', $scope.complianceMetrics[0])
         compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric).then(data => {
-            console.log(data, 'status' in data, 'status' in data && data.status == 'error')
             if ('status' in data && data.status == 'error') {
               console.log("ERROR updating...")
             } else {
@@ -92,7 +91,7 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
         console.log("creating new metric...", $scope.new_compliance_metric)
         compliance_metric_service.new_compliance_metric($scope.new_compliance_metric).then(data => {
               console.log(data)
-              if (_.includes(data, 'status')) {
+              if ('status' in data and data.status == 'error') {
                 console.log("ERROR saving...")
               } else {
                 console.log("metric saved!")
