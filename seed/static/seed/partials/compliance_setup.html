@@ -59,13 +59,17 @@
                         <label class="col-form-label" for="energyMetricActual" translate>Energy Metric Actual Column</label>
                     </div>
                     <div class="col-sm-3">
-                        <select class="form-control" id="energyMetricActual" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                        <select class="form-control" id="energyMetricActual" ng-model="new_compliance_metric.actual_energy_column">
+                            <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
                     </div>
                     <div class="col-sm-2">
                         <label class="col-form-label" for="emissionMetricActual" translate>Emission Metric Actual Column</label>
                     </div>
                     <div class="col-sm-3">
-                        <select class="form-control" id="emissionMetricActual" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                        <select class="form-control" id="emissionMetricActual" ng-model="new_compliance_metric.actual_emission_column">
+                            <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -73,44 +77,48 @@
                         <label class="col-form-label" for="energyMetricTarget" translate>Energy Metric Target Column</label>
                     </div>
                     <div class="col-sm-3">
-                        <select class="form-control" id="energyMetricTarget" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                        <select class="form-control" id="energyMetricTarget" ng-model="new_compliance_metric.target_energy_column">
+                            <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>                       
                     </div>
                     <div class="col-sm-2">
                         <label class="col-form-label" for="emissionMetricTarget" translate>Emission Metric Target Column</label>
                     </div>
                     <div class="col-sm-3">
-                        <select class="form-control" id="emissionMetricTarget" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                        <select class="form-control" id="emissionMetricTarget" ng-model="new_compliance_metric.target_emission_column">
+                            <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
                     </div>
                 </div>
                 <fieldset class="form-group">
                     <div class="row">
                         <legend class="col-form-label col-sm-2 pt-0">Energy Metric Type</legend>
                         <div class="col-sm-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="energyMetricTypeLT" id="energyMetricType1" value="option1" checked>
-                                <label class="form-check-label" for="energyMetricType1">
-                                    Actual < Target for Compliance Actual
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="energyMetricType" id="energyMetricType1" value="Target > Actual for Compliance" ng-model="new_compliance_metric.energy_metric_type" checked>
+                                    <span translate>Target > Actual for Compliance</span>
                                 </label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="energyMetricTypeGT" id="energyMetricType2" value="option2">
-                                <label class="form-check-label" for="energyMetricType2">
-                                    Actual > Target for Compliance Actual
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="energyMetricType" id="energyMetricType2" value="Actual > Target for Compliance" ng-model="new_compliance_metric.energy_metric_type">
+                                    <span translate>Actual > Target for Compliance</span>
                                 </label>
                             </div>
                         </div>
                         <legend class="col-form-label col-sm-2 pt-0">Emission Metric Type</legend>
                         <div class="col-sm-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="emissionMetricTypeLT" id="emissionMetricType1" value="option1" checked>
-                                <label class="form-check-label" for="emissionMetricType1">
-                                    Actual < Target for Compliance Actual
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="emissionMetricType" id="emissionMetricType1" value="Target > Actual for Compliance" ng-model="new_compliance_metric.emission_metric_type" checked>
+                                    <span translate>Target > Actual for Compliance</span>
                                 </label>
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="emissionMetricTypeGT" id="emissionMetricType2" value="option2">
-                                <label class="form-check-label" for="emissionMetricType2">
-                                    Actual > Target for Compliance Actual
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="emissionMetricType" id="emissionMetricType2" value="Actual > Target for Compliance" ng-model="new_compliance_metric.emission_metric_type">
+                                    <span translate>Actual > Target for Compliance</span>
                                 </label>
                             </div>
                         </div>
@@ -128,27 +136,29 @@
                     <div class="col-sm-3">
                         <p class="h5" translate>Selections:</p>
                     </div>
-                    <div class="col-sm-3">
+                    <!-- <div class="col-sm-3">
                         <p class="h5" translate>X Axis Column Selections:</p>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="form-group row">
                     <div class="col-sm-2">
                         <p> </p>
                     </div>
                     <div class="col-sm-3">
-                        <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                        <select multiple class="form-control" id="xAxisColumnSelections" ng-model="new_compliance_metric.x_axis_columns">
+                            <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
                     </div>
-                    <div class="col-sm-3">
+                    <!-- <div class="col-sm-3">
                         <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="form-group row">
                     <div class="col-sm-2">
                         <p> </p>
                     </div>
                     <div class="col-sm-4">
-                        <p class="h4" translate>View Compliance Tracking</p>
+                        <a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>View Compliance Tracking</a>
                     </div>
                 </div>
             </form>

@@ -7,23 +7,26 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'property_columns',
   function (
     $scope,
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    property_columns,
   ) {
 
     $scope.complianceMetrics = compliance_metrics;
     $scope.new_compliance_metric = {};
-
+    $scope.property_columns = property_columns;
+    // $scope.energyMetricType = energyMetricType;
     /**
      * saves the updates settings
      */
     $scope.save_settings = function () {
       $scope.new_compliance_metric.start = $scope.startYearValue + ":01:01";
       $scope.new_compliance_metric.end = $scope.endYearValue + ":12:31";
-  
+ 
       // need to use list compliance metric to see if one exists
       if ($scope.complianceMetrics.length > 0) {
         // update the compliance metric
