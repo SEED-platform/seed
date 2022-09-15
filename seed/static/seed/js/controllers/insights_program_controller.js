@@ -77,6 +77,7 @@ angular.module('BE.seed.controller.insights_program', [])
           console.log('NO DATA')
           return
         }
+
         const canvas = document.getElementById('program-overview-chart')
         const ctx = canvas.getContext('2d')
 
@@ -113,6 +114,7 @@ angular.module('BE.seed.controller.insights_program', [])
             }
           }
         });
+
 
         // load data
         console.log('load dataset start')

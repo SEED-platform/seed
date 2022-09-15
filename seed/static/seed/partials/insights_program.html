@@ -14,7 +14,7 @@
 <div class="section_content_container">
   <div class="section_content container-fluid">
     <div class="content_block row less_pad">
-        <div ng-if="!data">
+        <div ng-show="!data">
             <div class="col-md-10">
                 <div class="title-row">
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
@@ -26,7 +26,7 @@
             </div>
         </div>
 
-        <div ng-if="data">
+        <div ng-show="data">
         	<div class="col-md-2">
                 <div class="title-row">
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>

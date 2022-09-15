@@ -69,20 +69,28 @@ class ComplianceMetric(models.Model):
 #        property_datasets = {}
         # figure out what kind of metric it is (energy? emission? combo? bool?)
         metric = {'energy_metric': False, 'emission_metric': False, 'energy_bool': False, 'emission_bool': False,
-                  'actual_energy_column': self.actual_energy_column.id, 'actual_energy_column_name': self.actual_energy_column.display_name, 'target_energy_column': self.target_energy_column.id,
-                  'energy_metric_type': self.energy_metric_type, 'actual_emission_column': self.actual_emission_column.id, 'actual_emission_column_name': self.actual_emission_column.display_name,
-                  'target_emission_column': self.target_emission_column.id, 'emission_metric_type': self.emission_metric_type,
+                  'actual_energy_column': None, 'actual_energy_column_name': None, 'target_energy_column': None,
+                  'energy_metric_type': self.energy_metric_type, 'actual_emission_column': None, 'actual_emission_column_name': None,
+                  'target_emission_column': None, 'emission_metric_type': self.emission_metric_type,
                   'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:
+            metric['actual_energy_column'] = self.actual_energy_column.id
+            metric['actual_energy_column_name'] = self.actual_energy_column.display_name
             metric['energy_metric'] = True
             if self.target_energy_column is None:
                 metric['energy_bool'] = True
+            else:
+                metric['target_energy_column'] = self.target_energy_column.id
 
         if self.actual_emission_column is not None:
             metric['emission_metric'] = True
+            metric['actual_emission_column'] = self.actual_emission_column.id
+            metric['actual_emission_column_name'] = self.actual_emission_column.display_name
             if self.target_emission_column is None:
                 metric['emission_bool'] = True
+            else:
+                metric['target_emission_column'] = self.target_emission_column.id
 
         for cyc in property_response:
 
