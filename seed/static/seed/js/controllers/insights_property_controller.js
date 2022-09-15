@@ -199,7 +199,7 @@ angular.module('BE.seed.controller.insights_property', [])
             let add = false
             metric_type = $scope.chart_metric == 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
 
-            if ((metric_type == 0 && (item['target'] < item['y'])) || (metric_type == 1 && (item['target'] > item['y']))) {
+            if ((metric_type == 1 && (item['target'] < item['y'])) || (metric_type == 2 && (item['target'] > item['y']))) {
               add = true
             }
 

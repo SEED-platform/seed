@@ -158,7 +158,7 @@ class ComplianceMetric(models.Model):
 
         # test metric type
         the_type = self.energy_metric_type if metric_type == 'energy' else self.emission_metric_type
-        if the_type == 0:
+        if the_type == 1:
             differential = target_val - actual_val
         else:
             differential = actual_val - target_val
