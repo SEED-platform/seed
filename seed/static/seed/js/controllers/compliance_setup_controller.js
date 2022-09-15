@@ -17,23 +17,62 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
   ) {
 
     $scope.complianceMetrics = compliance_metrics;
+    console.log("compliancemetrics: ", $scope.complianceMetrics);
     $scope.new_compliance_metric = {};
+    if ($scope.complianceMetrics.length > 0){
+      $scope.new_compliance_metric = $scope.complianceMetrics[0];  // assign to first for now
+      // truncate start and end dates to only show years YYYY
+      $scope.new_compliance_metric.start = $scope.new_compliance_metric.start ? $scope.new_compliance_metric.start.split('-')[0] : null
+      $scope.new_compliance_metric.end = $scope.new_compliance_metric.end ? $scope.new_compliance_metric.end.split('-')[0] : null
+
+    }
     $scope.property_columns = property_columns;
     // $scope.energyMetricType = energyMetricType;
     /**
      * saves the updates settings
      */
     $scope.save_settings = function () {
-      $scope.new_compliance_metric.start = $scope.startYearValue + ":01:01";
-      $scope.new_compliance_metric.end = $scope.endYearValue + ":12:31";
- 
+
+      // just for saving
+      $scope.new_compliance_metric.start = $scope.new_compliance_metric.start + "-01-01";
+      $scope.new_compliance_metric.end = $scope.new_compliance_metric.end + "-12-31";
+
       // need to use list compliance metric to see if one exists
       if ($scope.complianceMetrics.length > 0) {
         // update the compliance metric
-        compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric);
+        console.log('updating...')
+        compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric)
+        .then(
+          function (data) {
+            console.log(data)
+            if (_.includes(data, 'status')) {
+              console.log("ERROR updating...")
+            } else {
+              console.log("metric updated!")
+              $scope.new_compliance_metric = data;
+              //reset for displaying
+              $scope.new_compliance_metric.start = $scope.new_compliance_metric.start.split('-')[0];
+              $scope.new_compliance_metric.end = $scope.new_compliance_metric.end.split('-')[0];
+            }
+        });
+
       } else {
         // create a new compliance metric
-        compliance_metric_service.new_compliance_metric($scope.new_compliance_metric);
+        console.log("creating new metric...")
+        compliance_metric_service.new_compliance_metric($scope.new_compliance_metric)
+        .then(
+          function(data) {
+              console.log(data)
+              if (_.includes(data, 'status')) {
+                console.log("ERROR saving...")
+              } else {
+                console.log("metric saved!")
+                $scope.new_compliance_metric = data;
+                // reset for displaying
+                $scope.new_compliance_metric.start = $scope.new_compliance_metric.start.split('-')[0];
+                $scope.new_compliance_metric.end = $scope.new_compliance_metric.end.split('-')[0];
+              }
+         });
       }
     };
 

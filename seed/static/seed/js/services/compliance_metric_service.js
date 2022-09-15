@@ -54,7 +54,9 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
           'organization_id': user_service.get_organization().id
         }
       }).then(function (response) {
-        return response.data.data;
+        return response.data.compliance_metric;
+      }).catch(function (response) {
+        return response.data;
       });
     };
 
@@ -65,6 +67,8 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
           'organization_id': user_service.get_organization().id
         }
       }).then(function (response) {
+        return response.data.compliance_metric;
+      }).catch(function (response) {
         return response.data;
       });
     };
