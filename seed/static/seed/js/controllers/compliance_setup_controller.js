@@ -27,6 +27,15 @@ angular.module('BE.seed.controller.compliance_setup', []).controller('compliance
 
     }
     $scope.property_columns = property_columns;
+
+
+    $scope.get_column_display = function (id) {
+      let record = _.find($scope.property_columns, {'id': id});
+      if (record) {
+        return record.displayName;
+      }
+    };
+
     // $scope.energyMetricType = energyMetricType;
     /**
      * saves the updates settings
