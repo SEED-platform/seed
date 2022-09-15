@@ -66,7 +66,9 @@ angular.module('BE.seed.controller.column_settings', [])
         {id: 'boolean', label: $translate.instant('Boolean')},
         {id: 'area', label: $translate.instant('Area')},
         {id: 'eui', label: $translate.instant('EUI')},
-        {id: 'geometry', label: $translate.instant('Geometry')}
+        {id: 'geometry', label: $translate.instant('Geometry')},
+        {id: 'ghg', label: $translate.instant('GHG')},
+        {id: 'ghg_intensity', label: $translate.instant('GHG Intensity')}
       ];
 
       $scope.comstock_types = [
