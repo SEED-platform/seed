@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
-      console.log("CYCLES: ", $scope.cycles);
+      // console.log("CYCLES: ", $scope.cycles);
 
       // compliance metric
       $scope.compliance_metric = {};
@@ -281,9 +281,9 @@ angular.module('BE.seed.controller.insights_property', [])
                   display: true
                 },
                 ticks: {
-                    callback: function(value, index, ticks) {
-                      return this.getLabelForValue(value).replace(',', '')
-                    }
+                  callback: function(value) {
+                    return this.getLabelForValue(value)
+                  }
                 },
                 type: 'linear'
               },
@@ -335,6 +335,18 @@ angular.module('BE.seed.controller.insights_property', [])
         _.forEach($scope.insightsChart.data.datasets, function(ds) {
           ds['backgroundColor'] = colors[ds['label']]
         });
+
+        // update x axis ticks (for year)
+        if (_.includes(_.lowerCase(x_axis_name), 'year')) {
+
+          $scope.insightsChart.options.scales.x.ticks = { callback: function(value, index, ticks) {
+            return this.getLabelForValue(value).replace(',', '')
+          } }
+        } else {
+          $scope.insightsChart.options.scales.x.ticks = { callback: function(value) {
+            return this.getLabelForValue(value)
+          } }
+        }
 
         // labels needed for categorical?
         $scope.insightsChart.data.labels = [];

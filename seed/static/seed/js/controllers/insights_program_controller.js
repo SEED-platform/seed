@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.insights_program', [])
     'compliance_metrics',
     'compliance_metric_service',
     'spinner_utility',
+    'organization_id',
     'cycles',
     function (
       $scope,
@@ -16,11 +17,13 @@ angular.module('BE.seed.controller.insights_program', [])
       compliance_metrics,
       compliance_metric_service,
       spinner_utility,
+      organization_id,
       cycles
     ) {
 
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
+      $scope.organization_id = organization_id;
 
       // compliance metric
       $scope.compliance_metric = {};

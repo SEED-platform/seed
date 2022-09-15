@@ -1873,14 +1873,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_program.html',
         controller: 'insights_program_controller',
         resolve: {
-          valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
-          }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_id: ['user_service', function (user_service) {
+            return user_service.get_organization().id;
           }]
         }
       })
@@ -1890,9 +1890,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_property.html',
         controller: 'insights_property_controller',
         resolve: {
-          valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
-          }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
           }],
