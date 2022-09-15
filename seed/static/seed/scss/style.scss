@@ -4301,17 +4301,25 @@ iframe.analysis-results {
 }
 
 .chart-legend {
-  margin: 2em;
-  margin-top: 4em;
-  margin-left: 2em;
+  margin-top: 3em;
+  margin-left: 0em;
   .title {
-    padding: 1em;
+    padding-top: 1em;
+    padding-bottom: 1em;
     font-size: 1.4em;
+  }
+  .legend-icon {
+    padding-left: 0px;
+    min-width: 30px;
+    max-width: 40px;
+  }
+  .legend-icon-col {
+    padding-left: 0px;
+    padding-right: 0px;
   }
 
   .legend-row {
-    //padding: 0.5em 1em 1em 0em;
-    margin: 0.5em 1em 1em 0em;
+    margin: 0.5em 1em 0.5em 0em;
   }
   .box {
     min-height: 2em;
@@ -4329,10 +4337,15 @@ iframe.analysis-results {
     background-color: #eeeeee;
   }
   .text {
-    padding-left: 2em;
-    padding-top: 2px;
+    padding-left: 0.5em;
+    padding-top: 0.3em;
     font-size: 1.2em;
+    vertical-align: middle;
   }
+}
+
+.title-row {
+  padding: 0px 0px 20px 0px;
 }
 
 // "namespacing" with "r-" until css cleanup

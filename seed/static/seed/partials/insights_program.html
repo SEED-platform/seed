@@ -13,32 +13,30 @@
 
 <div class="section_content_container">
   <div class="section_content container-fluid">
-    <div class="content_block row" style="padding:20px 20px 10px 20px">
-      <div class="col-md-12">
-        <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
-      </div>
-    </div>
     <div class="content_block row less_pad">
     	<div class="col-md-2">
-    			<!-- compliance setup -->
-    			<div class="compliance-setup">
-    				<p>Have you configured your program metrics? If you are seeing all unknowns on the chart, visit the <a ui-sref="compliance_setup(::{organization_id: organization.id})">Program Metric Configuration page</a>.
-                    </p>
-    			</div>
+            <div class="title-row">
+                <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
+            </div>
+			<!-- compliance setup -->
+			<div class="compliance-setup">
+				<p>Have you configured your program metrics? If you are seeing all unknowns on the chart, visit the <a ui-sref="compliance_setup(::{organization_id: organization.id})">Program Metric Configuration page</a>.
+                </p>
+			</div>
 <!--     			<div class="margin-top-20">
-    				<button type="button" class="btn btn-primary" ng-click="export_data()">
-    					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
-    				</button>
-    			</div> -->
-    			<div class="chart-legend">
-    				<div class="title">Chart Legend</div>
-    				<div class="legend-row row">
-    					<div class="col-md-3 box blue-box"></div>
-    					<div class="col-md-9 text">Compliant</div>
-    				</div>
-    				<div class="legend-row row"><div class="col-md-3 box red-box"></div><div class="col-md-9 text">Not Compliant</div></div>
-    				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
-    			</div>
+				<button type="button" class="btn btn-primary" ng-click="export_data()">
+					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
+				</button>
+			</div> -->
+			<div class="chart-legend">
+				<div class="title">Chart Legend</div>
+				<div class="legend-row row">
+					<div class="col-md-3 box blue-box"></div>
+					<div class="col-md-9 text">Compliant</div>
+				</div>
+				<div class="legend-row row"><div class="col-md-3 box red-box"></div><div class="col-md-9 text">Not Compliant</div></div>
+				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
+			</div>
     	</div>
     	<div class="col-md-10">
             <div style="margin-left: 5vw; margin-right: 5vw">

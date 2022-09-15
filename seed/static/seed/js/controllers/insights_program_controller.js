@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.insights_program', [])
       }
 
       // CHARTS
-      var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#EEEEEE'}
+      var colors = {'compliant': '#77CCCB', 'non-compliant': '#A94455', 'unknown': '#DDDDDD'}
 
       const _build_chart = () => {
         console.log('BUILD CHART')
