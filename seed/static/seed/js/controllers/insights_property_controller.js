@@ -23,7 +23,6 @@ angular.module('BE.seed.controller.insights_property', [])
 
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
-      // console.log("CYCLES: ", $scope.cycles);
       $scope.static_url = urls.static_url;
       $scope.organization =  organization_payload.organization;
 
@@ -37,7 +36,7 @@ angular.module('BE.seed.controller.insights_property', [])
       // console.log("COMPLIANCE METRIC: ", $scope.compliance_metric);
 
       // chart data
-      $scope.data = {};
+      $scope.data = null;
       $scope.chart_datasets = {};
 
       // default settings / dropdowns
@@ -51,7 +50,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       // load data
       let _load_data = function () {
-        if (!$scope.compliance_metric) {
+        if (_.isEmpty($scope.compliance_metric)) {
           spinner_utility.hide();
           return;
         }

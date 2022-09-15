@@ -35,10 +35,6 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         organization_id = self.get_organization(request)
-
-        # temporary: get or create default metric first, then retrieve all to put in correct format
-        # the_org = Organization.objects.get(id=organization_id)
-        # ComplianceMetric.get_or_create_default(the_org)
         compliance_metric_queryset = ComplianceMetric.objects.filter(organization=organization_id)
 
         return JsonResponse({
@@ -235,10 +231,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             compliance_metric = ComplianceMetric.objects.get(id=pk, organization=organization)
-        except ComplianceMetric.DoesNotExist:
+        except Exception:
             return JsonResponse({
                 'status': 'error',
-                'message': f'ComplianceMetric with id {pk} does not exist'
+                'message': 'ComplianceMetric does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
         response = compliance_metric.evaluate()

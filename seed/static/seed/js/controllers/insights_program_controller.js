@@ -38,10 +38,10 @@ angular.module('BE.seed.controller.insights_program', [])
       // table row toggles
       $scope.show_properties_for_dataset = {'y': false, 'n': false, 'u': false};
 
+      $scope.data = null;
       // chart data
-      $scope.data = {};
       let _load_data = function () {
-        if (!$scope.compliance_metric) {
+        if (_.isEmpty($scope.compliance_metric)) {
           spinner_utility.hide();
           return;
         }

@@ -3,10 +3,8 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 """
 
-from datetime import datetime
 
 from django.db import models
-from django.utils import timezone
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
@@ -43,7 +41,6 @@ class ComplianceMetric(models.Model):
     def __str__(self):
         return 'Compliance Metric - %s' % self.name
 
-    # TODO finish this
     def evaluate(self):
         response = {
             'meta': {
@@ -62,7 +59,6 @@ class ComplianceMetric(models.Model):
         cycles = Cycle.objects.filter(organization_id=self.organization.id, start__lte=self.end, end__gte=self.start).order_by('start')
         cycle_ids = cycles.values_list('pk', flat=True)
         response['graph_data']['labels'] = list(cycles.values_list('name', flat=True))
-        # needed?
         response['cycles'] = list(cycles.values('id', 'name'))
 
         # get properties
@@ -180,35 +176,3 @@ class ComplianceMetric(models.Model):
                 ),
             )
         ]
-
-    # temporary until we have the metric setup page
-    @classmethod
-    def get_or_create_default(cls, organization):
-        metric = ComplianceMetric.objects.filter(organization=organization).first()
-        if not metric:
-            name = 'Combined Site EUI and GHG Emissions'
-            # TODO: make this more foolproof if these columns don't exist
-            actual_column = Column.objects.filter(column_name='site_eui', organization=organization).first()
-            target_column = Column.objects.filter(column_name='Target Site EUI', organization=organization).first()
-            actual_emission_column = Column.objects.filter(column_name='total_ghg_emissions', organization=organization).first()
-            target_emission_column = Column.objects.filter(column_name='Target Total GHG Emissions', organization=organization).first()
-            x_axes = Column.objects.filter(column_name__in=['year_built', 'property_type', 'conditioned_floor_area'], organization=organization).all()
-
-            # TODO: use of tzinfo does some weird stuff here and changes the year at the extremes...
-            # saving as 2,2 since we don't care about day/month
-
-            metric = ComplianceMetric.objects.create(
-                name=name,
-                organization=organization,
-                start=datetime(2017, 1, 1, tzinfo=timezone.utc),
-                end=datetime(2021, 12, 31, tzinfo=timezone.utc),
-                actual_energy_column=actual_column,
-                target_energy_column=target_column,
-                energy_metric_type=0,
-                actual_emission_column=actual_emission_column,
-                target_emission_column=target_emission_column,
-                emission_metric_type=0
-            )
-            metric.x_axis_columns.set(x_axes)
-
-        return metric
