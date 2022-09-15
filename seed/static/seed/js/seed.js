@@ -1009,7 +1009,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'compliance_setup_controller',
         resolve: {
           valid_column_data_types: [function () {
-            return ['number', 'float', 'integer', 'area', 'eui', 'bool'];
+            return ['number', 'float', 'integer', 'area', 'eui', 'boolean'];
           }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
@@ -1020,7 +1020,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
                 columns = _.reject(columns, (item) => {
-                  return item['related'] || !o.includes(item['data_type']);
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
                 }).sort(function (a, b) {
                   return naturalSort(a.displayName, b.displayName);
                 });
