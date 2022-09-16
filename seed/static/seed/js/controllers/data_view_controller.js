@@ -368,9 +368,10 @@ angular.module('BE.seed.controller.data_view', [])
           data_view = $scope.selected_data_view
         }
         if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
-          let delete_data_view = data_view_service.delete_data_view(data_view.id).then((data) => {
+          delete_id = data_view.id;
+          let delete_data_view = data_view_service.delete_data_view(delete_id).then((data) => {
             if (data.status == 'success') {
-              window.location = '#/insights/custom/';
+              $scope.data_views = $scope.data_views.filter(data_view => data_view.id != delete_id);
             } else {
 
             }
