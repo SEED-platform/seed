@@ -123,6 +123,15 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
+    // Program Setup
+    // Datepickers for compliance period
+    $("#datepicker").datepicker({
+      format: "yyyy",
+      viewMode: "years",
+      minViewMode: "years",
+      autoclose:true //to close picker once year is selected
+  });
+
     $scope.confirm_delete = function (org) {
       $uibModal.open({
         templateUrl: urls.static_url + 'seed/partials/delete_org_modal.html',

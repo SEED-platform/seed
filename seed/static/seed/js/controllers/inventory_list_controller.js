@@ -191,9 +191,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
         });
 
-        modalInstance.result.then(function (newName) {
+        modalInstance.result.then((newName) => {
           $scope.currentFilterGroup.name = newName;
-          _.find($scope.filterGroups, {id: $scope.currentFilterGroup.id}).name = newName;
+          _.find($scope.filterGroups, { id: $scope.currentFilterGroup.id }).name = newName;
           Notification.primary('Renamed ' + oldFilterGroup.name + ' to ' + newName);
         });
       };

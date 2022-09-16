@@ -253,7 +253,7 @@ angular.module('BE.seed.controller.data_view', [])
       $scope.click_new_data_view = function () {
         spinner_utility.show();
         $scope.selected_data_view = {
-          name: 'New Data View',
+          name: 'New Custom Report',
           first_axis_aggregations: [],
           second_axis_aggregations: []
         };
@@ -378,7 +378,7 @@ angular.module('BE.seed.controller.data_view', [])
         if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
           let delete_data_view = data_view_service.delete_data_view(data_view.id).then((data) => {
             if (data.status == 'success') {
-              window.location = '#/insights/custom/';
+              window.location = '#/insights/custom';
             } else {
 
             }
