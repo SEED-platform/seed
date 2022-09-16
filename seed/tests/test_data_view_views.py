@@ -516,8 +516,8 @@ class DataViewEvaluationTests(TestCase):
         office_view_ids = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view40.state.address_line_1, self.view41.state.address_line_1]
         retail_view_ids = [self.view12.state.address_line_1, self.view13.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1, self.view42.state.address_line_1, self.view43.state.address_line_1]
 
-        self.assertEqual(sorted(office_view_ids), data['views_by_filter_group_id'][str(self.office_filter_group.id)])
-        self.assertEqual(sorted(retail_view_ids), data['views_by_filter_group_id'][str(self.retail_filter_group.id)])
+        self.assertEqual(sorted(office_view_ids), sorted(list(data['views_by_filter_group_id'][str(self.office_filter_group.id)].values())))
+        self.assertEqual(sorted(retail_view_ids), sorted(list(data['views_by_filter_group_id'][str(self.retail_filter_group.id)].values())))
 
         data = data['columns_by_id']
         self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
@@ -875,10 +875,10 @@ class DataViewInventoryTests(TestCase):
         self.assertEqual(list(data.keys()), [str(self.fg1.id), str(self.fg2.id)])
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
-        self.assertEqual(sorted(exp), data[str(self.fg1.id)])
+        self.assertEqual(sorted(exp), sorted(list(data[str(self.fg1.id)].values())))
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view13.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view23.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1]
-        self.assertEqual(sorted(exp), data[str(self.fg2.id)])
+        self.assertEqual(sorted(exp), sorted(list(data[str(self.fg2.id)].values())))
 
         response = self.client.get(
             reverse('api:v3:data_views-inventory', args=[self.data_view3.id]) + '?organization_id=' + str(self.org.id)
@@ -887,10 +887,10 @@ class DataViewInventoryTests(TestCase):
         data = data['data']
 
         exp = [self.view12.state.address_line_1, self.view20.state.address_line_1]
-        self.assertEqual(sorted(exp), data[str(self.fg_and.id)])
+        self.assertEqual(sorted(exp), sorted(list(data[str(self.fg_and.id)].values())))
 
         exp = [self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1]
-        self.assertEqual(sorted(exp), data[str(self.fg_or.id)])
+        self.assertEqual(sorted(exp), sorted(list(data[str(self.fg_or.id)].values())))
 
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
-        self.assertEqual(sorted(exp), data[str(self.fg_exc.id)])
+        self.assertEqual(sorted(exp), sorted(list(data[str(self.fg_exc.id)].values())))
