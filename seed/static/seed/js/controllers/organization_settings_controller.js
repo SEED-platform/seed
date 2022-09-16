@@ -127,7 +127,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     // Datepickers for compliance period
     $("#datepicker").datepicker({
       format: "yyyy",
-      viewMode: "years", 
+      viewMode: "years",
       minViewMode: "years",
       autoclose:true //to close picker once year is selected
   });
