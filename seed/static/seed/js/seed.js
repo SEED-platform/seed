@@ -47,7 +47,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
-  'BE.seed.controller.compliance_setup',
+  'BE.seed.controller.program_setup',
   'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_organization_modal',
   'BE.seed.controller.create_sub_organization_modal',
@@ -1003,10 +1003,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'compliance_setup',
-        url: '/accounts/{organization_id:int}/compliance_setup',
-        templateUrl: static_url + 'seed/partials/compliance_setup.html',
-        controller: 'compliance_setup_controller',
+        name: 'program_setup',
+        url: '/accounts/{organization_id:int}/program_setup',
+        templateUrl: static_url + 'seed/partials/program_setup.html',
+        controller: 'program_setup_controller',
         resolve: {
           valid_column_data_types: [function () {
             return ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
