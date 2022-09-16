@@ -93,6 +93,10 @@ $pairingCellWidth: 200px;
   color: $yellow;
 }
 
+.omitted {
+  filter: opacity(25%);
+}
+
 .clearfix {
   *zoom: 1; // For IE 6/7 (trigger hasLayout)
   &:before,
