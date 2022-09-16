@@ -515,7 +515,7 @@ class DataViewEvaluationTests(TestCase):
 
         office_view_ids = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view40.state.address_line_1, self.view41.state.address_line_1]
         retail_view_ids = [self.view12.state.address_line_1, self.view13.state.address_line_1, self.view32.state.address_line_1, self.view33.state.address_line_1, self.view42.state.address_line_1, self.view43.state.address_line_1]
-        
+
         self.assertEqual(sorted(office_view_ids), sorted(list(data['views_by_filter_group_id'][str(self.office_filter_group.id)].values())))
         self.assertEqual(sorted(retail_view_ids), sorted(list(data['views_by_filter_group_id'][str(self.retail_filter_group.id)].values())))
 
@@ -873,7 +873,7 @@ class DataViewInventoryTests(TestCase):
         data = data['data']
 
         self.assertEqual(list(data.keys()), [str(self.fg1.id), str(self.fg2.id)])
-    
+
         exp = [self.view10.state.address_line_1, self.view11.state.address_line_1, self.view12.state.address_line_1, self.view20.state.address_line_1, self.view21.state.address_line_1, self.view22.state.address_line_1, self.view30.state.address_line_1, self.view31.state.address_line_1, self.view32.state.address_line_1]
         self.assertEqual(sorted(exp), sorted(list(data[str(self.fg1.id)].values())))
 
