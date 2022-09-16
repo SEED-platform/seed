@@ -13,15 +13,15 @@
 
 <div class="section_content_container rp-data-view">
     <div class="wrap-collapsible">
-        <input id="collapsible" class="toggle" type="checkbox" checked >
+        <input id="collapsible" class="toggle" type="checkbox" checked style="display:none;">
         <label for="collapsible" class="lbl-toggle" style="width: 100px">Config</label>
         <div class="section_content r-columns rp-data-view-config collapsible-content" >
             <div class="r-column r-shrink r-panel">
                 <ul class="r-list">
                     <li class="r-list-header" translate>Custom Reports</li>
-                    <li ng-if="selected_data_view" class="r-selected" style="display: flex; justify-content: space-between">
+                    <li ng-if="selected_data_view" class="r-selected r-row r-row-centered" style="display: flex; justify-content: space-between">
                         <span>{$ selected_data_view.name $}</span>
-                        <span class="glyphicon glyphicon-remove" ng-click="click_delete(data_view)" style="cursor: pointer; color: gray" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Delete"></span>
+                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
                     </li>
                 </ul>
                 <ul class="r-list r-scrollable">
@@ -53,13 +53,13 @@
                     <ul class="r-list">
                         <li ng-if="editing && fields.filter_group_checkboxes[filter_group.id]" ng-repeat-start="filter_group in filter_groups" ng-repeat-end class="r-row r-selected">
                             <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.filter_group_checkboxes[filter_group.id]"/>
-                            <label for="input-filter-group-{$:: filter_group.id $}" class="r-no-wrap">{$:: filter_group.name $}</label>
+                            <label for="input-filter-group-{$:: filter_group.id $}" class="r-no-wrap r-grow">{$:: filter_group.name $}</label>
                         </li>
                     </ul>
                     <ul class="r-list r-scrollable">
                         <li ng-if="editing && !fields.filter_group_checkboxes[filter_group.id]" ng-repeat-start="filter_group in filter_groups" ng-repeat-end class="r-row">
                             <input id="input-filter-group-{$:: filter_group.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.filter_group_checkboxes[filter_group.id]"/>
-                            <label for="input-filter-group-{$:: filter_group.id $}" class="r-no-wrap">{$:: filter_group.name $}</label>
+                            <label for="input-filter-group-{$:: filter_group.id $}" class="r-no-wrap r-grow">{$:: filter_group.name $}</label>
                         </li>
                         <li ng-if="!editing" ng-repeat-start="filter_group in used_filter_groups" ng-repeat-end ng-class="object_has_key(selected_filter_groups, filter_group.name) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_filter_group(filter_group.id)">{$:: filter_group.name $}</li>
                     </ul>
@@ -77,13 +77,13 @@
                     <ul class="r-list">
                         <li ng-if="editing && fields.cycle_checkboxes[cycle.id]" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row r-selected">
                             <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]" value="cycle.id"/>
-                            <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap">{$:: cycle.name $}</label>
+                            <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap r-grow">{$:: cycle.name $}</label>
                         </li>
                     </ul>
                     <ul class="r-list r-scrollable">
                         <li ng-if="editing && !fields.cycle_checkboxes[cycle.id]" ng-repeat-start="cycle in cycles" ng-repeat-end class="r-row">
                             <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
-                            <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap">{$:: cycle.name $}</label>
+                            <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap r-grow">{$:: cycle.name $}</label>
                         </li>
                         <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.id) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_cycle(cycle.id)">{$:: cycle.name $}</li>
                     </ul>
