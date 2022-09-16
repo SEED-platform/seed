@@ -39,7 +39,7 @@ class ComplianceMetric(models.Model):
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
 
     def __str__(self):
-        return 'Compliance Metric - %s' % self.name
+        return 'Program Metric - %s' % self.name
 
     def evaluate(self):
         response = {

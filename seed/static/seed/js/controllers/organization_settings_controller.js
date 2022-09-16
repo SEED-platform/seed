@@ -123,7 +123,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
-    // Compliance Setup
+    // Program Setup
     // Datepickers for compliance period
     $("#datepicker").datepicker({
       format: "yyyy",
