@@ -85,7 +85,7 @@
                             <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
                             <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap">{$:: cycle.name $}</label>
                         </li>
-                        <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.id) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_cycle(cycle.id)">{$:: cycle.name $}</li>
+                        <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.start) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_cycle(cycle.start)">{$:: cycle.name $}</li>
                     </ul>
                     <ul class="r-list">
                         <li ng-if="!object_has_any_key(selected_cycles) || editing" class="r-info">
