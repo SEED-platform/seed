@@ -70,10 +70,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         $scope.errors.push('A name is required!');
       }
       if (!$scope.fields.start_year) {
-        $scope.errors.push('A compliance period start (XXXX) is required!');
+        $scope.errors.push('A compliance period start year (XXXX) is required!');
       }
       if (!$scope.fields.end_year) {
-        $scope.errors.push('A compliance period end (XXXX) year is required!');
+        $scope.errors.push('A compliance period end year (XXXX) is required!');
       }
       let has_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.target_energy_column && $scope.new_compliance_metric.energy_metric_type;
       let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.target_emission_column && $scope.new_compliance_metric.emission_metric_type;
