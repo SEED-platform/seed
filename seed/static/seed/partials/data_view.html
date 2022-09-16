@@ -20,13 +20,13 @@
                 <ul class="r-list">
                     <li class="r-list-header" translate>Custom Reports</li>
                     <li ng-if="selected_data_view" class="r-selected r-row r-row-centered">
-                        <span>{$ selected_data_view.name $}</span>
+                        <span class="r-grow">{$ selected_data_view.name $}</span>
                         <i class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
                     </li>
                 </ul>
                 <ul class="r-list r-scrollable">
                     <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end class="r-row r-row-centered">
-                        <a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a>
+                        <a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})" class="r-grow">{$:: data_view.name $}</a>
                         <i class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
                     </li>
                 </ul>
