@@ -163,7 +163,7 @@ class ComplianceMetric(models.Model):
         else:
             differential = actual_val - target_val
 
-        return 'y' if differential > 0 else 'n'
+        return 'y' if differential >= 0 else 'n'
 
     # retrieves column data by id substring
     def _get_column_data(self, data, substring):
