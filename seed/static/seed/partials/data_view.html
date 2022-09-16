@@ -14,20 +14,20 @@
 <div class="section_content_container rp-data-view">
     <div class="wrap-collapsible">
         <input id="collapsible" class="toggle" type="checkbox" checked style="display:none;">
-        <label for="collapsible" class="lbl-toggle" style="width: 100px">Config</label>
-        <div class="section_content r-columns rp-data-view-config collapsible-content" >
+        <label for="collapsible" class="lbl-toggle r-grow">Config</label>
+        <div class="section_content r-columns rp-data-view-config collapsible-content">
             <div class="r-column r-shrink r-panel">
                 <ul class="r-list">
                     <li class="r-list-header" translate>Custom Reports</li>
-                    <li ng-if="selected_data_view" class="r-selected r-row r-row-centered" style="display: flex; justify-content: space-between">
+                    <li ng-if="selected_data_view" class="r-selected r-row r-row-centered">
                         <span>{$ selected_data_view.name $}</span>
                         <i class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
                     </li>
                 </ul>
                 <ul class="r-list r-scrollable">
-                    <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end style="display: flex; justify-content: space-between">
+                    <li ng-if="!selected_data_view || data_view.id != selected_data_view.id" ng-repeat-start="data_view in data_views" ng-repeat-end class="r-row r-row-centered">
                         <a ui-sref="data_view(::{organization_id: org.id, id: data_view.id})">{$:: data_view.name $}</a>
-                        <span class="glyphicon glyphicon-remove" ng-click="click_delete(data_view)" style="cursor: pointer; color: gray" aria-hidden="true" tooltip-placement="bottom" uib-tooltip="Delete"></span>
+                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
                     </li>
                 </ul>
                 <ul class="r-list">
