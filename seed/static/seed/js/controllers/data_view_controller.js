@@ -371,14 +371,11 @@ angular.module('BE.seed.controller.data_view', [])
           delete_id = data_view.id;
           let delete_data_view = data_view_service.delete_data_view(delete_id).then((data) => {
             if (data.status == 'success') {
-              if ($scope.selected_data_view.id == data_view.id) {
-                window.location = '#/insights/custom';
-              } else {
                 $scope.data_views = $scope.data_views.filter(data_view => data_view.id != delete_id);
+                window.location = '#/insights/custom';
               }
-            }
-          });
-        }
+            });
+          };
         spinner_utility.hide();
       };
 
