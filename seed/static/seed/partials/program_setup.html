@@ -123,6 +123,9 @@
                             The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required.
                         </div>
                     </div>
+                    <div ng-if="errors.length > 0" class="r-panel r-error r-margin-bottom-10">
+                        <ul class="r-list"><li ng-repeat="error in errors">{$ error $}</li></ul>
+                    </div>
                     <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
                 </div>
             </div>
