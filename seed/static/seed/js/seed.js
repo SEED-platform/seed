@@ -47,6 +47,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
+  'BE.seed.controller.program_setup',
   'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_organization_modal',
   'BE.seed.controller.create_sub_organization_modal',
@@ -156,6 +157,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
   'BE.seed.service.columns',
+  'BE.seed.service.compliance_metric',
   'BE.seed.service.cycle',
   'BE.seed.service.postoffice',
   'BE.seed.service.dataset',
@@ -998,6 +1000,33 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }]
+        }
+      })
+      .state({
+        name: 'program_setup',
+        url: '/accounts/{organization_id:int}/program_setup',
+        templateUrl: static_url + 'seed/partials/program_setup.html',
+        controller: 'program_setup_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+            return ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
+          }],
+          compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
+            return compliance_metric_service.get_compliance_metrics();
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            return organization_service.get_organization($stateParams.organization_id);
+          }],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
         }
       })
       .state({
@@ -1860,12 +1889,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_program.html',
         controller: 'insights_program_controller',
         resolve: {
-          valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
+          compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
+            return compliance_metric_service.get_compliance_metrics();
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }]
+
         }
       })
       .state({
@@ -1874,11 +1907,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_property.html',
         controller: 'insights_property_controller',
         resolve: {
-          valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
+          compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
+            return compliance_metric_service.get_compliance_metrics();
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }]
         }
       })

@@ -35,7 +35,7 @@
                 </ul>
             </div>
 
-            <div ng-if="!selected_data_view && !editing" class="r-panel r-column r-grow">
+            <div ng-if="!selected_data_view && !editing" class="r-panel r-column">
                 <div ng-if="data_views_error" class="r-panel r-error r-margin-bottom-10">{$ data_views_error $}</div>
                 <b ng-if="!has_data_views" translate>No Custom Reports Created</b>
                 <p ng-if="!has_data_views"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Custom Report to get started!</span></p>
@@ -45,7 +45,7 @@
                 <p translate>A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time.</p>
             </div>
 
-            <div ng-if="selected_data_view || editing" class="r-panel r-columns r-grow r-no-margin">
+            <div ng-if="selected_data_view || editing" class="r-panel r-columns r-no-margin">
                 <div class="r-column">
                     <ul class="r-list">
                         <li class="r-list-header" translate>Filter Groups</li>
@@ -70,7 +70,7 @@
                     </ul>
                 </div>
 
-                <div class="r-column">
+                <div class="r-column r-shrink">
                     <ul class="r-list">
                         <li class="r-list-header" translate>Cycles</li>
                     </ul>
@@ -85,7 +85,7 @@
                             <input id="input-cycle-{$:: cycle.id $}" type="checkbox" class="r-margin-right-5" ng-model="fields.cycle_checkboxes[cycle.id]"/>
                             <label for="input-cycle-{$:: cycle.id $}" class="r-no-wrap r-grow">{$:: cycle.name $}</label>
                         </li>
-                        <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.id) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_cycle(cycle.id)">{$:: cycle.name $}</li>
+                        <li ng-if="!editing" ng-repeat-start="cycle in used_cycles" ng-repeat-end ng-class="object_has_key(selected_cycles, cycle.start) ? 'r-selected' : ''" class="r-row r-selectable r-no-wrap" ng-click="toggle_cycle(cycle.start)">{$:: cycle.name $}</li>
                     </ul>
                     <ul class="r-list">
                         <li ng-if="!object_has_any_key(selected_cycles) || editing" class="r-info">
