@@ -4463,7 +4463,7 @@ ul.r-list {
 }
 
 .r-selectable:hover {
-  cursor: pointer;
+  cursor: pointer !important;
   font-weight: bold;
   background-color: $infoBackground;
 }
@@ -4537,10 +4537,6 @@ ul.r-list {
   .wrap-collapsible {
     margin-bottom: 1.2rem 0;
     border-bottom: 1px solid #cccccc;
-  }
-
-  input[type="checkbox"] {
-    display: none;
   }
 
   .lbl-toggle {
