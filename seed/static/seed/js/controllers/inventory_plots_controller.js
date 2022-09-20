@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
           "yDisplayName": "ECI"
         },
         {
-          "chartName": "CO2 vs Gross Floor Area (ft²)",
+          "chartName": "Total GHG Emissions vs Gross Floor Area (ft²)",
           "xDisplayName": "Total GHG Emissions (t/year)",
           "yDisplayName": "Gross Floor Area (ft²)"
         },
@@ -85,7 +85,7 @@ angular.module('BE.seed.controller.inventory_plots', [])
           "xDisplayName": "ECI"
         },
         {
-          "chartName": "CO2/sqft vs Year Built",
+          "chartName": "Total GHG Emissions/sqft vs Year Built",
           "xDisplayName": "Total GHG Emissions/sqft",
           "yDisplayName": "Year Built"
         },
