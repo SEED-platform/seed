@@ -28,7 +28,7 @@ class PropertyMeasure(models.Model):
     MEASURE_COMPLETED = 7
     MEASURE_MV = 8
     MEASURE_VERIFIED = 9
-    MEASURE_UNSATIFACTORY = 10
+    MEASURE_UNSATISFACTORY = 10
 
     IMPLEMENTATION_TYPES = (
         (MEASURE_PROPOSED, 'Proposed'),
@@ -40,7 +40,7 @@ class PropertyMeasure(models.Model):
         (MEASURE_COMPLETED, 'Completed'),
         (MEASURE_MV, 'MV'),
         (MEASURE_VERIFIED, 'Verified'),
-        (MEASURE_UNSATIFACTORY, 'Unsatisfactory'),
+        (MEASURE_UNSATISFACTORY, 'Unsatisfactory'),
     )
 
     SCALE_INDIVIDUAL_SYSTEM = 1

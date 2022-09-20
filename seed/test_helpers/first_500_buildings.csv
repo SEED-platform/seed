@@ -1,4 +1,4 @@
-tax_lot_id,address_line_1,city,state,postal_code,year_built,site_eui,owner,owner_email,owner_telephone,owner_adress,owner_city_state,owner_postal_code
+tax_lot_id,address_line_1,city,state,postal_code,year_built,site_eui,owner,owner_email,owner_telephone,owner_address,owner_city_state,owner_postal_code
 11588,1151 Lambert Street,Boring,Oregon,97039,2002,216,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
 48810,1071 Jones Street,Boring,Oregon,97017,1907,437,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853
 54953,611 Ortega Avenue,Boring,Oregon,97020,1882,64,Russell Parrish Ltd,michael00@russell-parrish.com,08110738504,1261 Beard Avenue,"Christophermouth, WI",19853

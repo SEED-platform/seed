@@ -835,7 +835,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def test_property_states_not_associated_to_properties_are_not_targetted_on_meter_import(self):
+    def test_property_states_not_associated_to_properties_are_not_targeted_on_meter_import(self):
         # Create three pm_property_id = 5766973 properties that are exact duplicates
         base_details = {
             'address_line_1': '123 Match Street',

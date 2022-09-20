@@ -2,7 +2,7 @@ Raw Columns,units,SEED Table,SEED Columns
 jurisdiction property identifier,,PropertyState,JPID
 custom id 1,,PropertyState,custom_id_1
 pm property id,,PropertyState,pm_property_id
-pm parent propery id,,PropertyState,pm_parent_property_id
+pm parent property id,,PropertyState,pm_parent_property_id
 UBID,,PropertyState,ubid
 property name,,PropertyState,property_name
 address line 1,,PropertyState,address_line_1

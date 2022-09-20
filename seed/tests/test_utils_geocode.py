@@ -3,7 +3,7 @@
 """
 Test Geocoding of Properties and Tax Lots
 
-On first run, HTTP request/responses are truely sent and received.
+On first run, HTTP request/responses are truly sent and received.
 On subsequent runs on the same machine, API request/responses are
 intercepted/mocked by VCR. To execute an actual HTTP request/response
 (and not use mocked data), delete the vcr_cassette files.
@@ -347,7 +347,7 @@ class GeocodeAddresses(TestCase):
         self.assertIsNone(refreshed_property.long_lat)
         self.assertEqual(refreshed_property.geocoding_confidence, "Missing address components (N/A)")
 
-    def test_geocode_buildings_returns_no_data_when_provided_address_is_ambigious(self):
+    def test_geocode_buildings_returns_no_data_when_provided_address_is_ambiguous(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
             # 1st Property
             state_zip_only_details = self.property_state_factory.get_details()
@@ -669,7 +669,7 @@ class GeocodeAddresses(TestCase):
         property = PropertyState(**property_details)
         property.save()
 
-        # Make sure geocoding_confidence isn't overriden to be Manual given latitude and longitude are updated
+        # Make sure geocoding_confidence isn't overridden to be Manual given latitude and longitude are updated
         refreshed_property = PropertyState.objects.get(pk=property.id)
         self.assertEqual('High (P1AAA)', refreshed_property.geocoding_confidence)
 

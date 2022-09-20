@@ -33,7 +33,7 @@ class Command(BaseCommand):
             coords = [f"{coord[0]} {coord[1]}" for coord in geom['coordinates'][0]]
             return f"POLYGON (( {', '.join(coords)} ))"
         else:
-            raise Exception(f"Unknown type of Geomoetry in GeoJSON of {geom['type']}")
+            raise Exception(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
 
     def handle(self, *args, **options):
         self.stdout.write('Parsing geojson files in %s' % (options['path']), ending='\n')

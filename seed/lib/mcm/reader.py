@@ -369,7 +369,7 @@ class ExcelParser(object):
         return item.value
 
     def XLSDictReader(self, sheet, header_row=0):
-        """returns a generator yeilding a dict per row from the XLS/XLSX file
+        """returns a generator yielding a dict per row from the XLS/XLSX file
         https://gist.github.com/mdellavo/639082
 
         :param sheet: xlrd Sheet
@@ -473,7 +473,7 @@ class MCMParser(object):
     columnar data against a set of known ontologies and separates data
     according to those distinctions.
 
-    Map: mapping the columns to known ontologies, then colating data by these.
+    Map: mapping the columns to known ontologies, then collating data by these.
     Clean: coerce data according to ontology schema.
     Merge: merging the data from multiple sources into one ontology.
 
@@ -526,7 +526,7 @@ class MCMParser(object):
         elif isinstance(self.reader, ExcelParser):
             self.data = self.reader.excelreader
         else:
-            raise Exception('Uknown type of parser in MCMParser')
+            raise Exception('Unknown type of parser in MCMParser')
 
         return self.reader.seek_to_beginning()
 

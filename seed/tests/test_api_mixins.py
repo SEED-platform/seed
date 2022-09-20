@@ -416,7 +416,7 @@ class TestHelpers(TestCase):
         result = rgetattr(obj, ['a', 'c'])
         self.assertEqual(result, None)
 
-    def test_gett_org_id_from_validator(self):
+    def test_get_org_id_from_validator(self):
         """test get_org_id_from_validator"""
         child = type('X', (object,), dict(a=7, b=2))
         obj = type('X', (object,), dict(a=child, b=3))

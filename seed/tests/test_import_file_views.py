@@ -119,7 +119,7 @@ class TestSensorViewSet(DataMappingBaseTestCase):
             {'display_name': 'my dex sensor', 'type': 'dex', 'location_description': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
             {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_description': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
             {'display_name': 'my coolness sensor', 'type': 'cool', 'location_description': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
-            {'display_name': 'my intelligence', 'type': 'intl', 'location_description': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
+            {'display_name': 'my intelligence', 'type': 'intl', 'location_description': 'brain', 'units': 'opinions', 'column_name': 'intelligence_sensor', 'description': ''},
         ]
 
         self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
@@ -597,7 +597,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
 
-        # This test fails on purpose becasue the format of the first five rows will not
+        # This test fails on purpose because the format of the first five rows will not
         # support this use case.
         self.assertNotEqual(converted, expected)
 

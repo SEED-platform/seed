@@ -585,7 +585,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        the reverse order of the merged -State. 3rd City will be given precedecnce
+        the reverse order of the merged -State. 3rd City will be given precedence
         """
         self.assertEqual(TaxLotView.objects.count(), 1)
         only_view = TaxLotView.objects.get()
@@ -985,7 +985,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             )
             self.assertCountEqual(view_ids, matching_view_ids)
 
-    def test_match_merge_link_for_properties_resuses_canonical_records_when_possible(self):
+    def test_match_merge_link_for_properties_reuses_canonical_records_when_possible(self):
         """
         3 Cycles - 1 Property Set in each - all 3 will match after import
         2 Sets will be linked first. The last will be linked afterwards and will
@@ -1048,7 +1048,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(3, PropertyView.objects.count())
         self.assertEqual(3, PropertyView.objects.filter(property_id=linking_id).count())
 
-    def test_match_merge_link_for_taxlots_resuses_canonical_records_when_possible(self):
+    def test_match_merge_link_for_taxlots_reuses_canonical_records_when_possible(self):
         """
         3 Cycles - 1 TaxLot Set in each - all 3 will match after import
         2 Sets will be linked first. The last will be linked afterwards and will
@@ -1111,7 +1111,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(3, TaxLotView.objects.count())
         self.assertEqual(3, TaxLotView.objects.filter(taxlot_id=linking_id).count())
 
-    def test_match_merge_link_for_properties_diassociated_records_if_no_longer_valid(self):
+    def test_match_merge_link_for_properties_disassociated_records_if_no_longer_valid(self):
         """
         3 Cycles - 1 Property Set in each - all 3 are match linked after import.
         Make one not match anymore and rerun match merge link to unlink it.
@@ -1171,7 +1171,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(initial_linked_id, view_21.property_id)
         self.assertEqual(initial_linked_id, view_31.property_id)
 
-    def test_match_merge_link_for_taxlots_diassociated_records_if_no_longer_valid(self):
+    def test_match_merge_link_for_taxlots_disassociated_records_if_no_longer_valid(self):
         """
         3 Cycles - 1 TaxLot Set in each - all 3 are match linked after import.
         Make one not match anymore and rerun match merge link to unlink it.
@@ -1279,7 +1279,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         First case - The following is set up:
             - 3 overlapping readings are created between 3 Sets
             - 2 overlapping readings are created between the last 2 Sets
-            - The 1st Set is targetted in the match_merge_link method
+            - The 1st Set is targeted in the match_merge_link method
 
         Outcome:
             - The 3 overlapping readings should have the 1st Set's reading
