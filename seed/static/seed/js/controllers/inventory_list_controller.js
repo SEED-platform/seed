@@ -121,14 +121,15 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Filter Groups
       $scope.filterGroups = filter_groups;
       $scope.currentFilterGroup = current_filter_group;
+      $scope.currentFilterGroupId = current_filter_group ? String(current_filter_group.id) : '-1';
 
       $scope.Modified = false;
 
       $scope.new_filter_group = function () {
         var label_ids = [];
         for (label in $scope.selected_labels) {
-            label_ids.push($scope.selected_labels[label].id);
-        };
+          label_ids.push($scope.selected_labels[label].id);
+        }
         filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
         var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
 
@@ -193,7 +194,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         modalInstance.result.then((newName) => {
           $scope.currentFilterGroup.name = newName;
-          _.find($scope.filterGroups, { id: $scope.currentFilterGroup.id }).name = newName;
+          _.find($scope.filterGroups, {id: $scope.currentFilterGroup.id}).name = newName;
           Notification.primary('Renamed ' + oldFilterGroup.name + ' to ' + newName);
         });
       };
@@ -266,40 +267,53 @@ angular.module('BE.seed.controller.inventory_list', [])
       const updateCurrentFilterGroup = (filterGroup) => {
         // Set current filter group
         $scope.currentFilterGroup = filterGroup;
-        filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type)
 
-        // Update labels
-        $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
-        $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
+        if (filterGroup) {
+          filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type);
+
+          // Update labels
+          $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+          $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
         $scope.filterUsingLabels();
 
-        // clear table filters
-        $scope.gridApi.grid.columns.forEach(column =>{
-          column.filters[0] = {
-            term: null
-          };
-        });
+          // clear table filters
+          $scope.gridApi.grid.columns.forEach(column => {
+            column.filters[0] = {
+              term: null
+            };
+          });
 
-        // write new filter in table
-        for (const key in $scope.currentFilterGroup.query_dict) {
-          const value = $scope.currentFilterGroup.query_dict[key];
-          const [column_name, operator] = key.split('__');
+          // write new filter in table
+          for (const key in $scope.currentFilterGroup.query_dict) {
+            const value = $scope.currentFilterGroup.query_dict[key];
+            const [column_name, operator] = key.split('__');
 
-          const column = $scope.gridApi.grid.columns.find(column => column.colDef.column_name === column_name);
+            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.column_name === column_name);
 
-          if (column.filters[0].term == null) {
-            column.filters[0].term = getTableFilter(value, operator);
-          } else {
-            column.filters[0].term += `, ${getTableFilter(value, operator)}`;
+            if (column.filters[0].term == null) {
+              column.filters[0].term = getTableFilter(value, operator);
+            } else {
+              column.filters[0].term += `, ${getTableFilter(value, operator)}`;
+            }
           }
-        }
 
-        // update filtering
-        updateColumnFilterSort();
+          // update filtering
+          updateColumnFilterSort();
+        } else {
+          // Clear filter group
+          filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
+          // TODO clear everything else
+        }
       };
 
-      $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroup) => {
-        const selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId)
+      $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroupId) => {
+        currentFilterGroupId = +currentFilterGroupId;
+
+        let selectedFilterGroup = null;
+        if (currentFilterGroupId !== -1) {
+          selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
+        }
+
         if ($scope.Modified) {
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>',
@@ -308,7 +322,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.Modified = false;
             updateCurrentFilterGroup(selectedFilterGroup);
           }).catch(() => {
-            $scope.currentFilterGroup = oldFilterGroup;
+            $scope.currentFilterGroupId = String(oldFilterGroupId);
           });
         } else {
           updateCurrentFilterGroup(selectedFilterGroup);
@@ -959,11 +973,11 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       // disable sorting and filtering on related data until the backend can filter/sort over two models
-      for (i in $scope.columns) {
+      for (const i in $scope.columns) {
         let column = $scope.columns[i];
         if (column['related']) {
           column['enableSorting'] = false;
-          title = "Filtering disabled for property columns on the taxlot list.";
+          let title = "Filtering disabled for property columns on the taxlot list.";
           if ($scope.inventory_type == 'properties') {
             title = "Filtering disabled for taxlot columns on the property list.";
           }

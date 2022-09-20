@@ -34,7 +34,11 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
     filter_groups_factory.save_last_filter_group = function (id, inventory_type) {
       var organization_id = user_service.get_organization().id,
         filter_groups = JSON.parse(localStorage.getItem('filter_groups.' + inventory_type)) || {};
-        filter_groups[organization_id] = _.toInteger(id);
+      if (id === -1) {
+        delete filter_groups[organization_id];
+      } else {
+        filter_groups[organization_id] = id;
+      }
       localStorage.setItem('filter_groups.' + inventory_type, JSON.stringify(filter_groups));
     };
 
