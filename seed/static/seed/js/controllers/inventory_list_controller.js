@@ -225,6 +225,8 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // compare filters if different then true, then compare labels, and finally label_logic. All must be the same to return false
       $scope.isModified = function () {
+        if ($scope.currentFilterGroup == null) return false;
+
         if ($scope.filterGroups.length > 0) {
           current_filters = {};
           current_filters = inventory_service.get_format_column_filters($scope.column_filters);
@@ -302,7 +304,16 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else {
           // Clear filter group
           filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
-          // TODO clear everything else
+          $scope.selected_labels = [];
+          $scope.filterUsingLabels();
+
+            // clear table filters
+            $scope.gridApi.grid.columns.forEach(column => {
+              column.filters[0] = {
+                term: null
+              };
+            });
+            updateColumnFilterSort();
         }
       };
 
