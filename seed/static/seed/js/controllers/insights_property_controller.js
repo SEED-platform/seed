@@ -198,12 +198,13 @@ angular.module('BE.seed.controller.insights_property', [])
             // don't add whisker if data is in range for that metric or it looks bad
             let add = false
             metric_type = $scope.chart_metric == 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
-
-            if ((metric_type == 1 && (item['target'] < item['y'])) || (metric_type == 2 && (item['target'] > item['y']))) {
-              add = true
+            if (item['x'] && item['y'] && item['target']) {
+              if ((metric_type == 1 && (item['target'] < item['y'])) || (metric_type == 2 && (item['target'] > item['y']))) {
+                add = true
+              }
             }
 
-            if (add && item['target']) {
+            if (add) {
               // add it
               let anno = Object.assign({},annotation)
               anno.xMin = item['x']
