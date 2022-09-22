@@ -24,6 +24,11 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       'start_year': null,
       'end_year': null
     };
+    $scope.program_settings_not_changed = true;
+    $scope.program_settings_changed = function () {
+      $scope.program_settings_not_changed = false;
+    }
+
     $scope.errors = [];
     if ($scope.complianceMetrics.length > 0){
       $scope.new_compliance_metric = $scope.complianceMetrics[0];  // assign to first for now
@@ -45,6 +50,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.x_axis_selection = '';
 
     $scope.select_x_axis = function () {
+      $scope.program_settings_not_changed = false;
       let selection = $scope.x_axis_selection;
       $scope.x_axis_selection = '';
       if (!$scope.new_compliance_metric.x_axis_columns) {
@@ -57,6 +63,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     $scope.click_remove_x_axis = function (id) {
+      $scope.program_settings_not_changed = false;
       $scope.new_compliance_metric.x_axis_columns = $scope.new_compliance_metric.x_axis_columns.filter(item => item != id);
     };
 
