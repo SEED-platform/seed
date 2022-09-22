@@ -137,6 +137,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               }
          });
       }
+      $scope.program_settings_not_changed = true;
     };
-
   }]);
