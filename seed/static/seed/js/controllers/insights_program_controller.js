@@ -27,8 +27,6 @@ angular.module('BE.seed.controller.insights_program', [])
 
       // compliance metric
       $scope.compliance_metric = {};
-      // for now there should always be 1 (get_or_create_default function in compliance_metrics list api)
-      // in the future there will be multiple
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
       }
