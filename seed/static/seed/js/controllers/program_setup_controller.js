@@ -62,7 +62,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.new_compliance_metric.x_axis_columns = $scope.new_compliance_metric.x_axis_columns.filter(item => item != id);
     };
 
-    // $scope.energyMetricType = energyMetricType;
     /**
      * saves the updates settings
      */
