@@ -34,17 +34,18 @@
             <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
                 <li class="dropdown-header" translate>Organization Settings</li>
                 <li class="divider"></li>
-                <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
-                <li><a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a></li>
                 <li><a ui-sref="organization_column_settings({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Column Settings</a></li>
                 <li><a ui-sref="organization_column_mappings({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Column Mappings</a></li>
-                <li><a ui-sref="organization_data_quality({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Data Quality</a></li>
                 <li><a ui-sref="organization_cycles({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Cycles</a></li>
-                <li><a ui-sref="organization_labels({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Labels</a></li>
-                <li><a ui-sref="organization_sub_orgs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a></li>
-                <li><a ui-sref="organization_members({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
-                <li><a ui-sref="organization_email_templates({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Email Templates</a></li>
+                <li><a ui-sref="organization_data_quality({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Data Quality</a></li>
                 <li><a ui-sref="organization_derived_columns({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Derived Columns</a></li>
+                <li><a ui-sref="organization_email_templates({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Email Templates</a></li>
+                <li><a ui-sref="organization_labels({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Labels</a></li>
+                <li><a ui-sref="organization_members({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
+                <li><a ui-sref="program_setup({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Program Setup</a></li>
+                <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
+                <li><a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a></li>
+                <li><a ui-sref="organization_sub_orgs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a></li>
 
 
                 <!--<li>

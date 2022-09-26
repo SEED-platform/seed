@@ -1,0 +1,132 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container"></div>
+        <div class="page_title"><h1 translate>Program Overview</h1></div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
+</div>
+
+
+<div class="section_content_container">
+  <div class="section_content container-fluid">
+    <div class="content_block row less_pad">
+        <div ng-show="!data">
+            <div class="col-md-10">
+                <div class="title-row">
+                    <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
+                </div>
+                <div class="compliance-setup">
+                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metrics</a> page to configure your program's metrics.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div ng-show="data">
+        	<div class="col-md-2">
+                <div class="title-row">
+                    <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
+                </div>
+    			<!-- compliance setup -->
+    			<div class="compliance-setup">
+    				<p>Need to configure your Program Metrics? <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metric Configuration page</a>.
+                    </p>
+    			</div>
+                <!--<div class="margin-top-20">
+    				<button type="button" class="btn btn-primary" ng-click="export_data()">
+    					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
+    				</button>
+    			</div> -->
+    			<div class="chart-legend">
+    				<div class="title">Chart Legend</div>
+    				<div class="legend-row row">
+    					<div class="col-md-3 box blue-box"></div>
+    					<div class="col-md-9 text">Compliant</div>
+    				</div>
+    				<div class="legend-row row"><div class="col-md-3 box red-box"></div><div class="col-md-9 text">Not Compliant</div></div>
+    				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
+    			</div>
+        	</div>
+        	<div class="col-md-10">
+                <div style="margin-left: 5vw; margin-right: 5vw">
+                    <h3 style="font-size:18px;">{$ compliance_metric.name $}</h3>
+                </div>
+                <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
+                   <canvas id="program-overview-chart"></canvas>
+                </div>
+                <div class="section_content r-columns" style="display:unset !important;" >
+                    <div class="r-column r-shrink table_list_container" ng-if="data" style="margin-top:2vw; margin-right: 5vw">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" translate>Cycles</th>
+                                    <th ng-repeat="cycle in data.cycles">{$:: cycle.name $}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-click="show_properties_for_dataset['y'] = !show_properties_for_dataset['y']">
+                                    <td class="r-selectable r-selected"> Compliant </td>
+                                    <td ng-repeat="cycle in data.cycles">
+                                        {$ data.results_by_cycles[cycle.id]['y'].length $}
+                                    </td>
+                                </tr>
+                                <tr ng-show="show_properties_for_dataset['y']">
+                                    <td></td>
+                                    <td ng-repeat="cycle in data.cycles">
+                                        <div ng-repeat="item in data.results_by_cycles[cycle.id]['y']">
+                                            <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$ get_display_field_value(cycle.id, item) $}</a></td>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr ng-click="show_properties_for_dataset['n'] = !show_properties_for_dataset['n']">
+                                    <td class="r-selectable r-selected"> Non-Compliant </td>
+                                    <td ng-repeat="cycle in data.cycles"> {$:: data.results_by_cycles[cycle.id]['n'].length $}
+                                    </td>
+                                </tr>
+                                <tr ng-show="show_properties_for_dataset['n']">
+                                    <td></td>
+                                    <td ng-repeat="cycle in data.cycles">
+                                        <div ng-repeat="item in data.results_by_cycles[cycle.id]['n']">
+                                            <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(cycle.id, item) $}</a></td>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr ng-click="show_properties_for_dataset['u'] = !show_properties_for_dataset['u']">
+                                    <td class="r-selectable r-selected"> Unknown </td>
+                                    <td ng-repeat="cycle in data.cycles">
+                                        {$ data.results_by_cycles[cycle.id]['u'].length $}
+                                    </td>
+                                </tr>
+                                <tr ng-show="show_properties_for_dataset['u']">
+                                    <td></td>
+                                    <td ng-repeat="cycle in data.cycles">
+                                        <div ng-repeat="item in data.results_by_cycles[cycle.id]['u']">
+                                            <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(cycle.id, item) $}</a></td>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="section_content_container">
+    <div class="section_content r-columns" style="display:unset !important">
+
+
+
+        <div class="r-column r-shrink">
+        </div>
+
+    </div>
+</div>
