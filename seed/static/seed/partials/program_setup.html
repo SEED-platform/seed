@@ -1,0 +1,139 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+
+<div class="section">
+
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left">
+                <h2><i class="fa fa-tachometer"></i> {$:: 'Program Metric Configuration' | translate $}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+        <div class="section_content">
+            <div class="r-columns">
+                <div class="r-column">
+                    <div class="r-panel r-margin-bottom-10">
+                        <ul class="r-list">
+                            <li class="r-list-header" translate>Metric</li>
+                            <li class="r-row r-row-centered">
+                                <label for="input-metric-name" class="r-no-wrap r-margin-right-5" translate>Name</label>
+                                <input id="input-metric-name" type="text" class="form-control" ng-model="new_compliance_metric.name"/>
+                            </li>
+                            <li class="r-row r-row-centered">
+                                <label for="input-compliance-period-start" class="r-no-wrap r-margin-right-5" translate>Compliance Period (years)</label>
+                                <input id="input-compliance-period-start" type="number" min=1000 max=9000 class="form-control" ng-model="fields.start_year"/>
+                                <span class="r-margin-left-5 r-margin-right-5">to</span>
+                                <input id="input-compliance-period-end" type="number" min=1000 max=9000 class="form-control" ng-model="fields.end_year"/>
+                            </li>
+                        </ul>
+                        <div class="r-panel r-info r-margin-top-10">
+                            Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program insights</a></b> page.
+                        </div>
+                    </div>
+                    <div class="r-panel">
+                        <ul class="r-list">
+                            <li class="r-list-header" translate>X-Axis Columns</li>
+                            <li ng-repeat="item in new_compliance_metric.x_axis_columns" class="r-row r-row-centered">
+                                <span class="r-grow">{$:: get_column_display(item) $}</span>
+                                <i class="fa fa-times r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
+                            </li>
+                            <li class="r-row r-row-centered">
+                                <select id="select-x-axis" class="form-control" ng-change="select_x_axis()" ng-model="x_axis_selection">
+                                    <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                                </select>
+                            </li>
+                        </ul>
+                        <div class="r-panel r-info r-margin-top-10">
+                            Select at least one column which will serve as the x-axis for visualizations on the property insights page. Multiple columns can be selected.
+                        </div>
+                    </div>
+                </div>
+                <div class="r-column">
+                    <div class="r-panel r-margin-bottom-10">
+                        <div class="r-columns r-no-margin">
+                            <ul class="r-list">
+                                <li class="r-list-header" translate>Energy Metric</li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-energy-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Column</label>
+                                    <select id="select-energy-metric-actual-column" class="form-control" ng-model="new_compliance_metric.actual_energy_column">
+                                        <option value=""></option>
+                                        <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                                    </select>
+                                </li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-energy-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Column</label>
+                                    <select id="select-energy-metric-target-column" class="form-control" ng-model="new_compliance_metric.target_energy_column">
+                                        <option value=""></option>
+                                        <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                                    </select>
+                                </li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-energy-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
+                                    <select id="select-energy-metric-type" class="form-control" ng-model="new_compliance_metric.energy_metric_type">
+                                        <option value=""></option>
+                                        <option value="Target > Actual for Compliance" translatee>Target > Actual for Compliance</option>
+                                        <option value="Actual > Target for Compliance" translatee>Actual > Target for Compliance</option>
+                                    </select>
+                                </li>
+                            </ul>
+                            <ul class="r-list">
+                                <li class="r-list-header" translate>Emission Metric</li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-emission-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Column</label>
+                                    <select id="select-emission-metric-actual-column" class="form-control" ng-model="new_compliance_metric.actual_emission_column">
+                                        <option value=""></option>
+                                        <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                                    </select>
+                                </li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-emission-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Column</label>
+                                    <select id="select-emission-metric-target-column" class="form-control" ng-model="new_compliance_metric.target_emission_column">
+                                        <option value=""></option>
+                                        <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                                    </select>
+                                </li>
+                                <li class="r-row r-row-centered">
+                                    <label for="select-emission-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
+                                    <select id="select-emission-metric-type" class="form-control" ng-model="new_compliance_metric.emission_metric_type">
+                                        <option value=""></option>
+                                        <option value="Target > Actual for Compliance" translate>Target > Actual for Compliance</option>
+                                        <option value="Actual > Target for Compliance" translate>Actual > Target for Compliance</option>
+                                    </select>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="r-panel r-info r-margin-top-10">
+                            The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required.
+                        </div>
+                    </div>
+                    <div ng-if="errors.length > 0" class="r-panel r-error r-margin-bottom-10">
+                        <ul class="r-list"><li ng-repeat="error in errors">{$ error $}</li></ul>
+                    </div>
+                    <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+    </div>
+
+    </div>
+</div>

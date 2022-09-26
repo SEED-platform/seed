@@ -13,12 +13,15 @@ from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
+from seed.views.v3.compliance_metrics import ComplianceMetricViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
+from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
+from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.green_assessment_properties import (
@@ -55,11 +58,14 @@ api_v3_router.register(r'building_files', BuildingFileViewSet, basename="buildin
 api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, basename='column_mapping_profiles')
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
+api_v3_router.register(r'compliance_metrics', ComplianceMetricViewSet, basename='compliance_metrics')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
 api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
+api_v3_router.register(r'data_views', DataViewViewSet, basename='data_views')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
 api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
+api_v3_router.register(r'filter_groups', FilterGroupViewSet, basename='filter_groups')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename="properties")
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename="green_assessment_properties")
