@@ -46,7 +46,6 @@ class DataView(models.Model):
                 for view in views:
                     view_name = self._format_property_display_field(view)
                     views_by_filter_group_id[filter_group.id][view.id] = view_name
-            # views_by_filter_group_id[filter_group.id] = sorted(list(set(views_by_filter_group_id[filter_group.id])))
 
         return views_by_filter_group_id, filter_group_views
 
