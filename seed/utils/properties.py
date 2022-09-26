@@ -192,3 +192,27 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
         results[cycle_id] = unit_collapsed_results
 
     return results
+
+
+def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[]):
+    # Identify column preferences to be used to scope fields/values
+    columns_from_database = Column.retrieve_all(org_id, 'property', False)
+
+    results = {}
+    for cycle_id in cycle_ids:
+        # get -Views for this Cycle
+        property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+            .filter(property__organization_id=org_id, cycle_id=cycle_id) \
+            .order_by('id')
+
+        for p in property_views.values():
+            print(f"!!!!! {p}\n")
+
+        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
+
+        org = Organization.objects.get(pk=org_id)
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+        results[cycle_id] = unit_collapsed_results
+
+    return results

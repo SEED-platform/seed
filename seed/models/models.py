@@ -133,6 +133,7 @@ class StatusLabel(TimeStampedModel):
         return obj_to_dict(self)
 
 
+# Note that the compliance model is related to Projects which has been disabled for a long time. Delete this model and corresponding code.
 class Compliance(TimeStampedModel):
     compliance_type = models.CharField(
         _('compliance_type'),

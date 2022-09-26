@@ -9,9 +9,9 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Column, PropertyView
-from seed.search import FilterException, build_view_filters_and_sorts
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.utils.organizations import create_organization
+from seed.utils.search import FilterException, build_view_filters_and_sorts
 
 
 class TestInventoryViewSearchParsers(TestCase):

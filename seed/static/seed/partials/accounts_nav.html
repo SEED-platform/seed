@@ -1,11 +1,12 @@
-        <a ui-sref="organization_settings(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Settings</a>
-        <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>
         <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::auth.requires_owner" ng-class="::{active: state.name === 'organization_column_settings'}" translate>Column Settings</a>
         <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::auth.requires_owner" ng-class="::{active: state.name === 'organization_column_mappings'}" translate>Column Mappings</a>
-        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent && auth.requires_owner" ng-class="::{active: state.name === 'organization_data_quality'}" translate>Data Quality</a>
         <a ui-sref="organization_cycles(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Cycles</a>
-        <a ui-sref="organization_labels(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Labels</a>
-        <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a>
-        <a ui-sref="organization_members(::{organization_id: org.id})" ui-sref-active="active" translate>Members</a>
-        <a ui-sref="organization_email_templates(::{organization_id: org.id})" ui-sref-active="active" translate>Email Templates</a>
+        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent && auth.requires_owner" ng-class="::{active: state.name === 'organization_data_quality'}" translate>Data Quality</a>
         <a ui-sref="organization_derived_columns(::{organization_id: org.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Derived Columns</a>
+        <a ui-sref="organization_email_templates(::{organization_id: org.id})" ui-sref-active="active" translate>Email Templates</a>
+        <a ui-sref="organization_labels(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Labels</a>
+        <a ui-sref="organization_members(::{organization_id: org.id})" ui-sref-active="active" translate>Members</a>
+        <a ui-sref="program_setup(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Program Setup</a>
+        <a ui-sref="organization_settings(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Settings</a>
+        <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>
+        <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a>
