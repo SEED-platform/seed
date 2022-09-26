@@ -429,6 +429,7 @@ a:not([href]) {
           }
         }
 
+        .logo:focus,
         .logo:hover {
           text-decoration: none;
           color: #23527c;
