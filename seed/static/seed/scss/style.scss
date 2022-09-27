@@ -1845,10 +1845,10 @@ a:not([href]) {
 }
 
 #auto-populate-body {
-  overflow: scroll;
-  height: 70vh;
-  position: relative;
+  max-height: calc(100vh - 184px);
+  overflow-y: auto;
 }
+
 .scroll-indicator {
   width: calc(100% - 30px);
   height: 100px;
