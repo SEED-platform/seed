@@ -325,6 +325,8 @@ angular.module('BE.seed.controller.data_view', [])
             "location": 'second_axis',
             "aggregations": $scope.selected_data_view.second_axis_aggregations
           });
+        spinner_utility.show();
+        window.location.reload();
         }
 
         let _done = function (data) {
