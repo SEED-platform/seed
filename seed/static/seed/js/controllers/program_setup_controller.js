@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'Notification',
   'organization_payload',
   'property_columns',
   function (
@@ -14,6 +15,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    Notification,
     organization_payload,
     property_columns,
   ) {
@@ -76,8 +78,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
       let has_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.energy_metric_type;
       let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.emission_metric_type;
-      let no_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.target_energy_column && !$scope.new_compliance_metric.energy_metric_type;
-      let no_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.target_emission_column && !$scope.new_compliance_metric.emission_metric_type;
+      let no_energy_metric = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.energy_metric_type;
+      let no_emission_metric = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.emission_metric_type;
       let actual_energy_column_not_boolean = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.target_energy_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_energy_column}).data_type != 'boolean';
       let actual_emission_column_not_boolean = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.target_emission_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_emission_column}).data_type != 'boolean';
 
@@ -129,6 +131,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               }
          });
       }
+      setTimeout(() => {
+        Notification.primary('<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>');
+        Notification.success('Program Metric Configuration Saved!');
+      }, 1000);
     };
 
   }]);
