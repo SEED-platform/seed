@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'Notification',
   'organization_payload',
   'property_columns',
   function (
@@ -14,6 +15,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    Notification,
     organization_payload,
     property_columns,
   ) {
@@ -137,5 +139,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
          });
       }
       $scope.program_settings_not_changed = true;
+      setTimeout(() => {
+        Notification.primary('<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>');
+        Notification.success('Program Metric Configuration Saved!');
+      }, 1000);
     };
   }]);

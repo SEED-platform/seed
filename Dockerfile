@@ -22,7 +22,8 @@ RUN apk add --no-cache python3-dev \
         gdal \
         gcc \
         musl-dev \
-        cargo && \
+        cargo \
+        tzdata && \
     ln -sf /usr/bin/python3 /usr/bin/python && \
     python -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
