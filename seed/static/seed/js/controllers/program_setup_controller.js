@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   'Notification',
   'organization_payload',
   'property_columns',
+  'x_axis_columns',
   function (
     $scope,
     $stateParams,
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     Notification,
     organization_payload,
     property_columns,
+    x_axis_columns,
   ) {
     $scope.org = organization_payload.organization;
     $scope.complianceMetrics = compliance_metrics;
@@ -40,10 +42,18 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     }
     $scope.property_columns = property_columns;
+    $scope.x_axis_columns = x_axis_columns;
 
 
     $scope.get_column_display = function (id) {
       let record = _.find($scope.property_columns, {'id': id});
+      if (record) {
+        return record.displayName;
+      }
+    };
+
+    $scope.get_x_axis_display = function (id) {
+      let record = _.find($scope.x_axis_columns, {'id': id});
       if (record) {
         return record.displayName;
       }
