@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'Notification',
   'organization_payload',
   'property_columns',
   'x_axis_columns',
@@ -15,6 +16,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    Notification,
     organization_payload,
     property_columns,
     x_axis_columns,
@@ -84,13 +86,21 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (!$scope.fields.end_year) {
         $scope.errors.push('A compliance period end year (XXXX) is required!');
       }
-      let has_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.target_energy_column && $scope.new_compliance_metric.energy_metric_type;
-      let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.target_emission_column && $scope.new_compliance_metric.emission_metric_type;
-      if (!has_energy_metric && !has_emission_metric) {
+      let has_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.energy_metric_type;
+      let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.emission_metric_type;
+      let no_energy_metric = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.energy_metric_type;
+      let no_emission_metric = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.emission_metric_type;
+      let actual_energy_column_not_boolean = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.target_energy_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_energy_column}).data_type != 'boolean';
+      let actual_emission_column_not_boolean = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.target_emission_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_emission_column}).data_type != 'boolean';
+
+      if ((!has_energy_metric && !has_emission_metric) || (no_energy_metric || no_emission_metric)) {
         $scope.errors.push('A completed energy or emission metric is required!');
       }
       if ($scope.new_compliance_metric.x_axis_columns.length < 1) {
         $scope.errors.push('At least one x-axis column is required!');
+      }
+      if (actual_energy_column_not_boolean || actual_emission_column_not_boolean) {
+        $scope.errors.push('The actual energy or emission columns must have a \'boolean\' data type if there is not a corresponding target column selected!');
       }
       if ($scope.errors.length > 0) {
         return;
@@ -131,6 +141,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               }
          });
       }
+      setTimeout(() => {
+        Notification.primary('<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>');
+        Notification.success('Program Metric Configuration Saved!');
+      }, 1000);
     };
 
   }]);
