@@ -47,6 +47,9 @@ msgstr "A 'Remove' button is shown for tags that are already applied to one or m
 msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
 msgstr "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+msgstr "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+
 msgid "A list of your imported headers."
 msgstr "A list of your imported headers."
 
@@ -110,6 +113,12 @@ msgstr "Actions"
 #: seed/models/projects.py:24
 msgid "Active"
 msgstr "Active"
+
+msgid "Actual > Target"
+msgstr "Actual > Target"
+
+msgid "Actual Column"
+msgstr "Actual Column"
 
 msgid "Add"
 msgstr "Add"
@@ -508,6 +517,9 @@ msgstr "Compliance Information"
 msgid "Compliance Period"
 msgstr "Compliance Period"
 
+msgid "Compliance Period (years)"
+msgstr "Compliance Period (years)"
+
 msgid "Compliant"
 msgstr "Compliant"
 
@@ -818,6 +830,9 @@ msgstr "Delete your Profile"
 msgid "Deleting in progress..."
 msgstr "Deleting in progress..."
 
+msgid "Derived Columns"
+msgstr "Derived Columns"
+
 #: seed/landing/models.py:48
 msgid "Designates whether the user can log into this admin site."
 msgstr "Designates whether the user can log into this admin site."
@@ -924,6 +939,12 @@ msgstr "Email Address"
 msgid "Email Address:"
 msgstr "Email Address:"
 
+msgid "Email Templates"
+msgstr "Email Templates"
+
+msgid "Emission Metric"
+msgstr "Emission Metric"
+
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
 
@@ -935,6 +956,9 @@ msgstr "Energy"
 
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
+
+msgid "Energy Metric"
+msgstr "Energy Metric"
 
 msgid "Energy data file"
 msgstr "Energy data file"
@@ -1660,6 +1684,9 @@ msgstr "Meter Data"
 msgid "Meters"
 msgstr "Meters"
 
+msgid "Metric"
+msgstr "Metric"
+
 msgid "Metric Actual Column"
 msgstr "Metric Actual Column"
 
@@ -1862,6 +1889,9 @@ msgstr "Organization Name:"
 msgid "Organization Owner(s)"
 msgstr "Organization Owner(s)"
 
+msgid "Organization Settings"
+msgstr "Organization Settings"
+
 msgid "Organizations"
 msgstr "Organizations"
 
@@ -2054,6 +2084,9 @@ msgstr "Profile Name"
 
 msgid "Program Metric"
 msgstr "Program Metric"
+
+msgid "Program Metric Configuration"
+msgstr "Program Metric Configuration"
 
 msgid "Program Overview"
 msgstr "Program Overview"
@@ -2608,6 +2641,12 @@ msgstr "Please type <strong>{org}</strong> to confirm."
 msgid "Table Name"
 msgstr "Table Name"
 
+msgid "Target > Actual"
+msgstr "Target > Actual"
+
+msgid "Target Column"
+msgstr "Target Column"
+
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
@@ -2993,6 +3032,9 @@ msgstr "X Axis Column Selections:"
 
 msgid "X Axis Column Types for Plotting:"
 msgstr "X Axis Column Types for Plotting:"
+
+msgid "X-Axis Columns"
+msgstr "X-Axis Columns"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
