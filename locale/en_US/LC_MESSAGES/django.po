@@ -44,6 +44,9 @@ msgstr "(no minimum)"
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+
 msgid "A list of your imported headers."
 msgstr "A list of your imported headers."
 
@@ -459,6 +462,9 @@ msgstr "Close Preview"
 
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
+
+msgid "Column"
+msgstr "Column"
 
 msgid "Column Description"
 msgstr "Column Description"
@@ -1054,6 +1060,9 @@ msgstr "Filter Group"
 msgid "Filter Group Name"
 msgstr "Filter Group Name"
 
+msgid "Filter Groups"
+msgstr "Filter Groups"
+
 msgid "Filter by label"
 msgstr "Filter by label"
 
@@ -1398,6 +1407,9 @@ msgstr "Last name is required."
 
 msgid "Latitude"
 msgstr "Latitude"
+
+msgid "Left Axis"
+msgstr "Left Axis"
 
 msgid "Left Half"
 msgstr "Left Half"
@@ -1748,6 +1760,9 @@ msgstr "Next"
 
 msgid "No"
 msgstr "No"
+
+msgid "No Custom Reports Selected"
+msgstr "No Custom Reports Selected"
 
 msgid "No Data"
 msgstr "No Data"
@@ -2250,6 +2265,9 @@ msgstr "Review Mapped Data"
 msgid "Review matches"
 msgstr "Review matches"
 
+msgid "Right Axis"
+msgstr "Right Axis"
+
 msgid "Right Half"
 msgstr "Right Half"
 
@@ -2408,6 +2426,12 @@ msgstr "Select All Columns"
 msgid "Select None"
 msgstr "Select None"
 
+msgid "Select a Custom Report to get started!"
+msgstr "Select a Custom Report to get started!"
+
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."
 
@@ -2419,6 +2443,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lots 
 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
+
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Select one or more filter groups to load your inventory."
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Select the type of file(s) you would like to add to"
@@ -2948,6 +2975,9 @@ msgstr "Welcome to SEED Platform™"
 #: seed/landing/templates/landing/password_set.html:16
 msgid "Welcome to SEED!"
 msgstr "Welcome to SEED!"
+
+msgid "What is a Custom Report?"
+msgstr "What is a Custom Report?"
 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"

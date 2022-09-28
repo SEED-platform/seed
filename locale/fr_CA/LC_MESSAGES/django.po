@@ -45,6 +45,9 @@ msgstr "(pas de minimum)"
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "Un bouton «Supprimer» s'affiche pour les balises déjà appliquées à une ou plusieurs propriétés dans la sélection actuelle"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "Un rapport personnalisé vous permet de consulter des données agrégées sur vos inventaires et vos cycles. Ceci est utile pour voir comment des métriques spécifiques changent au fil du temps. n'existe pas"
+
 msgid "A list of your imported headers."
 msgstr "Une liste de vos en-têtes importés."
 
@@ -465,6 +468,9 @@ msgstr "Fermer l'aperçu"
 
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
+
+msgid "Column"
+msgstr "Colonne"
 
 msgid "Column Description"
 msgstr "Description de la colonne"
@@ -1064,6 +1070,9 @@ msgstr "Groupe de filtres"
 msgid "Filter Group Name"
 msgstr "Filtrer le nom du groupe"
 
+msgid "Filter Groups"
+msgstr "Groupe de filtres"
+
 msgid "Filter by label"
 msgstr "Filtrer par étiquette"
 
@@ -1411,6 +1420,9 @@ msgstr "Le nom de famille est requis."
 
 msgid "Latitude"
 msgstr "Latitude"
+
+msgid "Left Axis"
+msgstr "Axe gauche"
 
 msgid "Left Half"
 msgstr "Moitié gauche"
@@ -1762,6 +1774,9 @@ msgstr "Prochain"
 
 msgid "No"
 msgstr "Non"
+
+msgid "No Custom Reports Selected"
+msgstr "Aucun rapport personnalisé sélectionné"
 
 msgid "No Data"
 msgstr "Pas de données"
@@ -2269,6 +2284,9 @@ msgstr "Examiner les données mappées"
 msgid "Review matches"
 msgstr "Examiner les correspondences"
 
+msgid "Right Axis"
+msgstr "Axe droit"
+
 msgid "Right Half"
 msgstr "Moitié droite"
 
@@ -2429,6 +2447,12 @@ msgstr "Sélectionnez toutes les colonnes"
 msgid "Select None"
 msgstr "Sélectionnez Aucun"
 
+msgid "Select a Custom Report to get started!"
+msgstr "Sélectionnez un rapport personnalisé pour commencer !"
+
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
+
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
 
@@ -2440,6 +2464,9 @@ msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire appara�
 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire apparaître sur les moitiés gauche ou droite de votre table de Liste des Correspondances. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Sélectionnez un ou plusieurs groupes de filtres pour charger votre inventaire."
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
@@ -2971,6 +2998,9 @@ msgstr "Bienvenue sur SEED Platform™"
 #: seed/landing/templates/landing/password_set.html:16
 msgid "Welcome to SEED!"
 msgstr "Bienvenue chez SEED!"
+
+msgid "What is a Custom Report?"
+msgstr "Qu'est-ce qu'un rapport personnalisé ?"
 
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
