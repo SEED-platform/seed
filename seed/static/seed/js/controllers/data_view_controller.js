@@ -492,6 +492,13 @@ angular.module('BE.seed.controller.data_view', [])
         _assign_datasets()
       }
 
+      $scope.downloadChart = () => {
+        var a = document.createElement('a');
+        a.href = $scope.dataViewChart.toBase64Image();
+        a.download = 'Custom Report.png';
+        a.click();
+      }
+
       const _assign_datasets = () => {
         console.log('assgin dataset start')
         if (!$scope.data.graph_data) {
