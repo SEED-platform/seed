@@ -135,14 +135,14 @@ msgstr "Add another file"
 msgid "Add compliance information"
 msgstr "Add compliance information"
 
-msgid "Add compliance information."
-msgstr "Add compliance information."
-
 msgid "Add files to"
 msgstr "Add files to"
 
 msgid "Add more data files"
 msgstr "Add more data files"
+
+msgid "Add program information."
+msgstr "Add program information."
 
 msgid "Add user"
 msgstr "Add user"
@@ -219,6 +219,9 @@ msgstr "Are you sure you want to delete the data file"
 msgid "Are you sure you want to delete the data set"
 msgstr "Are you sure you want to delete the data set"
 
+msgid "Are you sure you want to delete the filter group"
+msgstr "Are you sure you want to delete the filter group"
+
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 
@@ -261,6 +264,9 @@ msgstr "Auto Matching"
 
 msgid "BEFORE_GEOCODING"
 msgstr "Before geocoding"
+
+msgid "BETTER_TOKEN_TEXT"
+msgstr "Please refer to the <a href=\"{link}/docs/api/\" target=\"_blank\" rel=\"noopener noreferrer\">BETTER documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself. BETTER host is configured to be"
 
 msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
 msgstr "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
@@ -421,6 +427,9 @@ msgstr "Change my password"
 msgid "Changed By"
 msgstr "Changed By"
 
+msgid "Chart Legend"
+msgstr "Chart Legend"
+
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
 
@@ -490,6 +499,12 @@ msgstr "Compliance"
 msgid "Compliance Information"
 msgstr "Compliance Information"
 
+msgid "Compliance Period"
+msgstr "Compliance Period"
+
+msgid "Compliant"
+msgstr "Compliant"
+
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concatenate Headers (Columns of Data)"
 
@@ -548,6 +563,9 @@ msgstr "Create Cycle"
 
 msgid "Create Data Set"
 msgstr "Create Data Set"
+
+msgid "Create Filter Group"
+msgstr "Create Filter Group"
 
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
@@ -634,6 +652,9 @@ msgstr "Custom ID 1 (Property)"
 
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
+
+msgid "Custom Reports"
+msgstr "Custom Reports"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
@@ -779,6 +800,9 @@ msgstr "Delete your Data File"
 msgid "Delete your Data Set"
 msgstr "Delete your Data Set"
 
+msgid "Delete your Filter Group"
+msgstr "Delete your Filter Group"
+
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
 
@@ -816,6 +840,9 @@ msgstr "Dismiss"
 
 msgid "Display Name"
 msgstr "Display Name"
+
+msgid "Distance to Target"
+msgstr "Distance to Target"
 
 msgid "District"
 msgstr "District"
@@ -1020,6 +1047,12 @@ msgstr "File Source:"
 
 msgid "Files (Main State Only)"
 msgstr "Files (Main State Only)"
+
+msgid "Filter Group"
+msgstr "Filter Group"
+
+msgid "Filter Group Name"
+msgstr "Filter Group Name"
 
 msgid "Filter by label"
 msgstr "Filter by label"
@@ -1275,6 +1308,9 @@ msgstr "Include Notes"
 
 msgid "Ineligible"
 msgstr "Ineligible"
+
+msgid "Insights"
+msgstr "Insights"
 
 msgid "Integer"
 msgstr "Integer"
@@ -1612,6 +1648,18 @@ msgstr "Meter Data"
 msgid "Meters"
 msgstr "Meters"
 
+msgid "Metric Actual Column"
+msgstr "Metric Actual Column"
+
+msgid "Metric Name"
+msgstr "Metric Name"
+
+msgid "Metric Target Column"
+msgstr "Metric Target Column"
+
+msgid "Metric Type"
+msgstr "Metric Type"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1718,6 +1766,9 @@ msgstr "No warnings/errors"
 
 msgid "None"
 msgstr "None"
+
+msgid "Not Compliant"
+msgstr "Not Compliant"
 
 msgid "Not Null"
 msgstr "Not Null"
@@ -1986,6 +2037,15 @@ msgstr "Profile Information"
 msgid "Profile Name"
 msgstr "Profile Name"
 
+msgid "Program Metric"
+msgstr "Program Metric"
+
+msgid "Program Overview"
+msgstr "Program Overview"
+
+msgid "Program Setup"
+msgstr "Program Setup"
+
 #: seed/models/models.py:239
 msgid "Project"
 msgstr "Project"
@@ -2043,6 +2103,9 @@ msgstr "Property Display Field"
 
 msgid "Property Footprint"
 msgstr "Property Footprint"
+
+msgid "Property Insights"
+msgstr "Property Insights"
 
 msgid "Property Name"
 msgstr "Property Name"
@@ -2132,8 +2195,14 @@ msgstr "Removing buildings from project"
 msgid "Rename"
 msgstr "Rename"
 
+msgid "Rename Filter Group"
+msgstr "Rename Filter Group"
+
 msgid "Rename Profile"
 msgstr "Rename Profile"
+
+msgid "Rename your Filter Group"
+msgstr "Rename your Filter Group"
 
 msgid "Rename your Profile"
 msgstr "Rename your Profile"
@@ -2365,6 +2434,9 @@ msgstr "Selected Taxlots"
 
 msgid "Selecting Fields to Share"
 msgstr "Selecting Fields to Share"
+
+msgid "Selections:"
+msgstr "Selections:"
 
 msgid "Send Invite"
 msgstr "Send Invite"
@@ -2719,6 +2791,9 @@ msgstr "For columns with unit settings, default units will be used for conversio
 msgid "Units"
 msgstr "Units"
 
+msgid "Unknown"
+msgstr "Unknown"
+
 msgid "Until last date of"
 msgstr "Until last date of"
 
@@ -2816,6 +2891,9 @@ msgstr "Valid"
 msgid "Version"
 msgstr "Version"
 
+msgid "View Compliance Tracking"
+msgstr "View Compliance Tracking"
+
 msgid "View Project"
 msgstr "View Project"
 
@@ -2880,6 +2958,12 @@ msgstr "Where would you like to move these buildings?"
 msgid "X Axis"
 msgstr "X Axis"
 
+msgid "X Axis Column Selections:"
+msgstr "X Axis Column Selections:"
+
+msgid "X Axis Column Types for Plotting:"
+msgstr "X Axis Column Types for Plotting:"
+
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
 msgstr "Accented téxt. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");</script>{injectedText}"
@@ -2928,6 +3012,9 @@ msgstr "Yes, Delete Sub-Organization"
 
 msgid "Yes, Delete User"
 msgstr "Yes, Delete User"
+
+msgid "Yes, Remove Filter Group"
+msgstr "Yes, Remove Filter Group"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
