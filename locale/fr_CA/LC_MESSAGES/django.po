@@ -45,6 +45,12 @@ msgstr "(pas de minimum)"
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "Un bouton «Supprimer» s'affiche pour les balises déjà appliquées à une ou plusieurs propriétés dans la sélection actuelle"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "Un rapport personnalisé vous permet de consulter des données agrégées sur vos inventaires et vos cycles. Ceci est utile pour voir comment des métriques spécifiques changent au fil du temps. n'existe pas"
+
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+msgstr "Un rapport personnalisé vous permet de consulter des données agrégées sur vos inventaires et vos cycles. Ceci est utile pour voir comment des métriques spécifiques changent au fil du temps."
+
 msgid "A list of your imported headers."
 msgstr "Une liste de vos en-têtes importés."
 
@@ -108,6 +114,12 @@ msgstr "Actions"
 #: seed/models/projects.py:24
 msgid "Active"
 msgstr "actif"
+
+msgid "Actual > Target"
+msgstr "Réel > Cible"
+
+msgid "Actual Column"
+msgstr "Colonne réelle"
 
 msgid "Add"
 msgstr "Ajouter"
@@ -466,6 +478,9 @@ msgstr "Fermer l'aperçu"
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
+msgid "Column"
+msgstr "Colonne"
+
 msgid "Column Description"
 msgstr "Description de la colonne"
 
@@ -508,6 +523,9 @@ msgstr "Informations de conformité"
 
 msgid "Compliance Period"
 msgstr "Période de conformité"
+
+msgid "Compliance Period (years)"
+msgstr "Période de conformité (années)"
 
 msgid "Compliant"
 msgstr "Conforme"
@@ -820,6 +838,9 @@ msgstr "Supprimer votre profil"
 msgid "Deleting in progress..."
 msgstr "Suppression en cours ..."
 
+msgid "Derived Columns"
+msgstr "Colonnes dérivées"
+
 #: seed/landing/models.py:48
 msgid "Designates whether the user can log into this admin site."
 msgstr "Désigne si l'utilisateur peut se connecter à ce site d'administration."
@@ -927,6 +948,12 @@ msgstr "adresse e-mail"
 msgid "Email Address:"
 msgstr "Adresse e-mail:"
 
+msgid "Email Templates"
+msgstr "Modèles d'e-mails"
+
+msgid "Emission Metric"
+msgstr "Mesure des émissions"
+
 msgid "Enable ComStock Functionality"
 msgstr "Activer la fonctionnalité ComStock"
 
@@ -938,6 +965,9 @@ msgstr "Énergie"
 
 msgid "Energy Alerts"
 msgstr "Alertes énergétiques"
+
+msgid "Energy Metric"
+msgstr "Métrique énergétique"
 
 msgid "Energy data file"
 msgstr "Fichier de données d'énergie"
@@ -1063,6 +1093,9 @@ msgstr "Groupe de filtres"
 
 msgid "Filter Group Name"
 msgstr "Filtrer le nom du groupe"
+
+msgid "Filter Groups"
+msgstr "Groupe de filtres"
 
 msgid "Filter by label"
 msgstr "Filtrer par étiquette"
@@ -1412,6 +1445,9 @@ msgstr "Le nom de famille est requis."
 msgid "Latitude"
 msgstr "Latitude"
 
+msgid "Left Axis"
+msgstr "Axe gauche"
+
 msgid "Left Half"
 msgstr "Moitié gauche"
 
@@ -1662,6 +1698,9 @@ msgstr "Données du compteur"
 msgid "Meters"
 msgstr "Mètres"
 
+msgid "Metric"
+msgstr "Métrique"
+
 msgid "Metric Actual Column"
 msgstr "Colonne de mesures réelles"
 
@@ -1763,6 +1802,9 @@ msgstr "Prochain"
 msgid "No"
 msgstr "Non"
 
+msgid "No Custom Reports Selected"
+msgstr "Aucun rapport personnalisé sélectionné"
+
 msgid "No Data"
 msgstr "Pas de données"
 
@@ -1860,6 +1902,9 @@ msgstr "Nom de l'organisation:"
 
 msgid "Organization Owner(s)"
 msgstr "Propriétaire(s) de l'organisation"
+
+msgid "Organization Settings"
+msgstr "Paramètres de l'organisation"
 
 msgid "Organizations"
 msgstr "Organisations"
@@ -2053,6 +2098,9 @@ msgstr "Nom de profil"
 
 msgid "Program Metric"
 msgstr "Métrique du programme"
+
+msgid "Program Metric Configuration"
+msgstr "Configuration de la métrique du programme"
 
 msgid "Program Overview"
 msgstr "Métrique du programme"
@@ -2269,6 +2317,9 @@ msgstr "Examiner les données mappées"
 msgid "Review matches"
 msgstr "Examiner les correspondences"
 
+msgid "Right Axis"
+msgstr "Axe droit"
+
 msgid "Right Half"
 msgstr "Moitié droite"
 
@@ -2429,6 +2480,12 @@ msgstr "Sélectionnez toutes les colonnes"
 msgid "Select None"
 msgstr "Sélectionnez Aucun"
 
+msgid "Select a Custom Report to get started!"
+msgstr "Sélectionnez un rapport personnalisé pour commencer !"
+
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
+
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
 
@@ -2440,6 +2497,9 @@ msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire appara�
 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire apparaître sur les moitiés gauche ou droite de votre table de Liste des Correspondances. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Sélectionnez un ou plusieurs groupes de filtres pour charger votre inventaire."
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
@@ -2601,6 +2661,12 @@ msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 
 msgid "Table Name"
 msgstr "Nom de la table"
+
+msgid "Target > Actual"
+msgstr "Cible > Réel"
+
+msgid "Target Column"
+msgstr "Colonne cible"
 
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
@@ -2972,6 +3038,9 @@ msgstr "Bienvenue sur SEED Platform™"
 msgid "Welcome to SEED!"
 msgstr "Bienvenue chez SEED!"
 
+msgid "What is a Custom Report?"
+msgstr "Qu'est-ce qu'un rapport personnalisé ?"
+
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
 
@@ -2986,6 +3055,9 @@ msgstr "Sélections de colonne sur l'axe X :"
 
 msgid "X Axis Column Types for Plotting:"
 msgstr "Types de colonne de l'axe X pour le traçage:"
+
+msgid "X-Axis Columns"
+msgstr "Colonnes de l'axe X"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
