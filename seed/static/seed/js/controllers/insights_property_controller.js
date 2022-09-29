@@ -326,6 +326,13 @@ angular.module('BE.seed.controller.insights_property', [])
 
       }
 
+      $scope.downloadChart = () => {
+        var a = document.createElement('a');
+        a.href = $scope.insightsChart.toBase64Image();
+        a.download = 'Property Insights.png';
+        a.click();
+      }
+
       const _update_chart = () => {
         let x_index = _.findIndex($scope.data.metric.x_axis_columns, {'id': $scope.chart_xaxis});
         let x_axis_name = $scope.data.metric.x_axis_columns[x_index].display_name;
