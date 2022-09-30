@@ -1,3 +1,37 @@
+# SEED Version 2.16.0-beta
+
+Date Range: 09/08/22 - 09/29/22
+
+Closed Issues and Features (Total: 28):
+- Fixed [#3148]( https://github.com/SEED-platform/seed/issues/3148 ), Beta Property List view: Tax lot data is not being displayed under Properties, and Properties are not being displayed under Tax Lots
+- Fixed [#3341]( https://github.com/SEED-platform/seed/issues/3341 ), Replace charting library on reports page
+- Feature [#3346]( https://github.com/SEED-platform/seed/issues/3346 ), Filter Group - Back End
+- Feature [#3349]( https://github.com/SEED-platform/seed/issues/3349 ), Filter Group - Front End (Inventory List)
+- Feature [#3354]( https://github.com/SEED-platform/seed/issues/3354 ), Enable ability to not map a column in SEED
+- Fixed [#3433]( https://github.com/SEED-platform/seed/issues/3433 ), Add translations to BETTER Analysis helper text
+- Feature [#3459]( https://github.com/SEED-platform/seed/issues/3459 ), Create Compliance Metric Setup Page
+- Feature [#3460]( https://github.com/SEED-platform/seed/issues/3460 ), Create Program Overview Page
+- Feature [#3467]( https://github.com/SEED-platform/seed/issues/3467 ), integrate filter_groups into data_view
+- Feature [#3487]( https://github.com/SEED-platform/seed/issues/3487 ), Create Property Insights Page
+- Fixed [#3489]( https://github.com/SEED-platform/seed/issues/3489 ), Phrase 'Data View' to 'Custom Reports'
+- Fixed [#3491]( https://github.com/SEED-platform/seed/issues/3491 ), Confirm edit and save updates the graph
+- Fixed [#3493]( https://github.com/SEED-platform/seed/issues/3493 ), Improve DataView Plot legend and format table
+- Fixed [#3494]( https://github.com/SEED-platform/seed/issues/3494 ), Refresh list of dataviews when on metrics overview page
+- Fixed [#3524]( https://github.com/SEED-platform/seed/issues/3524 ), Create function for selecting 'No Filter Group'
+- Fixed [#3525]( https://github.com/SEED-platform/seed/issues/3525 ), Update the link for Program Overview on Program Setup Page
+- Fixed [#3527]( https://github.com/SEED-platform/seed/issues/3527 ), Lokalize check all strings
+- Fixed [#3528]( https://github.com/SEED-platform/seed/issues/3528 ), Create UI indicator when saving changes on Program Metric Configuration Page
+- Fixed [#3529]( https://github.com/SEED-platform/seed/issues/3529 ), Modify "Save Changes" button on Program Setup Page
+- Fixed [#3531]( https://github.com/SEED-platform/seed/issues/3531 ), Amend "Year Built" axis on Property Insights Page
+- Fixed [#3532]( https://github.com/SEED-platform/seed/issues/3532 ), Remove gaps between nav links
+- Fixed [#3533]( https://github.com/SEED-platform/seed/issues/3533 ), Update Program Setup page for an additional metric type check
+- Fixed [#3534]( https://github.com/SEED-platform/seed/issues/3534 ), Integrate auto-refresh to the Custom Reports Page
+- Fixed [#3535]( https://github.com/SEED-platform/seed/issues/3535 ), Update Program Setup page for a check on actual column
+- Fixed [#3536]( https://github.com/SEED-platform/seed/issues/3536 ), Fix the auto-populate modal which shows empty scrollbars by default
+- Fixed [#3537]( https://github.com/SEED-platform/seed/issues/3537 ), Fix the docker images that don't support the TZ environment variable without adding tzdata via apk
+- Fixed [#3538]( https://github.com/SEED-platform/seed/issues/3538 ), Fix the temporary underline that results from :focus not being handled
+- Fixed [#3558]( https://github.com/SEED-platform/seed/issues/3558 ), Program Setup: Add 'string' data type to valid column data types (for x-axis only?)
+
 # SEED Version 2.15.2
 
 Date Range: 07/20/22 - 09/08/22
