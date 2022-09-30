@@ -107,7 +107,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         }
         ps = self.property_state_factory.get_property_state(None, **ps_data)
 
-        # Add 3 additionals rule to default set
+        # Add 3 additional rules to default set
         dq = DataQualityCheck.retrieve(self.org.id)
         rule_info = {
             'field': 'custom_id_1',

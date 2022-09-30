@@ -105,7 +105,7 @@ class ColumnMappingPresetViewSet(ViewSet):
 
                 preset.mappings = final_mappings
             elif updated_mappings:
-                # indiscriminantly update the mappings
+                # indiscriminately update the mappings
                 preset.mappings = updated_mappings
 
         preset.save()

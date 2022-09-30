@@ -1,5 +1,5 @@
 // see seed/ogbs/flipper.py ... usage and philosophy pretty much the same
-// bit minimum-useable right now .. just want this to squawk after it goes stale so as not to
+// bit minimum-usable right now .. just want this to squawk after it goes stale so as not to
 // forget about it.
 angular.module('BE.seed.service.flippers', [])
   .factory('flippers', ['$log', function ($log) {

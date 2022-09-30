@@ -477,7 +477,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  
                 project = project[0]
         if not error:
             if project.super_organization_id != int(organization_id):
-                error, status_code = self.get_error('permssion denied')
+                error, status_code = self.get_error('permission denied')
             else:
                 ProjectPropertyView.objects.filter(project=project).delete()
                 ProjectTaxLotView.objects.filter(project=project).delete()

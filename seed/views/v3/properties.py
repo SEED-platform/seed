@@ -728,7 +728,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         new_view1.save()
         new_view2.save()
 
-        # Asssociate labels
+        # Associate labels
         label_objs = Label.objects.filter(pk__in=label_ids)
         new_view1.labels.set(label_objs)
         new_view2.labels.set(label_objs)
@@ -1192,7 +1192,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Return a property view based on the property id and cycle
         :param pk: ID of property (not property view)
         :param cycle_pk: ID of the cycle
-        :return: dict, propety view and status
+        :return: dict, property view and status
         """
         try:
             property_view = PropertyView.objects.select_related(

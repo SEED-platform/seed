@@ -34,7 +34,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     org_id = request.query_params.get('organization_id')
     cycle_id = request.query_params.get('cycle')
     ids_only = request.query_params.get('ids_only', 'false').lower() == 'true'
-    # check if there is a query paramater for the profile_id. If so, then use that one
+    # check if there is a query parameter for the profile_id. If so, then use that one
     profile_id = request.query_params.get('profile_id', profile_id)
     shown_column_ids = request.query_params.get('shown_column_ids')
 
@@ -141,7 +141,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         )
 
     # This uses an old method of returning the show_columns. There is a new method that
-    # is prefered in v2.1 API with the ProfileIdMixin.
+    # is preferred in v2.1 API with the ProfileIdMixin.
     if inventory_type == 'property':
         profile_inventory_type = VIEW_LIST_PROPERTY
     elif inventory_type == 'taxlot':
@@ -153,7 +153,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             {
                 'status': 'error',
                 'recommended_action': 'update_column_settings',
-                'message': 'Error filtering - "shown_column_ids" and "profile_id" are mutually excusive.'
+                'message': 'Error filtering - "shown_column_ids" and "profile_id" are mutually exclusive.'
             },
             status=status.HTTP_400_BAD_REQUEST
         )

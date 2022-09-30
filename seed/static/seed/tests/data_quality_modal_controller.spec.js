@@ -60,7 +60,7 @@ describe('controller: data_quality_modal_controller', function () {
    */
 
 
-   /*  set this up but does't do anything anyway, tested in e2e now. Kept file in case it's useful later */
+   /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
   it('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();

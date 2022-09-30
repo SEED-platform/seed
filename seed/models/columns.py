@@ -820,7 +820,7 @@ class Column(models.Model):
         except (ValidationError, DataError):
             return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."]
         except DimensionalityError:
-            return [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."]
+            return [False, "The column data can't be converted to the new column due to conversion constraints (e.g., converting square feet to kBtu etc.)."]
 
         # Return true if this operation was successful
         return [True, 'Successfully renamed column and moved data']

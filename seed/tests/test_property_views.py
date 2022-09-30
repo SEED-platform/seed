@@ -570,7 +570,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
         self.view_1 = PropertyView.objects.create(
@@ -754,7 +754,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
 
     def test_properties_merge_without_losing_meters_from_different_sources_nonoverlapping(self):
-        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
@@ -840,7 +840,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
-        # For second Property, add GreenButton Meters containing 2 Electricitiy readings: 1 overlapping
+        # For second Property, add GreenButton Meters containing 2 Electricity readings: 1 overlapping
         gb_overlapping_filename = "example-GreenButton-data-1-overlapping.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
@@ -936,7 +936,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
     @unittest.skip("TODO: fix merging of PM and BSync meters")
     def test_properties_merge_combining_bsync_and_pm_sources(self):
         # -- SETUP
-        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
@@ -1032,7 +1032,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
         self.view_1 = PropertyView.objects.create(
@@ -1871,7 +1871,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         property_1_electric_meter = Meter.objects.get(source_id='5766973-0')
-        # add additional sub-montly entries for each initial meter
+        # add additional sub-monthly entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
         for meter in Meter.objects.all():
             # November 2019 reading between DST transition
