@@ -1,8 +1,8 @@
 # SEED Version 2.16.0-beta
 
-This Beta released contains new functionality to help track building-portfolio programs such as Benchmarking and basic-Building Performance Standards. In order to track programs, SEED was updated with a program configuration page with the selection of two metrics to track (typically an energy and emissions metric). The tracking requires an actual and a goal column to be defined allowing the program to determine if a property is in compliance.
+This Beta release contains new functionality to help track building-portfolio programs such as Benchmarking and basic-Building Performance Standards. In order to track programs, SEED was updated with a program configuration page with the selection of two metrics to track (typically an energy and emissions metric). The tracking requires an actual and a goal column to be defined allowing the program to determine if a property is in compliance.
 
-A new program insight page was creating allowing easy visualization over the compliance periods. In addition, new backend functionality was created for "filter groups" allowing for a user to save a set of labels and filters into a recallable filter group. The filter groups can be then aggregated with sums, averages, etc., and plotted on a custom report page.
+A new program insight page was created to allow easy visualization over the compliance periods. In addition, new backend functionality was created for "filter groups" allowing for a user to save a set of labels and filters into a recallable filter group. The filter groups can be then aggregated with sums, averages, etc., and plotted on a custom report page.
 
 Date Range: 09/08/22 - 09/29/22
 
