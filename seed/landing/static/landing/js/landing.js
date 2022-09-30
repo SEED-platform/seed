@@ -29,7 +29,7 @@ BEHome.actions.show_login_form = function () {
 };
 BEHome.actions.check_unsupported_browser = function () {
   // var version=parseInt($.browser.version, 10);
-  // if(($.browser.msie&&version<9)||($.browser.mozila&&version<3)||($.browser.webkit&&version<200)) {
+  // if(($.browser.msie&&version<9)||($.browser.mozilla&&version<3)||($.browser.webkit&&version<200)) {
   //     BEHome.actions.show_unsupported_browser_message();
   //     BEHome.actions.hide_login_form();
   // }

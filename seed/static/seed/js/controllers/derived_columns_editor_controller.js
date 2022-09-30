@@ -141,7 +141,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       };
 
 
-      // Recusion exists when the source column (the definition) contains a reference to itself
+      // Recursion exists when the source column (the definition) contains a reference to itself
       // a = b
       // b = a ----> b = b
       const check_for_circular_definition = function (source_column) {
@@ -154,7 +154,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           let nested_derived_columns = check_parameters_for_nested_derived_columns(source_derived_column.parameters)
 
           const current_column = property_columns_payload.find(col => col.derived_column == $scope.derived_column.id);
-          // if the current column has been found in the definition of any of the source_column's nested derived columns, recursion has occured.
+          // if the current column has been found in the definition of any of the source_column's nested derived columns, recursion has occurred.
           return nested_derived_columns.includes(current_column.id)
         }
       }

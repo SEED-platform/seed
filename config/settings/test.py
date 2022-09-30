@@ -32,7 +32,7 @@ DATABASES = {
     },
 }
 
-# These celery variables can be overriden by the local_untracked values
+# These celery variables can be overridden by the local_untracked values
 CELERY_BROKER_BACKEND = 'memory'
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True

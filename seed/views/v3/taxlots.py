@@ -397,7 +397,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         new_view1.save()
         new_view2.save()
 
-        # Asssociate labels
+        # Associate labels
         label_objs = StatusLabel.objects.filter(pk__in=label_ids)
         new_view1.labels.set(label_objs)
         new_view2.labels.set(label_objs)

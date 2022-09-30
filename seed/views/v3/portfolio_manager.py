@@ -353,7 +353,7 @@ class PortfolioManagerImport(object):
         """
         This method is for the updated ESPM where the response is escaped JSON string in a JSON response.
 
-        :param response_text: str, repsonse to parse
+        :param response_text: str, response to parse
         :return: dict
         """
         try:

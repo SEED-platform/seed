@@ -1553,7 +1553,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
 
         # Interval Data
-        filename = 'PM Meter Data.xlsx'  # contians meter data for bsyncr and BETTER
+        filename = 'PM Meter Data.xlsx'  # contains meter data for bsyncr and BETTER
         filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
 
         import_meterdata = ImportFile.objects.create(

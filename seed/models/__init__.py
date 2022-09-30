@@ -11,6 +11,7 @@
 # Import all the models in this folder
 from .analyses import *  # noqa
 from .cycles import *  # noqa
+from .data_views import *  # noqa
 from .derived_columns import *  # noqa
 from .models import *  # noqa
 from .tax_lot_properties import *  # noqa
@@ -21,6 +22,7 @@ from .column_mappings import *  # noqa
 from .column_mapping_profiles import *  # noqa
 from .column_list_profiles import *  # noqa
 from .column_list_profile_columns import *  # noqa
+from .compliance_metrics import * # noqa
 from .auditlog import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa
@@ -35,6 +37,7 @@ from .analysis_input_files import *  # noqa
 from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
 from .postoffice import *  # noqa
+from .filter_group import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

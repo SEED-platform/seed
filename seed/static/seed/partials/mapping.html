@@ -139,6 +139,7 @@
                     </tbody>
                     <thead>
                         <tr>
+                            <th><translate>Is Omitted</translate></th>
                             <th><translate>Inventory Type</translate></th>
                             <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
                             <th><translate>Measurement Units</translate></th>
@@ -152,39 +153,47 @@
                     </thead>
                     <tbody id="mapped-table">
                         <tr ng-repeat="col in mappings">
-                            <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-type-{$:: $index $}">
-                                <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done">
+                            <td style="text-align: right;" ng-class="{'danger': !col.isOmitted && (col.is_duplicate || col.suggestion === '')}" ng-attr-id="mapped-row-isOmitted-{$:: $index $}">
+                                <input type="checkbox" ng-model="col.isOmitted" ng-disabled="import_file.matching_done">
+                                </input>
+                            </td>
+                            <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-type-{$:: $index $}">
+                                <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done || col.isOmitted">
                                     <option disabled ng-if="col.suggestion_table_name===undefined" value="{$ undefined $}"></option>
                                     <option value="PropertyState" translate>Property</option>
                                     <option value="TaxLotState" ng-if="!mappingBuildingSync" translate>Tax Lot</option>
                                 </select>
                             </td>
-                            <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
-                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                            <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}" ng-attr-id="mapped-row-input-{$:: $index $}">
+                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done  || col.isOmitted" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </td>
-                            <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col))}">
-                                <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()">
+                            <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col) || is_ghg_column(col) || is_ghg_intensity_column(col)), 'omitted': col.isOmitted}">
+                                <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                                     <option value="ft**2" translate>square feet</option>
                                     <option value="m**2" translate>square metres</option>
                                 </select>
-                                <select ng-model="col.from_units" ng-if="is_eui_column(col)" ng-change="flag_mappings_change()">
+                                <select ng-model="col.from_units" ng-if="is_eui_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                                     <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                     <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                     <option value="GJ/m**2/year" translate>GJ/m²/year</option>
                                     <option value="MJ/m**2/year" translate>MJ/m²/year</option>
                                     <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                                 </select>
-                                <select ng-model="col.from_units" ng-if="is_ghg_column(col)" ng-change="flag_mappings_change()">
+                                <select ng-model="col.from_units" ng-if="is_ghg_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
                                     <option value="MtCO2e/year" translate>MtCO2e/year</option>
+                                    <option value="kgCO2e/year" translate>kgCO2e/year</option>
                                 </select>
-                                <select ng-model="col.from_units" ng-if="is_ghg_intensity_column(col)" ng-change="flag_mappings_change()">
+                                <select ng-model="col.from_units" ng-if="is_ghg_intensity_column(col)" ng-change="flag_mappings_change()" ng-disabled="col.isOmitted">
+                                    <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
                                     <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
+                                    <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
+                                    <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
                                 </select>
                             </td>
-                            <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}">
+                            <td ng-class="{'danger': col.is_duplicate || (!col.isOmitted && col.suggestion === ''), 'omitted': col.isOmitted}">
                                 <strong ng-attr-id="mapped-header-{$:: $index $}">{$:: col.name $}</strong>
                             </td>
-                            <td ng-repeat="cell_value in ::col.raw_data track by $index">
+                            <td ng-repeat="cell_value in ::col.raw_data track by $index" ng-class="{'omitted': col.isOmitted}">
                                 {$:: cell_value $}
                             </td>
                         </tr>

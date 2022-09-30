@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--org_id',
                             default=None,
-                            help='Organization to add defaut columns',
+                            help='Organization to add default columns',
                             action='store')
 
     def handle(self, *args, **options):

@@ -188,7 +188,7 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
         )
 
     def test_validate(self):
-        """Test (overriden) validate method"""
+        """Test (overridden) validate method"""
         mock_request = mock.MagicMock()
         mock_request.user = self.user
         serializer = GreenAssessmentPropertySerializer(context={'request': mock_request})
