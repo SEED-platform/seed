@@ -153,6 +153,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.filterGroups.push(new_filter_group);
           $scope.Modified=false;
           $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroupId = String(new_filter_group.id)
 
           Notification.primary('Created ' + $scope.currentFilterGroup.name);
         });
