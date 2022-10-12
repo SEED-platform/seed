@@ -301,7 +301,7 @@ class MetersParser(object):
         the same property_id more than once. Return True when a property_id is
         found.
 
-        If no ProperyStates (and subsequent Properties) are found, flag the
+        If no PropertyStates (and subsequent Properties) are found, flag the
         PM ID as unlinkable, and False is returned.
         """
         # If the PM ID has been previously found to be unlinkable, return False
@@ -432,7 +432,7 @@ class MetersParser(object):
     @staticmethod
     def preprocess_raw_pm_data_request(raw_data):
         """Reformats the raw data. Must be called on meter data which comes
-        from a Data Request spreadsheet, _before_ intializing the MetersParser
+        from a Data Request spreadsheet, _before_ initializing the MetersParser
         class with the data.
 
         :param raw_data: list[dict], `.data` from MCMParser for the Monthly Usage sheet

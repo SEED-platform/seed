@@ -41,7 +41,7 @@ class Command(BaseCommand):
             files = ImportFile.objects.get_all()
 
         # fix the file path if it is not /seed/media/uploads
-        # populate the list of files - this may need to be broken up into mulitple tasks on the real data
+        # populate the list of files - this may need to be broken up into multiple tasks on the real data
         # based on how large the directory / table is.
         rename_files = []
         for f in files:

@@ -345,7 +345,7 @@
     "display_name": "Property Data Administrator",
     "to_field": "property_data_administrator",
     "to_table_name": "PropertyState",
-    "from_field": "propertyDataAdminstrator",
+    "from_field": "propertyDataAdministrator",
     "units": "",
     "type": "string",
     "schema": ""

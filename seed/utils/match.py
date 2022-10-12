@@ -123,7 +123,7 @@ def _link_matches(matching_views, org_id, view, ViewClass):
 
     Given a QS of matching -Views, the following cases are handled:
     1. No matches found - check for pre-existing links and, if necessary,
-    diassociate the given -View
+    disassociate the given -View
     2. All matches are linked already - use the currently existing linking ID to
     link the given -View
     3. All matches are NOT linked already - use new canonical record to link the
@@ -146,7 +146,7 @@ def _link_matches(matching_views, org_id, view, ViewClass):
         values_list(canonical_id_col, flat=True)
 
     if unique_canonical_ids.exists() is False:
-        # If no matches found - check for past links and diassociate if necessary
+        # If no matches found - check for past links and disassociate if necessary
         canonical_id_dict = {canonical_id_col: getattr(view, canonical_id_col)}
         previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=view.id)
         if previous_links.exists():
@@ -367,7 +367,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             values_list(canonical_id_col, flat=True).\
             filter(use_count=1)
 
-        # Ignoring -Views associated to -States with empty matching critieria, group by columns
+        # Ignoring -Views associated to -States with empty matching criteria, group by columns
         link_groups = org_views.\
             exclude(**state_appended_empty_matching_criteria).\
             values(*state_appended_col_names).\

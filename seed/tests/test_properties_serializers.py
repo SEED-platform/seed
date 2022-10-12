@@ -399,7 +399,7 @@ class TestMisc(DeleteModelsTestCase):
     """Miscellaneous tests."""
 
     def test_unflatten_values(self):
-        """Test unflatten_values fucntion."""
+        """Test unflatten_values function."""
         test_dict = {
             'a': 1, 'b': 2, 'sub_a': 3,
             'sub__a': 4, 'sub__b': 5,

@@ -428,7 +428,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         });
       };
 
-      /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
+      /** Get the 'raw' (disaggregated) chart data from the server for the scatter plot chart.
        The user's selections are already stored as properties on the scope, so use
        those for the parameters that need to be sent to the server.
 

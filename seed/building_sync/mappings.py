@@ -430,7 +430,7 @@ def _build_path(element, xpath_list):
 def build_path(element, xpath):
     """creates all elements in the xpath, starting from the given element.
     NOTE: it does not check if any elements in the xpath already exist, it creates
-    them indiscriminantly.
+    them indiscriminately.
 
     It is able to handle xpaths with simple conditionals. E.g. if the xpath was
     Foo[BarColor="Yellow"]/BarFont, it would create the elements that'd look

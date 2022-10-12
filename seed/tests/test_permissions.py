@@ -295,7 +295,7 @@ class SEEDPublicPermissionsTests(TestCase):
         permissions = SEEDPublicPermissions()
         mock_request = mock.MagicMock()
 
-        # assert can use safe methods if not autheticated
+        # assert can use safe methods if not authenticated
         mock_is_authenticated.return_value = False
         for view_type in ['GET', 'OPTIONS', 'HEAD']:
             mock_request.method = view_type

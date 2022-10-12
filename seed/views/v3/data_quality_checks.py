@@ -95,7 +95,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({
             'num_properties': len(property_state_ids),
             'num_taxlots': len(taxlot_state_ids),
-            # TODO #239: Deprecate progress_key from here and just use the 'progess.progress_key'
+            # TODO #239: Deprecate progress_key from here and just use the 'progress.progress_key'
             'progress_key': return_value['progress_key'],
             'progress': return_value,
         })

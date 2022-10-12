@@ -512,7 +512,7 @@ class TestBsyncrPipeline(TestCase):
 
         #
         # Setup more properties with linked meters with 12 valid meter readings.
-        # These properties, unmodified, should successfully run thorugh the bsyncr pipeline
+        # These properties, unmodified, should successfully run through the bsyncr pipeline
         #
         property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.good_property_views = []

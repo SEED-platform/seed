@@ -44,6 +44,12 @@ msgstr "(no minimum)"
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+msgstr "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+
 msgid "A list of your imported headers."
 msgstr "A list of your imported headers."
 
@@ -108,6 +114,12 @@ msgstr "Actions"
 msgid "Active"
 msgstr "Active"
 
+msgid "Actual > Target"
+msgstr "Actual > Target"
+
+msgid "Actual Column"
+msgstr "Actual Column"
+
 msgid "Add"
 msgstr "Add"
 
@@ -135,14 +147,14 @@ msgstr "Add another file"
 msgid "Add compliance information"
 msgstr "Add compliance information"
 
-msgid "Add compliance information."
-msgstr "Add compliance information."
-
 msgid "Add files to"
 msgstr "Add files to"
 
 msgid "Add more data files"
 msgstr "Add more data files"
+
+msgid "Add program information."
+msgstr "Add program information."
 
 msgid "Add user"
 msgstr "Add user"
@@ -219,6 +231,9 @@ msgstr "Are you sure you want to delete the data file"
 msgid "Are you sure you want to delete the data set"
 msgstr "Are you sure you want to delete the data set"
 
+msgid "Are you sure you want to delete the filter group"
+msgstr "Are you sure you want to delete the filter group"
+
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 
@@ -261,6 +276,9 @@ msgstr "Auto Matching"
 
 msgid "BEFORE_GEOCODING"
 msgstr "Before geocoding"
+
+msgid "BETTER_TOKEN_TEXT"
+msgstr "Please refer to the <a href=\"{link}/docs/api/\" target=\"_blank\" rel=\"noopener noreferrer\">BETTER documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself. BETTER host is configured to be"
 
 msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
 msgstr "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
@@ -421,6 +439,9 @@ msgstr "Change my password"
 msgid "Changed By"
 msgstr "Changed By"
 
+msgid "Chart Legend"
+msgstr "Chart Legend"
+
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
 
@@ -450,6 +471,9 @@ msgstr "Close Preview"
 
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
+
+msgid "Column"
+msgstr "Column"
 
 msgid "Column Description"
 msgstr "Column Description"
@@ -489,6 +513,15 @@ msgstr "Compliance"
 
 msgid "Compliance Information"
 msgstr "Compliance Information"
+
+msgid "Compliance Period"
+msgstr "Compliance Period"
+
+msgid "Compliance Period (years)"
+msgstr "Compliance Period (years)"
+
+msgid "Compliant"
+msgstr "Compliant"
 
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concatenate Headers (Columns of Data)"
@@ -548,6 +581,9 @@ msgstr "Create Cycle"
 
 msgid "Create Data Set"
 msgstr "Create Data Set"
+
+msgid "Create Filter Group"
+msgstr "Create Filter Group"
 
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
@@ -634,6 +670,9 @@ msgstr "Custom ID 1 (Property)"
 
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
+
+msgid "Custom Reports"
+msgstr "Custom Reports"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
@@ -779,6 +818,9 @@ msgstr "Delete your Data File"
 msgid "Delete your Data Set"
 msgstr "Delete your Data Set"
 
+msgid "Delete your Filter Group"
+msgstr "Delete your Filter Group"
+
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
 
@@ -787,6 +829,9 @@ msgstr "Delete your Profile"
 
 msgid "Deleting in progress..."
 msgstr "Deleting in progress..."
+
+msgid "Derived Columns"
+msgstr "Derived Columns"
 
 #: seed/landing/models.py:48
 msgid "Designates whether the user can log into this admin site."
@@ -816,6 +861,9 @@ msgstr "Dismiss"
 
 msgid "Display Name"
 msgstr "Display Name"
+
+msgid "Distance to Target"
+msgstr "Distance to Target"
 
 msgid "District"
 msgstr "District"
@@ -891,6 +939,12 @@ msgstr "Email Address"
 msgid "Email Address:"
 msgstr "Email Address:"
 
+msgid "Email Templates"
+msgstr "Email Templates"
+
+msgid "Emission Metric"
+msgstr "Emission Metric"
+
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
 
@@ -902,6 +956,9 @@ msgstr "Energy"
 
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
+
+msgid "Energy Metric"
+msgstr "Energy Metric"
 
 msgid "Energy data file"
 msgstr "Energy data file"
@@ -1020,6 +1077,15 @@ msgstr "File Source:"
 
 msgid "Files (Main State Only)"
 msgstr "Files (Main State Only)"
+
+msgid "Filter Group"
+msgstr "Filter Group"
+
+msgid "Filter Group Name"
+msgstr "Filter Group Name"
+
+msgid "Filter Groups"
+msgstr "Filter Groups"
 
 msgid "Filter by label"
 msgstr "Filter by label"
@@ -1276,6 +1342,9 @@ msgstr "Include Notes"
 msgid "Ineligible"
 msgstr "Ineligible"
 
+msgid "Insights"
+msgstr "Insights"
+
 msgid "Integer"
 msgstr "Integer"
 
@@ -1362,6 +1431,9 @@ msgstr "Last name is required."
 
 msgid "Latitude"
 msgstr "Latitude"
+
+msgid "Left Axis"
+msgstr "Left Axis"
 
 msgid "Left Half"
 msgstr "Left Half"
@@ -1612,6 +1684,21 @@ msgstr "Meter Data"
 msgid "Meters"
 msgstr "Meters"
 
+msgid "Metric"
+msgstr "Metric"
+
+msgid "Metric Actual Column"
+msgstr "Metric Actual Column"
+
+msgid "Metric Name"
+msgstr "Metric Name"
+
+msgid "Metric Target Column"
+msgstr "Metric Target Column"
+
+msgid "Metric Type"
+msgstr "Metric Type"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1701,6 +1788,9 @@ msgstr "Next"
 msgid "No"
 msgstr "No"
 
+msgid "No Custom Reports Selected"
+msgstr "No Custom Reports Selected"
+
 msgid "No Data"
 msgstr "No Data"
 
@@ -1718,6 +1808,9 @@ msgstr "No warnings/errors"
 
 msgid "None"
 msgstr "None"
+
+msgid "Not Compliant"
+msgstr "Not Compliant"
 
 msgid "Not Null"
 msgstr "Not Null"
@@ -1795,6 +1888,9 @@ msgstr "Organization Name:"
 
 msgid "Organization Owner(s)"
 msgstr "Organization Owner(s)"
+
+msgid "Organization Settings"
+msgstr "Organization Settings"
 
 msgid "Organizations"
 msgstr "Organizations"
@@ -1986,6 +2082,18 @@ msgstr "Profile Information"
 msgid "Profile Name"
 msgstr "Profile Name"
 
+msgid "Program Metric"
+msgstr "Program Metric"
+
+msgid "Program Metric Configuration"
+msgstr "Program Metric Configuration"
+
+msgid "Program Overview"
+msgstr "Program Overview"
+
+msgid "Program Setup"
+msgstr "Program Setup"
+
 #: seed/models/models.py:239
 msgid "Project"
 msgstr "Project"
@@ -2043,6 +2151,9 @@ msgstr "Property Display Field"
 
 msgid "Property Footprint"
 msgstr "Property Footprint"
+
+msgid "Property Insights"
+msgstr "Property Insights"
 
 msgid "Property Name"
 msgstr "Property Name"
@@ -2132,8 +2243,14 @@ msgstr "Removing buildings from project"
 msgid "Rename"
 msgstr "Rename"
 
+msgid "Rename Filter Group"
+msgstr "Rename Filter Group"
+
 msgid "Rename Profile"
 msgstr "Rename Profile"
+
+msgid "Rename your Filter Group"
+msgstr "Rename your Filter Group"
 
 msgid "Rename your Profile"
 msgstr "Rename your Profile"
@@ -2180,6 +2297,9 @@ msgstr "Review Mapped Data"
 
 msgid "Review matches"
 msgstr "Review matches"
+
+msgid "Right Axis"
+msgstr "Right Axis"
 
 msgid "Right Half"
 msgstr "Right Half"
@@ -2339,6 +2459,12 @@ msgstr "Select All Columns"
 msgid "Select None"
 msgstr "Select None"
 
+msgid "Select a Custom Report to get started!"
+msgstr "Select a Custom Report to get started!"
+
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."
 
@@ -2350,6 +2476,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lots 
 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
+
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Select one or more filter groups to load your inventory."
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Select the type of file(s) you would like to add to"
@@ -2365,6 +2494,9 @@ msgstr "Selected Taxlots"
 
 msgid "Selecting Fields to Share"
 msgstr "Selecting Fields to Share"
+
+msgid "Selections:"
+msgstr "Selections:"
 
 msgid "Send Invite"
 msgstr "Send Invite"
@@ -2508,6 +2640,12 @@ msgstr "Please type <strong>{org}</strong> to confirm."
 
 msgid "Table Name"
 msgstr "Table Name"
+
+msgid "Target > Actual"
+msgstr "Target > Actual"
+
+msgid "Target Column"
+msgstr "Target Column"
 
 msgid "Tax Lot"
 msgstr "Tax Lot"
@@ -2719,6 +2857,9 @@ msgstr "For columns with unit settings, default units will be used for conversio
 msgid "Units"
 msgstr "Units"
 
+msgid "Unknown"
+msgstr "Unknown"
+
 msgid "Until last date of"
 msgstr "Until last date of"
 
@@ -2816,6 +2957,9 @@ msgstr "Valid"
 msgid "Version"
 msgstr "Version"
 
+msgid "View Compliance Tracking"
+msgstr "View Compliance Tracking"
+
 msgid "View Project"
 msgstr "View Project"
 
@@ -2871,6 +3015,9 @@ msgstr "Welcome to SEED Platform™"
 msgid "Welcome to SEED!"
 msgstr "Welcome to SEED!"
 
+msgid "What is a Custom Report?"
+msgstr "What is a Custom Report?"
+
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
 
@@ -2879,6 +3026,15 @@ msgstr "Where would you like to move these buildings?"
 
 msgid "X Axis"
 msgstr "X Axis"
+
+msgid "X Axis Column Selections:"
+msgstr "X Axis Column Selections:"
+
+msgid "X Axis Column Types for Plotting:"
+msgstr "X Axis Column Types for Plotting:"
+
+msgid "X-Axis Columns"
+msgstr "X-Axis Columns"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
@@ -2928,6 +3084,9 @@ msgstr "Yes, Delete Sub-Organization"
 
 msgid "Yes, Delete User"
 msgstr "Yes, Delete User"
+
+msgid "Yes, Remove Filter Group"
+msgstr "Yes, Remove Filter Group"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."

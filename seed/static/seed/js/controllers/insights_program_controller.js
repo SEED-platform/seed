@@ -54,6 +54,13 @@ angular.module('BE.seed.controller.insights_program', [])
         })
       };
 
+      $scope.downloadChart = () => {
+        var a = document.createElement('a');
+        a.href = $scope.insightsChart.toBase64Image();
+        a.download = 'Property Overview.png';
+        a.click();
+      }
+
       $scope.get_display_field_value = function(cycle_id, prop_id) {
         let name = null
         let record = _.find($scope.data.properties_by_cycles[cycle_id], {'property_view_id': prop_id})

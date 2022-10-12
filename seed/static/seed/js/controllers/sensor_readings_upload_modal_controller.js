@@ -112,7 +112,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
 
       var show_confirmation_info = function () {
         uploader_service.sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger_id).then(function (result) {
-          var addtional_columnDefs = [
+          var additional_columnDefs = [
             {
               field: 'exists',
               enableHiding: false
@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
 
           $scope.proposed_imports_options = {
             data: result,
-            columnDefs: [...base_sensor_readings_col_defs, ...addtional_columnDefs],
+            columnDefs: [...base_sensor_readings_col_defs, ...additional_columnDefs],
             enableColumnResizing: true,
             enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
             enableVerticalScrollbar: result.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,

@@ -66,7 +66,7 @@ def login_view(request):
                 password=form.cleaned_data['password']
             )
             if new_user is not None and new_user.is_active:
-                # TODO: the ToS haven't worked for awhile, reneable?
+                # TODO: the ToS haven't worked for awhile, renewable?
                 # determine if user has accepted ToS, if one exists
                 # try:
                 #     user_accepted_tos = has_user_agreed_latest_tos(new_user)

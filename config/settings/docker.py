@@ -38,7 +38,7 @@ COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
-# Make sure to disable secure cooking and csrf when using Cloudflare
+# Make sure to disable secure cookies and csrf when using Cloudflare
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
