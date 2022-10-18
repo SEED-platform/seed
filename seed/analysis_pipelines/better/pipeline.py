@@ -540,9 +540,9 @@ def _process_results(self, analysis_id):
         # create a message for the failed models
         warning_messages = []
         if not electricity_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption.')
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
         if not fuel_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption.')
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
         for warning_message in warning_messages:
             AnalysisMessage.log_and_create(
                 logger,
