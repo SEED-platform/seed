@@ -30,18 +30,19 @@
                                 <a ui-sref="organization_members(::{organization_id: org.id})">{$:: org.name $}</a>
                             </td>
                             <td class="account_org right">
-                                <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa fa-cogs"></i>Settings</a>
-                                <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-share-square-o"></i>{$:: 'Sharing' | translate $}</a>
+                                <a ui-sref="analyses(::{organization_id: org.id})"><i class="fa fa-bar-chart"></i>{$:: 'Analyses' | translate $}</a>
                                 <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"><i class="fa fa-sliders"></i>{$:: 'Column Settings' | translate $}</a>
                                 <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"><i class="fa fa-sitemap"></i>{$:: 'Column Mappings' | translate $}</a>
-                                <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"><i class="fa fa-flag"></i>{$:: 'Data Quality' | translate $}</a>
                                 <a ui-sref="organization_cycles(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-calendar"></i>{$:: 'Cycles' | translate $}</a>
-                                <a ui-sref="organization_labels(::{organization_id: org.id})"><i class="fa fa-tags"></i>{$:: 'Labels' | translate $}</a>
-                                <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
-                                <a ui-sref="organization_members(::{organization_id: org.id})"><i class="fa fa-user"></i>{$:: 'Members' | translate $}</a>
-                                <a ui-sref="organization_email_templates(::{organization_id: org.id})"><i class="fa fa-envelope"></i>{$:: 'Email Templates' | translate $}</a>
-                                <a ui-sref="analyses(::{organization_id: org.id})"><i class="fa fa-bar-chart"></i>{$:: 'Analyses' | translate $}</a>
+                                <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"><i class="fa fa-flag"></i>{$:: 'Data Quality' | translate $}</a>
                                 <a ui-sref="organization_derived_columns(::{organization_id: org.id, inventory_type: 'properties'})"><i class="fa fa-calculator"></i>Derived Columns</a>
+                                <a ui-sref="organization_email_templates(::{organization_id: org.id})"><i class="fa fa-envelope"></i>{$:: 'Email Templates' | translate $}</a>
+                                <a ui-sref="organization_labels(::{organization_id: org.id})"><i class="fa fa-tags"></i>{$:: 'Labels' | translate $}</a>
+                                <a ui-sref="organization_members(::{organization_id: org.id})"><i class="fa fa-user"></i>{$:: 'Members' | translate $}</a>
+                                <a ui-sref="program_setup({organization_id: menu.user.organization.id})"><i class="fa fa-tachometer"></i>{$:: 'Program Setup' | translate $}</a>
+                                <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa fa-cogs"></i>Settings</a>
+                                <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-share-square-o"></i>{$:: 'Sharing' | translate $}</a>
+                                <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
                                 <i class="fa fa-cog"></i>
                             </td>
                         </tr>

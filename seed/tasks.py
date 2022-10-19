@@ -435,7 +435,7 @@ def update_inventory_metadata(ids, states, inventory_type, progress_key):
 
     # Iterates across Properties (or Taxlots) and -States and refreshes each 'updated' attribute
     # Updating Properties (or Taxlots) for OEP Connection
-    # Updating -States for UI feedack on inventory list
+    # Updating -States for UI feedback on inventory list
     for idx, state in enumerate(inventory):
         state.updated = now
         state.save()

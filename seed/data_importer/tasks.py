@@ -835,7 +835,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 @shared_task
 def _save_sensor_data_create_tasks(file_pk, progress_key):
     """
-    Create or Edit Sensor tasks. Creates mutliple sensors for the same property.
+    Create or Edit Sensor tasks. Creates multiple sensors for the same property.
     """
     progress_data = ProgressData.from_key(progress_key)
 

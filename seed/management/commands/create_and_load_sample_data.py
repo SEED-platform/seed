@@ -313,7 +313,7 @@ def get_cycle(org, year=2015):
 def update_taxlot_noise(taxlot):
     """
     Updates the "noise" in a taxlot state.  The noise is just some value
-    that changes with every new taxlot regradless of anything else
+    that changes with every new taxlot regardless of anything else
     :param taxlot: SampleDataRecord with taxlot data.
     :return: The same taxlot with the confidence updated to a random number
     """
@@ -365,7 +365,7 @@ def create_cases(org, cycle, tax_lots, properties):
         # (once for individual, once for _caseALL).  So if the get_or_create returns
         # an existing one then it still is unknown if it is something that already exists.
         # Check the view model to see if there is something with this state and this org.
-        # If it does not exist thencreate one.  If it does exist than that is correct (hopefully)
+        # If it does not exist then create one.  If it does exist than that is correct (hopefully)
         #
         # FIXME.  In the instance where this script is creating both individual cases and _caseALL this
         # throws an error for some taxlots that multiple are returned.  Since TaxLotState does not depend
@@ -402,13 +402,13 @@ def create_cases(org, cycle, tax_lots, properties):
 
         # Moved the property and taxlot items below the state items because they only depend on an org
         # So if they are just left at the top as get_or_create(organization=org) then there will only
-        # be one property created per org.  Instead for creating this data if the state was created
+        # be one property created per org.  Instead, for creating this data if the state was created
         # then a property/taxlot needs to be created too.
         if property_state_created:
             property = seed.models.Property.objects.create(organization=org)
         else:
-            # else the propery_state already existed so there should also be a PropertyView
-            # with this with this property_state.  Find and use that property.
+            # else the property_state already existed so there should also be a PropertyView
+            # with this property_state.  Find and use that property.
             property = seed.models.PropertyView.objects.filter(state=prop_state).filter(
                 property__organization=org)[0].property
 
@@ -416,7 +416,7 @@ def create_cases(org, cycle, tax_lots, properties):
             taxlot = seed.models.TaxLot.objects.create(organization=org)
         else:
             # else the taxlot_state already existed so there should also be a TaxlotView
-            # with this with this taxlot_state.  Find and use that taxlot.
+            # with this taxlot_state.  Find and use that taxlot.
             taxlot = seed.models.TaxLotView.objects.filter(state=taxlot_state).filter(
                 taxlot__organization=org)[0].taxlot
 
@@ -443,7 +443,7 @@ def update_taxlot_views(views, number_of_updates):
     """
     Changes some data in the underlying state and then updates the view to create an audit log
 
-    :param viws: list of TaxLotViews to be updated
+    :param views: list of TaxLotViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
     for i in range(number_of_updates):
@@ -458,7 +458,7 @@ def update_property_views(views, number_of_updates):
     """
     Changes some data in the underlying state and then updates the view to create an audit log
 
-    :param viws: list of PropertyViews to be updated
+    :param views: list of PropertyViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
     for i in range(number_of_updates):
@@ -691,7 +691,7 @@ def update_taxlot_year(taxlot, year):
 def update_property_noise(property):
     """
     Updates the "noise" in a property state.  The noise is just some value
-    that changes with every new property regradless of anything else
+    that changes with every new property regardless of anything else
     :param property: SampleDataRecord with property data.
     :return: The same property with the site_eui updated to a random number
     """
@@ -731,13 +731,13 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
         is a list of SampleDataRecords with property data.
         E.G Simplest case is A which is 1-1 which means each entry in pairs_taxlots_and_properties
         will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
-        might look like [[propert_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
+        might look like [[property_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     :param case: string, description of the case being created
     """
 
     # Simplest case is A which is 1-1 which means each entry in pairs_taxlots_and_properties
     # will look like [[taxlot_1], [property_1]].  An entry in one property to many taxlots
-    # might look like [[propert_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
+    # might look like [[property_1], [taxlot_1, taxlot_2, taxlot_3]], etc...
     for year in years:
         print('Creating additional year for case {c}:\t{y}'.format(c=case, y=year))
         cycle = get_cycle(org, year)

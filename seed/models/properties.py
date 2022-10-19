@@ -244,7 +244,7 @@ class PropertyState(models.Model):
     # site EUI (modeled 8/4/2017).
     #
     # note: `*_orig` are all the unit-unaware original fields in the property
-    # state, which have been superceded by unit-aware Quantity fields. The old
+    # state, which have been superseded by unit-aware Quantity fields. The old
     # ones are left in place via the rename from eg. site_eui -> site_eui_orig
     # with their original data intact until we're sure things are OK with the
     # new columns. At that point (probably 2.4 release) these can be safely
@@ -472,7 +472,7 @@ class PropertyState(models.Model):
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
-                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
@@ -511,6 +511,12 @@ class PropertyState(models.Model):
                         done_searching = True
                     else:
                         log = tree
+
+                    # only get 10 histories at max
+                    if len(history) >= 10:
+                        history = history[:10]
+                        break
+
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
@@ -700,7 +706,7 @@ class PropertyState(models.Model):
                 else:
                     try:
                         new_measure = copy.deepcopy(measure)
-                        # copy the created and modifed time
+                        # copy the created and modified time
                         new_measure.pk = None
                         new_measure.property_state = merged_state
                         new_measure.save()
@@ -713,7 +719,7 @@ class PropertyState(models.Model):
 
                     except IntegrityError:
                         _log.error(
-                            "Measure state_id, measure_id, application_sacle, and implementation_status already exists -- skipping for now")
+                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now")
 
                 new_items.append(test_dict)
 

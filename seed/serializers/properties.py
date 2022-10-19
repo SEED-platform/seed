@@ -452,7 +452,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             )
             errors['wrong_type'] = msg
         if unique:
-            msg = "Unique together contraint violated for: {}".format(unique)
+            msg = "Unique together constraint violated for: {}".format(unique)
             errors['unique'] = msg
         if errors:
             raise serializers.ValidationError(detail=errors)

@@ -594,7 +594,7 @@ class DataQualityCheck(models.Model):
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
 
-        The cache_key is different than the indentifier. The cache_key is where all the results are
+        The cache_key is different than the identifier. The cache_key is where all the results are
         to be stored for the data quality checks, the identifier, is the random number (or specified
         value that is used to identifier both the progress and the data storage
 

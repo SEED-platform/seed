@@ -107,7 +107,7 @@ class PropertyMeterReadingsExporter():
         Returns readings and column definitions formatted and aggregated to display all
         records in monthly intervals.
 
-        At a high-level, following algorithm is used to acccomplish this:
+        At a high-level, following algorithm is used to accomplish this:
             - Identify the first start time and last end time
             - Define a range of dates between start and end time that fall within a month
             - For each month in the date range, aggregate the readings found in that month using a linear relationship down to the second.
@@ -126,7 +126,7 @@ class PropertyMeterReadingsExporter():
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
-            # iterate through each usage and assingn to accumulator
+            # iterate through each usage and assign to accumulator
             for usage in meter.meter_readings.values():
                 st, et = usage['start_time'], usage['end_time']
                 total_seconds = round((et - st).total_seconds())

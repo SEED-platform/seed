@@ -210,7 +210,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
                     logger.error(f"!!! Error retrieving meter readings: {err}")
-                    # continute but analysis will fail
+                    # continue but analysis will fail
                     continue
             else:
                 readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
@@ -494,7 +494,7 @@ def _process_results(self, analysis_id):
             'inverse_model.Electricity.r2'
         ),
         ExtraDataColumnPath(
-            'better_inverse_r_squared_fossile_fuel',
+            'better_inverse_r_squared_fossil_fuel',
             'BETTER Inverse Model R^2 (Fossil Fuel)',
             1,
             'inverse_model.Fossil Fuel.r2'

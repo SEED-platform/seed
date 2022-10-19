@@ -38,7 +38,7 @@ def decode_unique_ids(qs):
         try:
             bounding_box_obj = decode(getattr(item, unique_id))
         except ValueError:
-            _log.error(f'Cound not decode UBID of {getattr(item, unique_id)}')
+            _log.error(f'Could not decode UBID of {getattr(item, unique_id)}')
             continue  # property with an incorrectly formatted UBID/ULID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order

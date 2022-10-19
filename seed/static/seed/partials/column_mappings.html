@@ -152,6 +152,16 @@
                                   <option value="MJ/m**2/year" translate>MJ/m²/year</option>
                                   <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                               </select>
+                                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_column(col)">
+                                    <option value="MtCO2e/year" translate>MtCO2e/year</option>
+                                    <option value="kgCO2e/year" translate>kgCO2e/year</option>
+                                </select>
+                                <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_ghg_intensity_column(col)">
+                                    <option value="MtCO2e/ft**2/year" translate>MtCO2e/ft**2/year</option>
+                                    <option value="kgCO2e/ft**2/year" translate>kgCO2e/ft**2/year</option>
+                                    <option value="MtCO2e/m**2/year" translate>MtCO2e/m**2/year</option>
+                                    <option value="kgCO2e/m**2/year" translate>kgCO2e/m**2/year</option>
+                                </select>
                           </td>
                           <td ng-class="{'danger': is_file_header_duplicate(col)}">
                               <input type="text" class="form-control input-sm tcm_field" ng-model="col.from_field" ng-change="flag_change()" ng-disabled="!profile_action_ok('change_from_field')">

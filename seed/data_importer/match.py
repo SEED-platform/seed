@@ -273,7 +273,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
-    # IDs of -States with all matching criteria equal to None are intially promoted
+    # IDs of -States with all matching criteria equal to None are initially promoted
     # as they're not eligible for matching.
     promoted_ids = list(
         StateClass.objects.filter(
@@ -508,7 +508,7 @@ def save_state_match(state1, state2, priorities):
     :param state1: PropertyState or TaxLotState
     :param state2: PropertyState or TaxLotState
     :param priorities: dict, column names and the priorities of the merging of data. This includes
-    all of the priorites for the columns, not just the priorities for the selected taxlotstate.
+    all of the priorities for the columns, not just the priorities for the selected taxlotstate.
     :return: state1, after merge
     """
     merged_state = type(state1).objects.create(organization=state1.organization)

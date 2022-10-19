@@ -139,7 +139,7 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # The columns will be removed if you don't specity them again in an update method
+        # The columns will be removed if you don't specify them again in an update method
         self.assertEqual(result['data']['inventory_type'], 'Tax Lot')
         self.assertEqual(len(result['data']['columns']), 0)
 
