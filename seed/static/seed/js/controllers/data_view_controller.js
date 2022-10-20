@@ -194,6 +194,9 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
         console.log('selected cycles', $scope.selected_cycles)
         console.log('used cycles', $scope.used_cycles)
+
+        console.log('_assign_datasets toggle cycle')
+        _assign_datasets();
       };
 
       $scope.toggle_aggregation = function (location, aggregation_id) {
@@ -505,7 +508,12 @@ angular.module('BE.seed.controller.data_view', [])
           spinner_utility.hide()
           return
         }
+
         xAxisLabels = $scope.data.graph_data.labels
+        selectedCycleNames = Object.values($scope.selected_cycles).map(c => c.name)
+        xAxisLabelsSelected = xAxisLabels.map(l => selectedCycleNames.includes(l))
+        xAxisLabelsSelectedMask = (_, i) => xAxisLabelsSelected[i]
+
         datasets = []
         axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
         axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map(agg1 => $scope.aggregations.find(agg2 => agg2.id == agg1).name)
@@ -526,7 +534,8 @@ angular.module('BE.seed.controller.data_view', [])
               dataset.borderColor = colors[i],
               dataset.tension = 0.1
               dataset.yAxisID = 'y1'
-              datasets.push(dataset)
+              // spread in data filter so the object itself is not modified.
+              datasets.push({...dataset, data: dataset.data.filter(xAxisLabelsSelectedMask)})
               i = i > 19 ? 0 : i + 1
             }
           }
@@ -551,7 +560,8 @@ angular.module('BE.seed.controller.data_view', [])
                 dataset.tension = 0.1
                 dataset.yAxisID = 'y2'
                 dataset.borderDash = [10,15]
-                datasets.push(dataset)
+                // spread in data filter so the object itself is not modified.
+                datasets.push({...dataset, data: dataset.data.filter(xAxisLabelsSelectedMask)}  )
                 i = i > 19 ? 0 : i + 1
               }
             }
@@ -560,7 +570,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.dataViewChart.options.scales.y2.title.display = false
         }
 
-        $scope.dataViewChart.data.labels = xAxisLabels
+        $scope.dataViewChart.data.labels = xAxisLabels.filter(xAxisLabelsSelectedMask)
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
