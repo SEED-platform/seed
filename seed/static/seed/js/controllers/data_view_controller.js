@@ -533,6 +533,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
 
         if ($scope.source_column_by_location.second_axis) {
+          i = 0
           axis2_column = $scope.source_column_by_location.second_axis.column_name
           let second_axis_name = $scope.source_column_by_location.second_axis.displayName
           console.log('second axis name', second_axis_name)
