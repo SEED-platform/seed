@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       var mapping_display_to_db = function (mapping) {
         // Also, clear from_units if mapping is not for units col
-        if (!$scope.is_eui_column(mapping) && !$scope.is_area_column(mapping)) {
+        if (!$scope.is_area_column(mapping) && !$scope.is_eui_column(mapping) && !$scope.is_ghg_column(mapping) && !$scope.is_ghg_intensity_column(mapping)) {
           mapping.from_units = null;
         }
 
@@ -296,12 +296,28 @@ angular.module('BE.seed.controller.column_mappings', [])
         return mapping.to_table_name === 'PropertyState' && Boolean(_.find(area_columns, {displayName: mapping.to_field}));
       };
 
+      var ghg_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg'});
+      $scope.is_ghg_column = function (mapping) {
+        // All of these are on the PropertyState table
+        return mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, {displayName: mapping.to_field}))
+      };
+
+      var ghg_intensity_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg_intensity'});
+      $scope.is_ghg_intensity_column = function (mapping) {
+        // All of these are on the PropertyState table
+        return mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, {displayName: mapping.to_field}))
+      };
+
       var get_default_quantity_units = function (col) {
         // TODO - hook up to org preferences / last mapping in DB
         if ($scope.is_eui_column(col)) {
           return 'kBtu/ft**2/year';
         } else if ($scope.is_area_column(col)) {
           return 'ft**2';
+        } else if ($scope.is_ghg_column(col)) {
+          return 'MtCO2e/year';
+        } else if ($scope.is_ghg_intensity_column(col)) {
+          return 'MtCO2e/ft**2/year';
         }
         return null;
       };
@@ -394,7 +410,8 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.empty_units_present = function () {
         return Boolean(_.find($scope.current_profile.mappings, function (field) {
-          return field.to_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field));
+          let has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
+          return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
         }));
       };
 

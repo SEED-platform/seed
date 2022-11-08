@@ -76,7 +76,7 @@ class TaxLotViewSet(ViewSet, ProfileIdMixin):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
-        # check if there is a query paramater for the profile_id. If so, then use that one
+        # check if there is a query parameter for the profile_id. If so, then use that one
         profile_id = request.query_params.get('profile_id', profile_id)
         if not org_id:
             return JsonResponse(
@@ -439,7 +439,7 @@ class TaxLotViewSet(ViewSet, ProfileIdMixin):
         new_view1.save()
         new_view2.save()
 
-        # Asssociate labels
+        # Associate labels
         label_objs = StatusLabel.objects.filter(pk__in=label_ids)
         new_view1.labels.set(label_objs)
         new_view2.labels.set(label_objs)

@@ -7,7 +7,7 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
 This files has faker methods for generating fake data.
 The data is pseudo random, but still predictable. I.e. calling the same
-method mutiple times will always return the same sequence of results
+method multiple times will always return the same sequence of results
 (after initialization)..
 .. warning::
     Do not edit the seed unless you know what you are doing!
@@ -72,7 +72,7 @@ class BaseFake(object):
     """
     Base class for fake factories.
     .. warning::
-    *Always* call super, *first* when overridding init if you subclass this.
+    *Always* call super, *first* when overriding init if you subclass this.
     """
 
     def __init__(self):
@@ -261,7 +261,7 @@ class FakePropertyStateFactory(BaseFake):
         }
 
     def get_property_state_as_extra_data(self, organization=None, **kw):
-        """Return the porperty state but only populated as extra_data (used for mapping)"""
+        """Return the property state but only populated as extra_data (used for mapping)"""
         property_details = {}
         if 'no_default_data' not in kw:
             property_details = self.get_details()
@@ -571,7 +571,7 @@ class FakeStatusLabelFactory(BaseFake):
 
 class FakeNoteFactory(BaseFake):
     """
-    Facotry Class for producing Note instances.
+    Factory Class for producing Note instances.
     """
 
     def __init__(self, organization=None, user=None):
@@ -708,7 +708,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
         property_view = kwargs.get('property_view')
         if not property_view:
             property_view = self.property_view_factory.get_property_view(
-                prprty=kwargs.get('prprpty'), cycle=cycle,
+                prprty=kwargs.get('prprty'), cycle=cycle,
                 state=kwargs.get('property_state'),
                 organization=organization, user=user
             )

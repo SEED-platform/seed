@@ -48,7 +48,7 @@ describe('The stripImportPrefix filter', function () {
   });
 
   it('Only strips out the prefix if it has at least one digit and a hyphen', function () {
-    // must have the 'IMP' folowed by a digit then a hyphen
+    // must have the 'IMP' followed by a digit then a hyphen
     expect(stripImportPrefixFilter('IMP-123')).toBe('IMP-123');
     expect(stripImportPrefixFilter('IMP1123')).toBe('IMP1123');
   });

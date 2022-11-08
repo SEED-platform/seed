@@ -78,7 +78,7 @@ def geocode_buildings(buildings):
 
     id_addresses = _id_addresses(buildings_to_geocode, org)
 
-    # Don't continue if there are no addresses to geocode, indiciating an insufficient
+    # Don't continue if there are no addresses to geocode, indicating an insufficient
     # number of geocoding columns for all individual buildings or the whole org
     if not id_addresses:
         return

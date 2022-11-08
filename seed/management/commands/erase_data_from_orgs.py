@@ -23,7 +23,7 @@ class Command(BaseCommand):
         return
 
     def handle(self, *args, **options):
-        logging_info("RUN create_m2m_relatinships_organization with args={},kwds={}".format(args, options))
+        logging_info("RUN create_m2m_relationships_organization with args={},kwds={}".format(args, options))
         if options['organization']:
             core_organization = list(map(int, options['organization'].split(",")))
         else:
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         for org in core_organization:
             delete_data_from_org(org)
 
-        logging_info("END create_m2m_relatinships_organization")
+        logging_info("END create_m2m_relationships_organization")
         return
 
 

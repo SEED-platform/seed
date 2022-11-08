@@ -84,11 +84,11 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     Return the first five rows. This is a complicated method because it handles converting the
     persisted format of the first five rows into a list of dictionaries. It handles some basic
     logic if there are crlf in the fields. Note that this method does not cover all the use cases
-    and cannot due to the custom delimeter. See the tests in
+    and cannot due to the custom delimiter. See the tests in
     test_views.py:test_get_first_five_rows_newline_should_work to see the limitation
 
     :param header: list, ordered list of headers as strings
-    :param first_five_rows: string, long string with |#*#| delimeter.
+    :param first_five_rows: string, long string with |#*#| delimiter.
     :return: list
     """
     row_data = []

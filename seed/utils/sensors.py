@@ -63,7 +63,7 @@ class PropertySensorReadingsExporter():
         }
 
         if len(timestamps_in_page) > 0:
-            eariliest_time = timestamps_in_page[0]
+            earliest_time = timestamps_in_page[0]
             latest_time = timestamps_in_page[-1]
 
             time_format = "%Y-%m-%d %H:%M:%S"
@@ -71,7 +71,7 @@ class PropertySensorReadingsExporter():
             for sensor in self.sensors:
                 field_name = self._build_column_def(sensor, column_defs)
 
-                sensor_readings = sensor.sensor_readings.filter(timestamp__range=[eariliest_time, latest_time])
+                sensor_readings = sensor.sensor_readings.filter(timestamp__range=[earliest_time, latest_time])
                 if self.showOnlyOccupiedReadings:
                     sensor_readings = sensor_readings.filter(is_occupied=True)
 

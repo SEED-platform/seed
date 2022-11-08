@@ -93,7 +93,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         except Exception as e:
             return JsonResponse(
-                {'status': 'error', 'message': e},
+                {'status': 'error', 'message': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
@@ -353,7 +353,7 @@ class PortfolioManagerImport(object):
         """
         This method is for the updated ESPM where the response is escaped JSON string in a JSON response.
 
-        :param response_text: str, repsonse to parse
+        :param response_text: str, response to parse
         :return: dict
         """
         try:

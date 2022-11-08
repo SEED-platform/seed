@@ -279,7 +279,7 @@ class GreenAssessmentProperty(models.Model):
             self.rating = value
 
     def initialize_audit_logs(self, **kwargs):
-        """Set up inital log."""
+        """Set up initial log."""
         kwargs.update({
             'organization': self.assessment.organization,
             'property_view': self.view,

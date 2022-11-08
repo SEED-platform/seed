@@ -91,7 +91,7 @@ class Meter(models.Model):
         'Wood Use': ENERGY_TYPE_BY_METER_TYPE[WOOD],
         'Electricity Use (Unknown)': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
 
-        # theese values are added based on known usage
+        # these values are added based on known usage
         'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
         'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
     }

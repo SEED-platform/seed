@@ -192,13 +192,13 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           /*
            * Our basic approach here for event handlers is that we listen for a down event (mousedown or touchstart).
            * Once we have a down event, we need to work out whether we have a click, a drag, or a
-           * hold.  A click would sort the grid (if sortable).  A drag would be used by moveable, so
+           * hold.  A click would sort the grid (if sortable).  A drag would be used by movable, so
            * we ignore it.  A hold would open the menu.
            *
            * So, on down event, we put in place handlers for move and up events, and a timer.  If the
            * timer expires before we see a move or up, then we have a long press and hence a column menu open.
            * If the up happens before the timer, then we have a click, and we sort if the column is sortable.
-           * If a move happens before the timer, then we are doing column move, so we do nothing, the moveable feature
+           * If a move happens before the timer, then we are doing column move, so we do nothing, the movable feature
            * will handle it.
            *
            * To deal with touch enabled devices that also have mice, we only create our handlers when

@@ -146,7 +146,7 @@ class TestAnalysisUtils(TestCase):
 
         # -- Act
         # NOTE: we set snap to false, we expect the first and last readings to
-        # keep their original start and end (respectrively)
+        # keep their original start and end (respectively)
         readings = _split_reading(reading, snap_intervals=False)
 
         # -- Assert

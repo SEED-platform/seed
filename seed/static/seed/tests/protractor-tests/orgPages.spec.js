@@ -41,7 +41,7 @@ describe('When I visit the accounts page', function () {
       expect($('.page_title').getText()).toEqual(browser.params.testOrg.childRename);
     });
   });
-  it('should go back to orgranizations', function () {
+  it('should go back to organizations', function () {
     $('[ui-sref="organizations"]').click();
     expect($('.page_title').getText()).toEqual('Organizations');
   });

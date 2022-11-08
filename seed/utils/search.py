@@ -6,9 +6,16 @@
 """
 import operator
 import re
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
 from functools import reduce
+from typing import Any, Callable, Union
 
+from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Cast, NullIf, Replace
+from django.http.request import QueryDict
 from past.builtins import basestring
 
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
@@ -184,3 +191,261 @@ def parse_expression(k, parts):
         else:
             query_filters.append(q_object)
     return reduce(operator.and_, query_filters, Q())
+
+
+class FilterException(Exception):
+    pass
+
+
+class QueryFilterOperator(Enum):
+    EQUAL = 'exact'
+    LT = 'lt'
+    LTE = 'lte'
+    GT = 'gt'
+    GTE = 'gte'
+    CONTAINS = 'icontains'
+    ISNULL = 'isnull'
+
+
+@dataclass
+class QueryFilter:
+    field_name: str
+    operator: Union[QueryFilterOperator, None]
+    is_negated: bool
+
+    @classmethod
+    def parse(cls, filter):
+        """Parse a filter string into a QueryFilter
+
+        :param filter: string in the format <field_name>, or <field_name>__<lookup_expression>
+        """
+        field_name, _, lookup = filter.partition('__')
+        is_negated = lookup == 'ne'
+        operator = None
+        if lookup and not is_negated:
+            try:
+                operator = QueryFilterOperator(lookup)
+            except ValueError:
+                valid_lookups = [op.value for op in list(QueryFilterOperator)]
+                raise FilterException(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}')
+
+        return cls(field_name, operator, is_negated)
+
+    def to_q(self, value: Any) -> Q:
+        if self.operator:
+            expression = f'{self.field_name}__{self.operator.value}'
+        else:
+            expression = self.field_name
+        q_dict = {expression: value}
+
+        if self.is_negated:
+            return ~Q(**q_dict)
+        else:
+            return Q(**q_dict)
+
+
+# represents a dictionary usable with a QuerySet annotation:
+#   `QuerySet.annotation(**AnnotationDict)`
+AnnotationDict = dict[str, models.Func]
+
+
+def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str, AnnotationDict]:
+    """Creates a dictionary of annotations which will cast the extra data column_name
+    into the provided data_type, for usage like: `*View.annotate(**annotations)`
+
+    Why is this necessary? In some cases, extra_data only stores string values.
+    This means anytime you try to filter numeric values in extra data, it won't
+    behave as expected. Thus we cast extra data to the defined column data_type
+    at query time to make sure our filters and sorts will work.
+
+    :param column_name: the Column.column_name for a Column which is extra_data
+    :param data_type: the Column.data_type for the column
+    :returns: the annotated field name which contains the casted result, along with
+              a dict of annotations
+    """
+    full_field_name = f'state__extra_data__{column_name}'
+
+    # annotations require a few characters to be removed...
+    cleaned_column_name = column_name.replace(' ', '_')
+    cleaned_column_name = cleaned_column_name.replace("'", '-')
+    cleaned_column_name = cleaned_column_name.replace('"', '-')
+    cleaned_column_name = cleaned_column_name.replace('`', '-')
+    cleaned_column_name = cleaned_column_name.replace(';', '-')
+    text_field_name = f'_{cleaned_column_name}_to_text'
+    stripped_field_name = f'_{cleaned_column_name}_stripped'
+    cleaned_field_name = f'_{cleaned_column_name}_cleaned'
+    final_field_name = f'_{cleaned_column_name}_final'
+
+    annotations: AnnotationDict = {
+        text_field_name: Cast(full_field_name, output_field=models.TextField()),
+        # after casting a json field to text, the resulting value will be wrapped
+        # in double quotes which need to be removed
+        stripped_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+        cleaned_field_name: NullIf(stripped_field_name, models.Value('null'), output_field=models.TextField())
+    }
+    if data_type == 'integer':
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.IntegerField())
+        })
+    elif data_type in ['number', 'float', 'area', 'eui']:
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.FloatField())
+        })
+    elif data_type in ['date', 'datetime']:
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.DateTimeField())
+        })
+    elif data_type == 'boolean':
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.BooleanField())
+        })
+    else:
+        # treat it as a string (just cast to text and strip)
+        annotations = {
+            text_field_name: Cast(full_field_name, output_field=models.TextField()),
+            final_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+        }
+
+    return final_field_name, annotations
+
+
+def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
+    """Parse a filter expression into a Q object
+
+    :param filter_expression: should be a valid Column.column_name, with an optional
+                              Django field lookup suffix (e.g., `__gt`, `__icontains`, etc)
+                              https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
+                              One custom field lookup suffix is allowed, `__ne`,
+                              which negates the expression (i.e., column_name != filter_value)
+    :param filter_value: the value evaluated against the filter_expression
+    :param columns_by_name: mapping of Column.column_name to dict representation of Column
+    :return: query object
+    """
+    DATA_TYPE_PARSERS: dict[str, Callable] = {
+        'number': float,
+        'float': float,
+        'integer': int,
+        'string': str,
+        'geometry': str,
+        'datetime': datetime.fromisoformat,
+        'date': datetime.fromisoformat,
+        'boolean': lambda v: v.lower() == 'true',
+        'area': float,
+        'eui': float,
+    }
+
+    filter = QueryFilter.parse(filter_expression)
+    column = columns_by_name.get(filter.field_name)
+    if column is None or column['related']:
+        return Q(), {}
+
+    updated_filter = None
+    annotations: AnnotationDict = {}
+    if filter.field_name == 'campus':
+        # campus is the only column found on the canonical property (TaxLots don't have this column)
+        # all other columns are found in the state
+        updated_filter = QueryFilter(f'property__{filter.field_name}', filter.operator, filter.is_negated)
+    elif column['is_extra_data']:
+        new_field_name, annotations = _build_extra_data_annotations(column['column_name'], column['data_type'])
+        updated_filter = QueryFilter(new_field_name, filter.operator, filter.is_negated)
+    else:
+        updated_filter = QueryFilter(f'state__{filter.field_name}', filter.operator, filter.is_negated)
+
+    parser = DATA_TYPE_PARSERS.get(column['data_type'], str)
+    try:
+        new_filter_value = parser(filter_value)
+    except Exception:
+        raise FilterException(f'Invalid data type for "{filter.field_name}". Expected a valid {column["data_type"]} value.')
+
+    return updated_filter.to_q(new_filter_value), annotations
+
+
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> tuple[Union[None, str], AnnotationDict]:
+    """Parse a sort expression
+
+    :param sort_expression: should be a valid Column.column_name. Optionally prefixed
+                            with '-' to indicate descending order.
+    :param columns_by_name: mapping of Column.column_name to dict representation of Column
+    :return: the parsed sort expression or None if not valid followed by a dictionary of annotations
+    """
+    column_name = sort_expression.lstrip('-')
+    direction = '-' if sort_expression.startswith('-') else ''
+    if column_name == 'id':
+        return sort_expression, {}
+    elif column_name == 'campus':
+        # campus is the only column which is found exclusively on the Property, not the state
+        return f'property__{sort_expression}', {}
+    elif column_name in columns_by_name:
+        column = columns_by_name[column_name]
+        if column['related']:
+            return None, {}
+        elif column['is_extra_data']:
+            new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
+            return f'{direction}{new_field_name}', annotations
+        else:
+            return f'{direction}state__{column_name}', {}
+    else:
+        return None, {}
+
+
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
+    """Build a query object usable for `*View.filter(...)` as well as a list of
+    column names for usable for `*View.order_by(...)`.
+
+    Filters are specified in a similar format as Django queries, as `column_name`
+    or `column_name__lookup`, where `column_name` is a valid Column.column_name,
+    and `__lookup` (which is optional) is any valid Django field lookup:
+      https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
+
+    One special lookup which is not provided by Django is `__ne` which negates
+    the filter expression.
+
+    Query string examples:
+    - `?city=Denver` - inventory where City is Denver
+    - `?city__ne=Denver` - inventory where City is NOT Denver
+    - `?site_eui__gte=100` - inventory where Site EUI >= 100
+    - `?city=Denver&site_eui__gte=100` - inventory where City is Denver AND Site EUI >= 100
+    - `?my_custom_column__lt=1000` - inventory where the extra data field `my_custom_column` < 1000
+
+    Sorts are specified with the `order_by` parameter, with any valid Column.column_name
+    as the value. By default the column is sorted in ascending order, columns prefixed
+    with `-` will be sorted in descending order.
+
+    Query string examples:
+    - `?order_by=site_eui` - sort by Site EUI in ascending order
+    - `?order_by=-site_eui` - sort by Site EUI in descending order
+    - `?order_by=city&order_by=site_eui` - sort by City, then Site EUI
+
+    This function basically does the following:
+    - Ignore any filter/sort that doesn't have a corresponding column
+    - Handle cases for extra data
+    - Convert filtering values into their proper types (e.g., str -> int)
+
+    :param filters: QueryDict from a request
+    :param columns: list of all valid Columns in dict format
+    :return: filters, annotations and sorts
+    """
+    columns_by_name = {}
+    for column in columns:
+        if (column['related']):
+            continue
+        columns_by_name[column['column_name']] = column
+
+    new_filters = Q()
+    annotations = {}
+    for filter_expression, filter_value in filters.items():
+        if filter_expression[-4:] == '__ne' and filter_value == '':
+            filter_expression = filter_expression.replace('__ne', '__isnull')
+            filter_value = False
+        parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+        new_filters &= parsed_filters
+        annotations.update(parsed_annotations)
+
+    order_by = []
+    for sort_expression in filters.getlist('order_by', ['id']):
+        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name)
+        if parsed_sort is not None:
+            order_by.append(parsed_sort)
+            annotations.update(parsed_annotations)
+
+    return new_filters, annotations, order_by

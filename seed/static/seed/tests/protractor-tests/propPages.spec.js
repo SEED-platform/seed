@@ -64,7 +64,7 @@ describe('When I go to the prop page', function () {
     // no historical items
     var historicalItems = element.all(by.repeater('historical_item in historical_items'));
 
-    // commented out, not guarranteed:
+    // commented out, not guaranteed:
     // expect(historicalItems.count()).toBeLessThan(1);
 
     //make change

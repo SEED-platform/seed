@@ -1,12 +1,12 @@
 {
   "name": "seed",
-  "version": "2.15.1",
-  "lockfileVersion": 1,
+  "version": "2.15.2",
+  "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "seed",
-      "version": "2.14.0",
+      "version": "2.16.0-beta",
       "hasInstallScript": true,
       "license": "SEE LICENSE IN LICENSE",
       "devDependencies": {
@@ -3098,6 +3098,7 @@
       "version": "5.4.4",
       "resolved": "https://registry.npmjs.org/protractor/-/protractor-5.4.4.tgz",
       "integrity": "sha512-BaL4vePgu3Vfa/whvTUAlgaCAId4uNSGxIFSCXMgj7LMYENPWLp85h5RBi9pdpX/bWQ8SF6flP7afmi2TC4eHw==",
+      "deprecated": "We have news to share - Protractor is deprecated and will reach end-of-life by Summer 2023. To learn more and find out about other options please refer to this post on the Angular blog. Thank you for using and contributing to Protractor. https://goo.gle/state-of-e2e-in-angular",
       "dev": true,
       "dependencies": {
         "@types/q": "^0.0.32",

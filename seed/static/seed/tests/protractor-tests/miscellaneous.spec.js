@@ -123,7 +123,7 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should refesh and rules are correctly saved', function () {
+  it('should refresh and rules are correctly saved', function () {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
     $$('[ng-click="remove_label(rule)"]').first().click();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
@@ -131,7 +131,7 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should refesh again and check rules', function () {
+  it('should refresh again and check rules', function () {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $$('.btn.btn-sm.btn-default.action_link').get(2).click();

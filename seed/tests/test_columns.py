@@ -715,7 +715,7 @@ class TestRenameColumns(TestCase):
 
         old_column = Column.objects.filter(column_name='gross_floor_area').first()
         result = old_column.rename_column(new_col_name, force=True)
-        self.assertEqual(result, [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."])
+        self.assertEqual(result, [False, "The column data can't be converted to the new column due to conversion constraints (e.g., converting square feet to kBtu etc.)."])
 
         new_column_count = Column.objects.count()
         self.assertEqual(original_column_count, new_column_count)

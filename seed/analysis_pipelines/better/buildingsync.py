@@ -30,7 +30,7 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Other': 'Other'
 }
 
-# maps SEED Meter types to BuildignSync ResourceUse types
+# maps SEED Meter types to BuildingSync ResourceUse types
 # NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
 SEED_TO_BSYNC_RESOURCE_TYPE = {
     Meter.ELECTRICITY_GRID: 'Electricity',
@@ -214,5 +214,5 @@ def _parse_analysis_property_view_id(filepath):
 
     if len(analysis_property_view_id_elem) != 1:
         raise AnalysisPipelineException(
-            f'Expected BuildlingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
+            f'Expected BuildingSync file to have exactly one "{PREMISES_ID_NAME}" PremisesIdentifier')
     return int(analysis_property_view_id_elem[0].text)

@@ -147,7 +147,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
     rating = serializers.CharField(
         required=False, allow_null=True, max_length=100)
     expiration_date = serializers.DateField(allow_null=True, required=False)
-    # ensure reuqest.users org matches that of view and assessment
+    # ensure request.users org matches that of view and assessment
     org_validators = [ASSESSMENT_VALIDATOR, PROPERTY_VIEW_VALIDATOR]
 
     def __init__(self, *args, **kwargs):
@@ -291,7 +291,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
 
 
 class GreenAssessmentURLSerializer(OrgValidateMixin, serializers.ModelSerializer):
-    # ensure reuqest.users org matches that property_assessment
+    # ensure request.users org matches that property_assessment
     org_validators = [ASSESSMENT_PROPERTY_VALIDATOR]
 
     class Meta:

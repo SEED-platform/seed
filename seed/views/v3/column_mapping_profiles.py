@@ -132,7 +132,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
                 profile.mappings = final_mappings
             elif updated_mappings:
-                # indiscriminantly update the mappings
+                # indiscriminately update the mappings
                 profile.mappings = updated_mappings
 
         profile.save()

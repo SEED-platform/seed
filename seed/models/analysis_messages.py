@@ -83,11 +83,11 @@ class AnalysisMessage(models.Model):
 
         # truncate the messages to make sure they meet our db constraints
         MAX_MESSAGE_LENGTH = 255
-        ELIPSIS = '...'
+        ELLIPSIS = '...'
         if len(user_message) > MAX_MESSAGE_LENGTH:
-            user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
+            user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
         if len(debug_message) > MAX_MESSAGE_LENGTH:
-            debug_message = debug_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
+            debug_message = debug_message[:MAX_MESSAGE_LENGTH - len(ELLIPSIS)] + ELLIPSIS
 
         return AnalysisMessage.objects.create(
             type=type_,
