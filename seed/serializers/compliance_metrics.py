@@ -24,4 +24,4 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ComplianceMetric
-        fields = ('id', 'name', 'organization_id', 'start', 'end', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'x_axis_columns',)
+        fields = ('id', 'name', 'organization_id', 'start', 'end', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'filter_group', 'x_axis_columns',)

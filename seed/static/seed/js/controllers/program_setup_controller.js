@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
+  'filter_groups',
   'Notification',
   'organization_payload',
   'property_columns',
@@ -16,6 +17,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
+    filter_groups,
     Notification,
     organization_payload,
     property_columns,
@@ -79,6 +81,15 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.new_compliance_metric.x_axis_columns = $scope.new_compliance_metric.x_axis_columns.filter(item => item != id);
     };
 
+    // Filter Groups
+    $scope.filter_groups = filter_groups;
+    $scope.get_filter_group_display = function (id) {
+      let record = _.find($scope.filter_groups, {id: id});
+      if (record) {
+        return record.name;
+      }
+    };
+
     /**
      * saves the updates settings
      */
@@ -122,6 +133,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
       // need to use list compliance metric to see if one exists
       if ($scope.complianceMetrics.length > 0) {
+        console.log("Existing metric");
         // update the compliance metric
         compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric).then(data => {
           if ('status' in data && data.status == 'error') {
@@ -129,7 +141,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               $scope.errors.push(key + ': ' + error);
             }
           } else {
+            console.log(data, $scope.new_compliance_metric);
             $scope.new_compliance_metric = data;
+            console.log($scope.new_compliance_metric);
             //reset for displaying
             $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
             $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
