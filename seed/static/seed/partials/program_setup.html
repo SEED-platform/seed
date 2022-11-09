@@ -29,6 +29,16 @@
         <div class="section_content">
             <div class="r-columns">
                 <div class="r-column">
+                    <ul class="r-list">
+                        <li class="r-row r-row-start">
+                            <div class="col-md-4">
+                                <button type="button" ng-disabled="!program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'New Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" ng-disabled="!program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Edit Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                            </div>
+                        </li>
+                    </ul>
                     <div class="r-panel r-margin-bottom-10">
                         <ul class="r-list">
                             <li class="r-list-header" translate>Metric</li>
@@ -41,6 +51,13 @@
                                 <input id="input-compliance-period-start" type="number" min=1000 max=9000 class="form-control" ng-model="fields.start_year" ng-change="program_settings_changed()"/>
                                 <span class="r-margin-left-5 r-margin-right-5">to</span>
                                 <input id="input-compliance-period-end" type="number" min=1000 max=9000 class="form-control" ng-model="fields.end_year" ng-change="program_settings_changed()"/>
+                            </li>
+                            <li class="r-row r-row-centered">
+                                <label for="select-filter-group" class="r-no-wrap r-margin-right-5" translate>Filter Group</label>
+                                <select id="select-filter-group" class="form-control" ng-model="new_compliance_metric.filter_group" ng-change="program_settings_changed()">
+                                    <option value=""></option>
+                                    <option ng-repeat="filter_group in filter_groups" ng-value="{$ filter_group.id $}">{$:: filter_group.name $}</option>
+                                </select>
                             </li>
                         </ul>
                         <div class="r-panel r-info r-margin-top-10">
@@ -126,7 +143,14 @@
                     <div ng-if="errors.length > 0" class="r-panel r-error r-margin-bottom-10">
                         <ul class="r-list"><li ng-repeat="error in errors">{$ error $}</li></ul>
                     </div>
-                    <button type="button" ng-disabled="program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button type="button" ng-disabled="program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" ng-disabled="program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Delete Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

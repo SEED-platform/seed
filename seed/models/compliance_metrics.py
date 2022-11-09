@@ -9,6 +9,7 @@ from django.db import models
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
+from seed.models.filter_group import FilterGroup
 from seed.utils.properties import properties_across_cycles
 
 
@@ -35,6 +36,7 @@ class ComplianceMetric(models.Model):
     actual_emission_column = models.ForeignKey(Column, related_name="actual_emission_column", null=True, on_delete=models.CASCADE)
     target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", null=True, on_delete=models.CASCADE)
     emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
+    filter_group = models.ForeignKey(FilterGroup, related_name="filter_group", null=True, on_delete=models.CASCADE)
 
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
 
@@ -72,6 +74,7 @@ class ComplianceMetric(models.Model):
                   'actual_energy_column': None, 'actual_energy_column_name': None, 'target_energy_column': None,
                   'energy_metric_type': self.energy_metric_type, 'actual_emission_column': None, 'actual_emission_column_name': None,
                   'target_emission_column': None, 'emission_metric_type': self.emission_metric_type,
+                  'fliter_group': None,
                   'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:

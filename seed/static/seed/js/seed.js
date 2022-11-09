@@ -1040,6 +1040,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return columns;
               });
           }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
+          }]
         }
       })
       .state({
