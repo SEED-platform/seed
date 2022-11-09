@@ -177,7 +177,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.currentFilterGroup = _.last($scope.filterGroups);
 
           Notification.primary('Removed ' + oldFilterGroupName);
-          updateCurrentFilterGroup($scope.currentFilterGroup);
         });
       };
 
@@ -304,6 +303,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           updateColumnFilterSort();
         } else {
           // Clear filter group
+          $scope.currentFilterGroupId = -1
           filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
           $scope.selected_labels = [];
           $scope.filterUsingLabels();
