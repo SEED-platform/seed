@@ -119,6 +119,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         'integer',
         'number'
       ];
+     
       var filtered_columns = _.filter(columns, function (column) {
         return _.includes(acceptable_column_types, column.data_type);
       });
@@ -134,27 +135,25 @@ angular.module('BE.seed.controller.inventory_reports', [])
         };
       });
 
-      $scope.yAxisVars = [
-        {
-          name: $translate.instant('Gross Floor Area'),
-          label: $translate.instant('Gross Floor Area'),
-          varName: 'gross_floor_area',
-          axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
-          axisMin: ''
-        }, {
-          name: $translate.instant('Property Type'),
-          label: $translate.instant('Property Type'),
-          varName: 'property_type',
-          axisLabel: translateAxisLabel('Property Type'),
-          axisMin: ''
-        }, {
-          name: $translate.instant('Year Built'),
-          label: $translate.instant('Year Built'),
-          varName: 'year_built',
-          axisLabel: translateAxisLabel('Year Built'),
-          axisMin: '1900'
-        }
-      ];
+      var acceptable_y_column_names = [
+        'gross_floor_area',
+        'property_type',
+        'year_built'
+      ]
+      var filtered_y_columns = _.filter(columns, function (column) {
+        return _.includes(acceptable_y_column_names, column.column_name);
+      });
+      
+      $scope.yAxisVars = _.map(filtered_y_columns, function (column) {
+        return {
+          name: $translate.instant(column.displayName), //short name for variable, used in pulldown
+          label: $translate.instant(column.displayName), //full name for variable
+          varName: column.column_name, //name of variable, to be sent to server
+          axisLabel: parse_axis_label(column), //label to be used in charts, should include units
+          // axisType: 'Measure', //DimpleJS property for axis type
+          // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+        };
+      });
 
       // Chart titles
       $scope.chart1Title = '';
@@ -261,7 +260,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                     let label = [];
                     let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
                     if (labeltmp.length > 0) {
-                      label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
+                      label.push($scope.yAxisSelectedItem.label + ': ' + ctx.parsed.y);
                       // The x axis data is generated more programmatically than the y, so only
                       // grab the `label` since the `axisLabel` has redundant unit information.
                       label.push($scope.xAxisSelectedItem.label + ': ' + ctx.parsed.x);
@@ -410,10 +409,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
 
         $scope.scatterChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
-        $scope.scatterChart.options.scales.y.title.text = $scope.yAxisSelectedItem.axisLabel
+        $scope.scatterChart.options.scales.y.title.text = $scope.yAxisSelectedItem.label
 
         $scope.barChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
-        $scope.barChart.options.scales.y.title.text = $scope.yAxisSelectedItem.axisLabel
+        $scope.barChart.options.scales.y.title.text = $scope.yAxisSelectedItem.label
       }
 
       $scope.open_export_modal = function () {
