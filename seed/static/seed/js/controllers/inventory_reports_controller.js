@@ -142,10 +142,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
           axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
           axisMin: ''
         }, {
-          name: $translate.instant('Property Classification'),
-          label: $translate.instant('Property Classification'),
-          varName: 'use_description',
-          axisLabel: translateAxisLabel('Property Classification'),
+          name: $translate.instant('Property Type'),
+          label: $translate.instant('Property Type'),
+          varName: 'property_type',
+          axisLabel: translateAxisLabel('Property Type'),
           axisMin: ''
         }, {
           name: $translate.instant('Year Built'),
@@ -174,7 +174,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       // series will be sent to the graphs when data is updated
       // ('series' values are used by the dimple graphs to group data)
       $scope.chartSeries = ['id', 'yr_e'];
-      $scope.aggChartSeries = ['use_description', 'yr_e'];
+      $scope.aggChartSeries = ['property_type', 'yr_e'];
 
       var localStorageXAxisKey = base_storage_key + '.xaxis';
       var localStorageYAxisKey = base_storage_key + '.yaxis';
