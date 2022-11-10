@@ -159,7 +159,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       // Chart titles
       $scope.chart1Title = '';
       $scope.chart2Title = '';
-
+      
       // Datepickers
       var initStartDate = new Date();
       initStartDate.setYear(initStartDate.getFullYear() - 1);
@@ -199,7 +199,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.aggChartStatusMessage = 'No Data';
 
       /* NEW CHART STUFF */
-      var createChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis, pointColors) {
+      var createChart = function (elementId, type, indexAxis, pointColors) {
         var canvas = document.getElementById(elementId);
         var ctx = canvas.getContext("2d");
 
@@ -223,15 +223,13 @@ angular.module('BE.seed.controller.inventory_reports', [])
               x: {
                 display: true,
                 title: {
-                  display: true,
-                  text: xAxisKey,
+                  display: true
                 },
               },
               y: {
                 display: true,
                 title: {
-                  display: true,
-                  text: yAxisKey
+                  display: true
                 },
                 ticks: {
                 // round values
@@ -255,6 +253,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                 display: false,
               },
               tooltip: {
+                // add in the pop up tool tips to show the datapoint values
                 displayColors: false,
                 mode: 'index',
                 callbacks: {
@@ -263,7 +262,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
                     let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
                     if (labeltmp.length > 0) {
                       label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
-                      label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
+                      // The x axis data is generated more programmatically than the y, so only
+                      // grab the `label` since the `axisLabel` has redundant unit information.
+                      label.push($scope.xAxisSelectedItem.label + ': ' + ctx.parsed.x);
                     }
                     return label
                   }
@@ -278,8 +279,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
         createChart(
           elementId = "chartNew",
           type = "scatter",
-          xAxisKey = $scope.xAxisVars[0]['label'],
-          yAxisKey = $scope.yAxisVars[0]['label'],
           indexAxis = 'x',
           $scope.pointBackgroundColors
         )
@@ -288,8 +287,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
         createChart(
           elementId = "aggChartNew",
           type = "bar",
-          xAxisKey = $scope.xAxisVars[0]['label'],
-          yAxisKey = $scope.yAxisVars[0]['label'],
           indexAxis = 'y',
           $scope.aggPointBackgroundColors
         )
@@ -362,7 +359,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.aggChartStatusMessage = 'Loading data...';
         getChartData();
         getAggChartData();
-        updateChartTitles();
+        updateChartTitlesAndAxes();
         updateStorage();
 
       };
@@ -395,7 +392,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       }
 
       /* Update the titles above each chart*/
-      function updateChartTitles () {
+      function updateChartTitlesAndAxes () {
         var interpolationParams;
         try {
           interpolationParams = {
@@ -411,6 +408,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
         $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
         $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
+
+        $scope.scatterChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
+        $scope.scatterChart.options.scales.y.title.text = $scope.yAxisSelectedItem.axisLabel
+
+        $scope.barChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
+        $scope.barChart.options.scales.y.title.text = $scope.yAxisSelectedItem.axisLabel
       }
 
       $scope.open_export_modal = function () {
@@ -532,8 +535,6 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.aggChartData = {
             series: $scope.aggChartSeries,
             chartData: data.chart_data,
-            xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-            yAxisTitle: $scope.yAxisSelectedItem.axisLabel
           };
 
           // new agg chart
