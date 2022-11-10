@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         'integer',
         'number'
       ];
-     
+
       var filtered_columns = _.filter(columns, function (column) {
         return _.includes(acceptable_column_types, column.data_type);
       });
@@ -143,7 +143,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       var filtered_y_columns = _.filter(columns, function (column) {
         return _.includes(acceptable_y_column_names, column.column_name);
       });
-      
+
       $scope.yAxisVars = _.map(filtered_y_columns, function (column) {
         return {
           name: $translate.instant(column.displayName), //short name for variable, used in pulldown
@@ -158,7 +158,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       // Chart titles
       $scope.chart1Title = '';
       $scope.chart2Title = '';
-      
+
       // Datepickers
       var initStartDate = new Date();
       initStartDate.setYear(initStartDate.getFullYear() - 1);
@@ -231,11 +231,11 @@ angular.module('BE.seed.controller.inventory_reports', [])
                   display: true
                 },
                 ticks: {
-                // round values
-                callback: function(value, index, values) {
+                  // round values
+                  callback: function (value, index, values) {
                     return Math.round(value, 3);
+                  }
                 }
-            }
               }
             },
             elements: {
@@ -381,7 +381,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
       /* Clear the data used by the chart*/
-      function clearChartData () {
+      function clearChartData() {
         $scope.chartData = [];
         $scope.aggChartData = [];
         $scope.propertyCounts = [];
@@ -391,7 +391,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       }
 
       /* Update the titles above each chart*/
-      function updateChartTitlesAndAxes () {
+      function updateChartTitlesAndAxes() {
         var interpolationParams;
         try {
           interpolationParams = {
@@ -450,7 +450,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
        The chart will update automatically as it's watching the chartData property on the scope.
        */
-      function getChartData () {
+      function getChartData() {
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.chartIsLoading = true;
@@ -495,10 +495,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
             }
 
           },
-          function (data, status) {
-            $scope.chartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading chart data : ' + status);
-          })
+            function (data, status) {
+              $scope.chartStatusMessage = 'Data Load Error';
+              $log.error('#InventoryReportsController: Error loading chart data : ' + status);
+            })
           .finally(function () {
             $scope.chartIsLoading = false;
           });
@@ -516,7 +516,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
 
        **/
-      function getAggChartData () {
+      function getAggChartData() {
 
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
@@ -557,16 +557,16 @@ angular.module('BE.seed.controller.inventory_reports', [])
             $scope.aggChartStatusMessage = 'No Data';
           }
         },
-        function (data, status) {
-          $scope.aggChartStatusMessage = 'Data Load Error';
-          $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
-        })
+          function (data, status) {
+            $scope.aggChartStatusMessage = 'Data Load Error';
+            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+          })
           .finally(function () {
             $scope.aggChartIsLoading = false;
           });
       }
 
-      function updateStorage () {
+      function updateStorage() {
         // Save axis and cycle selections
         localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
         localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
@@ -584,7 +584,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        A side effect of this method is that the colors are also applied to the propertyCounts object
        so that they're available in the table view beneath the chart that lists group details.
        */
-      function mapColors (propertyCounts) {
+      function mapColors(propertyCounts) {
         if (!propertyCounts) return [];
         var colorsArr = [];
         var numPropertyGroups = propertyCounts.length;
@@ -605,7 +605,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Call the update method so the page initializes
        with the values set in the scope */
-      function init () {
+      function init() {
 
         // Initialize pulldowns
         $scope.fromCycle = {
