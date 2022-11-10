@@ -1003,8 +1003,52 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'program_setup',
+        name: 'programs',
         url: '/accounts/{organization_id:int}/program_setup',
+        templateUrl: static_url + 'seed/partials/program_setup.html',
+        controller: 'program_setup_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+            return ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
+          }],
+          valid_x_axis_data_types: [function () {
+            return ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
+          }],
+          compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
+            return compliance_metric_service.get_compliance_metrics();
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            return organization_service.get_organization($stateParams.organization_id);
+          }],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_column_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          x_axis_columns: ['valid_x_axis_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_x_axis_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+                columns = _.reject(columns, (item) => {
+                  return item['related'] || !valid_x_axis_data_types.includes(item['data_type']);
+                }).sort(function (a, b) {
+                  return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+          }],
+          filter_groups: ['filter_groups_service', function (filter_groups_service) {
+            var inventory_type = 'Property'; // just properties for now
+            return filter_groups_service.get_filter_groups(inventory_type, brief=true);
+          }]
+        }
+      })
+      .state({
+        name: 'program_setup',
+        url: '/accounts/{organization_id:int}/program_setup/{id:int}',
         templateUrl: static_url + 'seed/partials/program_setup.html',
         controller: 'program_setup_controller',
         resolve: {
