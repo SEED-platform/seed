@@ -186,6 +186,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
       //Chart data
       $scope.chartData = [];
       $scope.aggChartData = [];
+      $scope.pointBackgroundColors = [];
+      $scope.aggPointBackgroundColors = [];
 
       //Chart status
       $scope.chartIsLoading = false;
@@ -197,7 +199,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.aggChartStatusMessage = 'No Data';
 
       /* NEW CHART STUFF */
-      var createChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis) {
+      var createChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis, pointColors) {
         var canvas = document.getElementById(elementId);
         var ctx = canvas.getContext("2d");
 
@@ -205,7 +207,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
           type: type,
           data: {
             datasets: [{
-              data: []
+              data: [],
+              pointBackgroundColor: pointColors,
+              backgroundColor: pointColors
             }],
           },
           options: {
@@ -276,7 +280,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
           type = "scatter",
           xAxisKey = $scope.xAxisVars[0]['label'],
           yAxisKey = $scope.yAxisVars[0]['label'],
-          indexAxis = 'x'
+          indexAxis = 'x',
+          $scope.pointBackgroundColors
         )
 
       $scope.barChart =
@@ -285,7 +290,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
           type = "bar",
           xAxisKey = $scope.xAxisVars[0]['label'],
           yAxisKey = $scope.yAxisVars[0]['label'],
-          indexAxis = 'y'
+          indexAxis = 'y',
+          $scope.aggPointBackgroundColors
         )
 
       // specific styling for bar chart
@@ -384,6 +390,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.aggChartData = [];
         $scope.propertyCounts = [];
         $scope.aggPropertyCounts = [];
+        $scope.pointBackgroundColors.length = 0;
+        $scope.aggPointBackgroundColors.length = 0;
       }
 
       /* Update the titles above each chart*/
@@ -462,12 +470,20 @@ angular.module('BE.seed.controller.inventory_reports', [])
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
               yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat,
-              colors: colorsArr
             };
 
             // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
+            // add the colors to the datapoints, need to create a hash map first
+            const colorMap = new Map(
+              colorsArr.map(object => {
+                return [object.seriesName, object.color];
+              }),
+            );
+            for (i = 0; i < $scope.scatterChart.data.datasets[0].data.length; i++) {
+              $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
+            }
             $scope.scatterChart.update()
 
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
@@ -517,14 +533,22 @@ angular.module('BE.seed.controller.inventory_reports', [])
             series: $scope.aggChartSeries,
             chartData: data.chart_data,
             xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-            yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-            colors: colorsArr
+            yAxisTitle: $scope.yAxisSelectedItem.axisLabel
           };
 
           // new agg chart
           let the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
           $scope.barChart.data.labels = the_data.map(a => a.y)
           $scope.barChart.data.datasets[0].data = the_data.map(a => a.x)
+          // add the colors to the datapoints, need to create a hash map first
+          const colorMap = new Map(
+            colorsArr.map(object => {
+              return [object.seriesName, object.color];
+            }),
+          );
+          for (i = 0; i < the_data.length; i++) {
+            $scope.aggPointBackgroundColors.push(colorMap.get(the_data[i].yr_e));
+          }
           $scope.barChart.update()
 
           if (!_.isEmpty($scope.aggChartData.chartData)) {
