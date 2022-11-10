@@ -25,20 +25,38 @@
         </div>
     </div>
 
-    <div class="section_content_container">
+    <div class="section_content_container rp-data-view">
+        <div class="section_content r-columns rp-data-view-config">
+            <div class="r-column r-shrink r-panel">
+                <ul class="r-list">
+                    <li class="r-list-header" translate>Program Metrics</li>
+                    <li ng-if="selected_compliance_metric" class="r-selected r-row r-row-centered">
+                        <span class="r-grow">{$ selected_compliance_metric.name $}</span>
+                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                    </li>
+                </ul>
+                <ul class="r-list r-scrollable">
+                    <li ng-if="!selected_compliance_metric || compliance_metric.id != selected_compliance_metric.id" ng-repeat-start="compliance_metric in compliance_metrics" ng-repeat-end class="r-row r-row-centered">
+                        <a ui-sref="program_setup(::{organization_id: org.id, id: compliance_metric.id})" class="r-grow">{$:: compliance_metric.name $}</a>
+                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                    </li>
+                </ul>
+                <ul class="r-list">
+                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="editing"><i class="fa fa-plus-circle r-pad-right-5"></i>New Program Metric</button></li>
+                </ul>
+            </div>
+
+            <div ng-if="!selected_compliance_metric && !editing" class="r-panel r-column">
+                <div ng-if="compliance_metrics_error" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
+                <b ng-if="!has_compliance_metrics" translate>No Program Metrics Created</b>
+                <p ng-if="!has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Program Metric to get started!</span></p>
+                <b ng-if="has_compliance_metrics" translate>No Program Metric Selected</b>
+                <p ng-if="has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Program Metric to get started!</span></p>
+            </div>
+    <div ng-if="selected_compliance_metric || editing" class="r-panel r-columns r-no-margin">
         <div class="section_content">
             <div class="r-columns">
                 <div class="r-column">
-                    <ul class="r-list">
-                        <li class="r-row r-row-start">
-                            <div class="col-md-4">
-                                <button type="button" ng-disabled="!program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'New Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
-                            </div>
-                            <div class="col-md-4">
-                                <button type="button" ng-disabled="!program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Edit Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
-                            </div>
-                        </li>
-                    </ul>
                     <div class="r-panel r-margin-bottom-10">
                         <ul class="r-list">
                             <li class="r-list-header" translate>Metric</li>
@@ -143,17 +161,16 @@
                     <div ng-if="errors.length > 0" class="r-panel r-error r-margin-bottom-10">
                         <ul class="r-list"><li ng-repeat="error in errors">{$ error $}</li></ul>
                     </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <button type="button" ng-disabled="program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" ng-disabled="program_settings_not_changed" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Delete Program' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
-                        </div>
+                    <div ng-if="selected_compliance_metric" class="r-row">
+                        <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+                        <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
                     </div>
+    
                 </div>
             </div>
         </div>
+    </div>
+
     </div>
 
     <div class="section_content_container">

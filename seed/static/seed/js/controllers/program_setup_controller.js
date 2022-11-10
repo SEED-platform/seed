@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   'Notification',
   'organization_payload',
   'property_columns',
+  'spinner_utility',
   'x_axis_columns',
   function (
     $scope,
@@ -21,10 +22,12 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     Notification,
     organization_payload,
     property_columns,
+    spinner_utility,
     x_axis_columns
   ) {
+    $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
-    $scope.complianceMetrics = compliance_metrics;
+    $scope.compliance_metrics = compliance_metrics;
     $scope.new_compliance_metric = {};
     $scope.fields = {
       start_year: null,
@@ -36,8 +39,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     $scope.errors = [];
-    if ($scope.complianceMetrics.length > 0) {
-      $scope.new_compliance_metric = $scope.complianceMetrics[0]; // assign to first for now
+    if ($scope.compliance_metrics.length > 0) {
+      $scope.new_compliance_metric = $scope.compliance_metrics[0]; // assign to first for now
       // truncate start and end dates to only show years YYYY
       $scope.fields.start_year = $scope.new_compliance_metric.start ? parseInt($scope.new_compliance_metric.start.split('-')[0]) : null;
       $scope.fields.end_year = $scope.new_compliance_metric.end ? parseInt($scope.new_compliance_metric.end.split('-')[0]) : null;
@@ -90,6 +93,16 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
     };
 
+    let _init_data  = function () {
+      // load compliance metrics
+      $scope.compliance_metrics = compliance_metrics;
+      $scope.has_compliance_metrics = $scope.compliance_metrics.length > 0;
+      $scope.selected_compliance_metric = $scope.id ? $scope.compliance_metrics.find(item => item.id === $scope.id) : null;
+      if ($scope.selected_compliance_metric) {
+      } else if ($scope.id) {
+        $scope.errors = 'Could not find Program Metric with id #' + $scope.id + '!';
+      }
+    };
     /**
      * saves the updates settings
      */
@@ -132,10 +145,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.new_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
       // need to use list compliance metric to see if one exists
-      if ($scope.complianceMetrics.length > 0) {
+      if ($scope.compliance_metrics.length > 0) {
         console.log("Existing metric");
         // update the compliance metric
-        compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric).then(data => {
+        compliance_metric_service.update_compliance_metric($scope.compliance_metrics[0].id, $scope.new_compliance_metric).then(data => {
           if ('status' in data && data.status == 'error') {
             for (const [key, error] of Object.entries(data.errors)) {
               $scope.errors.push(key + ': ' + error);
@@ -171,4 +184,34 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         Notification.success('Program Metric Configuration Saved!');
       }, 1000);
     };
+
+    $scope.click_new_compliance_metric = function () {
+      spinner_utility.show();
+      $scope.selected_compliance_metric = {
+        name: 'New Program Metric',
+      };
+      $scope.editing = true;
+      spinner_utility.hide();
+    };
+
+    $scope.click_delete = function (compliance_metric=null) {
+      spinner_utility.show();
+      if (!compliance_metric) {
+        compliance_metric = $scope.selected_compliance_metric;
+      }
+      if (confirm('Are you sure you want to delete the Program Metric "' + compliance_metric.name + '"?')) {
+        delete_id = compliance_metric.id;
+        let delete_compliance_metric = compliance_metric_service.delete_compliance_metric(delete_id).then((data) => {
+          if (data.status == 'success') {
+              $scope.compliance_metrics = $scope.compliance_metrics.filter(compliance_metric => compliance_metric.id != delete_id);
+              if ($scope.selected_compliance_metric.id == compliance_metric.id) {
+                window.location = '#/insights/custom';
+              }
+            }
+          });
+        };
+      spinner_utility.hide();
+    };
+
+    _init_data();
   }]);
