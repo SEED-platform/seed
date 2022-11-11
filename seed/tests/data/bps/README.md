@@ -6,4 +6,3 @@
   - Import data from ESPM through the ESPM integration in SEED (or manually export from within ESPM)
   - Import the report directly into SEED with shared ESPM login of the `SEED_City_Test` user.
 - Import "BPS_Sample_AT_XXXXX" files in SEED. I think this has to be done one at a time.
-

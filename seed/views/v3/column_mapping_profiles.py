@@ -176,12 +176,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
         return response
 
-
-
-
-
-
-
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(
             required=False,
