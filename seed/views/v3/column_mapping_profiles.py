@@ -1,7 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.http import JsonResponse
+import csv
+
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
@@ -140,6 +142,45 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             'status': 'success',
             'data': ColumnMappingProfileSerializer(profile).data,
         })
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )]
+    )
+    @api_endpoint_class
+    @action(detail=True, methods=['GET'])
+    def csv(self, request, pk=None):
+        """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
+        new mappings programatically."""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="column_mapping_profile_{pk}.csv"'
+
+        org_id = self.get_organization(request, True).id
+        try:
+            profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
+        except ColumnMappingProfile.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'data': 'No profile with given id'
+            }, status=HTTP_400_BAD_REQUEST)
+
+        writer = csv.writer(response)
+        writer.writerow(['Raw Columns', 'units', 'SEED Table', 'SEED Columns'])
+
+        for map in profile.mappings:
+            writer.writerow([
+                map['from_field'], map['from_units'], map['to_table_name'], map['to_field']
+            ])
+
+        return response
+
+
+
+
+
+
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(

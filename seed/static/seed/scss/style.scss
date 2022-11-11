@@ -57,6 +57,7 @@ $blue: #428bca;
 $beige: #f5f4ec;
 $orange: #fc882a;
 $green: #66b132;
+$lightgreen: #86d875;
 $yellow: #ffc40d;
 $purple: #90f;
 $red: #ff4d4d;
@@ -2315,6 +2316,17 @@ select {
 
   &:hover {
     background-color: darken($orange, 5%);
+  }
+}
+
+.btn-secondary{
+  color: #fff;
+  background-color: $lightgreen;
+  border-color: darken($lightgreen, 5%);
+
+  &:hover {
+    color: #fff;
+    background-color: darken($lightgreen, 10%);
   }
 }
 
