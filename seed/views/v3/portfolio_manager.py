@@ -93,7 +93,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         except Exception as e:
             return JsonResponse(
-                {'status': 'error', 'message': e},
+                {'status': 'error', 'message': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})

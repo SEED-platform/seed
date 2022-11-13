@@ -1095,7 +1095,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             AutoSchemaHelper.query_string_field(
                 'y_var',
                 required=True,
-                description='Raw column name for y axis, must be one of: "gross_floor_area", "use_description", "year_built"'
+                description='Raw column name for y axis, must be one of: "gross_floor_area", "property_type", "year_built"'
             ),
             AutoSchemaHelper.query_string_field(
                 'start',
@@ -1123,7 +1123,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         Retrieve a summary report for charting x vs y aggregated by y_var
         """
         campus_only = json.loads(request.query_params.get('campus_only', 'false'))
-        valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
+        valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
         params = {}
         missing_params = []
         empty = True
@@ -1182,7 +1182,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     def aggregate_data(self, yr_e, y_var, buildings):
         aggregation_method = {
-            'use_description': self.aggregate_use_description,
+            'property_type': self.aggregate_property_type,
             'year_built': self.aggregate_year_built,
             'gross_floor_area': self.aggregate_gross_floor_area,
 
@@ -1190,7 +1190,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         }
         return aggregation_method[y_var](yr_e, buildings)
 
-    def aggregate_use_description(self, yr_e, buildings):
+    def aggregate_property_type(self, yr_e, buildings):
         # Group buildings in this year_ending group into uses
         chart_data = []
         grouped_uses = defaultdict(list)
