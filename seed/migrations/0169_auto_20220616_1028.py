@@ -19,7 +19,7 @@ def add_new_bsync_mappings(apps, schema_editor):
                 'from_field_value': 'text',
                 'from_units': None,
                 'to_table_name': 'PropertyState',
-                'to_field': 'Audit Template Building Id', 
+                'to_field': 'Audit Template Building Id',
             },
             {
                 'from_field': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site/auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Portfolio Manager Building ID"]/auc:IdentifierValue',

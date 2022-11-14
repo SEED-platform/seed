@@ -67,12 +67,11 @@ class Property(models.Model):
     remain the same. The PropertyView will point to the unchanged property as the PropertyState
     and Property view are updated.
 
-    If the property can be a campus. The property can also reference a parent property.
+    The property can also reference a parent property.
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     # Handle properties that may have multiple properties (e.g., buildings)
-    campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 
     # Track when the entry was created and when it was updated
@@ -170,8 +169,8 @@ class PropertyState(models.Model):
     ubid = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The main campus record (campus=True on Property model) will
-    # have the pm_property_id set to be the same as the pm_parent_property_id
+    # for all the properties. The main campus record will have the pm_property_id
+    # set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     pm_property_id = models.CharField(max_length=255, null=True, blank=True)
 
