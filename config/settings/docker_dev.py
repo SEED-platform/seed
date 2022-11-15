@@ -60,18 +60,6 @@ DATABASES = {
 }
 
 if SEED_TESTING:
-    INSTALLED_APPS += (  # noqa F405
-        "django_nose",
-    )
-    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-    NOSE_PLUGINS = [
-        'nose_exclude.NoseExclude',
-    ]
-    NOSE_ARGS = [
-        '--nocapture',
-        # '--nologcapture',
-    ]
-
     CELERY_BROKER_BACKEND = 'memory'
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True

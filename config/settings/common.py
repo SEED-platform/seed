@@ -234,12 +234,6 @@ SERVER_EMAIL = 'info@seed-platform.org'
 PASSWORD_RESET_EMAIL = SERVER_EMAIL
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
-# Added By Gavin on 1/27/2014
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_PLUGINS = [
-    'nose_exclude.NoseExclude',
-]
-
 AUTH_USER_MODEL = 'landing.SEEDUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
