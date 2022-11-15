@@ -67,7 +67,7 @@
         <div class="row">
             <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" ng-change="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
                 <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
