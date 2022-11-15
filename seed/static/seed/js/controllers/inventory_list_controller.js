@@ -984,7 +984,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
-      // disable sorting and filtering on related data until the backend can filter/sort over two models
+      // disable sorting (but not filtering) on related data until the backend can filter/sort over two models
       for (const i in $scope.columns) {
         let column = $scope.columns[i];
         if (column['related']) {
@@ -993,7 +993,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           if ($scope.inventory_type == 'properties') {
             title = "Filtering disabled for taxlot columns on the property list.";
           }
-          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
         }
       }
 

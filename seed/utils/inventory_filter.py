@@ -105,6 +105,39 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
+    # If we are returning the children, build the childrens filters.
+    if include_related:
+        other_inventory_type = "taxlot" if inventory_type == "property" else "property"
+
+        other_columns_from_database = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type=other_inventory_type,
+            only_used=False,
+            include_related=include_related
+        )
+        try:
+            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
+        except FilterException as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # If the children have filters, filter views_list by their children.
+        if len(filters) > 0 and len(annotations) > 0:
+            other_inventory_type_class = TaxLotView if inventory_type == "property" else PropertyView
+            other_views_list = (
+                other_inventory_type_class.objects.select_related('taxlot', 'state', 'cycle')
+                .filter(taxlot__organization_id=org_id, cycle=cycle)
+            )
+
+            other_views_list = other_views_list.annotate(**annotations).filter(filters)
+            taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
+            views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+
     # return property views limited to the 'include_view_ids' list if not empty
     if 'include_view_ids' in request.data and request.data['include_view_ids']:
         views_list = views_list.filter(id__in=request.data['include_view_ids'])
