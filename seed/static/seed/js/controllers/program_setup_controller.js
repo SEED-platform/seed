@@ -186,6 +186,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     $scope.click_new_compliance_metric = function () {
+      console.log("clicked new program metric button");
       spinner_utility.show();
       $scope.selected_compliance_metric = {
         name: 'New Program Metric',
