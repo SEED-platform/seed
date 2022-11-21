@@ -25,25 +25,29 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     spinner_utility,
     x_axis_columns
   ) {
+    spinner_utility.show();
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
-    $scope.compliance_metrics = compliance_metrics;
-    $scope.new_compliance_metric = {};
+    $scope.editing = false;
+    $scope.compliance_metrics_error = null;
     $scope.fields = {
-      start_year: null,
-      end_year: null
-    };
-    $scope.program_settings_not_changed = true;
-    $scope.program_settings_changed = function () {
-      $scope.program_settings_not_changed = false;
+      name: '',
+      start_year: '',
+      end_year: '',
+      filter_group: '',
+      actual_energy_column: '',
+      target_energy_column: '',
+      energy_metric_type: '',
+      actual_emission_column: '',
+      target_emission_column: '',
+      emission_metric_type: ''
     };
 
-    $scope.errors = [];
-    if ($scope.compliance_metrics.length > 0) {
-      $scope.new_compliance_metric = $scope.compliance_metrics[0]; // assign to first for now
+    $scope.compliance_metrics_error = [];
+    if ($scope.selected_compliance_metric) {
       // truncate start and end dates to only show years YYYY
-      $scope.fields.start_year = $scope.new_compliance_metric.start ? parseInt($scope.new_compliance_metric.start.split('-')[0]) : null;
-      $scope.fields.end_year = $scope.new_compliance_metric.end ? parseInt($scope.new_compliance_metric.end.split('-')[0]) : null;
+      $scope.fields.start_year = $scope.selected_compliance_metric.start ? parseInt($scope.selected_compliance_metric.start.split('-')[0]) : null;
+      $scope.fields.end_year = $scope.selected_compliance_metric.end ? parseInt($scope.selected_compliance_metric.end.split('-')[0]) : null;
 
     }
     $scope.property_columns = property_columns;
@@ -67,21 +71,21 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.x_axis_selection = '';
 
     $scope.select_x_axis = function () {
-      $scope.program_settings_not_changed = false;
+      $scope.program_settings_changed()
       let selection = $scope.x_axis_selection;
       $scope.x_axis_selection = '';
-      if (!$scope.new_compliance_metric.x_axis_columns) {
-        $scope.new_compliance_metric.x_axis_columns = [];
+      if (!$scope.selected_compliance_metric.x_axis_columns) {
+        $scope.selected_compliance_metric.x_axis_columns = [];
       }
-      if ($scope.new_compliance_metric.x_axis_columns.includes(selection)) {
+      if ($scope.selected_compliance_metric.x_axis_columns.includes(selection)) {
         return;
       }
-      $scope.new_compliance_metric.x_axis_columns.push(selection);
+      $scope.selected_compliance_metric.x_axis_columns.push(selection);
     };
 
     $scope.click_remove_x_axis = function (id) {
-      $scope.program_settings_not_changed = false;
-      $scope.new_compliance_metric.x_axis_columns = $scope.new_compliance_metric.x_axis_columns.filter(item => item != id);
+      $scope.program_settings_changed()
+      $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter(item => item != id);
     };
 
     // Filter Groups
@@ -93,106 +97,154 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
     };
 
+
     let _init_data  = function () {
       // load compliance metrics
       $scope.compliance_metrics = compliance_metrics;
+      if (compliance_metrics.status == 'error') {
+        $scope.compliance_metrics_error = compliance_metrics.message;
+      }
       $scope.has_compliance_metrics = $scope.compliance_metrics.length > 0;
       $scope.selected_compliance_metric = $scope.id ? $scope.compliance_metrics.find(item => item.id === $scope.id) : null;
       if ($scope.selected_compliance_metric) {
+        $scope.fields.name = $scope.selected_compliance_metric.name;
+        $scope.fields.start_year = $scope.selected_compliance_metric.start ? parseInt($scope.selected_compliance_metric.start.split('-')[0]) : null;
+        $scope.fields.end_year = $scope.selected_compliance_metric.end ? parseInt($scope.selected_compliance_metric.end.split('-')[0]) : null;
+        $scope.fields.actual_energy_column = $scope.selected_compliance_metric.actual_energy_column;
+        $scope.fields.target_energy_column = $scope.selected_compliance_metric.target_energy_column;
+        $scope.fields.energy_metric_type = $scope.selected_compliance_metric.energy_metric_type;
+        $scope.fields.actual_emission_column = $scope.selected_compliance_metric.actual_emission_column;
+        $scope.fields.target_emission_column =
+          $scope.selected_compliance_metric.target_emission_column;
+        $scope.fields.emission_metric_type =
+          $scope.selected_compliance_metric.emission_metric_type;
+        $scope.fields.filter_group =
+            $scope.selected_compliance_metric.filter_group;
+        console.log("I think this is happening when page is loaded and there's a selected compliance metric");
+        console.log("This is the $scope.id",$scope.id);
+        console.log("This is $scope.compliance_metrics", $scope.compliance_metrics);
+        console.log("This is compliance_metrics", compliance_metrics);
       } else if ($scope.id) {
-        $scope.errors = 'Could not find Program Metric with id #' + $scope.id + '!';
+        $scope.compliance_metrics_error = 'Could not find Program Metric with id #' + $scope.id + '!';
       }
     };
     /**
      * saves the updates settings
      */
     $scope.save_settings = function () {
-      $scope.errors = [];
-      if (!$scope.new_compliance_metric.name) {
-        $scope.errors.push('A name is required!');
+      spinner_utility.show();
+      $scope.compliance_metrics_error = [];
+      if (!$scope.fields.name) {
+        $scope.compliance_metrics_error.push('A name is required!');
       }
       if (!$scope.fields.start_year) {
-        $scope.errors.push('A compliance period start year (XXXX) is required!');
+        $scope.compliance_metrics_error.push('A compliance period start year (XXXX) is required!');
       }
       if (!$scope.fields.end_year) {
-        $scope.errors.push('A compliance period end year (XXXX) is required!');
+        $scope.compliance_metrics_error.push('A compliance period end year (XXXX) is required!');
       }
-      let has_energy_metric = $scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.energy_metric_type;
-      let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.emission_metric_type;
-      let no_energy_metric = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.energy_metric_type;
-      let no_emission_metric = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.emission_metric_type;
-      let actual_energy_column_not_boolean = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.target_energy_column && _.find($scope.property_columns, {id: $scope.new_compliance_metric.actual_energy_column}).data_type != 'boolean';
-      let actual_emission_column_not_boolean = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.target_emission_column && _.find($scope.property_columns, {id: $scope.new_compliance_metric.actual_emission_column}).data_type != 'boolean';
+      let has_energy_metric = $scope.fields.actual_energy_column && $scope.fields.energy_metric_type;
+      let has_emission_metric = $scope.fields.actual_emission_column && $scope.fields.emission_metric_type;
+      let no_energy_metric = $scope.fields.actual_energy_column && !$scope.fields.energy_metric_type;
+      let no_emission_metric = $scope.fields.actual_emission_column && !$scope.fields.emission_metric_type;
+      let actual_energy_column_not_boolean = $scope.fields.actual_energy_column && !$scope.fields.target_energy_column && _.find($scope.property_columns, {id: $scope.fields.actual_energy_column}).data_type != 'boolean';
+      let actual_emission_column_not_boolean = $scope.fields.actual_emission_column && !$scope.fields.target_emission_column && _.find($scope.property_columns, {id: $scope.fields.actual_emission_column}).data_type != 'boolean';
 
       if ((!has_energy_metric && !has_emission_metric) || (no_energy_metric || no_emission_metric)) {
-        $scope.errors.push('A completed energy or emission metric is required!');
+        $scope.compliance_metrics_error.push('A completed energy or emission metric is required!');
       }
-      if ($scope.new_compliance_metric.x_axis_columns.length < 1) {
-        $scope.errors.push('At least one x-axis column is required!');
+      if ($scope.fields.x_axis_columns) {
+        if ($scope.fields.x_axis_columns.length < 1) {
+          $scope.compliance_metrics_error.push('At least one x-axis column is required!');
+        }
       }
       if (actual_energy_column_not_boolean || actual_emission_column_not_boolean) {
-        $scope.errors.push('The actual energy or emission columns must have a \'boolean\' data type if there is not a corresponding target column selected!');
+        $scope.compliance_metrics_error.push('The actual energy or emission columns must have a \'boolean\' data type if there is not a corresponding target column selected!');
       }
-      if (!$scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.target_energy_column || !$scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.target_emission_column) {
-        $scope.errors.push('The actual energy or emission columns must be included when the target column is selected!');
+      if (!$scope.fields.actual_energy_column && $scope.fields.target_energy_column || !$scope.fields.actual_emission_column && $scope.fields.target_emission_column) {
+        $scope.compliance_metrics_error.push('The actual energy or emission columns must be included when the target column is selected!');
       }
-      if ($scope.errors.length > 0) {
+      if ($scope.compliance_metrics_error.length > 0) {
         return;
       }
 
       // just for saving
-      $scope.new_compliance_metric.start = $scope.fields.start_year + '-01-01';
-      $scope.new_compliance_metric.end = $scope.fields.end_year + '-12-31';
+      $scope.selected_compliance_metric.start = $scope.fields.start_year + '-01-01';
+      $scope.selected_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
-      // need to use list compliance metric to see if one exists
-      if ($scope.compliance_metrics.length > 0) {
-        console.log("Existing metric");
-        // update the compliance metric
-        compliance_metric_service.update_compliance_metric($scope.compliance_metrics[0].id, $scope.new_compliance_metric).then(data => {
-          if ('status' in data && data.status == 'error') {
-            for (const [key, error] of Object.entries(data.errors)) {
-              $scope.errors.push(key + ': ' + error);
-            }
-          } else {
-            console.log(data, $scope.new_compliance_metric);
-            $scope.new_compliance_metric = data;
-            console.log($scope.new_compliance_metric);
-            //reset for displaying
-            $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
-            $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
-          }
-        });
+      // update selected compliance metric with current fields data
+      $scope.selected_compliance_metric = {
+        id: $scope.id,
+        name: $scope.fields.name,
+        start: $scope.fields.start_year + '-01-01',
+        end: $scope.fields.end_year + '-12-31',
+        actual_energy_column: $scope.fields.actual_energy_column,
+        target_energy_column: $scope.fields.target_energy_column,
+        actual_emission_column: $scope.fields.actual_emission_column,
+        target_emission_column: $scope.fields.target_emission_column,
+        energy_metric_type: $scope.fields.energy_metric_type,
+        emission_metric_type: $scope.fields.emission_metric_type,
+        filter_group: $scope.fields.filter_group
+      };
 
-      } else {
-        // create a new compliance metric
-        compliance_metric_service.new_compliance_metric($scope.new_compliance_metric).then(data => {
-          if ('status' in data && data.status == 'error') {
-            for (const [key, error] of Object.entries(data.errors)) {
-              $scope.errors.push(key + ': ' + error);
-            }
-          } else {
-            $scope.new_compliance_metric = data;
-            // reset for displaying
-            $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
-            $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
+      // update the compliance metric
+      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
+        if ('status' in data && data.status == 'error') {
+          for (const [key, error] of Object.entries(data.errors)) {
+            $scope.compliance_metrics_error.push(key + ': ' + error);
           }
-        });
-      }
+        } else {
+          if (!$scope.selected_compliance_metric.id) {
+            window.location = '#/accounts/' + $scope.org.id + '/program_setup/' + data.compliance_metric.id;
+            spinner_utility.hide();
+            return;
+          }
+          compliance_metrics = compliance_metrics.map(compliance_metric => {
+            if (compliance_metric.id == data.compliance_metric.id) {
+              spinner_utility.hide();
+              return Object.assign({}, data.compliance_metric);
+            }
+            spinner_utility.hide();
+            return compliance_metric;
+          });
+          $scope.selected_compliance_metric = Object.assign({}, data.compliance_metric);
+          _init_data();
+
+          //reset for displaying
+          $scope.selected_compliance_metric.start = parseInt($scope.selected_compliance_metric.start.split('-')[0]);
+          $scope.selected_compliance_metric.end = parseInt($scope.selected_compliance_metric.end.split('-')[0]);
+          spinner_utility.hide();
+          return;
+        }
+        spinner_utility.hide();
+      });
+
       $scope.program_settings_not_changed = true;
       setTimeout(() => {
         Notification.primary('<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>');
         Notification.success('Program Metric Configuration Saved!');
       }, 1000);
+      spinner_utility.hide();
     };
 
     $scope.click_new_compliance_metric = function () {
-      console.log("clicked new program metric button");
       spinner_utility.show();
       $scope.selected_compliance_metric = {
         name: 'New Program Metric',
+        start_year: null,
+        end_year: null,
+        actual_energy_column: null,
+        target_energy_column: null,
+        energy_metric_type: '',
+        actual_emission_column: null,
+        target_emission_column: null,
+        emission_metric_type: '',
+        filter_group: null,
+        x_axis_selection: []
       };
       $scope.editing = true;
       spinner_utility.hide();
+
     };
 
     $scope.click_delete = function (compliance_metric=null) {
@@ -204,13 +256,13 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         delete_id = compliance_metric.id;
         let delete_compliance_metric = compliance_metric_service.delete_compliance_metric(delete_id).then((data) => {
           if (data.status == 'success') {
-              $scope.compliance_metrics = $scope.compliance_metrics.filter(compliance_metric => compliance_metric.id != delete_id);
-              if ($scope.selected_compliance_metric.id == compliance_metric.id) {
-                window.location = '#/insights/custom';
-              }
+            $scope.compliance_metrics = $scope.compliance_metrics.filter(compliance_metric => compliance_metric.id != delete_id);
+            if ($scope.selected_compliance_metric.id == compliance_metric.id) {
+              window.location = '#/accounts/' + $scope.org.id + '/program_setup';
             }
-          });
-        };
+          }
+        });
+      };
       spinner_utility.hide();
     };
 

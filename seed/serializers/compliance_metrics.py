@@ -18,9 +18,17 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(required=True)
 
     def to_representation(self, instance):
-        self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
-        self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
-        return super().to_representation(instance)
+        # check for start and end date fields first
+        if (self.fields['start'] == "") and (self.fields['end'] == ""):
+            return
+        elif self.fields['start'] == "":
+            self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        elif self.fields['end'] == "":
+            self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        else:
+            self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
+            self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
+            return super().to_representation(instance)
 
     class Meta:
         model = ComplianceMetric

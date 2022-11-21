@@ -26,8 +26,8 @@ class ComplianceMetric(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='compliance_metrics', blank=True, null=True)
     name = models.CharField(max_length=255)
-    start = models.DateTimeField()  # only care about year, but adding as a DateTime
-    end = models.DateTimeField()  # only care about year, but adding as a DateTime
+    start = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
+    end = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
     created = models.DateTimeField(auto_now_add=True)
     # TODO: could these be derived columns?
     actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", null=True, on_delete=models.CASCADE)
@@ -38,7 +38,7 @@ class ComplianceMetric(models.Model):
     emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
     filter_group = models.ForeignKey(FilterGroup, related_name="filter_group", null=True, on_delete=models.CASCADE)
 
-    x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
+    x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns", blank=True)
 
     def __str__(self):
         return 'Program Metric - %s' % self.name
@@ -176,14 +176,3 @@ class ComplianceMetric(models.Model):
     class Meta:
         ordering = ['-created']
         get_latest_by = 'created'
-
-        constraints = [
-            models.CheckConstraint(
-                name="at_least_one_compliance_metric_type",
-                check=(
-                    models.Q(actual_energy_column__isnull=False)
-                    | models.Q(actual_emission_column__isnull=False)
-
-                ),
-            )
-        ]
