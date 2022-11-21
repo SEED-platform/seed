@@ -129,7 +129,7 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = ['id', 'campus', 'parent_property']
+        fields = ['id', 'parent_property']
         extra_kwargs = {
             'organization': {'read_only': True}
         }

@@ -296,7 +296,8 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             # Fix the table name, eventually move this to the build_column_mapping
             for m in suggested_mappings:
                 table, _destination_field, _confidence = suggested_mappings[m]
-                # Do not return the campus, created, updated fields... that is force them to be in the property state
+                # Do not return the created or updated fields... that is force them to be
+                # in the property state. Not sure how this code makes this happen though.
                 if not table or table == 'Property':
                     suggested_mappings[m][0] = 'PropertyState'
                 elif table == 'TaxLot':

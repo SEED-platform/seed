@@ -165,12 +165,10 @@ class TestPropertySerializers(DeleteModelsTestCase):
         expected = [
             OrderedDict([
                 ('id', property1.id),
-                ('campus', False),
                 ('parent_property', None),
             ]),
             OrderedDict([
                 ('id', property2.id),
-                ('campus', False),
                 ('parent_property', None),
             ]),
         ]
