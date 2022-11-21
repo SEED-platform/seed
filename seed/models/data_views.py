@@ -207,7 +207,7 @@ class DataView(models.Model):
 
             if aggregation.get('value') or aggregation.get('value') == 0:
                 value = aggregation['value']
-                if type(value) is int or type(value) is float:
+                if isinstance(value, int) or isinstance(value, float):
                     return round(value, 2)
                 return round(value.m, 2)
 
