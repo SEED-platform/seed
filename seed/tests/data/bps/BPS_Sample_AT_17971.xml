@@ -1,0 +1,1408 @@
+<?xml version="1.0"?>
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" version="2.3.0">
+  <auc:Facilities>
+    <auc:Facility ID="Facility-70339467598220">
+      <auc:Sites>
+        <auc:Site ID="SiteType-70339467596380">
+          <auc:Buildings>
+            <auc:Building ID="BuildingType-70339467993140">
+              <auc:PremisesName>GSA: 300 E Street SW</auc:PremisesName>
+              <auc:PremisesNotes/>
+              <auc:PremisesIdentifiers>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Atlanta Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue/>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue/>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Portfolio Manager Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>22178845</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Audit Template Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>17971</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+              </auc:PremisesIdentifiers>
+              <auc:Address>
+                <auc:StreetAddressDetail>
+                  <auc:Simplified>
+                    <auc:StreetAddress>300 E St SW</auc:StreetAddress>
+                  </auc:Simplified>
+                </auc:StreetAddressDetail>
+                <auc:City>Washington</auc:City>
+                <auc:State>DC</auc:State>
+                <auc:PostalCode>20546</auc:PostalCode>
+              </auc:Address>
+              <auc:ConditionedFloorsAboveGrade>6</auc:ConditionedFloorsAboveGrade>
+              <auc:ConditionedFloorsBelowGrade>1</auc:ConditionedFloorsBelowGrade>
+              <auc:BuildingAutomationSystem>false</auc:BuildingAutomationSystem>
+              <auc:HistoricalLandmark>false</auc:HistoricalLandmark>
+              <auc:FloorAreas>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Cooled only</auc:FloorAreaType>
+                  <auc:FloorAreaValue>0.0</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                  <auc:FloorAreaValue>79000.0</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Heated and Cooled</auc:FloorAreaType>
+                  <auc:FloorAreaValue>79000.0</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Heated only</auc:FloorAreaType>
+                  <auc:FloorAreaValue>0.0</auc:FloorAreaValue>
+                </auc:FloorArea>
+              </auc:FloorAreas>
+              <auc:TotalExteriorAboveGradeWallArea>14340.0</auc:TotalExteriorAboveGradeWallArea>
+              <auc:TotalExteriorBelowGradeWallArea>7005.0</auc:TotalExteriorBelowGradeWallArea>
+              <auc:OverallWindowToWallRatio>0.2199999988079071</auc:OverallWindowToWallRatio>
+              <auc:YearOfConstruction>1922</auc:YearOfConstruction>
+              <auc:YearOfLastMajorRemodel>1973</auc:YearOfLastMajorRemodel>
+              <auc:PercentOccupiedByOwner>100.0</auc:PercentOccupiedByOwner>
+              <auc:PercentLeasedByOwner>0.0</auc:PercentLeasedByOwner>
+              <auc:Sections>
+                <auc:Section ID="Section-70339469111120">
+                  <auc:SectionType>Whole building</auc:SectionType>
+                  <auc:FootprintShape>Rectangular</auc:FootprintShape>
+                  <auc:Sides>
+                    <auc:Side>
+                      <auc:DoorID IDref="FenestrationSystemType-70339469492040"/>
+                    </auc:Side>
+                  </auc:Sides>
+                </auc:Section>
+                <auc:Section ID="Section-70339469232140">
+                  <auc:SectionType>Space function</auc:SectionType>
+                  <auc:OccupancyClassification>Multifamily</auc:OccupancyClassification>
+                  <auc:OriginalOccupancyClassification>Multifamily</auc:OriginalOccupancyClassification>
+                  <auc:OccupancyLevels>
+                    <auc:OccupancyLevel>
+                      <auc:OccupantQuantityType>Peak total occupants</auc:OccupantQuantityType>
+                      <auc:OccupantQuantity>156</auc:OccupantQuantity>
+                    </auc:OccupancyLevel>
+                  </auc:OccupancyLevels>
+                  <auc:TypicalOccupantUsages>
+                    <auc:TypicalOccupantUsage>
+                      <auc:TypicalOccupantUsageValue>24.0</auc:TypicalOccupantUsageValue>
+                      <auc:TypicalOccupantUsageUnits>Hours per week</auc:TypicalOccupantUsageUnits>
+                    </auc:TypicalOccupantUsage>
+                    <auc:TypicalOccupantUsage>
+                      <auc:TypicalOccupantUsageValue>52.0</auc:TypicalOccupantUsageValue>
+                      <auc:TypicalOccupantUsageUnits>Weeks per year</auc:TypicalOccupantUsageUnits>
+                    </auc:TypicalOccupantUsage>
+                  </auc:TypicalOccupantUsages>
+                  <auc:FloorAreas>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                      <auc:FloorAreaValue>79000.0</auc:FloorAreaValue>
+                    </auc:FloorArea>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Conditioned</auc:FloorAreaType>
+                      <auc:FloorAreaValue>79000.0</auc:FloorAreaValue>
+                    </auc:FloorArea>
+                  </auc:FloorAreas>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Floor Area For Gross Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Miscellaneous Electric Load Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Occupancy Classification Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Percentage Dwellings Occupied</auc:FieldName>
+                      <auc:FieldValue>100</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Percentage Dwellings Occupied Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Principal Lighting System Type</auc:FieldName>
+                      <auc:FieldValue>T12</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Quantity Of Dwellings</auc:FieldName>
+                      <auc:FieldValue>58</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Quantity Of Dwellings Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Section Notes For Not Applicable</auc:FieldName>
+                      <auc:FieldValue/>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:Section>
+              </auc:Sections>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Alternative Roof Surface Construction Method</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Alternative Roof Surface Construction Method Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Calculate Annual Energy Use Summary</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Direct metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Direct metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Master meter with sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Master meter with sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Master meter without sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Master meter without sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Direct metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Direct metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Master meter with sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Master meter with sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Master meter without sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Commercial Tenant Metering Configuration For Natural gas Is Master meter without sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Conditioned Floors Above Grade Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Conditioned Floors Below Grade Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Demising Above Grade Wall Area</auc:FieldName>
+                  <auc:FieldValue>1195.0</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Floor Area For Cooled only Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Floor Area For Gross Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Floor Area For Heated only Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Floor Area For Heated and Cooled Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Multi Tenant</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Multi Tenant Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Number Of Facilities On Site Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation Operation Average Annual Hours Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For Fuel cell Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For Microturbine Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For PV Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For Reciprocating engine Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For Turbine Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System For Wind Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Generation System Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Renewable Peak Generating Capacity Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Renewable System</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Renewable System For Solar Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Onsite Renewable System Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Energy Generation Technology</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Energy Generation Technology Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Percentage Onsite Generation Peak Generating Capacity Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Identifier For Atlanta Building ID Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Identifier For City Custom Building ID Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Identifier For Portfolio Manager Building ID Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Notes For Not Applicable</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Notes For Shared Metering Not Applicable</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Notes For Space functions For Not Applicable</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Notes For Tenant Metering Configuration For Not Applicable</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Premises Notes Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Direct metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Direct metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter with sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter with sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter without sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter without sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Direct metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Direct metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter with sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter with sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter without sub metering</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter without sub metering Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Retrocommissioning Date Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Roof Area</auc:FieldName>
+                  <auc:FieldValue>7005.0</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Chilled water</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Chilled water Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Fuel oil</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Fuel oil Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Heating</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Heating Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For District steam</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For District steam Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For Electricity</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For Electricity Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meters For Multiple buildings on a single lot</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meters For Multiple buildings on a single lot Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meters For Multiple buildings on multiple lots</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meters For Multiple buildings on multiple lots Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For Natural gas</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Shared Meter For Natural gas Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Spaces Excluded From Gross Floor Area</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Spaces Excluded From Gross Floor Area Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Terrace R Value Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Validate 100% Lighting Status</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Validate 100% Lighting Status Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Year Of Last Energy Audit Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Year Of Last Major Remodel Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Building>
+          </auc:Buildings>
+        </auc:Site>
+      </auc:Sites>
+      <auc:Systems>
+        <auc:HVACSystems>
+          <auc:HVACSystem ID="HVACSystemType-47423814358640">
+            <auc:Plants>
+              <auc:HeatingPlants>
+                <auc:HeatingPlant ID="HeatingPlantType-47423813947120">
+                  <auc:Boiler>
+                    <auc:BoilerType>Steam</auc:BoilerType>
+                    <auc:DraftType>Mechanical forced</auc:DraftType>
+                    <auc:OutputCapacity>4184.39990234375</auc:OutputCapacity>
+                    <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
+                    <auc:AnnualHeatingEfficiencyValue>85.0</auc:AnnualHeatingEfficiencyValue>
+                    <auc:AnnualHeatingEfficiencyUnits>Thermal Efficiency</auc:AnnualHeatingEfficiencyUnits>
+                    <auc:Quantity>1</auc:Quantity>
+                  </auc:Boiler>
+                  <auc:HeatingPlantCondition>Good</auc:HeatingPlantCondition>
+                  <auc:Location>Mechanical Room</auc:Location>
+                  <auc:YearInstalled>1973</auc:YearInstalled>
+                  <auc:PrimaryFuel>Dual fuel</auc:PrimaryFuel>
+                  <auc:BuildingAutomationSystem>false</auc:BuildingAutomationSystem>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Annual Heating Efficiency Units Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Annual Heating Efficiency Value Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Building Automation System Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Burner Control Type Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Burner Quantity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Burner Year Installed Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Control System Type For Digital Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Control System Type For Pneumatic Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Draft Type Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Heating Plant Condition Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Heating Plant Notes</auc:FieldName>
+                      <auc:FieldValue/>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Heating Plant Notes Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Input Capacity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Location Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Output Capacity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Quantity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Year Installed Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:HeatingPlant>
+              </auc:HeatingPlants>
+            </auc:Plants>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+          </auc:HVACSystem>
+        </auc:HVACSystems>
+        <auc:DomesticHotWaterSystems>
+          <auc:DomesticHotWaterSystem ID="DomesticHotWaterSystemType-47423815071080">
+            <auc:DomesticHotWaterType>
+              <auc:Other/>
+            </auc:DomesticHotWaterType>
+            <auc:WaterHeaterEfficiencyType>AFUE</auc:WaterHeaterEfficiencyType>
+            <auc:WaterHeaterEfficiency>85.0</auc:WaterHeaterEfficiency>
+            <auc:YearInstalled>1973</auc:YearInstalled>
+            <auc:PrimaryFuel>District hot water</auc:PrimaryFuel>
+            <auc:Location>Mechanical Room</auc:Location>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+              <auc:Section>
+                <auc:LinkedSectionID IDref="Section-70339469232140">
+                  <auc:FloorAreas>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                      <auc:FloorAreaPercentage>100.0</auc:FloorAreaPercentage>
+                    </auc:FloorArea>
+                  </auc:FloorAreas>
+                </auc:LinkedSectionID>
+              </auc:Section>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Draft Type Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Heating Plant ID Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Hot Water Distribution Type Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Location Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Primary Fuel Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Storage Tank Insulation R Value Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Storage Tank Insulation Thickness Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Tank Volume Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Water Heater Efficiency Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Water Heater Efficiency Type Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Year Installed Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:DomesticHotWaterSystem>
+        </auc:DomesticHotWaterSystems>
+        <auc:FenestrationSystems>
+          <auc:FenestrationSystem ID="FenestrationSystemType-70339469492040">
+            <auc:FenestrationType>
+              <auc:Door>
+                <auc:ExteriorDoorType>Uninsulated metal</auc:ExteriorDoorType>
+              </auc:Door>
+            </auc:FenestrationType>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Other Exterior Door Type</auc:FieldName>
+                <auc:FieldValue/>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:FenestrationSystem>
+        </auc:FenestrationSystems>
+        <auc:CriticalITSystems>
+          <auc:CriticalITSystem ID="CriticalITSystemType-47423754080340">
+            <auc:ITSystemType>Server</auc:ITSystemType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Occupancy Classification</auc:FieldName>
+                <auc:FieldValue>Data center</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Gross Floor Area Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>IT Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Metering</auc:FieldName>
+                <auc:FieldValue>false</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Metering Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Power Usage Effectiveness Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:CriticalITSystem>
+          <auc:CriticalITSystem ID="CriticalITSystemType-47423756388000">
+            <auc:ITSystemType>Other</auc:ITSystemType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Occupancy Classification</auc:FieldName>
+                <auc:FieldValue>Trading floor</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Gross Floor Area Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>IT Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:CriticalITSystem>
+          <auc:CriticalITSystem ID="CriticalITSystemType-47423759498100">
+            <auc:ITSystemType>Other</auc:ITSystemType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Occupancy Classification</auc:FieldName>
+                <auc:FieldValue>TV studio</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Gross Floor Area Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>IT Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:CriticalITSystem>
+          <auc:CriticalITSystem ID="CriticalITSystemType-47423756937960">
+            <auc:ITSystemType>UPS</auc:ITSystemType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Occupancy Classification</auc:FieldName>
+                <auc:FieldValue>Data center</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>IT Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:CriticalITSystem>
+        </auc:CriticalITSystems>
+        <auc:PlugLoads>
+          <auc:PlugLoad ID="PlugElectricLoadType-47423769703500">
+            <auc:PlugLoadType>Broadcast Antenna</auc:PlugLoadType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Plug Load Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:PlugLoad>
+          <auc:PlugLoad ID="PlugElectricLoadType-47423776184100">
+            <auc:PlugLoadType>Kitchen Equipment</auc:PlugLoadType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Gross Floor Area Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Plug Load Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:PlugLoad>
+          <auc:PlugLoad ID="PlugElectricLoadType-47423776807740">
+            <auc:PlugLoadType>Other</auc:PlugLoadType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Plug Load Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Plug Load Total Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:PlugLoad>
+          <auc:PlugLoad ID="PlugElectricLoadType-47423777307380">
+            <auc:PlugLoadType>Signage Display</auc:PlugLoadType>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Plug Load Peak Power Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:PlugLoad>
+        </auc:PlugLoads>
+        <auc:OnsiteStorageTransmissionGenerationSystems>
+          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-47423768459380">
+            <auc:BackupGenerator>true</auc:BackupGenerator>
+            <auc:DemandReduction>false</auc:DemandReduction>
+            <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Capacity Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Demand Reduction Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Output Resource Type Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Other Energy Generation Technology Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Year Installed Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:OnsiteStorageTransmissionGenerationSystem>
+          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-47423765130600">
+            <auc:BackupGenerator>false</auc:BackupGenerator>
+            <auc:DemandReduction>false</auc:DemandReduction>
+            <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+            <auc:UserDefinedFields>
+              <auc:UserDefinedField>
+                <auc:FieldName>Capacity Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Demand Reduction Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Output Resource Type Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+              <auc:UserDefinedField>
+                <auc:FieldName>Year Installed Is Not Applicable</auc:FieldName>
+                <auc:FieldValue>true</auc:FieldValue>
+              </auc:UserDefinedField>
+            </auc:UserDefinedFields>
+          </auc:OnsiteStorageTransmissionGenerationSystem>
+        </auc:OnsiteStorageTransmissionGenerationSystems>
+        <auc:AirInfiltrationSystems>
+          <auc:AirInfiltrationSystem ID="AirInfiltrationSystem-70339469403180">
+            <auc:Tightness>Average</auc:Tightness>
+            <auc:LinkedPremises>
+              <auc:Building>
+                <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+              </auc:Building>
+            </auc:LinkedPremises>
+          </auc:AirInfiltrationSystem>
+        </auc:AirInfiltrationSystems>
+      </auc:Systems>
+      <auc:Reports>
+        <auc:Report ID="ReportType-47423781873240">
+          <auc:Scenarios>
+            <auc:Scenario ID="ScenarioType-47423809200220">
+              <auc:ScenarioName>benchmark</auc:ScenarioName>
+              <auc:ScenarioNotes/>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Benchmark>
+                  <auc:BenchmarkType>
+                    <auc:PortfolioManager/>
+                  </auc:BenchmarkType>
+                  <auc:BenchmarkYear>2020</auc:BenchmarkYear>
+                </auc:Benchmark>
+              </auc:ScenarioType>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal ID="AllResourceTotalType-47423809271820">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUseIntensity>36.70000076293945</auc:SiteEnergyUseIntensity>
+                  <auc:EnergyCost>0.0</auc:EnergyCost>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Site Energy Use Intensity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>false</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Benchmark Value Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>true</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Benchmark Year Is Not Applicable</auc:FieldName>
+                  <auc:FieldValue>false</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Scenario Notes For Not Applicable</auc:FieldName>
+                  <auc:FieldValue/>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423809391900">
+              <auc:ScenarioName>current_building</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:CurrentBuilding/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423809292000">
+                  <auc:SharedResourceSystem>Unknown</auc:SharedResourceSystem>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>GHG Emissions Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423809458420">
+              <auc:ScenarioName>current_building_with_normalization</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:Normalization>Weather normalized</auc:Normalization>
+              <auc:ScenarioType>
+                <auc:CurrentBuilding/>
+              </auc:ScenarioType>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal ID="AllResourceTotalType-47423809522000">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Source</auc:ResourceBoundary>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Source Energy Use Intensity Is Not Applicable</auc:FieldName>
+                      <auc:FieldValue>true</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423809550980">
+              <auc:ScenarioName>target</auc:ScenarioName>
+              <auc:TemporalStatus>Target</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Target/>
+              </auc:ScenarioType>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal ID="AllResourceTotalType-47423809613960">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUseIntensity>0.0</auc:SiteEnergyUseIntensity>
+                  <auc:EnergyCost>0.0</auc:EnergyCost>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423810257540">
+              <auc:ScenarioName>Audit Template Annual Summary - Dual fuel</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423809768980">
+                  <auc:EnergyResource>Dual fuel</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Annual Summary</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423810316800">
+              <auc:ScenarioName>Audit Template Annual Summary - Electricity</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423809947460">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Annual Summary</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423810374800">
+              <auc:ScenarioName>Audit Template Annual Summary - Natural gas</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423810080080">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>therms</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Annual Summary</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423810652660">
+              <auc:ScenarioName>Audit Template Energy Supply Sources</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423810888180">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                  <auc:UtilityIDs>
+                    <auc:UtilityID IDref="UtilityType-47423810719400"/>
+                  </auc:UtilityIDs>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="ResourceUseType-47423811469080">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>therms</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                  <auc:UtilityIDs>
+                    <auc:UtilityID IDref="UtilityType-47423811011520"/>
+                  </auc:UtilityIDs>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Energy Supply Sources</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-47423749893820">
+              <auc:ScenarioName>Audit Template Available Energy</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUseType-47423749967680">
+                  <auc:EnergyResource>Dual fuel</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="ResourceUseType-47423750074460">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="ResourceUseType-47423750212240">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>therms</auc:ResourceUnits>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Available Energy</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+          </auc:Scenarios>
+          <auc:AuditDates>
+            <auc:AuditDate>
+              <auc:Date>2021-11-08</auc:Date>
+              <auc:DateType>Custom</auc:DateType>
+              <auc:CustomDateType>Level 2: Energy Survey and Analysis</auc:CustomDateType>
+            </auc:AuditDate>
+          </auc:AuditDates>
+          <auc:Utilities>
+            <auc:Utility ID="UtilityType-47423810719400">
+              <auc:RateSchedules>
+                <auc:RateSchedule ID="RateSchedule-47423810738420">
+                  <auc:RateStructureName>EL2</auc:RateStructureName>
+                </auc:RateSchedule>
+              </auc:RateSchedules>
+              <auc:MeteringConfiguration>Direct metering</auc:MeteringConfiguration>
+              <auc:UtilityAccountNumber>32-5319-0035-0008-1</auc:UtilityAccountNumber>
+            </auc:Utility>
+            <auc:Utility ID="UtilityType-47423811011520">
+              <auc:RateSchedules>
+                <auc:RateSchedule ID="RateSchedule-47423811070060">
+                  <auc:RateStructureName>GS2</auc:RateStructureName>
+                </auc:RateSchedule>
+              </auc:RateSchedules>
+              <auc:MeteringConfiguration>Direct metering</auc:MeteringConfiguration>
+              <auc:UtilityAccountNumber>32-5319-0035-0008-1</auc:UtilityAccountNumber>
+            </auc:Utility>
+          </auc:Utilities>
+          <auc:AuditorContactID IDref="ContactType-47423785045640"/>
+          <auc:LinkedPremisesOrSystem>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="BuildingType-70339467993140"/>
+            </auc:Building>
+          </auc:LinkedPremisesOrSystem>
+          <auc:UserDefinedFields>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Date For Level 1: Walk-through Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>true</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Date For Level 2: Energy Survey and Analysis Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Date For Level 3: Detailed Survey and Analysis Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>true</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Filing Status</auc:FieldName>
+              <auc:FieldValue>Initial Filing</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Filing Status Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>true</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Notes</auc:FieldName>
+              <auc:FieldValue/>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Notes For Not Applicable</auc:FieldName>
+              <auc:FieldValue/>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Notes Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Team Notes</auc:FieldName>
+              <auc:FieldValue/>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Team Notes Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Template Report Type</auc:FieldName>
+              <auc:FieldValue>ASHRAE Level 2 Report</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Auditor Years Of Experience</auc:FieldName>
+              <auc:FieldValue>29</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Early Compliance</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Early Compliance Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>true</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Required Audit Year Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>true</auc:FieldValue>
+            </auc:UserDefinedField>
+          </auc:UserDefinedFields>
+        </auc:Report>
+      </auc:Reports>
+      <auc:Contacts>
+        <auc:Contact ID="ContactType-47423785045640">
+          <auc:ContactRoles>
+            <auc:ContactRole>Energy Auditor</auc:ContactRole>
+          </auc:ContactRoles>
+          <auc:ContactCompany>Edison Energy</auc:ContactCompany>
+          <auc:Address>
+            <auc:StreetAddressDetail>
+              <auc:Simplified>
+                <auc:StreetAddress>39 Broadway</auc:StreetAddress>
+              </auc:Simplified>
+            </auc:StreetAddressDetail>
+            <auc:City>New York</auc:City>
+            <auc:State>NY</auc:State>
+            <auc:PostalCode>10006</auc:PostalCode>
+          </auc:Address>
+          <auc:UserDefinedFields>
+            <auc:UserDefinedField>
+              <auc:FieldName>City Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Company Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Email Address Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Name Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Telephone Number Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Postal Code Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>State Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Street Address Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Role For ReportType-47423781873240</auc:FieldName>
+              <auc:FieldValue>Energy Auditor</auc:FieldValue>
+            </auc:UserDefinedField>
+          </auc:UserDefinedFields>
+        </auc:Contact>
+        <auc:Contact ID="ContactType-47423809033540">
+          <auc:ContactRoles>
+            <auc:ContactRole>Owner</auc:ContactRole>
+          </auc:ContactRoles>
+          <auc:ContactCompany>Exclusive Management Company</auc:ContactCompany>
+          <auc:Address>
+            <auc:StreetAddressDetail>
+              <auc:Simplified>
+                <auc:StreetAddress>270 North Avenue, Suite 708 </auc:StreetAddress>
+              </auc:Simplified>
+            </auc:StreetAddressDetail>
+            <auc:City>New Rochelle</auc:City>
+            <auc:State>NY</auc:State>
+            <auc:PostalCode>10801</auc:PostalCode>
+          </auc:Address>
+          <auc:UserDefinedFields>
+            <auc:UserDefinedField>
+              <auc:FieldName>City Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Company Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Email Address Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Name Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Telephone Number Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Postal Code Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>State Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Street Address Is Not Applicable</auc:FieldName>
+              <auc:FieldValue>false</auc:FieldValue>
+            </auc:UserDefinedField>
+            <auc:UserDefinedField>
+              <auc:FieldName>Contact Role For ReportType-47423781873240</auc:FieldName>
+              <auc:FieldValue>Owner</auc:FieldValue>
+            </auc:UserDefinedField>
+          </auc:UserDefinedFields>
+        </auc:Contact>
+      </auc:Contacts>
+    </auc:Facility>
+  </auc:Facilities>
+</auc:BuildingSync>

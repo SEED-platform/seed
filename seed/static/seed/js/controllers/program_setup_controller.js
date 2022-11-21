@@ -19,26 +19,26 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     Notification,
     organization_payload,
     property_columns,
-    x_axis_columns,
+    x_axis_columns
   ) {
     $scope.org = organization_payload.organization;
     $scope.complianceMetrics = compliance_metrics;
     $scope.new_compliance_metric = {};
     $scope.fields = {
-      'start_year': null,
-      'end_year': null
+      start_year: null,
+      end_year: null
     };
     $scope.program_settings_not_changed = true;
     $scope.program_settings_changed = function () {
       $scope.program_settings_not_changed = false;
-    }
+    };
 
     $scope.errors = [];
-    if ($scope.complianceMetrics.length > 0){
-      $scope.new_compliance_metric = $scope.complianceMetrics[0];  // assign to first for now
+    if ($scope.complianceMetrics.length > 0) {
+      $scope.new_compliance_metric = $scope.complianceMetrics[0]; // assign to first for now
       // truncate start and end dates to only show years YYYY
-      $scope.fields.start_year = $scope.new_compliance_metric.start ? parseInt($scope.new_compliance_metric.start.split('-')[0]) : null
-      $scope.fields.end_year = $scope.new_compliance_metric.end ? parseInt($scope.new_compliance_metric.end.split('-')[0]) : null
+      $scope.fields.start_year = $scope.new_compliance_metric.start ? parseInt($scope.new_compliance_metric.start.split('-')[0]) : null;
+      $scope.fields.end_year = $scope.new_compliance_metric.end ? parseInt($scope.new_compliance_metric.end.split('-')[0]) : null;
 
     }
     $scope.property_columns = property_columns;
@@ -46,14 +46,14 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
 
     $scope.get_column_display = function (id) {
-      let record = _.find($scope.property_columns, {'id': id});
+      let record = _.find($scope.property_columns, {id: id});
       if (record) {
         return record.displayName;
       }
     };
 
     $scope.get_x_axis_display = function (id) {
-      let record = _.find($scope.x_axis_columns, {'id': id});
+      let record = _.find($scope.x_axis_columns, {id: id});
       if (record) {
         return record.displayName;
       }
@@ -97,8 +97,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       let has_emission_metric = $scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.emission_metric_type;
       let no_energy_metric = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.energy_metric_type;
       let no_emission_metric = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.emission_metric_type;
-      let actual_energy_column_not_boolean = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.target_energy_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_energy_column}).data_type != 'boolean';
-      let actual_emission_column_not_boolean = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.target_emission_column && _.find($scope.property_columns, {'id': $scope.new_compliance_metric.actual_emission_column}).data_type != 'boolean';
+      let actual_energy_column_not_boolean = $scope.new_compliance_metric.actual_energy_column && !$scope.new_compliance_metric.target_energy_column && _.find($scope.property_columns, {id: $scope.new_compliance_metric.actual_energy_column}).data_type != 'boolean';
+      let actual_emission_column_not_boolean = $scope.new_compliance_metric.actual_emission_column && !$scope.new_compliance_metric.target_emission_column && _.find($scope.property_columns, {id: $scope.new_compliance_metric.actual_emission_column}).data_type != 'boolean';
 
       if ((!has_energy_metric && !has_emission_metric) || (no_energy_metric || no_emission_metric)) {
         $scope.errors.push('A completed energy or emission metric is required!');
@@ -109,44 +109,47 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (actual_energy_column_not_boolean || actual_emission_column_not_boolean) {
         $scope.errors.push('The actual energy or emission columns must have a \'boolean\' data type if there is not a corresponding target column selected!');
       }
+      if (!$scope.new_compliance_metric.actual_energy_column && $scope.new_compliance_metric.target_energy_column || !$scope.new_compliance_metric.actual_emission_column && $scope.new_compliance_metric.target_emission_column) {
+        $scope.errors.push('The actual energy or emission columns must be included when the target column is selected!');
+      }
       if ($scope.errors.length > 0) {
         return;
       }
 
       // just for saving
-      $scope.new_compliance_metric.start = $scope.fields.start_year + "-01-01";
-      $scope.new_compliance_metric.end = $scope.fields.end_year + "-12-31";
+      $scope.new_compliance_metric.start = $scope.fields.start_year + '-01-01';
+      $scope.new_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
       // need to use list compliance metric to see if one exists
       if ($scope.complianceMetrics.length > 0) {
         // update the compliance metric
         compliance_metric_service.update_compliance_metric($scope.complianceMetrics[0].id, $scope.new_compliance_metric).then(data => {
-            if ('status' in data && data.status == 'error') {
-              for (const [key, error] of Object.entries(data.errors)) {
-                $scope.errors.push(key + ': ' + error);
-              }
-            } else {
-              $scope.new_compliance_metric = data;
-              //reset for displaying
-              $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
-              $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
+          if ('status' in data && data.status == 'error') {
+            for (const [key, error] of Object.entries(data.errors)) {
+              $scope.errors.push(key + ': ' + error);
             }
+          } else {
+            $scope.new_compliance_metric = data;
+            //reset for displaying
+            $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
+            $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
+          }
         });
 
       } else {
         // create a new compliance metric
         compliance_metric_service.new_compliance_metric($scope.new_compliance_metric).then(data => {
-              if ('status' in data && data.status == 'error') {
-                for (const [key, error] of Object.entries(data.errors)) {
-                  $scope.errors.push(key + ': ' + error);
-                }
-              } else {
-                $scope.new_compliance_metric = data;
-                // reset for displaying
-                $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
-                $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
-              }
-         });
+          if ('status' in data && data.status == 'error') {
+            for (const [key, error] of Object.entries(data.errors)) {
+              $scope.errors.push(key + ': ' + error);
+            }
+          } else {
+            $scope.new_compliance_metric = data;
+            // reset for displaying
+            $scope.new_compliance_metric.start = parseInt($scope.new_compliance_metric.start.split('-')[0]);
+            $scope.new_compliance_metric.end = parseInt($scope.new_compliance_metric.end.split('-')[0]);
+          }
+        });
       }
       $scope.program_settings_not_changed = true;
       setTimeout(() => {

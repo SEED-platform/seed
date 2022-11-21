@@ -1938,7 +1938,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'data_view_controller',
         resolve: {
           valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
+              return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];
           }],
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
@@ -1979,7 +1979,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'data_view_controller',
         resolve: {
           valid_column_data_types: [function () {
-              return ['number', 'float', 'integer', 'area', 'eui'];
+              return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];
           }],
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {

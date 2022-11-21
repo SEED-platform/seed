@@ -149,7 +149,7 @@ angular.module('BE.seed.controller.insights_property', [])
         _.forEach($scope.data.properties_by_cycles[$scope.chart_cycle], function(prop) {
           item = {'id': prop.property_view_id}
           item['name'] = _.find(prop, function(v,k) {
-            return _.startsWith(k, 'property_name')
+            return _.startsWith(k, $scope.organization.property_display_field)
           });
           // x axis is easy
           item['x'] = _.find(prop, function(v, k) {

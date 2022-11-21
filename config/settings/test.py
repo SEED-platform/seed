@@ -39,19 +39,6 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # this celery log level is currently not overridden.
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
-# Testing
-INSTALLED_APPS += ( # noqa F405
-    "django_nose",
-)
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_PLUGINS = [
-    'nose_exclude.NoseExclude',
-]
-NOSE_ARGS = [
-    '--nocapture',
-    '--nologcapture',
-]
-
 REQUIRE_UNIQUE_EMAIL = False
 
 INTERNAL_IPS = ('127.0.0.1',)

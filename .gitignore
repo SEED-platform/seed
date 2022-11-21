@@ -9,7 +9,6 @@
 .coverage
 .vscode
 coverage.protractor.json
-.noseids
 .vscode
 *~
 *~$*
