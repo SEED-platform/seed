@@ -9,9 +9,9 @@ from django.test import TestCase
 from seed.utils.address import normalize_address_str
 
 
-class TestColumnListProfile(TestCase):
+class TestAddressNormalization(TestCase):
 
-    def test_adding_columns(self):
+    def test_normalization(self):
         cases = [
             # case, test str, expected resulting string, actual response
             ('simple', '123 Test St.', '123 test st'),

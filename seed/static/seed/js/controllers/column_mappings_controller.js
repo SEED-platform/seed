@@ -255,6 +255,14 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
+      $scope.export_profile = function () {
+        column_mappings_service.export_mapping_profile($scope.org.id,  $scope.current_profile.id).then(function (data) {
+          var blob = new Blob([data], {type: 'text/csv'});
+          saveAs(blob, `${$scope.current_profile.name}_mapping_profile.csv`);
+          Notification.primary(`Data exported for \'${$scope.current_profile.name}\'`);
+        });
+      }
+
       // Track changes to warn users about losing changes when data could be lost
       $scope.changes_possible = false;
 
