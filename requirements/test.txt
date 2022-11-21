@@ -9,12 +9,12 @@ tox==3.14.3
 psutil==5.6.7
 
 # python testing
-django-nose==1.4.6
 Faker==0.9.3
 mock==2.0.0
-nose-exclude==0.5.0
 coveralls-merge==0.0.3
 vcrpy==4.0.0
+pytest==7.2.0
+pytest-django==4.5.2
 
 # static code analysis
 flake8==3.8.1
