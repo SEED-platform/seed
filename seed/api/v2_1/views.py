@@ -66,7 +66,6 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
                 'properties': [
                     {
                         'id': Property primary key,
-                        'campus': property is a campus,
                         'parent_property': dict of associated parent property
                         'labels': list of associated label ids
                     }

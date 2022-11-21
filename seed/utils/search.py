@@ -341,11 +341,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
 
     updated_filter = None
     annotations: AnnotationDict = {}
-    if filter.field_name == 'campus':
-        # campus is the only column found on the canonical property (TaxLots don't have this column)
-        # all other columns are found in the state
-        updated_filter = QueryFilter(f'property__{filter.field_name}', filter.operator, filter.is_negated)
-    elif column['is_extra_data']:
+    if column['is_extra_data']:
         new_field_name, annotations = _build_extra_data_annotations(column['column_name'], column['data_type'])
         updated_filter = QueryFilter(new_field_name, filter.operator, filter.is_negated)
     else:
@@ -372,9 +368,6 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
     direction = '-' if sort_expression.startswith('-') else ''
     if column_name == 'id':
         return sort_expression, {}
-    elif column_name == 'campus':
-        # campus is the only column which is found exclusively on the Property, not the state
-        return f'property__{sort_expression}', {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
         if column['related']:

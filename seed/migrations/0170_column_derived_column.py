@@ -3,13 +3,14 @@
 from django.db import migrations, models, transaction
 import django.db.models.deletion
 
+
 def forwards(apps, schema_editor):
     DerivedColumn = apps.get_model("seed", "DerivedColumn")
     Column = apps.get_model("seed", "Column")
 
     with transaction.atomic():
         Column.objects.all().update(derived_column=None)
-        
+
         table_name = {0: 'PropertyState', 1: 'TaxLotState'}
         for dc in DerivedColumn.objects.all():
             Column.objects.create(

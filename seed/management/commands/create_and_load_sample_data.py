@@ -565,7 +565,6 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
     :param cycle: Cycle, the cycle the created records will be associated with
     :param taxlots: list of SampleDataRecords containing taxlot data
     :param properties: list of SampleDataRecords containing property data
-    :param campus: SampleDataRecord of property data
     :return: None
     """
 
@@ -588,9 +587,9 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
 
     taxlots = list(map(update_taxlot_noise, taxlots))
     properties = list(map(update_property_noise, properties))
-    campus = update_property_noise(campus)
+    property_ = update_property_noise(campus)
 
-    campus_property = seed.models.Property.objects.create(organization=org, campus=True)
+    campus_property = seed.models.Property.objects.create(organization=org)
     property_objs = [
         seed.models.Property.objects.create(organization=org, parent_property=campus_property) for p
         in properties]
@@ -599,7 +598,7 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
     taxlot_objs = [seed.models.TaxLot.objects.create(organization=org) for t in taxlots]
 
     property_states = _create_states_with_extra_data(seed.models.PropertyState,
-                                                     [campus] + properties)
+                                                     [property_] + properties)
     property_views = [seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle,
                                                                      state=prop_state)[0] for
                       (property, prop_state) in list(zip(property_objs, property_states))]

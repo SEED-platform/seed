@@ -46,7 +46,6 @@ describe('controller: inventory_detail_controller', function () {
 
     var fake_inventory_payload = {
       property: {
-        campus: 'False',
         id: 4,
         organization: 24,
         parent_property: '',

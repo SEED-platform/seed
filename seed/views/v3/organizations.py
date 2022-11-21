@@ -965,8 +965,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var,
-                            campus_only):
+    def get_raw_report_data(self, organization_id, cycles, x_var, y_var):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
@@ -982,21 +981,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             data = []
             for property_view in property_views:
                 property_pk = property_view.property_id
-                if property_view.property.campus and campus_only:
-                    count_total.append(property_pk)
-                    result = self.get_data(property_view, x_var, y_var)
-                    if result:
-                        result['yr_e'] = cycle.end.strftime('%Y')
-                        data.append(result)
-                        count_with_data.append(property_pk)
-                elif not property_view.property.campus:
-                    count_total.append(property_pk)
-                    result = self.get_data(property_view, x_var, y_var)
-                    if result:
-                        result['yr_e'] = cycle.end.strftime('%Y')
-                        de_unitted_result = apply_display_unit_preferences(organization, result)
-                        data.append(de_unitted_result)
-                        count_with_data.append(property_pk)
+                count_total.append(property_pk)
+                result = self.get_data(property_view, x_var, y_var)
+                if result:
+                    result['yr_e'] = cycle.end.strftime('%Y')
+                    de_unitted_result = apply_display_unit_preferences(organization, result)
+                    data.append(de_unitted_result)
+                    count_with_data.append(property_pk)
             result = {
                 "cycle_id": cycle.pk,
                 "chart_data": data,
@@ -1031,11 +1022,6 @@ class OrganizationViewSet(viewsets.ViewSet):
                 required=True,
                 description='End time, in the format "2018-12-31T23:53:00-08:00"'
             ),
-            AutoSchemaHelper.query_string_field(
-                'campus_only',
-                required=False,
-                description='If true, includes campuses'
-            ),
         ]
     )
     @api_endpoint_class
@@ -1043,10 +1029,8 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def report(self, request, pk=None):
+        """Retrieve a summary report for charting x vs y
         """
-        Retrieve a summary report for charting x vs y
-        """
-        campus_only = json.loads(request.query_params.get('campus_only', 'false'))
         params = {}
         missing_params = []
         error = ''
@@ -1066,8 +1050,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             cycles = self.get_cycles(params['start'], params['end'], pk)
             data = self.get_raw_report_data(
-                pk, cycles,
-                params['x_var'], params['y_var'], campus_only
+                pk, cycles, params['x_var'], params['y_var']
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
@@ -1107,11 +1090,6 @@ class OrganizationViewSet(viewsets.ViewSet):
                 required=True,
                 description='End time, in the format "2018-12-31T23:53:00-08:00"'
             ),
-            AutoSchemaHelper.query_string_field(
-                'campus_only',
-                required=False,
-                description='If true, includes campuses'
-            ),
         ]
     )
     @api_endpoint_class
@@ -1119,10 +1097,8 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def report_aggregated(self, request, pk=None):
+        """Retrieve a summary report for charting x vs y aggregated by y_var
         """
-        Retrieve a summary report for charting x vs y aggregated by y_var
-        """
-        campus_only = json.loads(request.query_params.get('campus_only', 'false'))
         valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
         params = {}
         missing_params = []
@@ -1149,10 +1125,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             cycles = self.get_cycles(params['start'], params['end'], pk)
             x_var = params['x_var']
             y_var = params['y_var']
-            data = self.get_raw_report_data(
-                pk, cycles, x_var, y_var,
-                campus_only
-            )
+            data = self.get_raw_report_data(pk, cycles, x_var, y_var)
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
                     empty = False
@@ -1355,8 +1328,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Gather base data
         cycles = self.get_cycles(params['start'], params['end'], pk)
         data = self.get_raw_report_data(
-            pk, cycles,
-            params['x_var'], params['y_var'], False
+            pk, cycles, params['x_var'], params['y_var']
         )
 
         base_row = data_row_start + 1
