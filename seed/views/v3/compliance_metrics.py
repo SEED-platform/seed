@@ -169,7 +169,8 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'actual_emission_column': 'integer',
                 'target_emission_column': 'integer',
                 'emission_metric_type': 'string',
-                'filter_group': 'integer',                'x_axis_columns': ['integer'],
+                'filter_group': 'integer',
+                'x_axis_columns': ['integer'],
             },
         )
     )
