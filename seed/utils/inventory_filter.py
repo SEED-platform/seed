@@ -3,7 +3,7 @@
 :author
 """
 
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
@@ -128,7 +128,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
         # If the children have filters, filter views_list by their children.
         if len(filters) > 0 and len(annotations) > 0:
-            other_inventory_type_class: Union[TaxLotView, PropertyView] = TaxLotView if inventory_type == "property" else PropertyView
+            other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = TaxLotView if inventory_type == "property" else PropertyView
             other_views_list = (
                 other_inventory_type_class.objects.select_related('taxlot', 'state', 'cycle')
                 .filter(taxlot__organization_id=org_id, cycle=cycle)
