@@ -91,7 +91,7 @@
                                     </li>
                                     <li class="r-row r-row-centered">
                                         <select id="select-x-axis" class="form-control" ng-change="select_x_axis(); program_settings_changed()" ng-model="x_axis_selection">
-                                            <option ng-repeat="x_axis_column in x_axis_columns" ng-value="x_axis_column.id">{$:: x_axis_column.id $}</option>
+                                            <option ng-repeat="x_axis_column in x_axis_columns" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
                                         </select>
                                     </li>
                                 </ul>
