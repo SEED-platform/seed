@@ -160,20 +160,20 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.selected_compliance_metric.end = $scope.selected_compliance_metric.end_year + '-12-31';
 
       // update selected compliance metric with current fields data
-      $scope.selected_compliance_metric = {
-        id: $scope.id,
-        // name: $scope.fields.name,
-        start: $scope.fields.start_year + '-01-01',
-        end: $scope.fields.end_year + '-12-31',
-        // actual_energy_column: $scope.fields.actual_energy_column,
-        // target_energy_column: $scope.fields.target_energy_column,
-        // actual_emission_column: $scope.fields.actual_emission_column,
-        // target_emission_column: $scope.fields.target_emission_column,
-        // energy_metric_type: $scope.fields.energy_metric_type,
-        // emission_metric_type: $scope.fields.emission_metric_type,
-        // filter_group: $scope.fields.filter_group
-        x_axis_columns: 
-      };
+      // $scope.selected_compliance_metric = {
+      //   id: $scope.id,
+      //   // name: $scope.fields.name,
+      //   start: $scope.fields.start_year + '-01-01',
+      //   end: $scope.fields.end_year + '-12-31',
+      //   // actual_energy_column: $scope.fields.actual_energy_column,
+      //   // target_energy_column: $scope.fields.target_energy_column,
+      //   // actual_emission_column: $scope.fields.actual_emission_column,
+      //   // target_emission_column: $scope.fields.target_emission_column,
+      //   // energy_metric_type: $scope.fields.energy_metric_type,
+      //   // emission_metric_type: $scope.fields.emission_metric_type,
+      //   // filter_group: $scope.fields.filter_group
+      //   x_axis_columns: 
+      // };
 
       // update the compliance metric
       compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
