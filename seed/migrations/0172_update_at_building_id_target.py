@@ -13,6 +13,7 @@ def update_at_building_id(apps, schema_editor):
                     mapping['to_field'] = "audit_template_building_id"
             profile.save(update_fields=['mappings'])
 
+
 def backwards(apps, schema_editor):
     Organization = apps.get_model("orgs", "Organization")
     for org in Organization.objects.all():

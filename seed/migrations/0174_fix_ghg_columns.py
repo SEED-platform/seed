@@ -3,14 +3,15 @@
 from django.db import migrations
 # from django.core import serializers
 
+
 def remove_old_ghg_columns(apps, schema_editor):
     """create a default BuildingSync column mapping preset for each organization"""
     Organization = apps.get_model("orgs", "Organization")
 
     better_columns = [
-        'better_ghg_reductions_combined', 
-        'better_ghg_reductions_electricity', 
-        'better_ghg_reductions_fuel', 
+        'better_ghg_reductions_combined',
+        'better_ghg_reductions_electricity',
+        'better_ghg_reductions_fuel',
     ]
     other_columns = [
         'total_ghg_emissions',
@@ -22,13 +23,13 @@ def remove_old_ghg_columns(apps, schema_editor):
         for prob_col in problematic_columns:
             # find the problematic columns
             columns = org.column_set.filter(column_name=prob_col, table_name="PropertyState").order_by('-created')
-            # find the newest column, and delete that one. 
-            if len(columns) > 1:        
+            # find the newest column, and delete that one.
+            if len(columns) > 1:
                 # for column in columns:
                 #     print('Found multiple total_ghg_emissions columns, what to do?')
                 #     print(serializers.serialize('python', [column], ensure_ascii=False))
                 columns[0].delete()
-        
+
 
 class Migration(migrations.Migration):
 

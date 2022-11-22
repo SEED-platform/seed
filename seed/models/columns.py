@@ -115,13 +115,11 @@ class Column(models.Model):
         'longitude',
         'year_built',
         'property_footprint',
-        'campus',
         'created',
         'updated',
     ] + COLUMN_EXCLUDE_FIELDS
 
     EXCLUDED_RENAME_FROM_FIELDS = [
-        'campus',
         'lot_number',
         'year_built',
         'property_footprint',
@@ -139,7 +137,6 @@ class Column(models.Model):
 
     # These are columns that should not be offered as suggestions during mapping
     UNMAPPABLE_PROPERTY_FIELDS = [
-        'campus',
         'created',
         'geocoding_confidence',
         'lot_number',
@@ -355,13 +352,6 @@ class Column(models.Model):
             'display_name': 'Tax Lot Footprint',
             'column_description': 'Tax Lot Footprint',
             'data_type': 'geometry',
-        }, {
-            'column_name': 'campus',
-            'table_name': 'Property',
-            'display_name': 'Campus',
-            'column_description': 'Campus',
-            'data_type': 'boolean',
-            # 'type': 'boolean',
         }, {
             'column_name': 'updated',
             'table_name': 'PropertyState',

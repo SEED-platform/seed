@@ -277,7 +277,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.isDisabledField = function (name) {
         return _.includes([
           'geocoding_confidence',
-          'campus',
           'created',
           'updated'
         ], name);

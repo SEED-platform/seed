@@ -629,7 +629,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         Import test files from Stephen for many-to-many testing. This imports
         and maps the data accordingly. Presently these files are missing a
         couple of attributes to make them valid:
-            1) the master campus record to define the pm_property_id
+            1) the campus record to define the pm_property_id
             2) the joins between propertystate and taxlotstate
         """
 

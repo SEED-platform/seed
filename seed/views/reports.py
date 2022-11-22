@@ -70,8 +70,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
             }
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var,
-                            campus_only):
+    def get_raw_report_data(self, organization_id, cycles, x_var, y_var):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
@@ -87,21 +86,13 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
             data = []
             for property_view in property_views:
                 property_pk = property_view.property_id
-                if property_view.property.campus and campus_only:
-                    count_total.append(property_pk)
-                    result = self.get_data(property_view, x_var, y_var)
-                    if result:
-                        result['yr_e'] = cycle.end.strftime('%Y')
-                        data.append(result)
-                        count_with_data.append(property_pk)
-                elif not property_view.property.campus:
-                    count_total.append(property_pk)
-                    result = self.get_data(property_view, x_var, y_var)
-                    if result:
-                        result['yr_e'] = cycle.end.strftime('%Y')
-                        de_unitted_result = apply_display_unit_preferences(organization, result)
-                        data.append(de_unitted_result)
-                        count_with_data.append(property_pk)
+                count_total.append(property_pk)
+                result = self.get_data(property_view, x_var, y_var)
+                if result:
+                    result['yr_e'] = cycle.end.strftime('%Y')
+                    de_unitted_result = apply_display_unit_preferences(organization, result)
+                    data.append(de_unitted_result)
+                    count_with_data.append(property_pk)
             result = {
                 "cycle_id": cycle.pk,
                 "chart_data": data,
@@ -115,7 +106,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
         return results
 
     def get_property_report_data(self, request):
-        campus_only = request.query_params.get('campus_only', False)
         params = {}
         missing_params = []
         error = ''
@@ -136,7 +126,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
             cycles = self.get_cycles(params['start'], params['end'])
             data = self.get_raw_report_data(
                 params['organization_id'], cycles,
-                params['x_var'], params['y_var'], campus_only
+                params['x_var'], params['y_var']
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
@@ -208,7 +198,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
         cycles = self.get_cycles(params['start'], params['end'])
         data = self.get_raw_report_data(
             params['organization_id'], cycles,
-            params['x_var'], params['y_var'], False
+            params['x_var'], params['y_var']
         )
 
         base_row = data_row_start + 1
@@ -254,7 +244,6 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
         return response
 
     def get_aggregated_property_report_data(self, request):
-        campus_only = request.query_params.get('campus_only', False)
         valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
         params = {}
         missing_params = []
@@ -282,8 +271,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
             x_var = params['x_var']
             y_var = params['y_var']
             data = self.get_raw_report_data(
-                params['organization_id'], cycles, x_var, y_var,
-                campus_only
+                params['organization_id'], cycles, x_var, y_var
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:

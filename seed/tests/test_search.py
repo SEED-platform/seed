@@ -37,7 +37,6 @@ class TestInventoryViewSearchParsers(TestCase):
             TestCase('canonical column with geometry data_type', QueryDict('property_footprint=abcdefg'), Q(state__property_footprint='abcdefg')),
             TestCase('canonical column with datetime data_type', QueryDict('updated=2022-01-01 10:11:12'), Q(state__updated=datetime(2022, 1, 1, 10, 11, 12))),
             TestCase('canonical column with date data_type', QueryDict('year_ending=2022-01-01'), Q(state__year_ending=datetime(2022, 1, 1))),
-            TestCase('canonical column with boolean data_type', QueryDict('campus=True'), Q(property__campus=True)),
             TestCase('canonical column with area data_type', QueryDict('gross_floor_area=12.3'), Q(state__gross_floor_area=12.3)),
             TestCase('canonical column with eui data_type', QueryDict('site_eui=12.3'), Q(state__site_eui=12.3)),
         ]
