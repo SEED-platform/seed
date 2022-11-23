@@ -35,11 +35,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
     $scope.program_settings_not_changed = true;
     $scope.program_settings_changed = function () {
-      console.log("program_settings_changed is called");
       $scope.program_settings_not_changed = false;
     };
 
-    $scope.compliance_metrics_error = [];
     if ($scope.selected_compliance_metric) {
       // truncate start and end dates to only show years YYYY
       $scope.fields.start_year = $scope.selected_compliance_metric.start ? parseInt($scope.selected_compliance_metric.start.split('-')[0]) : null;
@@ -67,7 +65,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.x_axis_selection = '';
 
     $scope.select_x_axis = function () {
-      console.log("select_x_axis is called");
       $scope.program_settings_changed();
       let selection = $scope.x_axis_selection;
       $scope.x_axis_selection = '';
@@ -96,6 +93,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
 
     let _init_data  = function () {
+      // reset compliance_metrics_error
+      $scope.compliance_metrics_error = null;
+
       // load compliance metrics
       $scope.compliance_metrics = compliance_metrics;
       if (compliance_metrics.status == 'error') {
@@ -107,10 +107,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if ($scope.selected_compliance_metric) {
         $scope.fields.start_year = $scope.selected_compliance_metric.start ? parseInt($scope.selected_compliance_metric.start.split('-')[0]) : null;
         $scope.fields.end_year = $scope.selected_compliance_metric.end ? parseInt($scope.selected_compliance_metric.end.split('-')[0]) : null;
-        console.log("From _init_data, I think this is happening when page is loaded and there's a selected compliance metric");
-        console.log("This is the $scope.id",$scope.id);
-        console.log("This is $scope.compliance_metrics", $scope.compliance_metrics);
-        console.log("This is compliance_metrics", compliance_metrics);
       } else if ($scope.id) {
         $scope.compliance_metrics_error = 'Could not find Program Metric with id #' + $scope.id + '!';
       }
@@ -120,7 +116,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
      */
     $scope.save_settings = function () {
       spinner_utility.show();
-      $scope.compliance_metrics_error = [];
       if (!$scope.selected_compliance_metric.name) {
         $scope.compliance_metrics_error.push('A name is required!');
       }
@@ -151,29 +146,13 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (!$scope.selected_compliance_metric.actual_energy_column && $scope.selected_compliance_metric.target_energy_column || !$scope.selected_compliance_metric.actual_emission_column && $scope.selected_compliance_metric.target_emission_column) {
         $scope.compliance_metrics_error.push('The actual energy or emission columns must be included when the target column is selected!');
       }
-      if ($scope.compliance_metrics_error.length > 0) {
+      if ($scope.compliance_metrics_error) {
         return;
       }
 
       // just for saving
-      $scope.selected_compliance_metric.start = $scope.selected_compliance_metric.start_year + '-01-01';
-      $scope.selected_compliance_metric.end = $scope.selected_compliance_metric.end_year + '-12-31';
-
-      // update selected compliance metric with current fields data
-      // $scope.selected_compliance_metric = {
-      //   id: $scope.id,
-      //   // name: $scope.fields.name,
-      //   start: $scope.fields.start_year + '-01-01',
-      //   end: $scope.fields.end_year + '-12-31',
-      //   // actual_energy_column: $scope.fields.actual_energy_column,
-      //   // target_energy_column: $scope.fields.target_energy_column,
-      //   // actual_emission_column: $scope.fields.actual_emission_column,
-      //   // target_emission_column: $scope.fields.target_emission_column,
-      //   // energy_metric_type: $scope.fields.energy_metric_type,
-      //   // emission_metric_type: $scope.fields.emission_metric_type,
-      //   // filter_group: $scope.fields.filter_group
-      //   x_axis_columns: 
-      // };
+      $scope.selected_compliance_metric.start = $scope.fields.start_year + '-01-01';
+      $scope.selected_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
       // update the compliance metric
       compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
@@ -271,5 +250,4 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     _init_data();
-    console.log($scope.x_axis_columns);
   }]);
