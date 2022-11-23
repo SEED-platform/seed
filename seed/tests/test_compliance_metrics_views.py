@@ -144,7 +144,7 @@ class ComplianceMetricViewTests(TestCase):
         self.assertEqual(data['compliance_metric']['actual_emission_column'], self.column3.id)
         self.assertEqual(data['compliance_metric']['target_emission_column'], self.column4.id)
         self.assertEqual(len(data['compliance_metric']['x_axis_columns']), 2)
-        self.assertEqual('filter group 1', data['compliance_metric']['filter_group']['name'])
+        self.assertTrue(bool(data['compliance_metric']['filter_group']))
 
         self.assertEqual(3, len(ComplianceMetric.objects.all()))
 

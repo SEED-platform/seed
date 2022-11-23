@@ -208,7 +208,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     $scope.click_new_compliance_metric = function () {
       spinner_utility.show();
-      // create a new metric using api and then assign it to selected_compliance_metric that 
+      // create a new metric using api and then assign it to selected_compliance_metric that
       // way it will have an id
       let template_compliance_metric = {
         name: "New Program Metric",
