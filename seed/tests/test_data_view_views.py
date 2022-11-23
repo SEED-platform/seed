@@ -788,18 +788,19 @@ class DataViewInventoryTests(TestCase):
             location='axis1',
         )
 
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
         self.fg1 = FilterGroup.objects.create(
             name="fg1",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={'extra_col__gt': '1', "site_eui__gt": 1},
+            query_dict={f'extra_col_{self.extra_col.id}__gt': '1', f"site_eui_{site_eui_id}__gt": 1},
         )
         self.fg1.save()
         self.fg2 = FilterGroup.objects.create(
             name="fg2",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"site_eui__gt": 1},
+            query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.fg2.save()
 
@@ -820,7 +821,7 @@ class DataViewInventoryTests(TestCase):
             name="fg_and",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"extra_col__gt": 1},
+            query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
             label_logic=0  # and,
         )
         self.fg_and.labels.set([self.label2.id, self.label3.id])
@@ -830,7 +831,7 @@ class DataViewInventoryTests(TestCase):
             name="fg_or",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"extra_col__gt": 1},
+            query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
             label_logic=1  # or,
         )
         self.fg_or.labels.set([self.label2.id, self.label3.id])
@@ -840,7 +841,7 @@ class DataViewInventoryTests(TestCase):
             name="fg_exc",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"extra_col__gt": 1},
+            query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
             label_logic=2,  # exclude
         )
         self.fg_exc.labels.set([self.label3.id, self.label4.id])
