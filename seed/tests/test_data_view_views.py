@@ -64,11 +64,12 @@ class DataViewViewTests(TestCase):
 
         self.filter_groups = []
         for i in range(8):
+            year_built_id = Column.objects.get(table_name="PropertyState", column_name="year_built").id
             filter_group = FilterGroup.objects.create(
                 name=f"filter group {i}",
                 organization_id=self.org.id,
                 inventory_type=1,  # Tax Lot
-                query_dict={'year_built__lt': ['1950']},
+                query_dict={f'year_built_{year_built_id}__lt': ['1950']},
             )
             filter_group.labels.add(self.label_1.id)
             filter_group.save()
@@ -372,11 +373,13 @@ class DataViewEvaluationTests(TestCase):
         self.view42 = PropertyView.objects.create(property=self.retail3, cycle=self.cycle4, state=self.state42)
         self.view43 = PropertyView.objects.create(property=self.retail4, cycle=self.cycle4, state=self.state43)
 
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+        property_type_id = Column.objects.get(table_name="PropertyState", column_name="property_type").id
         self.office_filter_group = FilterGroup.objects.create(
             name="office",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={'property_type__exact': 'office', "site_eui__gt": 1},
+            query_dict={f'property_type_{property_type_id}__exact': 'office', f"site_eui_{site_eui_id}__gt": 1},
         )
         self.office_filter_group.save()
 
@@ -384,7 +387,7 @@ class DataViewEvaluationTests(TestCase):
             name="retail",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={'property_type__exact': 'retail', "site_eui__gt": 1},
+            query_dict={f'property_type_{property_type_id}__exact': 'retail', f"site_eui_{site_eui_id}__gt": 1},
         )
         self.retail_filter_group.save()
 
@@ -407,18 +410,19 @@ class DataViewEvaluationTests(TestCase):
             target='test'
         )
 
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
         self.three_properties_filter_group = FilterGroup.objects.create(
             name="three_properties",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={'extra_col__gt': '1', "site_eui__gt": 1},
+            query_dict={f'extra_col_{self.extra_col.id}__gt': '1', f"site_eui_{site_eui_id}__gt": 1},
         )
         self.three_properties_filter_group.save()
         self.four_properties_filter_group = FilterGroup.objects.create(
             name="four_properties",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"site_eui__gt": 1},
+            query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.four_properties_filter_group.save()
 
@@ -456,7 +460,7 @@ class DataViewEvaluationTests(TestCase):
             name="dc_filter",
             organization_id=self.org.id,
             inventory_type=1,  # Property
-            query_dict={"site_eui__gt": 1},
+            query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.dc_filter_group.save()
         self.data_view3 = DataView.objects.create(
