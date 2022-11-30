@@ -17,12 +17,13 @@ _log = logging.getLogger(__name__)
 
 
 class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
-    """API endpoint for viewing and creating notes.
+    """API endpoint for creating, retrieving, updating, and deleting notes.
 
             Returns::
                 [
                     {
-                        'id': Note's primary key
+                        'id': Note's primary key,
+                        'note_type': Is it a note or automated log message,
                         'name': Superfluous name,
                         'text': Note's text
                     }
