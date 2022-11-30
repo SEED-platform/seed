@@ -27,13 +27,15 @@ angular.module('BE.seed.controller.insights_property', [])
       $scope.organization =  organization_payload.organization;
 
       // compliance metric
+      $scope.compliance_metrics = compliance_metrics;
       $scope.compliance_metric = {};
-      // for now there should always be 1 (get_or_create_default function in compliance_metrics list api)
-      // in the future there will be multiple
+      $scope.selected_metric = null;
+      $scope.initialize_chart = true;
+      // default
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
+        $scope.selected_metric = $scope.compliance_metric.id;
       }
-      // console.log("COMPLIANCE METRIC: ", $scope.compliance_metric);
 
       // chart data
       $scope.data = null;
@@ -59,16 +61,20 @@ angular.module('BE.seed.controller.insights_property', [])
           $scope.data = data;
           spinner_utility.hide();
         }).then(() => {
-          console.log( "DATA RETURNED: ", $scope.data)
+          // console.log( "DATA RETURNED: ", $scope.data)
           if ($scope.data) {
             // set options
             // x axis
             $scope.x_axis_options = $scope.data.metric.x_axis_columns;
 
             if (_.size($scope.x_axis_options) > 0) {
-              $scope.chart_xaxis = _.first($scope.x_axis_options).id;
+              // don't clear out a valid existing selection
+              if ($scope.chart_xaxis == null || _.find($scope.x_axis_options, function (o) { return o.id == $scope.chart_xaxis}) == undefined) {
+                $scope.chart_xaxis = _.first($scope.x_axis_options).id;
+              }
             }
             // y axis
+            $scope.y_axis_options = [];
             if ($scope.data.metric.energy_metric == true){
               $scope.y_axis_options.push({'id': 0, 'name': 'Energy Metric'})
             }
@@ -76,7 +82,10 @@ angular.module('BE.seed.controller.insights_property', [])
               $scope.y_axis_options.push({'id': 1, 'name': 'Emission Metric'})
             }
             if (_.size($scope.y_axis_options) > 0) {
-              $scope.chart_metric = _.first($scope.y_axis_options).id;
+              // don't clear out a valid existing selection
+              if ($scope.chart_metric == null || _.find($scope.y_axis_options, function(o) { return o.id == $scope.chart_metric; }) == undefined){
+                $scope.chart_metric = _.first($scope.y_axis_options).id;
+              }
             }
 
           }
@@ -118,8 +127,26 @@ angular.module('BE.seed.controller.insights_property', [])
         spinner_utility.hide();
       }
 
+      $scope.update_metric = function() {
+        spinner_utility.show();
+
+        // compliance metric
+        $scope.compliance_metric = _.find($scope.compliance_metrics, function(o) {
+          return o.id == $scope.selected_metric;
+        });
+
+        // reload data for selected metric
+        _load_data();
+
+        // redraw dataset
+        _rebuild_datasets();
+        // update chart
+        _update_chart();
+        spinner_utility.hide();
+      }
+
       const _rebuild_datasets = () => {
-        console.log("REBUILD DATASETS")
+        // console.log("REBUILD DATASETS")
 
         $scope.x_categorical = false;
 
@@ -220,9 +247,9 @@ angular.module('BE.seed.controller.insights_property', [])
           }
         });
 
-        console.log("DATASETS BUILT: ", datasets);
+        // console.log("DATASETS BUILT: ", datasets);
         $scope.chart_datasets = datasets;
-        //console.log("ANNOTATIONS: ", $scope.annotations);
+
       }
 
       // CHARTS
@@ -231,97 +258,105 @@ angular.module('BE.seed.controller.insights_property', [])
       const tooltip_footer = (tooltipItems) => {
         let text = ''
         tooltipItems.forEach(function(tooltipItem) {
-          text = 'ID: ' + tooltipItem.raw.id + '\n' + 'name: ' + tooltipItem.raw.name;
+          if (tooltipItem.raw.name) {
+            text = 'Property - ' + tooltipItem.raw.name;
+          } else {
+            // revise this in future
+            text = 'Property ID - ' + tooltipItem.raw.id;
+          }
         });
 
         return text;
       };
 
       const _build_chart = () => {
-        console.log('BUILD CHART')
+        // console.log('BUILD CHART')
         if (!$scope.chart_datasets) {
           console.log('NO DATA')
           return
         }
-        const canvas = document.getElementById('property-insights-chart')
-        const ctx = canvas.getContext('2d')
 
+        // do this once
+        if ($scope.initialize_chart) {
 
-        $scope.insightsChart = new Chart(ctx, {
-          type: 'scatter',
-          data: {
-          },
-          options: {
-            elements: {
-              point: {
-                radius: 5
-              }
+          const canvas = document.getElementById('property-insights-chart')
+          const ctx = canvas.getContext('2d')
+
+          $scope.insightsChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
             },
-            plugins: {
-              title: {
-                display: true,
-                align: 'start'
-              },
-              legend: {
-                display: false
-              },
-              tooltip: {
-                callbacks: {
-                  footer: tooltip_footer,
+            options: {
+              elements: {
+                point: {
+                  radius: 5
                 }
               },
-              annotation: {
-                annotations: {
-                  box1: {
-                    // Indicates the type of annotation
-                    type: 'line',
-                    xMin: 1990,
-                    xMax: 1990,
-                    yMin: 60,
-                    yMax: 40,
-                    backgroundColor: '#333',
-                    arrowHeads: {
-                      end: {
-                        display: true,
-                        width: 9,
-                        length: 0
-                      }
+              plugins: {
+                title: {
+                  display: true,
+                  align: 'start'
+                },
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  callbacks: {
+                    footer: tooltip_footer,
+                  }
+                },
+                annotation: {
+                  annotations: {
+                    // box1: {
+                    //   // Indicates the type of annotation
+                    //   type: 'line',
+                    //   xMin: 1990,
+                    //   xMax: 1990,
+                    //   yMin: 60,
+                    //   yMax: 40,
+                    //   backgroundColor: '#333',
+                    //   arrowHeads: {
+                    //     end: {
+                    //       display: true,
+                    //       width: 9,
+                    //       length: 0
+                    //     }
+                    //   }
+                    // }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  title: {
+                    text: 'X',
+                    display: true
+                  },
+                  ticks: {
+                    callback: function(value) {
+                      return this.getLabelForValue(value)
                     }
-                  }
-                }
-              }
-            },
-            scales: {
-              x: {
-                title: {
-                  text: 'X',
-                  display: true
+                  },
+                  type: 'linear'
                 },
-                ticks: {
-                  callback: function(value) {
-                    return this.getLabelForValue(value)
+                y: {
+                  beginAtZero: true,
+                  stacked: true,
+                  position: 'left',
+                  display: true,
+                  title: {
+                    text: 'Y',
+                    display: true
                   }
-                },
-                type: 'linear'
-              },
-              y: {
-                beginAtZero: true,
-                stacked: true,
-                position: 'left',
-                display: true,
-                title: {
-                  text: 'Y',
-                  display: true
                 }
               }
             }
-          }
-        });
+          });
+          $scope.initialize_chart = false;
+        }
 
         // load data
-        console.log('UPDATE CHART');
         _update_chart();
-        console.log('BUILD CHART COMPLETE ')
         console.log("CHART DATA: ", $scope.insightsChart.data)
 
       }
@@ -385,7 +420,7 @@ angular.module('BE.seed.controller.insights_property', [])
           $scope.insightsChart.data.labels = labels;
         }
 
-        console.log("REFRESH CHART");
+        // console.log("REFRESH CHART");
         $scope.insightsChart.update()
 
       }
