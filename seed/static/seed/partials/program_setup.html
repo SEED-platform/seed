@@ -47,7 +47,7 @@
             </div>
 
             <div ng-show="!selected_compliance_metric && program_settings_not_changed" class="r-panel r-column">
-                <div ng-show="compliance_metrics_error" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
+                <div ng-show="compliance_metrics_error.length > 1" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
                 <b ng-show="!has_compliance_metrics" translate>No Program Metrics Created</b>
                 <p ng-show="!has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Program Metric to get started!</span></p>
                 <b ng-show="has_compliance_metrics" translate>No Program Metric Selected</b>
