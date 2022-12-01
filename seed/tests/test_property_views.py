@@ -1522,8 +1522,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        url = reverse('api:v3:properties-meters', kwargs={'pk': self.property_view_1.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id})
 
         result = self.client.get(url)
         result_dict = json.loads(result.content)
@@ -1534,24 +1533,27 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             {
                 'id': electric_meter.id,
                 'type': 'Electric - Grid',
-                'source': 'PM',
+                'source': 'Portfolio Manager',
                 'source_id': '5766973-0',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
             }, {
                 'id': gas_meter.id,
                 'type': 'Natural Gas',
-                'source': 'PM',
+                'source': 'Portfolio Manager',
                 'source_id': '5766973-1',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
             }, {
                 'id': gb_gas_meter.id,
                 'type': 'Natural Gas',
-                'source': 'GB',
+                'source': 'GreenButton',
                 'source_id': '123fakeID',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
             },
         ]
 

@@ -102,12 +102,14 @@ class Meter(models.Model):
     GREENBUTTON = 2
     BUILDINGSYNC = 3
     PORTFOLIO_MANAGER_DATA_REQUEST = 4
+    MANUAL_ENTRY = 5
 
     SOURCES = (
         (PORTFOLIO_MANAGER, 'Portfolio Manager'),
         (GREENBUTTON, 'GreenButton'),
         (BUILDINGSYNC, 'BuildingSync'),
         (PORTFOLIO_MANAGER_DATA_REQUEST, 'Portfolio Manager'),
+        (MANUAL_ENTRY, 'Manual Entry'),
     )
 
     is_virtual = models.BooleanField(default=False)
@@ -166,8 +168,7 @@ class Meter(models.Model):
                     conversion_factor=reading.conversion_factor,
                     meter_id=self.id,
                 )
-                for reading
-                in source_meter.meter_readings.all()
+                for reading in source_meter.meter_readings.all()
             }
 
             MeterReading.objects.bulk_create(readings)
