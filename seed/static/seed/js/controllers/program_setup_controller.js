@@ -102,6 +102,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
      */
     $scope.save_settings = function () {
       spinner_utility.show();
+      $scope.compliance_metrics_error = [];
       if (!$scope.selected_compliance_metric.name) {
         $scope.compliance_metrics_error.push('A name is required!');
       }
@@ -132,7 +133,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (!$scope.selected_compliance_metric.actual_energy_column && $scope.selected_compliance_metric.target_energy_column || !$scope.selected_compliance_metric.actual_emission_column && $scope.selected_compliance_metric.target_emission_column) {
         $scope.compliance_metrics_error.push('The actual energy or emission columns must be included when the target column is selected!');
       }
-      if ($scope.compliance_metrics_error) {
+      if ($scope.compliance_metrics_error.length > 0) {
+        console.log("exited due to complaince_metrics_error");
         spinner_utility.hide();
         return;
       }
@@ -141,6 +143,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.selected_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
       // update the compliance metric
+      console.log("about to update the metric");
       compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
         if ('status' in data && data.status == 'error') {
           for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
