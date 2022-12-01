@@ -11,12 +11,14 @@ from seed.data_importer.utils import \
     kbtu_thermal_conversion_factors as conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakePropertyViewFactory
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
-class TestMeterValidTypesUnits(DataMappingBaseTestCase):
+class TestMeterValidTypesUnits(DeleteModelsTestCase):
     def setUp(self):
+        super().setUp()
+
         self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -40,16 +42,18 @@ class TestMeterValidTypesUnits(DataMappingBaseTestCase):
         self.assertEqual(result_dict, expectation)
 
 
-class TestMeterCRUD(DataMappingBaseTestCase):
+class TestMeterCRUD(DeleteModelsTestCase):
     def setUp(self):
+        super().setUp()
+
         self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email='test_user@demo.com', **self.user_details
         )
-        self.org, _, _ = create_organization(self.user)
+        self.org, _, _ = create_organization(self.user, 'meter crud test org')
         self.client.login(**self.user_details)
 
         # faker class for properties
