@@ -1532,7 +1532,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         expectation = [
             {
                 'id': electric_meter.id,
-                'property_id': self.property_view_1.property.id,
                 'type': 'Electric - Grid',
                 'source': 'Portfolio Manager',
                 'source_id': '5766973-0',
@@ -1542,7 +1541,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'alias': 'Electric - Grid - Portfolio Manager - 5766973-0',
             }, {
                 'id': gas_meter.id,
-                'property_id': self.property_view_1.property.id,
                 'type': 'Natural Gas',
                 'source': 'Portfolio Manager',
                 'source_id': '5766973-1',
@@ -1552,7 +1550,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'alias': 'Natural Gas - Portfolio Manager - 5766973-1',
             }, {
                 'id': gb_gas_meter.id,
-                'property_id': self.property_view_1.property.id,
                 'type': 'Natural Gas',
                 'source': 'GreenButton',
                 'source_id': '123fakeID',
