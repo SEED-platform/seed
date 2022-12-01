@@ -1539,6 +1539,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'scenario_id': None,
                 'scenario_name': None,
                 'is_virtual': False,
+                'alias': 'Electric - Grid - Portfolio Manager - 5766973-0',
             }, {
                 'id': gas_meter.id,
                 'property_id': self.property_view_1.property.id,
@@ -1548,6 +1549,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'scenario_id': None,
                 'scenario_name': None,
                 'is_virtual': False,
+                'alias': 'Natural Gas - Portfolio Manager - 5766973-1',
             }, {
                 'id': gb_gas_meter.id,
                 'property_id': self.property_view_1.property.id,
@@ -1557,6 +1559,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'scenario_id': None,
                 'scenario_name': None,
                 'is_virtual': False,
+                'alias': 'Natural Gas - GreenButton - 123fakeID',
             },
         ]
 

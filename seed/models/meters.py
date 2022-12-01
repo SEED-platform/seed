@@ -112,6 +112,7 @@ class Meter(models.Model):
         (MANUAL_ENTRY, 'Manual Entry'),
     )
 
+    alias = models.CharField(max_length=255, null=True, blank=True)
     is_virtual = models.BooleanField(default=False)
 
     property = models.ForeignKey(
