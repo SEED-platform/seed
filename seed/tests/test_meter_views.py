@@ -10,9 +10,7 @@ from django.urls import reverse
 from seed.data_importer.utils import \
     kbtu_thermal_conversion_factors as conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import (
-    FakePropertyViewFactory
-)
+from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
