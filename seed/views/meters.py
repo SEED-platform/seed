@@ -2,8 +2,9 @@
 # encoding: utf-8
 
 from django.db.models import Q
-from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import (
@@ -13,10 +14,18 @@ from seed.data_importer.utils import (
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
 from seed.models import ImportFile, Meter, PropertyView
+from seed.serializers.meters import MeterSerializer
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
-class MeterViewSet(viewsets.ViewSet):
+class MeterViewSetV2(SEEDOrgCreateUpdateModelViewSet):
+    serializer_class = MeterSerializer
+    renderer_classes = (JSONRenderer,)
+    pagination_class = None
+    model = Meter
+    parser_classes = (JSONParser,)
+    orgfilter = 'property__organization'
 
     @ajax_request_class
     @action(detail=False, methods=['POST'])
