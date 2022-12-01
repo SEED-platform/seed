@@ -90,7 +90,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
         self.assertEqual(result['property_view_id'], self.pv.pk)
-        self.assertIsNone(result['taxlot_view_id'])
+        self.assertTrue('taxlot_view_id' not in result)
         self.assertEqual(result['organization_id'], self.org.pk)
         self.assertEqual(result['user_id'], self.user.pk)
 
@@ -109,7 +109,7 @@ class NoteViewTests(TestCase):
         # check that the note was attached to the property
         self.assertEqual(result['note_type'], 'Note')
         self.assertEqual(result['text'], payload['text'])
-        self.assertIsNone(result['property_view_id'])
+        self.assertTrue('property_view_id' not in result)
         self.assertEqual(result['taxlot_view_id'], self.tl.pk)
 
     def test_update_note(self):
