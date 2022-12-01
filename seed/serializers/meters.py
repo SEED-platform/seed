@@ -16,7 +16,6 @@ class MeterSerializer(serializers.ModelSerializer):
     alias = serializers.CharField(required=False, allow_blank=True)
     source = ChoiceField(choices=Meter.SOURCES)
     source_id = serializers.CharField(required=False, allow_blank=True)
-    property_id = serializers.IntegerField(required=True)
     scenario_id = serializers.IntegerField(required=False, allow_null=True)
     scenario_name = serializers.CharField(required=False, allow_blank=True)
     # meter_readings = serializers.StringRelatedField(many=True)

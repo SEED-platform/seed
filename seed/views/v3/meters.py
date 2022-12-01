@@ -4,7 +4,7 @@
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.models import Meter
+from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -22,4 +22,16 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     def get_queryset(self):
         # get all the meters for the organization
         org_id = self.get_organization(self.request)
-        return Meter.objects.filter(property__organization_id=org_id, property_id=self.kwargs.get('property_pk'))
+        # get the property id - since the meter is associated with the property (not the property view)
+        property_view = PropertyView.objects.get(pk=self.kwargs.get('property_pk', None))
+        self.property_pk = property_view.property.pk
+        return Meter.objects.filter(property__organization_id=org_id, property_id=self.property_pk)
+
+    def perform_create(self, serializer):
+        """On create, make sure to add in the property id which comes from the URL kwargs."""
+
+        # check permissions?
+        if self.property_pk:
+            serializer.save(property_id=self.property_pk)
+        else:
+            raise Exception('No property_pk provided in URL to create the meter')
