@@ -1515,10 +1515,10 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         # create GB gas meter
         meter_details = {
-            'source': Meter.GREENBUTTON,
-            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
-            'type': Meter.NATURAL_GAS,
             'property_id': self.property_view_1.property.id,
+            'type': Meter.NATURAL_GAS,
+            'source': Meter.GREENBUTTON,
+            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',            
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
@@ -1532,6 +1532,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         expectation = [
             {
                 'id': electric_meter.id,
+                'property_id': self.property_view_1.property.id,
                 'type': 'Electric - Grid',
                 'source': 'Portfolio Manager',
                 'source_id': '5766973-0',
@@ -1540,6 +1541,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'is_virtual': False,
             }, {
                 'id': gas_meter.id,
+                'property_id': self.property_view_1.property.id,
                 'type': 'Natural Gas',
                 'source': 'Portfolio Manager',
                 'source_id': '5766973-1',
@@ -1548,6 +1550,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 'is_virtual': False,
             }, {
                 'id': gb_gas_meter.id,
+                'property_id': self.property_view_1.property.id,
                 'type': 'Natural Gas',
                 'source': 'GreenButton',
                 'source_id': '123fakeID',
