@@ -22,6 +22,10 @@
             <div class="section_action_container left">
                 <h2><i class="fa fa-tachometer"></i> {$:: 'Program Metric Configuration' | translate $}</h2>
             </div>
+            <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
+                <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+                <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+            </div>
         </div>
     </div>
 
@@ -58,6 +62,12 @@
                     <div class="r-columns">
                         <div class="r-column">
                             <div class="r-panel r-margin-bottom-10">
+                                <div class="r-small-header">
+                                    <p class="r-small-header">General Metric Settings</p>
+                                </div>
+                                <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                                    Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.
+                                </div>
                                 <ul class="r-list">
                                     <li class="r-list-header" translate>Metric</li>
                                     <li class="r-row r-row-centered">
@@ -78,11 +88,15 @@
                                         </select>
                                     </li>
                                 </ul>
-                                <div class="r-panel r-info r-margin-top-10">
-                                    Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.
-                                </div>
+
                             </div>
                             <div class="r-panel">
+                                <div class="r-small-header">
+                                    <p class="r-small-header">Visualization Settings</p>
+                                </div>
+                                <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                                    Select at least one field which will serve as the x-axis for visualizations on the <b><a ui-sref="insights_property(::{organization_id: org.id})" ui-sref-active="active" translate>property insights</a></b> page. Multiple fields can be selected.
+                                </div>
                                 <ul class="r-list">
                                     <li class="r-list-header" translate>X-Axis Columns</li>
                                     <li ng-repeat="item in selected_compliance_metric.x_axis_columns" class="r-row r-row-centered">
@@ -95,13 +109,17 @@
                                         </select>
                                     </li>
                                 </ul>
-                                <div class="r-panel r-info r-margin-top-10">
-                                    Select at least one column which will serve as the x-axis for visualizations on the property insights page. Multiple columns can be selected.
-                                </div>
+
                             </div>
                         </div>
                         <div class="r-column">
                             <div class="r-panel r-margin-bottom-10">
+                                <div class="r-small-header">
+                                        <p class="r-small-header">Metric Type Settings</p>
+                                    </div>
+                                    <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                                    The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required.
+                                    </div>
                                 <div class="r-columns r-no-margin">
                                     <ul class="r-list">
                                         <li class="r-list-header" translate>Energy Metric</li>
@@ -154,17 +172,11 @@
                                         </li>
                                     </ul>
                                 </div>
-                                <div class="r-panel r-info r-margin-top-10">
-                                    The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required.
-                                </div>
                             </div>
                             <div ng-show="compliance_metrics_error.length > 0" class="r-panel r-error r-margin-bottom-10">
                                 <ul class="r-list"><li ng-repeat="error in compliance_metrics_error">{$ error $}</li></ul>
                             </div>
-                            <div ng-show="selected_compliance_metric" class="r-row">
-                                <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
-                                <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
-                            </div>
+
 
                         </div>
                     </div>
