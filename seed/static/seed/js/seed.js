@@ -83,6 +83,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
+  'BE.seed.controller.meter_deletion_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',
