@@ -86,13 +86,16 @@ class MeterViewSetV2(SEEDOrgCreateUpdateModelViewSet):
         res = []
         for meter in Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)):
             if meter.source == meter.GREENBUTTON:
-                source = 'GB'
+                source = 'GreenButton'
                 source_id = usage_point_id(meter.source_id)
             elif meter.source == meter.BUILDINGSYNC:
-                source = 'BS'
+                source = 'BuildingSync'
+                source_id = meter.source_id
+            elif meter.source == meter.MANUAL_ENTRY:
+                source = 'Manual'
                 source_id = meter.source_id
             else:
-                source = 'PM'
+                source = 'Portfolio Manager'
                 source_id = meter.source_id
 
             res.append({
