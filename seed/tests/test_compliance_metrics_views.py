@@ -12,9 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from seed.models import Column, ComplianceMetric, FilterGroup, User
-from seed.test_helpers.fake import (
-    FakeCycleFactory
-)
+from seed.test_helpers.fake import FakeCycleFactory
 from seed.utils.organizations import create_organization
 
 
