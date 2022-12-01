@@ -4,10 +4,6 @@
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.data_importer.utils import (
-    kbtu_thermal_conversion_factors,
-    usage_point_id
-)
 from seed.models import Meter
 from seed.serializers.meters import MeterSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
