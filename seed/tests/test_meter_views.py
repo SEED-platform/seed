@@ -64,7 +64,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
 
         payload = {
-            'property_id': property_view.property.id,
             'type': 'Electric - Grid',
             'source': 'GreenButton',
             'source_id': '1234567890',
@@ -75,7 +74,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.assertDictContainsSubset(payload, response.data)
 
         payload = {
-            'property_id': property_view.property.id,
             'type': 'Electric - Grid',
             'source': 'GreenButton',
             'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
@@ -88,7 +86,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.assertEqual(response.data['alias'], 'Electric - Grid - GreenButton - 123fakeID')
 
         payload = {
-            'property_id': property_view.property.id,
             'type': 'Natural Gas',
             'source': 'Portfolio Manager',
             'source_id': 'A Custom Source ID',
@@ -104,7 +101,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         property_view = self.property_view_factory.get_property_view()
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
         payload = {
-            'property_id': property_view.property.id,
             'type': 'Natural Gas',
             'source': 'Portfolio Manager',
             'source_id': 'A Custom Source ID',
@@ -120,6 +116,8 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.assertEqual(len(response.data), 1)
 
         meter_id = response.data[0]['id']
+        print(f"meter id: {meter_id}")
+        print(f"all of response data: {response.data}")
         meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': property_view.id, 'pk': meter_id})
         response = self.client.delete(meter_url, content_type='application/json')
         self.assertEqual(response.status_code, 204)
@@ -133,7 +131,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         property_view = self.property_view_factory.get_property_view()
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
         payload = {
-            'property_id': property_view.property.id,
             'type': 'Natural Gas',
             'source': 'Portfolio Manager',
             'source_id': 'A Custom Source ID',
