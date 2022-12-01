@@ -1518,7 +1518,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'property_id': self.property_view_1.property.id,
             'type': Meter.NATURAL_GAS,
             'source': Meter.GREENBUTTON,
-            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',            
+            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
