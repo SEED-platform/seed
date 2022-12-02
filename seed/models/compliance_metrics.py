@@ -12,7 +12,6 @@ from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
 from seed.utils.properties import (
-    properties_across_cycles,
     properties_across_cycles_with_filters
 )
 
