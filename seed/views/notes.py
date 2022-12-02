@@ -17,14 +17,23 @@ _log = logging.getLogger(__name__)
 
 
 class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
-    """API endpoint for viewing and creating notes.
+    """API endpoint for creating, retrieving, updating, and deleting notes. If it is an
+    automated message which is typically trigger by a manual edit, then log_data will
+    be populated with the data that was changed.
 
             Returns::
                 [
                     {
-                        'id': Note's primary key
+                        'id': Note's primary key,
+                        'note_type': Is it a note or automated log message,
                         'name': Superfluous name,
-                        'text': Note's text
+                        'text': Note's text,
+                        'log_data': [{
+                            "field": Modified field name,
+                            "state_id": State's primary key,
+                            "new_value": New value,
+                            "previous_value": Previous value if any
+                        }]
                     }
                 ]
 
