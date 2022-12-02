@@ -302,6 +302,25 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         });
       };
 
+      // refresh_readings make an API call to refresh the base readings data
+      // according to the selected interval
+      $scope.refresh_readings = function () {
+        spinner_utility.show();
+        meter_service.property_meter_usage(
+          $scope.inventory.view_id,
+          $scope.organization.id,
+          $scope.interval.selected,
+          [] // Not excluding any meters from the query
+        ).then(function (usage) {
+          // update the base data and reset filters
+          property_meter_usage = usage;
+
+          resetSelections();
+          $scope.applyFilters();
+          spinner_utility.hide();
+        });
+      };
+
       $scope.open_green_button_upload_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/green_button_upload_modal.html',
