@@ -1059,7 +1059,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.updateQueued = true;
       };
 
-      var fetch = function (page, chunk) {
+      var fetch = function (page, chunk, ids_only=false) {
         var fn;
         if ($scope.inventory_type === 'properties') {
           fn = inventory_service.get_properties;
@@ -1092,7 +1092,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.organization.id,
           true,
           $scope.column_filters,
-          $scope.column_sorts
+          $scope.column_sorts,
+          ids_only
         ).then(function (data) {
           return data;
         });
@@ -1382,15 +1383,15 @@ angular.module('BE.seed.controller.inventory_list', [])
           selectedViewIds = viewIds;
 
         // if it appears everything selected, only get the full set of ids...
-        } else if ($scope.selectedCount === $scope.inventory_pagination.total) {
+        } else if ($scope.selectedCount >= $scope.inventory_pagination.total && $scope.inventory_pagination.num_pages > 1) {
           selectedViewIds = [];
 
           if ($scope.inventory_type === 'properties') {
-            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           } else if ($scope.inventory_type === 'taxlots') {
-            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           }
