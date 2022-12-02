@@ -218,14 +218,10 @@ class PropertyMeterReadingsExporter():
 
     def _build_column_def(self, meter, column_defs):
         type_text = meter.get_type_display()
+        source = meter.get_source_display()
         if meter.source == meter.GREENBUTTON:
-            source = 'GB'
             source_id = usage_point_id(meter.source_id)
-        elif meter.source == meter.BUILDINGSYNC:
-            source = 'BS'
-            source_id = meter.source_id
         else:
-            source = 'PM'
             source_id = meter.source_id
 
         field_name = '{} - {} - {}'.format(type_text, source, source_id)

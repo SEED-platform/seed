@@ -13,6 +13,14 @@ angular.module('BE.seed.service.meter', [])
         });
       };
 
+      meter_factory.delete_meter = function (property_view_id, meter_id) {
+        return $http.delete(
+          '/api/v3/properties/' + property_view_id + '/meters/' + meter_id,
+        ).then(function (response) {
+          return response.data;
+        });
+      };
+
       meter_factory.property_meter_usage = function (property_view_id, organization_id, interval, excluded_meter_ids) {
         if (_.isUndefined(excluded_meter_ids)) excluded_meter_ids = [];
         return $http.post(
