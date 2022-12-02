@@ -59,14 +59,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       };
 
       var resetSelections = function () {
-        $scope.meter_selections = _.map($scope.sorted_meters, function (meter) {
-          return {
-            selected: true,
-            label: getMeterLabel(meter),
-            value: meter.id
-          };
-        });
-
         $scope.scenario_selections = _.map($scope.scenarios, function (scenario) {
           return {
             selected: true,
@@ -85,18 +77,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
 
       resetSelections();
 
-      $scope.meter_selection_toggled = function (is_open) {
-        if (!is_open) {
-          $scope.applyFilters();
-        }
-      };
-
-      $scope.scenario_selection_toggled = function (is_open) {
-        if (!is_open) {
-          $scope.applyFilters();
-        }
-      };
-
       deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
 
       $scope.meterGridOptions = {
@@ -113,10 +93,11 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         ],
         enableColumnResizing: true,
         flatEntityAccess: true,
+        rowIdentity: (meter) => {return meter.id},
         fastWatch: true,
         minRowsToShow: Math.min($scope.sorted_meters.length, 10),
-        onRegisterApi: function (gridApi) {
-          $scope.gridApi = gridApi;
+        onRegisterApi: function (meterGridApi) {
+          $scope.meterGridApi = meterGridApi;
 
           _.delay($scope.updateHeight, 150);
 
@@ -124,6 +105,18 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           angular.element($window).on('resize', debouncedHeightUpdate);
           $scope.$on('$destroy', function () {
             angular.element($window).off('resize', debouncedHeightUpdate);
+          });
+
+          $scope.meterGridApi.selection.on.rowSelectionChanged($scope, $scope.applyFilters);
+          $scope.meterGridApi.selection.on.rowSelectionChangedBatch($scope, $scope.applyFilters);
+
+          // only run once, once data is ready, TODO: find a better way to do this.
+          init = true;
+          $scope.meterGridApi.core.on.rowsRendered($scope, function() {
+            if(init){
+              $scope.meterGridApi.selection.selectAllRows();
+              init = false;
+            }
           });
         }
       };
@@ -136,8 +129,8 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         flatEntityAccess: true,
         fastWatch: true,
         minRowsToShow: Math.min($scope.data.length, 10),
-        onRegisterApi: function (gridApi) {
-          $scope.gridApi = gridApi;
+        onRegisterApi: function (readingGridApi) {
+          $scope.readingGridApi = readingGridApi;
 
           _.delay($scope.updateHeight, 150);
 
@@ -227,13 +220,11 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       };
 
       // given the meter selections, it returns the filtered readings and column defs
-      var filterByMeterSelections = function (readings, columnDefs, meterSelections) {
+      var filterByMeterSelections = function (readings, columnDefs) {
         // filter according to meter selections
-        var selectedMeterLabels = meterSelections.filter(function (selection) {
-          return selection.selected;
-        })
-          .map(function (selection) {
-            return selection.label;
+        var selected_meters = $scope.meterGridApi.selection.getSelectedGridRows()
+        var selectedMeterLabels = selected_meters.map(function (row) {
+            return getMeterLabel(row.entity);
           });
 
         return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
@@ -259,7 +250,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.applyFilters = function () {
         var results, readings, columnDefs;
         if ($scope.filterMethod.selected === 'meter') {
-          results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs, $scope.meter_selections);
+          results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
           readings = results.readings;
           columnDefs = results.columnDefs;
         } else if ($scope.filterMethod.selected === 'scenario') {
@@ -365,6 +356,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
-        $scope.gridApi.core.handleWindowResize();
+        $scope.readingGridApi.core.handleWindowResize();
+        $scope.meterGridApi.core.handleWindowResize();
       };
     }]);
