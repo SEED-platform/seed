@@ -17,7 +17,7 @@ def remove_old_campus_column(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0177_compliance_metric'),
+        ('seed', '0179_auto_20220916_0927'),
     ]
 
     operations = [
