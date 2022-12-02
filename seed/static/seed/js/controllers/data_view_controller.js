@@ -433,9 +433,7 @@ angular.module('BE.seed.controller.data_view', [])
       ]
 
       const _build_chart = () => {
-        console.log('BUILD CHART')
         if (!$scope.data.graph_data) {
-          console.log('NO DATA')
           spinner_utility.hide()
           return
         }
@@ -491,7 +489,6 @@ angular.module('BE.seed.controller.data_view', [])
             }
           }
         })
-        console.log('_assign_datasets BUILD CHART')
         _assign_datasets()
       }
 

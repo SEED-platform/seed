@@ -5,11 +5,16 @@
 
 
 from django.db import models
+from django.http import QueryDict
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
-from seed.utils.properties import properties_across_cycles
+from seed.models.filter_group import FilterGroup
+from seed.utils.properties import (
+    properties_across_cycles,
+    properties_across_cycles_with_filters
+)
 
 
 class ComplianceMetric(models.Model):
@@ -25,8 +30,8 @@ class ComplianceMetric(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='compliance_metrics', blank=True, null=True)
     name = models.CharField(max_length=255)
-    start = models.DateTimeField()  # only care about year, but adding as a DateTime
-    end = models.DateTimeField()  # only care about year, but adding as a DateTime
+    start = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
+    end = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
     created = models.DateTimeField(auto_now_add=True)
     # TODO: could these be derived columns?
     actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", null=True, on_delete=models.CASCADE)
@@ -35,8 +40,9 @@ class ComplianceMetric(models.Model):
     actual_emission_column = models.ForeignKey(Column, related_name="actual_emission_column", null=True, on_delete=models.CASCADE)
     target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", null=True, on_delete=models.CASCADE)
     emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
+    filter_group = models.ForeignKey(FilterGroup, related_name="filter_group", null=True, on_delete=models.CASCADE)
 
-    x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns")
+    x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns", blank=True)
 
     def __str__(self):
         return 'Program Metric - %s' % self.name
@@ -55,14 +61,21 @@ class ComplianceMetric(models.Model):
             'cycles': []
         }
 
+        query_dict = QueryDict(mutable=True)
+        if self.filter_group and self.filter_group.query_dict:
+            query_dict.update(self.filter_group.query_dict)
+        # print(f"query dict: {query_dict}")
+
         # grab cycles within start and end dates
         cycles = Cycle.objects.filter(organization_id=self.organization.id, start__lte=self.end, end__gte=self.start).order_by('start')
         cycle_ids = cycles.values_list('pk', flat=True)
         response['graph_data']['labels'] = list(cycles.values_list('name', flat=True))
         response['cycles'] = list(cycles.values('id', 'name'))
 
-        # get properties
-        property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
+        # get properties (no filter)
+        # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
+        # get properties (applies filter group)
+        property_response = properties_across_cycles_with_filters(self.organization_id, -1, cycle_ids, query_dict)
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
         results_by_cycles = {}
@@ -72,6 +85,7 @@ class ComplianceMetric(models.Model):
                   'actual_energy_column': None, 'actual_energy_column_name': None, 'target_energy_column': None,
                   'energy_metric_type': self.energy_metric_type, 'actual_emission_column': None, 'actual_emission_column_name': None,
                   'target_emission_column': None, 'emission_metric_type': self.emission_metric_type,
+                  'fliter_group': None,
                   'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:
@@ -134,6 +148,7 @@ class ComplianceMetric(models.Model):
         response['results_by_cycles'] = results_by_cycles
         response['properties_by_cycles'] = property_response
         response['metric'] = metric
+
         for key in datasets:
             response['graph_data']['datasets'].append(datasets[key])
 
@@ -173,14 +188,3 @@ class ComplianceMetric(models.Model):
     class Meta:
         ordering = ['-created']
         get_latest_by = 'created'
-
-        constraints = [
-            models.CheckConstraint(
-                name="at_least_one_compliance_metric_type",
-                check=(
-                    models.Q(actual_energy_column__isnull=False)
-                    | models.Q(actual_emission_column__isnull=False)
-
-                ),
-            )
-        ]

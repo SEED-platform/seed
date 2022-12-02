@@ -18,10 +18,18 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(required=True)
 
     def to_representation(self, instance):
-        self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
-        self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
-        return super().to_representation(instance)
+        # check for start and end date fields first
+        if (self.fields['start'] == "") and (self.fields['end'] == ""):
+            return
+        elif self.fields['start'] == "":
+            self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        elif self.fields['end'] == "":
+            self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
+        else:
+            self.fields['start'] = serializers.DateTimeField(default_timezone=timezone.utc)
+            self.fields['end'] = serializers.DateTimeField(default_timezone=timezone.utc)
+            return super().to_representation(instance)
 
     class Meta:
         model = ComplianceMetric
-        fields = ('id', 'name', 'organization_id', 'start', 'end', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'x_axis_columns',)
+        fields = ('id', 'name', 'organization_id', 'start', 'end', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'filter_group', 'x_axis_columns',)
