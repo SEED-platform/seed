@@ -74,7 +74,6 @@ api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, basename="g
 api_v3_router.register(r'labels', LabelViewSet, basename='labels')
 api_v3_router.register(r'import_files', ImportFileViewSet, basename='import_files')
 api_v3_router.register(r'measures', MeasureViewSet, basename='measures')
-api_v3_router.register(r'meters', MeterViewSet, basename='meters')
 api_v3_router.register(r'organizations', OrganizationViewSet, basename='organizations')
 api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, basename="portfolio_manager")
 api_v3_router.register(r'postoffice', PostOfficeViewSet, basename='postoffice')
@@ -105,6 +104,7 @@ analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views
 analysis_view_messages_router.register(r'views_messages', AnalysisMessageViewSet, basename='analysis-messages')
 
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
+properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
 

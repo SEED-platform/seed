@@ -20,10 +20,12 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DataLogger,
     DerivedColumn,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
+    Meter,
     Note,
     Property,
     PropertyAuditLog,
@@ -65,6 +67,10 @@ class DeleteModelsTestCase(TestCase):
         GreenAssessmentURL.objects.all().delete()
         GreenAssessmentProperty.objects.all().delete()
         GreenAssessment.objects.all().delete()
+
+        # Delete all the meters and sensors, but they should have already been removed
+        Meter.objects.all().delete()
+        DataLogger.objects.all().delete()
 
         # Now delete the cycle after all the states and views have been removed
         Cycle.objects.all().delete()

@@ -31,8 +31,8 @@ repos:
             --skip=seed/models/__init__.py,
             --filter-files,
           ]
-  - repo: https://github.com/humitos/mirrors-autoflake.git
-    rev: v1.1
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.0.0
     hooks:
       - id: autoflake
         args:
