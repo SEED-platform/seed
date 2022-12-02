@@ -246,10 +246,7 @@ angular.module('BE.seed.controller.insights_property', [])
             datasets[2]['data'].push(item);
           }
         });
-
-        // console.log("DATASETS BUILT: ", datasets);
         $scope.chart_datasets = datasets;
-
       }
 
       // CHARTS
@@ -270,9 +267,7 @@ angular.module('BE.seed.controller.insights_property', [])
       };
 
       const _build_chart = () => {
-        // console.log('BUILD CHART')
         if (!$scope.chart_datasets) {
-          console.log('NO DATA')
           return
         }
 
@@ -357,8 +352,6 @@ angular.module('BE.seed.controller.insights_property', [])
 
         // load data
         _update_chart();
-        console.log("CHART DATA: ", $scope.insightsChart.data)
-
       }
 
       $scope.downloadChart = () => {

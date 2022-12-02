@@ -158,8 +158,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               data.id;
           }
 
-          console.log("!!DATA: ", data);
-
           // replace data into compliance metric? needed?
           let index = _.findIndex($scope.compliance_metrics, ['id', data.id]);
           $scope.compliance_metrics[index] = data;

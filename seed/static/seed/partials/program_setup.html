@@ -69,7 +69,7 @@
                                     Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.
                                 </div>
                                 <ul class="r-list">
-                                    <li class="r-list-header" translate>Metric</li>
+                                    <li class="r-list-header" translate>Program Definition</li>
                                     <li class="r-row r-row-centered">
                                         <label for="input-metric-name" class="r-no-wrap r-margin-right-5" translate>Name</label>
                                         <input id="input-metric-name" type="text" class="form-control" ng-model="selected_compliance_metric.name" ng-change="program_settings_changed()"/>
@@ -118,20 +118,20 @@
                                         <p class="r-small-header">Metric Type Settings</p>
                                     </div>
                                     <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
-                                    The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required.
+                                    The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance.
                                     </div>
                                 <div class="r-columns r-no-margin">
                                     <ul class="r-list">
                                         <li class="r-list-header" translate>Energy Metric</li>
                                         <li class="r-row r-row-centered">
-                                            <label for="select-energy-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Column</label>
+                                            <label for="select-energy-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
                                             <select id="select-energy-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_energy_column" ng-change="program_settings_changed()">
                                                 <option value=""></option>
                                                 <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
                                             </select>
                                         </li>
                                         <li class="r-row r-row-centered">
-                                            <label for="select-energy-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Column</label>
+                                            <label for="select-energy-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
                                             <select id="select-energy-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_energy_column" ng-change="program_settings_changed()">
                                                 <option value=""></option>
                                                 <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
@@ -149,14 +149,14 @@
                                     <ul class="r-list">
                                         <li class="r-list-header" translate>Emission Metric</li>
                                         <li class="r-row r-row-centered">
-                                            <label for="select-emission-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Column</label>
+                                            <label for="select-emission-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
                                             <select id="select-emission-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_emission_column" ng-change="program_settings_changed()">
                                                 <option value=""></option>
                                                 <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
                                             </select>
                                         </li>
                                         <li class="r-row r-row-centered">
-                                            <label for="select-emission-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Column</label>
+                                            <label for="select-emission-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
                                             <select id="select-emission-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_emission_column" ng-change="program_settings_changed()">
                                                 <option value=""></option>
                                                 <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>

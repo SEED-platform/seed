@@ -66,7 +66,6 @@ angular.module('BE.seed.controller.insights_program', [])
         // console.log("get data for metric id: ", $scope.compliance_metric.id);
         let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
-          console.log("DATA: ", data);
           spinner_utility.hide();
         }).then(() => {
           // console.log( "DATA: ", $scope.data)
@@ -107,14 +106,10 @@ angular.module('BE.seed.controller.insights_program', [])
         });
 
         $scope.insightsChart.update()
-        // console.log("CHART DATA: ", $scope.insightsChart.data)
-
       }
 
       let _build_chart = () => {
-        console.log('BUILD CHART')
         if (!$scope.data.graph_data) {
-          console.log('NO DATA')
           return
         }
 
