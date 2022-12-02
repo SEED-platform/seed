@@ -2099,8 +2099,8 @@ msgstr "Nom de profil"
 msgid "Program Metric"
 msgstr "Métrique du programme"
 
-msgid "Program Metric Configuration"
-msgstr "Configuration de la métrique du programme"
+msgid "Program Configuration"
+msgstr "Configuration du programme"
 
 msgid "Program Overview"
 msgstr "Métrique du programme"

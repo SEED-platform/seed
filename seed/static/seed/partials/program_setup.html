@@ -20,7 +20,7 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa fa-tachometer"></i> {$:: 'Program Metric Configuration' | translate $}</h2>
+                <h2><i class="fa fa-tachometer"></i> {$:: 'Program Configuration' | translate $}</h2>
             </div>
             <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
                 <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
@@ -33,7 +33,7 @@
         <div class="section_content r-columns rp-data-view-config">
             <div class="r-column r-shrink r-panel">
                 <ul class="r-list">
-                    <li class="r-list-header" translate>Program Metrics</li>
+                    <li class="r-list-header" translate>Program</li>
                     <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
                         <span class="r-grow">{$ selected_compliance_metric.name $}</span>
                         <i class="fa fa-times r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
@@ -46,16 +46,16 @@
                     </li>
                 </ul>
                 <ul class="r-list">
-                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed"><i class="fa fa-plus-circle r-pad-right-5"></i>New Program Metric</button></li>
+                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed"><i class="fa fa-plus-circle r-pad-right-5"></i>New Program</button></li>
                 </ul>
             </div>
 
             <div ng-show="!selected_compliance_metric && program_settings_not_changed" class="r-panel r-column">
                 <div ng-show="compliance_metrics_error.length > 1" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
-                <b ng-show="!has_compliance_metrics" translate>No Program Metrics Created</b>
-                <p ng-show="!has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Program Metric to get started!</span></p>
-                <b ng-show="has_compliance_metrics" translate>No Program Metric Selected</b>
-                <p ng-show="has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Program Metric to get started!</span></p>
+                <b ng-show="!has_compliance_metrics" translate>No program created</b>
+                <p ng-show="!has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Program to get started!</span></p>
+                <b ng-show="has_compliance_metrics" translate>No program selected</b>
+                <p ng-show="has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Program to get started!</span></p>
             </div>
             <div ng-show="selected_compliance_metric || !program_settings_not_changed" class="r-panel r-columns r-no-margin">
                 <div class="section_content">
@@ -63,7 +63,7 @@
                         <div class="r-column">
                             <div class="r-panel r-margin-bottom-10">
                                 <div class="r-small-header">
-                                    <p class="r-small-header">General Metric Settings</p>
+                                    <p class="r-small-header">General Settings</p>
                                 </div>
                                 <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
                                     Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.

@@ -60,7 +60,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             except Exception:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'No Program Metrics exist'
+                    'message': 'No Programs exist'
                 }, status=status.HTTP_404_NOT_FOUND)
         else:
             try:
