@@ -62,7 +62,7 @@ class ComplianceMetric(models.Model):
         }
 
         query_dict = QueryDict(mutable=True)
-        if self.filter_group.query_dict:
+        if self.filter_group and self.filter_group.query_dict:
             query_dict.update(self.filter_group.query_dict)
         # print(f"query dict: {query_dict}")
 
