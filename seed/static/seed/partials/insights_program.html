@@ -20,7 +20,7 @@
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
                 </div>
                 <div class="compliance-setup">
-                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metrics</a> page to configure your program's metrics.
+                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program Metrics</a> page to configure your program's metrics.
                     </p>
                 </div>
             </div>
@@ -33,14 +33,19 @@
                 </div>
     			<!-- compliance setup -->
     			<div class="compliance-setup">
-    				<p>Need to configure your Program Metrics? <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metric Configuration page</a>.
+    				<p>Need to configure your Program Metrics? <a ui-sref="programs(::{organization_id: organization.id})">Program Metric Configuration page</a>.
                     </p>
     			</div>
+                <div class="form-group margin-top-20">
+                    <label for="program">Program</label>
+                    <select class="form-control" id="selected_metric" ng-model="selected_metric" ng-change="updateSelectedMetric()" ng-options="metric.id as metric.name for metric in compliance_metrics">
+                    </select>
+                </div>
                 <div class="margin-top-20">
-    				<button type="button" class="btn btn-primary" ng-click="downloadChart()">
-    					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
-    				</button>
-    			</div>
+                    <button type="button" class="btn btn-primary" ng-click="downloadChart()">
+                        <i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
+                    </button>
+                </div>
     			<div class="chart-legend">
     				<div class="title">Chart Legend</div>
     				<div class="legend-row row">

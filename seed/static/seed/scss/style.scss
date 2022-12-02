@@ -4479,6 +4479,11 @@ ul.r-list {
   border-bottom: 1px solid #b3b3b3;
 }
 
+.r-small-header {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
 .r-selectable:hover {
   cursor: pointer !important;
   font-weight: bold;

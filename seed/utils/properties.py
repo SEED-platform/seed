@@ -29,6 +29,7 @@ from seed.models import (
     TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
+from seed.utils.search import build_view_filters_and_sorts
 
 
 def get_changed_fields(old, new):
@@ -194,6 +195,70 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
     return results
 
 
+def properties_across_cycles_with_filters(org_id, profile_id, cycle_ids=[], query_dict={}):
+    # Identify column preferences to be used to scope fields/values
+    columns_from_database = Column.retrieve_all(org_id, 'property', False)
+
+    if profile_id == -1:
+        show_columns = list(Column.objects.filter(
+            organization_id=org_id
+        ).values_list('id', flat=True))
+    else:
+        try:
+            profile = ColumnListProfile.objects.get(
+                organization_id=org_id,
+                id=profile_id,
+                profile_location=VIEW_LIST,
+                inventory_type=VIEW_LIST_PROPERTY
+            )
+            show_columns = list(ColumnListProfileColumn.objects.filter(
+                column_list_profile_id=profile.id
+            ).values_list('column_id', flat=True))
+        except ColumnListProfile.DoesNotExist:
+            show_columns = None
+
+    results = {}
+    for cycle_id in cycle_ids:
+        # get Filtered Views for this Cycle
+        org = Organization.objects.get(pk=org_id)
+        property_views = _get_filter_group_views(org_id, cycle_id, query_dict)
+        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
+        # format
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+        results[cycle_id] = unit_collapsed_results
+
+    return results
+
+
+# helper function for getting filtered properties
+def _get_filter_group_views(org_id, cycle, query_dict):
+
+    columns = Column.retrieve_all(
+        org_id=org_id,
+        inventory_type='property',
+        only_used=False,
+        include_related=False
+    )
+
+    annotations = {}
+    try:
+        filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+    except Exception:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'error with filter group'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    views_list = (
+        PropertyView.objects.select_related('property', 'state', 'cycle')
+        .filter(property__organization_id=org_id, cycle=cycle)
+    )
+
+    views_list = views_list.filter(filters).order_by('id')
+
+    return views_list
+
+
 def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[]):
     # Identify column preferences to be used to scope fields/values
     columns_from_database = Column.retrieve_all(org_id, 'property', False)
@@ -204,9 +269,6 @@ def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[])
         property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
             .filter(property__organization_id=org_id, cycle_id=cycle_id) \
             .order_by('id')
-
-        for p in property_views.values():
-            print(f"!!!!! {p}\n")
 
         related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 

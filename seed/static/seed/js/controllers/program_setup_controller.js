@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         $scope.compliance_metrics_error.push('The actual energy or emission columns must be included when the target column is selected!');
       }
       if ($scope.compliance_metrics_error.length > 0) {
-        console.log("exited due to complaince_metrics_error");
+        console.log("exited due to compliance_metrics_error");
         spinner_utility.hide();
         return;
       }
@@ -155,15 +155,14 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               '#/accounts/' +
               $scope.org.id +
               '/program_setup/' +
-              data.compliance_metric.id;
+              data.id;
           }
-          // should I be using 'compliance metric' or 'selected compliance metric'?
-          compliance_metrics = compliance_metrics.map((compliance_metric) => {
-            if (compliance_metric.id == data.compliance_metric.id) {
-              return Object.assign({}, data.compliance_metric);
-            }
-            return compliance_metric;
-          });
+
+          // replace data into compliance metric? needed?
+          let index = _.findIndex($scope.compliance_metrics, ['id', data.id]);
+          $scope.compliance_metrics[index] = data;
+
+          $scope.selected_compliance_metric = data;
 
           //reset for displaying
           $scope.selected_compliance_metric.start = parseInt(
@@ -172,25 +171,24 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
           $scope.selected_compliance_metric.end = parseInt(
             $scope.selected_compliance_metric.end.split('-')[0]
           );
-          // return;
+
+          window.location =
+          '#/accounts/' +
+          $scope.org.id +
+          '/program_setup';
+
+          return;
         }
       });
 
-      $scope.compliance_metrics = compliance_metrics;
+      // display messages
+          setTimeout(() => {
+            Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
+            Notification.success({message: 'Program Metric Configuration Saved!', delay: 5000});
+          }, 1000);
       $scope.program_settings_not_changed = true;
-      window.location =
-      '#/accounts/' +
-      $scope.org.id +
-      '/program_setup';
-
-      // reload the page
-      setTimeout(() => {
-        Notification.primary('<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>');
-        Notification.success('Program Metric Configuration Saved!');
-      }, 1000);
-
       spinner_utility.hide();
-      return;
+
     };
 
     $scope.click_new_compliance_metric = function () {
