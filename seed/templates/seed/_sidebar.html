@@ -29,7 +29,7 @@
             <div class="item_name" translate>Organizations</div>
             <div ng-show="logged_in" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
         </a>
-        <a id="sidebar-accounts" ng-class="{item: true, active: is_active('/insights'), 'disabled-item': !logged_in}" title="{$:: 'Analyses' | translate $}" href="{% url "seed:home" %}#/insights">
+        <a id="sidebar-accounts" ng-class="{item: true, active: is_active('/insights'), 'disabled-item': !logged_in}" title="{$:: 'Insights' | translate $}" href="{% url "seed:home" %}#/insights">
             <div class="icon"><i class="fa fa-tachometer"></i></div>
             <div class="item_name" translate>Insights</div>
         </a>

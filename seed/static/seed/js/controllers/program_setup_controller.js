@@ -197,7 +197,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       // create a new metric using api and then assign it to selected_compliance_metric that
       // way it will have an id
       let template_compliance_metric = {
-        name: 'New Program Metric',
+        name: 'New Program',
         start_year: null,
         end_year: null,
         actual_energy_column: null,

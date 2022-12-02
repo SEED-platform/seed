@@ -2082,11 +2082,11 @@ msgstr "Profile Information"
 msgid "Profile Name"
 msgstr "Profile Name"
 
-msgid "Program Metric"
-msgstr "Program Metric"
+msgid "Program"
+msgstr "Program"
 
-msgid "Program Metric Configuration"
-msgstr "Program Metric Configuration"
+msgid "Program Configuration"
+msgstr "Program Configuration"
 
 msgid "Program Overview"
 msgstr "Program Overview"
