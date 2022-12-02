@@ -85,6 +85,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 201)
         # verify that the source_id gets updated when GreenButton
         self.assertEqual(response.data['source_id'], '123fakeID')
+        self.assertEqual(response.data['alias'], 'Electric - Grid - GreenButton - 123fakeID')
 
         payload = {
             'property_id': property_view.property.id,

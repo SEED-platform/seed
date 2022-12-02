@@ -13,11 +13,12 @@ from seed.serializers.base import ChoiceField
 
 class MeterSerializer(serializers.ModelSerializer):
     type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)
+    alias = serializers.CharField(required=False, allow_blank=True)
     source = ChoiceField(choices=Meter.SOURCES)
-    source_id = serializers.CharField()
+    source_id = serializers.CharField(required=False, allow_blank=True)
     property_id = serializers.IntegerField(required=True)
-    scenario_id = serializers.IntegerField(allow_null=True, required=False)
-    scenario_name = serializers.CharField(allow_blank=True, required=False)
+    scenario_id = serializers.IntegerField(required=False, allow_null=True)
+    scenario_name = serializers.CharField(required=False, allow_blank=True)
     # meter_readings = serializers.StringRelatedField(many=True)
 
     class Meta:
@@ -31,5 +32,8 @@ class MeterSerializer(serializers.ModelSerializer):
             result['source_id'] = usage_point_id(obj.source_id)
 
         result['scenario_name'] = obj.scenario.name if obj.scenario else None
+
+        if obj.alias is None or obj.alias == '':
+            result['alias'] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
 
         return result
