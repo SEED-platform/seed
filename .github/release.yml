@@ -1,0 +1,36 @@
+# https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes#configuration-options
+
+changelog:
+  exclude:
+    labels:
+      - DO NOT MERGE
+      - dependencies
+      - Verify No Longer Relevant
+      - No Longer Valid
+      - Not Reproducible
+      - Duplicate
+      - To Investigate
+    authors:
+      - octocat
+      - dependabot
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - Semver-Major
+        - breaking-change
+    - title: New Features 🎉
+      labels:
+        - Semver-Minor
+        - Enhancement
+        - Feature
+    - title: Maintenance
+      labels:
+        - Maintenance
+        - Documentation
+        - Performance
+    - title: Bug Fixes
+      labels:
+        - Bug
+    - title: Other Changes
+      labels:
+        - "*"
