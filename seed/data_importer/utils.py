@@ -408,9 +408,12 @@ def usage_point_id(raw_source_id):
     """
     Extracts and returns the usage point ID of a GreenButton full uri ID.
     """
-    id_split = raw_source_id.split('/')
-    usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
-    return id_split[usage_point_index]
+    if raw_source_id and '/' in raw_source_id:
+        id_split = raw_source_id.split('/')
+        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
+        return id_split[usage_point_index]
+    else:
+        return raw_source_id
 
 
 class CoercionRobot(object):

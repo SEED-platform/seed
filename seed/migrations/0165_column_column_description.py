@@ -2,6 +2,7 @@
 
 from django.db import migrations, models, transaction
 
+
 def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
@@ -17,6 +18,7 @@ def forwards(apps, schema_editor):
                 else:
                     col.column_description = col.display_name
                 col.save()
+
 
 class Migration(migrations.Migration):
 

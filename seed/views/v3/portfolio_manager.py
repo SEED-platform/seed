@@ -93,7 +93,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         except Exception as e:
             return JsonResponse(
-                {'status': 'error', 'message': e},
+                {'status': 'error', 'message': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
@@ -319,7 +319,7 @@ class PortfolioManagerImport(object):
 
                     # the beginning and end of the string needs to be without the doublequote. Remove the escaped double quotes
                     data_to_parse = decoded['data'].replace('"{', '{').replace('}"', '}').replace('"[{', '[{').replace(
-                        '}]"', '}]').replace('\\"', '"')
+                        '}]"', '}]').replace('\\"', '"').replace('"[]"', '[]')
 
                     # print(f'data to parse: {data_to_parse}')
                     child_object = json.loads(data_to_parse)['childrenRows']

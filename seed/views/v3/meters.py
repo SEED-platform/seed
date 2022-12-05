@@ -1,29 +1,37 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, JSONParser
+from rest_framework.renderers import JSONRenderer
 
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
-from seed.decorators import ajax_request_class
+from seed.models import Meter, PropertyView
+from seed.serializers.meters import MeterSerializer
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-class MeterViewSet(viewsets.ViewSet):
+class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    """API endpoint for managing meters."""
 
-    @ajax_request_class
-    @action(detail=False, methods=['GET'])
-    def valid_types_units(self, request):
-        """
-        Returns the valid type for units.
+    serializer_class = MeterSerializer
+    renderer_classes = (JSONRenderer,)
+    pagination_class = None
+    model = Meter
+    parser_classes = (JSONParser, FormParser)
+    orgfilter = 'property__organization'
 
-        The valid type and unit combinations are built from US Thermal Conversion
-        values. As of this writing, the valid combinations are the same as for
-        Canadian conversions, even though the actual factors may differ between
-        the two.
-        (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
-        """
-        return {
-            type: list(units.keys())
-            for type, units
-            in kbtu_thermal_conversion_factors("US").items()
-        }
+    def get_queryset(self):
+        # get all the meters for the organization
+        org_id = self.get_organization(self.request)
+        # get the property id - since the meter is associated with the property (not the property view)
+        property_view = PropertyView.objects.get(pk=self.kwargs.get('property_pk', None))
+        self.property_pk = property_view.property.pk
+        return Meter.objects.filter(property__organization_id=org_id, property_id=self.property_pk)
+
+    def perform_create(self, serializer):
+        """On create, make sure to add in the property id which comes from the URL kwargs."""
+
+        # check permissions?
+        if self.property_pk:
+            serializer.save(property_id=self.property_pk)
+        else:
+            raise Exception('No property_pk provided in URL to create the meter')

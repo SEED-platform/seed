@@ -11,14 +11,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from seed.models import Column, ComplianceMetric, User
-from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakeDerivedColumnFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
-    FakePropertyViewFactory
-)
+from seed.models import Column, ComplianceMetric, FilterGroup, User
+from seed.test_helpers.fake import FakeCycleFactory
 from seed.utils.organizations import create_organization
 
 
@@ -54,7 +48,15 @@ class ComplianceMetricViewTests(TestCase):
         self.x_axes1 = [self.column5, self.column6, self.column7]
         self.x_axes2 = [self.column7]
 
-        # first metric (combined energy and emission)
+        self.filter_group = FilterGroup.objects.create(
+            name='filter group 1',
+            organization_id=self.org.id,
+            inventory_type=1,  # Tax Lot
+            query_dict={'year_built__lt': ['1980']},
+        )
+        self.filter_group.save()
+
+        # first metric (combined energy and emission with filter group)
         self.compliance_metric1 = ComplianceMetric.objects.create(
             name='compliance metric 1',
             organization=self.org,
@@ -65,12 +67,13 @@ class ComplianceMetricViewTests(TestCase):
             energy_metric_type=0,
             actual_emission_column=self.column3,
             target_emission_column=self.column4,
-            emission_metric_type=1
+            emission_metric_type=1,
+            filter_group=self.filter_group
         )
 
         self.compliance_metric1.x_axis_columns.set(self.x_axes1)
 
-        # 2nd metric (just energy)
+        # 2nd metric (just energy without filter group)
         self.compliance_metric2 = ComplianceMetric.objects.create(
             name='compliance metric 2',
             organization=self.org,
@@ -89,6 +92,7 @@ class ComplianceMetricViewTests(TestCase):
         compliance_metrics1 = compliance_metrics[0]
         self.assertIsNotNone(compliance_metrics1.energy_metric_type)
         self.assertIsNotNone(compliance_metrics1.emission_metric_type)
+        self.assertIsNotNone(compliance_metrics1.filter_group)
 
         compliance_metrics1.x_axis_columns.all()
 
@@ -99,6 +103,7 @@ class ComplianceMetricViewTests(TestCase):
         self.assertIsNone(compliance_metrics2.actual_emission_column)
         self.assertIsNone(compliance_metrics2.target_emission_column)
         self.assertEqual(len(compliance_metrics2.x_axis_columns.all()), 1)
+        self.assertIsNone(compliance_metrics2.filter_group)
 
     def test_compliance_metric_create_endpoint(self):
         self.assertEqual(2, len(ComplianceMetric.objects.all()))
@@ -119,6 +124,7 @@ class ComplianceMetricViewTests(TestCase):
                 "actual_emission_column": self.column3.id,
                 "target_emission_column": self.column4.id,
                 "emission_metric_type": "Target > Actual for Compliance",
+                "filter_group": self.filter_group.id,
                 "x_axis_columns": [self.column5.id, self.column6.id]
 
             }),
@@ -132,6 +138,7 @@ class ComplianceMetricViewTests(TestCase):
         self.assertEqual(data['compliance_metric']['actual_emission_column'], self.column3.id)
         self.assertEqual(data['compliance_metric']['target_emission_column'], self.column4.id)
         self.assertEqual(len(data['compliance_metric']['x_axis_columns']), 2)
+        self.assertTrue(bool(data['compliance_metric']['filter_group']))
 
         self.assertEqual(3, len(ComplianceMetric.objects.all()))
 

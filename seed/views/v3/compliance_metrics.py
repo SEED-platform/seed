@@ -60,7 +60,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             except Exception:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'No Program Metrics exist'
+                    'message': 'No Programs exist'
                 }, status=status.HTTP_404_NOT_FOUND)
         else:
             try:
@@ -110,6 +110,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'actual_emission_column': 'integer',
                 'target_emission_column': 'integer',
                 'emission_metric_type': 'string',
+                'filter_group': 'integer',
                 'x_axis_columns': ['integer'],
             },
         )
@@ -168,6 +169,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 'actual_emission_column': 'integer',
                 'target_emission_column': 'integer',
                 'emission_metric_type': 'string',
+                'filter_group': 'integer',
                 'x_axis_columns': ['integer'],
             },
         )
@@ -223,7 +225,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
@@ -238,6 +240,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             }, status=status.HTTP_404_NOT_FOUND)
 
         response = compliance_metric.evaluate()
+
         return JsonResponse({
             'status': 'success',
             'data': response

@@ -30,16 +30,24 @@ class TestInventoryViewSearchParsers(TestCase):
             expected: Q
 
         # -- Setup
+        latitude_id = Column.objects.get(table_name="PropertyState", column_name="latitude").id
+        year_built_id = Column.objects.get(table_name="PropertyState", column_name="year_built").id
+        custom_id_1_id = Column.objects.get(table_name="PropertyState", column_name="custom_id_1").id
+        property_footprint_id = Column.objects.get(table_name="PropertyState", column_name="property_footprint").id
+        updated_id = Column.objects.get(table_name="PropertyState", column_name="updated").id
+        year_ending_id = Column.objects.get(table_name="PropertyState", column_name="year_ending").id
+        gross_floor_area_id = Column.objects.get(table_name="PropertyState", column_name="gross_floor_area").id
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+
         test_cases = [
-            TestCase('canonical column with number data_type', QueryDict('latitude=12.3'), Q(state__latitude=12.3)),
-            TestCase('canonical column with integer data_type', QueryDict('year_built=123'), Q(state__year_built=123)),
-            TestCase('canonical column with string data_type', QueryDict('custom_id_1=123'), Q(state__custom_id_1='123')),
-            TestCase('canonical column with geometry data_type', QueryDict('property_footprint=abcdefg'), Q(state__property_footprint='abcdefg')),
-            TestCase('canonical column with datetime data_type', QueryDict('updated=2022-01-01 10:11:12'), Q(state__updated=datetime(2022, 1, 1, 10, 11, 12))),
-            TestCase('canonical column with date data_type', QueryDict('year_ending=2022-01-01'), Q(state__year_ending=datetime(2022, 1, 1))),
-            TestCase('canonical column with boolean data_type', QueryDict('campus=True'), Q(property__campus=True)),
-            TestCase('canonical column with area data_type', QueryDict('gross_floor_area=12.3'), Q(state__gross_floor_area=12.3)),
-            TestCase('canonical column with eui data_type', QueryDict('site_eui=12.3'), Q(state__site_eui=12.3)),
+            TestCase('canonical column with number data_type', QueryDict(f'latitude_{latitude_id}=12.3'), Q(state__latitude=12.3)),
+            TestCase('canonical column with integer data_type', QueryDict(f'year_built_{year_built_id}=123'), Q(state__year_built=123)),
+            TestCase('canonical column with string data_type', QueryDict(f'custom_id_1_{custom_id_1_id}=123'), Q(state__custom_id_1='123')),
+            TestCase('canonical column with geometry data_type', QueryDict(f'property_footprint_{property_footprint_id}=abcdefg'), Q(state__property_footprint='abcdefg')),
+            TestCase('canonical column with datetime data_type', QueryDict(f'updated_{updated_id}=2022-01-01 10:11:12'), Q(state__updated=datetime(2022, 1, 1, 10, 11, 12))),
+            TestCase('canonical column with date data_type', QueryDict(f'year_ending_{year_ending_id}=2022-01-01'), Q(state__year_ending=datetime(2022, 1, 1))),
+            TestCase('canonical column with area data_type', QueryDict(f'gross_floor_area_{gross_floor_area_id}=12.3'), Q(state__gross_floor_area=12.3)),
+            TestCase('canonical column with eui data_type', QueryDict(f'site_eui_{site_eui_id}=12.3'), Q(state__site_eui=12.3)),
         ]
 
         for test_case in test_cases:
@@ -64,29 +72,29 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Setup
         # create some extra data columns
-        extra_data_columns = [
-            {
+        test_string_column = Column.objects.create(
+            **{
                 'column_name': 'test_string',
                 'data_type': 'string',
                 'is_extra_data': True,
                 'table_name': 'PropertyState',
                 'organization': self.fake_org,
-            },
-            {
+            }
+        )
+        test_number_column = Column.objects.create(
+            **{
                 'column_name': 'test_number',
                 'data_type': 'number',
                 'is_extra_data': True,
                 'table_name': 'PropertyState',
                 'organization': self.fake_org,
             }
-        ]
-        for col in extra_data_columns:
-            Column.objects.create(**col)
+        )
 
         test_cases = [
             TestCase(
                 name='extra_data column with string data_type',
-                input=QueryDict('test_string=hello'),
+                input=QueryDict(f'{test_string_column.column_name}_{test_string_column.id}=hello'),
                 expected_filter=Q(_test_string_final='hello'),
                 expected_annotations={
                     '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
@@ -95,7 +103,7 @@ class TestInventoryViewSearchParsers(TestCase):
             ),
             TestCase(
                 name='extra_data column with number data_type',
-                input=QueryDict('test_number=12.3'),
+                input=QueryDict(f'{test_number_column.column_name}_{test_number_column.id}=12.3'),
                 expected_filter=Q(_test_number_final=12.3),
                 expected_annotations={
                     '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
@@ -136,7 +144,10 @@ class TestInventoryViewSearchParsers(TestCase):
 
     def test_parse_filters_can_handle_multiple_filters(self):
         # -- Setup
-        query_dict = QueryDict('city=Denver&site_eui=100&gross_floor_area=200')
+        city_id = Column.objects.get(table_name="PropertyState", column_name="city").id
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+        gross_floor_area_id = Column.objects.get(table_name="PropertyState", column_name="gross_floor_area").id
+        query_dict = QueryDict(f'city_{city_id}=Denver&site_eui_{site_eui_id}=100&gross_floor_area_{gross_floor_area_id}=200')
 
         # -- Act
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
@@ -158,13 +169,15 @@ class TestInventoryViewSearchParsers(TestCase):
             expected: Q
 
         # -- Setup
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+
         test_cases = [
-            TestCase('field lookup <', QueryDict('site_eui__lt=12.3'), Q(state__site_eui__lt=12.3)),
-            TestCase('field lookup <=', QueryDict('site_eui__lte=12.3'), Q(state__site_eui__lte=12.3)),
-            TestCase('field lookup >', QueryDict('site_eui__gt=12.3'), Q(state__site_eui__gt=12.3)),
-            TestCase('field lookup >=', QueryDict('site_eui__gte=12.3'), Q(state__site_eui__gte=12.3)),
-            TestCase('field lookup exact', QueryDict('site_eui__exact=12.3'), Q(state__site_eui__exact=12.3)),
-            TestCase('field lookup icontains', QueryDict('site_eui__icontains=12.3'), Q(state__site_eui__icontains=12.3)),
+            TestCase('field lookup <', QueryDict(f'site_eui_{site_eui_id}__lt=12.3'), Q(state__site_eui__lt=12.3)),
+            TestCase('field lookup <=', QueryDict(f'site_eui_{site_eui_id}__lte=12.3'), Q(state__site_eui__lte=12.3)),
+            TestCase('field lookup >', QueryDict(f'site_eui_{site_eui_id}__gt=12.3'), Q(state__site_eui__gt=12.3)),
+            TestCase('field lookup >=', QueryDict(f'site_eui_{site_eui_id}__gte=12.3'), Q(state__site_eui__gte=12.3)),
+            TestCase('field lookup exact', QueryDict(f'site_eui_{site_eui_id}__exact=12.3'), Q(state__site_eui__exact=12.3)),
+            TestCase('field lookup icontains', QueryDict(f'site_eui_{site_eui_id}__icontains=12.3'), Q(state__site_eui__icontains=12.3)),
         ]
 
         for test_case in test_cases:
@@ -181,7 +194,8 @@ class TestInventoryViewSearchParsers(TestCase):
 
     def test_parse_filters_returns_negated_q_object_for_ne_lookup(self):
         # -- Setup
-        query_dict = QueryDict('city__ne=Denver')
+        city_id = Column.objects.get(table_name="PropertyState", column_name="city").id
+        query_dict = QueryDict(f'city_{city_id}__ne=Denver')
 
         # -- Act
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
@@ -193,7 +207,8 @@ class TestInventoryViewSearchParsers(TestCase):
     def test_parse_filters_raises_exception_when_filter_value_is_invalid(self):
         # -- Setup
         # site_eui is a number type, so the string 'hello' will fail to be parsed
-        query_dict = QueryDict('site_eui=hello')
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+        query_dict = QueryDict(f'site_eui_{site_eui_id}=hello')
 
         # -- Act, Assert
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
@@ -210,35 +225,38 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Setup
         # create some extra data columns
-        extra_data_columns = [
-            {
+        test_string_column = Column.objects.create(
+            **{
                 'column_name': 'test_string',
                 'data_type': 'string',
                 'is_extra_data': True,
                 'table_name': 'PropertyState',
                 'organization': self.fake_org,
-            },
-            {
+            }
+        )
+        test_number_column = Column.objects.create(
+            **{
                 'column_name': 'test_number',
                 'data_type': 'number',
                 'is_extra_data': True,
                 'table_name': 'PropertyState',
                 'organization': self.fake_org,
             }
-        ]
-        for col in extra_data_columns:
-            Column.objects.create(**col)
+        )
+
+        site_eui_id = Column.objects.get(table_name="PropertyState", column_name="site_eui").id
+        city_id = Column.objects.get(table_name="PropertyState", column_name="city").id
 
         test_cases = [
             TestCase(
                 name='order_by canonical column',
-                input=QueryDict('order_by=site_eui'),
+                input=QueryDict(f'order_by=site_eui_{site_eui_id}'),
                 expected_order_by=['state__site_eui'],
                 expected_annotations={}
             ),
             TestCase(
                 name='order_by extra data string column',
-                input=QueryDict('order_by=test_string'),
+                input=QueryDict(f'order_by=test_string_{test_string_column.id}'),
                 expected_order_by=['_test_string_final'],
                 expected_annotations={
                     '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
@@ -247,7 +265,7 @@ class TestInventoryViewSearchParsers(TestCase):
             ),
             TestCase(
                 name='order_by extra data number column',
-                input=QueryDict('order_by=test_number'),
+                input=QueryDict(f'order_by=test_number_{test_number_column.id}'),
                 expected_order_by=['_test_number_final'],
                 expected_annotations={
                     '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
@@ -258,7 +276,7 @@ class TestInventoryViewSearchParsers(TestCase):
             ),
             TestCase(
                 name='order_by multiple columns',
-                input=QueryDict('order_by=city&order_by=site_eui'),
+                input=QueryDict(f'order_by=city_{city_id}&order_by=site_eui_{site_eui_id}'),
                 expected_order_by=['state__city', 'state__site_eui'],
                 expected_annotations={}
             ),
@@ -270,7 +288,7 @@ class TestInventoryViewSearchParsers(TestCase):
             ),
             TestCase(
                 name='order_by can handle descending operator',
-                input=QueryDict('order_by=-site_eui'),
+                input=QueryDict(f'order_by=-site_eui_{site_eui_id}'),
                 expected_order_by=['-state__site_eui'],
                 expected_annotations={},
             ),
@@ -296,7 +314,7 @@ class TestInventoryViewSearchParsers(TestCase):
     def test_filter_and_sorts_parser_annotations_works(self):
         # -- Setup
         # create extra data column with a number type
-        Column.objects.create(
+        test_number_column = Column.objects.create(
             column_name='test_number',
             data_type='number',
             is_extra_data=True,
@@ -319,7 +337,7 @@ class TestInventoryViewSearchParsers(TestCase):
         self.assertEqual(uncast_property_views.count(), 0)
 
         # -- Act
-        input = QueryDict('test_number__gte=10')
+        input = QueryDict(f'test_number_{test_number_column.id}__gte=10')
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, annotations, _ = build_view_filters_and_sorts(input, columns)
         cast_property_views = PropertyView.objects.annotate(**annotations).filter(filters)

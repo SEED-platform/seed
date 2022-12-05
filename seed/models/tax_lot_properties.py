@@ -250,11 +250,6 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
             obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
 
-            # store the property / taxlot data to the object dictionary as well. This is hacky.
-            if lookups['obj_class'] == 'PropertyView':
-                if 'campus' in filtered_fields:
-                    obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
-
             # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
             # Also, do not make these timestamps naive. They persist correctly.
             if 'updated' in filtered_fields:
@@ -321,8 +316,6 @@ class TaxLotProperty(models.Model):
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
-                if 'campus' in filtered_fields:
-                    related_dict[related_column_name_mapping['campus']] = related_view.property.campus
                 # Do not make these timestamps naive. They persist correctly.
                 if 'updated' in filtered_fields:
                     related_dict[related_column_name_mapping['updated']] = related_view.property.updated

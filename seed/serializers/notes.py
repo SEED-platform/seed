@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+
 from rest_framework import serializers
 
 from seed.models import Note
@@ -20,3 +21,13 @@ class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         exclude = ('property_view', 'taxlot_view', 'user', 'organization')
+
+    def to_representation(self, instance):
+        """Override the to_representation method to remove the property or taxlot view id if it is null"""
+        ret = super().to_representation(instance)
+        # only show the non-null (taxlot|property)_view_id
+        if ret['property_view_id'] is None:
+            del ret['property_view_id']
+        elif ret['taxlot_view_id'] is None:
+            del ret['taxlot_view_id']
+        return ret

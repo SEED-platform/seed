@@ -785,7 +785,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
 
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
-        property_property = self.property_factory.get_property(campus=True)
+        property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
@@ -818,7 +818,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         results = response.json()
         self.assertEqual(len(results['results']), 1)
         result = results['results'][0]
-        self.assertTrue(result[column_name_mappings['campus']])
         self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['postal_code']],
@@ -830,7 +829,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             property_footprint="POLYGON ((0 0, 1 1, 1 0, 0 0))"
         )
 
-        property_property = self.property_factory.get_property(campus=True)
+        property_property = self.property_factory.get_property()
         property_view = PropertyView.objects.create(
             property=property_property, cycle=self.cycle, state=property_state
         )
@@ -864,7 +863,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         results = response.json()
         self.assertEqual(len(results['results']), 1)
         result = results['results'][0]
-        self.assertTrue(result[column_name_mappings['campus']])
         self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['postal_code']],
@@ -998,7 +996,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
 
         expected_property = {
             'id': property_property.pk,
-            'campus': False,
             'organization': self.org.pk,
             'parent_property': None,
         }
@@ -1110,7 +1107,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(tstate_2['address_line_1'], taxlot_state_2.address_line_1)
 
         expected_property = {
-            'campus': False,
             'id': property_property.pk,
             'organization': self.org.pk,
             'parent_property': None,

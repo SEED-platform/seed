@@ -119,6 +119,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         'integer',
         'number'
       ];
+
       var filtered_columns = _.filter(columns, function (column) {
         return _.includes(acceptable_column_types, column.data_type);
       });
@@ -134,27 +135,25 @@ angular.module('BE.seed.controller.inventory_reports', [])
         };
       });
 
-      $scope.yAxisVars = [
-        {
-          name: $translate.instant('Gross Floor Area'),
-          label: $translate.instant('Gross Floor Area'),
-          varName: 'gross_floor_area',
-          axisLabel: translateAxisLabel('Gross Floor Area', area_units()),
-          axisMin: ''
-        }, {
-          name: $translate.instant('Property Classification'),
-          label: $translate.instant('Property Classification'),
-          varName: 'use_description',
-          axisLabel: translateAxisLabel('Property Classification'),
-          axisMin: ''
-        }, {
-          name: $translate.instant('Year Built'),
-          label: $translate.instant('Year Built'),
-          varName: 'year_built',
-          axisLabel: translateAxisLabel('Year Built'),
-          axisMin: '1900'
-        }
-      ];
+      var acceptable_y_column_names = [
+        'gross_floor_area',
+        'property_type',
+        'year_built'
+      ]
+      var filtered_y_columns = _.filter(columns, function (column) {
+        return _.includes(acceptable_y_column_names, column.column_name);
+      });
+
+      $scope.yAxisVars = _.map(filtered_y_columns, function (column) {
+        return {
+          name: $translate.instant(column.displayName), //short name for variable, used in pulldown
+          label: $translate.instant(column.displayName), //full name for variable
+          varName: column.column_name, //name of variable, to be sent to server
+          axisLabel: parse_axis_label(column), //label to be used in charts, should include units
+          // axisType: 'Measure', //DimpleJS property for axis type
+          // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+        };
+      });
 
       // Chart titles
       $scope.chart1Title = '';
@@ -174,7 +173,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       // series will be sent to the graphs when data is updated
       // ('series' values are used by the dimple graphs to group data)
       $scope.chartSeries = ['id', 'yr_e'];
-      $scope.aggChartSeries = ['use_description', 'yr_e'];
+      $scope.aggChartSeries = ['property_type', 'yr_e'];
 
       var localStorageXAxisKey = base_storage_key + '.xaxis';
       var localStorageYAxisKey = base_storage_key + '.yaxis';
@@ -186,6 +185,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
       //Chart data
       $scope.chartData = [];
       $scope.aggChartData = [];
+      $scope.pointBackgroundColors = [];
+      $scope.aggPointBackgroundColors = [];
 
       //Chart status
       $scope.chartIsLoading = false;
@@ -197,7 +198,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.aggChartStatusMessage = 'No Data';
 
       /* NEW CHART STUFF */
-      var createChart = function (elementId, type, xAxisKey, yAxisKey, indexAxis) {
+      var createChart = function (elementId, type, indexAxis, pointColors) {
         var canvas = document.getElementById(elementId);
         var ctx = canvas.getContext("2d");
 
@@ -205,7 +206,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
           type: type,
           data: {
             datasets: [{
-              data: []
+              data: [],
+              pointBackgroundColor: pointColors,
+              backgroundColor: pointColors
             }],
           },
           options: {
@@ -219,22 +222,20 @@ angular.module('BE.seed.controller.inventory_reports', [])
               x: {
                 display: true,
                 title: {
-                  display: true,
-                  text: xAxisKey,
+                  display: true
                 },
               },
               y: {
                 display: true,
                 title: {
-                  display: true,
-                  text: yAxisKey
+                  display: true
                 },
                 ticks: {
-                // round values
-                callback: function(value, index, values) {
+                  // round values
+                  callback: function (value, index, values) {
                     return Math.round(value, 3);
+                  }
                 }
-            }
               }
             },
             elements: {
@@ -251,6 +252,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                 display: false,
               },
               tooltip: {
+                // add in the pop up tool tips to show the datapoint values
                 displayColors: false,
                 mode: 'index',
                 callbacks: {
@@ -258,8 +260,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
                     let label = [];
                     let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
                     if (labeltmp.length > 0) {
-                      label.push($scope.yAxisSelectedItem.axisLabel + ': ' + ctx.parsed.y);
-                      label.push($scope.xAxisSelectedItem.axisLabel + ': ' + ctx.parsed.x);
+                      label.push($scope.yAxisSelectedItem.label + ': ' + ctx.parsed.y);
+                      // The x axis data is generated more programmatically than the y, so only
+                      // grab the `label` since the `axisLabel` has redundant unit information.
+                      label.push($scope.xAxisSelectedItem.label + ': ' + ctx.parsed.x);
                     }
                     return label
                   }
@@ -274,18 +278,16 @@ angular.module('BE.seed.controller.inventory_reports', [])
         createChart(
           elementId = "chartNew",
           type = "scatter",
-          xAxisKey = $scope.xAxisVars[0]['label'],
-          yAxisKey = $scope.yAxisVars[0]['label'],
-          indexAxis = 'x'
+          indexAxis = 'x',
+          $scope.pointBackgroundColors
         )
 
       $scope.barChart =
         createChart(
           elementId = "aggChartNew",
           type = "bar",
-          xAxisKey = $scope.xAxisVars[0]['label'],
-          yAxisKey = $scope.yAxisVars[0]['label'],
-          indexAxis = 'y'
+          indexAxis = 'y',
+          $scope.aggPointBackgroundColors
         )
 
       // specific styling for bar chart
@@ -356,7 +358,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.aggChartStatusMessage = 'Loading data...';
         getChartData();
         getAggChartData();
-        updateChartTitles();
+        updateChartTitlesAndAxes();
         updateStorage();
 
       };
@@ -379,15 +381,17 @@ angular.module('BE.seed.controller.inventory_reports', [])
       /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
       /* Clear the data used by the chart*/
-      function clearChartData () {
+      function clearChartData() {
         $scope.chartData = [];
         $scope.aggChartData = [];
         $scope.propertyCounts = [];
         $scope.aggPropertyCounts = [];
+        $scope.pointBackgroundColors.length = 0;
+        $scope.aggPointBackgroundColors.length = 0;
       }
 
       /* Update the titles above each chart*/
-      function updateChartTitles () {
+      function updateChartTitlesAndAxes() {
         var interpolationParams;
         try {
           interpolationParams = {
@@ -403,6 +407,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
         }
         $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
         $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
+
+        $scope.scatterChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
+        $scope.scatterChart.options.scales.y.title.text = $scope.yAxisSelectedItem.label
+
+        $scope.barChart.options.scales.x.title.text = $scope.xAxisSelectedItem.label
+        $scope.barChart.options.scales.y.title.text = $scope.yAxisSelectedItem.label
       }
 
       $scope.open_export_modal = function () {
@@ -440,7 +450,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
        The chart will update automatically as it's watching the chartData property on the scope.
        */
-      function getChartData () {
+      function getChartData() {
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
         $scope.chartIsLoading = true;
@@ -462,12 +472,20 @@ angular.module('BE.seed.controller.inventory_reports', [])
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
               yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat,
-              colors: colorsArr
             };
 
             // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
+            // add the colors to the datapoints, need to create a hash map first
+            const colorMap = new Map(
+              colorsArr.map(object => {
+                return [object.seriesName, object.color];
+              }),
+            );
+            for (i = 0; i < $scope.scatterChart.data.datasets[0].data.length; i++) {
+              $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
+            }
             $scope.scatterChart.update()
 
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
@@ -477,10 +495,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
             }
 
           },
-          function (data, status) {
-            $scope.chartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading chart data : ' + status);
-          })
+            function (data, status) {
+              $scope.chartStatusMessage = 'Data Load Error';
+              $log.error('#InventoryReportsController: Error loading chart data : ' + status);
+            })
           .finally(function () {
             $scope.chartIsLoading = false;
           });
@@ -498,7 +516,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        we can pass in different configuration options.
 
        **/
-      function getAggChartData () {
+      function getAggChartData() {
 
         var xVar = $scope.xAxisSelectedItem.varName;
         var yVar = $scope.yAxisSelectedItem.varName;
@@ -516,15 +534,21 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.aggChartData = {
             series: $scope.aggChartSeries,
             chartData: data.chart_data,
-            xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
-            yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
-            colors: colorsArr
           };
 
           // new agg chart
           let the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
           $scope.barChart.data.labels = the_data.map(a => a.y)
           $scope.barChart.data.datasets[0].data = the_data.map(a => a.x)
+          // add the colors to the datapoints, need to create a hash map first
+          const colorMap = new Map(
+            colorsArr.map(object => {
+              return [object.seriesName, object.color];
+            }),
+          );
+          for (i = 0; i < the_data.length; i++) {
+            $scope.aggPointBackgroundColors.push(colorMap.get(the_data[i].yr_e));
+          }
           $scope.barChart.update()
 
           if (!_.isEmpty($scope.aggChartData.chartData)) {
@@ -533,16 +557,16 @@ angular.module('BE.seed.controller.inventory_reports', [])
             $scope.aggChartStatusMessage = 'No Data';
           }
         },
-        function (data, status) {
-          $scope.aggChartStatusMessage = 'Data Load Error';
-          $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
-        })
+          function (data, status) {
+            $scope.aggChartStatusMessage = 'Data Load Error';
+            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+          })
           .finally(function () {
             $scope.aggChartIsLoading = false;
           });
       }
 
-      function updateStorage () {
+      function updateStorage() {
         // Save axis and cycle selections
         localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
         localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
@@ -560,7 +584,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
        A side effect of this method is that the colors are also applied to the propertyCounts object
        so that they're available in the table view beneath the chart that lists group details.
        */
-      function mapColors (propertyCounts) {
+      function mapColors(propertyCounts) {
         if (!propertyCounts) return [];
         var colorsArr = [];
         var numPropertyGroups = propertyCounts.length;
@@ -581,7 +605,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
       /* Call the update method so the page initializes
        with the values set in the scope */
-      function init () {
+      function init() {
 
         // Initialize pulldowns
         $scope.fromCycle = {

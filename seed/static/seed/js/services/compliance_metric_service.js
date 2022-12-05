@@ -34,6 +34,23 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
       });
     };
 
+    // delete
+    const delete_compliance_metric = function (metric_id) {
+      if (_.isNil(metric_id)) {
+        $log.error('#compliance_metric_service.get_compliance_metric(): metric_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+      return $http.delete('/api/v3/compliance_metrics/' + metric_id + '/', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
     // evaluate
     const evaluate_compliance_metric = function (metric_id) {
       return $http.get('/api/v3/compliance_metrics/' + metric_id + '/evaluate/', {
@@ -76,6 +93,7 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     const compliance_metric_factory = {
       'get_compliance_metrics': get_compliance_metrics,
       'get_compliance_metric': get_compliance_metric,
+      'delete_compliance_metric': delete_compliance_metric,
       'evaluate_compliance_metric': evaluate_compliance_metric,
       'update_compliance_metric': update_compliance_metric,
       'new_compliance_metric': new_compliance_metric

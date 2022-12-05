@@ -728,11 +728,6 @@ class TestRenameColumns(TestCase):
 
         self.assertListEqual(results, expected_data)
 
-    def test_rename_property_campus_field_unsuccessful(self):
-        old_column = Column.objects.filter(column_name='campus').first()
-        result = old_column.rename_column("new_col_name", force=True)
-        self.assertEqual(result, [False, "Can't move data out of reserved column 'campus'"])
-
 
 class TestColumnMapping(TestCase):
     """Test ColumnMapping utility methods."""
@@ -1046,7 +1041,6 @@ class TestColumnsByInventory(TestCase):
                 "block_number": "string",
                 "building_certification": "string",
                 "building_count": "integer",
-                "campus": "boolean",
                 "city": "string",
                 "conditioned_floor_area": "float",
                 "created": "datetime",
@@ -1112,8 +1106,8 @@ class TestColumnsByInventory(TestCase):
         c = Column.retrieve_db_fields(self.fake_org.pk)
 
         data = ['address_line_1', 'address_line_2', 'audit_template_building_id', 'block_number',
-                'building_certification', 'building_count', 'campus', 'city',
-                'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts',
+                'building_certification', 'building_count', 'city', 'conditioned_floor_area',
+                'created', 'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts',
                 'energy_score', 'generation_date', 'geocoding_confidence', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'latitude', 'longitude', 'lot_number', 'normalized_address', 'number_properties',

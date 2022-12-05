@@ -153,6 +153,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.filterGroups.push(new_filter_group);
           $scope.Modified=false;
           $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroupId = String(new_filter_group.id)
 
           Notification.primary('Created ' + $scope.currentFilterGroup.name);
         });
@@ -176,7 +177,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.currentFilterGroup = _.last($scope.filterGroups);
 
           Notification.primary('Removed ' + oldFilterGroupName);
-          updateCurrentFilterGroup($scope.currentFilterGroup);
         });
       };
 
@@ -303,6 +303,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           updateColumnFilterSort();
         } else {
           // Clear filter group
+          $scope.currentFilterGroupId = -1
           filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
           $scope.selected_labels = [];
           $scope.filterUsingLabels();
@@ -983,7 +984,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
-      // disable sorting and filtering on related data until the backend can filter/sort over two models
+      // disable sorting (but not filtering) on related data until the backend can filter/sort over two models
       for (const i in $scope.columns) {
         let column = $scope.columns[i];
         if (column['related']) {
@@ -992,7 +993,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           if ($scope.inventory_type == 'properties') {
             title = "Filtering disabled for taxlot columns on the property list.";
           }
-          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
         }
       }
 
@@ -1059,7 +1059,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.updateQueued = true;
       };
 
-      var fetch = function (page, chunk) {
+      var fetch = function (page, chunk, ids_only=false) {
         var fn;
         if ($scope.inventory_type === 'properties') {
           fn = inventory_service.get_properties;
@@ -1092,7 +1092,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.organization.id,
           true,
           $scope.column_filters,
-          $scope.column_sorts
+          $scope.column_sorts,
+          ids_only
         ).then(function (data) {
           return data;
         });
@@ -1382,15 +1383,15 @@ angular.module('BE.seed.controller.inventory_list', [])
           selectedViewIds = viewIds;
 
         // if it appears everything selected, only get the full set of ids...
-        } else if ($scope.selectedCount === $scope.inventory_pagination.total) {
+        } else if ($scope.selectedCount >= $scope.inventory_pagination.total && $scope.inventory_pagination.num_pages > 1) {
           selectedViewIds = [];
 
           if ($scope.inventory_type === 'properties') {
-            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           } else if ($scope.inventory_type === 'taxlots') {
-            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           }

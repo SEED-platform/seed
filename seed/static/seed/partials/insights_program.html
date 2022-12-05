@@ -1,7 +1,7 @@
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container"></div>
-        <div class="page_title"><h1 translate>Program Overview</h1></div>
+        <div class="page_title"><h1 translate>Insights</h1></div>
         <div class="right page_action_container"></div>
     </div>
 </div>
@@ -20,7 +20,7 @@
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
                 </div>
                 <div class="compliance-setup">
-                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metrics</a> page to configure your program's metrics.
+                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.
                     </p>
                 </div>
             </div>
@@ -33,14 +33,19 @@
                 </div>
     			<!-- compliance setup -->
     			<div class="compliance-setup">
-    				<p>Need to configure your Program Metrics? <a ui-sref="program_setup(::{organization_id: organization.id})">Program Metric Configuration page</a>.
+    				<p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.
                     </p>
     			</div>
-                <!--<div class="margin-top-20">
-    				<button type="button" class="btn btn-primary" ng-click="export_data()">
-    					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
-    				</button>
-    			</div> -->
+                <div class="form-group margin-top-20">
+                    <label for="program">Program</label>
+                    <select class="form-control" id="selected_metric" ng-model="selected_metric" ng-change="updateSelectedMetric()" ng-options="metric.id as metric.name for metric in compliance_metrics">
+                    </select>
+                </div>
+                <div class="margin-top-20">
+                    <button type="button" class="btn btn-primary" ng-click="downloadChart()">
+                        <i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
+                    </button>
+                </div>
     			<div class="chart-legend">
     				<div class="title">Chart Legend</div>
     				<div class="legend-row row">
@@ -56,7 +61,6 @@
                     <h3 style="font-size:18px;">{$ compliance_metric.name $}</h3>
                 </div>
                 <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
-                    <div class="glyphicon glyphicon-save" style="float: right;" ng-click="downloadChart()" aria-hidden="true"></div>
                    <canvas id="program-overview-chart"></canvas>
                 </div>
                 <div class="section_content r-columns" style="display:unset !important;" >

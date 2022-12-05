@@ -57,6 +57,7 @@ $blue: #428bca;
 $beige: #f5f4ec;
 $orange: #fc882a;
 $green: #66b132;
+$lightgreen: #86d875;
 $yellow: #ffc40d;
 $purple: #90f;
 $red: #ff4d4d;
@@ -2318,6 +2319,17 @@ select {
   }
 }
 
+.btn-secondary {
+  color: #fff;
+  background-color: $lightgreen;
+  border-color: darken($lightgreen, 5%);
+
+  &:hover {
+    color: #fff;
+    background-color: darken($lightgreen, 10%);
+  }
+}
+
 .ui-sortable .ui-sortable-handle {
   cursor: move;
 }
@@ -4465,6 +4477,11 @@ ul.r-list {
   background-color: #cdcdcd;
   text-shadow: 0 1px 0 white;
   border-bottom: 1px solid #b3b3b3;
+}
+
+.r-small-header {
+  text-transform: uppercase;
+  font-weight: bold;
 }
 
 .r-selectable:hover {

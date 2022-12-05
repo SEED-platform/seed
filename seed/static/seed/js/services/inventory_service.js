@@ -27,8 +27,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       const filters = {};
-      for (const {column_name, operator, value} of column_filters) {
-        filters[`${column_name}__${operator}`] = value;
+      for (const {name, operator, value} of column_filters) {
+        filters[`${name}__${operator}`] = value;
       }
 
       return filters;
@@ -43,9 +43,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       const sorts = [];
-      for (const {column_name, direction} of column_sorts) {
+      for (const {name, direction} of column_sorts) {
         const direction_operator = direction == 'desc' ? '-' : '';
-        sorts.push(`${direction_operator}${column_name}`);
+        sorts.push(`${direction_operator}${name}`);
       }
 
       return {order_by: sorts};
