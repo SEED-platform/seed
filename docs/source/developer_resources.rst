@@ -419,7 +419,7 @@ The desired workflow for development and submitting changes is the following:
 
 #. Fork the repository on GitHub if you do not have access to the repository, otherwise, work within the https://github.com/seed-platform/seed repository.
 #. Ensure there is a ticket/issue created for the work you are doing. Verify that the ticket is assigned to you and that it is part of the latest project board on the GitHub site (https://github.com/orgs/SEED-platform/projects).
-#. Move the ticket/issue to ‘In Progress’ in the GitHub project tracker when you begin work
+#. Move the ticket/issue to 'In Progress' in the GitHub project tracker when you begin work
 #. Create a branch off of develop (unless it is a hotfix, then branch of the appropriate tag). The recommended naming convention is <issue_id>-short-descriptive-name.
 #. Make changes and write a test for the code added.
 #. Make sure tests pass locally. Most branches created and pushed to GitHub will be tested automatically.
@@ -456,4 +456,4 @@ To make a release do the following:
 #. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
 #. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 
-[seed-contribution-agreement]: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
+.. [seed-contribution-agreement]: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
