@@ -425,13 +425,13 @@ The desired workflow for development and submitting changes is the following:
 #. Make sure tests pass locally. Most branches created and pushed to GitHub will be tested automatically.
 #. Upon completion of the work, create a pull request (PR) against the develop branch (or hotfix branch if applicable). In the PR description fill out the requested information and include the issue number (e.g., #1234).
 #. Assign one label to the PR (not the ticket/issue) in order to auto-populate change logs (e.g., Bug, Feature, Maintenance, Performance, DoNotPublish) This is required and CI will fail if not present.
-    **Bug** (these will appear as "Bug Fixes" in the change log)
-    **Feature** (features will appear as “New Features” item in the change log)
-    **Enhancement** (these will appear as “Improvements" in the change log)
-    **Maintenance** (these will appear under “Maintenance" in the change log)
-    **Performance** (these will appear under “Maintenance" in the change log)
-    **Documentation** (these will appear under “Maintenance" in the change log)
-    **Do not publish** (these will no appear in the change log)
+    * **Bug** (these will appear as "Bug Fixes" in the change log)
+    * **Feature** (features will appear as “New Features” item in the change log)
+    * **Enhancement** (these will appear as “Improvements" in the change log)
+    * **Maintenance** (these will appear under “Maintenance" in the change log)
+    * **Performance** (these will appear under “Maintenance" in the change log)
+    * **Documentation** (these will appear under “Maintenance" in the change log)
+    * **Do not publish** (these will no appear in the change log)
 #. Ensure all tests pass.
 #. Assign a reviewer to the PR.
 #. If the reviewer requests changes, then addresses changes and re-assign the reviewer as needed.
