@@ -413,7 +413,7 @@ For releasing, copy the ``htmlout`` directory into the seed-platform's website r
 Contribution Instructions / Best Practices
 ------------------------------------------
 
-If this is the first time contributing and you are outside of the DOE National Lab system, then you will need to review and fill out the contribution agreement which is found in [SEED's GitHub repository][seed-contribution-agreement].
+If this is the first time contributing and you are outside of the DOE National Lab system, then you will need to review and fill out the contribution agreement which is found in `SEED's Contribution Agreement in the GitHub repository`_
 
 The desired workflow for development and submitting changes is the following:
 
@@ -456,4 +456,4 @@ To make a release do the following:
 #. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
 #. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 
-.. [seed-contribution-agreement]: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
+.. _`SEED's Contribution Agreement in the GitHub repository`: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
