@@ -41,14 +41,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
-      $scope.scenarios = _.uniqBy(_.map(meters, function (meter) {
-        return {
-          id: meter.scenario_id,
-          name: meter.scenario_name
-        };
-      }), 'id').filter(function (scenario) {
-        return !_.isNil(scenario.id);
-      });
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -59,14 +51,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       };
 
       var resetSelections = function () {
-        $scope.scenario_selections = _.map($scope.scenarios, function (scenario) {
-          return {
-            selected: true,
-            label: scenario.name,
-            value: scenario.id
-          };
-        });
-
         $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
       };
 
@@ -190,18 +174,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         selected: 'Exact'
       };
 
-      $scope.filterMethod = {
-        options: [
-          'meter',
-          'scenario'
-        ],
-        selected: 'meter'
-      };
-      // remove option to filter by scenario if there are no scenarios
-      if ($scope.scenarios.length === 0) {
-        $scope.filterMethod.options = ['meter'];
-      }
-
       // given a list of meter labels, it returns the filtered readings and column defs
       // This is used by the primary filterBy... functions
       var filterByMeterLabels = function filterByMeterLabels (readings, columnDefs, meterLabels) {
@@ -230,40 +202,11 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
       };
 
-      // given the scenario selections, it returns the filtered readings and column defs
-      var filterByScenarioSelections = function (readings, columnDefs, meters, scenarioSelections) {
-        var selectedScenarioIds = scenarioSelections.filter(function (selection) {
-          return selection.selected;
-        }).map(function (selection) {
-          return selection.value;
-        });
-        var selectedMeterLabels = meters.filter(function (meter) {
-          return selectedScenarioIds.includes(meter.scenario_id);
-        }).map(function (meter) {
-          return getMeterLabel(meter);
-        });
-
-        return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
-      };
-
-      // filters the meter readings by selected meters or scenarios and updates the table
+      // filters the meter readings by selected meters and updates the table
       $scope.applyFilters = function () {
-        var results, readings, columnDefs;
-        if ($scope.filterMethod.selected === 'meter') {
-          results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
-          readings = results.readings;
-          columnDefs = results.columnDefs;
-        } else if ($scope.filterMethod.selected === 'scenario') {
-          results = filterByScenarioSelections(property_meter_usage.readings, property_meter_usage.column_defs, $scope.sorted_meters, $scope.scenario_selections);
-          readings = results.readings;
-          columnDefs = results.columnDefs;
-        } else {
-          $log.error('Invalid filter method selected: ', $scope.filterMethod);
-          return;
-        }
-
-        $scope.data = readings;
-        $scope.meterReadGridOptions.columnDefs = columnDefs;
+        results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
+        $scope.data = results.readings;
+        $scope.meterReadGridOptions.columnDefs = results.columnDefs;;
         $scope.has_meters = meters.length > 0;
         $scope.has_readings = $scope.data.length > 0;
         $scope.apply_column_settings();
