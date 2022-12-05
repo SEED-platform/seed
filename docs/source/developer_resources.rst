@@ -424,7 +424,7 @@ The desired workflow for development and submitting changes is the following:
 1. Make changes and write a test for the code added.
 1. Make sure tests pass locally. Most branches created and pushed to GitHub will be tested automatically.
 1. Upon completion of the work, create a pull request (PR) against the develop branch (or hotfix branch if applicable). In the PR description fill out the requested information and include the issue number (e.g., #1234).
-1. Assign labels to the PR (not the ticket/issue) in order to auto-populate change logs (e.g., Bug, Feature, Maintenance, Performance, DoNotPublish) This is required and CI will fail if not present.
+1. Assign one label to the PR (not the ticket/issue) in order to auto-populate change logs (e.g., Bug, Feature, Maintenance, Performance, DoNotPublish) This is required and CI will fail if not present.
     **Bug** (these will appear as "Bug Fixes" in the change log)
     **Feature** (features will appear as “New Features” item in the change log)
     **Enhancement** (these will appear as “Improvements" in the change log)
