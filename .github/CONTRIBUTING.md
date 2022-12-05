@@ -1,6 +1,6 @@
 # SEED Platform Contribution Policy
 
-_Version 1.0_
+_Version 1.1_
 
 The SEED team welcomes your contribution to the project. You can contribute to the SEED platform
 project in several ways: by using the software, reporting issues, contributing documentation, or
@@ -12,37 +12,34 @@ The contribution process for SEED is composed of three steps:
 
 1.  Send consent email
 
-        In order for us to distribute your code as part of SEED under the SEED
-
+    In order for us to distribute your code as part of SEED under the SEED
     [license](https://github.com/SEED-platform/seed/blob/main/LICENSE), we’ll need
     your consent. An email acknowledging understanding of these terms and agreeing to them is
     all that will be asked of any contributor. Send an email to the SEED project manager (see
     below for the address) including the following text and a list of co-contributors (if any):
 
-        *I agree to contribute to SEED. I agree to the following terms and conditions for my
+        I agree to contribute to SEED. I agree to the following terms and conditions for my
+        contributions: First, I agree that I am licensing the copyright to my contributions under
+        the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
+        Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
+        Department of Energy, and to all recipients of a version of SEED that includes my
+        contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
+        any patent claims owned by me, or owned by my employer and known to me, that are or will be,
+        necessarily infringed upon by my contributions alone, or by combination of my contributions
+        with the version of SEED to which they are contributed, to make, have made, use, offer to
+        sell, sell, import, and otherwise transfer any version of SEED that includes my
+        contributions, in source code and object code form. Third, I represent and warrant that I
+        am authorized to make the contributions and grant the foregoing license(s). Additionally,
+        if, to my knowledge, my employer has rights to intellectual property that covers my
+        contributions, I represent and warrant that I have received permission to make these
+        contributions and grant the foregoing license(s) on behalf of my employer.
 
-    contributions: First, I agree that I am licensing the copyright to my contributions under
-    the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
-    Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
-    Department of Energy, and to all recipients of a version of SEED that includes my
-    contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
-    any patent claims owned by me, or owned by my employer and known to me, that are or will be,
-    necessarily infringed upon by my contributions alone, or by combination of my contributions
-    with the version of SEED to which they are contributed, to make, have made, use, offer to
-    sell, sell, import, and otherwise transfer any version of SEED that includes my
-    contributions, in source code and object code form. Third, I represent and warrant that I
-    am authorized to make the contributions and grant the foregoing license(s). Additionally,
-    if, to my knowledge, my employer has rights to intellectual property that covers my
-    contributions, I represent and warrant that I have received permission to make these
-    contributions and grant the foregoing license(s) on behalf of my employer.\*
-
-        Once we have your consent on file, you’ll only need to redo it if conditions change (e.g., a
-
+    Once we have your consent on file, you’ll only need to redo it if conditions change (e.g., a
     change of employer).
 
 2.  Scope agreement and timeline commitment
 
-        If your contribution is small (e.g., a bug fix), simply submit your contribution via GitHub.
+    If your contribution is small (e.g., a bug fix), simply submit your contribution via GitHub.
 
     If you find a bug, first make sure it is not an already known issue, then report it in the GitHub
     [issue tracker](https://github.com/SEED-platform/seed/issues) for this repository. If your
@@ -59,8 +56,7 @@ The contribution process for SEED is composed of three steps:
 
 3.  Technical contribution process
 
-        We want SEED to adhere to our established quality standards. As such, we ask that you follow
-
+    We want SEED to adhere to our established quality standards. As such, we ask that you follow
     our Agile development process - particularly with respect to
     [coding standards](https://github.com/SEED-platform/seed/wiki/Coding-Standards),
     code review, unit tests, and code coverage. These items are explained further below.
@@ -73,8 +69,8 @@ The contribution process for SEED is composed of three steps:
     submission or creation of new code.
 
 **Release Schedule** - Contributions should be aligned with the SEED release schedule. SEED is
-currently released publicly three times each year (approximately on the last workday of
-January, May and September). There are cutoff dates for when new contributions are allowed for the
+released publicly multiple times each year (with almost guaranteed releases on the last workday of
+January and September). There are cutoff dates for when new contributions are allowed for the
 upcoming release (approximately two weeks before release date). If your contribution is
 incomplete or comes in past the cutoff date for a release, we reserve the right to hold your code
 for a later release.
@@ -117,10 +113,10 @@ how to use your new functionality.
 
 For further questions or information:
 
-&nbsp;&nbsp;&nbsp;&nbsp;Luigi Gentile Polese<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;SEED Project Management<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;luigi.gentile.polese@nrel.gov<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;303.275.4362<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;Nicholas Long<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;SEED Principal Investigator<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;nicholas.long@nrel.gov<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;303.384.6183<br/>
 
 SEED is funded by the U.S. Department of Energy’s (DOE) Building Technologies Office (BTO), and
 managed by the National Renewable Energy Laboratory (NREL).
@@ -129,6 +125,6 @@ SEED is developed in collaboration with NREL, LBNL, and private firms.
 
 **Documents**
 
-[SEED_Contribution_Proposal_v1.0_2019-12-10.docx][seed-proposal]
+[SEED_Contribution_Proposal_v1.1_2022-12-05][seed-proposal]
 
-[seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.0_2019-12-10.docx
+[seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.1_2022-12-05.docx
