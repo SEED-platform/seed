@@ -432,18 +432,15 @@ Release Instructions
 
 To make a release do the following:
 
+1. Create a branch to prepare the updates (e.g., 2.16.0-release-prep).
 1. Github admin user, on develop branch: update the ``package.json`` and ``npm-shrinkwrap.json`` files with the most recent version number. Always use MAJOR.MINOR.RELEASE.
-2. Update the ``docs/sources/migrations.rst`` file with any required actions.
-3. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for the range of time between last release and this release. Only add the *Closed Issues*. Also make sure that all the pull requests have a related Issue in order to be included in the change log.
-
-.. code-block:: console
-
-    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2022-03-31 –e 2022-05-29
-
-4. Paste the results (remove unneeded Accepted Pull Requests and the new issues) into the CHANGELOG.md. Cleanup the formatting (if needed).
-5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
-6. Once develop passes, then create a new PR from develop to main.
-7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
-8. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
-9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-10. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
+1. Update the ``docs/sources/migrations.rst`` file with any required actions.
+1. Push updates to new branch on GitHub, then go to the releases page to draft a new release which will generate the changelog.
+1. Copy the GitHub change log results into the CHANGELOG.md. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, etc.)
+1. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
+1. Create PR for release preparation and merge after tests/reviews pass.
+1. Once develop tests pass, then create a new PR from develop to main.
+1. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
+1. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
+1. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+1. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
