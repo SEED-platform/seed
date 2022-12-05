@@ -10,6 +10,7 @@ changelog:
       - Not Reproducible
       - Duplicate
       - To Investigate
+      - Ignore in release notes
     authors:
       - octocat
       - dependabot
