@@ -417,14 +417,14 @@ If this is the first time contributing and you are outside of the DOE National L
 
 The desired workflow for development and submitting changes is the following:
 
-1. Fork the repository on GitHub if you do not have access to the repository, otherwise, work within the https://github.com/seed-platform/seed repository.
-1. Ensure there is a ticket/issue created for the work you are doing. Verify that the ticket is assigned to you and that it is part of the latest project board on the GitHub site (https://github.com/orgs/SEED-platform/projects).
-1. Move the ticket/issue to ‘In Progress’ in the GitHub project tracker when you begin work
-1. Create a branch off of develop (unless it is a hotfix, then branch of the appropriate tag). The recommended naming convention is <issue_id>-short-descriptive-name.
-1. Make changes and write a test for the code added.
-1. Make sure tests pass locally. Most branches created and pushed to GitHub will be tested automatically.
-1. Upon completion of the work, create a pull request (PR) against the develop branch (or hotfix branch if applicable). In the PR description fill out the requested information and include the issue number (e.g., #1234).
-1. Assign one label to the PR (not the ticket/issue) in order to auto-populate change logs (e.g., Bug, Feature, Maintenance, Performance, DoNotPublish) This is required and CI will fail if not present.
+#. Fork the repository on GitHub if you do not have access to the repository, otherwise, work within the https://github.com/seed-platform/seed repository.
+#. Ensure there is a ticket/issue created for the work you are doing. Verify that the ticket is assigned to you and that it is part of the latest project board on the GitHub site (https://github.com/orgs/SEED-platform/projects).
+#. Move the ticket/issue to ‘In Progress’ in the GitHub project tracker when you begin work
+#. Create a branch off of develop (unless it is a hotfix, then branch of the appropriate tag). The recommended naming convention is <issue_id>-short-descriptive-name.
+#. Make changes and write a test for the code added.
+#. Make sure tests pass locally. Most branches created and pushed to GitHub will be tested automatically.
+#. Upon completion of the work, create a pull request (PR) against the develop branch (or hotfix branch if applicable). In the PR description fill out the requested information and include the issue number (e.g., #1234).
+#. Assign one label to the PR (not the ticket/issue) in order to auto-populate change logs (e.g., Bug, Feature, Maintenance, Performance, DoNotPublish) This is required and CI will fail if not present.
     **Bug** (these will appear as "Bug Fixes" in the change log)
     **Feature** (features will appear as “New Features” item in the change log)
     **Enhancement** (these will appear as “Improvements" in the change log)
@@ -432,28 +432,28 @@ The desired workflow for development and submitting changes is the following:
     **Performance** (these will appear under “Maintenance" in the change log)
     **Documentation** (these will appear under “Maintenance" in the change log)
     **Do not publish** (these will no appear in the change log)
-1. Ensure all tests pass.
-1. Assign a reviewer to the PR.
-1. If the reviewer requests changes, then addresses changes and re-assign the reviewer as needed.
-1. Once approved, merge the PR!
-1. Move the related ticket(s)/issue(s) to the 'Ready to Deploy' column in the GitHub project tracker.
+#. Ensure all tests pass.
+#. Assign a reviewer to the PR.
+#. If the reviewer requests changes, then addresses changes and re-assign the reviewer as needed.
+#. Once approved, merge the PR!
+#. Move the related ticket(s)/issue(s) to the 'Ready to Deploy' column in the GitHub project tracker.
 
 Release Instructions
 --------------------
 
 To make a release do the following:
 
-1. Create a branch to prepare the updates (e.g., 2.16.0-release-prep).
-1. Github admin user, on develop branch: update the ``package.json`` and ``npm-shrinkwrap.json`` files with the most recent version number. Always use MAJOR.MINOR.RELEASE.
-1. Update the ``docs/sources/migrations.rst`` file with any required actions.
-1. Push updates to new branch on GitHub, then go to the releases page to draft a new release which will generate the changelog.
-1. Copy the GitHub change log results into the CHANGELOG.md. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, etc.)
-1. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
-1. Create PR for release preparation and merge after tests/reviews pass.
-1. Once develop tests pass, then create a new PR from develop to main.
-1. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
-1. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
-1. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
-1. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
+#. Create a branch to prepare the updates (e.g., 2.16.0-release-prep).
+#. Github admin user, on develop branch: update the ``package.json`` and ``npm-shrinkwrap.json`` files with the most recent version number. Always use MAJOR.MINOR.RELEASE.
+#. Update the ``docs/sources/migrations.rst`` file with any required actions.
+#. Push updates to new branch on GitHub, then go to the releases page to draft a new release which will generate the changelog.
+#. Copy the GitHub change log results into the CHANGELOG.md. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, etc.)
+#. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
+#. Create PR for release preparation and merge after tests/reviews pass.
+#. Once develop tests pass, then create a new PR from develop to main.
+#. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
+#. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
+#. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+#. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 
 [seed-contribution-agreement]: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
