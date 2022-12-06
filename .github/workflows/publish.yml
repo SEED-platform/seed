@@ -56,7 +56,7 @@ jobs:
             echo "Unhandled event type (this shouldn't happen), exiting"
             exit 1
           fi
-          echo ::set-output name=seed_tags::${SEED_TAG}
+          echo "seed_tags=${SEED_TAG}" >> $GITHUB_OUTPUT
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
