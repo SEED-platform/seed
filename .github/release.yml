@@ -4,16 +4,14 @@ changelog:
   exclude:
     labels:
       - DO NOT MERGE
-      - dependencies
       - Verify No Longer Relevant
       - No Longer Valid
       - Not Reproducible
       - Duplicate
       - To Investigate
-      - Ignore in release notes
+      - Do not publish
     authors:
       - octocat
-      - dependabot
   categories:
     - title: Breaking Changes 🛠
       labels:
@@ -22,14 +20,16 @@ changelog:
     - title: New Features 🎉
       labels:
         - Semver-Minor
-        - Enhancement
         - Feature
-    - title: Maintenance
+    - title: Improvements 📈
+      labels:
+        - Enhancement
+    - title: Maintenance 🧹
       labels:
         - Maintenance
         - Documentation
         - Performance
-    - title: Bug Fixes
+    - title: Bug Fixes 🐛
       labels:
         - Bug
     - title: Other Changes
