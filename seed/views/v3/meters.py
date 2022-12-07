@@ -24,7 +24,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         org_id = self.get_organization(self.request)
         # get the property id - since the meter is associated with the property (not the property view)
 
-        # eventhough it is named 'property_pk' it is really the property view id
+        # even though it is named 'property_pk' it is really the property view id
         property_view_pk = self.kwargs.get('property_pk', None)
         if not property_view_pk:
             # Return None otherwise swagger will not be able to process the request
