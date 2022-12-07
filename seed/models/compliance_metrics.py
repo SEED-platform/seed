@@ -72,7 +72,18 @@ class ComplianceMetric(models.Model):
         # get properties (no filter)
         # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
         # get properties (applies filter group)
-        property_response = properties_across_cycles_with_filters(self.organization_id, -1, cycle_ids, query_dict)
+        property_response = properties_across_cycles_with_filters(
+            self.organization_id,
+            cycle_ids,
+            query_dict,
+            [
+                self.organization.property_display_field,
+                self.actual_energy_column.id,
+                self.target_energy_column.id,
+                self.actual_emission_column,
+                self.target_emission_column
+            ]
+        )
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
         results_by_cycles = {}
