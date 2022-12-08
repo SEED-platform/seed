@@ -994,6 +994,11 @@ angular.module('BE.seed.controller.inventory_list', [])
             title = "Filtering disabled for taxlot columns on the property list.";
           }
         }
+        if (column['derived_column'] != null) {
+          column['enableSorting'] = false;
+          let title = "Sorting and filtering disabled for derived columns.";
+          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
+        }
       }
 
       var findColumn = _.memoize(function (name) {

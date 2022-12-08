@@ -1372,6 +1372,7 @@ class Column(models.Model):
         inventory_type: Optional[Literal['property', 'taxlot']] = None,
         only_used: bool = False,
         include_related: bool = True,
+        exclude_derived: bool = False
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
@@ -1388,8 +1389,11 @@ class Column(models.Model):
         # Grab all the columns out of the database for the organization that are assigned to a
         # table_name. Order extra_data last so that extra data duplicate-checking will happen after
         # processing standard columns
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None).order_by('is_extra_data', 'column_name')
+        column_query = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
+            table_name=None)
+        if exclude_derived:
+            column_query = column_query.exclude(derived_column__isnull=False)
+        columns_db = column_query.order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
             if c.column_name in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
