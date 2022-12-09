@@ -527,7 +527,7 @@ angular.module('BE.seed.controller.data_view', [])
         for (let aggregation of axis1_aggregations) {
           for (let dataset of $scope.data.graph_data.datasets) {
             if (aggregation == dataset.aggregation && axis1_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
-              dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
+              dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
               dataset.backgroundColor = colors[i],
               dataset.borderColor = colors[i],
               dataset.tension = 0.1
@@ -553,7 +553,7 @@ angular.module('BE.seed.controller.data_view', [])
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
               if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
-                dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
+                dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
                 dataset.backgroundColor = colors[i],
                 dataset.borderColor = colors[i],
                 dataset.tension = 0.1
