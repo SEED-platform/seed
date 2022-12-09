@@ -26,6 +26,8 @@ from xlrd.xldate import XLDateAmbiguous
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
+# Create a list of Excel cell types. This is copied
+# directly from the xlrd source code.
 (
     XL_CELL_EMPTY,
     XL_CELL_TEXT,
@@ -33,7 +35,7 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
     XL_CELL_DATE,
     XL_CELL_BOOLEAN,
     XL_CELL_ERROR,
-    XL_CELL_BLANK,  # for use in debugging, gathering stats, etc
+    XL_CELL_BLANK,
 ) = range(7)
 
 ROW_DELIMITER = "|#*#|"
@@ -367,9 +369,16 @@ class ExcelParser(object):
             else:
                 return item.value
 
+        # If Excel reports an ERROR (typically the #VALUE! or #NAME! in the cell), then return None,
+        # otherwise the item.value will be the error code and saved in SEED incorrectly.
+        if item.ctype in [XL_CELL_EMPTY, XL_CELL_ERROR, XL_CELL_BLANK]:
+            return None
+
+        # XL_CELL_TEXT
         if isinstance(item.value, basestring):
             return unidecode(item.value)
 
+        # only remaining items should be booleans
         return item.value
 
     def XLSDictReader(self, sheet, header_row=0):
