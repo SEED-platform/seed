@@ -7,7 +7,7 @@ from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 
