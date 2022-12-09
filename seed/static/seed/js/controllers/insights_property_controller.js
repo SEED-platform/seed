@@ -283,6 +283,15 @@ angular.module('BE.seed.controller.insights_property', [])
             data: {
             },
             options: {
+              onClick: (event) => {
+                var activePoints = event.chart.getActiveElements(event);
+
+                if (activePoints[0]) {
+                  var activePoint = activePoints[0]
+                  var item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index]
+                  window.location.href = '/app/#/properties/' + item["id"];
+                }
+              },
               elements: {
                 point: {
                   radius: 5
