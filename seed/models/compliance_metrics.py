@@ -72,12 +72,13 @@ class ComplianceMetric(models.Model):
         # get properties (no filter)
         # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
         # get properties (applies filter group)
+        display_field_id = Column.objects.get(table_name="PropertyState", column_name=self.organization.property_display_field).id
         property_response = properties_across_cycles_with_filters(
             self.organization_id,
             cycle_ids,
             query_dict,
             [
-                self.organization.property_display_field,
+                display_field_id,
                 self.actual_energy_column.id,
                 self.target_energy_column.id,
                 self.actual_emission_column,
