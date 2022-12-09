@@ -371,8 +371,12 @@ class ExcelParser(object):
 
         # If Excel reports an ERROR (typically the #VALUE! or #NAME! in the cell), then return None,
         # otherwise the item.value will be the error code and saved in SEED incorrectly.
-        if item.ctype in [XL_CELL_EMPTY, XL_CELL_ERROR, XL_CELL_BLANK]:
+        if item.ctype in [XL_CELL_ERROR]:
             return None
+
+        # If it is blank or empty, then return empty string
+        if item.ctype in [XL_CELL_EMPTY, XL_CELL_BLANK]:
+            return ''
 
         # XL_CELL_TEXT
         if isinstance(item.value, basestring):
