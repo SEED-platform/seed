@@ -1,27 +1,29 @@
 Help
 ====
 
-For SEED-Platform Users
+For SEED Platform Users
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform.
+Please visit our website for information, tutorials, and documentation to help you learn how to use SEED.
 
-https://sites.google.com/a/lbl.gov/seed/
+https://seed-platform.org
 
-There is also a link to the SEED-Platform Users forum, where you can connect with other users.
+The SEED User's forum is where you can review user announcements, workflow questions, and join to connect with other users.
 
-https://groups.google.com/forum/#!forum/seed-platform-users
+https://lists.buildingenergytools.org/g/SEEDusers/topics
 
-For direct help on a specific problem, please email: SEED-Support@lists.lbl.gov
+For direct help on a specific problem, please fill out a request on the building data tools website help desk:
+
+https://buildingdata.energy.gov/#/help-desk
 
 
-For SEED-Platform Developers
+For SEED Platform Developers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Open Source code is available on the Github organization SEED-Platform:
+The open-source code is available on the Github organization SEED-Platform and contains various repositiories for the different components of the platform such as the main SEED application, a Python SEED client to communicate to SEED's API, and various example datasets.
 
 https://github.com/SEED-platform
 
-Please join the SEED-Platform Dev forum where you can connect with other developers.
+The SEED developer's forum contains various topics and joining enables you to connect with other developers. It is recommended to join this forum to sumbit developer questions, featuers requests, and report issues as needed. Also, submitting issues on Github is encouraged.
 
-https://groups.google.com/forum/#!forum/seed-platform-dev
+https://lists.buildingenergytools.org/g/SEEDdevelopers/topics
