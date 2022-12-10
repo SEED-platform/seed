@@ -11,6 +11,7 @@ elsewhere.
 
 """
 import json
+import logging
 import mmap
 import operator
 import re
@@ -37,6 +38,9 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
 ROW_DELIMITER = "|#*#|"
 SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
+
+
+_log = logging.getLogger(__name__)
 
 
 def clean_fieldnames(fieldnames):
@@ -440,7 +444,14 @@ class CSVParser(object):
         self.csvfile.readline()
         # Read a significant chunk of the data to improve the odds of
         # determining the dialect.  MCM is often run on very wide csv files.
-        dialect = Sniffer().sniff(self.csvfile.read(16384))
+        try:
+            dialect = Sniffer().sniff(self.csvfile.read(16384))
+            if dialect.delimiter != ',':
+                _log.warn('CSV file has a non-standard delimiter, converting to \'comma\'')
+                dialect.delimiter = ','
+        except SyntaxError:
+            raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")
+
         self.csvfile.seek(0)
 
         fieldnames, generated_headers = clean_fieldnames(
