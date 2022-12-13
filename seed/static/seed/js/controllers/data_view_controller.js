@@ -578,6 +578,9 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.dataViewChart.options.scales.y2.title.display = false
         }
 
+        yMax = Math.max(...datasets.map(d => Math.max(...d.data)));
+        $scope.dataViewChart.options.scales.y1.max = Math.trunc(1.1 * yMax);
+        $scope.dataViewChart.options.scales.y2.max = Math.trunc(1.1 * yMax);;
         $scope.dataViewChart.data.labels = xAxisLabels.filter(xAxisLabelsSelectedMask)
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
