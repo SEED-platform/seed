@@ -32,7 +32,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def list(self, request):
         organization_id = self.get_organization(request)
         compliance_metric_queryset = ComplianceMetric.objects.filter(organization=organization_id)
@@ -46,7 +46,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
@@ -225,7 +225,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     @action(detail=True, methods=['GET'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
