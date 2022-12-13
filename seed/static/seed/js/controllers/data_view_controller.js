@@ -431,6 +431,13 @@ angular.module('BE.seed.controller.data_view', [])
         '#88CCAA',
         '#774411',
       ]
+      colorsByLabelPrefix = {}
+      const colorIter = colors[Symbol.iterator]();
+      for (let agg of $scope.aggregations) {
+        for (let fg of $scope.filter_groups) {
+          colorsByLabelPrefix[`${fg.name} - ${agg.name}`] = colorIter.next().value
+        }
+      }
 
       const _build_chart = () => {
         if (!$scope.data.graph_data) {
@@ -528,8 +535,9 @@ angular.module('BE.seed.controller.data_view', [])
           for (let dataset of $scope.data.graph_data.datasets) {
             if (aggregation == dataset.aggregation && axis1_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
-              dataset.backgroundColor = colors[i],
-              dataset.borderColor = colors[i],
+              color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
+              dataset.backgroundColor = color
+              dataset.borderColor = color
               dataset.tension = 0.1
               dataset.yAxisID = 'y1'
               // spread in data filter so the object itself is not modified.
@@ -554,8 +562,9 @@ angular.module('BE.seed.controller.data_view', [])
             for (let dataset of $scope.data.graph_data.datasets) {
               if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
                 dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
-                dataset.backgroundColor = colors[i],
-                dataset.borderColor = colors[i],
+                color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
+                dataset.backgroundColor = color
+                dataset.borderColor = color
                 dataset.tension = 0.1
                 dataset.yAxisID = 'y2'
                 dataset.borderDash = [10,15]
