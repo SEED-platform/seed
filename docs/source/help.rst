@@ -20,7 +20,7 @@ https://buildingdata.energy.gov/#/help-desk
 For SEED Platform Developers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The open-source code is available on the Github organization SEED-Platform and contains various repositiories for the different components of the platform such as the main SEED application, a Python SEED client to communicate to SEED's API, and various example datasets.
+The open-source code is available on the GitHub organization SEED-Platform and contains various repositories for the different components of the platform such as the main SEED application, a Python SEED client to communicate to SEED's API and various example datasets.
 
 https://github.com/SEED-platform
 
