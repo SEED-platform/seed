@@ -24,6 +24,6 @@ The open-source code is available on the GitHub organization SEED-Platform and c
 
 https://github.com/SEED-platform
 
-The SEED developer's forum contains various topics and joining enables you to connect with other developers. It is recommended to join this forum to sumbit developer questions, featuers requests, and report issues as needed. Also, submitting issues on Github is encouraged.
+The SEED Developers Forum contains various topics and joining enables you to connect with other developers. It is recommended to join this forum to submit developer questions, features requests, and report issues as needed. Also, submitting issues on GitHub is encouraged.
 
 https://lists.buildingenergytools.org/g/SEEDdevelopers/topics
