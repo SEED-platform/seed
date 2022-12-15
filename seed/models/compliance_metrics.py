@@ -72,18 +72,23 @@ class ComplianceMetric(models.Model):
         # get properties (no filter)
         # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
         # get properties (applies filter group)
-        display_field_id = Column.objects.get(table_name="PropertyState", column_name=self.organization.property_display_field).id
+        display_field_id = Column.objects.get(table_name="PropertyState", column_name=self.organization.property_display_field, organization=self.organization).id
+        # array of columns to return
+        column_ids = [
+            display_field_id,
+            self.actual_energy_column.id,
+            self.target_energy_column.id,
+            self.actual_emission_column.id,
+            self.target_emission_column.id
+        ]
+        for col in self.x_axis_columns.all():
+            column_ids.append(col.id)
+
         property_response = properties_across_cycles_with_filters(
             self.organization_id,
             cycle_ids,
             query_dict,
-            [
-                display_field_id,
-                self.actual_energy_column.id,
-                self.target_energy_column.id,
-                self.actual_emission_column,
-                self.target_emission_column
-            ]
+            column_ids
         )
 
         datasets = {'y': {'data': [], 'label': 'compliant'}, 'n': {'data': [], 'label': 'non-compliant'}, 'u': {'data': [], 'label': 'unknown'}}
@@ -168,7 +173,6 @@ class ComplianceMetric(models.Model):
 
         actual_col_id = self.actual_energy_column.id if metric_type == 'energy' else self.actual_emission_column.id
         target_col_id = self.target_energy_column.id if metric_type == 'energy' else self.target_emission_column.id
-
         actual_val = self._get_column_data(the_property, actual_col_id)
         if actual_val is None:
             return 'u'
