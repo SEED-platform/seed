@@ -263,7 +263,6 @@ class PortfolioManagerImport(object):
         if '=' not in cookie_header:
             raise PMExcept('Malformed Cookie key in response headers; aborting.')
         cookie = cookie_header.split('=')[1]
-        # _log.debug('Logged in and received cookie: ' + cookie)
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
@@ -355,29 +354,6 @@ class PortfolioManagerImport(object):
             raise PMExcept("Could not find a matching template for this name, try a different name")
         _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
-
-    def parse_template_response(self, response_text):
-        """
-        This method is for the updated ESPM where the response is escaped JSON string in a JSON response.
-
-        :param response_text: str, response to parse
-        :return: dict
-        """
-        try:
-            # the data are now in the string of the data key of the returned dictionary with an excessive amount of
-            # escaped doublequotes.
-            # e.g., response = {"data": "{"customReportsData":"..."}"}
-            decoded = json.loads(response_text)  # .encode('utf-8').decode('unicode_escape')
-
-            # the beginning and end of the string needs to be without the doublequote. Remove the escaped double quotes
-            data_to_parse = decoded['data'].replace('"[{', '[{').replace('}]"', '}]').replace('\\"', '"')
-
-            # print(f'data to parse: {data_to_parse}')
-            template_object = json.loads(data_to_parse)
-            _log.debug('Received the following JSON return: ' + json.dumps(template_object, indent=2))
-            return template_object
-        except ValueError:
-            raise PMExcept('Malformed JSON response from report template rows query; aborting.')
 
     def generate_and_download_template_report(self, matched_template):
         """
