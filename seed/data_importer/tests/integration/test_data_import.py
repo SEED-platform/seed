@@ -703,7 +703,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         map_data(self.import_file.id)
 
 
-class TestPostalCode(DataMappingBaseTestCase):
+class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties-postal.xlsx')
         import_file_source_type = ASSESSED_RAW
@@ -718,7 +718,7 @@ class TestPostalCode(DataMappingBaseTestCase):
         self.import_file.save()
 
     def test_postal_code_property(self):
-
+        """Text importing tax lots to properties correctly"""
         new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
 
         tasks.save_raw_data(self.import_file.pk)
@@ -736,7 +736,7 @@ class TestPostalCode(DataMappingBaseTestCase):
         self.assertEqual(ps.postal_code, '00001-0002')
 
     def test_postal_code_taxlot(self):
-
+        """Text importing tax lots to tax lots correctly"""
         new_mappings = copy.deepcopy(self.fake_mappings['taxlot'])
 
         tasks.save_raw_data(self.import_file.pk)
@@ -755,3 +755,27 @@ class TestPostalCode(DataMappingBaseTestCase):
         if ts is None:
             raise TypeError("Invalid Taxlot Address!")
         self.assertEqual(ts.postal_code, '00000-0000')
+
+    def test_postal_code_invalid_fields(self):
+        """Text importing tax lots to properties correctly"""
+        new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
+
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
+        tasks.map_data(self.import_file.pk)
+
+        # postal code is #NAME! in the excel file
+        ps = PropertyState.objects.filter(address_line_1='521 Elm Street')[0]
+        self.assertEqual(ps.postal_code, None)
+
+        # postal code is #div/0! in the excel file
+        # site EUI is #VALUE! in the excel file
+        ps = PropertyState.objects.filter(address_line_1='123 Mainstreet')[0]
+        self.assertEqual(ps.postal_code, None)
+        self.assertEqual(ps.site_eui, None)
+
+        # postal code is #VALUE! in the excel file
+        # site EUI is "Not Available" in the excel file
+        ps = PropertyState.objects.filter(address_line_1='124 Mainstreet')[0]
+        self.assertEqual(ps.postal_code, None)
+        self.assertEqual(ps.site_eui, None)
