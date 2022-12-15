@@ -8,7 +8,7 @@ Please visit our website for information, tutorials, and documentation to help y
 
 https://seed-platform.org
 
-The SEED User's forum is where you can review user announcements, workflow questions, and join to connect with other users.
+The SEED Users Forum is where you can review user announcements, workflow questions, and join to connect with other users.
 
 https://lists.buildingenergytools.org/g/SEEDusers/topics
 
