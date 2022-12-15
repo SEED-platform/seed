@@ -718,7 +718,7 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         self.import_file.save()
 
     def test_postal_code_property(self):
-        """Text importing tax lots to properties correctly"""
+        """Test importing tax lots to properties correctly"""
         new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
 
         tasks.save_raw_data(self.import_file.pk)
@@ -736,7 +736,7 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         self.assertEqual(ps.postal_code, '00001-0002')
 
     def test_postal_code_taxlot(self):
-        """Text importing tax lots to tax lots correctly"""
+        """Test importing tax lots to tax lots correctly"""
         new_mappings = copy.deepcopy(self.fake_mappings['taxlot'])
 
         tasks.save_raw_data(self.import_file.pk)
@@ -757,7 +757,7 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         self.assertEqual(ts.postal_code, '00000-0000')
 
     def test_postal_code_invalid_fields(self):
-        """Text importing tax lots to properties correctly"""
+        """Test the import of fields that have Excel cell errors (e.g., #VALUE!, etc.)"""
         new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
 
         tasks.save_raw_data(self.import_file.pk)
