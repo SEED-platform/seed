@@ -22,7 +22,7 @@ class ComplianceMetric(models.Model):
     METRIC_TYPES = (
         (TARGET_NONE, ''),
         (TARGET_GT_ACTUAL, 'Target > Actual for Compliance'),
-        (TARGET_LT_ACTUAL, 'Actual > Target for Compliance'),
+        (TARGET_LT_ACTUAL, 'Target < Actual for Compliance'),
     )
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='compliance_metrics', blank=True, null=True)
@@ -75,12 +75,19 @@ class ComplianceMetric(models.Model):
         display_field_id = Column.objects.get(table_name="PropertyState", column_name=self.organization.property_display_field, organization=self.organization).id
         # array of columns to return
         column_ids = [
-            display_field_id,
-            self.actual_energy_column.id,
-            self.target_energy_column.id,
-            self.actual_emission_column.id,
-            self.target_emission_column.id
+            display_field_id
         ]
+
+        if self.actual_energy_column is not None:
+            column_ids.append(self.actual_energy_column.id)
+            if self.target_energy_column is not None:
+                column_ids.append(self.target_energy_column.id)
+
+        if self.actual_emission_column is not None:
+            column_ids.append(self.actual_emission_column.id)
+            if self.target_emission_column is not None:
+                column_ids.append(self.target_emission_column.id)
+
         for col in self.x_axis_columns.all():
             column_ids.append(col.id)
 
