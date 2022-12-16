@@ -7,7 +7,7 @@ from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 
@@ -28,7 +28,7 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import FilterException, build_view_filters_and_sorts
 
 
-def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
+def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> JsonResponse:
     page = request.query_params.get('page')
     per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
