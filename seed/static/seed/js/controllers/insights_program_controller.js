@@ -66,11 +66,12 @@ angular.module('BE.seed.controller.insights_program', [])
         // console.log("get data for metric id: ", $scope.compliance_metric.id);
         let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
-          spinner_utility.hide();
         }).then(() => {
           // console.log( "DATA: ", $scope.data)
           _build_chart();
 
+        }).finally(() => {
+          spinner_utility.hide()
         })
       };
 
@@ -160,6 +161,6 @@ angular.module('BE.seed.controller.insights_program', [])
 
       }
 
-      _load_data();
+      setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
     }
   ]);
