@@ -2406,6 +2406,7 @@
                       <auc:FieldValue>true</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
+                  </auc:ResourceUse>
               </auc:ResourceUses>
               <auc:AllResourceTotals>
                 <auc:AllResourceTotal ID="AllResourceTotalType-70339507287080">
