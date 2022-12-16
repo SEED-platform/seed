@@ -8,6 +8,10 @@ django-crispy-forms==1.8.1
 # Persistence stores
 psycopg2-binary==2.8.4
 
+# Shapely 2.X fails to build. Force to use
+# the previous version
+shapely==1.8.5.post1
+
 # background process management
 celery==5.2.2
 django-redis-cache==3.0.0
