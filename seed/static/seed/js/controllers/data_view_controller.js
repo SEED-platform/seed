@@ -182,6 +182,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
         console.log('_assign_datasets toggle filter group')
+        $scope.click_edit();
         _assign_datasets();
       };
 
@@ -194,7 +195,7 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
         console.log('selected cycles', $scope.selected_cycles)
         console.log('used cycles', $scope.used_cycles)
-
+        $scope.click_edit();
         console.log('_assign_datasets toggle cycle')
         _assign_datasets();
       };
@@ -222,6 +223,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
         if ($scope.dataViewChart) {
           console.log('_assign_datasets toggle agg')
+          $scope.click_edit();
           _assign_datasets()
         }
       };
@@ -248,7 +250,9 @@ angular.module('BE.seed.controller.data_view', [])
         }
         if (reload_data) {
           _load_data();
+          $scope.click_edit();
         }
+
         console.log('_assign_datasets select source column')
         _assign_datasets();
       };
