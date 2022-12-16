@@ -22,7 +22,7 @@ class ComplianceMetric(models.Model):
     METRIC_TYPES = (
         (TARGET_NONE, ''),
         (TARGET_GT_ACTUAL, 'Target > Actual for Compliance'),
-        (TARGET_LT_ACTUAL, 'Actual > Target for Compliance'),
+        (TARGET_LT_ACTUAL, 'Target < Actual for Compliance'),
     )
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='compliance_metrics', blank=True, null=True)
