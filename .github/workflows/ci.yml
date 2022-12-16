@@ -15,7 +15,7 @@ jobs:
   # As a result, the DRYest method for now is to use a testing matrix and
   # use conditional steps for actually running the tests.
   unittests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         test_env: [django, functional, api]
@@ -95,7 +95,7 @@ jobs:
         if: ${{ always() }}
         run: docker logs seed_web
   formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         tox_env: [docs, precommit, mypy]
