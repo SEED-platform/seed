@@ -290,7 +290,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             const value = $scope.currentFilterGroup.query_dict[key];
             const [column_name, operator] = key.split('__');
 
-            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.column_name === column_name);
+            // TODO: if this column is hidden, this whole operation falls apart.
+            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.name === column_name);
 
             if (column.filters[0].term == null) {
               column.filters[0].term = getTableFilter(value, operator);
