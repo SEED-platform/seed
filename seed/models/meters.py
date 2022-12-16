@@ -66,7 +66,7 @@ class Meter(models.Model):
     # list of header strings and their related energy types
     ENERGY_TYPE_BY_HEADER_STRING = {
 
-        # these mappings are assumed based on ESPM values
+        # these mappings are assumed based on ESPM values [old format]
         'Coal Use (Anthracite)': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
         'Coal Use (Bituminous)': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
         'Coke': ENERGY_TYPE_BY_METER_TYPE[COKE],
@@ -94,6 +94,31 @@ class Meter(models.Model):
         # these values are added based on known usage
         'Fuel Oil #2 Use': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
         'Diesel #2 Use': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+
+        # these mappings are assumed based on ESPM values [new format as of 12-16-2022]
+        'Coal Use (Anthracite) - Monthly': ENERGY_TYPE_BY_METER_TYPE[COAL_ANTHRACITE],
+        'Coal Use (Bituminous) - Monthly': ENERGY_TYPE_BY_METER_TYPE[COAL_BITUMINOUS],
+        'Coke - Monthly': ENERGY_TYPE_BY_METER_TYPE[COKE],
+        'Diesel - Monthly': ENERGY_TYPE_BY_METER_TYPE[DIESEL],
+        'District Chilled Water Use (Absorption) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ABSORPTION],
+        'District Chilled Water Use (Electric) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ELECTRIC],
+        'District Chilled Water Use (Engine) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_ENGINE],
+        'District Chilled Water Use (Other) - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_CHILLED_WATER_OTHER],
+        'District Hot Water Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_HOT_WATER],
+        'District Steam Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[DISTRICT_STEAM],
+        'Electricity Use (Grid) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_GRID],
+        'Electricity Use (Solar) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_SOLAR],
+        'Electricity Use (Wind) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_WIND],
+        'Fuel Oil Use (No. 1) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_1],
+        'Fuel Oil Use (No. 2) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_2],
+        'Fuel Oil Use (No. 4) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_4],
+        'Fuel Oil Use (No. 5 and No. 6) - Monthly': ENERGY_TYPE_BY_METER_TYPE[FUEL_OIL_NO_5_AND_NO_6],
+        'Kerosene Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[KEROSENE],
+        'Natural Gas Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[NATURAL_GAS],
+        'Other Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[OTHER],
+        'Propane Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[PROPANE],
+        'Wood Use - Monthly': ENERGY_TYPE_BY_METER_TYPE[WOOD],
+        'Electricity Use (Unknown) - Monthly': ENERGY_TYPE_BY_METER_TYPE[ELECTRICITY_UNKNOWN],
     }
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
