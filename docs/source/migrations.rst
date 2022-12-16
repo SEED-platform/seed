@@ -46,6 +46,11 @@ local_untracked.py file
             routing_key=CELERY_TASK_DEFAULT_QUEUE
         ),
     )
+
+Version 2.17.0
+-----------------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
 Version 2.16.0
 -----------------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
