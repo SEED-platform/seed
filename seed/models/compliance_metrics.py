@@ -38,7 +38,6 @@ class ComplianceMetric(models.Model):
     target_emission_column = models.ForeignKey(Column, related_name="target_emission_column", null=True, on_delete=models.CASCADE)
     emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
     filter_group = models.ForeignKey(FilterGroup, related_name="filter_group", null=True, on_delete=models.CASCADE)
-
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns", blank=True)
 
     def __str__(self):
