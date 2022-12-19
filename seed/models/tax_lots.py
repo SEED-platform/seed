@@ -81,6 +81,7 @@ class TaxLotState(models.Model):
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
+    derived_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     # taxlots can now have lat/long and polygons, points.

@@ -278,6 +278,7 @@ class PropertyState(models.Model):
     total_marginal_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
+    derived_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 

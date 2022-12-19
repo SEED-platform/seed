@@ -499,6 +499,7 @@ class TestDerivedColumns(TestCase):
         result = derived_column.evaluate(property_state)
 
         # -- Assert
+        self.assertEqual(property_state.derived_data, {})  # for the moment, this is always empty
         self.assertEqual(2, result)
 
     def test_derived_column_evaluate_returns_none_when_missing_parameters(self):
