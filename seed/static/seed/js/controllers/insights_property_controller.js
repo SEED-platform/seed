@@ -60,7 +60,6 @@ angular.module('BE.seed.controller.insights_property', [])
         let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
         }).then(() => {
-          // console.log( "DATA RETURNED: ", $scope.data)
           if ($scope.data) {
             // set options
             // x axis
@@ -86,7 +85,6 @@ angular.module('BE.seed.controller.insights_property', [])
                 $scope.chart_metric = _.first($scope.y_axis_options).id;
               }
             }
-
           }
           _rebuild_datasets();
 
@@ -147,8 +145,6 @@ angular.module('BE.seed.controller.insights_property', [])
       }
 
       const _rebuild_datasets = () => {
-        // console.log("REBUILD DATASETS")
-
         $scope.x_categorical = false;
 
         let datasets = [{'data': [], 'label': 'compliant', 'pointStyle': 'circle'},
@@ -423,9 +419,7 @@ angular.module('BE.seed.controller.insights_property', [])
           $scope.insightsChart.data.labels = labels;
         }
 
-        // console.log("REFRESH CHART");
         $scope.insightsChart.update()
-
       }
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.

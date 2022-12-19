@@ -1,5 +1,6 @@
+=========
 Mapping
-=======
+=========
 
 This document describes the set of calls that occur from the web client or API
 down to the back-end for the process of mapping data into SEED.
