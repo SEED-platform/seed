@@ -290,7 +290,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             const value = $scope.currentFilterGroup.query_dict[key];
             const [column_name, operator] = key.split('__');
 
-            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.column_name === column_name);
+            // TODO: if this column is hidden, this whole operation falls apart.
+            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.name === column_name);
 
             if (column.filters[0].term == null) {
               column.filters[0].term = getTableFilter(value, operator);
@@ -993,6 +994,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           if ($scope.inventory_type == 'properties') {
             title = "Filtering disabled for taxlot columns on the property list.";
           }
+        }
+        if (column['derived_column'] != null) {
+          column['enableSorting'] = false;
+          let title = "Sorting and filtering disabled for derived columns.";
+          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
         }
       }
 

@@ -195,43 +195,25 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
     return results
 
 
-def properties_across_cycles_with_filters(org_id, profile_id, cycle_ids=[], query_dict={}):
+def properties_across_cycles_with_filters(org_id, cycle_ids=[], query_dict={}, column_ids=[]):
     # Identify column preferences to be used to scope fields/values
     columns_from_database = Column.retrieve_all(org_id, 'property', False)
+    org = Organization.objects.get(pk=org_id)
 
-    if profile_id == -1:
-        show_columns = list(Column.objects.filter(
-            organization_id=org_id
-        ).values_list('id', flat=True))
-    else:
-        try:
-            profile = ColumnListProfile.objects.get(
-                organization_id=org_id,
-                id=profile_id,
-                profile_location=VIEW_LIST,
-                inventory_type=VIEW_LIST_PROPERTY
-            )
-            show_columns = list(ColumnListProfileColumn.objects.filter(
-                column_list_profile_id=profile.id
-            ).values_list('column_id', flat=True))
-        except ColumnListProfile.DoesNotExist:
-            show_columns = None
+    results = {cycle_id: [] for cycle_id in cycle_ids}
+    property_views = _get_filter_group_views(org_id, cycle_ids, query_dict)
+    views_cycle_ids = [v.cycle_id for v in property_views]
+    related_results = TaxLotProperty.serialize(property_views, column_ids, columns_from_database, include_related=False)
+    unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
 
-    results = {}
-    for cycle_id in cycle_ids:
-        # get Filtered Views for this Cycle
-        org = Organization.objects.get(pk=org_id)
-        property_views = _get_filter_group_views(org_id, cycle_id, query_dict)
-        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
-        # format
-        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
-        results[cycle_id] = unit_collapsed_results
+    for cycle_id, unit_collapsed_result in zip(views_cycle_ids, unit_collapsed_results):
+        results[cycle_id].append(unit_collapsed_result)
 
     return results
 
 
 # helper function for getting filtered properties
-def _get_filter_group_views(org_id, cycle, query_dict):
+def _get_filter_group_views(org_id, cycles, query_dict):
 
     columns = Column.retrieve_all(
         org_id=org_id,
@@ -251,7 +233,7 @@ def _get_filter_group_views(org_id, cycle, query_dict):
 
     views_list = (
         PropertyView.objects.select_related('property', 'state', 'cycle')
-        .filter(property__organization_id=org_id, cycle=cycle)
+        .filter(property__organization_id=org_id, cycle__in=cycles)
     )
 
     views_list = views_list.filter(filters).order_by('id')

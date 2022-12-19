@@ -15,16 +15,16 @@ jobs:
   # As a result, the DRYest method for now is to use a testing matrix and
   # use conditional steps for actually running the tests.
   unittests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         test_env: [django, functional, api]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           # using `-v3` in key to clear old cache due to errors
@@ -52,7 +52,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
       - name: Install dependencies
         run: |
           npm install
@@ -95,13 +95,13 @@ jobs:
         if: ${{ always() }}
         run: docker logs seed_web
   formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         tox_env: [docs, precommit, mypy]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
       - name: Install deps

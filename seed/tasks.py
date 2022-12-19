@@ -30,6 +30,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DerivedColumn,
     Property,
     PropertyState,
     PropertyView,
@@ -172,6 +173,8 @@ def delete_organization(org_pk):
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(org_pk, prog_key):
+    # Derived columns use protected foreign keys, they must be deleted first
+    DerivedColumn.objects.filter(organization_id=org_pk).delete()
     Organization.objects.get(pk=org_pk).delete()
 
     # TODO: Delete measures in BRICR branch

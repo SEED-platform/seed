@@ -465,7 +465,12 @@ class MetersParser(object):
 
         results = []
         for raw_reading in raw_data:
-            start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
+            # December 16, 2022 updated code to match ESPM formatting changes
+            try:
+                start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
+            except KeyError:
+                start_date = datetime.strptime(raw_reading['Month '], '%b-%y')
+
             _, days_in_month = monthrange(start_date.year, start_date.month)
             end_date = datetime(
                 start_date.year,

@@ -7,7 +7,7 @@ from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 
@@ -28,7 +28,7 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import FilterException, build_view_filters_and_sorts
 
 
-def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
+def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> JsonResponse:
     page = request.query_params.get('page')
     per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
@@ -90,7 +90,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         org_id=org_id,
         inventory_type=inventory_type,
         only_used=False,
-        include_related=include_related
+        include_related=include_related,
+        exclude_derived=True,
     )
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
@@ -113,7 +114,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             org_id=org_id,
             inventory_type=other_inventory_type,
             only_used=False,
-            include_related=include_related
+            include_related=include_related,
+            exclude_derived=True,
         )
         try:
             filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
@@ -127,7 +129,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             )
 
         # If the children have filters, filter views_list by their children.
-        if len(filters) > 0 and len(annotations) > 0:
+        if len(filters) > 0 or len(annotations) > 0:
             other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = TaxLotView if inventory_type == "property" else PropertyView
             other_views_list = (
                 other_inventory_type_class.objects.select_related('taxlot', 'state', 'cycle')

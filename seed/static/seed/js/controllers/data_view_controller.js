@@ -182,6 +182,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
         console.log('_assign_datasets toggle filter group')
+        $scope.click_edit();
         _assign_datasets();
       };
 
@@ -194,7 +195,7 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
         console.log('selected cycles', $scope.selected_cycles)
         console.log('used cycles', $scope.used_cycles)
-
+        $scope.click_edit();
         console.log('_assign_datasets toggle cycle')
         _assign_datasets();
       };
@@ -222,6 +223,7 @@ angular.module('BE.seed.controller.data_view', [])
         }
         if ($scope.dataViewChart) {
           console.log('_assign_datasets toggle agg')
+          $scope.click_edit();
           _assign_datasets()
         }
       };
@@ -248,7 +250,9 @@ angular.module('BE.seed.controller.data_view', [])
         }
         if (reload_data) {
           _load_data();
+          $scope.click_edit();
         }
+
         console.log('_assign_datasets select source column')
         _assign_datasets();
       };
@@ -431,6 +435,13 @@ angular.module('BE.seed.controller.data_view', [])
         '#88CCAA',
         '#774411',
       ]
+      colorsByLabelPrefix = {}
+      const colorIter = colors[Symbol.iterator]();
+      for (let agg of $scope.aggregations) {
+        for (let fg of $scope.filter_groups) {
+          colorsByLabelPrefix[`${fg.name} - ${agg.name}`] = colorIter.next().value
+        }
+      }
 
       const _build_chart = () => {
         if (!$scope.data.graph_data) {
@@ -463,6 +474,7 @@ angular.module('BE.seed.controller.data_view', [])
                 labels: {
                   boxHeight: 0,
                   boxWidth: 50,
+                  sort: (a, b) => a.text > b.text, // alphabetical
                 },
               },
             },
@@ -526,9 +538,10 @@ angular.module('BE.seed.controller.data_view', [])
         for (let aggregation of axis1_aggregations) {
           for (let dataset of $scope.data.graph_data.datasets) {
             if (aggregation == dataset.aggregation && axis1_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
-              dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
-              dataset.backgroundColor = colors[i],
-              dataset.borderColor = colors[i],
+              dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
+              color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
+              dataset.backgroundColor = color
+              dataset.borderColor = color
               dataset.tension = 0.1
               dataset.yAxisID = 'y1'
               // spread in data filter so the object itself is not modified.
@@ -552,9 +565,10 @@ angular.module('BE.seed.controller.data_view', [])
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
               if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
-                dataset.label = `${dataset.filter_group} - ${dataset.column} - ${dataset.aggregation}`
-                dataset.backgroundColor = colors[i],
-                dataset.borderColor = colors[i],
+                dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
+                color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
+                dataset.backgroundColor = color
+                dataset.borderColor = color
                 dataset.tension = 0.1
                 dataset.yAxisID = 'y2'
                 dataset.borderDash = [10,15]
@@ -568,6 +582,9 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.dataViewChart.options.scales.y2.title.display = false
         }
 
+        yMax = Math.max(...datasets.map(d => Math.max(...d.data)));
+        $scope.dataViewChart.options.scales.y1.max = Math.trunc(1.1 * yMax);
+        $scope.dataViewChart.options.scales.y2.max = Math.trunc(1.1 * yMax);
         $scope.dataViewChart.data.labels = xAxisLabels.filter(xAxisLabelsSelectedMask)
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
