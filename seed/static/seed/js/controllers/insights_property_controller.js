@@ -344,7 +344,6 @@ angular.module('BE.seed.controller.insights_property', [])
                 },
                 y: {
                   beginAtZero: true,
-                  stacked: true,
                   position: 'left',
                   display: true,
                   title: {
