@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   'filter_groups',
   'Notification',
   'organization_payload',
+  'auth_payload',
   'property_columns',
   'spinner_utility',
   'x_axis_columns',
@@ -21,6 +22,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     filter_groups,
     Notification,
     organization_payload,
+    auth_payload,
     property_columns,
     spinner_utility,
     x_axis_columns
@@ -28,6 +30,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     spinner_utility.show();
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
+    $scope.auth = auth_payload.auth;
     $scope.compliance_metrics_error = [];
     $scope.fields = {
       start_year: '',
@@ -51,6 +54,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     }
     $scope.property_columns = property_columns;
     $scope.x_axis_columns = x_axis_columns;
+
+    console.log($scope.auth.requires_owner);
 
 
     $scope.get_column_display = function (id) {
