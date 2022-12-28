@@ -223,6 +223,10 @@ class DerivedColumn(models.Model):
         elif self.inventory_type == 1:
             inventory_type = 'TaxLotState'
         if created:
+            # check if the column name already exists for the table_name
+            if Column.objects.filter(organization=self.organization, table_name=inventory_type, column_name=self.name).exists():
+                raise ValidationError(f'Column name {inventory_type}.{self.name} already exists, must be unique')
+
             Column.objects.create(
                 derived_column=self,
                 column_name=self.name,

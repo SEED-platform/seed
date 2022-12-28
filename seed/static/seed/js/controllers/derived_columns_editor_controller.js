@@ -225,6 +225,17 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       };
 
       $scope.update_column_name_error = function () {
+        $scope.duplicate_column_name = false;
+        if ($scope.derived_column.inventory_type === 'Property') {
+          if ($scope.property_columns.some(col => col.column_name === $scope.derived_column.name)) {
+            $scope.duplicate_column_name = true
+          }
+        }else {
+          if ($scope.taxlot_columns.some(col => col.column_name === $scope.derived_column.name)) {
+            $scope.duplicate_column_name = true
+          }
+        }
+
         $scope.invalid_column_name = !$scope.derived_column.name;
       };
 
@@ -239,10 +250,11 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
           okButtonText: 'Yes',
           cancelButtonText: 'Cancel',
           headerText: 'Are you sure?',
-          bodyText: 'If you change the Type your current parameters will be reset. Would you like to continue?'
+          bodyText: 'If you change the Type your current configuration will be reset. Would you like to continue?'
         };
         simple_modal_service.showModal(modalOptions).then(() => {
           //user confirmed, clear the params then generate a new one
+          $scope.derived_column.name = '';
           $scope.parameters = [];
           $scope.parameters = [make_param()];
         }, () => {
