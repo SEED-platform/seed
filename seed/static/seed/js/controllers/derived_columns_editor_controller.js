@@ -279,7 +279,8 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         });
         return (
           any_param_errors ||
-          !!$scope.expression_error_message
+          !!$scope.expression_error_message ||
+          !!$scope.duplicate_column_name
         );
       };
 
