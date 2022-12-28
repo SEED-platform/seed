@@ -59,7 +59,7 @@
             </div>
             <div ng-show="selected_compliance_metric || !program_settings_not_changed" class="r-panel r-columns r-no-margin" disabled>
                 <form class="section_content">
-                    <fieldset ng-disabled="!auth.requires_owner">
+                    <fieldset ng-disabled="!auth.requires_member && !auth.requires_owner">
                         <div class="r-columns">
                             <div class="r-column">
                                 <div class="r-panel r-margin-bottom-10">

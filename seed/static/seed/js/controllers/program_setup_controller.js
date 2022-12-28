@@ -55,9 +55,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.property_columns = property_columns;
     $scope.x_axis_columns = x_axis_columns;
 
-    console.log($scope.auth.requires_owner);
-
-
     $scope.get_column_display = function (id) {
       let record = _.find($scope.property_columns, {id: id});
       if (record) {
