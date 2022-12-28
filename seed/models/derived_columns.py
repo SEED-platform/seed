@@ -230,6 +230,7 @@ class DerivedColumn(models.Model):
                 column_description=self.name,
                 table_name=inventory_type,
                 organization=self.organization,
+                is_extra_data=False,
             )
         return save_response
 
