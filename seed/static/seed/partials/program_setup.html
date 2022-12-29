@@ -22,7 +22,7 @@
             <div class="section_action_container left">
                 <h2><i class="fa fa-tachometer"></i> {$:: 'Program Configuration' | translate $}</h2>
             </div>
-            <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
+            <div ng-show="selected_compliance_metric && (auth.requires_owner || auth.requires_member)" class="section_action_container right_40 section_action_btn pull-right">
                 <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
                 <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
             </div>
@@ -101,9 +101,9 @@
                                         <li class="r-list-header" translate>X-Axis Field Options</li>
                                         <li ng-repeat="item in selected_compliance_metric.x_axis_columns" class="r-row r-row-centered">
                                             <span class="r-grow">{$:: get_x_axis_display(item) $}</span>
-                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
+                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_x_axis(item)" ng-show="auth.requires_owner || auth.requires_member"></i>
                                         </li>
-                                        <li class="r-row r-row-centered">
+                                        <li class="r-row r-row-centered" ng-show="auth.requires_owner || auth.requires_member">
                                             <select id="select-x-axis" class="form-control" ng-change="select_x_axis(); program_settings_changed()" ng-model="x_axis_selection">
                                                 <option ng-repeat="x_axis_column in x_axis_columns" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
                                             </select>
