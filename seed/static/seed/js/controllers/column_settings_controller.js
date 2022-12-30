@@ -389,7 +389,7 @@ angular.module('BE.seed.controller.column_settings', [])
         return $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/create_column_modal.html',
           controller: 'create_column_modal_controller',
-          size: 'lg',
+          // size: 'lg',
           resolve: {
             org_id: $scope.org.id,
             table_name: () => $scope.inventory_type == "properties"? "PropertyState": "TaxlotState",
