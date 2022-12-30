@@ -6,6 +6,8 @@
 """
 import json
 
+from django.core.exceptions import ValidationError
+from django.db.models import F, Func, JSONField, Value
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -17,7 +19,7 @@ from rest_framework.renderers import JSONRenderer
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Column, Organization
+from seed.models import Column, Organization, PropertyState, TaxLotState
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
 from seed.utils.api import (
@@ -110,6 +112,46 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'status': 'success',
             'columns': columns,
         })
+
+    @api_endpoint_class
+    @ajax_request_class
+    def create(self, request):
+        organization_id = self.get_organization(self.request)
+
+        table_name = self.request.data.get("table_name")
+        if table_name != "PropertyState" and table_name != "TaxLotState":
+            return JsonResponse({
+                'status': 'error',
+                'message': 'table_name must be "PropertyState" or "TaxLotState"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_column = Column.objects.create(
+                is_extra_data=True,
+                **self.request.data
+            )
+            new_column.save()
+        except ValidationError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        state_model = PropertyState if table_name == 'PropertyState' else TaxLotState
+        states = state_model.objects.filter(organization_id=organization_id)
+        states.update(
+            extra_data=Func(
+                F("extra_data"),
+                Value([self.request.data['column_name']]),
+                Value(1, JSONField()),
+                function="jsonb_set",
+            )
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'column': ColumnSerializer(new_column).data,
+        }, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
