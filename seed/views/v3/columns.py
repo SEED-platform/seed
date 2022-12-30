@@ -143,7 +143,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             extra_data=Func(
                 F("extra_data"),
                 Value([self.request.data['column_name']]),
-                Value(1, JSONField()),
+                Value("", JSONField()),
                 function="jsonb_set",
             )
         )
