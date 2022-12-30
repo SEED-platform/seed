@@ -13,6 +13,15 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
       return columns_service.update_column_for_org(user_service.get_organization().id, column_id, data);
     };
 
+    columns_service.create_column_for_org = function (org_id, data) {
+      return $http.post('/api/v3/columns/', {
+          organization_id: org_id,
+          ...data,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     columns_service.update_column_for_org = function (org_id, column_id, data) {
       return $http.put('/api/v3/columns/' + column_id + '/', data, {
         params: {
