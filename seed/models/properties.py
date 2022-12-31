@@ -751,6 +751,18 @@ def pre_delete_state(sender, **kwargs):
     kwargs['instance'].propertymeasure_set.all().delete()
 
 
+@receiver(pre_save, sender=PropertyState)
+def pre_save_state(sender, instance, **kwargs):
+    """On state create, update state with all the relevant derived data"""
+    from seed.models.derived_columns import DerivedColumn
+
+    # TODO: This only needs to happen on the creation of a propertystate or when source columns of the
+    # derived column is changed. How might we ensure this is only called when it needs to be?
+    derived_columns = DerivedColumn.objects.filter(organization=instance.organization)
+    for derived_column in derived_columns:
+        instance.derived_data[derived_column.name] = derived_column.evaluate(instance)
+
+
 class PropertyView(models.Model):
     """
     Similar to the old world of canonical building.

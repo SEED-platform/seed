@@ -10,7 +10,9 @@ import copy
 from typing import Any, Union
 
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
 from quantityfield.units import ureg
@@ -332,6 +334,25 @@ class DerivedColumn(models.Model):
                 val = dc.evaluate(inventory_state)
                 merged_parameters[dcp.parameter_name] = val
 
+    def update_derived_data(self) -> None:
+        """For every state with this derieved column, update the derived data for this column
+        """
+        inventory_type = DerivedColumn.INVENTORY_TYPE_TO_CLASS[self.inventory_type]
+        states = inventory_type.objects.filter(organization_id=self.organization_id)
+        with transaction.atomic():
+            for state in states:
+                state.derived_data[self.name] = self.evaluate(state)
+                state.save()
+
+
+@receiver(post_save, sender=DerivedColumn)
+def post_save_derived_column(sender, instance, **kwargs):
+    """Every time the expression is updated, update the derived data for the relevant states
+    """
+    # TODO: this only has to happen when instance.expression is modifed. How might we ensure this
+    # only happens whem needed?
+    instance.update_derived_data()
+
 
 class DerivedColumnParameter(models.Model):
     """
@@ -368,3 +389,15 @@ class DerivedColumnParameter(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=DerivedColumnParameter)
+def post_save_derived_column_parameter(sender, instance, created, **kwargs):
+    """On save of a DerivedColumnParameter, it's DerivedColumn should update all relevant states derived data.
+    """
+    # TODO: DerivedColumnParameter with the same DerivedColumn are often create/update one right after
+    # the other. How might we ensure this does get called more than needed? Perhaps with bulk creates?
+    derived_column = instance.derived_column
+    if hasattr(derived_column, '_cached_column_parameters'):
+        del derived_column._cached_column_parameters
+    derived_column.update_derived_data()

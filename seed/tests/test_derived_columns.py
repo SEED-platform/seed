@@ -12,6 +12,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 
 from seed.landing.models import SEEDUser as User
+from seed.models import PropertyState
 from seed.models.columns import Column
 from seed.models.derived_columns import (
     DerivedColumn,
@@ -499,8 +500,126 @@ class TestDerivedColumns(TestCase):
         result = derived_column.evaluate(property_state)
 
         # -- Assert
-        self.assertEqual(property_state.derived_data, {})  # for the moment, this is always empty
         self.assertEqual(2, result)
+
+        property_state = PropertyState.objects.get(pk=property_state.id)
+        self.assertEqual(property_state.derived_data, {derived_column.name: 2})
+
+    def test_derived_column_evaluate_is_successful_when_property_state_is_created_first(self):
+        # -- Setup
+        expression = '$a + $b'
+        column_parameters = {
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 3,
+            },
+            'b': {
+                'source_column': self.col_factory('bar', is_extra_data=True),
+                'value': 1,
+            }
+        }
+        property_state = self.property_state_factory.get_property_state(extra_data={"foo": 3, "bar": 1})
+
+        # -- Act
+        derived_column = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)['derived_column']
+
+        # -- Assert
+        property_state = PropertyState.objects.get(pk=property_state.id)
+        self.assertEqual(property_state.derived_data, {derived_column.name: 4})
+
+    def test_derived_data_updates_when_expression_is_changed(self):
+        # -- Setup
+        expression = '$a + $b'
+        column_parameters = {
+            # this parameter will be missing on the property state
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+            'b': {
+                'source_column': self.col_factory('bar', is_extra_data=True),
+                'value': 1,
+            }
+        }
+
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        derived_column = models['derived_column']
+        property_state = models['property_state']
+
+        self.assertEqual(property_state.derived_data, {derived_column.name: 2})
+
+        # -- Act
+        derived_column.expression = '$a - $b'
+        derived_column.save()
+
+        # -- Assert
+        property_state = PropertyState.objects.get(pk=property_state.id)
+        self.assertEqual(property_state.derived_data, {derived_column.name: 0})
+
+    def test_derived_data_updates_when_source_column_is_changed(self):
+        # -- Setup
+        expression = '$a + $b'
+        column_parameters = {
+            # this parameter will be missing on the property state
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+            'b': {
+                'source_column': self.col_factory('bar', is_extra_data=True),
+                'value': 1,
+            }
+        }
+
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        derived_column = models['derived_column']
+        property_state = models['property_state']
+
+        self.assertEqual(property_state.derived_data, {derived_column.name: 2})
+
+        buzz = self.col_factory('buzz', is_extra_data=True)
+        property_state.extra_data["buzz"] = 3
+        property_state.save()
+
+        # -- Act
+        param = DerivedColumnParameter.objects.get(derived_column=derived_column.id, source_column__column_name="foo")
+        param.source_column = buzz
+        param.save()
+
+        # -- Assert
+        property_state = PropertyState.objects.get(pk=property_state.id)
+        self.assertEqual(property_state.derived_data, {derived_column.name: 4})
+
+    def test_derived_data_updates_when_source_data_is_updated(self):
+        # -- Setup
+        a_column = self.col_factory('foo', is_extra_data=True)
+        b_column = Column.objects.get(table_name="PropertyState", column_name="building_count")
+        expression = '$a + $b'
+        column_parameters = {
+            'a': {
+                'source_column': a_column,
+                'value': 1,
+            },
+            'b': {
+                'source_column': b_column,
+                'value': 1,
+            }
+        }
+
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        derived_column = models['derived_column']
+        property_state = models['property_state']
+
+        self.assertEqual(property_state.derived_data, {derived_column.name: 2})
+
+        # -- Act
+        property_state.extra_data[a_column.column_name] = 2
+        property_state.building_count = 2
+        property_state.save()
+
+        # -- Assert
+        property_state = PropertyState.objects.get(pk=property_state.id)
+        self.assertEqual(property_state.derived_data, {derived_column.name: 4})
 
     def test_derived_column_evaluate_returns_none_when_missing_parameters(self):
         # -- Setup

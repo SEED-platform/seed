@@ -377,6 +377,20 @@ class TaxLotState(models.Model):
         return None
 
 
+@receiver(pre_save, sender=TaxLotState)
+def pre_save_state(sender, instance, **kwargs):
+    """On state create, update state with all the relevant derived data"""
+    # TODO: Currently, only this methods sister in Property State is tested. The two inventory types
+    # should share this method, or they should both be tested seperately.
+    from seed.models.derived_columns import DerivedColumn
+
+    # TODO: This only needs to happen on the creation of a propertystate or when source columns of the
+    # derived column is changed. How might we ensure this is only called when it needs to be?
+    derived_columns = DerivedColumn.objects.filter(organization=instance.organization)
+    for derived_column in derived_columns:
+        instance.derived_data[derived_column.name] = derived_column.evaluate(instance)
+
+
 class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
