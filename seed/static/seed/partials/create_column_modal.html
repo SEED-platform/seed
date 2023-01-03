@@ -1,0 +1,15 @@
+<div class="modal-header">
+    <h4 class="modal-title" translate>Create Column</h4>
+</div>
+<div class="modal-body no_bottom_padding row form-horizontal">
+    <div class="form-group">
+        <label class="col-sm-3 col-sm-offset-1 control-label" translate>Name</label>
+        <div class="col-sm-7">
+            <input type="text" class="form-control" ng-model="column.column_name">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="create_column()">{$:: 'Create Column' | translate $}
+    </button>
+</div>

@@ -126,7 +126,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
-  'BE.seed.controller.update_item_labels_modal'
+  'BE.seed.controller.update_item_labels_modal',
+  'BE.seed.controller.create_column_modal'
 
 ]);
 angular.module('BE.seed.filters', [
