@@ -205,6 +205,7 @@ class TaxLotProperty(models.Model):
                                    and col['id'] in show_columns])
             filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
                                               and col['id'] in show_columns])
+            filtered_derived_data_fields = set([col['column_name'] for col in obj_columns if col['derived_column'] is not None and col['id'] in show_columns])
 
         # get the related data
         join_map = {}
@@ -231,6 +232,7 @@ class TaxLotProperty(models.Model):
                         fields=filtered_extra_data_fields
                     ).items()
                 )
+                obj_dict.update([(k, v) for k, v in obj.state.derived_data.items() if k in filtered_derived_data_fields])
 
             # Use property_id instead of default (state_id)
             obj_dict['id'] = getattr(obj, lookups['obj_id'])

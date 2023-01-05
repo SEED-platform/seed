@@ -16,6 +16,8 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Column,
     Cycle,
+    DerivedColumn,
+    DerivedColumnParameter,
     Note,
     Property,
     PropertyState,
@@ -24,6 +26,8 @@ from seed.models import (
 )
 from seed.tasks import update_inventory_metadata
 from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeDerivedColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -63,6 +67,75 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.urls = ['http://example.com', 'http://example.org']
         self.client.login(**user_details)
 
+        self.derived_col_factory = FakeDerivedColumnFactory(
+            organization=self.org,
+            inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.col_factory = FakeColumnFactory(organization=self.org).get_column
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+    def _derived_column_for_property_factory(self, expression, column_parameters, create_property_state=True):
+        """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
+        which can be used to evaluate the DerivedColumn expression.
+
+        :param expression: str, expression for the DerivedColumn
+        :param column_parameters: dict, Columns to be added as parameters. Of the format:
+            {
+                <parameter name>: {
+                    'source_column': Column,
+                    'value': <value>,
+                },
+                ...
+            }
+            NOTE:
+                - <parameter name> is used for the DerivedColumnParameter.parameter_name
+                - `value` is used to set the value of the property state. If None,
+                  and the column is extra_data, it is not added the property state
+        :return: dict, of the format:
+            {
+                'property_state': PropertyState,
+                'derived_column': DerivedColumn,
+                'derived_column_parameters': [DerivedColumnParameters]
+            }
+        """
+        derived_column = self.derived_col_factory.get_derived_column(expression)
+
+        # link the parameter columns to the derived column
+        derived_column_parameters = []
+        for param_name, param_config in column_parameters.items():
+            derived_column_parameters.append(DerivedColumnParameter.objects.create(
+                parameter_name=param_name,
+                derived_column=derived_column,
+                source_column=param_config['source_column'],
+            ))
+
+        # make a property state which has all the values for the expression
+        property_state_config = {
+            'extra_data': {}
+        }
+        for param_name, param_config in column_parameters.items():
+            col = param_config['source_column']
+            param_value = param_config['value']
+            if col.is_extra_data:
+                # don't add extra data with value of None
+                # this is to assist testing properties with missing extra data columns
+                if param_value is not None:
+                    property_state_config['extra_data'][col.column_name] = param_value
+            else:
+                property_state_config[col.column_name] = param_value
+
+        property_state = None
+        if create_property_state:
+            property_state = self.property_state_factory.get_property_state(**property_state_config)
+
+        return {
+            'property_state': property_state,
+            'derived_column': derived_column,
+            'derived_column_parameters': derived_column_parameters
+        }
+
     def test_tax_lot_property_get_related(self):
         """Test to make sure get_related returns the fields"""
         for i in range(50):
@@ -85,6 +158,39 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)
+
+    def test_taxlot_property_returns_derived_data(self):
+        # -- Set up
+        foo = self.col_factory('foo', is_extra_data=True)
+        bar = self.col_factory('bar', is_extra_data=True)
+
+        property_view = self.property_view_factory.get_property_view()
+        property_view.state.extra_data = {"foo": 1, "bar": 1}
+        property_view.state.save()
+
+        expression = '$a + $b'
+        column_parameters = {
+            # this parameter will be missing on the property state
+            'a': {
+                'source_column': foo,
+                'value': 1,
+            },
+            'b': {
+                'source_column': bar,
+                'value': 1,
+            }
+        }
+        derived_column = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)['derived_column']
+        column = Column.objects.get(derived_column=derived_column)
+
+        property_view = PropertyView.objects.get(id=property_view.id)
+        columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
+
+        # -- Action
+        data = TaxLotProperty.serialize([property_view], [foo.id, bar.id, column.id], columns_from_database)
+
+        # -- Assertion
+        self.assertEqual(data[0][column.column_name], 2)
 
     def test_csv_export(self):
         """Test to make sure get_related returns the fields"""
