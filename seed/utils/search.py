@@ -432,7 +432,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
         parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
         # if not "", exclude "" and null
-        if filter_expression[-4:] == '__ne' and filter_value == '':
+        if filter_expression.endswith('__ne') and filter_value == '':
             filter_expression = filter_expression.replace('__ne', '__isnull')
             filter_value = ""  # evals to false
             is_not_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
@@ -440,7 +440,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
             parsed_filters &= is_not_null_parsed_filters
 
         # if exactly "", only return "" and null
-        elif filter_expression[-7:] == '__exact' and filter_value == '':
+        elif filter_expression.endswith('__exact') and filter_value == '':
             filter_expression = filter_expression.replace('__exact', '__isnull')
             filter_value = True
             is_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
