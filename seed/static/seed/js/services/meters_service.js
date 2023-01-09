@@ -5,7 +5,7 @@ angular.module('BE.seed.service.meters', [])
       var meters_factory = {};
 
       meters_factory.valid_energy_types_units = function () {
-        return $http.get('/api/v3/meters/valid_types_units/').then(function (response) {
+        return $http.get('/api/v3/properties/valid_meter_types_and_units/').then(function (response) {
           return response.data;
         });
       };
