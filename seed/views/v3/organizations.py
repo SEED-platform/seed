@@ -153,6 +153,20 @@ def _dict_org(request, organizations):
             'audit_template_user': o.audit_template_user,
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
+            'salesforce_enabled': o.salesforce_enabled,
+            'sf_indication_label': o.sf_indication_label,
+            'sf_violation_label': o.sf_violation_label,
+            'sf_compliance_label': o.sf_compliance_label,
+            'sf_account_rec_type': o.sf_account_rec_type,
+            'sf_contact_rec_type': o.sf_contact_rec_type,
+            'sf_last_update_date': o.sf_last_update_date,
+            'sf_unique_benchmark_id_fieldname': o.sf_unique_benchmark_id_fieldname,
+            'sf_seed_benchmark_id_fieldname': o.sf_seed_benchmark_id_fieldname,
+            'sf_url': o.sf_url,
+            'sf_username': o.sf_username,
+            'sf_password': o.sf_password,
+            'sf_security_token': o.sf_security_token,
+            'sf_domain': o.sf_domain,
         }
         orgs.append(org)
 
@@ -634,6 +648,63 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_password = posted_org.get('audit_template_password', False)
         if audit_template_password != org.audit_template_password:
             org.audit_template_password = audit_template_password
+
+        # Salesforce fields
+        salesforce_enabled = posted_org.get('salesforce_enabled', False)
+        if salesforce_enabled != org.salesforce_enabled:
+            org.salesforce_enabled = salesforce_enabled
+
+        sf_indication_label = posted_org.get('sf_indication_label')
+        if sf_indication_label != org.sf_indication_label:
+            org.sf_indication_label = sf_indication_label
+
+        sf_violation_label = posted_org.get('sf_violation_label')
+        if sf_violation_label != org.sf_violation_label:
+            org.sf_violation_label = sf_violation_label
+
+        sf_compliance_label = posted_org.get('sf_compliance_label')
+        if sf_compliance_label != org.sf_compliance_label:
+            org.sf_compliance_label = sf_compliance_label
+
+        sf_account_rec_type = posted_org.get('sf_account_rec_type')
+        if sf_account_rec_type != org.sf_account_rec_type:
+            org.sf_account_rec_type = sf_account_rec_type
+
+        sf_contact_rec_type = posted_org.get('sf_contact_rec_type')
+        if sf_contact_rec_type != org.sf_contact_rec_type:
+            org.sf_contact_rec_type = sf_contact_rec_type
+
+        sf_last_update_date = posted_org.get('sf_last_update_date')
+        if sf_last_update_date != org.sf_last_update_date:
+            org.sf_last_update_date = sf_last_update_date
+
+        sf_unique_benchmark_id_fieldname = posted_org.get('sf_unique_benchmark_id_fieldname')
+        if sf_unique_benchmark_id_fieldname != org.sf_unique_benchmark_id_fieldname:
+            org.sf_unique_benchmark_id_fieldname = sf_unique_benchmark_id_fieldname
+
+        sf_seed_benchmark_id_fieldname = posted_org.get('sf_seed_benchmark_id_fieldname')
+        if sf_seed_benchmark_id_fieldname != org.sf_seed_benchmark_id_fieldname:
+            org.sf_seed_benchmark_id_fieldname = sf_seed_benchmark_id_fieldname
+
+        sf_url = posted_org.get('sf_url')
+        if sf_url != org.sf_url:
+            org.sf_url = sf_url
+
+        sf_username = posted_org.get('sf_username')
+        if sf_username != org.sf_username:
+            org.sf_username = sf_username
+
+        sf_password = posted_org.get('sf_password')
+        if sf_password != org.sf_password:
+            org.sf_password = sf_password
+
+        sf_security_token = posted_org.get('sf_security_token')
+        if sf_security_token != org.sf_security_token:
+            org.sf_security_token = sf_security_token
+
+        sf_domain = posted_org.get('sf_domain')
+        if sf_domain != org.sf_domain:
+            org.sf_domain = sf_domain
 
         org.save()
 

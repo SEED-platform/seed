@@ -952,6 +952,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var organization_id = $stateParams.organization_id;
             return inventory_service.get_taxlot_column_names_for_org(organization_id);
           }],
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return label_service.get_labels_for_org(organization_id);
+          }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
             return auth_service.is_authorized(organization_id, ['requires_owner'])

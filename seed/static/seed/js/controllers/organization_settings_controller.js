@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_service',
   'property_column_names',
   'taxlot_column_names',
+  'labels_payload',
   'meters_service',
   '$translate',
   function (
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_service,
     property_column_names,
     taxlot_column_names,
+    labels_payload,
     meters_service,
     $translate
   ) {
@@ -30,6 +32,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
     $scope.org_static = angular.copy($scope.org);
+    $scope.labels = labels_payload;
 
     $scope.unit_options_eui = [{
       label: $translate.instant('kBtu/sq. ft./year'),

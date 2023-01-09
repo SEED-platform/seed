@@ -230,6 +230,22 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
+    # Salesforce Functionality
+    salesforce_enabled = models.BooleanField(default=False)
+    sf_indication_label = models.CharField(blank=True, max_length=128, default='')
+    sf_violation_label = models.CharField(blank=True, max_length=128, default='')
+    sf_compliance_label = models.CharField(blank=True, max_length=128, default='')
+    sf_account_rec_type = models.CharField(blank=True, max_length=20, default='')
+    sf_contact_rec_type = models.CharField(blank=True, max_length=20, default='')
+    sf_last_update_date = models.DateTimeField(null=True, blank=True)
+    sf_unique_benchmark_id_fieldname = models.CharField(blank=True, max_length=128, default='')
+    sf_seed_benchmark_id_fieldname = models.CharField(blank=True, max_length=128, default='')
+    sf_url = models.CharField(blank=True, max_length=200, default='')
+    sf_username = models.CharField(blank=True, max_length=128, default='')
+    sf_password = models.CharField(blank=True, max_length=128, default='')
+    sf_security_token = models.CharField(blank=True, max_length=128, default='')
+    sf_domain = models.CharField(blank=True, max_length=50, default='')
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
