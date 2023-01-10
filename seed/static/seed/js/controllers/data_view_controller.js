@@ -590,7 +590,6 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
         console.log('_assign_data COMPLETE ')
-        console.log($scope.dataViewChart.legend.legendItems)
       }
 
       _init_fields();
