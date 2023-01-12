@@ -126,7 +126,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
-  'BE.seed.controller.update_item_labels_modal'
+  'BE.seed.controller.update_item_labels_modal',
+  'BE.seed.controller.create_column_modal'
 
 ]);
 angular.module('BE.seed.filters', [
@@ -1044,6 +1045,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           filter_groups: ['filter_groups_service', function (filter_groups_service) {
             var inventory_type = 'Property'; // just properties for now
             return filter_groups_service.get_filter_groups(inventory_type, brief=true);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member','requires_viewer'])
+              .then(function (data) {
+                if (data.auth.requires_viewer) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
           }]
         }
       })
@@ -1088,6 +1102,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           filter_groups: ['filter_groups_service', function (filter_groups_service) {
             var inventory_type = 'Property'; // just properties for now
             return filter_groups_service.get_filter_groups(inventory_type, brief=true);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member','requires_viewer'])
+              .then(function (data) {
+                if (data.auth.requires_viewer) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
           }]
         }
       })
@@ -1122,9 +1149,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner'])
+            return auth_service.is_authorized(organization_id, ['requires_viewer'])
               .then(function (data) {
-                if (data.auth.requires_owner) {
+                if (data.auth.requires_viewer) {
                   return data;
                 } else {
                   return $q.reject('not authorized');
@@ -1163,9 +1190,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner'])
+            return auth_service.is_authorized(organization_id, ['requires_viewer'])
               .then(function (data) {
-                if (data.auth.requires_owner) {
+                if (data.auth.requires_viewer) {
                   return data;
                 } else {
                   return $q.reject('not authorized');
