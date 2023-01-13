@@ -352,6 +352,9 @@ class ExcelParser(object):
         """Handle different value types for XLS.
 
         :param item: xlrd cell object
+        :kwargs:
+            :trim_and_clean_strings: boolean, default False, strip whitespace before and after, remove
+                                     multiple whitespaces within string. Used specifically for headers
         :returns: items value with dates parsed properly
         """
 
@@ -380,7 +383,14 @@ class ExcelParser(object):
 
         # XL_CELL_TEXT
         if isinstance(item.value, basestring):
-            return unidecode(item.value)
+            if kwargs.get('trim_and_clean_strings', False):
+                # remove leading and trailing whitespace
+                value = item.value.strip()
+                # remove any double spaces within the string
+                value = " ".join(value.split())
+            else:
+                value = item.value
+            return unidecode(value)
 
         # only remaining items should be booleans
         return item.value
@@ -398,13 +408,13 @@ class ExcelParser(object):
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
-                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)).strip())
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True))
 
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             # self.cache_headers[j],
             return (
-                self.get_value(sheet.cell(header_row, j)),
+                self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True),
                 self.get_value(sheet.cell(i, j))
             )
 
