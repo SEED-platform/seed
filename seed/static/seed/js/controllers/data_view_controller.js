@@ -474,7 +474,7 @@ angular.module('BE.seed.controller.data_view', [])
                 labels: {
                   boxHeight: 0,
                   boxWidth: 50,
-                  sort: (a, b) => a.text > b.text, // alphabetical
+                  sort: (a, b) => a.text.localeCompare(b.text), // alphabetical
                 },
               },
             },
