@@ -453,7 +453,6 @@ class MetersParser(object):
                 # remove the ending space and subsequent text from string field to strip the units
                 field_strip_units = field[:field.rfind(' ')]
 
-
                 if field_strip_units == header_string:
                     provided_reading_types.append(field)
                     continue
