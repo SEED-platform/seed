@@ -169,7 +169,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         writer = csv.writer(response)
         writer.writerow(['Raw Columns', 'units', 'SEED Table', 'SEED Columns'])
 
-        for map in profile.mappings:
+        # sort the mappings by the to_field
+        sorted_mappings = sorted(profile.mappings, key=lambda m: m['to_field'].casefold())
+        for map in sorted_mappings:
             writer.writerow([
                 map['from_field'], map['from_units'], map['to_table_name'], map['to_field']
             ])
