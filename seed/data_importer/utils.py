@@ -111,6 +111,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Diesel']['kBtu (thousand Btu)'] = 1.00
         factors['Diesel']['Liters'] = 36.46
         factors['Diesel']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['GJ'] = 947.82
+        factors['District Chilled Water']['Btu'] = 0.001
+        factors['District Chilled Water']['kBtu (thousand Btu)'] = 1.00
+        factors['District Chilled Water']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['ton hours'] = 12.00
         factors['District Chilled Water - Absorption']['GJ'] = 947.82
         factors['District Chilled Water - Absorption']['Btu'] = 0.001
         factors['District Chilled Water - Absorption']['kBtu (thousand Btu)'] = 1.00
@@ -145,6 +150,13 @@ def kbtu_thermal_conversion_factors(country):
         factors['District Steam']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['District Steam']['MLbs. (million pounds)'] = 1194000.00
         factors['District Steam']['therms'] = 100.00
+        factors['Electric']['GJ'] = 947.82
+        factors['Electric']['Btu'] = 0.001
+        factors['Electric']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric']['Wh (Watt-hours)'] = 0.00341
+        factors['Electric']['kWh (thousand Watt-hours)'] = 3.41
+        factors['Electric']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Electric']['MWh (million Watt-hours)'] = 3412.00
         factors['Electric - Grid']['GJ'] = 947.82
         factors['Electric - Grid']['Btu'] = 0.001
         factors['Electric - Grid']['kBtu (thousand Btu)'] = 1.00

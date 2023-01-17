@@ -10,6 +10,8 @@ from seed.data_importer.utils import usage_point_id
 from seed.models import Meter
 from seed.serializers.base import ChoiceField
 
+# from seed.serializers.meter_readings import MeterReadingSerializer
+
 
 class MeterSerializer(serializers.ModelSerializer):
     type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)
@@ -18,7 +20,7 @@ class MeterSerializer(serializers.ModelSerializer):
     source_id = serializers.CharField(required=False, allow_blank=True)
     scenario_id = serializers.IntegerField(required=False, allow_null=True)
     scenario_name = serializers.CharField(required=False, allow_blank=True)
-    # meter_readings = serializers.StringRelatedField(many=True)
+    # meter_readings = MeterReadingSerializer(many=True)
 
     class Meta:
         model = Meter

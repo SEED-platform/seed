@@ -34,6 +34,7 @@ from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.media import MediaViewSet
+from seed.views.v3.meter_readings import MeterReadingViewSet
 from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
@@ -107,6 +108,9 @@ properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'propertie
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
+# This is a third level router, so we need to register it with the second level router
+meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')
+meters_router.register(r'readings', MeterReadingViewSet, basename='property-meter-readings')
 
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
@@ -130,6 +134,7 @@ urlpatterns = [
     re_path(r'^', include(analysis_messages_router.urls)),
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
+    re_path(r'^', include(meters_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
     re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
