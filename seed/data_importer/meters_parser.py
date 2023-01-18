@@ -450,10 +450,7 @@ class MetersParser(object):
         provided_reading_types = []
         for field in raw_data[0].keys():
             for header_string in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
-                # remove the ending space and subsequent text from string field to strip the units
-                field_strip_units = field[:field.rfind(' ')]
-
-                if field_strip_units == header_string:
+                if field.startswith(header_string):
                     provided_reading_types.append(field)
                     continue
 
@@ -490,9 +487,12 @@ class MetersParser(object):
                     raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
 
                 meter_type_match = type_and_units_match.group('meter_type').strip()
-                meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(meter_type_match)
-                if meter_type is None:
-                    raise Exception(f'Invalid meter type "{meter_type_match}"')
+                for energy_type in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
+                    if meter_type_match.startswith(energy_type):
+                        meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(energy_type)
+                        continue
+                if not meter_type:
+                    raise Exception(f'Invalid units "{meter_type_match}"')
 
                 units_match = type_and_units_match.group('units').strip()
                 units = METER_UNITS_MAPPING.get(units_match)
