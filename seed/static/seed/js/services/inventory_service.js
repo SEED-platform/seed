@@ -608,6 +608,22 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_property_column_names_and_ids_for_org = function (org_id) {
+      return $http.get('/api/v3/columns/', {
+        params: {
+          inventory_type: 'property',
+          organization_id: org_id,
+          only_used: false,
+          display_units: true
+        }
+      }).then(function (response) {
+        let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
+        return property_columns.map(a => {
+          return { column_name: a.column_name, display_name: a.display_name, id: a.id };
+        });
+      });
+    };
+
     inventory_service.get_taxlot_column_names_for_org = function (org_id) {
       return $http.get('/api/v3/columns/', {
         params: {

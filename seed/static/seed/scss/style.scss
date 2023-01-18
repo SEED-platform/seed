@@ -4516,11 +4516,25 @@ ul.r-list {
     border: 1px solid $errorBorder;
   }
 
+  &.r-success {
+    color: $successText;
+    background-color: $successBackground;
+    border: 1px solid $successBorder;
+  }
+
   &.r-info {
     color: $infoText;
     background-color: $infoBackground;
     border: 1px solid $infoBorder;
   }
+}
+
+.r-error-msg {
+  color: $errorText;
+  background-color: $errorBackground;
+  border: 1px solid $errorBorder;
+  margin: 5px;
+  padding: 5px;
 }
 
 .r-no-margin {
@@ -4541,6 +4555,10 @@ ul.r-list {
 
 .r-margin-right-5 {
   margin-right: 5px !important;
+}
+
+.r-margin-right-10 {
+  margin-right: 10px !important;
 }
 
 .r-margin-top-10 {

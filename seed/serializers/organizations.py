@@ -3,10 +3,9 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from django.utils import timezone
 from rest_framework import serializers
 
-from seed.models import Organization, StatusLabel
+from seed.models import Organization
 
 
 class SaveSettingsOrgFieldSerializer(serializers.Serializer):
@@ -38,19 +37,6 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
     salesforce_enabled = serializers.BooleanField()
-    sf_indication_label = serializers.ChoiceField(choices=StatusLabel.objects.all(), required=False)
-    sf_violation_label = serializers.ChoiceField(choices=StatusLabel.objects.all(), required=False)
-    sf_compliance_label = serializers.ChoiceField(choices=StatusLabel.objects.all(), required=False)
-    sf_account_rec_type = serializers.CharField(max_length=20)
-    sf_contact_rec_type = serializers.CharField(max_length=20)
-    sf_last_update_date = serializers.DateTimeField(default_timezone=timezone.utc)
-    sf_unique_benchmark_id_fieldname = serializers.CharField(max_length=128)
-    sf_seed_benchmark_id_fieldname = serializers.CharField(max_length=128)
-    sf_url = serializers.CharField(max_length=200)
-    sf_username = serializers.CharField(max_length=128)
-    sf_password = serializers.CharField(max_length=128)
-    sf_security_token = serializers.CharField(max_length=128)
-    sf_domain = serializers.CharField(max_length=50)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

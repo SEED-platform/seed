@@ -1,0 +1,359 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+:author
+"""
+from copy import deepcopy
+
+import django.core.exceptions
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+
+from seed.decorators import ajax_request_class, require_organization_id_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import StatusLabel as Label
+from seed.models.columns import Column
+from seed.models.salesforce_configs import SalesforceConfig
+from seed.serializers.salesforce_configs import SalesforceConfigSerializer
+from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
+from seed.utils.salesforce import test_connection
+
+
+def _validate_data(data, org_id):
+
+    error = False
+    msgs = []
+
+    # Indication Label
+    i_label_id = data.get('indication_label')
+    if i_label_id:
+        i_label = Label.objects.get(pk=i_label_id)
+        if i_label.super_organization_id != org_id:
+            # error, this label does not belong to this org
+            error = True
+            msgs.append('the selected indication label does not belong to this organization')
+
+    # Violation Label
+    v_label_id = data.get('violation_label')
+    if v_label_id:
+        v_label = Label.objects.get(pk=v_label_id)
+        if v_label.super_organization_id != org_id:
+            # error, this label does not belong to this org
+            error = True
+            msgs.append('the selected violation label does not belong to this organization')
+
+    # Compliance Label
+    c_label_id = data.get('compliance_label')
+    if c_label_id:
+        c_label = Label.objects.get(pk=c_label_id)
+        if c_label.super_organization_id != org_id:
+            # error, this label does not belong to this org
+            error = True
+            msgs.append('the selected compliance label does not belong to this organization')
+
+    #  Contact Columns
+    column_names = ['contact_email_column', 'contact_name_column', 'account_name_column', 'data_admin_email_column', 'data_admin_name_column']
+    for item in column_names:
+        c_id = data.get(item)
+        if c_id:
+            c_col = Column.objects.get(pk=c_id)
+
+            if c_col.organization_id != org_id:
+                # error, this column does not belong to this org
+                error = True
+                msgs.append('The selected column for ' + item + ' does not belong to this organization')
+
+    return error, msgs
+
+
+class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
+    serializer_class = SalesforceConfigSerializer
+    model = SalesforceConfig
+
+    @swagger_auto_schema_org_query_param
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def list(self, request):
+        organization_id = self.get_organization(request)
+        salesforce_configs = SalesforceConfig.objects.filter(organization=organization_id)
+
+        return JsonResponse({
+            'status': 'success',
+            'salesforce_configs': SalesforceConfigSerializer(salesforce_configs, many=True).data
+        }, status=status.HTTP_200_OK)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['POST'])
+    def salesforce_connection(self, request, pk=None):
+        """
+        Tests connection to Salesforce using saved credentials
+        """
+        body = request.data
+        # conf = SalesforceConfig.objects.get(pk=pk)
+        data = body.get('salesforce_config', None)
+        if data is None:
+            return JsonResponse({'status': 'error', 'message': 'malformed request'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        # get values from form (they may not be saved yet)
+        params = {}
+        params['instance_url'] = data.get('url', None)
+        params['username'] = data.get('username', None)
+        params['password'] = data.get('password', None)
+        params['security_token'] = data.get('security_token', None)
+        domain = data.get('domain', None)
+        if domain:
+            params['domain'] = data.get('domain')
+
+        # connect
+        status_msg, message = test_connection(params)
+        if status_msg == 'error':
+            return JsonResponse({'status': status_msg, 'message': message},
+                                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({'status': status_msg})
+
+    @swagger_auto_schema_org_query_param
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    def retrieve(self, request, pk=0):
+        organization = self.get_organization(request)
+        if pk == 0:
+            try:
+                return JsonResponse({
+                    'status': 'success',
+                    'salesforce_config': SalesforceConfigSerializer(
+                        SalesforceConfig.objects.filter(organization=organization).first()
+                    ).data
+                }, status=status.HTTP_200_OK)
+            except Exception:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No configs exist with this identifier'
+                }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            try:
+                return JsonResponse({
+                    'status': 'success',
+                    'salesforce_config': SalesforceConfigSerializer(
+                        SalesforceConfig.objects.get(id=pk, organization=organization)
+                    ).data
+                }, status=status.HTTP_200_OK)
+            except SalesforceConfig.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'SalesforceConfig with id {pk} does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema_org_query_param
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    def destroy(self, request, pk):
+        organization_id = self.get_organization(request)
+
+        try:
+            SalesforceConfig.objects.get(id=pk, organization=organization_id).delete()
+        except SalesforceConfig.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'SalesforceConfig with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Successfully deleted SalesforceConfig ID {pk}'
+        }, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'indication_label': 'integer',
+                'violation_label': 'integer',
+                'compliance_label': 'integer',
+                'account_rec_type': 'string',
+                'contact_rec_type': 'string',
+                'last_update_date': 'string',
+                'unique_benchmark_id_fieldname': 'string',
+                'seed_benchmark_id_fieldname': 'string',
+                'url': 'string',
+                'username': 'string',
+                'password': 'string',
+                'security_token': 'string',
+                'domain': 'string',
+                'cycle_fieldname': 'string',
+                'status_fieldname': 'string',
+                'labels_fieldname': 'string',
+                'contact_email_column': 'integer',
+                'contact_name_column': 'integer',
+                'account_name_column': 'integer',
+                'data_admin_email_column': 'integer',
+                'data_admin_name_column': 'integer',
+            },
+        )
+    )
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    def create(self, request):
+
+        org_id = int(self.get_organization(request))
+        try:
+            Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'bad organization_id'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        data = deepcopy(request.data)
+        data.update({'organization_id': org_id})
+
+        error, msgs = _validate_data(data, org_id)
+        if (error is True):
+            return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
+                                status=status.HTTP_400_BAD_REQUEST)
+        serializer = SalesforceConfigSerializer(data=data)
+
+        if not serializer.is_valid():
+            error_response = {
+                'status': 'error',
+                'message': 'Data Validation Error',
+                'errors': serializer.errors
+            }
+            return JsonResponse(error_response, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            serializer.save()
+            return JsonResponse({
+                'status': 'success',
+                'salesforce_config': serializer.data
+            }, status=status.HTTP_200_OK)
+        except django.core.exceptions.ValidationError as e:
+
+            message_dict = e.message_dict
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Bad Request',
+                'errors': message_dict
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'indication_label': 'integer',
+                'violation_label': 'integer',
+                'compliance_label': 'integer',
+                'account_rec_type': 'string',
+                'contact_rec_type': 'string',
+                'last_update_date': 'string',
+                'unique_benchmark_id_fieldname': 'string',
+                'seed_benchmark_id_fieldname': 'string',
+                'url': 'string',
+                'username': 'string',
+                'password': 'string',
+                'security_token': 'string',
+                'domain': 'string',
+                'cycle_fieldname': 'string',
+                'status_fieldname': 'string',
+                'labels_fieldname': 'string',
+                'contact_email_column': 'integer',
+                'contact_name_column': 'integer',
+                'account_name_column': 'integer',
+                'data_admin_email_column': 'integer',
+                'data_admin_name_column': 'integer',
+            },
+        )
+    )
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    def update(self, request, pk):
+        org_id = self.get_organization(request)
+        salesforce_config = None
+        try:
+            salesforce_config = SalesforceConfig.objects.get(id=pk, organization=org_id)
+        except SalesforceConfig.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'SalesforceConfig with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        data = deepcopy(request.data)
+        data.update({'organization': org_id})
+        error, msgs = _validate_data(data, org_id)
+        if (error is True):
+            return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = SalesforceConfigSerializer(salesforce_config, data=data, partial=True)
+
+        if not serializer.is_valid():
+            print(f"serializer errors: {serializer.errors}")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Bad Request',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            serializer.save()
+            return JsonResponse({
+                'status': 'success',
+                'salesforce_config': serializer.data,
+            }, status=status.HTTP_200_OK)
+        except django.core.exceptions.ValidationError as e:
+            message_dict = e.message_dict
+            # rename key __all__ to general to make it more user friendly
+            if '__all__' in message_dict:
+                message_dict['general'] = message_dict.pop('__all__')
+
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Bad request',
+                'errors': message_dict,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def evaluate(self, request, pk):
+        organization = self.get_organization(request)
+        deepcopy(request.data)
+
+        try:
+            salesforce_config = SalesforceConfig.objects.get(id=pk, organization=organization)
+        except Exception:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'SalesforceConfig does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        response = salesforce_config.evaluate()
+
+        return JsonResponse({
+            'status': 'success',
+            'data': response
+        })

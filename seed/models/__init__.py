@@ -27,6 +27,8 @@ from .auditlog import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa
 from .meters import *  # noqa
+from .salesforce_configs import *  # noqa
+from .salesforce_mappings import *  # noqa
 from .sensors import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
