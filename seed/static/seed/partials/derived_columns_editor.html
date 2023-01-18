@@ -45,6 +45,7 @@
                         placeholder="Derived column name"
                     >
                     <div ng-if="invalid_column_name" class="text-danger">Please provide a valid name</div>
+                    <div ng-if="duplicate_column_name" class="text-danger">Column name already exists, must be unique</div>
                 </div>
                 <select
                     type="text"
