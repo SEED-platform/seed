@@ -319,7 +319,7 @@ class TestDerivedColumns(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-    def _derived_column_for_property_factory(self, expression, column_parameters, create_property_state=True):
+    def _derived_column_for_property_factory(self, expression, column_parameters, name=None, create_property_state=True):
         """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
         which can be used to evaluate the DerivedColumn expression.
 
@@ -343,7 +343,7 @@ class TestDerivedColumns(TestCase):
                 'derived_column_parameters': [DerivedColumnParameters]
             }
         """
-        derived_column = self.derived_col_factory.get_derived_column(expression)
+        derived_column = self.derived_col_factory.get_derived_column(expression=expression, name=name)
 
         # link the parameter columns to the derived column
         derived_column_parameters = []
@@ -639,6 +639,7 @@ class TestDerivedColumns(TestCase):
         # -- Setup
         # expression which sums all the parameters
         expression = '$a + 2'
+        derived_column_name = 'dc1'
         column_parameters = {
             'a': {
                 'source_column': self.col_factory('foo', is_extra_data=True),
@@ -646,27 +647,41 @@ class TestDerivedColumns(TestCase):
             },
         }
 
-        models = self._derived_column_for_property_factory(expression, column_parameters)
+        models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
         derived_column = models['derived_column']
         property_state = models['property_state']
-
-        derived_column.name = 'dc1'
-        derived_column.save()
 
         self.assertEqual(derived_column.evaluate(property_state), 3)
 
         column_with_derived_column = Column.objects.filter(derived_column=derived_column.id).first()
         expression = '$b + 2'
+        derived_column_name_2 = 'dc2'
         column_parameters = {
             'b': {
                 'source_column': column_with_derived_column,
                 'value': None  # not necessary if property state is already created
             },
         }
-        models = self._derived_column_for_property_factory(expression, column_parameters, create_property_state=False)
+        models = self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name_2, create_property_state=False)
         derived_column2 = models['derived_column']
-        derived_column2.name = 'dc2'
-        derived_column2.save()
 
         # Derived Column 2 (defined by a different derived column) can be evaluated
         self.assertEqual(derived_column2.evaluate(property_state), 5)
+
+    def test_derived_column_duplicate_name(self):
+        """Test that a derived column cannot be created with the same name as another column"""
+
+        expression = '$a + 2'
+        # gross_floor_area is already created and should fail
+        derived_column_name = 'gross_floor_area'
+        column_parameters = {
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+        }
+
+        with self.assertRaises(Exception) as exc:
+            self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
+        # validation errors return as a list of errors, so check the string representation of the list
+        self.assertEqual(str(exc.exception), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
