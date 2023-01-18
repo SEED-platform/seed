@@ -29,7 +29,7 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         property_view_pk = self.kwargs.get('property_pk', None)
         if not property_view_pk:
             # Return None otherwise swagger will not be able to process the request
-            raise Exception('No property_pk (property view id) provided in URL to create the meter reading')
+            return MeterReading.objects.none()
         property_view = PropertyView.objects.get(pk=property_view_pk)
         self.property_pk = property_view.property.pk
 

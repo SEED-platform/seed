@@ -218,7 +218,7 @@ class MeterReading(models.Model):
     on import to kBtu using the conversion_factor which is determined by the meter type and raw units on import,
     therefore, the reading field of this model will always be in kBtu.
 
-    The original units however when being displayed to the user ie. (Property Detail Meters tab)
+    The original units however when being displayed to the user (e.g., on the Property Detail Meters tab)
     will contain the original units and meter readings.
     """
     meter = models.ForeignKey(
