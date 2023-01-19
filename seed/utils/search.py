@@ -429,23 +429,38 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
-        parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+        # when the filter value is "", we want to be sure to include None and "".
+        if filter_value == '':
+            # if not "", exclude null
+            if filter_expression.endswith('__ne'):
+                is_null_filter_expression = filter_expression.replace('__ne', '__isnull')
+                is_null_filter_value = ""  # evals to false
 
-        # if not "", exclude "" and null
-        if filter_expression.endswith('__ne') and filter_value == '':
-            filter_expression = filter_expression.replace('__ne', '__isnull')
-            filter_value = ""  # evals to false
-            is_not_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+            # if exactly "", only return null
+            elif filter_expression.endswith('__exact'):
+                is_null_filter_expression = filter_expression.replace('__exact', '__isnull')
+                is_null_filter_value = True
 
-            parsed_filters &= is_not_null_parsed_filters
+            parsed_filters, parsed_annotations = _parse_view_filter(
+                is_null_filter_expression,
+                is_null_filter_value,
+                columns_by_name
+            )
 
-        # if exactly "", only return "" and null
-        elif filter_expression.endswith('__exact') and filter_value == '':
-            filter_expression = filter_expression.replace('__exact', '__isnull')
-            filter_value = True
-            is_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+            # if column data_type is "string", also filter on the empty string
+            filter = QueryFilter.parse(filter_expression)
+            column = columns_by_name.get(filter.field_name)
+            if column is not None and column.get("data_type") == "string":
+                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
-            parsed_filters |= is_null_parsed_filters
+                if filter_expression.endswith('__ne'):
+                    parsed_filters &= empty_string_parsed_filters
+
+                elif filter_expression.endswith('__exact'):
+                    parsed_filters |= empty_string_parsed_filters
+
+        else:
+            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)
