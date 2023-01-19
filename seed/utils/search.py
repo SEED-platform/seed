@@ -439,7 +439,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
             # if exactly "", only return null
             elif filter_expression.endswith('__exact'):
                 is_null_filter_expression = filter_expression.replace('__exact', '__isnull')
-                is_null_filter_value = True
+                is_null_filter_value = "True"
 
             parsed_filters, parsed_annotations = _parse_view_filter(
                 is_null_filter_expression,
@@ -449,8 +449,8 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
-            column = columns_by_name.get(filter.field_name)
-            if column is not None and column.get("data_type") == "string":
+            column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
+            if column_data_type == "string":
                 empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
                 if filter_expression.endswith('__ne'):
