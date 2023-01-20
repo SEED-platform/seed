@@ -3,3 +3,4 @@ boto3==1.17.36
 django-sslify==0.2.7
 django-ses==1.0.3
 uWSGI==2.0.17.1
+django-storages

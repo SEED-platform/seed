@@ -6,7 +6,7 @@ import os
 import pint
 import xlrd
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage
 from django.http import JsonResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from past.builtins import basestring
@@ -28,7 +28,7 @@ def get_upload_path(filename):
     path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
 
     # Get a unique filename using the get_available_name method in FileSystemStorage
-    s = FileSystemStorage()
+    s = default_storage
     return s.get_available_name(path)
 
 
@@ -95,10 +95,6 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         filename = the_file.name
         path = get_upload_path(filename)
 
-        # verify the directory exists
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
-
         extension = the_file.name.split(".")[-1]
         if extension == "xlsx" or extension == "xls":
             workbook = xlrd.open_workbook(file_contents=the_file.read())
@@ -119,7 +115,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                 })
 
         # save the file
-        with open(path, 'wb+') as temp_file:
+        with default_storage.open(path, mode='wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
         org_id = self.get_organization(request)
@@ -228,13 +224,9 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         # create a folder to keep pm_import files
         path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
 
-        # Get a unique filename using the get_available_name method in FileSystemStorage
-        s = FileSystemStorage()
+        # Get a unique filename using the get_available_name method in default_storage
+        s = default_storage
         path = s.get_available_name(path)
-
-        # verify the directory exists
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
 
         # This list should cover the core keys coming from PM, ensuring that they map easily
         # We will also look for keys not in this list and just map them to themselves

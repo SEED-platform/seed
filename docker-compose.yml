@@ -25,8 +25,11 @@ services:
     image: seedplatform/seed:latest
     build: .
     environment:
+      - USE_S3
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+      - AWS_STORAGE_BUCKET_NAME
+      - AWS_S3_REGION_NAME
       - AWS_SES_REGION_NAME
       - AWS_SES_REGION_ENDPOINT
       - BSYNCR_SERVER_HOST
@@ -66,6 +69,11 @@ services:
     build: .
     command: /seed/docker/start_celery_docker.sh
     environment:
+      - USE_S3
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_S3_REGION_NAME
+      - AWS_STORAGE_BUCKET_NAME
       - BSYNCR_SERVER_HOST
       - BSYNCR_SERVER_PORT
       - POSTGRES_DB=seed

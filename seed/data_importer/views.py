@@ -13,7 +13,7 @@ import pint
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage
 from django.http import HttpResponse, JsonResponse
 from past.builtins import basestring
 from rest_framework import serializers, status, viewsets
@@ -123,15 +123,11 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
 
         # Get a unique filename using the get_available_name method in FileSystemStorage
-        s = FileSystemStorage()
+        s = default_storage
         path = s.get_available_name(path)
 
-        # verify the directory exists
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
-
         # save the file
-        with open(path, 'wb+') as temp_file:
+        with default_storage.open(filename, mode='wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
 
@@ -225,13 +221,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # create a folder to keep pm_import files
         path = os.path.join(settings.MEDIA_ROOT, "uploads", "pm_imports", file_name)
 
-        # Get a unique filename using the get_available_name method in FileSystemStorage
-        s = FileSystemStorage()
+        # Get a unique filename using the get_available_name method in deafult_storage
+        s = default_storage
         path = s.get_available_name(path)
-
-        # verify the directory exists
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
 
         # This list should cover the core keys coming from PM, ensuring that they map easily
         # We will also look for keys not in this list and just map them to themselves
@@ -344,7 +336,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
-        with open(path, 'w', encoding='utf-8') as csv_file:
+        with default_storage.open(request.FILES['file'], 'w', encoding='utf-8') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
             for row_num, row in enumerate(rows):
                 pm_csv_writer.writerow(row)
