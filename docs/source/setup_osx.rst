@@ -42,7 +42,7 @@ can also create other superusers.
 
 .. code-block:: console
 
-    ./manage.py create_default_user --username=demo@seed.lbl.gov --organization=lbl --password=demo123
+    ./manage.py create_default_user --username=demo@seed-platform.org --organization=lbl --password=demo123
 
 
 Prerequisites

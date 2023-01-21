@@ -433,7 +433,7 @@ Closed Issues and Features (Total: 54):
 - Fixed [#2374]( https://github.com/SEED-platform/seed/issues/2374 ), Import spreadsheets without a raw header results in an error
 - Maintenance [#2379]( https://github.com/SEED-platform/seed/issues/2379 ), Refactor perms for several API v3 views
 - Fixed [#2410]( https://github.com/SEED-platform/seed/issues/2410 ), Merge and Link Matches -- didn't seem to merge records that should have merged
-- Maintenance [#2432]( https://github.com/SEED-platform/seed/issues/2432 ), Migrate seedv2 to helm and upgrade to latest approved version
+- Maintenance [#2432]( https://github.com/SEED-platform/seed/issues/2432 ), Migrate production to helm and upgrade to latest approved version
 - Fixed [#2434]( https://github.com/SEED-platform/seed/issues/2434 ), Ensure Sentry is working on all of our instances
 - Feature [#2440]( https://github.com/SEED-platform/seed/issues/2440 ), Add API v3 endpoints /analyses GET and /analyses/{id}/ GET
 - Feature [#2455]( https://github.com/SEED-platform/seed/issues/2455 ), Implement front-end for Analyses summary page for Property
