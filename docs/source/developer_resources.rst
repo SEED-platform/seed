@@ -327,7 +327,7 @@ Restoring a Database Dump
     psql -d seed -c 'SELECT timescaledb_pre_restore();'
 
     # restore a previous database dump (must be pg_restore 12+)
-    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seed /backups/prod-backups/seedv2_20191203_000002.dump
+    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seed /backups/prod-backups/prod_20191203_000002.dump
     # if any errors appear during the pg_restore process check that the `installed_version` of the timescaledb extension where the database was dumped matches the extension version where it's being restored
     # `SELECT default_version, installed_version FROM pg_available_extensions WHERE name = 'timescaledb';`
 
@@ -342,7 +342,7 @@ Restoring a Database Dump
         --organization=testorg
 
 
-    # if restoring a seedv2 backup to a different deployment update the site settings for password reset emails
+    # if restoring a production backup to a different deployment update the site settings for password reset emails
     ./manage.py shell
 
     from django.contrib.sites.models import Site
