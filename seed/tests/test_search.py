@@ -46,7 +46,7 @@ class TestInventoryViewSearchParsers(TestCase):
             TestCase('canonical column with string data_type', QueryDict(f'custom_id_1_{custom_id_1_id}=123'), Q(state__custom_id_1='123')),
             TestCase('canonical column with geometry data_type', QueryDict(f'property_footprint_{property_footprint_id}=abcdefg'), Q(state__property_footprint='abcdefg')),
             TestCase('canonical column with datetime data_type', QueryDict(f'updated_{updated_id}=2022-01-01 10:11:12'), Q(state__updated=datetime(2022, 1, 1, 10, 11, 12))),
-            TestCase('canonical column with date data_type', QueryDict(f'year_ending_{year_ending_id}=2022-01-01'), Q(state__year_ending=datetime(2022, 1, 1))),
+            TestCase('canonical column with date data_type', QueryDict(f'year_ending_{year_ending_id}=2022-01-01'), Q(state__year_ending=datetime(2022, 1, 1).date())),
             TestCase('canonical column with area data_type', QueryDict(f'gross_floor_area_{gross_floor_area_id}=12.3'), Q(state__gross_floor_area=12.3)),
             TestCase('canonical column with eui data_type', QueryDict(f'site_eui_{site_eui_id}=12.3'), Q(state__site_eui=12.3)),
         ]
