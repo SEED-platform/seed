@@ -14,7 +14,8 @@ from typing import Any, Callable, Union
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, NullIf, Replace
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast, Coalesce, Replace
 from django.http.request import QueryDict
 from past.builtins import basestring
 
@@ -255,7 +256,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
 
     Why is this necessary? In some cases, extra_data only stores string values.
     This means anytime you try to filter numeric values in extra data, it won't
-    behave as expected. Thus we cast extra data to the defined column data_type
+    behave as expected. Thus, we cast extra data to the defined column data_type
     at query time to make sure our filters and sorts will work.
 
     :param column_name: the Column.column_name for a Column which is extra_data
@@ -263,48 +264,45 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     :returns: the annotated field name which contains the casted result, along with
               a dict of annotations
     """
-    full_field_name = f'state__extra_data__{column_name}'
-
     # annotations require a few characters to be removed...
-    cleaned_column_name = column_name.replace(' ', '_')
-    cleaned_column_name = cleaned_column_name.replace("'", '-')
-    cleaned_column_name = cleaned_column_name.replace('"', '-')
-    cleaned_column_name = cleaned_column_name.replace('`', '-')
-    cleaned_column_name = cleaned_column_name.replace(';', '-')
+    cleaned_column_name = column_name \
+        .replace(' ', '_') \
+        .replace("'", '-') \
+        .replace('"', '-') \
+        .replace('`', '-') \
+        .replace(';', '-')
     text_field_name = f'_{cleaned_column_name}_to_text'
-    stripped_field_name = f'_{cleaned_column_name}_stripped'
-    cleaned_field_name = f'_{cleaned_column_name}_cleaned'
     final_field_name = f'_{cleaned_column_name}_final'
 
     annotations: AnnotationDict = {
-        text_field_name: Cast(full_field_name, output_field=models.TextField()),
-        # after casting a json field to text, the resulting value will be wrapped
-        # in double quotes which need to be removed
-        stripped_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
-        cleaned_field_name: NullIf(stripped_field_name, models.Value('null'), output_field=models.TextField())
+        # use postgresql json string operator `->>`
+        text_field_name: KeyTextTransform(column_name, 'state__extra_data'),
     }
     if data_type == 'integer':
         annotations.update({
-            final_field_name: Cast(cleaned_field_name, output_field=models.IntegerField())
+            final_field_name: Cast(
+                # Remove comma separators
+                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.IntegerField())
         })
     elif data_type in ['number', 'float', 'area', 'eui']:
         annotations.update({
-            final_field_name: Cast(cleaned_field_name, output_field=models.FloatField())
+            final_field_name: Cast(
+                # Remove comma separators
+                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.FloatField())
         })
     elif data_type in ['date', 'datetime']:
         annotations.update({
-            final_field_name: Cast(cleaned_field_name, output_field=models.DateTimeField())
+            final_field_name: Cast(text_field_name, output_field=models.DateTimeField())
         })
     elif data_type == 'boolean':
         annotations.update({
-            final_field_name: Cast(cleaned_field_name, output_field=models.BooleanField())
+            final_field_name: Cast(text_field_name, output_field=models.BooleanField())
         })
     else:
-        # treat it as a string (just cast to text and strip)
-        annotations = {
-            text_field_name: Cast(full_field_name, output_field=models.TextField()),
-            final_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
-        }
+        # treat as string
+        annotations.update({
+            final_field_name: Coalesce(text_field_name, models.Value(''), output_field=models.TextField()),
+        })
 
     return final_field_name, annotations
 
@@ -340,7 +338,6 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
         return Q(), {}
 
     column_name = column["column_name"]
-    updated_filter = None
     annotations: AnnotationDict = {}
     if column['is_extra_data']:
         new_field_name, annotations = _build_extra_data_annotations(column['column_name'], column['data_type'])
@@ -349,10 +346,15 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
         updated_filter = QueryFilter(f'state__{column_name}', filter.operator, filter.is_negated)
 
     parser = DATA_TYPE_PARSERS.get(column['data_type'], str)
-    try:
-        new_filter_value = parser(filter_value)
-    except Exception:
-        raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+
+    # isnull filtering should not coerce booleans to the column type
+    if filter_expression.endswith('__isnull') and isinstance(filter_value, bool):
+        new_filter_value = filter_value
+    else:
+        try:
+            new_filter_value = parser(filter_value)
+        except Exception:
+            raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
 
     return updated_filter.to_q(new_filter_value), annotations
 
@@ -429,23 +431,38 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
-        parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+        # when the filter value is "", we want to be sure to include None and "".
+        if filter_value == '':
+            # if not "", exclude null
+            if filter_expression.endswith('__ne'):
+                is_null_filter_expression = filter_expression.replace('__ne', '__isnull')
+                is_null_filter_value = False
 
-        # if not "", exclude "" and null
-        if filter_expression.endswith('__ne') and filter_value == '':
-            filter_expression = filter_expression.replace('__ne', '__isnull')
-            filter_value = ""  # evals to false
-            is_not_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+            # if exactly "", only return null
+            elif filter_expression.endswith('__exact'):
+                is_null_filter_expression = filter_expression.replace('__exact', '__isnull')
+                is_null_filter_value = True
 
-            parsed_filters &= is_not_null_parsed_filters
+            parsed_filters, parsed_annotations = _parse_view_filter(
+                is_null_filter_expression,
+                is_null_filter_value,
+                columns_by_name
+            )
 
-        # if exactly "", only return "" and null
-        elif filter_expression.endswith('__exact') and filter_value == '':
-            filter_expression = filter_expression.replace('__exact', '__isnull')
-            filter_value = True
-            is_null_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+            # if column data_type is "string", also filter on the empty string
+            filter = QueryFilter.parse(filter_expression)
+            column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
+            if column_data_type in ['string', 'None']:
+                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
-            parsed_filters |= is_null_parsed_filters
+                if filter_expression.endswith('__ne'):
+                    parsed_filters &= empty_string_parsed_filters
+
+                elif filter_expression.endswith('__exact'):
+                    parsed_filters |= empty_string_parsed_filters
+
+        else:
+            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)

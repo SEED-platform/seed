@@ -256,7 +256,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       const getTableFilter = (value, operator) => {
         switch (operator) {
           case 'exact': return `"${value}"`;
-          case 'icontains':return value;
+          case 'icontains': return value;
           case 'gt': return `>${value}`;
           case 'gte': return `>=${value}`;
           case 'lt': return `<${value}`;
@@ -791,7 +791,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
         } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
-          options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
+          options.cellFilter = 'tolerantNumber: ' + $scope.organization.display_decimal_places;
         } else if (col.is_derived_column) {
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
         }
@@ -1100,9 +1100,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.column_filters,
           $scope.column_sorts,
           ids_only
-        ).then(function (data) {
-          return data;
-        });
+        );
       };
 
       // evaluate all derived columns and add the results to the table
@@ -1163,7 +1161,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         return fetch(page, page_size)
           .then(function (data) {
             if (data.status === 'error') {
-              let message = data.message;
+              let {message} = data;
               if (data.recommended_action === 'update_column_settings') {
                 const columnSettingsUrl = $state.href(
                   'organization_column_settings',
@@ -1568,8 +1566,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         exact: '=',
         lt: '<',
         lte: '<=',
-        gt: '<',
-        gte: '<=',
+        gt: '>',
+        gte: '>=',
         icontains: ''
       };
 
@@ -1578,7 +1576,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         if (!column || column.filters.size < 1) {
           return false;
         }
-        let newTerm = [];
+        const newTerm = [];
         for (let i in $scope.column_filters) {
           const filter = $scope.column_filters[i];
           if (filter.name !== filterToDelete.name || filter === filterToDelete) {
@@ -1596,7 +1594,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       // https://regexr.com/6cka2
-      const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\\\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
       const parseFilter = function (expression) {
         // parses an expression string into an object containing operator and value
         const filterData = expression.match(combinedRegex);

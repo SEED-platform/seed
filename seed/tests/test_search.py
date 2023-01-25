@@ -3,7 +3,8 @@ from datetime import datetime
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, NullIf, Replace
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast, Coalesce, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
 
@@ -97,8 +98,10 @@ class TestInventoryViewSearchParsers(TestCase):
                 input=QueryDict(f'{test_string_column.column_name}_{test_string_column.id}=hello'),
                 expected_filter=Q(_test_string_final='hello'),
                 expected_annotations={
-                    '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
-                    '_test_string_final': Replace('_test_string_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_string_to_text': KeyTextTransform('test_string', 'state__extra_data',
+                                                             output_field=models.TextField()),
+                    '_test_string_final': Coalesce('_test_string_to_text', models.Value(''),
+                                                   output_field=models.TextField()),
                 }
             ),
             TestCase(
@@ -106,10 +109,11 @@ class TestInventoryViewSearchParsers(TestCase):
                 input=QueryDict(f'{test_number_column.column_name}_{test_number_column.id}=12.3'),
                 expected_filter=Q(_test_number_final=12.3),
                 expected_annotations={
-                    '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
-                    '_test_number_stripped': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
-                    '_test_number_cleaned': NullIf('_test_number_stripped', models.Value('null'), output_field=models.TextField()),
-                    '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
+                    '_test_number_to_text': KeyTextTransform('test_number', 'state__extra_data',
+                                                             output_field=models.TextField()),
+                    '_test_number_final': Cast(
+                        Replace('_test_number_to_text', models.Value(','), models.Value('')),
+                        output_field=models.FloatField()),
                 }
             ),
         ]
@@ -259,8 +263,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 input=QueryDict(f'order_by=test_string_{test_string_column.id}'),
                 expected_order_by=['_test_string_final'],
                 expected_annotations={
-                    '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
-                    '_test_string_final': Replace('_test_string_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_string_to_text': KeyTextTransform('test_string', 'state__extra_data', output_field=models.TextField()),
+                    '_test_string_final': Coalesce('_test_string_to_text', models.Value(''), output_field=models.TextField()),
                 }
             ),
             TestCase(
@@ -268,10 +272,9 @@ class TestInventoryViewSearchParsers(TestCase):
                 input=QueryDict(f'order_by=test_number_{test_number_column.id}'),
                 expected_order_by=['_test_number_final'],
                 expected_annotations={
-                    '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
-                    '_test_number_stripped': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
-                    '_test_number_cleaned': NullIf('_test_number_stripped', models.Value('null'), output_field=models.TextField()),
-                    '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
+                    '_test_number_to_text': KeyTextTransform('test_number', 'state__extra_data', output_field=models.TextField()),
+                    '_test_number_final': Cast(
+                        Replace('_test_number_to_text', models.Value(','), models.Value('')), output_field=models.FloatField()),
                 }
             ),
             TestCase(
