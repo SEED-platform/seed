@@ -4,7 +4,7 @@ from datetime import datetime
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce
+from django.db.models.functions import Cast, Coalesce, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
 
@@ -111,7 +111,9 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_annotations={
                     '_test_number_to_text': KeyTextTransform('test_number', 'state__extra_data',
                                                              output_field=models.TextField()),
-                    '_test_number_final': Cast('_test_number_to_text', output_field=models.FloatField()),
+                    '_test_number_final': Cast(
+                        Replace('_test_number_to_text', models.Value(','), models.Value('')),
+                        output_field=models.FloatField()),
                 }
             ),
         ]
@@ -271,7 +273,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_order_by=['_test_number_final'],
                 expected_annotations={
                     '_test_number_to_text': KeyTextTransform('test_number', 'state__extra_data', output_field=models.TextField()),
-                    '_test_number_final': Cast('_test_number_to_text', output_field=models.FloatField()),
+                    '_test_number_final': Cast(
+                        Replace('_test_number_to_text', models.Value(','), models.Value('')), output_field=models.FloatField()),
                 }
             ),
             TestCase(
