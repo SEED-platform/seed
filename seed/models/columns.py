@@ -1219,7 +1219,7 @@ class Column(models.Model):
             if allow_none:
                 return None
             else:
-                raise ColumnCastException(f'Datum is None and allow_none is False.')
+                raise ColumnCastException('Datum is None and allow_none is False.')
 
         parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
         try:
