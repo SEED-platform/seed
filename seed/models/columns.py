@@ -19,6 +19,7 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
+from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
@@ -167,16 +168,16 @@ class Column(models.Model):
     }
 
     DATA_TYPE_PARSERS: dict[str, Callable] = {
-        'number': float,
-        'float': float,
-        'integer': int,
+        'number': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'float': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'integer': lambda v: int(v.replace(',', '') if isinstance(v, basestring) else v),
         'string': str,
         'geometry': str,
         'datetime': datetime.fromisoformat,
         'date': lambda v: datetime.fromisoformat(v).date(),
         'boolean': lambda v: v.lower() == 'true',
-        'area': float,
-        'eui': float,
+        'area': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'eui': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
