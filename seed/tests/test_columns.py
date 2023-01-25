@@ -6,6 +6,7 @@
 """
 
 import os.path
+from datetime import date, datetime
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -21,6 +22,7 @@ from seed.models import (
     ColumnMapping,
     PropertyState
 )
+from seed.models.columns import ColumnCastException
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
@@ -1199,3 +1201,61 @@ class TestColumnsByInventory(TestCase):
         self.assertEqual(priors['PropertyState']['extra_data']["Apostrophe's Field"], 'Favor New')
         self.assertEqual(priors['TaxLotState']['custom_id_1'], 'Favor New')
         self.assertEqual(priors['TaxLotState']['extra_data']['Gross Floor Area'], 'Favor New')
+
+
+class TestColumnCasting(TestCase):
+    def setUp(self):
+        self.fake_user = User.objects.create(username='test')
+        self.fake_org, _org_user, _user_created = create_organization(
+            self.fake_user, name='Existing Org'
+        )
+        self.column_1 = Column.objects.create(
+            table_name='PropertyState',
+            column_name='test_column',
+            data_type='integer',
+            organization=self.fake_org,
+            is_extra_data=True,
+        )
+
+    def test_cast_values(self):
+        r = Column.cast_column_value('string', 123)
+        self.assertEqual('123', r)
+        r = Column.cast_column_value('integer', '123')
+        self.assertEqual(123, r)
+        r = Column.cast_column_value('float', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('number', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('geometry', 'POLY 123, 456')
+        self.assertEqual('POLY 123, 456', r)
+        r = Column.cast_column_value('datetime', '2020-01-01T00:00:00')
+        self.assertEqual(datetime(2020, 1, 1, 0, 0, 0), r)
+        r = Column.cast_column_value('date', '2020-01-01')
+        self.assertEqual(date(2020, 1, 1), r)
+        r = Column.cast_column_value('boolean', 'true')
+        self.assertEqual(True, r)
+        r = Column.cast_column_value('boolean', 'false')
+        self.assertEqual(False, r)
+        r = Column.cast_column_value('area', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('eui', '123.456')
+        self.assertEqual(123.456, r)
+        r = Column.cast_column_value('eui', None)
+        self.assertEqual(None, r)
+
+    def test_cast_values_with_errors(self):
+        with self.assertRaises(ColumnCastException) as exc:
+            Column.cast_column_value('integer', 'abc')
+        self.assertEqual(str(exc.exception),
+                         'Invalid data type for "integer". Expected a valid "integer" value.'
+                         )
+
+        with self.assertRaises(ColumnCastException) as exc:
+            Column.cast_column_value('eui', None, allow_none=False)
+        self.assertEqual(str(exc.exception),
+                         'Datum is None and allow_none is False.'
+                         )
+
+    def test_column_based_cast(self):
+        r = self.column_1.cast('123')
+        self.assertEqual(123, r)

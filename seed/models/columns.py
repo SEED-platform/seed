@@ -10,7 +10,8 @@ import csv
 import logging
 import os.path
 from collections import OrderedDict
-from typing import Literal, Optional
+from datetime import datetime
+from typing import Any, Callable, Literal, Optional
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
@@ -30,6 +31,10 @@ INVENTORY_DISPLAY = {
     'TaxLot': 'Tax Lot',
 }
 _log = logging.getLogger(__name__)
+
+
+class ColumnCastException(Exception):
+    pass
 
 
 class Column(models.Model):
@@ -159,6 +164,19 @@ class Column(models.Model):
         'JSONField': 'string',
         'PolygonField': 'geometry',
         'PointField': 'geometry',
+    }
+
+    DATA_TYPE_PARSERS: dict[str, Callable] = {
+        'number': float,
+        'float': float,
+        'integer': int,
+        'string': str,
+        'geometry': str,
+        'datetime': datetime.fromisoformat,
+        'date': lambda v: datetime.fromisoformat(v).date(),
+        'boolean': lambda v: v.lower() == 'true',
+        'area': float,
+        'eui': float,
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -694,6 +712,14 @@ class Column(models.Model):
                         'Column \'%s\':\'%s\' is not a field in the database and not marked as extra data. Mark as extra data to save column.') % (
                         self.table_name, self.column_name)})
 
+    def cast(self, value: Any) -> Any:
+        """Cast the value to the correct type for the column.
+
+        Args:
+            value (Any): Value to cast, typically a string.
+        """
+        return Column.cast_column_value(self.data_type, value)
+
     def save(self, *args, **kwargs):
         if self.column_name and not self.column_description:
             self.column_description = self.column_name
@@ -1176,6 +1202,32 @@ class Column(models.Model):
         return [c_count, cm_delete_count]
 
     @staticmethod
+    def cast_column_value(column_data_type: str, value: Any, allow_none: bool = True) -> Any:
+        """cast a single value from the column data type
+
+        Args:
+            column_data_type (str): The data type as defined in the column object
+            value (Any): value to cast. Note the value may already be cast correctly.
+
+        Raises:
+            Exception: CastException if the value cannot be cast to the correct type
+
+        Returns:
+            Any: Resulting casted value
+        """
+        if value is None:
+            if allow_none:
+                return None
+            else:
+                raise ColumnCastException(f'Datum is None and allow_none is False.')
+
+        parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
+        try:
+            return parser(value)
+        except Exception:
+            raise ColumnCastException(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')
+
+    @staticmethod
     def retrieve_db_types():
         """
         Return the data types for the database columns in the format of:
@@ -1192,6 +1244,7 @@ class Column(models.Model):
         """
         columns = copy.deepcopy(Column.DATABASE_COLUMNS)
 
+        # TODO: There seem to be lots of these lists floating around. We should consolidate them.
         MAP_TYPES = {
             'number': 'float',
             'float': 'float',

@@ -7,10 +7,9 @@
 import operator
 import re
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from functools import reduce
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 from django.db import models
 from django.db.models import Q
@@ -18,6 +17,8 @@ from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Replace
 from django.http.request import QueryDict
 from past.builtins import basestring
+
+from seed.models.columns import Column
 
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
 DATE_FIELDS = ['year_ending']
@@ -284,7 +285,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
                 # Remove comma separators
                 Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.IntegerField())
         })
-    elif data_type in ['number', 'float', 'area', 'eui']:
+    elif data_type in ['number', 'float', 'area', 'eui', 'ghg', 'ghg_intensity']:
         annotations.update({
             final_field_name: Cast(
                 # Remove comma separators
@@ -319,19 +320,6 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     :param columns_by_name: mapping of Column.column_name to dict representation of Column
     :return: query object
     """
-    DATA_TYPE_PARSERS: dict[str, Callable] = {
-        'number': float,
-        'float': float,
-        'integer': int,
-        'string': str,
-        'geometry': str,
-        'datetime': datetime.fromisoformat,
-        'date': datetime.fromisoformat,
-        'boolean': lambda v: v.lower() == 'true',
-        'area': float,
-        'eui': float,
-    }
-
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
     if column is None or column['related']:
@@ -345,14 +333,12 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     else:
         updated_filter = QueryFilter(f'state__{column_name}', filter.operator, filter.is_negated)
 
-    parser = DATA_TYPE_PARSERS.get(column['data_type'], str)
-
     # isnull filtering should not coerce booleans to the column type
     if filter_expression.endswith('__isnull') and isinstance(filter_value, bool):
         new_filter_value = filter_value
     else:
         try:
-            new_filter_value = parser(filter_value)
+            new_filter_value = Column.cast_column_value(column['data_type'], filter_value)
         except Exception:
             raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
 
