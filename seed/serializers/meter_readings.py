@@ -4,23 +4,39 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from rest_framework import serializers
 
 from seed.models import MeterReading
 
 
+class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        print(validated_data)
+        meter_data = [MeterReading(**item) for item in validated_data]
+
+        try:
+            result = MeterReading.objects.bulk_create(meter_data)
+        except IntegrityError as e:
+            raise ValidationError(e)
+
+        return result
+
+
 class MeterReadingSerializer(serializers.ModelSerializer):
-    # type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)
-    # alias = serializers.CharField(required=False, allow_blank=True)
-    # source = ChoiceField(choices=Meter.SOURCES)
-    # source_id = serializers.CharField(required=False, allow_blank=True)
-    # scenario_id = serializers.IntegerField(required=False, allow_null=True)
-    # scenario_name = serializers.CharField(required=False, allow_blank=True)
-    # # meter_readings = serializers.StringRelatedField(many=True)
+    def create(self, validated_data):
+        instance = MeterReading(**validated_data)
+
+        if isinstance(self._kwargs["data"], dict):
+            instance.save()
+
+        return instance
 
     class Meta:
         model = MeterReading
         exclude = ('meter', )
+        list_serializer_class = MeterReadingBulkCreateUpdateSerializer
 
     def to_representation(self, obj):
         result = super().to_representation(obj)

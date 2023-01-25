@@ -6,10 +6,10 @@ from rest_framework.renderers import JSONRenderer
 
 from seed.models import MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class MeterReadingViewSet(SEEDOrgModelViewSet):
     """API endpoint for managing meters."""
 
     serializer_class = MeterReadingSerializer
@@ -43,6 +43,12 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return MeterReading.objects.filter(
             meter__property__organization_id=org_id, meter__property=self.property_pk, meter_id=meter_pk
         )
+
+    def get_serializer(self, *args, **kwargs):
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
+
+        return super(MeterReadingViewSet, self).get_serializer(*args, **kwargs)
 
     def perform_create(self, serializer):
         """On create, make sure to add in the property id which comes from the URL kwargs."""

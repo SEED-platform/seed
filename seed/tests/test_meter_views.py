@@ -177,7 +177,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         meter_pk = response.json()['id']
 
-        # create meter reading  property-meter-readings-list
+        # create meter readings
         url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
 
         # write a few values to the database
@@ -196,6 +196,47 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json()['reading'], values[2])
+
+        # read all the values from the meter and check the results
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 3)
+
+    def test_bulk_import(self):
+        # create property
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+
+        # prepare the data in bulk format
+        payload = []
+        for values in [("2022-01-05T05:00:00Z", "2022-01-05T06:00:00Z", 22.2),
+                       ("2022-01-05T06:00:00Z", "2022-01-05T07:00:00Z", 44.4),
+                       ("2022-01-05T07:00:00Z", "2022-01-05T08:00:00Z", 88.8), ]:
+            payload.append({
+                "start_time": values[0],
+                "end_time": values[1],
+                "reading": values[2],
+                "source_unit": "Wh (Watt-hours)",
+                # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                "conversion_factor": 0.00341,
+            })
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        print(response)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()[0]['reading'], 22.2)
+        self.assertEqual(response.json()[1]['reading'], 44.4)
 
         # read all the values from the meter and check the results
         response = self.client.get(url, content_type='application/json')
