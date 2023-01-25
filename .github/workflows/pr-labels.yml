@@ -11,6 +11,6 @@ jobs:
       - name: Verify PR label action
         uses: mheap/github-action-required-labels@v1
         with:
-          mode: exactly
+          mode: minimum
           count: 1
           labels: "Feature, Bug, Enhancement, Maintenance, Documentation, Performance, Do not publish"
