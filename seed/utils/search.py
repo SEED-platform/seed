@@ -15,7 +15,7 @@ from typing import Any, Callable, Union
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce
+from django.db.models.functions import Cast, Coalesce, Replace
 from django.http.request import QueryDict
 from past.builtins import basestring
 
@@ -280,11 +280,15 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     }
     if data_type == 'integer':
         annotations.update({
-            final_field_name: Cast(text_field_name, output_field=models.IntegerField())
+            final_field_name: Cast(
+                # Remove comma separators
+                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.IntegerField())
         })
     elif data_type in ['number', 'float', 'area', 'eui']:
         annotations.update({
-            final_field_name: Cast(text_field_name, output_field=models.FloatField())
+            final_field_name: Cast(
+                # Remove comma separators
+                Replace(text_field_name, models.Value(','), models.Value('')), output_field=models.FloatField())
         })
     elif data_type in ['date', 'datetime']:
         annotations.update({
@@ -448,7 +452,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
             column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
-            if column_data_type == "string":
+            if column_data_type in ['string', 'None']:
                 empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
                 if filter_expression.endswith('__ne'):
