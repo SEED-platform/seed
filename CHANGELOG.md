@@ -1,3 +1,28 @@
+# SEED Version 2.17.1
+
+## What's Changed
+### New Features 🎉
+* Allow users to create columns by @haneslinger in https://github.com/SEED-platform/seed/pull/3730
+### Improvements 📈
+* Show portfolio manager errors by @haneslinger in https://github.com/SEED-platform/seed/pull/3735
+* Allow users to hide property insight dataset by @haneslinger in https://github.com/SEED-platform/seed/pull/3726
+### Maintenance 🧹
+* Bump future from 0.18.2 to 0.18.3 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3792
+### Bug Fixes 🐛
+* Fix stacked property points by @haneslinger in https://github.com/SEED-platform/seed/pull/3725
+* Fix filter group with extra column work on revised programs by @haneslinger in https://github.com/SEED-platform/seed/pull/3727
+* Fix filter on nulls and empty strings by @haneslinger in https://github.com/SEED-platform/seed/pull/3733
+* Add the @has_perm_class permission to program metric api endpoints by @anchapin in https://github.com/SEED-platform/seed/pull/3729
+* fix meter service route for units in organization settings by @kflemin in https://github.com/SEED-platform/seed/pull/3738
+* Fix custom report legend sort for chrome by @haneslinger in https://github.com/SEED-platform/seed/pull/3740
+* Sort column mappings in profile before export by @nllong in https://github.com/SEED-platform/seed/pull/3748
+* Update derived column migration to prevent conflicting column names and prevent duplicate column names by @nllong in https://github.com/SEED-platform/seed/pull/3728
+* Fixed issue with overlapping meter readings with new ESPM format by @anchapin in https://github.com/SEED-platform/seed/pull/3745
+* Fix filtering on "" and !"" for all data types by @haneslinger in https://github.com/SEED-platform/seed/pull/3765
+* Fix bug where compliance calculations were not being cast to the right data types by @nllong in https://github.com/SEED-platform/seed/pull/3789
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.0...v2.17.1
+
 # SEED Version 2.17.0
 
 ## What's Changed
