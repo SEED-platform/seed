@@ -324,47 +324,6 @@
                 </div>
                 <div class="section_content_container">
                     <div class="section_content with_padding">
-                        <h3 translate></h3>
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="acc_rec" translate>Salesforce Account Object Record Type</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_ACCOUNT_RECORD_TYPE_TEXT"></p>
-                                    <input type="text" class="form-control" id="acc_rec" ng-model="conf.account_rec_type" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_rec" translate>Salesforce Contact Object Record Type</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_CONTACT_RECORD_TYPE_TEXT"></p>
-                                    <input type="text" id="contact_rec" class="form-control" ng-model="conf.contact_rec_type" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_date" translate>Last Salesforce Update</label>
-                                <div class="col-sm-3">
-                                    <input type="text" id="update_date" class="form-control" ng-model="conf.last_update_date" ng-disabled="::!auth.requires_owner">
-                                </div>
-                                <div class="col-sm-2"><button type="button" class="btn btn-info" ng-click="reset_date()">{$:: 'Reset' | translate $}
-                                    </button></div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
                             <div class="form-group">
                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_benchmark_id" translate>Salesforce Unique Benchmark ID Fieldname</label>
@@ -428,7 +387,64 @@
                         </form>
                     </div>
                 </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_date" translate>Last Salesforce Update</label>
+                                <div class="col-sm-3">
+                                    <!-- <input type="text" id="update_date" class="form-control" ng-model="conf.last_update_date" readonly> -->
+                                    <span class="form-control updated_date_field" ng-bind="conf.last_update_date | date:'MM/dd/yyyy hh:mm:ss a'"></span>
+                                </div>
+                                <div class="col-sm-2">
+                                    <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}
+                                    </button>
+                                    <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
+                                    </button>
+                                </div>
+                                <div class="col-sm-11">
+                                    <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
+                                        <i class="fa fa-exclamation-circle fa-lg"></i>
+                                        Error: {$ sync_sf_msg $}
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
+                <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-users"></i> {$:: 'Contacts and Accounts' | translate $}</h2>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <h3 translate></h3>
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="acc_rec" translate>Salesforce Account Object Record Type</label>
+                                <div class="col-sm-5">
+                                    <p translate="SF_ACCOUNT_RECORD_TYPE_TEXT"></p>
+                                    <input type="text" class="form-control" id="acc_rec" ng-model="conf.account_rec_type" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_rec" translate>Salesforce Contact Object Record Type</label>
+                                <div class="col-sm-5">
+                                    <p translate="SF_CONTACT_RECORD_TYPE_TEXT"></p>
+                                    <input type="text" id="contact_rec" class="form-control" ng-model="conf.contact_rec_type" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="section_content_container">
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
@@ -498,6 +514,11 @@
                 <div class="section_header_container has_btm_margin">
                     <div class="section_header">
                         <h2><i class="fa fa-gear"></i> {$:: 'Salesforce Field Mappings' | translate $}</h2>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <p translate="SF_MAPPINGS_TEXT"></p>
                     </div>
                 </div>
                 <div class="section_content_container">

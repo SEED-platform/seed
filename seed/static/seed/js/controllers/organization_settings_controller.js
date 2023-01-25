@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
   'meters_service',
+  'Notification',
   '$translate',
   function (
     $scope,
@@ -33,6 +34,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     salesforce_mappings_payload,
     salesforce_configs_payload,
     meters_service,
+    Notification,
     $translate
   ) {
     $scope.org = organization_payload.organization;
@@ -41,7 +43,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
     }
-    console.log("CONF: ", $scope.conf);
+
     $scope.auth = auth_payload.auth;
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
@@ -50,13 +52,13 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.labels = labels_payload;
     $scope.test_sf = false;
     $scope.test_sf_msg = null;
+    $scope.sync_sf = false;
+    $scope.sync_sf_msg = null;
     $scope.form_errors = null;
     $scope.table_errors = null;
     $scope.config_errors = null;
     $scope.changes_possible = false;
     $scope.secrets = {pwd: 'password', token: 'password'}
-
-    console.log("prop column names: ", $scope.property_column_names)
 
     $scope.unit_options_eui = [{
       label: $translate.instant('kBtu/sq. ft./year'),
@@ -200,7 +202,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             salesforce_config_service.get_salesforce_configs($scope.org.id)
             .then( function (data) {
               $scope.conf = (data.length > 0) ? data[0] : {}
-              console.log("updated CONF: ", $scope.conf);
             })
           })
           .catch(function (response) {
@@ -218,7 +219,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             salesforce_config_service.get_salesforce_configs($scope.org.id)
             .then( function (data) {
               $scope.conf = (data.length > 0) ? data[0] : {}
-              console.log("updated CONF: ", $scope.conf);
             })
           })
           .catch(function (response) {
@@ -270,7 +270,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             // retrieve mappings again
             salesforce_mapping_service.get_salesforce_mappings()
             .then(function (response) {
-              console.log("!!response: ", response)
               $scope.salesforce_mappings = response;
             });
         });
@@ -328,6 +327,48 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     }
 
     /**
+     * run the sync salesforce process
+    */
+    $scope.sync_salesforce = function () {
+      $scope.sync_sf = null;
+      $scope.sync_sf_msg = null;
+      salesforce_config_service.sync_salesforce().then(function (response) {
+        $scope.sync_sf = 'success';
+        // reload configs to grab new update date
+        salesforce_config_service.get_salesforce_configs($scope.org.id)
+        .then( function (data) {
+          $scope.conf = (data.length > 0) ? data[0] : {}
+        })
+        // show notification
+        Notification.success({
+          message: ("Salesforce Sync Successful!"),
+          delay: 4000
+        });
+      })
+      .catch(function (response) {
+        $scope.sync_sf = 'error';
+        if (response.data && response.data.message){
+          $scope.sync_sf_msg = response.data.message;
+        } else {
+          $scope.sync_sf_msg = 'Unknown Error'
+        }
+      });
+    }
+
+    /**
+     * reset the last update date (to null)
+    */
+    $scope.reset_date = function () {
+
+      $scope.conf.last_update_date = null;
+      $scope.save_settings();
+      Notification.success({
+        message: ("Reset successful!"),
+        delay: 4000
+      });
+    }
+
+    /**
      * tests the salesforce connection
     */
     $scope.test_connection = function () {
@@ -337,7 +378,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       // test connection: if works, set to success, if fails set to error.
       salesforce_config_service.salesforce_connection($scope.conf).then(function (response) {
         $scope.test_sf = 'success';
-        console.log("RESPONSE: ", response);
       })
       .catch(function (response) {
         $scope.test_sf = 'error';

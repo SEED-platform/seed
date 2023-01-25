@@ -90,13 +90,29 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
       });
     };
 
+    /**
+     * automatic sync of properties with Salesforce Benchmarks
+    */
+    const sync_salesforce = function () {
+      // todo: check that this works before configs are saved for the first time
+      console.log("org: ", user_service.get_organization().id)
+      return $http.post('/api/v3/salesforce_configs/sync/', {
+        params: {
+          'organization_id': user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    }
+
     const salesforce_config_factory = {
       'get_salesforce_configs': get_salesforce_configs,
       'get_salesforce_config': get_salesforce_config,
       'delete_salesforce_config': delete_salesforce_config,
       'update_salesforce_config': update_salesforce_config,
       'new_salesforce_config': new_salesforce_config,
-      'salesforce_connection': salesforce_connection
+      'salesforce_connection': salesforce_connection,
+      'sync_salesforce': sync_salesforce
     };
 
 	return salesforce_config_factory;

@@ -1426,6 +1426,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
+          case 'update_salesforce': $scope.update_salesforce(selectedViewIds); break;
           default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
         }
         $scope.model_actions = 'none';
@@ -1479,6 +1480,19 @@ angular.module('BE.seed.controller.inventory_list', [])
           // Modal dismissed, do nothing
         });
       };
+
+      $scope.update_salesforce = function (selectedViewIds) {
+        inventory_service.update_salesforce(selectedViewIds).then(function (result) {
+          setTimeout(() => {
+            Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
+          }, 1000);
+
+        }).catch( function (result) {
+          setTimeout(() => {
+            Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
+          }, 1000);
+        });
+      }
 
       $scope.view_notes = function (record) {
         $uibModal.open({

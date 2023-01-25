@@ -70,6 +70,7 @@ from seed.utils.properties import (
     properties_across_cycles,
     update_result_with_master
 )
+from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
@@ -1423,6 +1424,53 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'success': False,
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'property_view_ids': ['integer']
+            },
+            required=['property_view_ids'],
+            description='A list of property view ids to sync with Salesforce')
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    @has_perm_class('can_modify_data')
+    def update_salesforce(self, request):
+        """
+        Update an existing PropertyView's Salesforce Benchmark object.
+        Use an array so it can update one or more properties
+        """
+        org_id = self.get_organization(request)
+        ids = request.data['params'].get('property_view_ids', [])
+        try:
+            the_status, messages = update_salesforce_properties(org_id, ids)
+            if not the_status:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': messages,
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(err).__name__, err.args)
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if the_status:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successful sync with Salesforce'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['DELETE'])
     @has_perm_class('can_modify_data')

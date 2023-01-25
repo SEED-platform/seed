@@ -85,6 +85,10 @@
                             <a ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')">Merge and Link Matches</a>
                         </li>
 
+                        <li role="menuitem" ng-if="organization.salesforce_enabled">
+                            <a ng-click="update_salesforce()">{$:: 'Update Salesforce' | translate $}</a>
+                        </li>
+
                         <li class="divider"></li>
 
                         <li role="menuitem">

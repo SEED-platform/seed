@@ -187,6 +187,7 @@ def _dict_org_brief(request, organizations):
             'id': o.id,
             'user_role': user_role,
             'display_decimal_places': o.display_decimal_places,
+            'salesforce_enabled': o.salesforce_enabled,
         }
         orgs.append(org)
 

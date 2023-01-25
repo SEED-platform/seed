@@ -300,6 +300,25 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    /** Update Salesforce for specified property views and organization
+     *
+     * @param view_ids        List of Property View IDs
+     *
+     * @returns {Promise}
+     */
+    inventory_service.update_salesforce = function(view_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v3/properties/update_salesforce/', {
+        params: {
+          organization_id: user_service.get_organization().id,
+          property_view_ids: view_ids
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
 
     inventory_service.delete_property_states = function (property_view_ids) {
       return $http.delete('/api/v3/properties/batch_delete/', {

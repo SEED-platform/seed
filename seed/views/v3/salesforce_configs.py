@@ -24,7 +24,10 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
-from seed.utils.salesforce import test_connection
+from seed.utils.salesforce import (
+    auto_sync_salesforce_properties,
+    test_connection
+)
 
 
 def _validate_data(data, org_id):
@@ -79,7 +82,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     model = SalesforceConfig
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -92,6 +94,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             'salesforce_configs': SalesforceConfigSerializer(salesforce_configs, many=True).data
         }, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
@@ -118,12 +121,37 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             params['domain'] = data.get('domain')
 
         # connect
-        status_msg, message = test_connection(params)
+        status_msg, message, sf = test_connection(params)
         if status_msg == 'error':
             return JsonResponse({'status': status_msg, 'message': message},
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
             return JsonResponse({'status': status_msg})
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    @has_perm_class('requires_owner')
+    def sync(self, request):
+        """
+        Sync all eligible PropertyViews with Salesforce Benchmark objects.
+        Use the saved 'last_update_date' and the configured indication label to determine eligibility
+        """
+        org_id = self.get_organization(request)
+        the_status, messages = auto_sync_salesforce_properties(org_id)
+
+        if the_status:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully updated Salesforce'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': messages
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema_org_query_param
     @require_organization_id_class
