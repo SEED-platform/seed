@@ -465,11 +465,7 @@ class MetersParser(object):
 
         results = []
         for raw_reading in raw_data:
-            # December 16, 2022 updated code to match ESPM formatting changes
-            try:
-                start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
-            except KeyError:
-                start_date = datetime.strptime(raw_reading['Month '], '%b-%y')
+            start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
 
             _, days_in_month = monthrange(start_date.year, start_date.month)
             end_date = datetime(
@@ -491,9 +487,12 @@ class MetersParser(object):
                     raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
 
                 meter_type_match = type_and_units_match.group('meter_type').strip()
-                meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(meter_type_match)
-                if meter_type is None:
-                    raise Exception(f'Invalid meter type "{meter_type_match}"')
+                for energy_type in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
+                    if meter_type_match.startswith(energy_type):
+                        meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(energy_type)
+                        continue
+                if not meter_type:
+                    raise Exception(f'Invalid units "{meter_type_match}"')
 
                 units_match = type_and_units_match.group('units').strip()
                 units = METER_UNITS_MAPPING.get(units_match)

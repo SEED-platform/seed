@@ -11,6 +11,7 @@ jobs:
     steps:
       - uses: actions/stale@v4
         with:
+          days-before-stale: 60
           stale-issue-message: "This issue has been automatically marked as stale because it has not had recent activity within 60 days. It will be closed if no further activity occurs. Thank you for your contributions."
           close-issue-message: "This issue has been closed automatically. If this still affects you please re-open this issue with a comment or contact us so we can look into resolving it."
           exempt-all-milestones: true

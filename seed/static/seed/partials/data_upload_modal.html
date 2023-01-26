@@ -343,7 +343,7 @@
     </div>
     <!-- Step 15:  Upload PM Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
-        <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+        <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>{pm_meter_import_error}</div>
 
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top"

@@ -62,6 +62,94 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         self.client.login(**user_details)
 
+    def test_create_column(self):
+        # Set Up
+        ps = self.property_state_factory.get_property_state(self.org)
+        self.assertFalse("new_column" in ps.extra_data)
+
+        url = reverse_lazy('api:v3:columns-list')
+        post_data = {
+            'column_name': 'new_column',
+            'table_name': 'PropertyState',
+        }
+
+        # Act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+
+        # Assert
+        self.assertEqual(201, response.status_code)
+
+        json_string = response.content
+        data = json.loads(json_string)
+        self.assertEqual(data["column"]["column_name"], post_data["column_name"])
+        self.assertEqual(data["column"]["table_name"], post_data["table_name"])
+
+        Column.objects.get(**post_data)  # error if doesn't exist.
+        ps = PropertyState.objects.get(pk=ps.id)
+        self.assertTrue("new_column" in ps.extra_data)
+
+    def test_create_column_bad_no_data(self):
+        # Set Up
+        url = reverse_lazy('api:v3:columns-list')
+
+        # Act - no data
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - no table_name
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({'column_name': 'new_column'})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - no column_name
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({'table_name': 'PropertyState'})
+        )
+        self.assertEqual(400, response.status_code)
+
+        # Act - invalid key
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps({
+                'column_name': 'new_column',
+                'table_name': 'bad',
+                'whoa': 'I shouldnt be here',
+            })
+        )
+        self.assertEqual(400, response.status_code)
+
+    def test_create_column_bad_table_name(self):
+        # Set Up
+        url = reverse_lazy('api:v3:columns-list')
+        post_data = {
+            'column_name': 'new_column',
+            'table_name': 'bad',
+        }
+
+        # Act
+        response = self.client.post(
+            url,
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+
     def test_set_default_columns(self):
         url = reverse_lazy('api:v1:set_default_columns')
         columns = ['s', 'c1', 'c2']

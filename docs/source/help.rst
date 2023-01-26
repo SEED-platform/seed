@@ -12,10 +12,9 @@ The SEED Users Forum is where you can review user announcements, workflow questi
 
 https://lists.buildingenergytools.org/g/SEEDusers/topics
 
-For direct help on a specific problem, please fill out a request on the building data tools website help desk:
+For general inquiries or help on a specific problem, please fill out a request on the building data tools website help desk and select SEED as the relevant tool:
 
 https://buildingdata.energy.gov/#/help-desk
-
 
 For SEED Platform Developers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

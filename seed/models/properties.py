@@ -204,7 +204,37 @@ class PropertyState(models.Model):
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
-    # EPA's eGRID Subregion Code (https://www.epa.gov/egrid)
+    # EPA's eGRID Subregion Code
+    #   https://www.epa.gov/egrid, https://bedes.lbl.gov/bedes-online/egrid-subregion-code
+    #   Look up is easiest here: https://www.epa.gov/egrid/power-profiler#/
+    # The options are:
+    # AKGD
+    # AKMS
+    # AZNM
+    # CAMX
+    # ERCT
+    # FRCC
+    # HIMS
+    # HIOA
+    # MROE
+    # MROW
+    # NEWE
+    # NWPP
+    # NYCW
+    # NYLI
+    # NYUP
+    # PRMS
+    # RFCE
+    # RFCM
+    # RFCW
+    # RMPA
+    # SPNO
+    # SPSO
+    # SRMV
+    # SRMW
+    # SRSO
+    # SRTV
+    # SRVC
     egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True)
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.

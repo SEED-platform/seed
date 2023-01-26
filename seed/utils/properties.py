@@ -236,7 +236,7 @@ def _get_filter_group_views(org_id, cycles, query_dict):
         .filter(property__organization_id=org_id, cycle__in=cycles)
     )
 
-    views_list = views_list.filter(filters).order_by('id')
+    views_list = views_list.annotate(**annotations).filter(filters).order_by('id')
 
     return views_list
 
