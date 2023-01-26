@@ -9,8 +9,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Verify PR label action
-        uses: mheap/github-action-required-labels@v1
+        uses: mheap/github-action-required-labels@v3
         with:
           mode: minimum
           count: 1
           labels: "Feature, Bug, Enhancement, Maintenance, Documentation, Performance, Do not publish"
+          add_comment: true
