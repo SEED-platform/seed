@@ -11,12 +11,13 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
+from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 @method_decorator(name='list', decorator=swagger_auto_schema_org_query_param)
 @method_decorator(name='retrieve', decorator=swagger_auto_schema_org_query_param)
-class PropertyScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
+@method_decorator(name='destroy', decorator=swagger_auto_schema_org_query_param)
+class PropertyScenarioViewSet(SEEDOrgModelViewSet):
     """
     API View for Scenarios. This only includes retrieve and list for now.
     """

@@ -4,16 +4,20 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import base64
 from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Property, PropertyView, Scenario
 from seed.test_helpers.fake import (
     FakePropertyMeasureFactory,
-    FakePropertyStateFactory
+    FakePropertyStateFactory,
+    FakePropertyViewFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
+from django.urls import NoReverseMatch, reverse_lazy
+
 
 
 class TestMeasures(DeleteModelsTestCase):
@@ -23,9 +27,19 @@ class TestMeasures(DeleteModelsTestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_user(**user_details)
+        self.user = User.objects.create_superuser(**user_details)
+        self.user.generate_key()
         self.org, _, _ = create_organization(self.user)
+
+        auth_string = base64.urlsafe_b64encode(bytes(
+            '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
+        ))
+        self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
+        self.headers = {'Authorization': self.auth_string}
+
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
 
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
@@ -78,3 +92,30 @@ class TestMeasures(DeleteModelsTestCase):
         new_meter = Meter.objects.filter(scenario=new_scenario, property=new_property)
         self.assertEqual(new_meter.count(), 1)
         self.assertEqual(new_meter.first().meter_readings.count(), 1)
+
+    def test_selete_scenario(self):
+        """
+        Test that the scenario view can delete the scenario model
+        """
+        # -- Setup
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        source_scenario = Scenario.objects.create(property_state=property_state)
+
+        self.assertEqual(Scenario.objects.count(), 1)
+
+        # The Scenario view uses PropertyView.id not PropertyState.id
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_state.id, source_scenario.id]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(Scenario.objects.count(), 1)
+
+
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, source_scenario.id]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Scenario.objects.count(), 0)
