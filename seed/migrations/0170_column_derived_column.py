@@ -21,7 +21,7 @@ def forwards(apps, schema_editor):
                 "column_name": dc.name,
             }
             display_name = dc.name
-            
+
             # check if the column name exists, if so, then increment the name
             for i_name in range(100):
                 exists = Column.objects.filter(**column_data).exists()
@@ -39,10 +39,11 @@ def forwards(apps, schema_editor):
                 column_description=display_name,
                 is_extra_data=False
             )
-            
+
             # now update the derived column's name
             dc.name = display_name
             dc.save()
+
 
 class Migration(migrations.Migration):
 

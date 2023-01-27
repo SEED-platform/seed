@@ -139,6 +139,7 @@ angular.module('BE.seed.filters', [
   'startFrom',
   'stripImportPrefix',
   'titleCase',
+  'tolerantNumber',
   'typedNumber'
 ]);
 angular.module('BE.seed.directives', [

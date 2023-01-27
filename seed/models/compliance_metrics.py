@@ -4,6 +4,8 @@
 """
 
 
+from typing import Union
+
 from django.db import models
 from django.http import QueryDict
 
@@ -101,12 +103,21 @@ class ComplianceMetric(models.Model):
         results_by_cycles = {}
 #        property_datasets = {}
         # figure out what kind of metric it is (energy? emission? combo? bool?)
-        metric = {'energy_metric': False, 'emission_metric': False, 'energy_bool': False, 'emission_bool': False,
-                  'actual_energy_column': None, 'actual_energy_column_name': None, 'target_energy_column': None,
-                  'energy_metric_type': self.energy_metric_type, 'actual_emission_column': None, 'actual_emission_column_name': None,
-                  'target_emission_column': None, 'emission_metric_type': self.emission_metric_type,
-                  'fliter_group': None,
-                  'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
+        metric = {
+            'energy_metric': False,
+            'emission_metric': False,
+            'energy_bool': False,
+            'emission_bool': False,
+            'actual_energy_column': None,
+            'actual_energy_column_name': None,
+            'target_energy_column': None,
+            'energy_metric_type': self.energy_metric_type,
+            'actual_emission_column': None,
+            'actual_emission_column_name': None,
+            'target_emission_column': None,
+            'emission_metric_type': self.emission_metric_type,
+            'fliter_group': None,
+            'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:
             metric['actual_energy_column'] = self.actual_energy_column.id
@@ -127,12 +138,10 @@ class ComplianceMetric(models.Model):
                 metric['target_emission_column'] = self.target_emission_column.id
 
         for cyc in property_response:
-
             properties = {}
             cnts = {'y': 0, 'n': 0, 'u': 0}
 
             for p in property_response[cyc]:
-
                 # initialize
                 properties[p['property_view_id']] = None
                 # energy metric
@@ -174,24 +183,34 @@ class ComplianceMetric(models.Model):
 
         return response
 
-    # returns compliant, non-compliant, and unknown counts
     def _calculate_compliance(self, the_property, bool_metric, metric_type):
+        """Return the compliant, non-compliant, and unknown counts
 
-        actual_col_id = self.actual_energy_column.id if metric_type == 'energy' else self.actual_emission_column.id
-        target_col_id = self.target_energy_column.id if metric_type == 'energy' else self.target_emission_column.id
-        actual_val = self._get_column_data(the_property, actual_col_id)
+        Args:
+            the_property (PropertyState): The property state object to check compliance
+            bool_metric (Boolean): If the metric is a boolean metric, otherwise, it is a target metric
+            metric_type (Int): Target > Actual or Target < Actual
+
+        Returns:
+            string: single character string representing compliance status, u - unknown, y - compliant, n - non-compliant
+        """
+        actual_col = self.actual_energy_column if metric_type == 'energy' else self.actual_emission_column
+        target_col = self.target_energy_column if metric_type == 'energy' else self.target_emission_column
+        actual_val = self._get_column_data(the_property, actual_col)
         if actual_val is None:
             return 'u'
 
         if bool_metric:
             return 'y' if actual_val > 0 else 'n'
 
-        target_val = self._get_column_data(the_property, target_col_id)
+        target_val = self._get_column_data(the_property, target_col)
         if target_val is None:
             return 'u'
 
         # test metric type
         the_type = self.energy_metric_type if metric_type == 'energy' else self.emission_metric_type
+        # 1 = target is less than actual, 2 = target is greater than actual
+        # TODO: convert int to enum types for readability
         if the_type == 1:
             differential = target_val - actual_val
         else:
@@ -199,10 +218,27 @@ class ComplianceMetric(models.Model):
 
         return 'y' if differential >= 0 else 'n'
 
-    # retrieves column data by id substring
-    def _get_column_data(self, data, substring):
-        value = next(v for (k, v) in data.items() if k.endswith('_' + str(substring)))
-        return value
+    def _get_column_data(self, data: dict, column: Column) -> Union[float, bool]:
+        """Get the column datat from the dictionary version of the property state.
+        Also, cast the datatype based on the column data_type as needed.
+
+        Args:
+            data (dict): property state dictionary
+            column (Column): column object
+
+        Returns:
+            Union[float, bool]: the resulting value
+        """
+        # retrieves column data from the property state. The lookup is
+        # based on the <column_name>_<column_id> format because the data
+        # is the flat dictionary representation of the property state.
+        column_lookup = f"{column.column_name}_{column.id}"
+        value = data[column_lookup]
+
+        # Now cast it based on the column data_type, this uses
+        # the same method that is covered in the search.py file for
+        # consistency
+        return column.cast(value)
 
     class Meta:
         ordering = ['-created']
