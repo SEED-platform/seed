@@ -7,11 +7,18 @@
 from django.utils.decorators import method_decorator
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
+from seed.decorators import ajax_request_class
+from seed.utils.api import api_endpoint_class
+from drf_yasg.utils import swagger_auto_schema
+from django.http import JsonResponse
+from rest_framework import status
 
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgModelViewSet
+from seed.utils.api_schema import AutoSchemaHelper
+
 
 
 @method_decorator(name='list', decorator=swagger_auto_schema_org_query_param)
@@ -19,7 +26,7 @@ from seed.utils.viewsets import SEEDOrgModelViewSet
 @method_decorator(name='destroy', decorator=swagger_auto_schema_org_query_param)
 class PropertyScenarioViewSet(SEEDOrgModelViewSet):
     """
-    API View for Scenarios. This only includes retrieve and list for now.
+    API View for Scenarios.
     """
     serializer_class = ScenarioSerializer
     parser_classes = (JSONParser, FormParser,)
@@ -37,3 +44,51 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
             property_state__organization_id=org_id,
             property_state__propertyview=property_view_id,
         ).order_by('id')
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                name='property_pk',
+                required=True,
+                description='Associated PropertyView ID (not PropertyState).',
+            ),
+            AutoSchemaHelper.query_integer_field(
+                name="id",
+                required=True,
+                description="Scenario ID"
+            )
+        ],
+    )
+    @api_endpoint_class
+    def update(self, request, property_pk=None, pk=None):
+        scenario = Scenario.objects.get(pk=pk)
+
+        if "temporal_status" in request.data:
+            if request.data["temporal_status"] not in range (1,7):
+                return JsonResponse({
+                    "Success": False,
+                    "Message": "Temporal_status must be an integer between 1 and 6"
+                })
+
+            scenario.temporal_status = int(request.data["temporal_status"])
+        else:
+            return JsonResponse({
+                "Success": False,
+                "Message": "Invalid field. The following fields may be updated: 'temporal_status'"
+            })
+        scenario.save()
+
+        result = {
+            "status": "success",
+            "data": ScenarioSerializer(scenario).data
+        }
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
+
+
+    @api_endpoint_class
+    def create(self, request, pk=None):
+        breakpoint()
+
+

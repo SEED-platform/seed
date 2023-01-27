@@ -5,6 +5,7 @@
 :author
 """
 import base64
+import json
 from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
@@ -93,7 +94,7 @@ class TestMeasures(DeleteModelsTestCase):
         self.assertEqual(new_meter.count(), 1)
         self.assertEqual(new_meter.first().meter_readings.count(), 1)
 
-    def test_selete_scenario(self):
+    def test_delete_scenario(self):
         """
         Test that the scenario view can delete the scenario model
         """
@@ -119,3 +120,31 @@ class TestMeasures(DeleteModelsTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(Scenario.objects.count(), 0)
+
+    def test_update_scenario(self):
+        """
+        Test that the scenario view can edit/update the scenario model
+        """
+
+        # -- Setup
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        source_scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
+
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(source_scenario.temporal_status, 3)
+
+        response = self.client.put(
+            reverse_lazy(
+                'api:v3:property-scenarios-detail', 
+                args=[property_view.id, source_scenario.id]
+            ),
+            data=json.dumps({"temporal_status": "5"}),
+            content_type='application/json',
+            **self.headers
+        )
+
+        source_scenario = Scenario.objects.get(id=source_scenario.id)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(source_scenario.temporal_status, 5)
