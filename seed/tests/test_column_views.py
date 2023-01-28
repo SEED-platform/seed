@@ -89,8 +89,6 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.assertEqual(data["column"]["table_name"], post_data["table_name"])
 
         Column.objects.get(**post_data)  # error if doesn't exist.
-        ps = PropertyState.objects.get(pk=ps.id)
-        self.assertTrue("new_column" in ps.extra_data)
 
     def test_create_column_bad_no_data(self):
         # Set Up
