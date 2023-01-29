@@ -46,10 +46,6 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 
 
 class MeterReadingSerializer(serializers.ModelSerializer):
-    def to_internal_value(self, data):
-        print(data)
-        return data
-
     def create(self, validated_data):
         instance = MeterReading(**validated_data)
 
