@@ -47,6 +47,7 @@ def _get_default_display_meter_units():
         'Coal (bituminous)': 'kBtu (thousand Btu)',
         'Coke': 'kBtu (thousand Btu)',
         'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water': 'kBtu (thousand Btu)',
         'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
         'District Chilled Water - Electric': 'kBtu (thousand Btu)',
         'District Chilled Water - Engine': 'kBtu (thousand Btu)',
@@ -65,7 +66,8 @@ def _get_default_display_meter_units():
         'Natural Gas': 'kBtu (thousand Btu)',
         'Other:': 'kBtu (thousand Btu)',
         'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
+        'Wood': 'kBtu (thousand Btu)',
+        'Default': 'kBtu (thousand Btu)',
     }
 
 
@@ -145,6 +147,7 @@ class Organization(models.Model):
         'Coal (bituminous)': 'kBtu (thousand Btu)',
         'Coke': 'kBtu (thousand Btu)',
         'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water': 'kBtu (thousand Btu)',
         'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
         'District Chilled Water - Electric': 'kBtu (thousand Btu)',
         'District Chilled Water - Engine': 'kBtu (thousand Btu)',
@@ -163,7 +166,8 @@ class Organization(models.Model):
         'Natural Gas': 'kBtu (thousand Btu)',
         'Other:': 'kBtu (thousand Btu)',
         'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
+        'Wood': 'kBtu (thousand Btu)',
+        'Default': 'kBtu (thousand Btu)',
     }
 
     class Meta:
