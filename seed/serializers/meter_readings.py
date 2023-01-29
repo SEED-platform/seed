@@ -46,6 +46,13 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 
 
 class MeterReadingSerializer(serializers.ModelSerializer):
+    def to_internal_value(self, data):
+        data['start_time'] = make_aware(dateutil.parser.parse(
+            data['start_time']), timezone=timezone(TIME_ZONE))
+        data['end_time'] = make_aware(dateutil.parser.parse(
+            data['end_time']), timezone=timezone(TIME_ZONE))
+        return data
+
     def create(self, validated_data):
         instance = MeterReading(**validated_data)
 
