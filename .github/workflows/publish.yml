@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - debug-auditlog
     tags:
       - "*"
   workflow_dispatch:
@@ -43,6 +44,8 @@ jobs:
           if [[ ${GITHUB_EVENT_NAME} == "push" ]]; then
             if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
               SEED_TAG=seedplatform/seed:develop
+            elif [[ "${GITHUB_REF}" == "refs/heads/debug-auditlog" ]]; then
+              SEED_TAG=seedplatform/seed:debug-auditlog
             elif [[ "${GITHUB_REF}" =~ "refs/tags/v" ]]; then
               # you can have multiple tags, separated by commas
               SEED_TAG=seedplatform/seed:${GITHUB_REF#refs/tags/v},seedplatform/seed:latest
