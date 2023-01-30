@@ -61,17 +61,26 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
         ],
     )
     @api_endpoint_class
+    @ajax_request_class
     def update(self, request, property_pk=None, pk=None):
         scenario = Scenario.objects.get(pk=pk)
 
         if "temporal_status" in request.data:
-            if request.data["temporal_status"] not in range (1,7):
+            try:
+                temporal_status = int(request.data['temporal_status'])
+            except ValueError:
+                return JsonResponse({
+                    "Success": False,
+                    "Message": "temporal_status must be an integer between 1 and 6"
+                })
+
+            if int(request.data["temporal_status"]) not in range (1,7):
                 return JsonResponse({
                     "Success": False,
                     "Message": "Temporal_status must be an integer between 1 and 6"
                 })
 
-            scenario.temporal_status = int(request.data["temporal_status"])
+            scenario.temporal_status = temporal_status
         else:
             return JsonResponse({
                 "Success": False,
