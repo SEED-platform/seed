@@ -35,6 +35,10 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+def trigger_error(request):
+    """Endpoint for testing sentry with a divide by zero"""
+    1 / 0
+
 urlpatterns = [
     re_path(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
     re_path(
@@ -61,16 +65,14 @@ urlpatterns = [
     re_path(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^api/version/$', version, name='version'),
     re_path(r'^api/', include((api, "seed"), namespace='api')),
-    re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
+    re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider')),
+
+    # test sentry error
+    path('sentry-debug/', trigger_error)
 ]
 
 handler404 = 'seed.views.main.error404'
 handler500 = 'seed.views.main.error500'
-
-
-def trigger_error(request):
-    """Endpoint for testing sentry with a divide by zero"""
-    1 / 0
 
 
 if settings.DEBUG:
@@ -85,8 +87,5 @@ if settings.DEBUG:
         re_path(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
 
         # admin
-        re_path(r'^admin/', admin.site.urls),
-
-        # test sentry error
-        path('sentry-debug/', trigger_error)
+        re_path(r'^admin/', admin.site.urls),        
     ]
