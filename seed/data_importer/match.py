@@ -522,15 +522,12 @@ def save_state_match(state1, state2, priorities):
     if AuditLogClass.objects.filter(state=state1).count() == 0:
         # If there is no audit log for state1, then there is an error!
         # get the info of the object that is causing the issue
-        raise Exception(f'No audit log for merging of (base) state: {state1.__dict__}')
+        raise Exception(f'No audit log for merging of (base) state. Base {state1.id}, Incoming {state2.id}')
 
     if AuditLogClass.objects.filter(state=state2).count() == 0:
         # If there is no audit log for state1, then there is an error!
         # get the info of the object that is causing the issue
-        raise Exception(f'No audit log for merging of (incoming) state: {state2.__dict__}')
-
-    assert AuditLogClass.objects.filter(state=state1).count() >= 1
-    assert AuditLogClass.objects.filter(state=state2).count() >= 1
+        raise Exception(f'No audit log for merging of (incoming) state. Base {state1.id}, Incoming {state2.id}')
 
     # NJACHECK - is this logic correct?
     state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
