@@ -9,7 +9,7 @@ import json
 from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
-from seed.models import PropertyView, PropertyMeasure, Measure
+from seed.models import PropertyView, PropertyMeasure, Measure, Column, PropertyState
 from seed.test_helpers.fake import (
     FakePropertyMeasureFactory,
     FakePropertyStateFactory,
@@ -23,7 +23,7 @@ from django.test import TestCase
 
 
 
-class TestPropertyMeasures(TestCase):
+class TestPropertyMeasures(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -44,9 +44,9 @@ class TestPropertyMeasures(TestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
 
     def test_get_propery_measure(self):
-        # To create a measure 
-        # measure_id, property_state_id
-        # dont forget property_view
+        """
+        Test PropertyMeasure view can retrieve all or individual ProperyMeasure model instances
+        """
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
         measures = Measure.objects.all()
@@ -103,3 +103,62 @@ class TestPropertyMeasures(TestCase):
         self.assertEqual(response1.status_code, 200)
         self.assertEqual(response1.json()['description'], 'Property Measure 1' )
         self.assertEqual(response2.status_code, 404)
+
+    # def test_create_property_measure(self):
+    #     """
+    #     Test PropertyMeasure view's ability to create new PropertyMeasure model instances
+    #     """
+    #     property_view = self.property_view_factory.get_property_view()
+    #     property_state = property_view.state
+    #     measures = Measure.objects.all()
+
+    #     post_params = {
+    #         # "description": "PropertyMeasure create",
+    #         "implementation_status": 'Proposed',
+    #         "application_scale": 'Multiple systems',
+    #         "category_affected": 'Lighting',
+    #         "measure": 1,
+
+    #         # "measure": {
+    #         #     "id": measures[0].id,
+    #         # },
+    #         # "property_state_id": property_state.id,
+    #     }
+    #     url = reverse_lazy('api:v3:property-measures-list', args=[property_view.id])
+
+    #     x = self.client.post(
+    #         url,
+    #         content_type='application/json',
+    #         data=json.dumps(post_params),
+    #         **self.headers
+    #     )
+
+
+    #     breakpoint()
+
+    def test_delete_property_measure(self):
+        """
+        Test views ability to delete the model
+        """
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        measures = Measure.objects.all()
+        property_measure0 = PropertyMeasure.objects.create(
+            measure=measures[0],
+            property_state=property_state,
+            description="Property Measure 0"
+        )
+        property_measure1 = PropertyMeasure.objects.create(
+            measure=measures[1],
+            property_state=property_state,
+            description="Property Measure 1"
+        )
+
+        self.assertEqual(PropertyMeasure.objects.count(), 2)
+
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, property_measure0.id]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PropertyMeasure.objects.count(), 1)
