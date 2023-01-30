@@ -72,20 +72,22 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
                 return JsonResponse({
                     "Success": False,
                     "Message": "temporal_status must be an integer between 1 and 6"
-                })
+                }, status=status.HTTP_400_BAD_REQUEST)
+                    
 
             if int(request.data["temporal_status"]) not in range (1,7):
                 return JsonResponse({
                     "Success": False,
-                    "Message": "Temporal_status must be an integer between 1 and 6"
-                })
+                    "Message": "Temporal_status must be an integer between 1 and 6",
+                    
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             scenario.temporal_status = temporal_status
         else:
             return JsonResponse({
                 "Success": False,
                 "Message": "Invalid field. The following fields may be updated: 'temporal_status'"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         scenario.save()
 
         result = {
@@ -94,10 +96,3 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
         }
 
         return JsonResponse(result, status=status.HTTP_200_OK)
-
-
-    @api_endpoint_class
-    def create(self, request, pk=None):
-        breakpoint()
-
-

@@ -21,7 +21,7 @@ from django.urls import NoReverseMatch, reverse_lazy
 
 
 
-class TestMeasures(DeleteModelsTestCase):
+class TestScenarios(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -101,13 +101,13 @@ class TestMeasures(DeleteModelsTestCase):
         # -- Setup
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
-        source_scenario = Scenario.objects.create(property_state=property_state)
+        scenario = Scenario.objects.create(property_state=property_state)
 
         self.assertEqual(Scenario.objects.count(), 1)
 
         # The Scenario view uses PropertyView.id not PropertyState.id
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_state.id, source_scenario.id]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_state.id, scenario.id]),
             **self.headers
         )
         self.assertEqual(response.status_code, 404)
@@ -115,7 +115,7 @@ class TestMeasures(DeleteModelsTestCase):
 
 
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, source_scenario.id]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]),
             **self.headers
         )
         self.assertEqual(response.status_code, 204)
@@ -129,22 +129,58 @@ class TestMeasures(DeleteModelsTestCase):
         # -- Setup
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
-        source_scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
+        scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
 
         self.assertEqual(Scenario.objects.count(), 1)
-        self.assertEqual(source_scenario.temporal_status, 3)
+        self.assertEqual(scenario.temporal_status, 3)
 
         response = self.client.put(
             reverse_lazy(
                 'api:v3:property-scenarios-detail', 
-                args=[property_view.id, source_scenario.id]
+                args=[property_view.id, scenario.id]
             ),
             data=json.dumps({"temporal_status": "5"}),
             content_type='application/json',
             **self.headers
         )
 
-        source_scenario = Scenario.objects.get(id=source_scenario.id)
+        scenario = Scenario.objects.get(id=scenario.id)
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(source_scenario.temporal_status, 5)
+        self.assertEqual(scenario.temporal_status, 5)
+
+    def test_fails_to_update_scenario_with_invalid_data(self):
+        # -- Setup
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(scenario.temporal_status, 3)
+
+        response = self.client.put(
+            reverse_lazy(
+                'api:v3:property-scenarios-detail',
+                args=[property_view.id, scenario.id]
+            ),
+            data=json.dumps({"temporal_status":"not_integer"}),
+            content_type='application/json',
+            **self.headers
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['Success'], False)
+        self.assertEqual(response.json()['Message'], 'temporal_status must be an integer between 1 and 6')
+
+        response = self.client.put(
+            reverse_lazy(
+                'api:v3:property-scenarios-detail',
+                args=[property_view.id, scenario.id]
+            ),
+            data=json.dumps({"invalid_field":"123"}),
+            content_type='application/json',
+            **self.headers
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['Success'], False)
+        self.assertEqual(response.json()['Message'], "Invalid field. The following fields may be updated: 'temporal_status'")
