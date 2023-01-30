@@ -172,7 +172,7 @@ class DataView(models.Model):
             data_cycles[cycle_id][aggregation][view_key] = data_cycles[cycle_id][aggregation].get(view_key, [])
 
             if column.is_extra_data:
-                state_value = view.state.extra_data[column.column_name]
+                state_value = view.state.extra_data.get(column.column_name)
             elif column.derived_column:
                 state_value = column.derived_column.evaluate(view.state)
             else:

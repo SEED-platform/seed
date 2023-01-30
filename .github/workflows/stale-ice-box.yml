@@ -1,0 +1,19 @@
+name: "Close stale issues and PRs"
+on:
+  schedule:
+    - cron: "30 1 * * *"
+permissions:
+  issues: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/stale@v4
+        with:
+          days-before-stale: 180
+          any-of-labels: Icebox
+          stale-issue-message: "This issue has been automatically marked as stale because it has been in the icebox for more than 180 days. It will be closed if no further activity occurs. Thank you for your contributions."
+          close-issue-message: "This issue has been in the icebox for over 180 days and has been closed automatically. If this still affects you please re-open this issue with a comment or contact us so we can look into resolving it."
+          exempt-all-milestones: true
+          operations-per-run: 500

@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.create_column_modal', [])
         then(() => {
           $uibModalInstance.close();
           $state.reload();
-        }).error((err) => {
+        }).catch((err) => {
           Notification.error('error: ' + err);
         }).finally(() => {
           spinner_utility.hide()
