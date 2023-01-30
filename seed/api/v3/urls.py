@@ -43,6 +43,7 @@ from seed.views.v3.postoffice import PostOfficeEmailViewSet, PostOfficeViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
+from seed.views.v3.property_measures import PropertyMeasureViewSet
 from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
@@ -107,6 +108,7 @@ properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'propertie
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
+properties_router.register(r'property_measures', PropertyMeasureViewSet, basename='property-measures')
 
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
