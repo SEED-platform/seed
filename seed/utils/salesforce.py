@@ -6,8 +6,8 @@
 """
 import datetime
 
-import pytz
 from django.utils import timezone
+from django.utils.timezone import get_current_timezone
 from seed_salesforce.salesforce_client import SalesforceClient
 
 from seed.models import PropertyView
@@ -24,7 +24,6 @@ def test_connection(params):
     status = False
     message = None
     try:
-        status = 'unknown'
         sf = SalesforceClient(connection_params=params)
         if isinstance(sf, SalesforceClient):
             status = True
@@ -39,12 +38,13 @@ def retrieve_connection_params(org_id):
     """
     params = {}
     try:
-        config = SalesforceConfig.objects.get(organization_id=org_id)
+        config = SalesforceConfig.objects.filter(organization_id=org_id)
     except Exception as e:
         print('No salesforce configs entered in settings page: ' + e)
         return params
 
-    if config:
+    if len(config) >= 1:
+        config = config.first()
         params['instance'] = config.url
         params['username'] = config.username
         params['password'] = config.password
@@ -267,7 +267,7 @@ def auto_sync_salesforce_properties(org_id):
     ind_label_id = config.indication_label_id
 
     # set date
-    compare_date = config.last_update_date if config.last_update_date else datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)
+    compare_date = config.last_update_date if config.last_update_date else datetime.datetime(1970, 1, 1, tzinfo=get_current_timezone())
 
     # GET IDS by label and date
     # TODO: NOTE not limiting CYCLE here! (but should get caught by 'last update date' comparison to 'last salesforce update')

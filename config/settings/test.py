@@ -79,3 +79,12 @@ else:
 # suppress some logging on faker -- only show warnings or greater
 logging.getLogger('faker.factory').setLevel(logging.ERROR)
 logging.disable(logging.WARNING)
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', None)
+    SF_USERNAME = os.environ.get('SF_USERNAME', None)
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', None)
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', None)
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', None)
