@@ -1150,7 +1150,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_viewer'])
+            return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
               .then(function (data) {
                 if (data.auth.requires_viewer) {
                   return data;
@@ -1191,7 +1191,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_viewer'])
+            return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
               .then(function (data) {
                 if (data.auth.requires_viewer) {
                   return data;
