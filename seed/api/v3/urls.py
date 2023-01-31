@@ -108,7 +108,9 @@ properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'propertie
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
-properties_router.register(r'property_measures', PropertyMeasureViewSet, basename='property-measures')
+
+property_measures_router = nested_routers.NestedSimpleRouter(properties_router, r'scenarios', lookup='scenarios')
+property_measures_router.register(r'property_measures', PropertyMeasureViewSet, basename='property-measures')
 
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
@@ -132,6 +134,7 @@ urlpatterns = [
     re_path(r'^', include(analysis_messages_router.urls)),
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
+    re_path(r'^', include(property_measures_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
     re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
