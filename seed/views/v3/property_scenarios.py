@@ -65,7 +65,7 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
     def update(self, request, property_pk=None, pk=None):
         scenario = Scenario.objects.get(pk=pk)
         possible_fields = [f.name for f in scenario._meta.get_fields()]
-        breakpoint()
+
         for key, value in request.data.items():
             if key in possible_fields:
                 setattr(scenario, key, value)
