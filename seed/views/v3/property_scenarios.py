@@ -64,30 +64,17 @@ class PropertyScenarioViewSet(SEEDOrgModelViewSet):
     @ajax_request_class
     def update(self, request, property_pk=None, pk=None):
         scenario = Scenario.objects.get(pk=pk)
-
-        if "temporal_status" in request.data:
-            try:
-                temporal_status = int(request.data['temporal_status'])
-            except ValueError:
-                return JsonResponse({
+        possible_fields = [f.name for f in scenario._meta.get_fields()]
+        breakpoint()
+        for key, value in request.data.items():
+            if key in possible_fields:
+                setattr(scenario, key, value)
+            else:
+                return JsonResponse({                  
                     "Success": False,
-                    "Message": "temporal_status must be an integer between 1 and 6"
-                }, status=status.HTTP_400_BAD_REQUEST)
-                    
+                    "Message": f'"{key}" is not a valid scenario field'
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-            if int(request.data["temporal_status"]) not in range (1,7):
-                return JsonResponse({
-                    "Success": False,
-                    "Message": "Temporal_status must be an integer between 1 and 6",
-                    
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            scenario.temporal_status = temporal_status
-        else:
-            return JsonResponse({
-                "Success": False,
-                "Message": "Invalid field. The following fields may be updated: 'temporal_status'"
-            }, status=status.HTTP_400_BAD_REQUEST)
         scenario.save()
 
         result = {

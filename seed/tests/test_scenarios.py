@@ -129,17 +129,22 @@ class TestScenarios(DeleteModelsTestCase):
         # -- Setup
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
-        scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
+        scenario = Scenario.objects.create(property_state=property_state, temporal_status=3, name='name1')
 
         self.assertEqual(Scenario.objects.count(), 1)
         self.assertEqual(scenario.temporal_status, 3)
+
+        scenario_fields = {
+            'temporal_status': 5,
+            'name': 'name2'
+        }
 
         response = self.client.put(
             reverse_lazy(
                 'api:v3:property-scenarios-detail', 
                 args=[property_view.id, scenario.id]
             ),
-            data=json.dumps({"temporal_status": "5"}),
+            data=json.dumps(scenario_fields),
             content_type='application/json',
             **self.headers
         )
@@ -148,39 +153,34 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(scenario.temporal_status, 5)
+        self.assertEqual(scenario.name, 'name2')
 
-    def test_fails_to_update_scenario_with_invalid_data(self):
+    def test_fails_to_update_scenario_with_invalid_field(self):
+        """
+        Test the failure response when invalid field names are passed
+        """
         # -- Setup
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
         scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
-        self.assertEqual(Scenario.objects.count(), 1)
-        self.assertEqual(scenario.temporal_status, 3)
+        
+        scenario_fields = {
+            'temporal_status': 5,
+            'invalid_field': '123'
+        }
 
         response = self.client.put(
             reverse_lazy(
-                'api:v3:property-scenarios-detail',
+                'api:v3:property-scenarios-detail', 
                 args=[property_view.id, scenario.id]
             ),
-            data=json.dumps({"temporal_status":"not_integer"}),
+            data=json.dumps(scenario_fields),
             content_type='application/json',
             **self.headers
         )
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['Success'], False)
-        self.assertEqual(response.json()['Message'], 'temporal_status must be an integer between 1 and 6')
-
-        response = self.client.put(
-            reverse_lazy(
-                'api:v3:property-scenarios-detail',
-                args=[property_view.id, scenario.id]
-            ),
-            data=json.dumps({"invalid_field":"123"}),
-            content_type='application/json',
-            **self.headers
-        )
+        scenario = Scenario.objects.get(id=scenario.id)
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['Success'], False)
-        self.assertEqual(response.json()['Message'], "Invalid field. The following fields may be updated: 'temporal_status'")
+        self.assertEqual(response.json()['Message'], '"invalid_field" is not a valid scenario field')
