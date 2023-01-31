@@ -184,3 +184,43 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['Success'], False)
         self.assertEqual(response.json()['Message'], '"invalid_field" is not a valid scenario field')
+
+
+    def test_get_scenarios(self):
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        scenario1 = Scenario.objects.create(property_state=property_state, name='scenario 1')
+
+        url = reverse_lazy('api:v3:property-scenarios-list', args=[property_view.id])
+        response = self.client.get(
+            url, 
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(response.json()[0]['name'], 'scenario 0')
+        self.assertEqual(response.json()[1]['name'], 'scenario 1')
+
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id])
+        response = self.client.get(
+            url, 
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'scenario 0')
+
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario1.id])
+        response = self.client.get(
+            url, 
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'scenario 1')
+
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, 100])
+        response = self.client.get(
+            url, 
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
