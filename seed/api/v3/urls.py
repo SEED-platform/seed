@@ -110,7 +110,7 @@ properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
 
 property_measures_router = nested_routers.NestedSimpleRouter(properties_router, r'scenarios', lookup='scenario')
-property_measures_router.register(r'property_measures', PropertyMeasureViewSet, basename='property-measures')
+property_measures_router.register(r'measures', PropertyMeasureViewSet, basename='property-measures')
 
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
