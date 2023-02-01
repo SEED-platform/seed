@@ -35,9 +35,11 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+
 def trigger_error(request):
     """Endpoint for testing sentry with a divide by zero"""
     1 / 0
+
 
 urlpatterns = [
     re_path(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
@@ -87,5 +89,5 @@ if settings.DEBUG:
         re_path(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
 
         # admin
-        re_path(r'^admin/', admin.site.urls),        
+        re_path(r'^admin/', admin.site.urls),
     ]
