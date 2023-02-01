@@ -112,6 +112,53 @@
                     </div>
                 </div>
 
+                <div class="form-group" ng-if="new_analysis.service == 'EUI'">
+                    <label class="control-label sectionLabel">EUI Analysis Options</label>
+                    <div class="form-group" style="padding-top: 1em">
+
+                        <div class="form-row" style="padding-top: 1em; padding-bottom: 1em;">
+                            <div class="btn-group">
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
+                            </div>
+                        </div>
+
+                        <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-bottom: 1em;">
+                            <div class="col-md-6" ng-class="{'has-error' : invalidDates }" style="padding-bottom: 1em;">
+                                <label for="from-date">{$:: 'From date' | translate $}:</label>
+
+                                <div class="input-group date-input" style="padding-right:20px;">
+                                    <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_analysis.configuration.meter.start_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                    <span class="input-group-btn">
+                                        <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                                    </span>
+
+                                </div>
+                            </div>
+                            <div class="col-md-6" style="padding-bottom: 1em;">
+                                <label for="to-date">{$:: 'To date' | translate $}:</label>
+                                <div class="input-group date-input" style="padding-right:20px;">
+                                    <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_analysis.configuration.meter.end_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                    <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-bottom: 1em;">
+                            <div class="form-row">
+                                <label class="control-label sectionLabel text-muted">
+                                    Cycle
+                                </label>
+                                <select class="form-control" ng-model="new_analysis.configuration.cycle_id" style="width: 30rem" required>
+                                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group" ng-if="new_analysis.service == 'CO2'">
                     <label class="control-label sectionLabel">CO2 Analysis Options</label>
                     <div class="form-group" style="padding-top: 1em">
