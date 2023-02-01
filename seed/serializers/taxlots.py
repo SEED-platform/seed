@@ -56,6 +56,13 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
         return result
 
 
+class BriefTaxlotViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaxLotView
+        depth = 1
+        fields = ('id', 'cycle', 'taxlot_id')
+
+
 class TaxLotViewSerializer(serializers.ModelSerializer):
     # list of status labels (rather than the join field)
     labels = TaxLotLabelsField(read_only=True, many=True)

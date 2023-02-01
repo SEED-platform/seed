@@ -96,8 +96,11 @@
                     </div>
                 </div>
                 <div class="ellipsis">
-                     <span uib-popover="{$:: cycle.name $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                         <strong>{$:: 'Cycle' | translate $}:</strong> {$:: cycle.name $}
+                     <span style="display:flex; align-items:baseline; gap:1rem">
+                         <strong>{$:: 'Cycle' | translate $}:</strong>
+                         <select class="form-control" ng-model="selected_view.view_id" ng-change="changeView()" style="width: auto">
+                            <option ng-repeat="view in views" ng-value="view.view_id">{$ view.cycle_name $}</option>
+                         </select>
                      </span>
                 </div>
                 <div style="display:flex;align-items:center;">
