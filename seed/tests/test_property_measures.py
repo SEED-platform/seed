@@ -6,7 +6,6 @@
 """
 import base64
 import json
-from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
 from seed.models import PropertyMeasure, Measure, Scenario
@@ -16,8 +15,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from django.urls import NoReverseMatch, reverse_lazy
-from django.test import TestCase
+from django.urls import reverse_lazy
 
 
 
@@ -84,7 +82,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()['message'], "No Measures found for given scenario_pk")
+        self.assertEqual(response.json()['message'], "No Measures found for given pks")
         self.assertEqual(response.json()['status'], 'error')
 
         url = reverse_lazy(
@@ -128,146 +126,167 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['status'], 'error')
-        self.assertEqual(response.json()['message'], "No Measure found for given pk and scenario_pk")
+        self.assertEqual(response.json()['message'], "No Measure found for given pks")
 
-        # breakpoint()
-        # self.assertEqual(PropertyMeasure.objects.count(), 2)
+    def test_update_property_measure(self):
+        """
+        Test PropertyMeasure view can update a ProperyMeasure model instances
+        """
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        measures = Measure.objects.all()
+        scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        property_measure0 = PropertyMeasure.objects.create(
+            measure=measures[0],
+            property_state=property_state,
+            description="Property Measure 0",
+            implementation_status=1
+        )
+        property_measure1 = PropertyMeasure.objects.create(
+            measure=measures[1],
+            property_state=property_state,
+            description="Property Measure 1",
+            implementation_status=1
+        )
+        property_measure0.scenario_set.add(scenario0.id)
+        property_measure1.scenario_set.add(scenario0.id)
 
-        # response = self.client.get(
-        #     reverse_lazy(
-        #         'api:v3:property-measures-list', 
-        #         args=[property_view.id]
-        #     ),
-        #     **self.headers
-        # )
+        property_measure_fields = {
+            'description': 'updated desc',
+            'implementation_status': 7
+        }
 
-        # data = response.json()
-        # self.assertEqual(len(data), 2)
-        # self.assertEqual(data[0].get('description'), "Property Measure 0")
-        # self.assertEqual(data[1].get('description'), "Property Measure 1")
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[property_view.id, scenario0.id, property_measure1.id]
+        )
 
-        # response0 = self.client.get(
-        #     reverse_lazy(
-        #         'api:v3:property-measures-detail', 
-        #         args=[property_view.id, property_measure0.id]
-        #     ),
-        #     **self.headers
-        # )
-        # response1 = self.client.get(
-        #     reverse_lazy(
-        #         'api:v3:property-measures-detail', 
-        #         args=[property_view.id, property_measure1.id]
-        #     ),
-        #     **self.headers
-        # )
-        # response2 = self.client.get(
-        #     reverse_lazy(
-        #         'api:v3:property-measures-detail', 
-        #         args=[property_view.id, 999999]
-        #     ),
-        #     **self.headers
-        # )
+        response = self.client.put(
+            url, 
+            data=json.dumps(property_measure_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        data = response.json()['data']
+        self.assertEqual(data['description'], 'updated desc')
+        self.assertEqual(data['implementation_status'], "Completed")
 
-        # self.assertEqual(response0.status_code, 200)
-        # self.assertEqual(response0.json()['description'], 'Property Measure 0' )
-        # self.assertEqual(response1.status_code, 200)
-        # self.assertEqual(response1.json()['description'], 'Property Measure 1' )
-        # self.assertEqual(response2.status_code, 404)
+        property_measure0 = PropertyMeasure.objects.get(pk=property_measure0.id)
+        property_measure1 = PropertyMeasure.objects.get(pk=property_measure1.id)
 
+        self.assertEqual(property_measure0.implementation_status, 1)
+        self.assertEqual(property_measure1.implementation_status, 7)
 
-    # def test_create_property_measure(self):
-    #     """
-    #     Test PropertyMeasure view's ability to create new PropertyMeasure model instances
-    #     """
-    #     property_view = self.property_view_factory.get_property_view()
-    #     property_state = property_view.state
-    #     measures = Measure.objects.all()
+    def test_fail_to_update_property_measure_with_invalid_data(self):
+        """
+        Test Failure modes when property measure is updated with invalid data
+        """
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        measures = Measure.objects.all()
+        scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        property_measure0 = PropertyMeasure.objects.create(
+            measure=measures[0],
+            property_state=property_state,
+            description="Property Measure 0",
+            implementation_status=1
+        )
+        property_measure0.scenario_set.add(scenario0.id)
+        # Invalid Field Name
+        property_measure_fields = {
+            'description': 'updated desc',
+            'invalid_field': 123
+        }
 
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[property_view.id, scenario0.id, property_measure0.id]
+        )
 
-    #     post_params = {
-    #         # "description": "PropertyMeasure create",
-    #         "implementation_status": 'Proposed',
-    #         "application_scale": 'Multiple systems',
-    #         "category_affected": 'Lighting',
-    #         "measure_id": "water_and_sewer_conservation_systems.upgrade_operating_protocols_calibration_and_or_sequencing",
-    #         "property_state_id": property_state.id,
-    #     }
-    #     url = reverse_lazy('api:v3:property-measures-list', args=[property_view.id])
-
-    #     x = self.client.post(
-    #         url,
-    #         content_type='application/json',
-    #         data=json.dumps(post_params),
-    #         **self.headers
-    #     )
+        response = self.client.put(
+            url, 
+            data=json.dumps(property_measure_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], '"invalid_field" is not a valid property measure field')
 
 
-    #     breakpoint()
+        property_measure_fields = {
+            'description': 'updated desc',
+        }
+        # Invalid Property Measure ID
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[property_view.id, scenario0.id, 99999]
+        )
 
-    # def test_delete_property_measure(self):
-    #     """
-    #     Test views ability to delete the model
-    #     """
-    #     property_view = self.property_view_factory.get_property_view()
-    #     property_state = property_view.state
-    #     measures = Measure.objects.all()
-    #     property_measure0 = PropertyMeasure.objects.create(
-    #         measure=measures[0],
-    #         property_state=property_state,
-    #         description="Property Measure 0"
-    #     )
-    #     property_measure1 = PropertyMeasure.objects.create(
-    #         measure=measures[1],
-    #         property_state=property_state,
-    #         description="Property Measure 1"
-    #     )
+        response = self.client.put(
+            url, 
+            data=json.dumps(property_measure_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'No Property Measure found with given pks')
 
-    #     self.assertEqual(PropertyMeasure.objects.count(), 2)
+        url = reverse_lazy(
+            'api:v3:property-measures-detail',
+            args=[9999, scenario0.id, property_measure0.id]
+        )
 
-    #     response = self.client.delete(
-    #         reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, property_measure0.id]),
-    #         **self.headers
-    #     )
-    #     self.assertEqual(response.status_code, 204)
-    #     self.assertEqual(PropertyMeasure.objects.count(), 1)
+        response = self.client.put(
+            url, 
+            data=json.dumps(property_measure_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'No Property Measure found with given pks')
 
-    # def test_update_property_measure(self):
-    #     self.assertEqual(1,1)
+    def test_delete_property_measure(self):
+        """
+        Test views ability to delete the model
+        """
+        property_view = self.property_view_factory.get_property_view()
+        property_state = property_view.state
+        measures = Measure.objects.all()
+        scenario = Scenario.objects.create(property_state=property_state)
+        property_measure0 = PropertyMeasure.objects.create(
+            measure=measures[0],
+            property_state=property_state,
+            description="Property Measure 0"
+        )
+        property_measure1 = PropertyMeasure.objects.create(
+            measure=measures[1],
+            property_state=property_state,
+            description="Property Measure 1"
+        )
+        property_measure0.scenario_set.add(scenario.id)
+        property_measure1.scenario_set.add(scenario.id)
 
-    #     property_view = self.property_view_factory.get_property_view()
-    #     property_state = property_view.state
-    #     measures = Measure.objects.all()
-    #     property_measure = PropertyMeasure.objects.create(
-    #         measure=measures[0],
-    #         property_state=property_state,
-    #         description="Property Measure 0",
-    #         implementation_status="Proposed"
-    #     )
 
-    #     response = self.client.get(
-    #         reverse_lazy(
-    #             'api:v3:property-measures-detail', 
-    #             args=[property_view.id, property_measure.id]
-    #         ),
-    #         **self.headers
-    #     )
+        self.assertEqual(PropertyMeasure.objects.count(), 2)
 
-    #     self.assertEqual(response.json()['description'], "Property Measure 0")
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, scenario.id, property_measure0.id]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        self.assertEqual(response.json()['message'], 'Successfully Deleted Property Measure')
+        self.assertEqual(PropertyMeasure.objects.count(), 1)
 
-    #     url = reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, property_measure.id])
-    #     put_params = json.dumps({
-    #         "implementation_status": 'Completed',
-    #     })
-
-    #     response = self.client.put(
-    #         url, 
-    #         data=put_params,
-    #         content_type='application/json',
-    #         **self.headers
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-        # data = response.json()
-        # self.assertEqual(data["description"], "updated description")
-        # self.assertEqual(data["implementation_status"], "Proposed")
-        # self.assertEqual(data["application_scale"], "Multiple systems")
-        # self.assertEqual(data["category_affected"], "Lighting")
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-measures-detail', args=[property_view.id, scenario.id, 9999]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'No Property Measure found with given pks')
