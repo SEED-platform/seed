@@ -187,6 +187,9 @@ class TestScenarios(DeleteModelsTestCase):
 
 
     def test_get_scenarios(self):
+        """
+        Test retrieve and list endpoints for Scenario view
+        """
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
         scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
