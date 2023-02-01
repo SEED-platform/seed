@@ -192,6 +192,10 @@ describe('controller: inventory_detail_controller', function () {
       users_payload: {
         users: []
       },
+      views_payload: {
+        status:	"success",
+        property_views: [],
+      }
     });
   }
 
