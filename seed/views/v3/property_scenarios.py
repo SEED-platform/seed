@@ -4,19 +4,18 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
-from seed.decorators import ajax_request_class
-from seed.utils.api import api_endpoint_class
-from drf_yasg.utils import swagger_auto_schema
-from django.http import JsonResponse
-from rest_framework import status
 
+from seed.decorators import ajax_request_class
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
-from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
+from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
-
+from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
 
 class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
@@ -65,7 +64,7 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             if key in possible_fields:
                 setattr(scenario, key, value)
             else:
-                return JsonResponse({                  
+                return JsonResponse({
                     "Success": False,
                     "Message": f'"{key}" is not a valid scenario field'
                     }, status=status.HTTP_400_BAD_REQUEST)

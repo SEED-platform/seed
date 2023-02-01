@@ -6,6 +6,8 @@
 """
 import base64
 import json
+
+from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
@@ -17,8 +19,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from django.urls import NoReverseMatch, reverse_lazy
-
 
 
 class TestScenarios(DeleteModelsTestCase):
@@ -141,7 +141,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         response = self.client.put(
             reverse_lazy(
-                'api:v3:property-scenarios-detail', 
+                'api:v3:property-scenarios-detail',
                 args=[property_view.id, scenario.id]
             ),
             data=json.dumps(scenario_fields),
@@ -163,7 +163,7 @@ class TestScenarios(DeleteModelsTestCase):
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
         scenario = Scenario.objects.create(property_state=property_state, temporal_status=3)
-        
+
         scenario_fields = {
             'temporal_status': 5,
             'invalid_field': '123'
@@ -171,7 +171,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         response = self.client.put(
             reverse_lazy(
-                'api:v3:property-scenarios-detail', 
+                'api:v3:property-scenarios-detail',
                 args=[property_view.id, scenario.id]
             ),
             data=json.dumps(scenario_fields),
@@ -197,7 +197,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         url = reverse_lazy('api:v3:property-scenarios-list', args=[property_view.id])
         response = self.client.get(
-            url, 
+            url,
             **self.headers
         )
         self.assertEqual(response.status_code, 200)
@@ -207,7 +207,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id])
         response = self.client.get(
-            url, 
+            url,
             **self.headers
         )
         self.assertEqual(response.status_code, 200)
@@ -215,7 +215,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario1.id])
         response = self.client.get(
-            url, 
+            url,
             **self.headers
         )
         self.assertEqual(response.status_code, 200)
@@ -223,7 +223,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, 100])
         response = self.client.get(
-            url, 
+            url,
             **self.headers
         )
         self.assertEqual(response.status_code, 404)

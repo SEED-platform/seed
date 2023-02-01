@@ -42,8 +42,8 @@ from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.postoffice import PostOfficeEmailViewSet, PostOfficeViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
-from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_measures import PropertyMeasureViewSet
+from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet

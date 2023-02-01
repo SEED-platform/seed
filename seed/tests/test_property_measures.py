@@ -7,17 +7,16 @@
 import base64
 import json
 
+from django.urls import reverse_lazy
+
 from seed.landing.models import SEEDUser as User
-from seed.models import PropertyMeasure, Measure, Scenario
+from seed.models import Measure, PropertyMeasure, Scenario
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
+    FakePropertyViewFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from django.urls import reverse_lazy
-
-
 
 
 class TestPropertyMeasures(DeleteModelsTestCase):
@@ -49,7 +48,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         measures = Measure.objects.all()
         scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
         scenario1 = Scenario.objects.create(property_state=property_state, name='scenario 1')
-        
+
         property_measure0 = PropertyMeasure.objects.create(
             measure=measures[0],
             property_state=property_state,
@@ -70,7 +69,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
             property_state=property_state,
             description="Property Measure 3"
         )
-        
+
         property_measure0.scenario_set.add(scenario0.id)
         property_measure1.scenario_set.add(scenario0.id)
         property_measure2.scenario_set.add(scenario1.id)
@@ -109,7 +108,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(data[0]['description'], "Property Measure 2")
         self.assertEqual(data[1]['description'], "Property Measure 3")
 
-        
+
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario1.id, property_measure2.id]
@@ -118,7 +117,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'success')
         self.assertEqual(response.json()['data']['description'], "Property Measure 2")
-        
+
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario1.id, 1234]
@@ -162,7 +161,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
 
         response = self.client.put(
-            url, 
+            url,
             data=json.dumps(property_measure_fields),
             content_type='application/json',
             **self.headers
@@ -206,7 +205,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
 
         response = self.client.put(
-            url, 
+            url,
             data=json.dumps(property_measure_fields),
             content_type='application/json',
             **self.headers
@@ -226,7 +225,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
 
         response = self.client.put(
-            url, 
+            url,
             data=json.dumps(property_measure_fields),
             content_type='application/json',
             **self.headers
@@ -241,7 +240,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
 
         response = self.client.put(
-            url, 
+            url,
             data=json.dumps(property_measure_fields),
             content_type='application/json',
             **self.headers

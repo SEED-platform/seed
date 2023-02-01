@@ -4,22 +4,22 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from seed.decorators import ajax_request_class
-from seed.utils.api import api_endpoint_class
-from seed.models import PropertyMeasure, PropertyView
-from seed.serializers.scenarios import PropertyMeasureSerializer
 from django.http import JsonResponse
 from rest_framework import status
-from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
+from seed.decorators import ajax_request_class
+from seed.models import PropertyMeasure, PropertyView
+from seed.serializers.scenarios import PropertyMeasureSerializer
+from seed.utils.api import api_endpoint_class
+from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
 
 class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API view for PropertyMeasures
     """
-    serializer_class = PropertyMeasureSerializer   
-    model = PropertyMeasure 
+    serializer_class = PropertyMeasureSerializer
+    model = PropertyMeasure
     orgfilter = 'property_state__organization_id'
 
     @api_endpoint_class
@@ -28,14 +28,14 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
         except PropertyView.DoesNotExist:
-            return JsonResponse({                  
+            return JsonResponse({
                 "status": 'error',
                 "message": f'No Measures found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
 
         measure_set = PropertyMeasure.objects.filter(scenario=scenario_pk, property_state=property_state.id)
         if not measure_set:
-            return JsonResponse({                  
+            return JsonResponse({
                 "status": 'error',
                 "message": f'No Measures found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
@@ -44,7 +44,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         for measure in measure_set:
             serialized_measure = PropertyMeasureSerializer(measure).data
             serialized_measures.append(serialized_measure)
-        
+
         return JsonResponse({
             'status': 'success',
             'data': serialized_measures
@@ -54,16 +54,16 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @ajax_request_class
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
 
-        try: 
+        try:
             property_state = PropertyView.objects.get(pk=property_pk).state
             measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
-            return JsonResponse({                  
+            return JsonResponse({
                 "status": 'error',
                 "message": 'No Measure found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        serialized_measure = PropertyMeasureSerializer(measure).data 
+        serialized_measure = PropertyMeasureSerializer(measure).data
 
         return JsonResponse({
             "status": 'success',
@@ -89,11 +89,11 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             if key in possible_fields:
                 setattr(property_measure, key, value)
             else:
-                return JsonResponse({                  
+                return JsonResponse({
                     "status": 'error',
                     "message": f'"{key}" is not a valid property measure field'
                     }, status=status.HTTP_400_BAD_REQUEST)
-                    
+
         property_measure.save()
 
         result = {
