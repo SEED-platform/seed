@@ -41,7 +41,6 @@ class TestScenarios(DeleteModelsTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
 
-
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
 
@@ -113,7 +112,6 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(Scenario.objects.count(), 1)
 
-
         response = self.client.delete(
             reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]),
             **self.headers
@@ -184,7 +182,6 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['Success'], False)
         self.assertEqual(response.json()['Message'], '"invalid_field" is not a valid scenario field')
-
 
     def test_get_scenarios(self):
         """

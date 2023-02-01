@@ -30,14 +30,14 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 "status": 'error',
-                "message": f'No Measures found for given pks'
+                "message": 'No Measures found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
 
         measure_set = PropertyMeasure.objects.filter(scenario=scenario_pk, property_state=property_state.id)
         if not measure_set:
             return JsonResponse({
                 "status": 'error',
-                "message": f'No Measures found for given pks'
+                "message": 'No Measures found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
 
         serialized_measures = []
@@ -56,7 +56,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
-            measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
+            measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk, property_state=property_state.id)
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
             return JsonResponse({
                 "status": 'error',
@@ -69,7 +69,6 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             "status": 'success',
             "data": serialized_measure
         }, status=status.HTTP_200_OK)
-
 
     @api_endpoint_class
     @ajax_request_class
@@ -92,7 +91,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 return JsonResponse({
                     "status": 'error',
                     "message": f'"{key}" is not a valid property measure field'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         property_measure.save()
 
@@ -119,4 +118,4 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         return JsonResponse({
             'status': 'success',
             'message': 'Successfully Deleted Property Measure'
-            }, status=status.HTTP_200_OK)
+        }, status=status.HTTP_200_OK)

@@ -67,7 +67,7 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 return JsonResponse({
                     "Success": False,
                     "Message": f'"{key}" is not a valid scenario field'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         scenario.save()
 

@@ -108,7 +108,6 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(data[0]['description'], "Property Measure 2")
         self.assertEqual(data[1]['description'], "Property Measure 3")
 
-
         url = reverse_lazy(
             'api:v3:property-measures-detail',
             args=[property_view.id, scenario1.id, property_measure2.id]
@@ -214,7 +213,6 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(response.json()['status'], 'error')
         self.assertEqual(response.json()['message'], '"invalid_field" is not a valid property measure field')
 
-
         property_measure_fields = {
             'description': 'updated desc',
         }
@@ -269,7 +267,6 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         )
         property_measure0.scenario_set.add(scenario.id)
         property_measure1.scenario_set.add(scenario.id)
-
 
         self.assertEqual(PropertyMeasure.objects.count(), 2)
 
