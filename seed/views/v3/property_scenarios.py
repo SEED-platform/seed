@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
+from django.utils.decorators import method_decorator
 
 from seed.decorators import ajax_request_class
 from seed.models import Scenario
@@ -17,7 +18,36 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
-
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field(
+            name='property_pk',
+            required=True,
+            description='Associated PropertyView ID',
+        )]
+    )
+)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field(
+            name='property_pk',
+            required=True,
+            description='Associated PropertyView ID',
+        )]
+    )
+)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field(
+            name='property_pk',
+            required=True,
+            description='Associated PropertyView ID',
+        )]
+    )
+)
 class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API View for Scenarios.
@@ -41,11 +71,10 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 name='property_pk',
                 required=True,
-                description='Associated PropertyView ID (not PropertyState).',
+                description='Associated PropertyView ID',
             ),
             AutoSchemaHelper.query_integer_field(
                 name="id",

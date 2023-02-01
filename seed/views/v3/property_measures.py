@@ -6,12 +6,14 @@
 """
 from django.http import JsonResponse
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
 
 from seed.decorators import ajax_request_class
 from seed.models import PropertyMeasure, PropertyView
 from seed.serializers.scenarios import PropertyMeasureSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
+from seed.utils.api_schema import AutoSchemaHelper
 
 
 class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
@@ -22,6 +24,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     model = PropertyMeasure
     orgfilter = 'property_state__organization_id'
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_string_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def list(self, request, property_pk=None, scenario_pk=None):
@@ -50,6 +53,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             'data': serialized_measures
         }, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
@@ -70,6 +74,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             "data": serialized_measure
         }, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
@@ -102,6 +107,7 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def destroy(self, request, property_pk=None, scenario_pk=None, pk=None):
