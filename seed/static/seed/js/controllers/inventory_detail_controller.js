@@ -93,7 +93,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             cycle_name: cycle.name,
           }
         }
-      )
+      ).sort((a,b) => a.cycle_name.localeCompare(b.cycle_name))
       $scope.selected_view = $scope.views.find(({view_id}) => view_id == $scope.inventory.view_id)
 
       $scope.changeView = function() {
