@@ -256,6 +256,13 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
         model = PropertyState
 
 
+class BriefPropertyViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PropertyView
+        depth = 1
+        fields = ('id', 'cycle', 'property_id')
+
+
 class PropertyViewSerializer(serializers.ModelSerializer):
     # list of status labels (rather than the join field)
     labels = PropertyLabelsField(read_only=True, many=True)

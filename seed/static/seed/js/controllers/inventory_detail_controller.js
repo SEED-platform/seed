@@ -26,6 +26,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'organization_service',
     'dataset_service',
     'inventory_payload',
+    'views_payload',
     'analyses_payload',
     'users_payload',
     'columns',
@@ -59,6 +60,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       organization_service,
       dataset_service,
       inventory_payload,
+      views_payload,
       analyses_payload,
       users_payload,
       columns,
@@ -84,6 +86,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
+
+      views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
+      $scope.views = views_payload.map(
+        ({id, cycle}) => {
+          return {
+            view_id: id,
+            cycle_name: cycle.name,
+          }
+        }
+      ).sort((a,b) => a.cycle_name.localeCompare(b.cycle_name))
+      $scope.selected_view = $scope.views.find(({view_id}) => view_id == $scope.inventory.view_id)
+
+      $scope.changeView = function() {
+        window.location.href = '/app/#/' + $scope.inventory_type + '/' + $scope.selected_view.view_id;
+      }
+
       $scope.labels = _.filter(labels_payload, function (label) {
         return !_.isEmpty(label.is_applied);
       });
