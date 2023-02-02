@@ -25,6 +25,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @api_endpoint_class
     @ajax_request_class
     def list(self, request, property_pk=None, scenario_pk=None):
+        """
+        Where property_pk is the associated PropertyView.id
+        """
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
         except PropertyView.DoesNotExist:
@@ -53,6 +56,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
+        """
+        Where property_pk is the associated PropertyView.id
+        """
 
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
@@ -73,6 +79,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
+        """
+        Where property_pk is the associated PropertyView.id
+        """
         try:
             property_state = PropertyView.objects.get(pk=property_pk).state
             property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk, property_state=property_state.id)

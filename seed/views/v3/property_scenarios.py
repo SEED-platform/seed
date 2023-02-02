@@ -40,6 +40,9 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, pk=None):
+        """
+        Where property_pk is the associated PropertyView.id
+        """
         scenario = Scenario.objects.get(pk=pk)
         possible_fields = [f.name for f in scenario._meta.get_fields()]
 
