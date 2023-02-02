@@ -26,6 +26,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.salesforce import (
     auto_sync_salesforce_properties,
+    check_salesforce_enabled,
     test_connection
 )
 
@@ -63,7 +64,7 @@ def _validate_data(data, org_id):
             msgs.append('the selected compliance label does not belong to this organization')
 
     #  Contact Columns
-    column_names = ['contact_email_column', 'contact_name_column', 'account_name_column', 'data_admin_email_column', 'data_admin_name_column']
+    column_names = ['seed_benchmark_id_column', 'contact_email_column', 'contact_name_column', 'account_name_column']
     for item in column_names:
         c_id = data.get(item)
         if c_id:
@@ -103,6 +104,13 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         """
         Tests connection to Salesforce using saved credentials
         """
+
+        org_id = self.get_organization(request)
+        # first ensure salesforce is enabled
+        if not check_salesforce_enabled(org_id):
+            return JsonResponse({'status': 'error', 'message': 'Salesforce functionality is not enabled for this organization'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
         body = request.data
         # conf = SalesforceConfig.objects.get(pk=pk)
         data = body.get('salesforce_config', None)
@@ -122,11 +130,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         # connect
         status_msg, message, sf = test_connection(params)
-        if status_msg == 'error':
-            return JsonResponse({'status': status_msg, 'message': message},
+        if status_msg is False:
+            return JsonResponse({'status': 'error', 'message': message},
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({'status': status_msg})
+            return JsonResponse({'status': 'success'})
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -231,8 +239,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'contact_email_column': 'integer',
                 'contact_name_column': 'integer',
                 'account_name_column': 'integer',
-                'data_admin_email_column': 'integer',
-                'data_admin_name_column': 'integer',
+                'logging_email': 'string',
             },
         )
     )
@@ -304,8 +311,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'contact_email_column': 'integer',
                 'contact_name_column': 'integer',
                 'account_name_column': 'integer',
-                'data_admin_email_column': 'integer',
-                'data_admin_name_column': 'integer',
+                'logging_email': 'string',
             },
         )
     )

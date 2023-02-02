@@ -10,12 +10,13 @@ from django.utils import timezone
 from django.utils.timezone import get_current_timezone
 from seed_salesforce.salesforce_client import SalesforceClient
 
-from seed.models import PropertyView
+from seed.models import Organization, PropertyView
 from seed.models import StatusLabel as Label
 from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
+from seed.tasks import send_salesforce_error_log
 
 
 def test_connection(params):
@@ -31,6 +32,16 @@ def test_connection(params):
     except Exception as e:
         message = " ".join(["Salesforce Authentication Failed:", str(e)])
         return status, message, None
+
+
+def check_salesforce_enabled(org_id):
+    """ check that salesforce process is enabled before synching
+    """
+    enabled = False
+    org = Organization.objects.get(pk=org_id)
+    if org.salesforce_enabled:
+        enabled = True
+    return enabled
 
 
 def retrieve_connection_params(org_id):
@@ -148,9 +159,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         return status, message
 
     benchmark_id_colname = Column.objects.get(pk=config.seed_benchmark_id_column_id)
-    # TODO: not sure about this...are column names or display names used?
-    # print(f"displayname: {benchmark_id_colname.display_name}")
-    # print(f"column_name: {benchmark_id_colname.column_name}")
 
     # we don't know if this will be in extra_data or canonical fields
     benchmark_id = None
@@ -166,19 +174,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         message = 'SEED Unique Benchmark ID Column is undefined '
         return status, message
 
-    # generate the field mappings
     params = {}
-    for mapping in mappings:
-        params[mapping.salesforce_fieldname] = None
-        colname = Column.objects.get(pk=mapping.column_id)
-
-        if colname.display_name and colname.display_name in flat_state:
-            field_val = flat_state[colname.display_name]
-        elif colname.column_name in flat_state:
-            field_val = flat_state[colname.column_name]
-
-        params[mapping.salesforce_fieldname] = field_val
-
     # add cycle, labels, status (if used)
     if config.cycle_fieldname:
         params[config.cycle_fieldname] = result['cycle']['name']
@@ -194,8 +190,18 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     if config.labels_fieldname:
         params[config.labels_fieldname] = ".".join(result['label_names'])
 
-    # print(f"!!!!!! PARAMS:")
-    # print(params)
+    # if compliance label is applied, also generate the other field mappings
+    if config.compliance_label_id and config.compliance_label_id in result['labels']:
+        for mapping in mappings:
+            params[mapping.salesforce_fieldname] = None
+            colname = Column.objects.get(pk=mapping.column_id)
+
+            if colname.display_name and colname.display_name in flat_state:
+                field_val = flat_state[colname.display_name]
+            elif colname.column_name in flat_state:
+                field_val = flat_state[colname.column_name]
+
+            params[mapping.salesforce_fieldname] = field_val
 
     try:
         salesforce_client.update_benchmark(benchmark_id, **params)
@@ -251,17 +257,16 @@ def auto_sync_salesforce_properties(org_id):
     status = False
     messages = []
 
+    if not check_salesforce_enabled(org_id):
+        messages.append("Salesforce Workflow is not enabled. Enable Salesforce on the organization settings page")
+        return status, messages
+
     # get salesforce config object
     try:
         config = SalesforceConfig.objects.get(organization_id=org_id)
     except Exception:
-        status = False
         messages.append('No Salesforce configs found. Configure Salesforce on the organization settings page')
         return status, messages
-
-    # salesforce_client = SalesforceClient(connection_params=retrieve_connection_params(org_id))
-    # get mapping object
-    # mappings = SalesforceMapping.objects.filter(organization_id=org_id)
 
     # get properties list that have the 'Indication Label' label applied (for adding to Salesforce)
     ind_label_id = config.indication_label_id
@@ -269,14 +274,14 @@ def auto_sync_salesforce_properties(org_id):
     # set date
     compare_date = config.last_update_date if config.last_update_date else datetime.datetime(1970, 1, 1, tzinfo=get_current_timezone())
 
-    # GET IDS by label and date
-    # TODO: NOTE not limiting CYCLE here! (but should get caught by 'last update date' comparison to 'last salesforce update')
-    # could pass this date into the query below?
-
+    # get IDs by label and date
     property_matches = PropertyView.objects.filter(property__organization_id=org_id).filter(property__updated__gt=compare_date).filter(labels__in=[ind_label_id]).values_list('id', flat=True)
 
     status, messages = update_salesforce_properties(org_id, list(property_matches))
-    # TODO: log this somewhere!?
+
+    if not status:
+        # send email with errors
+        send_salesforce_error_log(org_id, messages)
 
     if len(messages) == 0:
         status = True

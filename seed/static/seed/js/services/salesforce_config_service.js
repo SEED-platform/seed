@@ -95,7 +95,6 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     */
     const sync_salesforce = function () {
       // todo: check that this works before configs are saved for the first time
-      console.log("org: ", user_service.get_organization().id)
       return $http.post('/api/v3/salesforce_configs/sync/', {
         params: {
           'organization_id': user_service.get_organization().id

@@ -34,6 +34,7 @@ from seed.models import (
     Property,
     PropertyState,
     PropertyView,
+    SalesforceConfig,
     TaxLot,
     TaxLotState,
     TaxLotView
@@ -155,6 +156,26 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
+
+
+def send_salesforce_error_log(org_pk, errors):
+
+    sf_conf = SalesforceConfig.objects.get(organization_id=org_pk)
+    org = Organization.objects.get(pk=org_pk)
+
+    if sf_conf.logging_email:
+
+        context = {
+            'organization_name': org.name,
+            'errors': errors
+        }
+
+        subject = 'Salesforce Automatic Update Errors'
+        email_body = loader.render_to_string(
+            'seed/salesforce_update_errors.html',
+            context
+        )
+        send_mail(subject, email_body, settings.SERVER_EMAIL, [sf_conf.logging_email])
 
 
 def delete_organization(org_pk):

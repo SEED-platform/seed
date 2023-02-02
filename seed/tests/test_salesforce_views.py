@@ -7,9 +7,9 @@
 import json
 from datetime import datetime
 
+from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
-from seed_salesforce.salesforce_client import SalesforceClient
 
 from config.settings.test import (
     SF_DOMAIN,
@@ -37,11 +37,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from seed.utils.salesforce import (
-    retrieve_connection_params,
-    test_connection,
-    update_salesforce_property
-)
+from seed.utils.salesforce import update_salesforce_property
 
 
 class SalesforceViewTests(DataMappingBaseTestCase):
@@ -135,17 +131,12 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             name='Compliance Label', super_organization=temp_org
         )
 
-        # TODO: make sure you can only save 1 per org
-        # with self.assertRaises(IntegrityError):
-        #    self.sf_config.save()
-
         status_fieldname = "Status__Yay__c"
 
         payload_data = {
             "indication_label": ind_label.id,
             "violation_label": violation_label.id,
             "compliance_label": compliance_label.id,
-            "seed_benchmark_id_column": self.benchmark_col.id,
             "unique_benchmark_id_fieldname": "Salesforce_Benchmark_ID__c",
             "status_fieldname": status_fieldname
         }
@@ -156,7 +147,6 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        # print(f" create config data: {data}")
         self.assertEqual(data['status'], 'success')
 
         tmp_sf_config = SalesforceConfig.objects.get(pk=data['salesforce_config']['id'])
@@ -192,11 +182,9 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        # print(f" create mapping data: {data}")
         self.assertEqual(data['status'], 'success')
 
         self.mapping_energystar = SalesforceMapping.objects.filter(salesforce_fieldname="ENERGY_STAR_Score__c").first()
-        # print(f" retrieved energystar record: {self.mapping_energystar}, {self.mapping_energystar.pk}")
 
         # Edit salesforce mappings
         new_data = {"salesforce_fieldname": "the_new_field__c"}
@@ -215,40 +203,83 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         with self.assertRaises(SalesforceMapping.DoesNotExist):
             SalesforceMapping.objects.get(pk=self.mapping_energystar.pk)
 
-    def test_salesforce_connection_fails(self):
-        # test error when connection to salesforce fails
-        self.sf_config = SalesforceConfig.objects.create(
-            organization=self.org,
-            compliance_label=self.compliance_label,
-            indication_label=self.ind_label,
-            violation_label=self.violation_label,
-            seed_benchmark_id_column=self.benchmark_col,
-            unique_benchmark_id_fieldname='Salesforce_Benchmark_ID__c',
-            status_fieldname='Status__c',
+    def test_fail_connection_when_sf_not_enabled(self):
+
+        payload_data = {
+            "salesforce_config": {
+                "instance": SF_INSTANCE,
+                "username": SF_USERNAME,
+                "password": SF_PASSWORD,
+                "security_token": SF_SECURITY_TOKEN
+            }
+        }
+        if SF_DOMAIN == 'test':
+            payload_data['salesforce_config']['domain'] = SF_DOMAIN
+
+        response = self.client.post(
+            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps(payload_data),
+            content_type='application/json'
         )
+        data = json.loads(response.content)
 
-        params = retrieve_connection_params(self.org.id)
-        status, message, connection = test_connection(params)
+        self.assertEqual(data['status'], 'error')
+        self.assertEqual(data['message'], 'Salesforce functionality is not enabled for this organization')
 
-        self.assertFalse(status)
-        self.assertIn('Salesforce Authentication Failed:', message)
+    def test_salesforce_connection_fails(self):
+        # test error when connection to salesforce fails due to no connection params
+
+        # enable sf
+        self.org.salesforce_enabled = True
+        self.org.save()
+
+        payload_data = {
+            "salesforce_config": {
+                "instance": None,
+                "username": None,
+                "password": None,
+                "security_token": None
+            }
+        }
+        if SF_DOMAIN == 'test':
+            payload_data['salesforce_config']['domain'] = SF_DOMAIN
+
+        response = self.client.post(
+            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps(payload_data),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+
+        self.assertEqual(data['status'], 'error')
+        self.assertIn('Salesforce Authentication Failed:', data['message'])
 
     def test_salesforce_connection_success(self):
         # test salesforce connection
-        params = {}
-        params['instance'] = SF_INSTANCE
-        params['username'] = SF_USERNAME
-        params['password'] = SF_PASSWORD
-        params['security_token'] = SF_SECURITY_TOKEN
+
+        # enable sf
+        self.org.salesforce_enabled = True
+        self.org.save()
+
+        payload_data = {
+            "salesforce_config": {
+                "instance": SF_INSTANCE,
+                "username": SF_USERNAME,
+                "password": SF_PASSWORD,
+                "security_token": SF_SECURITY_TOKEN
+            }
+        }
         if SF_DOMAIN == 'test':
-            params['domain'] = SF_DOMAIN
+            payload_data['salesforce_config']['domain'] = SF_DOMAIN
 
-        status, message, connection = test_connection(params)
+        response = self.client.post(
+            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps(payload_data),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
 
-        # print(f"status: {status}, message: {message}")
-
-        self.assertTrue(status)
-        self.assertTrue(isinstance(connection, SalesforceClient))
+        self.assertEqual(data['status'], 'success')
 
     def test_pushing_salesforce_benchmark(self):
         state = self.property_state_factory.get_property_state()
@@ -265,9 +296,39 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         )
 
         PropertyViewSerializer(view).data
-        # print(f" view data: {pdata}")
 
         status, message = update_salesforce_property(self.org.id, view.id)
-        # print(f" push to sf status: {status}, message: {message}")
 
-    # TODO: test that you can't have 2 salesforce_configs records per org (catch error)
+    def test_multiple_salesforce_configs_illegal(self):
+        """ test that you can't have 2 salesforce_configs records per org
+        (catch error)
+        """
+
+        # we already have a config saved to this org, try to save another
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                SalesforceConfig.objects.create(
+                    organization=self.org,
+                    status_fieldname='Status__c',
+                )
+
+    def test_no_sync_when_disabled(self):
+        """
+            test that auto sync does not run when salesforce functionality is disabled
+        """
+
+        # disable sf
+        self.org.salesforce_enabled = False
+        self.org.save()
+
+        response = self.client.post(
+            reverse('api:v3:salesforce_configs-sync') + '?organization_id=' + str(self.org.id),
+            data={},
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+
+        self.assertEqual(data['status'], 'error')
+        self.assertIn('Salesforce Workflow is not enabled', data['message'])
+
+    # TODO: test auto sync works and sets date
