@@ -19,36 +19,6 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
 
-@method_decorator(
-    name='list',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            name='property_pk',
-            required=True,
-            description='Associated PropertyView ID',
-        )]
-    )
-)
-@method_decorator(
-    name='retrieve',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            name='property_pk',
-            required=True,
-            description='Associated PropertyView ID',
-        )]
-    )
-)
-@method_decorator(
-    name='destroy',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            name='property_pk',
-            required=True,
-            description='Associated PropertyView ID',
-        )]
-    )
-)
 class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API View for Scenarios.
@@ -70,20 +40,6 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             property_state__propertyview=property_view_id,
         ).order_by('id')
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_integer_field(
-                name='property_pk',
-                required=True,
-                description='Associated PropertyView ID',
-            ),
-            AutoSchemaHelper.query_integer_field(
-                name="id",
-                required=True,
-                description="Scenario ID"
-            )
-        ],
-    )
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, pk=None):

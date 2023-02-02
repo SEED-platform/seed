@@ -24,7 +24,6 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     model = PropertyMeasure
     orgfilter = 'property_state__organization_id'
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_string_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def list(self, request, property_pk=None, scenario_pk=None):
@@ -53,7 +52,6 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             'data': serialized_measures
         }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, property_pk=None, scenario_pk=None, pk=None):
@@ -74,7 +72,6 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             "data": serialized_measure
         }, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
@@ -107,7 +104,6 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_integer_field('property_pk', True, 'Associated PropertyView ID')])
     @api_endpoint_class
     @ajax_request_class
     def destroy(self, request, property_pk=None, scenario_pk=None, pk=None):
