@@ -198,11 +198,15 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         if ($scope.conf.id){
           // update
           salesforce_config_service.update_salesforce_config($scope.conf.id, $scope.conf)
-          .then(function () {
-            salesforce_config_service.get_salesforce_configs($scope.org.id)
-            .then( function (data) {
-              $scope.conf = (data.length > 0) ? data[0] : {}
-            })
+          .then(function (response) {
+            if (response.status == 'error'){
+              $scope.config_errors = response.errors;
+            } else {
+              salesforce_config_service.get_salesforce_configs($scope.org.id)
+              .then( function (data) {
+                $scope.conf = (data.length > 0) ? data[0] : {}
+              })
+            }
           })
           .catch(function (response) {
             if (response.data && response.data.status == 'error') {
