@@ -84,6 +84,7 @@
                             <div class="btn-group">
                                 <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select'">Select Meter Data Range</label>
                                 <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
                             </div>
                         </div>
                         <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'select'" style="padding-bottom: 1em;">
@@ -107,6 +108,19 @@
                                     <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                                     </span>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="form-row" ng-if="new_analysis.configuration.select_meters = 'select_cycle'" style="padding-bottom: 1em">
+                            <div class="form-row">
+                                <label class="control-label">
+                                    Cycle
+                                </label>
+                                <select class="form-control" ng-model="new_analysis.configuration.cycle_id" style="width: 30rem" required>
+                                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">
+                                        {$ cycle.name $}
+                                    </option>
+                                </select>
+                                
                             </div>
                         </div>
                     </div>
