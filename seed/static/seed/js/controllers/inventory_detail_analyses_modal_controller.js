@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     'analyses_service',
     'inventory_ids',
     'current_cycle',
+    'cycles',
     function (
       $scope,
       $log,
@@ -24,11 +25,13 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       Notification,
       analyses_service,
       inventory_ids,
-      current_cycle
+      current_cycle,
+      cycles,
     ) {
       $scope.inventory_count = inventory_ids.length;
       // used to disable buttons on submit
       $scope.waiting_for_server = false;
+      $scope.cycles = cycles
 
       $scope.new_analysis = {
         name: null,
@@ -85,7 +88,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             break;
 
           case 'EUI':
-            $scope.new_analysis.configuration = {};
+            $scope.new_analysis.configuration = {
+              select_meters: 'all',
+            };
             break;
 
           case 'CO2':
