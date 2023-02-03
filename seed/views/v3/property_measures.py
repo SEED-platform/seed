@@ -6,6 +6,8 @@
 """
 from django.http import JsonResponse
 from rest_framework import status
+from seed.utils.api_schema import AutoSchemaHelper
+from drf_yasg.utils import swagger_auto_schema
 
 from seed.decorators import ajax_request_class
 from seed.models import PropertyMeasure, PropertyView
@@ -75,7 +77,26 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             "status": 'success',
             "data": serialized_measure
         }, status=status.HTTP_200_OK)
-
+    
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "application_scale": "integer",
+                "category_affected": "integer",
+                "cost_capital_replacement": "integer",
+                "cost_installation": "integer",
+                "cost_material": "integer",
+                "cost_mv": "integer",
+                "cost_residual_value": "integer",
+                "cost_total_first": "integer",
+                "description": "string",
+                "implementation_status": "integer",
+                "property_measure_name": "string",
+                "recommended" : "string",
+                "useful_life": "integer",
+            }
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, property_pk=None, scenario_pk=None, pk=None):
