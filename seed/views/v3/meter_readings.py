@@ -30,7 +30,12 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         if not property_view_pk:
             # Return None otherwise swagger will not be able to process the request
             return MeterReading.objects.none()
-        property_view = PropertyView.objects.get(pk=property_view_pk)
+
+        try:
+            property_view = PropertyView.objects.get(pk=property_view_pk)
+        except PropertyView.DoesNotExist:
+            return MeterReading.objects.none()
+
         self.property_pk = property_view.property.pk
 
         # Grab the meter id
