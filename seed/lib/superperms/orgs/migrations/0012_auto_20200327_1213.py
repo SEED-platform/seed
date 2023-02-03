@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organization',
             name='display_meter_units',
-            field=models.JSONField(default=seed.lib.superperms.orgs.models.Organization._default_display_meter_units),
+            field=models.JSONField(default=seed.lib.superperms.orgs.models._get_default_meter_units),
         ),
     ]
