@@ -7,7 +7,7 @@
 * Remove add column in mapping page by @haneslinger in https://github.com/SEED-platform/seed/pull/3813
 * Sort the dropdown of meter units by @nllong in https://github.com/SEED-platform/seed/pull/3822
 ### Maintenance 🧹
-* Update to Django 3.2.17
+* Update to Django 3.2.17 in https://github.com/SEED-platform/seed/pull/3824
 ### Bug Fixes 🐛
 * Fix 500 on data view evaluate when extra data is not present by @haneslinger in https://github.com/SEED-platform/seed/pull/3803
 * Catch create column error correctly by @haneslinger in https://github.com/SEED-platform/seed/pull/3791
