@@ -14,7 +14,6 @@
 * Show all navigation links in the organization view https://github.com/SEED-platform/seed/pull/3811
 * Remove state population in create column by @haneslinger in https://github.com/SEED-platform/seed/pull/3806
 
-
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.1...v2.17.2
 
 # SEED Version 2.17.1
