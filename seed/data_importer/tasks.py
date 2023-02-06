@@ -605,6 +605,28 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     import_file = ImportFile.objects.get(pk=import_file_id)
 
+    # _log.error("++++")
+    # _log.error("calling map_data")
+    # _log.error("++++")
+
+    # property_derived_columns = get_cache_raw('property_derived_columns', {})
+    # if import_file.cycle.organization.id in property_derived_columns:
+    #     columns = property_derived_columns[import_file.cycle.organization]
+    # else:
+    #     columns = list(DerivedColumn.objects.filter(organization=import_file.cycle.organization)
+    #                    .values('id', 'expression'))
+    #     property_derived_columns[import_file.cycle.organization] = columns
+    #     set_cache_raw('property_derived_columns', property_derived_columns, None)
+
+    # _log.error("++++")
+    # _log.error("caching in map_data")
+    # _log.error(property_derived_columns)
+    # _log.error("++++")
+
+    # parameters = list(DerivedColumnParameter.objects.filter(derived_column_id__in=[col['id'] for col in property_derived_columns]).values())
+
+    # set_cache_raw('property_derived_columns_parameters', property_derived_columns_parameters)
+
     # Clear out the previously mapped data
     DataQualityCheck.initialize_cache(import_file_id, import_file.import_record.super_organization.id)
 

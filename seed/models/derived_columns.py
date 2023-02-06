@@ -11,6 +11,7 @@ from typing import Any, Union
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from lark import Lark, Transformer, v_args
@@ -19,8 +20,9 @@ from quantityfield.units import ureg
 
 from seed.landing.models import Organization
 from seed.models.columns import Column
-from seed.models.properties import PropertyState
-from seed.models.tax_lots import TaxLotState
+from seed.models.properties import PropertyState, PropertyView
+from seed.models.tax_lots import TaxLotState, TaxLotView
+from seed.utils.cache import get_cache_raw
 
 
 def _cast_params_to_floats(params: dict[str, Any]) -> dict[str, float]:
@@ -251,26 +253,43 @@ class DerivedColumn(models.Model):
                 ...
             }
         """
-        if not hasattr(self, '_cached_column_parameters'):
-            self._cached_column_parameters = (
-                DerivedColumnParameter.objects
-                .filter(derived_column=self.id)
-                .prefetch_related('source_column')
-            )
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error("++++")
+        logger.error("get_parameter_values")
 
-        params = {}
-        for parameter in self._cached_column_parameters:
-            source_column_name = parameter.source_column.column_name
-            value = None
+        # check cache for parameter_dicts by org.id by derived_column.id.
+        cached_derived_columns = get_cache_raw("property_derived_columns", {}) # get from cache
+        derived_columns_dicts = cached_derived_columns.get(inventory_state.organization.id, {}) # by org id
+        derived_column_dict = derived_columns_dicts.get(self.id, {}) # by derived column id
+        parameter_dicts = derived_column_dict.get("parameters", None) # the parameters
+
+        # if absent, query for parameter_dicts.
+        if parameter_dicts is None:
+            logger.error("creating parameter_dicts")
+
+            parameters = DerivedColumnParameter.objects.filter(derived_column_id=self.id)
+            parameter_dicts = parameters.values('parameter_name', column_name=F('source_column__column_name'))
+
+        else:
+            logger.error("found parameter_dicts")
+
+
+        logger.error(parameter_dicts)
+
+        # populate parameter_values, key are parameter_name, value are state value.
+        parameter_values = {}
+        for parameter in parameter_dicts:
+            source_column_name = parameter['column_name']
 
             if hasattr(inventory_state, source_column_name):
                 value = getattr(inventory_state, source_column_name)
             else:
                 value = inventory_state.extra_data.get(source_column_name)
 
-            params[parameter.parameter_name] = value
+            parameter_values[parameter['parameter_name']] = value
 
-        return params
+        return parameter_values
 
     def evaluate(self, inventory_state: Union[None, PropertyState, TaxLotState] = None, parameters: Union[None, dict[str, float]] = None):
         """Evaluate the expression. Caller must provide `parameters`, `inventory_state`,
@@ -288,6 +307,12 @@ class DerivedColumn(models.Model):
         :param parameters: dict, optional, defines mapping of expression parameter names to values
         :return: float | None
         """
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"+++++++++++")
+        logger.error(f"evaluating derived column {self.id} for state {inventory_state.id}")
+        logger.error(f"+++++++++++")
+
         if not hasattr(self, '_cached_evaluator'):
             self._cached_evaluator = ExpressionEvaluator(self.expression)
 
@@ -337,10 +362,11 @@ class DerivedColumn(models.Model):
     def update_derived_data(self) -> None:
         """For every state with this derieved column, update the derived data for this column
         """
-        inventory_type = DerivedColumn.INVENTORY_TYPE_TO_CLASS[self.inventory_type]
-        states = inventory_type.objects.filter(organization_id=self.organization_id)
+        inventory_type = PropertyView if self.inventory_type == 0 else TaxLotView
+        views = inventory_type.objects.filter(state__organization_id=self.organization_id)
         with transaction.atomic():
-            for state in states:
+            for view in views:
+                state = view.state
                 state.derived_data[self.name] = self.evaluate(state)
                 state.save()
 
@@ -349,6 +375,10 @@ class DerivedColumn(models.Model):
 def post_save_derived_column(sender, instance, **kwargs):
     """Every time the expression is updated, update the derived data for the relevant states
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"post_save_derived_column - {instance.id}")
+
     # TODO: this only has to happen when instance.expression is modifed. How might we ensure this
     # only happens whem needed?
     instance.update_derived_data()
@@ -397,6 +427,10 @@ def post_save_derived_column_parameter(sender, instance, created, **kwargs):
     """
     # TODO: DerivedColumnParameter with the same DerivedColumn are often create/update one right after
     # the other. How might we ensure this does get called more than needed? Perhaps with bulk creates?
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"post_save_derived_column_parameter - {instance.id}")
+
     derived_column = instance.derived_column
     if hasattr(derived_column, '_cached_column_parameters'):
         del derived_column._cached_column_parameters

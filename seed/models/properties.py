@@ -14,6 +14,7 @@ from os import path
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError, models, transaction
+from django.db.models import F
 from django.db.models.signals import (
     m2m_changed,
     post_save,
@@ -41,6 +42,7 @@ from seed.models.models import (
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
+from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
     obj_to_dict,
@@ -751,15 +753,62 @@ def pre_delete_state(sender, **kwargs):
     kwargs['instance'].propertymeasure_set.all().delete()
 
 
+def _build_derived_columns_dicts(org_id):
+    from seed.models.derived_columns import (
+        DerivedColumn,
+        DerivedColumnParameter
+    )
+
+    derived_columns_dicts = {}
+
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    for derived_column in derived_columns:
+        parameters = DerivedColumnParameter.objects.filter(derived_column_id=derived_column.id)
+        parameter_dicts = list(parameters.values('parameter_name', column_name=F('source_column__column_name')))
+
+        derived_columns_dicts[derived_column.id] = {
+            "name": derived_column.name,
+            "expression": derived_column.expression,
+            "parameters": parameter_dicts,
+        }
+
+    return derived_columns_dicts
+
 @receiver(pre_save, sender=PropertyState)
 def pre_save_state(sender, instance, **kwargs):
     """On state create, update state with all the relevant derived data"""
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error("++++")
+    logger.error("pre_save_state")
+
     from seed.models.derived_columns import DerivedColumn
 
     # TODO: This only needs to happen on the creation of a propertystate or when source columns of the
     # derived column is changed. How might we ensure this is only called when it needs to be?
-    derived_columns = DerivedColumn.objects.filter(organization=instance.organization)
-    for derived_column in derived_columns:
+    # check cache for derived_columns_dicts by org.
+    cached_derived_columns = get_cache_raw("property_derived_columns", {})
+    derived_columns_dicts = cached_derived_columns.get(instance.organization.id, None)
+
+    # if derived_columns_dicts absent, add it.
+    if derived_columns_dicts is None:
+        logger.error("creating cached_derived_columns")
+
+        derived_columns_dicts = _build_derived_columns_dicts(instance.organization.id)
+        cached_derived_columns[instance.organization.id] = derived_columns_dicts
+        set_cache_raw("property_derived_columns", cached_derived_columns)
+    else:
+        logger.error("found cached_derived_columns!")
+
+    logger.error(cached_derived_columns)
+
+    # for each derived_column_dict, create a derived_column and evaluate.
+    for id, derived_column_dict in derived_columns_dicts.items():
+        derived_column = DerivedColumn(
+            id=id,
+            name=derived_column_dict["name"],
+            expression=derived_column_dict["expression"],
+        )
         instance.derived_data[derived_column.name] = derived_column.evaluate(instance)
 
 
