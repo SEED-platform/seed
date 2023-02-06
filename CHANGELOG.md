@@ -1,3 +1,21 @@
+# SEED Version 2.17.2
+
+## What's Changed
+### New Features 🎉
+* Allow switching cycles in inventory detail page by @haneslinger in https://github.com/SEED-platform/seed/pull/3783
+### Improvements 📈
+* Remove add column in mapping page by @haneslinger in https://github.com/SEED-platform/seed/pull/3813
+* Sort the dropdown of meter units by @nllong in https://github.com/SEED-platform/seed/pull/3822
+### Maintenance 🧹
+* Update to Django 3.2.17 in https://github.com/SEED-platform/seed/pull/3824
+### Bug Fixes 🐛
+* Fix 500 on data view evaluate when extra data is not present by @haneslinger in https://github.com/SEED-platform/seed/pull/3803
+* Catch create column error correctly by @haneslinger in https://github.com/SEED-platform/seed/pull/3791
+* Show all navigation links in the organization view https://github.com/SEED-platform/seed/pull/3811
+* Remove state population in create column by @haneslinger in https://github.com/SEED-platform/seed/pull/3806
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.1...v2.17.2
+
 # SEED Version 2.17.1
 
 ## What's Changed
