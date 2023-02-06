@@ -42,7 +42,7 @@ COMPRESS_OFFLINE = compress
 ALLOWED_HOSTS = ['*']
 
 # LBNL's BETTER tool host
-BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov')
 
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
