@@ -186,7 +186,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       // display messages
           setTimeout(() => {
             Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
-            Notification.success({message: 'Program Metric Configuration Saved!', delay: 5000});
+            Notification.success({message: 'Program Setup Saved!', delay: 5000});
           }, 1000);
       $scope.program_settings_not_changed = true;
       spinner_utility.hide();
