@@ -127,7 +127,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       }
 
       if (analyses_payload.analyses) {
-        $scope.analysis = analyses_payload.analyses.sort(function (a, b) {
+        cycle_analyses = analyses_payload.analyses.filter(analysis => analysis.cycles.includes($scope.cycle.id))
+        $scope.analysis = cycle_analyses.sort(function (a, b) {
           let key_a = new Date(a.end_time);
           let key_b = new Date(b.end_time);
           if (key_a > key_b) return -1;
