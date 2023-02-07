@@ -214,7 +214,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             } else {
               $scope.config_errors = 'An unknown error has occurred';
             }
-            console.log("config ERRORS: ", $scope.config_errors);
+            // console.log("config ERRORS: ", $scope.config_errors);
+            Notification.error({message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true});
           });
         } else {
           // create
@@ -231,7 +232,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             } else {
               $scope.config_errors = 'An unknown error has occurred';
             }
-            console.log("CONFIG ERRORS: ", $scope.config_errors);
+            // console.log("CONFIG ERRORS: ", $scope.config_errors);
+            Notification.error({message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true});
           });
         }
       }
@@ -250,7 +252,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
               } else {
                 $scope.table_errors = 'An unknown error has occurred';
               }
-              console.log("TABLE ERRORS: ", $scope.table_errors);
+              // console.log("TABLE ERRORS: ", $scope.table_errors);
+              Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
             });
           } else {
             // no ID, save new
@@ -261,7 +264,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
               } else {
                 $scope.table_errors = 'An unknown error has occurred';
               }
-              console.log("TABLE ERRORS: ", $scope.table_errors);
+              // console.log("TABLE ERRORS: ", $scope.table_errors);
+              Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
             });
           }
           promises.push(promise);
@@ -313,7 +317,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           } else {
             $scope.table_errors = 'An unknown error has occurred';
           }
-          console.log("TABLE ERRORS: ", $scope.table_errors);
+          Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
+
         });
       }
       else {
