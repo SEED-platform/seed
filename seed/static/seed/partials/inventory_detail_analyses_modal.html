@@ -152,7 +152,7 @@
                                 <label class="control-label sectionLabel text-muted">
                                     Cycle
                                 </label>
-                                <select class="form-control" ng-model="new_analysis.configuration.cycle_id" style="width: 30rem" required>
+                                <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" style="width: 30rem" required>
                                     <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
                                 </select>
                             </div>

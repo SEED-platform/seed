@@ -77,7 +77,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       // TODO:
       // if it's BETTER and selectMeters is 1
       // need to find start date and end date of meters data for first inventory?
-
       $scope.initializeAnalysisConfig = () => {
         switch ($scope.new_analysis.service) {
 
@@ -168,4 +167,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
       };
 
+      $scope.changeCycle = (cycle_id) => {
+        const selected_cycle = $scope.cycles.find(c => c.id == cycle_id)
+        $scope.new_analysis.configuration.cycle_name = selected_cycle.name
+      }
     }]);

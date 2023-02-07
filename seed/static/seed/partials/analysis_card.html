@@ -28,6 +28,10 @@
     <div class="card-stats grow">
         <ul ng-if="(analysis.configuration | json) != '{}'" ng-repeat="(config, setting) in analysis.configuration">
             <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
+            <div ng-if="config == 'meter'" ng-repeat="(key, value) in setting">
+                <li ng-if="key == 'start_date'">{$:: key $} = {$:: value | date : 'MM-dd-yyyy HH:mm' $}</li>
+                <li ng-if="key == 'end_date'">{$:: key $} = {$:: value | date : 'MM-dd-yyyy HH:mm' $}</li>
+            </div>
         </ul>
         <div ng-if="(analysis.configuration | json) == '{}'">
             No configuration.
