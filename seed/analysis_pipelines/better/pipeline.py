@@ -45,7 +45,8 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
-    Meter
+    Meter,
+    Cycle
 )
 
 logger = logging.getLogger(__name__)
@@ -162,15 +163,19 @@ def get_meter_readings(property_id, preprocess_meters, config):
     )
 
     # check if dates are ok
-    if 'select_meters' in config and config['select_meters'] == 'select':
-        try:
+    try:
+        if 'select_meters' in config and config['select_meters'] == 'select':
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
             value2 = value2 + timedelta(days=1)
+        elif 'select_meters' in config and config['select_meters'] == 'select_cycle':
+            cycle = Cycle.objects.get(pk=config['cycle_id'])
+            value1 = dateutil.parser.parse(cycle.start.isoformat())
+            value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
 
-        except Exception as err:
-            raise AnalysisPipelineException(
+    except Exception as err:
+        raise AnalysisPipelineException(
                 f'Analysis configuration error: invalid dates selected for meter readings: {err}')
 
     if preprocess_meters:
@@ -205,7 +210,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
-            if 'select_meters' in config and config['select_meters'] == 'select':
+            if 'select_meters' in config and (config['select_meters'] == 'select' or config['select_meters'] == 'select_cycle'):
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
