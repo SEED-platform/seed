@@ -467,6 +467,19 @@
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
                             <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_column" translate>Account Name</label>
+                                <div class="col-sm-5">
+                                    <p translate="SF_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
+                                    <select class="form-control" id="account_column" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.account_name_column" ng-disabled="::!auth.requires_owner"></select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_fieldname" translate>Contact Name Column</label>
                                 <div class="col-sm-5">
                                     <p translate="SF_CONTACT_NAME_FIELDNAME_TEXT"></p>
@@ -493,10 +506,10 @@
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
                             <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_column" translate>Account Name</label>
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="benchmark_contact_fieldname" translate>Contact Benchmark Field</label>
                                 <div class="col-sm-5">
-                                    <p translate="SF_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="account_column" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.account_name_column" ng-disabled="::!auth.requires_owner"></select>
+                                    <p translate="SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"></p>
+                                    <input type="text" class="form-control" id="benchmark_contact_fieldname" ng-model="conf.benchmark_contact_fieldname" ng-disabled="::!auth.requires_owner">
                                 </div>
                             </div>
                         </form>

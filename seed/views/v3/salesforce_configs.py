@@ -245,6 +245,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'contact_name_column': 'integer',
                 'account_name_column': 'integer',
                 'logging_email': 'string',
+                'benchmark_contact_fieldname': 'string',
             },
         )
     )
@@ -320,6 +321,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'contact_name_column': 'integer',
                 'account_name_column': 'integer',
                 'logging_email': 'string',
+                'benchmark_contact_fieldname': 'string',
             },
         )
     )
@@ -382,30 +384,3 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Bad request',
                 'errors': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
-
-    # @swagger_auto_schema(
-    #     manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    # )
-    # @require_organization_id_class
-    # @api_endpoint_class
-    # @ajax_request_class
-    # @has_perm_class('requires_viewer')
-    # @action(detail=True, methods=['GET'])
-    # def evaluate(self, request, pk):
-    #     organization = self.get_organization(request)
-    #     deepcopy(request.data)
-
-    #     try:
-    #         salesforce_config = SalesforceConfig.objects.get(id=pk, organization=organization)
-    #     except Exception:
-    #         return JsonResponse({
-    #             'status': 'error',
-    #             'message': 'SalesforceConfig does not exist'
-    #         }, status=status.HTTP_404_NOT_FOUND)
-
-    #     response = salesforce_config.evaluate()
-
-    #     return JsonResponse({
-    #         'status': 'success',
-    #         'data': response
-    #     })

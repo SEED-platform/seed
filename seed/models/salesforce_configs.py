@@ -36,6 +36,7 @@ class SalesforceConfig(models.Model):
     contact_email_column = models.ForeignKey(Column, related_name="contact_email_column", null=True, on_delete=models.CASCADE)
     contact_name_column = models.ForeignKey(Column, related_name="contact_name_column", null=True, on_delete=models.CASCADE)
     account_name_column = models.ForeignKey(Column, related_name="account_name_column", null=True, on_delete=models.CASCADE)
+    benchmark_contact_fieldname = models.CharField(blank=True, max_length=128, null=True)
     # data_admin_email_column = models.ForeignKey(Column, related_name="data_admin_email_column", null=True, on_delete=models.CASCADE)
     # data_admin_name_column = models.ForeignKey(Column, related_name="data_admin_name_column", null=True, on_delete=models.CASCADE)
     logging_email = models.CharField(blank=True, max_length=128, null=True)

@@ -38,6 +38,7 @@ class Migration(migrations.Migration):
                 ('status_fieldname', models.CharField(blank=True, max_length=128, null=True)),
                 ('labels_fieldname', models.CharField(blank=True, max_length=128, null=True)),
                 ('logging_email', models.CharField(blank=True, max_length=128, null=True)),
+                ('benchmark_contact_fieldname', models.CharField(blank=True, max_length=128, null=True)),
                 ('account_name_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='account_name_column', to='seed.column')),
                 ('compliance_label', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='compliance_label', to='seed.statuslabel')),
                 ('contact_email_column', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='contact_email_column', to='seed.column')),

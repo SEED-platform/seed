@@ -17,6 +17,7 @@ from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
 from seed.tasks import send_salesforce_error_log
+from seed.utils.encrypt import decrypt
 
 
 def test_connection(params):
@@ -58,7 +59,7 @@ def retrieve_connection_params(org_id):
         config = config.first()
         params['instance'] = config.url
         params['username'] = config.username
-        params['password'] = config.password
+        params['password'] = decrypt(config.password)[0]
         params['security_token'] = config.security_token
         if config.domain == 'test':
             params['domain'] = config.domain
@@ -111,7 +112,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     """
     status = False
     message = None
+    params = {}
 
+    """ INITIALIZATION """
     # if client is initialized, use it, otherwise initialize it
     if salesforce_client is None:
         connection_status, message, salesforce_client = test_connection(retrieve_connection_params(org_id))
@@ -127,13 +130,11 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             message = 'No Salesforce configs found. Configure Salesforce on the organization settings page'
             return status, message
 
+    # retrieve mappings if not initialized
     if len(mappings) == 0:
         mappings = SalesforceMapping.objects.filter(organization_id=org_id)
 
-    # TODO: check if property view does not have "add to salesforce label"?
-    # or if it is missing the violation OR compliance label?
-    # or no benchmark ID defined or populated?
-
+    # get property view
     result = _get_property_view(property_id, org_id)
     if result.get('status', None) == 'error':
         message = 'Cannot retrieve property view details for: ' + property_id
@@ -153,11 +154,18 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         else:
             flat_state[key] = val
 
-    # grab the benchmark ID from the record (can't do anything without it)
+    """ VALIDATE FIELDS """
+    # check a few required fields
     if not config.seed_benchmark_id_column_id:
-        message = 'No SEED Benchmark ID Field selected in Settings'
+        message = 'No SEED Benchmark ID Field configured. Configure Salesforce functionality on the organization settings page.'
         return status, message
 
+    if not config.compliance_label_id:
+        message = 'No Compliance Label configured. Configure Salesforce functionality on the organization settings page.'
+        return status, message
+
+    """ RETRIEVE BENCHMARK ID """
+    # grab the benchmark ID from the record
     benchmark_id_colname = Column.objects.get(pk=config.seed_benchmark_id_column_id)
 
     # we don't know if this will be in extra_data or canonical fields
@@ -171,14 +179,61 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
-        message = 'SEED Unique Benchmark ID Column is undefined '
+        message = 'SEED Unique Benchmark ID Column data is undefined. Update your property record with this information.'
         return status, message
 
-    params = {}
-    # add cycle, labels, status (if used)
-    if config.cycle_fieldname:
-        params[config.cycle_fieldname] = result['cycle']['name']
+    """ CONTACT/ACCOUNT CREATION """
+    # try to create / update contact and account (if configured)
+    # if we want to try to make a contact, we at least need contact email and account name on the Salesforce side
+    # NOTE: skipping this if not configured (not erroring out)
+    if config.contact_email_column_id and config.account_name_column_id and config.benchmark_contact_fieldname:
+        fields = {'email': config.contact_email_column_id,
+                  'contact_name': config.contact_name_column_id,
+                  'account_name': config.account_name_column_id}
+        contact_info = {}
+        for key, val in fields.items():
+            colname = Column.objects.get(pk=val)
+            contact_info[key] = ""
+            if colname.display_name and colname.display_name in flat_state:
+                contact_info[key] = flat_state[colname.display_name]
+            elif colname.column_name in flat_state:
+                contact_info[key] = flat_state[colname.column_name]
 
+        contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
+        if not contact_record:
+            # Create Account first, then Contact (Salesforce Requirement)
+            account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            if not account_record:
+                # create account
+                a_details = {}
+                if config.account_rec_type:
+                    a_details['RecordTypeId'] = config.account_rec_type
+                try:
+                    account_record = salesforce_client.create_account(contact_info['account_name'], **a_details)
+                    print(f"created account record: {account_record}")
+                except Exception as e:
+                    message = str(e)
+                    return status, message
+
+            account_id = account_record['Id']
+            # Note: Salesforce doesn't seem to allow direct access to the Contact "Name" field
+            # but instead concatenates FirstName + LastName to make Name
+            # push the Contact Name field into LastName only
+            c_details = {'AccountId': account_id, 'LastName': contact_info['contact_name']}
+            if config.contact_rec_type:
+                c_details['RecordTypeId'] = config.contact_rec_type
+
+            # Create contact: mapping name and email (PK) to Name and Email native Salesforce Contact Fields (no customization).
+            try:
+                contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
+            except Exception as e:
+                message = str(e)
+                return status, message
+        # add contact ID to params
+        params[config.benchmark_contact_fieldname] = contact_record['Id']
+
+    """ SPECIAL FIELD MAPPINGS FOR LABELS AND CYCLE NAME """
+    # create benchmark params
     if config.status_fieldname:
         # check if violation or compliant label is applied
         params[config.status_fieldname] = ""
@@ -190,7 +245,13 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     if config.labels_fieldname:
         params[config.labels_fieldname] = ".".join(result['label_names'])
 
+    # add cycle, labels, status (if used)
+    if config.cycle_fieldname:
+        params[config.cycle_fieldname] = result['cycle']['name']
+
+    """ CUSTOM SALESFORCE MAPPINGS FROM PROPERTY """
     # if compliance label is applied, also generate the other field mappings
+    # violation label applied means we do not transfer these data fields over
     if config.compliance_label_id and config.compliance_label_id in result['labels']:
         for mapping in mappings:
             params[mapping.salesforce_fieldname] = None
@@ -203,6 +264,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
             params[mapping.salesforce_fieldname] = field_val
 
+    """ PERFORM UPDATE """
     try:
         salesforce_client.update_benchmark(benchmark_id, **params)
         status = True
