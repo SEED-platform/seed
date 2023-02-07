@@ -1,11 +1,11 @@
 {% load i18n %}{% autoescape off %}
 {% blocktrans %}Hello, {% endblocktrans %}
 
-{% trans "You're receiving this message because your e-mail is registered as the 'logging email' for Salesforce updates in the SEED {{organization_name}} organization." %}
+{% blocktrans %}You're receiving this message because your e-mail is registered as the 'logging email' for Salesforce updates in the SEED {{ organization_name }} organization. {% endblocktrans %}
 
 {% blocktrans %}Errors were encountered while running the automatic Salesforce update process:{% endblocktrans %}
 
-{% blocktrans %}{{errors}}{% endblocktrans %}
+{% blocktrans %}{{ errors }}{% endblocktrans %}
 
 
 {% blocktrans %}The SEED Team{% endblocktrans %}

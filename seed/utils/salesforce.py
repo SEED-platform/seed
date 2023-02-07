@@ -198,8 +198,12 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 contact_info[key] = flat_state[colname.display_name]
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
+        try:
+            contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
+        except Exception as e:
+            message = str(e)
+            return status, message
 
-        contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         if not contact_record:
             # Create Account first, then Contact (Salesforce Requirement)
             account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
