@@ -11,6 +11,7 @@
             <th translate>Run Date</th>
             <th translate>Run Duration</th>
             <th translate>Run Author</th>
+            <th translate>Run Cycle</th>
         </tr>
         </thead>
         <tbody>
@@ -39,6 +40,7 @@
         <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>
         <td>{$:: analysis | get_run_duration $}</td>
         <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
+        <td>{$ cycle_name $}</td>
         </tr>
         </tbody>
     </table>

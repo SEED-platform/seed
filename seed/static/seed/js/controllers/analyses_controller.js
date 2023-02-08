@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.analyses', [])
   .controller('analyses_controller', [
     '$scope',
     'analyses_payload',
+    'cycles_payload',
     'organization_payload',
     'organization_service',
     'users_payload',
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.analyses', [])
     function (
       $scope,
       analyses_payload,
+      cycles_payload,
       organization_payload,
       organization_service,
       users_payload,
@@ -34,6 +36,7 @@ angular.module('BE.seed.controller.analyses', [])
       $scope.original_views = analyses_payload.original_views;
       $scope.users = users_payload.users;
       $scope.messages = messages_payload.messages;
+      $scope.cycles = cycles_payload.cycles;
 
       // Stores functions for stopping the polling of analysis progress. Keyed by analysis id
       const analysis_polling_stoppers = {};
@@ -81,6 +84,11 @@ angular.module('BE.seed.controller.analyses', [])
         const stop_func = analyses_service.check_progress_loop(analysis, refresh_analysis, mark_analysis_not_active);
         analysis_polling_stoppers[analysis.id] = stop_func;
       };
+
+      $scope.get_cycle_name = function(cycle_id) {
+        cycle =  $scope.cycles.find(cycle => cycle.id == cycle_id)
+        return cycle ? cycle.name : ''
+      }
 
       // start polling all of the analyses
       $scope.analyses.forEach(analysis => {
