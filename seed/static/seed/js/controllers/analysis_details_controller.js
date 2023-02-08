@@ -8,10 +8,12 @@ angular.module('BE.seed.controller.analysis_details', [])
     '$scope',
     '$state',
     'analyses_service',
+    'cycle_service',
     function (
       $scope,
       $state,
-      analyses_service
+      analyses_service,
+      cycle_service,
     ) {
       let stop_func = () => {};
       const starting_analysis_status = $scope.analysis.status;
@@ -29,6 +31,14 @@ angular.module('BE.seed.controller.analysis_details', [])
           });
       };
 
+      $scope.cycle = null;
+      cycle_service.get_cycles()
+        .then(cycles => {
+          return cycles.cycles.find(cycle => $scope.analysis.cycles.includes(cycle.id));
+        }).then(cycle =>{
+          $scope.cycle = cycle.name;
+        })
+
       // add flag to the analysis indicating it has no currently running tasks
       // Used to determine if we should indicate on UI if an analysis's status is being polled
       const mark_analysis_not_active = (/*analysis_id*/) => {
@@ -39,7 +49,7 @@ angular.module('BE.seed.controller.analysis_details', [])
         if (starting_analysis_status != $scope.analysis.status) {
           $state.reload();
         }
-      };
+      }; .
 
       stop_func = analyses_service.check_progress_loop($scope.analysis, refresh_analysis, mark_analysis_not_active);
     }]);

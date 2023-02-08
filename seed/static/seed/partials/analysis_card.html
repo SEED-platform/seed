@@ -40,7 +40,7 @@
             <small ng-if="analysis.start_time">{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</small>
             <small ng-if="analysis.end_time"> ({$:: analysis | get_run_duration $})</small>
         </div>
-        <small>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</small>
+        <small>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</small><small ng-if="cycle"> | cycle {$ cycle $}</small>
     </div>
     <div class="link" ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">
         Full Analysis <i class="glyphicon glyphicon-log-out"></i>
