@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.analysis_details', [])
         if (starting_analysis_status != $scope.analysis.status) {
           $state.reload();
         }
-      }; .
+      };
 
       stop_func = analyses_service.check_progress_loop($scope.analysis, refresh_analysis, mark_analysis_not_active);
     }]);
