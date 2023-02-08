@@ -45,8 +45,8 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
-    Meter,
-    Cycle
+    Cycle,
+    Meter
 )
 
 logger = logging.getLogger(__name__)
