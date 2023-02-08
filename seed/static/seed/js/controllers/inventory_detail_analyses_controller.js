@@ -68,7 +68,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       const refresh_analyses = function () {
         analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
           .then(function (data) {
-            $scope.analyses = data.analyses;
+            const cycle_analyses = analyses_payload.analyses.filter(analysis => analysis.cycles.includes($scope.cycle.id))
+            $scope.analyses = cycle_analyses;
             $scope.analyses_by_type = {};
             for (let analysis in $scope.analyses) {
               if (!$scope.analyses_by_type[$scope.analyses[analysis].service]) {
