@@ -280,9 +280,19 @@ class DerivedColumn(models.Model):
         # populate parameter_values, key are parameter_name, value are state value.
         parameter_values = {}
         for parameter in parameter_dicts:
-            source_column_name = parameter['column_name']
+            source_column_name = parameter['source_column_name']
+            source_column_derived_column_id = parameter["source_column_derived_column_id"]
 
-            if hasattr(inventory_state, source_column_name):
+            if source_column_derived_column_id is not None:
+                derived_column_dict = derived_columns_dicts.get(source_column_derived_column_id) # by derived column id
+                derived_column = DerivedColumn(
+                    id=source_column_derived_column_id,
+                    name=derived_column_dict["name"],
+                    expression=derived_column_dict["expression"],
+                )
+                value = derived_column.evaluate(inventory_state)
+
+            elif hasattr(inventory_state, source_column_name):
                 value = getattr(inventory_state, source_column_name)
             else:
                 value = inventory_state.extra_data.get(source_column_name)
@@ -329,7 +339,7 @@ class DerivedColumn(models.Model):
         merged_parameters = _cast_params_to_floats(merged_parameters)
 
         # determine if any source columns are derived_columns
-        self.check_for_source_columns_derived(inventory_state, merged_parameters)
+        # self.check_for_source_columns_derived(inventory_state, merged_parameters)
 
         if any([val is None for val in merged_parameters.values()]):
             return None

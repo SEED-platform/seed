@@ -14,7 +14,6 @@ from os import path
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError, models, transaction
-from django.db.models import F
 from django.db.models.signals import (
     m2m_changed,
     post_save,
@@ -764,7 +763,14 @@ def _build_derived_columns_dicts(org_id):
     derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
     for derived_column in derived_columns:
         parameters = DerivedColumnParameter.objects.filter(derived_column_id=derived_column.id)
-        parameter_dicts = list(parameters.values('parameter_name', column_name=F('source_column__column_name')))
+        parameter_dicts = [
+            {
+                "parameter_name": p.parameter_name,
+                "source_column_name": p.source_column.column_name,
+                "source_column_derived_column_id": getattr(p.source_column.derived_column, "id", None)
+            }
+            for p in parameters
+        ]
 
         derived_columns_dicts[derived_column.id] = {
             "name": derived_column.name,
