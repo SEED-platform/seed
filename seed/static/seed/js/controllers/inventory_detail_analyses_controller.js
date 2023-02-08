@@ -158,7 +158,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
             inventory_ids: function () {
               return [$scope.inventory.view_id];
             },
-            // current_cycle: {},
             current_cycle: $scope.cycle,
           }
         }).result.then(function (data) {
