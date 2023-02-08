@@ -31,12 +31,11 @@ angular.module('BE.seed.controller.analysis_details', [])
           });
       };
 
-      $scope.cycle = null;
+      $scope.cycle_name = null;
       cycle_service.get_cycles()
         .then(cycles => {
-          return cycles.cycles.find(cycle => $scope.analysis.cycles.includes(cycle.id));
-        }).then(cycle =>{
-          $scope.cycle = cycle.name;
+          const cycle = cycles.cycles.find(cycle => $scope.analysis.cycles.includes(cycle.id));
+          $scope.cycle_name = cycle.name
         })
 
       // add flag to the analysis indicating it has no currently running tasks
