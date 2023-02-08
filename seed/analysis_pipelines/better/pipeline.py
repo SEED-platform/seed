@@ -176,7 +176,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
 
     except Exception as err:
         raise AnalysisPipelineException(
-                f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+            f'Analysis configuration error: invalid dates selected for meter readings: {err}')
 
     if preprocess_meters:
         for meter in meters:
