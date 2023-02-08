@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.analyses', [])
       };
 
       $scope.get_cycle_name = function(cycle_id) {
-        cycle =  $scope.cycles.find(cycle => cycle.id == cycle_id)
+        cycle = $scope.cycles.find(cycle => cycle.id == cycle_id)
         return cycle ? cycle.name : ''
       }
 
