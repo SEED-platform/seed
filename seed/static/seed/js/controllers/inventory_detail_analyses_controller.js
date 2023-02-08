@@ -48,9 +48,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
-      $scope.tab = 0;      
+      $scope.tab = 0;
       $scope.cycle = inventory_payload.cycle;
-      
+
       views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
       $scope.views = views_payload.map(
         ({id, cycle}) => {
