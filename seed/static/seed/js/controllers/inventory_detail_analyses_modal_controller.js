@@ -162,6 +162,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       });
 
       $scope.checkInvalidDate = function () {
+        if (_.isEmpty($scope.new_analysis.configuration)) {
+          return
+        }
         $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
       };
 
