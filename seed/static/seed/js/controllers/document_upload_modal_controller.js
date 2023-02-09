@@ -41,6 +41,9 @@ angular.module('BE.seed.controller.document_upload_modal', [])
       };
 
       $scope.uploaderfunc = function (event_message, file, progress) {
+        console.log(event_message)
+        console.log(file)
+        console.log(progress)
         switch (event_message) {
           case 'invalid_extension':
             $scope.uploader.invalid_file_extension_alert = true;
