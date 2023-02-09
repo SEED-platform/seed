@@ -2632,6 +2632,9 @@ msgstr "Success!"
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
+msgid "Successfully Uploaded"
+msgstr "Successfully Uploaded"
+
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
 

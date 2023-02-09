@@ -2653,6 +2653,9 @@ msgstr "Succès!"
 msgid "Successful upload!"
 msgstr "Téléchargement réussi!"
 
+msgid "Successfully Uploaded"
+msgstr "Téléversé avec succès"
+
 msgid "Switch Profiles"
 msgstr "Changer de profil"
 
