@@ -5,9 +5,11 @@
 :author
 """
 import datetime
+import json
 
 from django.utils import timezone
 from django.utils.timezone import get_current_timezone
+from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from seed_salesforce.salesforce_client import SalesforceClient
 
 from seed.models import Organization, PropertyView
@@ -17,6 +19,8 @@ from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
 from seed.utils.encrypt import decrypt
+
+AUTO_SYNC_NAME = "salesforce_sync_org-"
 
 
 def test_connection(params):
@@ -42,6 +46,53 @@ def check_salesforce_enabled(org_id):
     if org.salesforce_enabled:
         enabled = True
     return enabled
+
+
+def schedule_sync(data, org_id):
+
+    timezone = data.get('timezone', get_current_timezone())
+
+    if data['update_at_hour'] and data['update_at_minute']:
+        # create crontab schedule
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute=data['update_at_minute'],
+            hour=data['update_at_hour'],
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*',
+            timezone=timezone
+        )
+
+        # then schedule task (create/update with new crontab)
+        tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
+        if not tasks:
+            PeriodicTask.objects.create(
+                crontab=schedule,
+                name=AUTO_SYNC_NAME + str(org_id),
+                task='seed.tasks.sync_salesforce',
+                args=json.dumps([org_id])
+            )
+        else:
+            task = tasks.first()
+            # update crontab (if changed)
+            task.crontab = schedule
+            task.save()
+
+
+def toggle_salesforce_sync(salesforce_enabled, org_id):
+    """ when salesforce_enabled value is toggled, also toggle the auto sync
+        task status if it exists
+    """
+    tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
+    if tasks:
+        task = tasks.first()
+        if salesforce_enabled:
+            # look for task and make sure it's enabled
+            task.enabled = True
+        else:
+            # look for task and make sure it's disabled
+            task.enabled = False
+        task.save()
 
 
 def retrieve_connection_params(org_id):
@@ -256,6 +307,12 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     # if compliance label is applied, also generate the other field mappings
     # violation label applied means we do not transfer these data fields over
     if config.compliance_label_id and config.compliance_label_id in result['labels']:
+        if config.violation_label_id and config.violation_label_id in result['labels']:
+            # if both labels are applied, error out
+            template = "Property View {0} / Benchmark ID {1} : both compliant and violation labels applied. Benchmark not updated."
+            message = template.format(property_id, benchmark_id)
+            return status, message
+
         for mapping in mappings:
             params[mapping.salesforce_fieldname] = None
             colname = Column.objects.get(pk=mapping.column_id)
@@ -264,15 +321,19 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 field_val = flat_state[colname.display_name]
             elif colname.column_name in flat_state:
                 field_val = flat_state[colname.column_name]
-
             params[mapping.salesforce_fieldname] = field_val
+
+    elif config.violation_label_id and config.violation_label_id not in result['labels']:
+        template = "Property View {0} / Benchmark ID {1} : no compliant or violation labels applied. Benchmark not updated."
+        message = template.format(property_id, benchmark_id)
+        return status, message
 
     """ PERFORM UPDATE """
     try:
         salesforce_client.update_benchmark(benchmark_id, **params)
         status = True
     except Exception as ex:
-        template = "Property View {2} / Salesforce Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
+        template = "Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args, property_id, benchmark_id)
 
     return status, message

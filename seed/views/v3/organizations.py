@@ -78,6 +78,7 @@ from seed.utils.organizations import (
     create_suborganization
 )
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.salesforce import toggle_salesforce_sync
 
 _log = logging.getLogger(__name__)
 
@@ -640,6 +641,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         salesforce_enabled = posted_org.get('salesforce_enabled', False)
         if salesforce_enabled != org.salesforce_enabled:
             org.salesforce_enabled = salesforce_enabled
+            # if salesforce_enabled was toggled, must start/stop auto sync functionality
+            toggle_salesforce_sync(salesforce_enabled, org.id)
 
         org.save()
 
