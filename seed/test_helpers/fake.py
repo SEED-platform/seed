@@ -867,7 +867,7 @@ class FakeDerivedColumnFactory(BaseFake):
     def __init__(self, expression=None, name=None, organization=None, inventory_type=None):
         super().__init__()
         self.expression = expression
-        self.name = name if name else self.fake.text()
+        self.name = name if name else self.fake.name()
         self.organization = organization
         self.inventory_type = inventory_type
 

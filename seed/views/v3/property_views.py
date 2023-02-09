@@ -9,7 +9,7 @@ All rights reserved.
 
 from seed.filtersets import PropertyViewFilterSet
 from seed.models import PropertyView
-from seed.serializers.properties import PropertyViewAsStateSerializer
+from seed.serializers.properties import BriefPropertyViewSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
@@ -49,7 +49,8 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     partial_update:
         WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update one or more fields on an existing PropertyView.
     """
-    serializer_class = PropertyViewAsStateSerializer
+    serializer_class = BriefPropertyViewSerializer
+    pagination_class = None
     model = PropertyView
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'

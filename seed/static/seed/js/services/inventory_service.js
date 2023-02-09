@@ -218,6 +218,28 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_property_views = function (organization_id, property_id) {
+      return $http.get('/api/v3/property_views/', {
+        params: {
+          organization_id: organization_id,
+          property: property_id,
+        }
+      }).then(function (response) {
+        return response.data;
+      })
+    };
+
+    inventory_service.get_taxlot_views = function (organization_id, taxlot_id) {
+      return $http.get('/api/v3/taxlot_views/', {
+        params: {
+          organization_id: organization_id,
+          taxlot: taxlot_id,
+        }
+      }).then(function (response) {
+        return response.data;
+      })
+    };
+
     inventory_service.delete_inventory_document = function (view_id, file_id) {
       return $http.delete('/api/v3/properties/' + view_id + '/delete_inventory_document/', {
         headers: {

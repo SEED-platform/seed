@@ -288,8 +288,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.step.number = 15;
       };
 
-      var present_meter_import_error = function (/*error*/) {
-        $scope.pm_meter_import_error = true;
+      var present_meter_import_error = function (message) {
+        $scope.pm_meter_import_error = message;
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
 
@@ -364,7 +364,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               uploader_service
                 .pm_meters_preview(file.file_id, $scope.organization.org_id)
                 .then(present_parsed_meters_confirmation)
-                .catch(present_meter_import_error);
+                .catch((err) => present_meter_import_error(err));
             } else {
               $scope.dataset.import_file_id = file.file_id;
 
@@ -586,7 +586,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             .then(function () {
               $scope.preparing_pm_meters_preview = false
             })
-            .catch(present_meter_import_error);
+            .catch((err) => present_meter_import_error(err));
         });
       };
 
