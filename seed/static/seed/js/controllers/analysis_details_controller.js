@@ -34,8 +34,7 @@ angular.module('BE.seed.controller.analysis_details', [])
       $scope.cycle_name = null;
       cycle_service.get_cycles()
         .then(cycles => {
-          // analysis cycles are returned in an array, but the relationship is one cycle to many analysis. 
-          const cycle = cycles.cycles.find(cycle => $scope.analysis.cycles[0] == cycle.id);
+          const cycle = cycles.cycles.find(cycle => $scope.analysis.cycles.includes(cycle.id));
           $scope.cycle_name = cycle.name
         })
 
