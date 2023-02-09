@@ -1301,6 +1301,9 @@ msgstr "INTERNE"
 msgid "INVALID_CSV_EXTENSION_ALERT"
 msgstr "<strong>Désolé!</strong> SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong>.csv</strong> sont pris en charge."
 
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Type de document sélectionné non valide. Les types de fichiers acceptés sont .dxf, .pdf, .idf et .osm"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
 
@@ -2855,6 +2858,9 @@ msgstr "Téléchargement Complet"
 
 msgid "UPLOAD_DATA_LOGGER_BUTTON"
 msgstr "Créer un enregistreur de données"
+
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Types de fichiers acceptés : .dxf, .pdf, .idf et .osm"
 
 msgid "UPLOAD_FILE"
 msgstr "Téléverser un Fichier"

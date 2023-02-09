@@ -1290,6 +1290,9 @@ msgstr "INTERNAL"
 msgid "INVALID_CSV_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong> files are supported."
 
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Invalid document type selected. Accepted file types are .dxf, .pdf, .idf, and .osm"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
@@ -2834,6 +2837,9 @@ msgstr "Upload Complete"
 
 msgid "UPLOAD_DATA_LOGGER_BUTTON"
 msgstr "Create Data Logger"
+
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Accepted File Types: .dxf, .pdf, .idf, and .osm"
 
 msgid "UPLOAD_FILE"
 msgstr "Upload File"
