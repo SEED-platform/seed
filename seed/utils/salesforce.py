@@ -16,7 +16,6 @@ from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
-from seed.tasks import send_salesforce_error_log
 from seed.utils.encrypt import decrypt
 
 
@@ -344,14 +343,11 @@ def auto_sync_salesforce_properties(org_id):
     property_matches = PropertyView.objects.filter(property__organization_id=org_id).filter(property__updated__gt=compare_date).filter(labels__in=[ind_label_id]).values_list('id', flat=True)
 
     status, messages = update_salesforce_properties(org_id, list(property_matches))
-
-    if not status:
-        # send email with errors
-        send_salesforce_error_log(org_id, messages)
+    # can't email from here due to circular imports...emailing is done in tasks.py
 
     if len(messages) == 0:
         status = True
-        # save new date
+        # save new date only if ALL succeeded
         config.last_update_date = timezone.now()
         config.save(update_fields=['last_update_date'])
 

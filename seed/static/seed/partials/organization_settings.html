@@ -387,6 +387,43 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="section_header_container has_btm_margin">
+                    <div class="section_header">
+                        <h2><i class="fa fa-clock-o"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
+                    </div>
+                </div>
+                 <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <p translate="SF_SCHEDULED_UPDATE_TEXT"></p>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_hour" translate>Hour</label>
+                                <div class="col-sm-5">
+                                    <p><span translate="SF_UPDATE_HOUR_TEXT"></span> Timezone: {$ timezone $}</p>
+                                    <input type="text" class="form-control" id="update_at_hour" ng-model="conf.update_at_hour" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_minute" translate>Minute</label>
+                                <div class="col-sm-5">
+                                    <p translate="SF_UPDATE_MINUTE_TEXT"></p>
+                                    <input type="text" class="form-control" id="update_at_minute" ng-model="conf.update_at_minute" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="section_content_container">
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">

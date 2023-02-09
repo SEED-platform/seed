@@ -105,6 +105,7 @@ DJANGO_CORE_APPS = (
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
     'post_office',
+    'django_celery_beat'
 )
 
 SEED_CORE_APPS = (
@@ -225,6 +226,8 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_TASK_COMPRESSION = 'gzip'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # hmm, we are logging outside the context of the app?
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')

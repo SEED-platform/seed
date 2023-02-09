@@ -116,6 +116,18 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             organization=self.org,
         )
 
+    def test_update_at_hour_constraint(self):
+        constraint_name = "saleforce_update_at_hour_range"
+        self.sf_config.update_at_hour = 25
+        with self.assertRaisesMessage(IntegrityError, constraint_name):
+            self.sf_config.save()
+
+    def test_update_at_minute_constraint(self):
+        constraint_name = "saleforce_update_at_minute_range"
+        self.sf_config.update_at_minute = 62
+        with self.assertRaisesMessage(IntegrityError, constraint_name):
+            self.sf_config.save()
+
     def test_save_salesforce_config(self):
 
         # use new org b/c can only have 1 config record on an org

@@ -39,6 +39,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+from seed.utils.salesforce import auto_sync_salesforce_properties
 
 logger = get_task_logger(__name__)
 
@@ -159,7 +160,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
 
 
 def send_salesforce_error_log(org_pk, errors):
-
+    """ send salesforce error log to logging email when errors are encountered during scheduled sync """
     sf_conf = SalesforceConfig.objects.get(organization_id=org_pk)
     org = Organization.objects.get(pk=org_pk)
 
@@ -433,6 +434,14 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
+
+
+@shared_task
+def sync_salesforce(org_id):
+    status, messages = auto_sync_salesforce_properties(org_id)
+    if not status:
+        # send email with errors
+        send_salesforce_error_log(org_id, messages)
 
 
 @shared_task

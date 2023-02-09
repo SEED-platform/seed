@@ -40,3 +40,17 @@ class SalesforceConfig(models.Model):
     # data_admin_email_column = models.ForeignKey(Column, related_name="data_admin_email_column", null=True, on_delete=models.CASCADE)
     # data_admin_name_column = models.ForeignKey(Column, related_name="data_admin_name_column", null=True, on_delete=models.CASCADE)
     logging_email = models.CharField(blank=True, max_length=128, null=True)
+    update_at_hour = models.IntegerField(blank=True, null=True)
+    update_at_minute = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="saleforce_update_at_hour_range",
+                check=models.Q(update_at_hour__range=(0, 23)),
+            ),
+            models.CheckConstraint(
+                name="salesforce_update_at_minute_range",
+                check=models.Q(update_at_minute__range=(0, 59)),
+            ),
+        ]

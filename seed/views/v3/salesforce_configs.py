@@ -4,10 +4,13 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import json
 from copy import deepcopy
 
 import django.core.exceptions
 from django.http import JsonResponse
+from django.utils.timezone import get_current_timezone
+from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -77,6 +80,37 @@ def _validate_data(data, org_id):
                 msgs.append('The selected column for ' + item + ' does not belong to this organization')
 
     return error, msgs
+
+
+def _schedule_sync(data, org_id):
+
+    timezone = data.get('timezone', get_current_timezone())
+
+    if data['update_at_hour'] and data['update_at_minute']:
+        # create crontab schedule
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute=data['update_at_minute'],
+            hour=data['update_at_hour'],
+            day_of_week='*',
+            day_of_month='*',
+            month_of_year='*',
+            timezone=timezone
+        )
+
+        # then schedule task (create/update with new crontab)
+        tasks = PeriodicTask.objects.filter(name='salesforce sync org ' + str(org_id))
+        if not tasks:
+            PeriodicTask.objects.create(
+                crontab=schedule,
+                name='salesforce sync org ' + str(org_id),
+                task='seed.tasks.sync_salesforce',
+                args=json.dumps([org_id])
+            )
+        else:
+            task = tasks.first()
+            # update crontab (if changed)
+            task.crontab = schedule
+            task.save()
 
 
 class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
@@ -246,6 +280,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'account_name_column': 'integer',
                 'logging_email': 'string',
                 'benchmark_contact_fieldname': 'string',
+                'update_at_hour': 'integer',
+                'update_at_minute': 'integer',
             },
         )
     )
@@ -283,7 +319,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             # encrypt pwd to save
             serializer['password'] = encrypt(serializer['password'])
             serializer.save()
-            # serializer['password'] = decrypt(serializer['password'])[0]
+
+            # setup Salesforce update scheduled tasks
+            data['timezone'] = request.GET.get('timezone', None)
+            _schedule_sync(data, org_id)
+
             return JsonResponse({
                 'status': 'success',
                 'salesforce_config': serializer.data
@@ -322,6 +362,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'account_name_column': 'integer',
                 'logging_email': 'string',
                 'benchmark_contact_fieldname': 'string',
+                'update_at_hour': 'integer',
+                'update_at_minute': 'integer',
             },
         )
     )
@@ -331,6 +373,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_owner')
     def update(self, request, pk):
         org_id = self.get_organization(request)
+
         salesforce_config = None
         try:
             salesforce_config = SalesforceConfig.objects.get(id=pk, organization=org_id)
@@ -356,6 +399,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Bad Request',
                 'errors': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        # setup Salesforce update scheduled tasks (if change detected)
+        if data['update_at_hour'] != salesforce_config.update_at_hour or data['update_at_minute'] != salesforce_config.update_at_minute:
+            data['timezone'] = request.GET.get('timezone', None)
+            _schedule_sync(data, org_id)
 
         try:
             serializer.save()

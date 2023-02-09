@@ -52,10 +52,11 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // update
-    const update_salesforce_config = function (id, data) {
+    const update_salesforce_config = function (id, data, timezone=null) {
       return $http.put('/api/v3/salesforce_configs/' + id + '/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          'organization_id': user_service.get_organization().id,
+          'timezone': timezone
         }
       }).then(function (response) {
         return response.data.salesforce_config;
@@ -65,10 +66,11 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // create
-    const new_salesforce_config = function (data) {
+    const new_salesforce_config = function (data, timezone=null) {
       return $http.post('/api/v3/salesforce_configs/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          'organization_id': user_service.get_organization().id,
+          'timezone': timezone
         }
       }).then(function (response) {
         return response.data.salesforce_config;

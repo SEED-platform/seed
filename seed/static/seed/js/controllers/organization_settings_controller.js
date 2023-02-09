@@ -44,6 +44,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.conf = salesforce_configs_payload[0];
     }
 
+    $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
     $scope.auth = auth_payload.auth;
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
@@ -197,7 +199,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       if ($scope.org.salesforce_enabled) {
         if ($scope.conf.id){
           // update
-          salesforce_config_service.update_salesforce_config($scope.conf.id, $scope.conf)
+          salesforce_config_service.update_salesforce_config($scope.conf.id, $scope.conf, $scope.timezone)
           .then(function (response) {
             if (response.status == 'error'){
               $scope.config_errors = response.errors;
@@ -219,7 +221,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           });
         } else {
           // create
-          salesforce_config_service.new_salesforce_config($scope.conf)
+          salesforce_config_service.new_salesforce_config($scope.conf, $scope.timezone)
           .then(function () {
             salesforce_config_service.get_salesforce_configs($scope.org.id)
             .then( function (data) {
