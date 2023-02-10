@@ -26,7 +26,6 @@ from seed.models import (
     SalesforceMapping
 )
 from seed.models import StatusLabel as Label
-from seed.serializers.properties import PropertyViewSerializer
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
@@ -36,8 +35,10 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.utils.encrypt import encrypt
 from seed.utils.organizations import create_organization
 from seed.utils.salesforce import update_salesforce_property
+from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
 class SalesforceViewTests(DataMappingBaseTestCase):
@@ -47,6 +48,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
+        self.api_view = LabelInventoryViewSet()
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
@@ -311,13 +313,36 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             property=prprty, cycle=self.cycle, state=state
         )
 
-        PropertyViewSerializer(view).data
+        self.api_view.add_labels(
+            self.api_view.models['property'].objects.none(),
+            'property',
+            [view.id],
+            [self.ind_label.id]
+        )
+        self.api_view.add_labels(
+            self.api_view.models['property'].objects.none(),
+            'property',
+            [view.id],
+            [self.compliance_label.id]
+        )
+
+        # pdata = PropertyViewSerializer(view).data
+        # print(f" view data: {pdata}")
+
+        # enable sf
+        self.sf_config.url = SF_INSTANCE
+        self.sf_config.username = SF_USERNAME
+        self.sf_config.password = encrypt(SF_PASSWORD)
+        self.sf_config.security_token = SF_SECURITY_TOKEN
+        if SF_DOMAIN == 'test':
+            self.sf_config.domain = SF_DOMAIN
+        self.sf_config.save()
 
         status, message = update_salesforce_property(self.org.id, view.id)
-        if status == 'error':
+        if status is False:
             print(f"ERROR encountered: {message}")
 
-        self.assertEqual(status, 'success')
+        self.assertEqual(status, True)
 
     def test_multiple_salesforce_configs_illegal(self):
         """ test that you can't have 2 salesforce_configs records per org
