@@ -117,16 +117,18 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         )
 
     def test_update_at_hour_constraint(self):
-        constraint_name = "saleforce_update_at_hour_range"
+        constraint_name = "salesforce_update_at_hour_range"
         self.sf_config.update_at_hour = 25
-        with self.assertRaisesMessage(IntegrityError, constraint_name):
-            self.sf_config.save()
+        with transaction.atomic():
+            with self.assertRaisesMessage(IntegrityError, constraint_name):
+                self.sf_config.save()
 
     def test_update_at_minute_constraint(self):
-        constraint_name = "saleforce_update_at_minute_range"
+        constraint_name = "salesforce_update_at_minute_range"
         self.sf_config.update_at_minute = 62
-        with self.assertRaisesMessage(IntegrityError, constraint_name):
-            self.sf_config.save()
+        with transaction.atomic():
+            with self.assertRaisesMessage(IntegrityError, constraint_name):
+                self.sf_config.save()
 
     def test_save_salesforce_config(self):
 
@@ -290,6 +292,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
+        if data['status'] == 'error':
+            print(f"ERROR encountered: {data}")
 
         self.assertEqual(data['status'], 'success')
 
@@ -310,6 +314,10 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         PropertyViewSerializer(view).data
 
         status, message = update_salesforce_property(self.org.id, view.id)
+        if status == 'error':
+            print(f"ERROR encountered: {message}")
+
+        self.assertEqual(status, 'success')
 
     def test_multiple_salesforce_configs_illegal(self):
         """ test that you can't have 2 salesforce_configs records per org
@@ -341,6 +349,6 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         data = json.loads(response.content)
 
         self.assertEqual(data['status'], 'error')
-        self.assertIn('Salesforce Workflow is not enabled', data['message'])
+        self.assertIn('Salesforce Workflow is not enabled', data['message'][0])
 
     # TODO: test auto sync works and sets date

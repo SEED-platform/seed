@@ -46,7 +46,7 @@ class SalesforceConfig(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                name="saleforce_update_at_hour_range",
+                name="salesforce_update_at_hour_range",
                 check=models.Q(update_at_hour__range=(0, 23)),
             ),
             models.CheckConstraint(

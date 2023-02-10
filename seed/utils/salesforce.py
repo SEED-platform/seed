@@ -52,7 +52,7 @@ def schedule_sync(data, org_id):
 
     timezone = data.get('timezone', get_current_timezone())
 
-    if data['update_at_hour'] and data['update_at_minute']:
+    if 'update_at_hour' in data and data['update_at_hour'] and 'update_at_minute' in data and data['update_at_minute']:
         # create crontab schedule
         schedule, _ = CrontabSchedule.objects.get_or_create(
             minute=data['update_at_minute'],
@@ -109,7 +109,7 @@ def retrieve_connection_params(org_id):
         config = config.first()
         params['instance'] = config.url
         params['username'] = config.username
-        params['password'] = decrypt(config.password)[0]
+        params['password'] = decrypt(config.password)[0] if config.password else None
         params['security_token'] = config.security_token
         if config.domain == 'test':
             params['domain'] = config.domain

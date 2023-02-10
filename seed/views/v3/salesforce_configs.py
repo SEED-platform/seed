@@ -268,6 +268,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         data = deepcopy(request.data)
         data.update({'organization_id': org_id})
 
+        # encrypt pwd
+        if 'password' in data and data['password']:
+            data['password'] = encrypt(data['password'])
+
         error, msgs = _validate_data(data, org_id)
         if (error is True):
             return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
@@ -283,8 +287,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse(error_response, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # encrypt pwd to save
-            serializer['password'] = encrypt(serializer['password'])
             serializer.save()
 
             # setup Salesforce update scheduled tasks
@@ -352,7 +354,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         data = deepcopy(request.data)
         data.update({'organization': org_id})
-        data['password'] = encrypt(data['password'])
+        if 'password' in data and data['password']:
+            data['password'] = encrypt(data['password'])
         error, msgs = _validate_data(data, org_id)
         if (error is True):
             return JsonResponse({'status': 'error', 'message': ','.join(msgs)},
