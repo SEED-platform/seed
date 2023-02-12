@@ -142,7 +142,7 @@ def _dict_org(request, organizations):
             'better_host_url': settings.BETTER_HOST,
             'property_display_field': o.property_display_field,
             'taxlot_display_field': o.taxlot_display_field,
-            'display_meter_units': o.display_meter_units,
+            'display_meter_units': dict(sorted(o.display_meter_units.items(), key=lambda item: (item[0], item[1]))),
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
             'comstock_enabled': o.comstock_enabled,
             'new_user_email_from': o.new_user_email_from,
