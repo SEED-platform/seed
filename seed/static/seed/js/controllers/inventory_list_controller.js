@@ -549,7 +549,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-        $scope.load_inventory(1);
         $scope.isModified();
       };
 
@@ -1062,6 +1061,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
+        get_labels(); 
         $scope.updateQueued = true;
       };
 
@@ -1204,20 +1204,31 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
-          $scope.labels = _.filter(current_labels, function (label) {
-            return !_.isEmpty(label.is_applied);
-          });
-
-          // load saved label filter
-          let ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
-          $scope.selected_labels = _.filter($scope.labels, function (label) {
-            return _.includes(ids, label.id);
-          });
-
+          updateApplicableLabels(current_labels)
           $scope.filterUsingLabels();
-          $scope.build_labels();
         });
       };
+
+      function updateApplicableLabels(current_labels) {
+        var inventoryIds;
+        if ($scope.inventory_type === 'properties') {
+          inventoryIds = _.map($scope.data, 'property_view_id').sort();
+        } else {
+          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
+        }
+        $scope.labels = _.filter(current_labels, function (label) {
+          return _.some(label.is_applied, function (id) {
+            return _.includes(inventoryIds, id);
+          });
+        });
+        // Ensure that no previously-applied labels remain
+        // Filter on $scope.labels to refresh is_applied
+        $scope.selected_labels = _.filter($scope.labels, function (label) {
+          return _.find($scope.selected_labels, ['id', label.id]);
+        });
+        $scope.build_labels();
+      }
+
 
       $scope.open_ubid_modal = function (selectedViewIds) {
         $uibModal.open({
