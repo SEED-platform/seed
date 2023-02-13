@@ -498,7 +498,7 @@ class PortfolioManagerImport(object):
             xml (dict): content to be parsed
 
         Returns:
-            properties: list of properties
+            (valid, return_data): success and list of properties, or failure and error message
         """
 
         def _flatten_property_metrics(pm):
