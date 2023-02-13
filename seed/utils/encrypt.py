@@ -1,5 +1,4 @@
 import os
-from typing import Union
 
 from django.conf import settings
 from django.core import signing
@@ -15,7 +14,7 @@ def encrypt(password: str) -> str:
     return enc
 
 
-def decrypt(password: str) -> tuple[Union[str, None], Union[str, None]]:
+def decrypt(password: str):
     """ Decrypts a password """
 
     secret = get_secret()
