@@ -435,6 +435,29 @@ angular.module('BE.seed.controller.insights_property', [])
       }
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
+
+      $scope.open_update_labels_modal = function () {
+        const visibleDatasets = $scope.insightsChart.data.datasets.filter( (d, i) => $scope.insightsChart.isDatasetVisible(i))
+        const visibleIds = visibleDatasets.reduce((acc, curr) => {return [...acc, ...curr.data.map(d => d.id)]}, [])
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
+          controller: 'update_item_labels_modal_controller',
+          resolve: {
+            inventory_ids: function () {
+              return visibleIds;
+            },
+            inventory_type: function () {
+              return "properties";
+            }
+          }
+        });
+        modalInstance.result.then(function () {
+          //dialog was closed with 'Done' button.
+          get_labels();
+          $scope.load_inventory(1);
+        });
+      };
     }
 
   ]);
