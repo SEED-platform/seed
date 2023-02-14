@@ -83,8 +83,8 @@ logging.disable(logging.WARNING)
 # salesforce testing
 if 'SF_INSTANCE' not in vars():
     # use env vars
-    SF_INSTANCE = os.environ.get('SF_INSTANCE')
-    SF_USERNAME = os.environ.get('SF_USERNAME')
-    SF_PASSWORD = os.environ.get('SF_PASSWORD')
-    SF_DOMAIN = os.environ.get('SF_DOMAIN')
-    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN')
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')
