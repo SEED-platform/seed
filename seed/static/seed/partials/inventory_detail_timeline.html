@@ -1,0 +1,146 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+                <i class="fa fa-chevron-left"></i>
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+            </a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+</div>
+<div class="section_header_container">
+    <div class="section_header fixed_height_short has_no_padding">
+        <div class="section_action_container left" style="width: 50%;">
+            <span>
+                <h2>
+                    <span ng-if="::inventory_type==='properties'">
+                        <i class="fa fa-building-o"></i><span translate>Property</span> :
+                    </span>
+                    <span ng-if="::inventory_type==='taxlots'">
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
+                    </span>
+                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ?
+                        'property' : 'taxlot') | translate $}</span>
+                </h2>
+            </span>
+        </div>
+    </div>
+</div>
+<!-- Scenarios and Measures Section -->
+<div class="section">
+    <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+        <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left" style="width: 50%;">
+                <span>
+                    <h2><i class="fa fa-sitemap"></i> Scenarios and Measures</h2>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="section_content_container">
+    <table id="scenario-table">
+        <tbody>
+            <tr class="scenario-row" ng-repeat-start="scenario in item_state.scenarios | orderBy:'$index':true">
+                <!-- Expand scenario -->
+                <td width="20">
+                    <div ng-click="expand_scenario(scenario.id)" style="padding: 5px;">
+                        <i class="fa fa-chevron-right" style="color: black;"
+                            ng-class="scenario_expanded[scenario.id] ? 'down' : 'right'"></i>
+                    </div>
+                </td>
+                <!-- Scenario -->
+                <td>
+                    <div style="font-weight: bold;">
+                        {$ scenario.id $} - {$ scenario.name $}
+                    </div>
+                </td>
+                <!-- Electricity Savings -->
+                <td>
+                    <div class="subsection_card"
+                        ng-class="{'orange-transparent': scenario.annual_electricity_savings > 0}">
+                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+                        <div style="display: unset;">
+                            <div class="subsection_card_title">
+                                Electricity savings
+                            </div>
+                            <div class="subsection_card_value">
+                                {$ scenario.annual_electricity_savings $} kBTu
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <!-- Peak Electricity Reduction -->
+                <td>
+                    <div class="subsection_card"
+                        ng-class="{'orange-transparent': scenario.annual_peak_electricity_reduction > 0}">
+                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+
+                        <div style="display: unset;">
+                            <div class="subsection_card_title">
+                                Peak electricity reduction
+                            </div>
+                            <div class="subsection_card_value">
+                                {$ scenario.annual_peak_electricity_reduction $} kW
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <!-- Natural Gas Savings -->
+                <td>
+                    <div class="subsection_card"
+                        ng-class="{'blue-transparent': scenario.annual_natural_gas_savings > 0}">
+                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+                        <div style="display: unset;">
+                            <div class="subsection_card_title">
+                                Natural gas savings
+                            </div>
+                            <div class="subsection_card_value">
+                                {$ scenario.annual_natural_gas_savings || 0 $} kBTU
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <!-- Measure Count  -->
+                <td>
+                    <div class="subsection_card">
+                        <div style="display: unset;">
+                            <div class="subsection_card_title">
+                                Measures
+                            </div>
+                            <div class="subsection_card_value">
+                                <!-- This will need to be divided into "implemented" and "proposed". Currently there is not one field to look at and a known list of all statuses is required -->
+                                {$ scenario.measures.length $}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <!-- Type -->
+                <td>
+                    <div>
+                        Type
+                    </div>
+                    <div style="font-weight: bold;">
+                        Current
+                    </div>
+                </td>
+            </tr>
+            <!-- Measures Tables-->
+            <tr ng-repeat-end>
+                <td colspan="100%">
+                    <div class="subsection_secondary" ng-class="scenario_expanded[scenario.id] ? 'show' : 'noshow'">
+                        <div ng-repeat="measure in scenario.measures">
+                            {$ measure.display_name $}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
