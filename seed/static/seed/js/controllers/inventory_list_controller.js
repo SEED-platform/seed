@@ -1807,7 +1807,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           var selectionChanged = function () {
             var selected = gridApi.selection.getSelectedRows();
             var parentsSelectedIds = _.map(_.filter(selected, {$$treeLevel: 0}), 'id');
-            $scope.selectedCount = selected.length;
+            $scope.selectedCount = selectionLengthByInventoryType(selected);
             $scope.selectedParentCount = parentsSelectedIds.length;
 
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
@@ -1837,10 +1837,16 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.selectedOrder = _.filter(sortedIds, function (id) {
                 return _.includes(parentsSelectedIds, id);
               });
-              $scope.selectedCount = allSelected.length;
+              $scope.selectedCount = selectionLengthByInventoryType(allSelected);
               $scope.selectedParentCount = parentsSelectedIds.length;
             }
             $scope.update_selected_display();
+          };
+
+          const selectionLengthByInventoryType = (selection) => {
+            return $scope.inventory_type == 'properties' ?
+              selection.filter(item => item.property_state_id || item.property_view_id).length :
+              selection.filter(item => item.taxlot_state_id || item.taxlot_view_id).length;
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
