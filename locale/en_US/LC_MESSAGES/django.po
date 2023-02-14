@@ -1290,6 +1290,9 @@ msgstr "INTERNAL"
 msgid "INVALID_CSV_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong> files are supported."
 
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Invalid document type selected. Accepted file types are .dxf, .pdf, .idf, and .osm"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
@@ -2082,11 +2085,11 @@ msgstr "Profile Information"
 msgid "Profile Name"
 msgstr "Profile Name"
 
-msgid "Program"
-msgstr "Program"
+msgid "Program Metric"
+msgstr "Program Metric"
 
-msgid "Program Configuration"
-msgstr "Program Configuration"
+msgid "Program Metric Configuration"
+msgstr "Program Metric Configuration"
 
 msgid "Program Overview"
 msgstr "Program Overview"
@@ -2364,6 +2367,9 @@ msgstr "SEED is easy, flexible, and cost effective software designed to help org
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Select Data Set"
 
+msgid "SELECT_DOC_UPLOAD_TITLE"
+msgstr "Select a Document to Upload"
+
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Select the type of file(s) you would like to add to {dataset_name}."
 
@@ -2626,6 +2632,9 @@ msgstr "Success!"
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
+msgid "Successfully Uploaded"
+msgstr "Successfully Uploaded"
+
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
 
@@ -2817,6 +2826,9 @@ msgstr "UBID"
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
 
+msgid "UPLOADING_DOCUMENT_TITLE"
+msgstr "Uploading Document..."
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Uploading File"
 
@@ -2828,6 +2840,9 @@ msgstr "Upload Complete"
 
 msgid "UPLOAD_DATA_LOGGER_BUTTON"
 msgstr "Create Data Logger"
+
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Accepted File Types: .dxf, .pdf, .idf, and .osm"
 
 msgid "UPLOAD_FILE"
 msgstr "Upload File"
