@@ -468,7 +468,8 @@ class PortfolioManagerImport(object):
         return response.content
 
     def _parse_properties_v1(self, xml):
-        """Parse the XML response from the ESPM API and return a list of properties. This version was implemented prior to 02/13/2023
+        """Parse the XML (in dict format) response from the ESPM API and return a list of
+        properties. This version was implemented prior to 02/13/2023
 
         Args:
             xml (dict): content to be parsed
@@ -492,7 +493,8 @@ class PortfolioManagerImport(object):
         return True, properties
 
     def _parse_properties_v2(self, xml):
-        """Parse the XML response from the ESPM API and return a list of properties. This version was implemented after 02/13/2023
+        """Parse the XML (in dict format) response from the ESPM API and return a list of
+        properties. This version was implemented after 02/13/2023
 
         Args:
             xml (dict): content to be parsed
