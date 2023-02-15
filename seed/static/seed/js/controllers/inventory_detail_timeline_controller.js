@@ -28,6 +28,17 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
                 console.log('CLICK!')
             }
+            $scope.expanded_rows = {
+                'cycles': {},
+                'events': {},
+            }
+            $scope.expand_row = (type, id) => {
+                if ($scope.expanded_rows[type][id]) {
+                    $scope.expanded_rows[type][id] = !$scope.expanded_rows[type][id]
+                } else {
+                    $scope.expanded_rows[type][id] = true
+                }
+            }
 
             $scope.format_created = (date) => {
                 return moment(date).format('YYYY/MM/DD')
@@ -49,7 +60,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 'property': 9, 
                 'cycles': [
                     {
-                        'cycle': 21,
+                        'id': 21,
                         'cycle_name': 'c2021',
                         'events': [
                             {
@@ -89,7 +100,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         ],
                     },
                     {
-                        'cycle': 22,
+                        'id': 22,
                         'cycle_name': 'c2022',
                         'events': [
                             {
@@ -121,7 +132,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         ]
                     },
                     {
-                        'cycle': 23,
+                        'id': 23,
                         'cycle_name': 'c2023',
                         'events': [
                             {

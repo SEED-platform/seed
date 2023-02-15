@@ -33,171 +33,194 @@
     </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
-<div class="section">
-    <table id="cycles-table">
-        <tbody>
-            <tr ng-repeat-start="cycle in timeline.cycles" class="cycle-row">
-                <td>
-                    name: {$ cycle.cycle_name $}
-                </td>
-                <td>
-                    events: {$ cycle.events.length $}
-                </td>
-            </tr>
-            <tr ng-repeat-end>
-                <td colspan="100%">
-                    <table class="event-table">
-                        <tbody>
-                            <tr ng-repeat-start="event in cycle.events" style="border: 1px solid black">
+<div class="section_content_container">
+    
+    <div class="section">
+        <!-- Cycles -->
+        <table id="cycles-table">
+            <tbody>
+                <tr ng-repeat-start="cycle in timeline.cycles" class="cycle-row">
+                    <td width="20">
+                        <div ng-click="expand_row('cycles', cycle.id)" style="padding: 5px;">
+                            <i class="fa fa-chevron-right" style="color: white;"
+                                ng-class="expanded_rows['cycles'][cycle.id] ? 'down' : 'right'">
+                            </i>
+                        </div>
+                    </td>
+                    <td >
+                        name: {$ cycle.cycle_name $}
+                    </td>
+                    <td>
+                        events: {$ cycle.events.length $}
+                    </td>
+                </tr>
+                <!-- Events -->
+                <tr ng-repeat-end style="background: white">
+                    <td colspan="100%">
+                        <table class="event-table">
+                            <tbody>
+                                <tr ng-repeat-start="event in cycle.events" style="border: 1px solid black; background: rgba(112,113,113)">
+                                        <td>
+                                            <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
+                                                <i class="fa fa-chevron-right" style="color: white;"
+                                                    ng-class="expanded_rows['events'][event.id] && expanded_rows['cycles'][cycle.id] ? 'down' : 'right'">
+                                                </i>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            event: {$ format_created(event.created) $}
+                                        </td>
+                                        <td>
+                                            type:  {$ format_event_type(event) $}
+                                        </td>
+                                </tr>
+                                <!-- Triggers -->
+                                <tr ng-repeat-end colspan="100%">
                                     <td>
-                                        >>>
+                                        <div class="section_content">
+                                        <div class="table_list_container table_item_detail" >
+                                            <table class="trigger-table table table-striped table_highlight_first" >
+                                                <thead>
+                                                    <tr>
+                                                        <th ng-repeat="(key,value) in event.data">
+                                                            {$ key $}
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td ng-repeat="val in event.data" style="color: black;">
+                                                                {$ val $}
+                                                        </td> 
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        </div>
                                     </td>
-                                    <td>
-                                        event: {$ format_created(event.created) $}
-                                    </td>
-                                    <td>
-                                        type:  {$ format_event_type(event) $}
-                                    </td>
-                            </tr>
-                            <tr ng-repeat-end colspan="100%">
-                                <td>
-                                    TEST
-                                    <table class="trigger-table" >
-
-                                        <tbody>
-                                            <tr>
-                                               <td >
-                                                    {$ event.data.entries() $}
-                                               </td> 
-                                               <td>
-                                                    value 2
-                                               </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
 
 
 
 
-<!-- Scenarios and Measures Section -->
-<div class="section">
-    <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-        <div class="section_header fixed_height_short has_no_padding">
-            <div class="section_action_container left" style="width: 50%;">
-                <span>
-                    <h2><i class="fa fa-sitemap"></i> Scenarios and Measures</h2>
-                </span>
+    <!-- Scenarios and Measures Section -->
+    <div class="section">
+        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+            <div class="section_header fixed_height_short has_no_padding">
+                <div class="section_action_container left" style="width: 50%;">
+                    <span>
+                        <h2><i class="fa fa-sitemap"></i> Scenarios and Measures</h2>
+                    </span>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<div class="section_content_container">
-    <table id="scenario-table">
-        <tbody>
-            <tr class="scenario-row" ng-repeat-start="scenario in item_state.scenarios | orderBy:'$index':true">
-                <!-- Expand scenario -->
-                <td width="20">
-                    <div ng-click="expand_scenario(scenario.id)" style="padding: 5px;">
-                        <i class="fa fa-chevron-right" style="color: black;"
-                            ng-class="scenario_expanded[scenario.id] ? 'down' : 'right'"></i>
-                    </div>
-                </td>
-                <!-- Scenario -->
-                <td>
-                    <div style="font-weight: bold;">
-                        {$ scenario.id $} - {$ scenario.name $}
-                    </div>
-                </td>
-                <!-- Electricity Savings -->
-                <td>
-                    <div class="subsection_card"
-                        ng-class="{'orange-transparent': scenario.annual_electricity_savings > 0}">
-                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
-                        <div style="display: unset;">
-                            <div class="subsection_card_title">
-                                Electricity savings
-                            </div>
-                            <div class="subsection_card_value">
-                                {$ scenario.annual_electricity_savings $} kBTu
+    <div class="section_content_container">
+        <table id="scenario-table">
+            <tbody>
+                <tr class="scenario-row" ng-repeat-start="scenario in item_state.scenarios | orderBy:'$index':true">
+                    <!-- Expand scenario -->
+                    <td width="20">
+                        <div ng-click="expand_scenario(scenario.id)" style="padding: 5px;">
+                            <i class="fa fa-chevron-right" style="color: black;"
+                                ng-class="scenario_expanded[scenario.id] ? 'down' : 'right'"></i>
+                        </div>
+                    </td>
+                    <!-- Scenario -->
+                    <td>
+                        <div style="font-weight: bold;">
+                            {$ scenario.id $} - {$ scenario.name $}
+                        </div>
+                    </td>
+                    <!-- Electricity Savings -->
+                    <td>
+                        <div class="subsection_card"
+                            ng-class="{'orange-transparent': scenario.annual_electricity_savings > 0}">
+                            <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+                            <div style="display: unset;">
+                                <div class="subsection_card_title">
+                                    Electricity savings
+                                </div>
+                                <div class="subsection_card_value">
+                                    {$ scenario.annual_electricity_savings $} kBTu
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </td>
-                <!-- Peak Electricity Reduction -->
-                <td>
-                    <div class="subsection_card"
-                        ng-class="{'orange-transparent': scenario.annual_peak_electricity_reduction > 0}">
-                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+                    </td>
+                    <!-- Peak Electricity Reduction -->
+                    <td>
+                        <div class="subsection_card"
+                            ng-class="{'orange-transparent': scenario.annual_peak_electricity_reduction > 0}">
+                            <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
 
-                        <div style="display: unset;">
-                            <div class="subsection_card_title">
-                                Peak electricity reduction
-                            </div>
-                            <div class="subsection_card_value">
-                                {$ scenario.annual_peak_electricity_reduction $} kW
-                            </div>
-                        </div>
-                    </div>
-                </td>
-                <!-- Natural Gas Savings -->
-                <td>
-                    <div class="subsection_card"
-                        ng-class="{'blue-transparent': scenario.annual_natural_gas_savings > 0}">
-                        <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
-                        <div style="display: unset;">
-                            <div class="subsection_card_title">
-                                Natural gas savings
-                            </div>
-                            <div class="subsection_card_value">
-                                {$ scenario.annual_natural_gas_savings || 0 $} kBTU
+                            <div style="display: unset;">
+                                <div class="subsection_card_title">
+                                    Peak electricity reduction
+                                </div>
+                                <div class="subsection_card_value">
+                                    {$ scenario.annual_peak_electricity_reduction $} kW
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </td>
-                <!-- Measure Count  -->
-                <td>
-                    <div class="subsection_card">
-                        <div style="display: unset;">
-                            <div class="subsection_card_title">
-                                Measures
-                            </div>
-                            <div class="subsection_card_value">
-                                <!-- This will need to be divided into "implemented" and "proposed". Currently there is not one field to look at and a known list of all statuses is required -->
-                                {$ scenario.measures.length $}
+                    </td>
+                    <!-- Natural Gas Savings -->
+                    <td>
+                        <div class="subsection_card"
+                            ng-class="{'blue-transparent': scenario.annual_natural_gas_savings > 0}">
+                            <img src="../static/seed/images/icon-city.svg" class="subsection_card_icon">
+                            <div style="display: unset;">
+                                <div class="subsection_card_title">
+                                    Natural gas savings
+                                </div>
+                                <div class="subsection_card_value">
+                                    {$ scenario.annual_natural_gas_savings || 0 $} kBTU
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </td>
-                <!-- Type -->
-                <td>
-                    <div>
-                        Type
-                    </div>
-                    <div style="font-weight: bold;">
-                        Current
-                    </div>
-                </td>
-            </tr>
-            <!-- Measures Tables-->
-            <tr ng-repeat-end>
-                <td colspan="100%">
-                    <div class="subsection_secondary" ng-class="scenario_expanded[scenario.id] ? 'show' : 'noshow'">
-                        <div ng-repeat="measure in scenario.measures">
-                            {$ measure.display_name $}
+                    </td>
+                    <!-- Measure Count  -->
+                    <td>
+                        <div class="subsection_card">
+                            <div style="display: unset;">
+                                <div class="subsection_card_title">
+                                    Measures
+                                </div>
+                                <div class="subsection_card_value">
+                                    <!-- This will need to be divided into "implemented" and "proposed". Currently there is not one field to look at and a known list of all statuses is required -->
+                                    {$ scenario.measures.length $}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                    </td>
+                    <!-- Type -->
+                    <td>
+                        <div>
+                            Type
+                        </div>
+                        <div style="font-weight: bold;">
+                            Current
+                        </div>
+                    </td>
+                </tr>
+                <!-- Measures Tables-->
+                <tr ng-repeat-end>
+                    <td colspan="100%">
+                        <div class="subsection_secondary" ng-class="scenario_expanded[scenario.id] ? 'show' : 'noshow'">
+                            <div ng-repeat="measure in scenario.measures">
+                                {$ measure.display_name $}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
