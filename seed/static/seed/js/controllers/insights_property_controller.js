@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.insights_property', [])
     'urls',
     'compliance_metrics',
     'compliance_metric_service',
+    'Notification',
     'organization_payload',
     'spinner_utility',
     'cycles',
@@ -16,6 +17,7 @@ angular.module('BE.seed.controller.insights_property', [])
       urls,
       compliance_metrics,
       compliance_metric_service,
+      Notification,
       organization_payload,
       spinner_utility,
       cycles
@@ -439,6 +441,11 @@ angular.module('BE.seed.controller.insights_property', [])
       $scope.open_update_labels_modal = function () {
         const visibleDatasets = $scope.insightsChart.data.datasets.filter( (d, i) => $scope.insightsChart.isDatasetVisible(i))
         const visibleIds = visibleDatasets.reduce((acc, curr) => {return [...acc, ...curr.data.map(d => d.id)]}, [])
+
+        if (visibleIds.length < 1){
+          Notification.error({message: "no properties selected", delay: 15000});
+          return;
+        }
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
