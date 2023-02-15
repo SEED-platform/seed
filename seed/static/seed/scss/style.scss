@@ -4647,3 +4647,96 @@ ul.r-list {
 .strikethrough {
   text-decoration: line-through;
 }
+.subsection_primary,
+.subsection_secondary {
+  display: flex;
+}
+
+.subsection_secondary {
+  height: 100%
+}
+
+.show {
+  max-height: 100px;
+  transition: max-height .25s;
+}
+
+.noshow {
+
+  visibility: hidden;
+  max-height: 0px;
+  transition: max-height .25s;
+}
+
+.subsection_primary {
+  background: rgb(240, 240, 240);
+  margin: 2px 10px;
+}
+
+.right {
+  transform: rotate(0turn);
+  transition: transform .25s;
+}
+
+.down {
+  transform: rotate(0.25turn);
+  transition: transform .25s;
+}
+
+.orange-transparent {
+  background-color: rgba(242, 158, 74, 0.4)
+}
+
+.blue-transparent {
+  background-color: rgba(74, 118, 243, 0.4)
+}
+
+.subsection_card {
+  display: flex;
+  margin: 0 10px;
+  padding: 5px;
+
+  .subsection_card_title {
+    width: 100%;
+  }
+
+  .subsection_card_value {
+    font-weight: bold;
+  }
+
+  .subsection_card_icon {
+    position: relative;
+    padding-right: 10px;
+  }
+}
+
+#scenario-table {
+  border-spacing: 0px 4px;
+  border-collapse: unset;
+  width: calc(100% - 20px);
+  margin: 10px;
+
+  .scenario-row {
+    background: rgb(240, 240, 240);
+
+    td {
+      padding-right: 20px;
+    }
+  }
+
+}
+
+.cycle-row {
+  border: 1px solid red;
+}
+#cycles-table {
+  background: black;
+  color: white;
+  width: 98%;
+  margin: 1%;
+
+  .event-table {
+    width: 100%;
+    background: rgb(112, 113, 113);
+  }
+}
