@@ -202,6 +202,51 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 3)
 
+    def test_error_with_time_aware(self):
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        # create meter readings
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+
+        # write a few values to the database
+        payload = {
+            "start_time": "2023-02-14T22:27:30Z",
+            "end_time": "2023-02-14T22:28:30Z",
+            "reading": 1000000,
+            "source_unit": "Wh (Watt-hours)",
+            # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+            "conversion_factor": 0.00341,
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'start_time must be non-time zone aware')
+
+        # verify that the end_time also errors
+        payload = {
+            "start_time": "2023-02-14T22:27:30",
+            "end_time": "2023-02-14T22:28:30Z",
+            "reading": 1000000,
+            "source_unit": "Wh (Watt-hours)",
+            # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+            "conversion_factor": 0.00341,
+        }
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.json()['message'], 'end_time must be non-time zone aware')
+
     def test_bulk_import(self):
         # create property
         property_view = self.property_view_factory.get_property_view()
