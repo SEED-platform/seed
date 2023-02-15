@@ -32,6 +32,63 @@
         </div>
     </div>
 </div>
+<!-- Timeline: cycles -> events -> trigger -->
+<div class="section">
+    <table id="cycles-table">
+        <tbody>
+            <tr ng-repeat-start="cycle in timeline.cycles" class="cycle-row">
+                <td>
+                    name: {$ cycle.cycle_name $}
+                </td>
+                <td>
+                    events: {$ cycle.events.length $}
+                </td>
+            </tr>
+            <tr ng-repeat-end>
+                <td colspan="100%">
+                    <table class="event-table">
+                        <tbody>
+                            <tr ng-repeat-start="event in cycle.events" style="border: 1px solid black">
+                                    <td>
+                                        >>>
+                                    </td>
+                                    <td>
+                                        event: {$ format_created(event.created) $}
+                                    </td>
+                                    <td>
+                                        type:  {$ format_event_type(event) $}
+                                    </td>
+                            </tr>
+                            <tr ng-repeat-end colspan="100%">
+                                <td>
+                                    TEST
+                                    <table class="trigger-table" >
+
+                                        <tbody>
+                                            <tr>
+                                               <td >
+                                                    {$ event.data.entries() $}
+                                               </td> 
+                                               <td>
+                                                    value 2
+                                               </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
 <!-- Scenarios and Measures Section -->
 <div class="section">
     <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
