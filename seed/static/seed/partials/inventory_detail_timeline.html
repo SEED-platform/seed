@@ -55,12 +55,14 @@
                     </td>
                 </tr>
                 <!-- Events -->
-                <tr ng-repeat-end style="background: white">
+                <tr ng-repeat-end style="background: white;">
                     <td colspan="100%">
                         <table class="event-table">
                             <tbody>
-                                <tr ng-repeat-start="event in cycle.events" style="border: 1px solid black; background: rgba(112,113,113)">
-                                        <td>
+                                <tr ng-repeat-start="event in cycle.events" 
+                                    ng-class="expanded_rows['cycles'][cycle.id] ? 'show' : 'noshow'"
+                                    style="border: 1px solid black; background: rgba(112,113,113)">
+                                        <td width="20">
                                             <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
                                                     ng-class="expanded_rows['events'][event.id] && expanded_rows['cycles'][cycle.id] ? 'down' : 'right'">
@@ -75,7 +77,8 @@
                                         </td>
                                 </tr>
                                 <!-- Triggers -->
-                                <tr ng-repeat-end colspan="100%">
+                                <tr ng-repeat-end colspan="100%" 
+                                    ng-class="expanded_rows['events'][event.id] && expanded_rows['cycles'][cycle.id] ? 'show' : 'noshow'">
                                     <td>
                                         <div class="section_content">
                                         <div class="table_list_container table_item_detail" >

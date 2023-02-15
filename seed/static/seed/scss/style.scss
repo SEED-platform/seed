@@ -4662,7 +4662,7 @@ ul.r-list {
 }
 
 .noshow {
-
+  display: none;
   visibility: hidden;
   max-height: 0px;
   transition: max-height .25s;
@@ -4727,15 +4727,21 @@ ul.r-list {
 }
 
 #cycles-table {
-  background: black;
+  background: white;
   color: white;
   width: 98%;
   margin: 1%;
+  border-spacing: 0 3px;
+  border-collapse: separate;
+
+  tr{
+    background: black;
+  }
 
   .event-table {
     width: 100%;
     // background: rgb(112, 113, 113);
-    
+
 
     .trigger-table {
       color: black;
