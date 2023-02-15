@@ -4726,9 +4726,6 @@ ul.r-list {
 
 }
 
-.cycle-row {
-  border: 1px solid red;
-}
 #cycles-table {
   background: black;
   color: white;
@@ -4737,6 +4734,14 @@ ul.r-list {
 
   .event-table {
     width: 100%;
-    background: rgb(112, 113, 113);
+    // background: rgb(112, 113, 113);
+    
+
+    .trigger-table {
+      color: black;
+      margin-bottom: 0px;
+      // background: white;
+    }
   }
+  
 }
