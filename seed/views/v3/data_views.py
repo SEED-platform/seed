@@ -196,7 +196,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['PUT'])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
