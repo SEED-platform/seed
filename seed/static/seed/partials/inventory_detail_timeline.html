@@ -61,7 +61,8 @@
                             <tbody>
                                 <tr ng-repeat-start="event in cycle.events" 
                                     ng-class="expanded_rows['cycles'][cycle.id] ? 'show' : 'noshow'"
-                                    style="border: 1px solid black; background: rgba(112,113,113)">
+                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;"
+                                    >
                                         <td width="20">
                                             <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
@@ -78,28 +79,14 @@
                                 </tr>
                                 <!-- Triggers -->
                                 <tr ng-repeat-end colspan="100%" 
-                                    ng-class="expanded_rows['events'][event.id] && expanded_rows['cycles'][cycle.id] ? 'show' : 'noshow'">
-                                    <td>
-                                        <div class="section_content">
-                                        <div class="table_list_container table_item_detail" >
-                                            <table class="trigger-table table table-striped table_highlight_first" >
-                                                <thead>
-                                                    <tr>
-                                                        <th ng-repeat="(key,value) in event.data">
-                                                            {$ key $}
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td ng-repeat="val in event.data" style="color: black;">
-                                                                {$ val $}
-                                                        </td> 
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        </div>
+                                    ng-class="expanded_rows['events'][event.id] && expanded_rows['cycles'][cycle.id] ? 'show' : 'noshow'"
+                                    style="background: white;"
+                                    >
+                                    <td ng-if="event['inventory_document']">
+                                        <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_inventory_document.html'"></div>
+                                    </td>
+                                    <td ng-if="event['analysis']">
+                                        <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis.html'"></div>
                                     </td>
                                 </tr>
                             </tbody>

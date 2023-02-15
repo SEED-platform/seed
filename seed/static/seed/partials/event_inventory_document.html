@@ -1,0 +1,20 @@
+<div class="event_inventory_document section_content">
+    <div class="table_list_container table_item_detail">
+        <table class="trigger-table table table-striped table_highlight_first">
+            <thead>
+                <tr>
+                    <th ng-repeat="(key,value) in event.data">
+                        {$ key $}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td ng-repeat="val in event.data" style="color: black;">
+                        {$ val $}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
