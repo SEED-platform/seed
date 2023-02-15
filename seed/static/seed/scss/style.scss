@@ -4726,27 +4726,31 @@ ul.r-list {
 
 }
 
+#cycles-table,
+.event-table {
+  border-spacing: 0 3px;
+  border-collapse: separate;
+}
+
 #cycles-table {
   background: white;
   color: white;
   width: 98%;
   margin: 1%;
-  border-spacing: 0 3px;
-  border-collapse: separate;
-
   tr{
     background: black;
   }
 
   .event-table {
     width: 100%;
-    // background: rgb(112, 113, 113);
-
 
     .trigger-table {
       color: black;
       margin-bottom: 0px;
-      // background: white;
+
+      tr{
+        background: white;
+      }
     }
   }
   

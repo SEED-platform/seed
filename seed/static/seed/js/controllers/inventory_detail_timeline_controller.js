@@ -38,6 +38,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 } else {
                     $scope.expanded_rows[type][id] = true
                 }
+
+                // if ($scope.expanded_rows[type][id] == true && type == 'events') {
+                //     insert_trigger(id)
+                // } else if (($scope.expanded_rows[type][id] == false && type == 'events')) {
+                //     remove_trigger(id)
+                // }
             }
 
             $scope.format_created = (date) => {
@@ -52,6 +58,29 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 }
                 return event.id
             }
+            // const create_element = () => {
+
+            //     const para = document.createElement("p");
+            //     const node = document.createTextNode("This is new.");
+            //     para.appendChild(node);
+                
+            //     const elements = document.getElementsByClassName("page_header_container");
+            //     elements[0].appendChild(para);
+            // }
+
+            // create_element()
+
+            // const insert_trigger = (id) => {
+
+
+            //     const para = document.createElement("p")
+            //     const node = document.createTextNode("event-child-" + id)
+            //     para.appendChild(node);
+                
+            //     const element = document.getElementById('event-child-' + id)
+            //     element.appendChild(para)
+            //     console.log('extra for ',id)
+            // }
 
             // DUMMY DATA FOR TESTING
             // ----------------------
@@ -106,8 +135,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             {
                                 'inventory_document': 4,
                                 'created': '2022-02-14T12:48:10.446652-08:00',
-                                'cycle': 29,
-                                'cycle_name': 'c2022',
                                 'id': 22,
                                 'property': 9,
                                 'data': {
@@ -119,8 +146,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             {
                                 'inventory_document': 5,
                                 'created': '2022-02-13T12:48:10.446652-08:00',
-                                'cycle': 29,
-                                'cycle_name': 'c2022',
                                 'id': 23,
                                 'property': 9,
                                 'data': {
@@ -138,14 +163,23 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             {
                                 'inventory_document': 6,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
-                                'cycle': 30,
-                                'cycle_name': 'c2021',
-                                'id': 24,
                                 'property': 9,
+                                'id': 23,
                                 'data': {
                                     'created': '2021-02-14T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
                                     'file_name': 'document_6.pdf'
+                                }
+                            },
+                            {
+                                'analysis': 1,
+                                'created': '2021-02-14T12:48:10.446652-08:00',
+                                'id': 24,
+                                'property': 9,
+                                'data': {
+                                    'potential_electricity_savings': 123,
+                                    'potential_cost_savings': "$3.99",
+                                    'type': 'BETTER'
                                 }
                             }
                         ]
