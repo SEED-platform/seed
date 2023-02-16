@@ -45,6 +45,11 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
 
 
 class MeterReadingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MeterReading
+        exclude = ('meter', )
+        list_serializer_class = MeterReadingBulkCreateUpdateSerializer
+
     def _tz_aware(self, dt):
         return dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
 
@@ -70,11 +75,6 @@ class MeterReadingSerializer(serializers.ModelSerializer):
             instance.save()
 
         return instance
-
-    class Meta:
-        model = MeterReading
-        exclude = ('meter', )
-        list_serializer_class = MeterReadingBulkCreateUpdateSerializer
 
     def to_representation(self, obj):
         result = super().to_representation(obj)

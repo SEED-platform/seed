@@ -10,6 +10,7 @@ from django.urls import reverse
 from seed.data_importer.utils import \
     kbtu_thermal_conversion_factors as conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -53,11 +54,16 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.user = User.objects.create_user(
             email='test_user@demo.com', **self.user_details
         )
+
         self.org, _, _ = create_organization(self.user, 'meter crud test org')
         self.client.login(**self.user_details)
 
         # faker class for properties
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        self.their_user = User.objects.create_user(email='not.me@demo.com', username='not.me@demo.com', password='not.me')
+        self.their_org, _, _ = create_organization(self.their_user, 'not my org nor user')
+        self.their_property_view_factory = FakePropertyViewFactory(organization=self.their_org)
 
     def test_create_meter(self):
         property_view = self.property_view_factory.get_property_view()
@@ -95,6 +101,56 @@ class TestMeterCRUD(DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertDictContainsSubset(payload, response.data)
+
+    def test_create_meter_with_scenario(self):
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        # create a scenario and test again
+        scenario = Scenario.objects.create(
+            name='test scenario',
+            property_state=property_view.state,
+        )
+
+        payload = {
+            'type': 'Electric - Grid',
+            'source': 'GreenButton',
+            'source_id': '1234567890',
+            'scenario_id': scenario.pk,
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['source_id'], '1234567890')
+        self.assertEqual(response.json()['scenario_id'], scenario.pk)
+
+        # check the scenario for the meter
+        scenario = Scenario.objects.get(pk=scenario.pk)
+        self.assertEqual(scenario.meter_set.count(), 1)
+        self.assertEqual(scenario.meter_set.first().source_id, '1234567890')
+
+    def test_create_meter_with_not_my_scenario(self):
+        # verify that the scenario is not returned when not requested
+
+        property_view_theirs = self.their_property_view_factory.get_property_view()
+        their_scenario = Scenario.objects.create(
+            name='test scenario',
+            property_state=property_view_theirs.state,
+        )
+
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric - Grid',
+            'source': 'GreenButton',
+            'source_id': '1234567890',
+            'scenario_id': their_scenario.pk,
+        }
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['scenario_id']['status'], 'error')
+        self.assertEqual(response.json()['scenario_id']['message'], 'Permission error assigning scenario to meter')
 
     def test_delete_meter(self):
         # create meter
