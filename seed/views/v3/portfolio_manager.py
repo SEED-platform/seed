@@ -180,20 +180,20 @@ class PortfolioManagerViewSet(GenericViewSet):
                     {'status': 'error', 'message': 'Malformed XML from template download'},
                     status=status.HTTP_400_BAD_REQUEST)
             try:
-                possible_properties = content_object['report']['informationAndMetrics']['row']
-                if isinstance(possible_properties, list):
-                    properties = possible_properties
-                elif isinstance(possible_properties, dict):
-                    properties = [possible_properties]
-                else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
-                    _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
+                if content_object.get('report', None) is not None:
+                    success, properties = pm._parse_properties_v1(content_object)
+                else:
+                    # assume that v2 is the correct version now
+                    success, properties = pm._parse_properties_v2(content_object)
+                if not success:
                     return JsonResponse(
                         {
                             'status': 'error',
-                            'message': 'Property list was not a list...was a preview report template used on accident?'
+                            'message': properties
                         },
                         status=status.HTTP_400_BAD_REQUEST
                     )
+
             except (KeyError, TypeError):
                 _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(content_object))
                 return JsonResponse(
@@ -466,6 +466,75 @@ class PortfolioManagerImport(object):
             raise PMExcept('Unsuccessful response from GET trying to download generated report; aborting.')
 
         return response.content
+
+    def _parse_properties_v1(self, xml):
+        """Parse the XML (in dict format) response from the ESPM API and return a list of
+        properties. This version was implemented prior to 02/13/2023
+
+        Args:
+            xml (dict): content to be parsed
+
+        Returns:
+            (valid, properties): success and list of properties, or failure and error message
+        """
+        try:
+            possible_properties = xml['report']['informationAndMetrics']['row']
+            if isinstance(possible_properties, list):
+                properties = possible_properties
+            elif isinstance(possible_properties, dict):
+                properties = [possible_properties]
+            else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
+                _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
+                return False, "Property list was not a list...was a preview report template used on accident?"
+        except (KeyError, TypeError):
+            _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(xml))
+            return False, "Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?"
+
+        return True, properties
+
+    def _parse_properties_v2(self, xml):
+        """Parse the XML (in dict format) response from the ESPM API and return a list of
+        properties. This version was implemented after 02/13/2023
+
+        Args:
+            xml (dict): content to be parsed
+
+        Returns:
+            (valid, return_data): success and list of properties, or failure and error message
+        """
+
+        def _flatten_property_metrics(pm):
+            """convert the property metrics into a flat dictionary and type case the nils"""
+            data = {}
+            for metric in pm['metric']:
+                if isinstance(metric['value'], dict):
+                    if metric['value']['@xsi:nil'] == 'true':
+                        data[metric['@name']] = None
+                        continue
+
+                # all other values are treated as strings. Eventually SEED will type cast
+                # these values.
+                data[metric['@name']] = metric['value']
+            return data
+
+        return_data = []
+        try:
+            possible_properties = xml['reportData']['informationAndMetrics']['propertyMetrics']
+            if isinstance(possible_properties, list):
+                properties = possible_properties
+            elif isinstance(possible_properties, dict):
+                properties = [possible_properties]
+            else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
+                _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
+                return False, "Property list was not a list...was a preview report template used on accident?"
+
+            for p in properties:
+                return_data.append(_flatten_property_metrics(p))
+        except (KeyError, TypeError):
+            _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(xml))
+            return False, "Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?"
+
+        return True, return_data
 
     def download_url(self, template_id):
         """helper method to assemble the download url for a given template id"""

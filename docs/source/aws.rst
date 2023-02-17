@@ -174,9 +174,9 @@ settings.
 Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Celery`_ is used for background tasks (saving data, matching, creating
-projects, etc) and must be connected to the message broker queue. From the
-project directory, ``celery`` can be started:
+`Celery`_ is used for background tasks (saving data, matching, data quality checks, etc.)
+and must be connected to the message broker queue. From the project directory, ``celery``
+can be started:
 
 .. code-block:: console
 

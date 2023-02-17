@@ -257,7 +257,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
         """
-        Retrieves meter usage information
+        Retrieves meter usage information for the meters not in the excluded_meter_ids list
         """
         body = dict(request.data)
         interval = body['interval']
