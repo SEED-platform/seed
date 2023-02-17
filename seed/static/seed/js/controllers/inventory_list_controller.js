@@ -1097,7 +1097,22 @@ angular.module('BE.seed.controller.inventory_list', [])
             exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
         }
-
+        const cycle_inventory = fn(
+          page,
+          chunk,
+          $scope.cycle.selected_cycle,
+          _.get($scope, 'currentProfile.id'),
+          undefined,
+          exclude_ids,
+          true,
+          $scope.organization.id,
+          true,
+          $scope.column_filters,
+          $scope.column_sorts,
+          ids_only
+        ).then(data => {
+          console.log(data.results.length)
+        })
         return fn(
           page,
           chunk,
