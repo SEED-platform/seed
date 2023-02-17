@@ -536,7 +536,17 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.loadLabelsForFilter = function (query) {
-        return _.filter($scope.labels, function (lbl) {
+        let inventoryIds
+        if ($scope.inventory_type === 'properties') {
+          inventoryIds = _.map($scope.data, 'property_view_id').sort();
+        } else {
+          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
+        }
+
+        $scope.cycleLabels = $scope.labels.filter(label => label.is_applied.some(id => inventoryIds.includes(id)))
+
+        // return _.filter($scope.labels, function (lbl) {
+        return _.filter($scope.cycleLabels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
             return true;
@@ -1062,6 +1072,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
+        // get_labels();
         $scope.updateQueued = true;
       };
 
