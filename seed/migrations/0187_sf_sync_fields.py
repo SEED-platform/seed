@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0184_salesforce_configurations'),
+        ('seed', '0186_salesforce_configurations'),
     ]
 
     operations = [

@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0024_salesforce_configurations'),
-        ('seed', '0183_auto_20221216_1221'),
+        ('seed', '0185_auto_20230112_0922'),
     ]
 
     operations = [
