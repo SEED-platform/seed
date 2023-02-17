@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0183_auto_20221216_1221'),
+        ('seed', '0184_alter_meter_type'),
     ]
 
     operations = [
