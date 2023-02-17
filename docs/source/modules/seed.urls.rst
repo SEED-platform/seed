@@ -27,11 +27,3 @@ Main
     :members:
     :undoc-members:
     :show-inheritance:
-
-Projects
---------
-
-.. automodule:: seed.urls.projects
-    :members:
-    :undoc-members:
-    :show-inheritance:
