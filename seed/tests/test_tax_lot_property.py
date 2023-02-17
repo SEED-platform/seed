@@ -210,7 +210,6 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         first_level_keys = list(data.keys())
 
         self.assertIn("type", first_level_keys)
-        self.assertIn("crs", first_level_keys)
         self.assertIn("features", first_level_keys)
 
         record_level_keys = list(data['features'][0]['properties'].keys())

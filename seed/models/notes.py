@@ -10,8 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView, TaxLotView
-from seed.models.projects import Project
+from seed.models import MAX_NAME_LENGTH, PropertyView, TaxLotView
 from seed.utils.generic import obj_to_dict
 
 
@@ -25,7 +24,7 @@ class Note(models.Model):
         (LOG, 'Log'),
     )
 
-    name = models.CharField(_('name'), max_length=Project.PROJECT_NAME_MAX_LENGTH)
+    name = models.CharField(_('name'), max_length=MAX_NAME_LENGTH)
     note_type = models.IntegerField(choices=NOTE_TYPES, default=NOTE, null=True)
 
     text = models.TextField()
