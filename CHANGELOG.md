@@ -1224,16 +1224,11 @@ Accepted Pull Requests: 25
 
 Date Range: 05/31/18 - 07/04/18:
 
-Closed Issues: 18
-- Fixed [#74]( https://github.com/SEED-platform/seed/issues/74 ), Update Projects when new data is added
+Closed Issues: 13
 - Fixed [#127]( https://github.com/SEED-platform/seed/issues/127 ), Export unmatched records
-- Fixed [#258]( https://github.com/SEED-platform/seed/issues/258 ), Add Buildings to Projects from Project Screen
-- Fixed [#285]( https://github.com/SEED-platform/seed/issues/285 ), Incorrect event for delete project?
 - Fixed [#360]( https://github.com/SEED-platform/seed/issues/360 ), Duplicate Data -- Cleanup after importing files
 - Fixed [#590]( https://github.com/SEED-platform/seed/issues/590 ), deleting data sets does not delete buildings?
 - Fixed [#654]( https://github.com/SEED-platform/seed/issues/654 ), Design feature which allows bulk editing of data
-- Fixed [#829]( https://github.com/SEED-platform/seed/issues/829 ), Building project tab shouldn't have edit button
-- Fixed [#838]( https://github.com/SEED-platform/seed/issues/838 ), Edit project window doesn't pre-populate compliance fields
 - Fixed [#1282]( https://github.com/SEED-platform/seed/issues/1282 ), Add space to the left of the Settings grids
 - Fixed [#1292]( https://github.com/SEED-platform/seed/issues/1292 ), Blank record added to Tax Lot view
 - Fixed [#1344]( https://github.com/SEED-platform/seed/issues/1344 ), Error trying to display inventory list
