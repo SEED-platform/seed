@@ -11,8 +11,6 @@ from seed.models import Meter, Scenario
 from seed.serializers.base import ChoiceField
 from seed.utils.api import OrgMixin
 
-# from seed.serializers.meter_readings import MeterReadingSerializer
-
 
 class MeterSerializer(serializers.ModelSerializer, OrgMixin):
     type = ChoiceField(choices=Meter.ENERGY_TYPES, required=True)

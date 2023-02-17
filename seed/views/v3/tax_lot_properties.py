@@ -440,6 +440,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 "properties": {}
             }
 
+            feature_geometries = []
             for key, value in datum.items():
                 if value is None:
                     continue
@@ -459,31 +460,22 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     established. When/If a second geometry is added, this is
                     appended alongside the previous geometry.
                     """
-                    individual_geometry = {}
 
                     # long_lat
                     if key == 'long_lat':
                         coordinates = self._serialized_point(value)
                         # point
-                        individual_geometry = {
+                        feature_geometries.append({
+                            "type": "Point",
                             "coordinates": coordinates,
-                            "type": "Point"
-                        }
+                        })
                     else:
                         # polygons
                         coordinates = self._serialized_coordinates(value)
-                        individual_geometry = {
+                        feature_geometries.append({
+                            "type": "Polygon",
                             "coordinates": [coordinates],
-                            "type": "Polygon"
-                        }
-
-                    if feature.get("geometry", None) is None:
-                        feature["geometry"] = {
-                            "type": "GeometryCollection",
-                            "geometries": [individual_geometry]
-                        }
-                    else:
-                        feature["geometry"]["geometries"].append(individual_geometry)
+                        })
                 else:
                     """
                     Non-polygon data
@@ -491,11 +483,20 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     display_key = column_name_mappings.get(key, key)
                     feature["properties"][display_key] = value
 
-                    # # store point geometry in case you need it
-                    # if display_key == "Longitude":
-                    #     point_geometry[0] = value
-                    # if display_key == "Latitude":
-                    #     point_geometry[1] = value
+            # now add in the geometry data depending on how many geometries were found
+            if len(feature_geometries) == 0:
+                # no geometry found -- save an empty polygon geometry
+                feature["geometry"] = {
+                    "type": "Polygon",
+                    "coordinates": []
+                }
+            elif len(feature_geometries) == 1:
+                feature["geometry"] = feature_geometries[0]
+            else:
+                feature["geometry"] = {
+                    "type": "GeometryCollection",
+                    "geometries": feature_geometries
+                }
 
             """
             Before appending feature, ensure that if there is no geometry recorded.
@@ -514,12 +515,11 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             # append feature
             features.append(feature)
 
+            # per geojsonlint.com, the CRS we were defining was the default and should not
+            # be included.
             response_dict = {
                 "type": "FeatureCollection",
-                "crs": {
-                    "type": "EPSG",
-                    "properties": {"code": 4326}
-                },
+                "name": f"SEED Export - {filename.replace('.geojson', '')}",
                 "features": features
             }
 
