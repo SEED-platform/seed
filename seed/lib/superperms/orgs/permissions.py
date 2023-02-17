@@ -10,6 +10,8 @@ All rights reserved.
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
+from typing import Union
+
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings
 from rest_framework.exceptions import PermissionDenied
@@ -37,12 +39,16 @@ def is_authenticated(user):
     return user.is_authenticated
 
 
-def get_org_or_id(dictlike):
+def get_org_or_id(dictlike: dict) -> Union[int, None]:
     """Get value of organization or organization_id"""
     # while documentation should encourage the use of one consistent key choice
     # for supplying an organization to query_params, we check all reasonable
     # permutations of organization id.
     org_query_strings = ['organization', 'organization_id', 'org_id', 'org']
+    if isinstance(dictlike, list):
+        return None
+
+    # Check if there are any assigned organization values
     org_id = None
     for org_str in org_query_strings:
         org_id = dictlike.get(org_str)
