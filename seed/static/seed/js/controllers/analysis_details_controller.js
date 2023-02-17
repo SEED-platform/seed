@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.analysis_details', [])
       $scope.$on('$destroy', () => {
         stop_func();
       });
+      console.log('controller called')
 
       const refresh_analysis = (analysis_id) => {
         // update analysis in scope

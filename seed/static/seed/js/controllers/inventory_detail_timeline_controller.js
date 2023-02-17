@@ -38,12 +38,13 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 } else {
                     $scope.expanded_rows[type][id] = true
                 }
-
-                // if ($scope.expanded_rows[type][id] == true && type == 'events') {
-                //     insert_trigger(id)
-                // } else if (($scope.expanded_rows[type][id] == false && type == 'events')) {
-                //     remove_trigger(id)
-                // }
+            }
+            $scope.check_expanded_row = (type, cycle_id, event_id=null) => {
+                if (type == 'cycle') {
+                    return $scope.expanded_rows['cycles'][cycle_id]
+                } else if (type == 'event') {
+                    return $scope.expanded_rows['cycles'][cycle_id] && $scope.expanded_rows['events'][event_id]
+                }
             }
 
             $scope.format_created = (date) => {
@@ -94,9 +95,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         'events': [
                             {
                                 'inventory_document': 1,
+                                'type': 1,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
                                 'id': 19,
-                                'property': 9,
                                 'data': {
                                     'created': '2021-02-14T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
@@ -105,9 +106,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             },
                             {
                                 'inventory_document': 2,
+                                'type': 1,
                                 'created': '2021-02-13T12:48:10.446652-08:00',
                                 'id': 20,
-                                'property': 9,
                                 'data': {
                                     'created': '2021-02-13T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
@@ -116,10 +117,10 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             },
                             {
                                 'inventory_document': 3,
+                                'type': 1,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
                                 'id': 21,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
-                                'property': 9,
                                 'data': {
                                     'created': '2021-02-14T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
@@ -134,9 +135,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         'events': [
                             {
                                 'inventory_document': 4,
+                                'type': 1,
                                 'created': '2022-02-14T12:48:10.446652-08:00',
                                 'id': 22,
-                                'property': 9,
                                 'data': {
                                     'created': '2022-02-14T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
@@ -145,9 +146,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             },
                             {
                                 'inventory_document': 5,
+                                'type': 1,
                                 'created': '2022-02-13T12:48:10.446652-08:00',
                                 'id': 23,
-                                'property': 9,
                                 'data': {
                                     'created': '2022-02-13T12:48:10.446652-08:00',
                                     'file_type': 'pdf',
@@ -162,8 +163,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         'events': [
                             {
                                 'inventory_document': 6,
+                                'type': 1,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
-                                'property': 9,
                                 'id': 23,
                                 'data': {
                                     'created': '2021-02-14T12:48:10.446652-08:00',
@@ -173,19 +174,47 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             },
                             {
                                 'analysis': 1,
+                                'type': 2,
                                 'created': '2021-02-14T12:48:10.446652-08:00',
                                 'id': 24,
-                                'property': 9,
                                 'data': {
-                                    'potential_electricity_savings': 123,
-                                    'potential_cost_savings': "$3.99",
-                                    'type': 'BETTER'
+                                    
+                                    "id": 192,
+                                    "service": "EUI",
+                                    "status": "Completed",
+                                    "name": "eui2",
+                                    "created_at": "2023-02-16T10:56:37.143083-08:00",
+                                    "start_time": "2023-02-16T10:56:37.477828-08:00",
+                                    "end_time": "2023-02-16T10:56:37.580090-08:00",
+                                    "configuration": {},
+                                    "parsed_results": {},
+                                    "user": 1,
+                                    "organization": 1,
+                                    "number_of_analysis_property_views": 1,
+                                    "views": [
+                                        62
+                                    ],
+                                    "cycles": [
+                                        10
+                                    ],
+                                    "highlights": [
+                                        {
+                                            "name": "Fractional EUI",
+                                            "value": "56.62 kBtu/sqft"
+                                        },
+                                        {
+                                            "name": "Annual Coverage",
+                                            "value": "100%"
+                                        }
+                                    ]
                                 }
                             }
                         ]
                     }
                 ],
             };
+
+           
 
 
         }]);

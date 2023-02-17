@@ -72,6 +72,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.developer',
   'BE.seed.controller.email_templates',
   'BE.seed.controller.email_templates_modal',
+  'BE.seed.controller.event_inventory_document',
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
