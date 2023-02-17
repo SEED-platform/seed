@@ -13,6 +13,7 @@ from django.test import TestCase
 from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
+from seed.models.events import ATEvent
 from seed.models.meters import Meter, MeterReading
 from seed.models.scenarios import Scenario
 from seed.utils.organizations import create_organization
@@ -54,6 +55,9 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(property_state.property_type, 'Office')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        event = ATEvent.objects.filter(property=property_view.property).values("property_id", "cycle_id", "building_file_id")
+        self.assertEqual(event, {"property_id": property_view.property_id, "cycle_id": property_view.cycle_id, "building_file_id": bf.id})
 
     def test_buildingsync_constructor_diff_ns(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_different_namespace.xml')

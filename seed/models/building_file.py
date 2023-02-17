@@ -385,6 +385,15 @@ class BuildingFile(models.Model):
         else:
             return True, property_state, None, messages
 
+        from seed.models import ATEvent
+
+        event = ATEvent.objects.create(
+            property=property_view.property,
+            cycle=property_view.cycle,
+            building_file=self,
+        )
+        event.save()
+
         for meter in linked_meters:
             meter.property = property_view.property
             meter.save()
