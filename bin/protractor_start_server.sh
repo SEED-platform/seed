@@ -10,7 +10,7 @@ echo "creating default user"
 echo "making SU"
 echo "y" | ./manage.py make_superuser --user demo@example.com &> make_superuser.log
 echo "starting celery"
-celery -A seed worker -l INFO -c 2 -B --events --max-tasks-per-child 1000 & &> celery.log
+celery -A seed worker -l INFO -c 2 --events --max-tasks-per-child 1000 -B --scheduler django_celery_beat.schedulers:DatabaseScheduler & &> celery.log
 echo "starting server"
 ./manage.py runserver & &> main.log
 sleep 15

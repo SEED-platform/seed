@@ -143,7 +143,86 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="2" heading="{$:: 'Salesforce' | translate $}">
+        <uib-tab index="2" heading="{$:: 'Default Display Fields' | translate $}">
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Property Display Field</h3>
+                    <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
+                    <small>{$ all_columns $}</small>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Taxlot Display Field</h3>
+                    <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
+                    <small>{$ all_columns $}</small>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </uib-tab>
+
+        <uib-tab index="3" heading="{$:: 'Email' | translate $}">
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>New User Email</h3>
+                    <small>Customizes the email sent when a new user is invited to SEED.  The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
+                    <form class="form-horizontal email-form" role="form">
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
+                            <div class="col-sm-3">
+                                <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
+                            <div class="col-sm-3">
+                                <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
+                            <div class="col-sm-3">
+                                <textarea id="new-user-email-content" rows="10" style="resize:vertical;" class="form-control" ng-model="org.new_user_email_content" ng-disabled="::!auth.requires_owner" ng-focus="resize_textarea()" ng-keyup="resize_textarea()"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
+                            <div class="col-sm-3">
+                                <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </uib-tab>
+
+        <uib-tab index="4" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
+            <div class="section_content_container">
+                <div class="section_content with_padding maintenance">
+                    <h3 translate>Maintenance Actions</h3>
+                    <small translate>The following actions have destructive effects, please read all warnings after clicking an option.</small>
+                    <button class="btn btn-danger" type="button" ng-click="confirm_delete(org)" ng-disabled="org.progress > -1">
+                        <i class="fa fa-exclamation-triangle"></i> {$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
+                    </button>
+                </div>
+            </div>
+        </uib-tab>
+
+        <uib-tab index="5" heading="{$:: 'Salesforce' | translate $}">
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
@@ -631,7 +710,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="3" heading="{$:: 'Units' | translate $}">
+        <uib-tab index="6" heading="{$:: 'Units' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
@@ -707,84 +786,6 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="4" heading="{$:: 'Default Display Fields' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Property Display Field</h3>
-                    <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
-                    <small>{$ all_columns $}</small>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Taxlot Display Field</h3>
-                    <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
-                    <small>{$ all_columns $}</small>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="5" heading="{$:: 'Email' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>New User Email</h3>
-                    <small>Customizes the email sent when a new user is invited to SEED.  The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
-                    <form class="form-horizontal email-form" role="form">
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
-                            <div class="col-sm-3">
-                                <textarea id="new-user-email-content" rows="10" style="resize:vertical;" class="form-control" ng-model="org.new_user_email_content" ng-disabled="::!auth.requires_owner" ng-focus="resize_textarea()" ng-keyup="resize_textarea()"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="6" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
-            <div class="section_content_container">
-                <div class="section_content with_padding maintenance">
-                    <h3 translate>Maintenance Actions</h3>
-                    <small translate>The following actions have destructive effects, please read all warnings after clicking an option.</small>
-                    <button class="btn btn-danger" type="button" ng-click="confirm_delete(org)" ng-disabled="org.progress > -1">
-                        <i class="fa fa-exclamation-triangle"></i> {$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
-                    </button>
-                </div>
-            </div>
-        </uib-tab>
     </uib-tabset>
 
     <div class="section_content_container" style="margin: 30px 0;" ng-if="::auth.requires_owner">
