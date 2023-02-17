@@ -1233,7 +1233,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             return _.includes(ids, label.id);
           });
 
-
           $scope.filterUsingLabels();
           $scope.build_labels();
         });
