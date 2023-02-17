@@ -1111,7 +1111,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.column_sorts,
           ids_only
         ).then(data => {
-          console.log(data.results.length)
+          $scope.cycle_inventory = $scope.inventory_type === 'properties' ?
+            data.results.map(property => property.property_view_id) :
+            data.results.map(taxlot => taxlot.taxlot_view_id)
         })
         return fn(
           page,
