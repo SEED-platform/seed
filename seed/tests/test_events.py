@@ -11,10 +11,11 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisEvent, ATEvent, BuildingFile
+from seed.models import AnalysisEvent, ATEvent, BuildingFile, NoteEvent
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeCycleFactory,
+    FakeNoteFactory,
     FakePropertyFactory
 )
 from seed.utils.organizations import create_organization
@@ -52,7 +53,10 @@ class EventTests(TransactionTestCase):
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = cycle_factory.get_cycle(name="Cycle A")
 
-    def test_get_all_filter_group(self):
+        self.note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+        self.note = self.note_factory.get_note()
+
+    def test_get_all_notes(self):
         # Setup
         at_event = ATEvent.objects.create(
             property=self.property,
@@ -67,6 +71,13 @@ class EventTests(TransactionTestCase):
             analysis=self.analysis
         )
         analysis_event.save()
+
+        note_event = NoteEvent.objects.create(
+            property=self.property,
+            cycle=self.cycle,
+            note=self.note
+        )
+        note_event.save()
 
         # wrong property, should not be included
         analysis_event = AnalysisEvent.objects.create(
@@ -86,16 +97,17 @@ class EventTests(TransactionTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', response.json()["status"])
         self.assertDictEqual({
-            'end': 2,
+            'end': 3,
             'has_next': False,
             'has_previous': False,
             'num_pages': 1,
             'page': 1,
             'start': 1,
-            'total': 2
+            'total': 3,
         }, response.json()["pagination"])
         self.assertEqual(
             {
+                "event_type",
                 "building_file",
                 "created",
                 "id",
@@ -107,6 +119,7 @@ class EventTests(TransactionTestCase):
         )
         self.assertEqual(
             {
+                "event_type",
                 "analysis",
                 "created",
                 "id",
@@ -115,4 +128,16 @@ class EventTests(TransactionTestCase):
                 "cycle",
             },
             set(response.json()["data"][1].keys())
+        )
+        self.assertEqual(
+            {
+                "event_type",
+                "note",
+                "created",
+                "id",
+                "modified",
+                "property",
+                "cycle",
+            },
+            set(response.json()["data"][2].keys())
         )

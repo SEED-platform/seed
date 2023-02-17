@@ -24,6 +24,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     Analysis,
+    AnalysisEvent,
     AnalysisPropertyView,
     Column,
     Cycle,
@@ -89,6 +90,18 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             user_id=request.user.id,
             organization_id=self.get_organization(request)
         )
+
+        # create events
+        property_views = PropertyView.objects.filter(id__in=request.data["property_view_ids"])
+        for property_view in property_views:
+            event = AnalysisEvent.objects.create(
+                property_id=property_view.property_id,
+                cycle_id=property_view.cycle_id,
+                analysis=analysis
+            )
+
+            event.save()
+
         pipeline = AnalysisPipeline.factory(analysis)
         try:
             progress_data = pipeline.prepare_analysis(
