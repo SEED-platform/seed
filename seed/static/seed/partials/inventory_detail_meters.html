@@ -19,20 +19,21 @@
         <div class="section_action_container left" style="width: 50%;">
             <span>
                 <h2>
-                    <span ng-if="::inventory_type==='properties'">
+                    <span ng-if="::inventory_type === 'properties'">
                         <i class="fa fa-building-o"></i><span translate>Property</span> :
                     </span>
-                    <span ng-if="::inventory_type==='taxlots'">
+                    <span ng-if="::inventory_type === 'taxlots'">
                         <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                     </span>
-                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
+                    <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
+                    <span ng-if="!inventory_name">({$:: inventory_name_error $}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i></span>
                 </h2>
             </span>
         </div>
     </div>
 </div>
 
-<div class="section_content_container" ng-cloak>
+<div class="section_content_container meters-detail" ng-cloak>
     <div class="inventory-list-controls columns">
 
         <div class="column">
@@ -58,7 +59,7 @@
     </div>
 
     <div class="section_content">
-        <h4> Meters </div>
+        <h4>Meters</h4>
         <div id="meters-grid-container" ng-show="has_meters">
             <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
         </div>
@@ -66,7 +67,7 @@
             <div class="jumbotron text-center" translate>No Data</div>
         </div>
 
-        <h4> Readings </h4>
+        <h4>Readings</h4>
         <div id="meters-readings-grid-container" ng-show="has_readings">
             <div ui-grid="meterReadGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
         </div>
