@@ -536,7 +536,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.loadLabelsForFilter = function (query) {
-        return _.filter($scope.labels, function (lbl) {
+        // Find all labels associated with the current cycle.
+        $scope.cycleLabels = $scope.labels.filter(label => label.is_applied.some(id => $scope.cycle_inventory_view_ids.includes(id)))
+        return _.filter($scope.cycleLabels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
             return true;
@@ -1061,7 +1063,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
+<<<<<<< HEAD
         get_labels();
+=======
+        // get_labels();
+>>>>>>> 3818-Filter-labels-troubleshooting
         $scope.updateQueued = true;
       };
 
@@ -1086,7 +1092,25 @@ angular.module('BE.seed.controller.inventory_list', [])
             exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
         }
-
+        // Find all inventory view ids for a cycle
+        fn(
+          page,
+          chunk,
+          $scope.cycle.selected_cycle,
+          _.get($scope, 'currentProfile.id'),
+          undefined,
+          exclude_ids,
+          true,
+          $scope.organization.id,
+          true,
+          $scope.column_filters,
+          $scope.column_sorts,
+          ids_only
+        ).then(data => {
+          $scope.cycle_inventory_view_ids = $scope.inventory_type === 'properties' ?
+            data.results.map(property => property.property_view_id) :
+            data.results.map(taxlot => taxlot.taxlot_view_id)
+        })
         return fn(
           page,
           chunk,
