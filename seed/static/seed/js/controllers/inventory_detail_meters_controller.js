@@ -75,10 +75,15 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           {field: "scenario_name"},
           {field: "actions", cellTemplate: deleteButton},
         ],
+        enableGridMenu: true,
+        enableSelectAll: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        exporterCsvFilename: 'meters.csv',
         enableColumnResizing: true,
         flatEntityAccess: true,
-        rowIdentity: (meter) => {return meter.id},
         fastWatch: true,
+        rowIdentity: (meter) => {return meter.id},
         minRowsToShow: Math.min($scope.sorted_meters.length, 10),
         onRegisterApi: function (meterGridApi) {
           $scope.meterGridApi = meterGridApi;
@@ -108,11 +113,16 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.meterReadGridOptions = {
         data: 'data',
         columnDefs: property_meter_usage.column_defs,
+        enableGridMenu: true,
+        enableSelectAll: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        exporterCsvFilename: 'meter_readings.csv',
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
         fastWatch: true,
-        minRowsToShow: Math.min($scope.data.length, 10),
+        minRowsToShow: Math.min($scope.data.length, 15),
         onRegisterApi: function (readingGridApi) {
           $scope.readingGridApi = readingGridApi;
 

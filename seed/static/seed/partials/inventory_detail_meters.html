@@ -60,7 +60,7 @@
     <div class="section_content">
         <h4> Meters </div>
         <div id="meters-grid-container" ng-show="has_meters">
-            <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns></div>
+            <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
         </div>
         <div ng-hide="has_meters">
             <div class="jumbotron text-center" translate>No Data</div>
@@ -68,7 +68,7 @@
 
         <h4> Readings </h4>
         <div id="meters-readings-grid-container" ng-show="has_readings">
-            <div ui-grid="meterReadGridOptions" ui-grid-resize-columns></div>
+            <div ui-grid="meterReadGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
         </div>
         <div ng-hide="has_readings">
             <div class="jumbotron text-center" translate>No Data</div>
