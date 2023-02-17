@@ -1063,11 +1063,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
-<<<<<<< HEAD
-        get_labels();
-=======
-        // get_labels();
->>>>>>> 3818-Filter-labels-troubleshooting
         $scope.updateQueued = true;
       };
 
