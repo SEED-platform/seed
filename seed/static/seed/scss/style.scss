@@ -889,7 +889,7 @@ a:not([href]) {
       }
     }
 
-    .jumbotron {
+    .bg.jumbotron {
       background: url("../../seed/images/kc_2.jpg") no-repeat center bottom;
       background-size: cover;
       min-height: 402px;
@@ -4645,4 +4645,9 @@ ul.r-list {
 
 .strikethrough {
   text-decoration: line-through;
+}
+
+.meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
+  overflow: auto;
+  max-height: 112px;
 }
