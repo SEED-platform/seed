@@ -62,7 +62,7 @@
         <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
-        <span ng-click="clearLabels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
+        <span ng-click="clearLabels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-lg fa-trash"></i></span>
       </div>
     </div>
     <div class="form-group btn-group">
@@ -106,7 +106,7 @@
       <div class="text-center title">Total Site EUI (kBtu/ft&sup2;)</div>
       <div class="gradient-container">
         <span class="text-right">20 -</span>
-        <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
+        <uib-progressbar value="0" ng-style="hexbinInfoBarColor()"></uib-progressbar>
         <span class="text-left">+ 750</span>
       </div>
     </div>
@@ -126,12 +126,12 @@
   </ul>
   <div class="item-count">
     <span ng-if="::inventory_type === 'properties'">
-      <i class="fa fa-building-o"></i>
+      <i class="fa-regular fa-building"></i>
       <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (filteredRecords | number: 0)}"></span>
     </span>
 
     <span ng-if="::inventory_type === 'taxlots'">
-      <i class="fa fa-map-o"></i>
+      <i class="fa-regular fa-map"></i>
       <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (filteredRecords | number: 0)}"></span>
     </span>
   </div>

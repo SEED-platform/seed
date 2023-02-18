@@ -28,8 +28,8 @@
                 </td>
                 <td>
                     <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-                        <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa fa-download"></span></a>
-                        <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa fa-download"></span></a>
+                        <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa-solid fa-download"></span></a>
+                        <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa-solid fa-download"></span></a>
                         <span ng-repeat-end ng-if="!$last">, </span>
                     </span>
                 </td>

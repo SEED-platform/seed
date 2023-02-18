@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -16,11 +16,11 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left_40">
-                <h2><i class="fa fa-sliders"></i> <span translate>Column Settings</span></h2>
+                <h2><i class="fa-solid fa-sliders"></i> <span translate>Column Settings</span></h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
                 <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="columns_updated"></i>
+                    <i class="fa-solid fa-check" ng-show="columns_updated"></i>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="open_create_column_modal()">{$:: 'Create Column' | translate $}
                 </button>
@@ -252,7 +252,7 @@
         <div class="section_content_container">
             <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
                 <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="columns_updated"></i>
+                    <i class="fa-solid fa-check" ng-show="columns_updated"></i>
                 </button>
             </div>
         </div>

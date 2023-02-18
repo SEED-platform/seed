@@ -67,19 +67,19 @@
                         </div>
                         <div class="col-sm-8" style="margin-bottom: 10px;" ng-disabled="!selectedCycle">
                             <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle">
-                                <i class="fa fa-table fa-2x"></i>
+                                <i class="fa-solid fa-table fa-2x"></i>
                                 <span class="grow">{$:: 'Upload a Spreadsheet' | translate $}</span>
                             </div>
                         </div>
                         <div class="col-sm-8" style="margin-bottom: 10px;" ng-disabled="!selectedCycle">
                             <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle">
-                                <i class="fa fa-globe fa-2x"></i>
+                                <i class="fa-solid fa-globe fa-2x"></i>
                                 <span class="grow">Upload a GeoJSON File</span>
                             </div>
                         </div>
                         <div class="col-sm-8" ng-disabled="!selectedCycle">
                             <div class="btn btn-primary upload-btn flex-centered" sd-uploader  organization-id="organization.org_id" sourcetype="BuildingSync Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle">
-                                <i class="fa fa-file-code-o fa-2x"></i>
+                                <i class="fa-regular fa-file-code fa-2x"></i>
                                 <span class="grow">{$:: 'Upload BuildingSync Data' | translate $}</span>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                         <div class="row" ng-switch-when="2">
                             <div class="col-sm-offset-4 col-sm-8" style="margin-bottom: 10px;">
                                 <div class="btn btn-primary upload-btn flex-centered" ng-click="goto_step(13)">
-                                    <i class="fa fa-id-card-o fa-2x"></i>
+                                    <i class="fa-regular fa-id-card fa-2x"></i>
                                     <span class="grow">{$:: 'Import Portfolio Manager Data' | translate $}</span>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@
                         </div>
                         <div class="col-sm-8">
                             <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)">
-                                <i class="fa fa-bolt fa-2x"></i>
+                                <i class="fa-solid fa-bolt fa-2x"></i>
                                 <span class="grow" translate>PM_METER_IMPORT_BUTTON</span>
                             </div>
                         </div>
@@ -170,7 +170,7 @@
                  translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
             <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
                 <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
-                <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
             </div>
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
@@ -226,7 +226,7 @@
                     <!-- Show a hint that SEED is still working when the progress data hasn't been updated in 1 minute -->
                     <div ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
                          class="progress_bar_copy_bottom">
-                        <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
+                        <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
                         SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
                     </div>
                 </div>
@@ -326,7 +326,7 @@
             <div class="alert alert-{$ step_10_style $}" style="display:flex;align-items:baseline;">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
                 <span ng-show="step_10_file_message" style="flex-grow:1">{$ step_10_file_message $}</span>
-                <button ng-show="step_10_file_message" type="button" class="btn btn-primary" ng-click="export_issues(match_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                <button ng-show="step_10_file_message" type="button" class="btn btn-primary" ng-click="export_issues(match_issues)"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                 <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="col-sm-12">
@@ -351,7 +351,7 @@
                 <span ng-if="step_12_buildingsync_validation_error">
                     <div class="alert alert-danger" style="display:flex;align-items:center;">
                         <div style="flex-grow:1" class="pad-right-20">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
-                        <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                        <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                     </div>
                     <div ng-repeat="issues in buildingsync_issues">
                         <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
@@ -381,14 +381,14 @@
                             <li>{$ proposed_meters_count_string $} from {$ proposed_properties_count_string $}</li>
                         </ul>
                         <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
-                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(proposed_imports_options, 'proposed_meter_imports.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(proposed_imports_options, 'proposed_meter_imports.csv')"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
 
                     </div>
                     <br>
                     <div ng-if="parsed_type_units_options.data.length">
                         <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
                         <div ui-grid="parsed_type_units_options" ui-grid-resize-columns></div>
-                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(parsed_type_units_options, 'parsed_energy_types.csv')"><i class="fa fa-download"aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(parsed_type_units_options, 'parsed_energy_types.csv')"><i class="fa-solid fa-download"aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                     </div>
                     <br>
                 </div>
@@ -398,7 +398,7 @@
                         <li>{$ unlinkable_properties_count_string $}</li>
                     </ul>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
-                    <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(unlinkable_pm_ids_options, 'unlinkable_properties.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                    <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(unlinkable_pm_ids_options, 'unlinkable_properties.csv')"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
 
                 </div>
             </div>
@@ -413,7 +413,7 @@
                     <li>{$ import_meters_count_string $} Imported from {$ import_properties_count_string $} </li>
                 </ul>
                 <div ui-grid="import_results_options"></div>
-                <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(import_results_options, 'import_meter_results.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(import_results_options, 'import_meter_results.csv')"><i class="fa-solid fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
 
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">

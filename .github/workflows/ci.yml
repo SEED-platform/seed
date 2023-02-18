@@ -91,9 +91,9 @@ jobs:
         run: |
           CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
           echo "Getting webdriver for chrome version ${CHROME_VERSION}"
-          ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
+          npx webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
-          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
+          npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |

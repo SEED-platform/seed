@@ -15,7 +15,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-info-circle"></i> {$:: 'Profile Information' | translate $}</h2>
+            <h2><i class="fa-solid fa-circle-info"></i> {$:: 'Profile Information' | translate $}</h2>
         </div>
     </div>
     <div class="section_content_container">
@@ -44,7 +44,7 @@
                                 <p ng-show="profile_form.email.$invalid && !profile_form.email.$pristine" class="help-block" translate>Enter a valid email address.</p>
                             </div>
                         </div>
-                        <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="user_updated"></i></button>
+                        <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="user_updated"></i></button>
                         <button type="button" class="btn btn-default" ng-click="reset_form()" translate>Cancel</button>
                     </form>
                 </div>

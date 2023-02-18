@@ -18,7 +18,7 @@
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-users"></i> {$:: 'Create an organization' | translate $}</h2>
+                    <h2><i class="fa-solid fa-users"></i> {$:: 'Create an organization' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_form container-fluid">
@@ -47,7 +47,7 @@
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-user"></i> {$:: 'Create a user' | translate $}</h2>
+                    <h2><i class="fa-solid fa-user"></i> {$:: 'Create a user' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container user_admin container-fluid">
@@ -94,7 +94,7 @@
             </div>
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-plus-circle"></i> {$:: 'Add/Remove a user to an organization' | translate $}</h2>
+                    <h2><i class="fa-solid fa-circle-plus"></i> {$:: 'Add/Remove a user to an organization' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_user_admin container-fluid">
@@ -144,7 +144,7 @@
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa fa-trash-o"></i> {$:: 'Remove inventory and organizations' | translate $}</h2>
+                    <h2><i class="fa-solid fa-trash-can"></i> {$:: 'Remove inventory and organizations' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container org_user_admin container-fluid">
@@ -184,7 +184,7 @@
                                         <div>
                                             <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
                                             <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="delete_org(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i>
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
                                                 <span ng-if="org.is_parent" translate>Delete Organization</span>
                                                 <span ng-if="!org.is_parent" translate>Delete Sub-Organization</span>
                                             </button>

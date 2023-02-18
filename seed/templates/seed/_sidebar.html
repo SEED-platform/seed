@@ -14,9 +14,7 @@
         </a>
         <div class="divider"></div>
         <a id="sidebar-inventory" ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots'), 'disabled-item': !logged_in}" href="{% url "seed:home" %}#/properties">
-            <div class="icon">
-                <img src="{{ STATIC_URL }}seed/images/icon-city.svg" title="{$:: 'Inventory' | translate $}">
-            </div>
+            <div class="icon"><i class="fa fa-building"></i></div>
             <div class="item_name" translate>Inventory</div>
         </a>
         <a id="sidebar-data" ng-class="{item: true, active: is_active('/data'), 'disabled-item': !logged_in}" title="{$:: 'Data' | translate $}" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
