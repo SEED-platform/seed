@@ -34,7 +34,6 @@ from seed.views.main import version
 from seed.views.measures import MeasureViewSet
 from seed.views.meters import MeterViewSetV2
 from seed.views.organizations import OrganizationViewSet
-from seed.views.projects import ProjectViewSet
 from seed.views.properties import (
     GBRPropertyViewSet,
     PropertyStateViewSet,
@@ -67,7 +66,6 @@ api_v2_router.register(r'measures', MeasureViewSet, basename='measures')
 api_v2_router.register(r'meters', MeterViewSetV2, basename='meters')
 api_v2_router.register(r'organizations', OrganizationViewSet, basename="organizations")
 api_v2_router.register(r'progress', ProgressViewSetV2, basename="progress")
-api_v2_router.register(r'projects', ProjectViewSet, basename="projects")
 api_v2_router.register(r'properties', PropertyViewSet, basename="properties")
 api_v2_router.register(r'property_states', PropertyStateViewSet, basename="property_states")
 api_v2_router.register(r'property_views', PropertyViewViewSet, basename="property_views")
@@ -85,31 +83,6 @@ urlpatterns = [
     # data uploader related things
     re_path(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
     re_path(r'^schema/$', get_api_schema, name='schema'),
-    re_path(
-        r'projects/(?P<pk>\w+)/add/$',
-        ProjectViewSet.as_view({'put': 'add'}),
-        name='projects-add-inventory'
-    ),
-    re_path(
-        r'projects/(?P<pk>\w+)/remove/$',
-        ProjectViewSet.as_view({'put': 'remove'}),
-        name='projects-remove-inventory'
-    ),
-    re_path(
-        r'projects/(?P<pk>\w+)/update/$',
-        ProjectViewSet.as_view({'put': 'update_details'}),
-        name='projects-update'
-    ),
-    re_path(
-        r'projects/(?P<pk>\w+)/move/$',
-        ProjectViewSet.as_view({'put': 'move'}),
-        name='projects-move'
-    ),
-    re_path(
-        r'projects/(?P<pk>\w+)/copy/$',
-        ProjectViewSet.as_view({'put': 'copy'}),
-        name='projects-copy'
-    ),
     re_path(
         r'labels-property/$',
         UpdateInventoryLabelsAPIView.as_view(),
