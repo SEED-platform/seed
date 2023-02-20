@@ -21,7 +21,7 @@ class JSONParserTest(TestCase):
         expectation = [
             {
                 "Address Line 1": "1 Fake Street",
-                "bounding_box": (
+                "property_footprint": (
                     "POLYGON ((-105.17262205481529 39.74200726814212, "
                     "-105.17227604985237 39.74207739085327, "
                     "-105.17228543758394 39.742112452182084, "
@@ -35,7 +35,7 @@ class JSONParserTest(TestCase):
             },
             {
                 "Address Line 1": "12 Fake Street",
-                "bounding_box": (
+                "property_footprint": (
                     "POLYGON ((-105.17615586519241 39.74217020021416, "
                     "-105.1763167977333 39.74228982098384, "
                     "-105.17616927623747 39.74240944154582, "
@@ -57,18 +57,19 @@ class JSONParserTest(TestCase):
             "Building Type",
             "Created At",
             "Floor Area",
-            "Type"
+            "Type",
+            "property_footprint"
         ]
 
         self.assertEqual(self.parser.headers, expectation)
 
     def test_it_has_a_num_columns_property(self):
-        self.assertEqual(self.parser.num_columns(), 5)
+        self.assertEqual(self.parser.num_columns(), 6)
 
     def test_it_has_a_first_five_rows_property(self):
         expectation = [
-            "1 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.788Z|#*#|2634.7594734229788|#*#|Building",
-            "12 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.649Z|#*#|3745.419332770663|#*#|Building"
+            "1 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.788Z|#*#|2634.7594734229788|#*#|Building|#*#|Property Footprint - Not Displayed",
+            "12 Fake Street|#*#|Office|#*#|2017-09-01T21:16:27.649Z|#*#|3745.419332770663|#*#|Building|#*#|Property Footprint - Not Displayed"
         ]
 
         self.assertEqual(self.parser.first_five_rows, expectation)

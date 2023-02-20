@@ -44,13 +44,6 @@ Generic Models
     :undoc-members:
     :show-inheritance:
 
-Projects
----------------------------
-
-.. automodule:: seed.models.projects
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 Properties
 -----------------------------

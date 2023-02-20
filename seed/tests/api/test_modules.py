@@ -4,10 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-import datetime as dt
 import json
-import pprint
-import time
 import uuid
 from builtins import str
 
@@ -16,8 +13,7 @@ from seed_readingtools import (
     check_progress,
     check_status,
     read_map_file,
-    upload_file,
-    write_out_django_debug
+    upload_file
 )
 
 
@@ -123,76 +119,6 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         headers=header,
         params={"organization_id": organization_id})
     check_status(result, partmsg, log)
-
-
-def search_and_project(header, main_url, organization_id, log):
-    # Search CanonicalBuildings
-    print('API Function: search_buildings\n'),
-    partmsg = 'search_buildings'
-    search_payload = {'filter_params': {'address_line_1': '94734 SE Honeylocust Street'}}
-
-    result = requests.get(main_url + '/api/v1/search_buildings/',
-                          headers=header,
-                          data=json.dumps(search_payload))
-    check_status(result, partmsg, log)
-
-    # Project
-    print('\n-------Project-------\n')
-
-    # Create a Project for 'Condo' in 'use_description'
-    print('API Function: create_project\n'),
-    partmsg = 'create_project'
-    time1 = dt.datetime.now()
-    newproject_payload = {
-        'name': 'New Project_' + str(time1.day) + str(time1.second),
-        'compliance_type': 'describe compliance type',
-        'description': 'project description'
-    }
-    result = requests.post(
-        main_url + '/api/v2/projects/',
-        headers=header,
-        params=json.dumps({'organization_id': organization_id}),
-        data=json.dumps(newproject_payload)
-    )
-    write_out_django_debug(partmsg, result)
-    check_status(result, partmsg, log)
-
-    # Get project slug
-    project_slug = result.json()['project_slug']
-
-    # Get the projects for the organization
-    print('API Function: get_project\n'),
-    partmsg = 'get_project'
-
-    result = requests.get(main_url + '/api/v2/projects/',
-                          headers=header,
-                          params=json.dumps(
-                              {'project_slug': project_slug, 'organization_id': organization_id}))
-    check_status(result, partmsg, log)
-
-    # Populate project by search buildings result
-    print('API Function: add_buildings_to_project\n'),
-    partmsg = 'add_buildings_to_project'
-    projectbldg_payload = {'project': {'status': 'active',
-                                       'project_slug': project_slug,
-                                       'slug': project_slug,
-                                       'select_all_checkbox': True,
-                                       'selected_buildings': [],
-                                       'filter_params': {'use_description': 'CONDO'}},
-                           'organization_id': organization_id}
-
-    result = requests.post(main_url + '/app/projects/add_buildings_to_project/',
-                           headers=header,
-                           data=json.dumps(projectbldg_payload))
-    time.sleep(10)
-    check_status(result, partmsg, log)
-
-    # Get the percent/progress of buildings added to project
-    progress = requests.post(
-        main_url + '/app/projects/get_adding_buildings_to_project_status_percentage/',
-        headers=header,
-        data=json.dumps({'project_loading_cache_key': result.json()['project_loading_cache_key']}))
-    log.debug(pprint.pformat(progress.json()))
 
 
 def account(header, main_url, username, log):
@@ -338,17 +264,6 @@ def delete_set(header, main_url, organization_id, dataset_id, log):
         params={'organization_id': organization_id},
     )
     check_status(result, partmsg, log)
-
-    # Delete project
-    # print('API Function: delete_project\n'),
-    # partmsg = 'delete_project'
-    # payload = {'organization_id': organization_id,
-    #            'project_slug': project_slug}
-    #
-    # result = requests.delete(main_url + '/app/projects/delete_project/',
-    #                          headers=header,
-    #                          data=json.dumps(payload))
-    # check_status(result, partmsg, log)
 
 
 def cycles(header, main_url, organization_id, log):
