@@ -41,9 +41,9 @@
             <tbody>
                 <tr ng-repeat-start="cycle in timeline.cycles" class="cycle-row">
                     <td width="20">
-                        <div ng-click="expand_cycle(cycle.id)" style="padding: 5px;">
+                        <div ng-click="expand_row('cycles', cycle.id)" style="padding: 5px;">
                             <i class="fa fa-chevron-right" style="color: white;"
-                                ng-class="expanded_rows['cycles'][cycle.id]['expanded'] ? 'down' : 'right'">
+                                ng-class="check_expanded_row(cycle.id) ? 'down' : 'right'">
                             </i>
                         </div>
                     </td>
@@ -60,13 +60,13 @@
                         <table class="event-table">
                             <tbody>
                                 <tr ng-repeat-start="event in cycle.events" 
-                                    ng-class="expanded_rows['cycles'][cycle.id]['expanded'] ? 'show' : 'noshow'"
+                                    ng-class="check_expanded_row(cycle.id) ? 'show' : 'noshow'"
                                     style="background: rgb(112,113,113); border-bottom: 2px solid white;"
                                     >
                                         <td width="20">
-                                            <div ng-click="expand_event(cycle.id, event.id)" style="padding: 5px;">
+                                            <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
-                                                    ng-class="check_expanded_events(cycle.id, event.id) ? 'down' : 'right'">
+                                                    ng-class="check_expanded_row(cycle.id, event.id) ? 'down' : 'right'">
                                                 </i>
                                             </div>
                                         </td>
@@ -79,7 +79,7 @@
                                 </tr>
                                 <!-- Triggers -->
                                 <tr ng-repeat-end colspan="100%" 
-                                    ng-class="false ? 'show' : 'noshow'"
+                                    ng-class="check_expanded_row(cycle.id, event.id) ? 'show' : 'noshow'"
                                     style="background: white;"
                                     >
                                     <td ng-if="event.type == 1">
