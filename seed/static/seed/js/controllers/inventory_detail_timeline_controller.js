@@ -10,49 +10,30 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             inventory_payload,
             events,
         ) {
-            
-            
             $scope.events = events
-           
             $scope.inventory_type = $stateParams.inventory_type;
             $scope.inventory = {
                 view_id: $stateParams.view_id,
                 related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
             };
 
-            $scope.expanded_rows = {
+            let expanded_rows = {
                 'cycles': {},
+                'events': {}
             }
-            $scope.expand_cycle = (id) => {
-                if($scope.expanded_rows['cycles'][id]) {
-                    $scope.expanded_rows['cycles'][id]['expanded'] = !$scope.expanded_rows['cycles'][id]['expanded'] 
+            $scope.expand_row = (type, id) => {
+                if(expanded_rows[type].hasOwnProperty(id)) {
+                    expanded_rows[type][id] = !expanded_rows[type][id] 
                 } else {
-                    $scope.expanded_rows['cycles'][id] = {'expanded': true}
+                    expanded_rows[type][id] = true
                 }
             }
 
-            $scope.expand_event = (cycle_id, event_id) => {
-                event_rows = $scope.expanded_rows['cycles'][cycle_id].hasOwnProperty('events')
-                if (!event_rows) {
-                    $scope.expanded_rows['cycles'][cycle_id]['events'] = {}
-                    $scope.expanded_rows['cycles'][cycle_id]['events'][event_id] = {'expanded': true}
+            $scope.check_expanded_row = (cycle_id, event_id=null) => {
+                if (event_id) {
+                    return expanded_rows['cycles'][cycle_id] && expanded_rows['events'][event_id]
                 } else {
-                    $scope.expanpanded_rows['cycles'][cycle_id]['events'][event_id]['expanded'] = !$scope.expanpanded_rows['cycles'][cycle_id]['events'][event_id]['expanded']
-                    
-                }
-            }
-
-            $scope.check_expanded_events = (cycle_id, event_id) => {
-                try {
-                    return $scope.epanded_rows['cycles'][cycle_id]['event'][event_id]['expanded']
-                } catch(error) {
-                }
-            }
-            $scope.check_expanded_row = (type, cycle_id, event_id=null) => {
-                if (type == 'cycle') {
-                    return $scope.expanded_rows['cycles'][cycle_id]
-                } else if (type == 'event') {
-                    return $scope.expanded_rows['cycles'][cycle_id] && $scope.expanded_rows['events'][event_id]
+                    return expanded_rows['cycles'][cycle_id]
                 }
             }
 
@@ -68,29 +49,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 }
                 return event.id
             }
-            // const create_element = () => {
+            
+            const format_timeline = (events) => {
+                console.log('formatting')
 
-            //     const para = document.createElement("p");
-            //     const node = document.createTextNode("This is new.");
-            //     para.appendChild(node);
-                
-            //     const elements = document.getElementsByClassName("page_header_container");
-            //     elements[0].appendChild(para);
-            // }
-
-            // create_element()
-
-            // const insert_trigger = (id) => {
-
-
-            //     const para = document.createElement("p")
-            //     const node = document.createTextNode("event-child-" + id)
-            //     para.appendChild(node);
-                
-            //     const element = document.getElementById('event-child-' + id)
-            //     element.appendChild(para)
-            //     console.log('extra for ',id)
-            // }
+            }
+            format_timeline($scope.events.data)
 
             // DUMMY DATA FOR TESTING
             // ----------------------
