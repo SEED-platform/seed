@@ -39,19 +39,22 @@
         <!-- Cycles -->
         <table id="cycles-table">
             <tbody>
-                <tr ng-repeat-start="cycle in timeline.cycles" class="cycle-row">
+                <tr ng-repeat-start="(cycle_id, events) in timeline" class="cycle-row">
                     <td width="20">
-                        <div ng-click="expand_row('cycles', cycle.id)" style="padding: 5px;">
+                        <div ng-click="expand_row('cycles', cycle_id)" style="padding: 5px;">
                             <i class="fa fa-chevron-right" style="color: white;"
-                                ng-class="check_expanded_row(cycle.id) ? 'down' : 'right'">
+                                ng-class="check_expanded_row(cycle_id) ? 'down' : 'right'">
                             </i>
                         </div>
                     </td>
                     <td >
-                        name: {$ cycle.cycle_name $}
+                        id: {$ cycle_id $}
+                    </td>
+                    <td >
+                        name: NEED CYCLE NAME
                     </td>
                     <td>
-                        events: {$ cycle.events.length $}
+                        events: {$ events.length $}
                     </td>
                 </tr>
                 <!-- Events -->
@@ -59,14 +62,14 @@
                     <td colspan="100%">
                         <table class="event-table">
                             <tbody>
-                                <tr ng-repeat-start="event in cycle.events" 
-                                    ng-class="check_expanded_row(cycle.id) ? 'show' : 'noshow'"
+                                <tr ng-repeat-start="event in events" 
+                                    ng-class="check_expanded_row(cycle_id) ? 'show' : 'noshow'"
                                     style="background: rgb(112,113,113); border-bottom: 2px solid white;"
                                     >
                                         <td width="20">
                                             <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
-                                                    ng-class="check_expanded_row(cycle.id, event.id) ? 'down' : 'right'">
+                                                    ng-class="check_expanded_row(cycle_id, event.id) ? 'down' : 'right'">
                                                 </i>
                                             </div>
                                         </td>
@@ -74,18 +77,19 @@
                                             event: {$ format_created(event.created) $}
                                         </td>
                                         <td>
-                                            type:  {$ format_event_type(event) $}
+                                            type:  {$ event.event_type $}
                                         </td>
                                 </tr>
                                 <!-- Triggers -->
-                                <tr ng-repeat-end colspan="100%" 
-                                    ng-class="check_expanded_row(cycle.id, event.id) ? 'show' : 'noshow'"
+                                <tr ng-repeat-end colspan="100%"
+                                    rowspan="100%" 
+                                    ng-class="check_expanded_row(cycle_id, event.id) ? 'show' : 'noshow'"
                                     style="background: white;"
                                     >
-                                    <td ng-if="event.type == 1">
+                                    <td ng-if="event.event_type == 'NoteEvent'">
                                         <div class="event-trigger" ng-controller="event_inventory_document_controller" ng-include="::urls.static_url + 'seed/partials/event_inventory_document_card.html'"></div>
                                     </td>
-                                    <td ng-if="event.type == 2">
+                                    <td ng-if="event.event_type == 'AnalysisEvent'">
                                         <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
                                     </td>
                                 </tr>

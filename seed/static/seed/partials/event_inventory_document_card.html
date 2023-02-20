@@ -1,17 +1,17 @@
 <div class="event_inventory_document section_content">
-    <div class="table_list_container table_item_detail" ng-init="analysis = event.data">
+    <div class="table_list_container table_item_detail">
         <table class="trigger-table table table-striped table_highlight_first">
             
             <thead>
                 <tr>
-                    <th ng-repeat="(key,value) in analysis">
+                    <th ng-repeat="(key,value) in event.note">
                         {$ key $}
                     </th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td ng-repeat="val in analysis" style="color: black;">
+                    <td ng-repeat="val in event.note" style="color: black;">
                         {$ val $}
                     </td>
                 </tr>

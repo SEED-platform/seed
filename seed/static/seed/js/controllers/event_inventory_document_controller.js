@@ -15,18 +15,6 @@ angular.module('BE.seed.controller.event_inventory_document', [])
             analyses_service,
             inventory_service,
         ) {
-            console.log('event inventory document controller')
 
-            $scope.$watch('expanded_rows', () => {
-                if ($scope.check_expanded_row('event', $scope.cycle.id, $scope.event.id)) {
-                    init()
-                }
-            })
-
-            const init = () => {
-                // return analyses_service.get_analysis_for_org(analysis_id, $scope.org.id)
-                    
-                console.log('go fetch inventory documents for event', $scope.event.id)
-            }
         }
     ])
