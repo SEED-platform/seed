@@ -1,3 +1,25 @@
+# SEED Version 2.17.3
+<!-- Release notes generated using configuration in .github/release.yml at prep-release-2.17.3 -->
+
+## What's Changed
+### New Features 🎉
+* Add CRUD to MeterReading by @nllong in https://github.com/SEED-platform/seed/pull/3757
+* Add export to meters and meter readings by @nllong in https://github.com/SEED-platform/seed/pull/3868
+### Improvements 📈
+* Change "Program Configuration" to "Program Setup" by @anchapin in https://github.com/SEED-platform/seed/pull/3832
+* Get audit date and audit date type from buildingsync files by @haneslinger in https://github.com/SEED-platform/seed/pull/3838
+* Update GeoJSON export format with GeometryCollections and remove crs by @nllong in https://github.com/SEED-platform/seed/pull/3851
+### Maintenance 🧹
+* Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
+* Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
+* Fix Nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+### Bug Fixes 🐛
+* Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
+* Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
+* Fix clickable header by @axelstudios in https://github.com/SEED-platform/seed/pull/3867
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.2...v2.17.3
+
 # SEED Version 2.17.2
 
 ## What's Changed
@@ -1224,16 +1246,11 @@ Accepted Pull Requests: 25
 
 Date Range: 05/31/18 - 07/04/18:
 
-Closed Issues: 18
-- Fixed [#74]( https://github.com/SEED-platform/seed/issues/74 ), Update Projects when new data is added
+Closed Issues: 13
 - Fixed [#127]( https://github.com/SEED-platform/seed/issues/127 ), Export unmatched records
-- Fixed [#258]( https://github.com/SEED-platform/seed/issues/258 ), Add Buildings to Projects from Project Screen
-- Fixed [#285]( https://github.com/SEED-platform/seed/issues/285 ), Incorrect event for delete project?
 - Fixed [#360]( https://github.com/SEED-platform/seed/issues/360 ), Duplicate Data -- Cleanup after importing files
 - Fixed [#590]( https://github.com/SEED-platform/seed/issues/590 ), deleting data sets does not delete buildings?
 - Fixed [#654]( https://github.com/SEED-platform/seed/issues/654 ), Design feature which allows bulk editing of data
-- Fixed [#829]( https://github.com/SEED-platform/seed/issues/829 ), Building project tab shouldn't have edit button
-- Fixed [#838]( https://github.com/SEED-platform/seed/issues/838 ), Edit project window doesn't pre-populate compliance fields
 - Fixed [#1282]( https://github.com/SEED-platform/seed/issues/1282 ), Add space to the left of the Settings grids
 - Fixed [#1292]( https://github.com/SEED-platform/seed/issues/1292 ), Blank record added to Tax Lot view
 - Fixed [#1344]( https://github.com/SEED-platform/seed/issues/1344 ), Error trying to display inventory list

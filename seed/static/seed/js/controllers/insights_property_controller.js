@@ -289,7 +289,7 @@ angular.module('BE.seed.controller.insights_property', [])
                 if (activePoints[0]) {
                   var activePoint = activePoints[0]
                   var item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index]
-                  window.location.href = '/app/#/properties/' + item["id"];
+                  window.open('/app/#/properties/' + item["id"])
                 }
               },
               elements: {

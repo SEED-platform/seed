@@ -39,14 +39,6 @@ Meters
     :undoc-members:
     :show-inheritance:
 
-Projects
---------
-
-.. automodule:: seed.views.projects
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

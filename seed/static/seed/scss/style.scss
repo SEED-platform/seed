@@ -403,11 +403,10 @@ a:not([href]) {
 
       .logo_container {
         .logo {
-          display: block;
+          display: inline-block;
           color: black;
 
           .logo_text {
-            width: 234px;
             padding: 11px 20px 10px 18px;
             font-size: 24px;
             font-family: $font-family-base-narrow;
@@ -890,7 +889,7 @@ a:not([href]) {
       }
     }
 
-    .jumbotron {
+    .bg.jumbotron {
       background: url("../../seed/images/kc_2.jpg") no-repeat center bottom;
       background-size: cover;
       min-height: 402px;
@@ -4674,4 +4673,9 @@ ul.r-list {
 
 .strikethrough {
   text-decoration: line-through;
+}
+
+.meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
+  overflow: auto;
+  max-height: 112px;
 }
