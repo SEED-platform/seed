@@ -168,6 +168,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.dataset',
   'BE.seed.service.data_view',
   'BE.seed.service.derived_columns',
+  'BE.seed.service.event',
   'BE.seed.service.meter',
   'BE.seed.service.filter_groups',
   'BE.seed.service.flippers',
@@ -2000,6 +2001,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }
             });
             return promise;
+          }],
+          events: ['$stateParams', 'event_service', 'user_service', function ($stateParams, event_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return event_service.get_events(organization_id, $stateParams.inventory_type, $stateParams.view_id);
           }],
         }
       })

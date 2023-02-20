@@ -3,40 +3,49 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         '$scope',
         '$stateParams',
         'inventory_payload',
+        'events',
         function (
             $scope,
             $stateParams,
             inventory_payload,
+            events,
         ) {
             
             
-            
-            $scope.test = 'abcdefg';
+            $scope.events = events
+           
             $scope.inventory_type = $stateParams.inventory_type;
             $scope.inventory = {
                 view_id: $stateParams.view_id,
                 related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
             };
-            $scope.item_state = inventory_payload.state;
-            $scope.scenario_expanded = {}
-            $scope.expand_scenario = (scenario_id) => {
-                if ($scope.scenario_expanded[scenario_id]) {
-                    $scope.scenario_expanded[scenario_id] = !$scope.scenario_expanded[scenario_id]
-                } else {
-                    $scope.scenario_expanded[scenario_id] = true
-                }
 
-                console.log('CLICK!')
-            }
             $scope.expanded_rows = {
                 'cycles': {},
-                'events': {},
             }
-            $scope.expand_row = (type, id) => {
-                if ($scope.expanded_rows[type][id]) {
-                    $scope.expanded_rows[type][id] = !$scope.expanded_rows[type][id]
+            $scope.expand_cycle = (id) => {
+                if($scope.expanded_rows['cycles'][id]) {
+                    $scope.expanded_rows['cycles'][id]['expanded'] = !$scope.expanded_rows['cycles'][id]['expanded'] 
                 } else {
-                    $scope.expanded_rows[type][id] = true
+                    $scope.expanded_rows['cycles'][id] = {'expanded': true}
+                }
+            }
+
+            $scope.expand_event = (cycle_id, event_id) => {
+                event_rows = $scope.expanded_rows['cycles'][cycle_id].hasOwnProperty('events')
+                if (!event_rows) {
+                    $scope.expanded_rows['cycles'][cycle_id]['events'] = {}
+                    $scope.expanded_rows['cycles'][cycle_id]['events'][event_id] = {'expanded': true}
+                } else {
+                    $scope.expanpanded_rows['cycles'][cycle_id]['events'][event_id]['expanded'] = !$scope.expanpanded_rows['cycles'][cycle_id]['events'][event_id]['expanded']
+                    
+                }
+            }
+
+            $scope.check_expanded_events = (cycle_id, event_id) => {
+                try {
+                    return $scope.epanded_rows['cycles'][cycle_id]['event'][event_id]['expanded']
+                } catch(error) {
                 }
             }
             $scope.check_expanded_row = (type, cycle_id, event_id=null) => {
