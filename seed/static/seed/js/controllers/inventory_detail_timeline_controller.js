@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             }
             $scope.expand_row = (type, id) => {
                 if(expanded_rows[type].hasOwnProperty(id)) {
-                    expanded_rows[type][id] = !expanded_rows[type][id] 
+                    expanded_rows[type][id] = !expanded_rows[type][id]
                 } else {
                     expanded_rows[type][id] = true
                 }
@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             // ----------------------
             // events are only returned for a specified property
         //     $scope.timeline = {
-        //         'property': 9, 
+        //         'property': 9,
         //         'cycles': [
         //             {
         //                 'id': 21,
@@ -148,7 +148,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         //                         'created': '2021-02-14T12:48:10.446652-08:00',
         //                         'id': 24,
         //                         'data': {
-                                    
+
         //                             "id": 192,
         //                             "service": "EUI",
         //                             "status": "Completed",
@@ -184,7 +184,38 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         //         ],
         //     };
 
-           
+        const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
+        const scenarios = atEvents.reduce((acc, curr) => {
+            return [...acc, ...curr.scenarios]
+        },[]);
 
+        $scope.measureGridOptionsByScenarioId = {}
+        $scope.gridApiByScenarioId = {}
+        scenarios.forEach(scenario => {
+            measureGridOptions = {
+                data: scenario.measures.map(measure => { return {
+                    "category": measure.category,
+                    "name": measure.name,
+                    "recommended": measure.recommended,
+                    "category_affected": measure.category_affected,
+                    "cost_installation": measure.cost_installation,
+                    "cost_material": measure.cost_material,
+                    "cost_residual_value": measure.cost_residual_value,
+                    "cost_total_first": measure.cost_total_first,
+                    "cost_capital_replacement": measure.cost_capital_replacement,
+                    "description": measure.description,
+                    "useful_life": measure.useful_life
 
+                }}),
+                onRegisterApi: function (gridApi) {
+                    $scope.gridApiByScenarioId[scenario.id] = gridApi;
+                }
+            }
+            $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
+        })
+
+        $scope.resizeGridByScenarioId = (scenarioId) => {
+            gridApi = $scope.gridApiByScenarioId[scenarioId]
+            setTimeout(gridApi.core.handleWindowResize, 50);
+        }
         }]);

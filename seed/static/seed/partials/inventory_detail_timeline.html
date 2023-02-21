@@ -34,7 +34,7 @@
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
 <div class="section_content_container">
-    
+
     <div class="section">
         <!-- Cycles -->
         <table id="cycles-table">
@@ -62,7 +62,7 @@
                     <td colspan="100%">
                         <table class="event-table">
                             <tbody>
-                                <tr ng-repeat-start="event in events" 
+                                <tr ng-repeat-start="event in events"
                                     ng-class="check_expanded_row(cycle_id) ? 'show' : 'noshow'"
                                     style="background: rgb(112,113,113); border-bottom: 2px solid white;"
                                     >
@@ -82,7 +82,7 @@
                                 </tr>
                                 <!-- Triggers -->
                                 <tr ng-repeat-end colspan="100%"
-                                    rowspan="100%" 
+                                    rowspan="100%"
                                     ng-class="check_expanded_row(cycle_id, event.id) ? 'show' : 'noshow'"
                                     style="background: white;"
                                     >
@@ -91,6 +91,9 @@
                                     </td>
                                     <td ng-if="event.event_type == 'AnalysisEvent'">
                                         <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
+                                    </td>
+                                    <td ng-if="event.event_type == 'ATEvent'">
+                                        <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_at_card.html'"></div>
                                     </td>
                                 </tr>
                             </tbody>

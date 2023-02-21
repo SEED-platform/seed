@@ -9,7 +9,7 @@ angular.module('BE.seed.service.event', []).factory('event_service', [
         const event_factory = {};
 
         event_factory.get_events = function (org_id, inventory_type, property_pk) {
-            return $http.get('/api/v3/' + inventory_type + '/' + property_pk + '/' + 'events', {
+            return $http.get('/api/v3/' + inventory_type + '/' + property_pk + '/events/', {
                 params: {
                     organization_id: org_id
                 }
