@@ -1294,7 +1294,7 @@ class Column(models.Model):
         """
         Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),
@@ -1514,7 +1514,7 @@ class Column(models.Model):
         """
         Return the list of priorities for the columns. Result will be in the form of:
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
                 'PropertyState': {
@@ -1557,7 +1557,7 @@ class Column(models.Model):
         """
         Return list of all columns for an organization as a tuple.
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),
