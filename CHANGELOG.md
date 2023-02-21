@@ -1,3 +1,6 @@
+# SEED Version 2.17.4
+
+
 # SEED Version 2.17.3
 <!-- Release notes generated using configuration in .github/release.yml at prep-release-2.17.3 -->
 
