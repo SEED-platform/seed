@@ -2,11 +2,11 @@ Developer Resources
 ===================
 
 .. toctree::
-    
+
     migrations
     translation
-    
-    
+
+
 General Notes
 -------------
 

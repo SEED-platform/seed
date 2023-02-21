@@ -305,7 +305,7 @@ class OrgMixin(object):
 
     def get_organization(self, request, return_obj=False):
         """Get org from query param or request.user.
-        
+
         :param request: request object.
         :param return_obj: bool. Set to True if obj vs pk is desired.
         :return: int representing a valid organization pk or organization object.
