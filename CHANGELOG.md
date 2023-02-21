@@ -1,5 +1,13 @@
 # SEED Version 2.17.4
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
 
+## What's Changed
+### Improvements 📈
+* Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
+### Maintenance 🧹
+* Improve NGINX security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
 
 # SEED Version 2.17.3
 <!-- Release notes generated using configuration in .github/release.yml at prep-release-2.17.3 -->
