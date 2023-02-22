@@ -295,7 +295,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         )
         data = json.loads(response.content)
         if data['status'] == 'error':
-            print(f"ERROR encountered: {data}")
+            print(f"ERROR encountered: {data}, instance: {payload_data['salesforce_config']['instance']}, domain: {payload_data['salesforce_config']['domain']}")
 
         self.assertEqual(data['status'], 'success')
 
