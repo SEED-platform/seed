@@ -1,3 +1,36 @@
+# SEED Version 2.17.4
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### Improvements 📈
+* Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
+### Maintenance 🧹
+* Improve NGINX security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
+
+# SEED Version 2.17.3
+<!-- Release notes generated using configuration in .github/release.yml at prep-release-2.17.3 -->
+
+## What's Changed
+### New Features 🎉
+* Add CRUD to MeterReading by @nllong in https://github.com/SEED-platform/seed/pull/3757
+* Add export to meters and meter readings by @nllong in https://github.com/SEED-platform/seed/pull/3868
+### Improvements 📈
+* Change "Program Configuration" to "Program Setup" by @anchapin in https://github.com/SEED-platform/seed/pull/3832
+* Get audit date and audit date type from buildingsync files by @haneslinger in https://github.com/SEED-platform/seed/pull/3838
+* Update GeoJSON export format with GeometryCollections and remove crs by @nllong in https://github.com/SEED-platform/seed/pull/3851
+### Maintenance 🧹
+* Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
+* Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
+* Fix Nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+### Bug Fixes 🐛
+* Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
+* Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
+* Fix clickable header by @axelstudios in https://github.com/SEED-platform/seed/pull/3867
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.2...v2.17.3
+
 # SEED Version 2.17.2
 
 ## What's Changed
