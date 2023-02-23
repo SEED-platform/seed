@@ -341,6 +341,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         status, message = update_salesforce_property(self.org.id, view.id)
         if status is False:
+            print(f" SF INSTANCE: {SF_INSTANCE}")
             print(f"ERROR encountered: {message}")
 
         self.assertEqual(status, True)

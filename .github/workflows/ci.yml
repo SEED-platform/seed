@@ -66,6 +66,11 @@ jobs:
         env:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
+          SF_INSTANCE: ${{ secrets.SF_INSTANCE }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DOMAIN: ${{ secrets.SF_DOMAIN }}
+          SF_SECURITY_TOKEN: ${{ secrets.SF_SECURITY_TOKEN }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           DJANGO_LOG_LEVEL: ERROR
         run: |
