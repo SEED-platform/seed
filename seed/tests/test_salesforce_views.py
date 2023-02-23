@@ -285,7 +285,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
                 "security_token": SF_SECURITY_TOKEN
             }
         }
-        print(f"!!! SF DOMAIN: {SF_DOMAIN}")
+
         if SF_DOMAIN == 'test':
             payload_data['salesforce_config']['domain'] = SF_DOMAIN
 
@@ -296,7 +296,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         )
         data = json.loads(response.content)
         if data['status'] == 'error':
-            print(f"ERROR encountered: {data}, instance: {payload_data['salesforce_config']['instance']}")
+            print(f"ERROR encountered: {data}")
 
         self.assertEqual(data['status'], 'success')
 
