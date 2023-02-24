@@ -8,6 +8,7 @@ Submodules
     :maxdepth: 2
 
     seed.test_helpers
+    seed.tests.functional
 
 Admin Views
 -----------
@@ -61,6 +62,11 @@ Tests
 -----
 
 .. automodule:: seed.tests.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: seed.tests.functional
     :members:
     :undoc-members:
     :show-inheritance:

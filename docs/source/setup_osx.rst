@@ -71,7 +71,7 @@ should have the following dependencies already installed:
 
 
 PostgreSQL 11.1
---------------
+---------------
 
 MacPorts::
 
