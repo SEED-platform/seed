@@ -178,6 +178,8 @@ class Column(models.Model):
         'boolean': lambda v: v.lower() == 'true',
         'area': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
         'eui': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg_intensity': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
