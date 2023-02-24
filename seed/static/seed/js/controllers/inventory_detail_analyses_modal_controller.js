@@ -97,11 +97,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           case 'BETTER':
             $scope.new_analysis.configuration = {
               savings_target: null,
-              benchmark_data: null,
+              benchmark_data_type: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
               preprocess_meters: false,
               select_meters: 'all',
+              enable_pvwatts: false,
               meter: {
                 start_date: null,
                 end_date: null
