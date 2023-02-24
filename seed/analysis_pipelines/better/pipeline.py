@@ -67,7 +67,7 @@ def _validate_better_config(analysis):
     REQUIRED_CONFIG_PROPERTIES = [
         'min_model_r_squared',
         'savings_target',
-        'benchmark_data',
+        'benchmark_data_type',
         'portfolio_analysis',
         'preprocess_meters',
     ]
@@ -491,13 +491,13 @@ def _process_results(self, analysis_id):
             'better_inverse_r_squared_electricity',
             'BETTER Inverse Model R^2 (Electricity)',
             1,
-            'inverse_model.Electricity.r2'
+            'inverse_model.ELECTRICITY.r2'
         ),
         ExtraDataColumnPath(
             'better_inverse_r_squared_fossil_fuel',
             'BETTER Inverse Model R^2 (Fossil Fuel)',
             1,
-            'inverse_model.Fossil Fuel.r2'
+            'inverse_model.FOSSIL_FUEL.r2'
         ),
     ] + ee_measure_column_data_paths
 
@@ -539,10 +539,17 @@ def _process_results(self, analysis_id):
 
         # create a message for the failed models
         warning_messages = []
+        # None values will error out when rounding
         if not electricity_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
+            r2_electricity = simplified_results['better_inverse_r_squared_electricity']
+            if r2_electricity is not None:
+                r2_electricity = round(r2_electricity, 4)
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(r2_electricity))
         if not fuel_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
+            r2_fossil_fuel = simplified_results['better_inverse_r_squared_fossil_fuel']
+            if r2_fossil_fuel is not None:
+                r2_fossil_fuel = round(r2_fossil_fuel, 4)
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(r2_fossil_fuel))
         for warning_message in warning_messages:
             AnalysisMessage.log_and_create(
                 logger,
