@@ -47,10 +47,10 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="control-label sectionLabel text-muted">
-                                    Benchmark Data
+                                    Benchmark Data Type
                                     <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
                                 </label>
-                                <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
+                                <select class="form-control" ng-model="new_analysis.configuration.benchmark_data_type" ng-dropdown required>
                                     <option ng-repeat="model in better_benchmark_options" selected="selected"
                                             ng-value=model>{$:: model $}
                                     </option>
