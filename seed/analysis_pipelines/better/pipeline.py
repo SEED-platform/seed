@@ -26,7 +26,8 @@ from seed.analysis_pipelines.better.helpers import (
     _run_better_building_analyses,
     _run_better_portfolio_analysis,
     _store_better_building_analysis_results,
-    _store_better_portfolio_analysis_results
+    _store_better_portfolio_analysis_results,
+    _store_better_portfolio_building_analysis_results,
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -331,7 +332,7 @@ def _start_analysis(self, analysis_id):
     better_building_analyses = _create_better_buildings(better_portfolio_id, context)
 
     if better_portfolio_id is not None:
-        better_analysis_id = _run_better_portfolio_analysis(
+        better_analysis_id, better_portfolio_building_analyses_keys = _run_better_portfolio_analysis(
             better_portfolio_id,
             better_building_analyses,
             analysis.configuration,
@@ -344,6 +345,14 @@ def _start_analysis(self, analysis_id):
             context,
         )
 
+        _store_better_portfolio_building_analysis_results(
+            better_portfolio_id,
+            better_analysis_id,
+            better_portfolio_building_analyses_keys,
+            better_building_analyses,
+            context,
+        )
+
     else:
         _run_better_building_analyses(
             better_building_analyses,
@@ -351,10 +360,10 @@ def _start_analysis(self, analysis_id):
             context,
         )
 
-    _store_better_building_analysis_results(
-        better_building_analyses,
-        context,
-    )
+        _store_better_building_analysis_results(
+            better_building_analyses,
+            context,
+        )
 
 
 @shared_task(bind=True)
