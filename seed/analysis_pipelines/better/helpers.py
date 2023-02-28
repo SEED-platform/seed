@@ -97,6 +97,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     :param analysis: Analysis
     :param progress_data: ProgressData
     :returns: int, better_analysis_id, ID of the analysis which was created and run
+    :returns: list[dict], each dict has keys 'building_id' and 'id' where 'id' is the portfolio_analysis ID.
     """
     better_analysis_id, errors = context.client.create_portfolio_analysis(
         better_portfolio_id,
@@ -124,6 +125,13 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     # find and store all individual building analysis IDs for the portfolio
     # so we can fetch and save those individual analysis results later
     better_portfolio_analysis, errors = context.client.get_portfolio_analysis(better_portfolio_id, better_analysis_id)
+    portfolio_building_analyses = better_portfolio_analysis.get('portfolio_building_analytics', [])
+    portfolio_building_analyses_keys = [
+        {'id': pba['id'], 'building_id': pba['building_id']} 
+        for pba 
+        in portfolio_building_analyses
+    ]
+
     _check_errors(
         errors,
         'Failed to get BETTER portfolio analysis as JSON',
@@ -131,16 +139,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
         fail_on_error=True
     )
 
-    api_building_analytics = better_portfolio_analysis.get('building_analytics_set', [])
-    for api_building_analysis in api_building_analytics:
-        # find the corresponding BuildingAnalysis
-        building_analysis = next(
-            (ba for ba in better_building_analyses if ba.better_building_id == api_building_analysis['building_id']),
-            None
-        )
-        building_analysis.better_analysis_id = api_building_analysis['id']
-
-    return better_analysis_id
+    return better_analysis_id, portfolio_building_analyses_keys
 
 
 def _store_better_portfolio_analysis_results(better_analysis_id, better_building_analyses, context):
@@ -176,6 +175,34 @@ def _store_better_portfolio_analysis_results(better_analysis_id, better_building
             analysis_output_file.save()
             # Since this is a portfolio analysis, add the result to all properties
             analysis_output_file.analysis_property_views.set([b.analysis_property_view_id for b in better_building_analyses])
+
+def _store_better_portfolio_building_analysis_results(better_portfolio_id, better_analysis_id, better_portfolio_building_analyses_keys, better_building_analyses, context):
+    """Stores results for a portfolio buidling analysis in an AnalysisPropertyView.parsed_results. A portfolio building analysis were introduced in v2 of the BETTER API
+
+    :param bettter_portfolio_id: int
+    :param better_analysis_id: int
+    :param better_portfolio_building_analyses_keys: list[dict], each dict has keys 'building_id' and 'id' where 'id' is the portfolio_analysis ID.
+    :param better_building_analyses: list[BuildingAnalysis]
+    :param progress_data: ProgressData
+    """
+    for keys in better_portfolio_building_analyses_keys:
+        better_building_analysis = [bba for bba in better_building_analyses if bba.better_building_id == keys['building_id']][0]
+        better_building_analysis.better_analysis_id = better_analysis_id
+        analysis_property_view_id = better_building_analysis.analysis_property_view_id 
+        results_dict, errors = context.client.get_portfolio_building_analysis(better_portfolio_id, better_analysis_id, keys['id'])
+        if errors:
+            _check_errors(
+            errors,
+            'Failed to get BETTER portfolio building analysis results',
+            context,
+            analysis_property_view_id=analysis_property_view_id,
+            fail_on_error=False,
+            )
+            # continue to next portfolio building analysis
+            continue
+        analysis_property_view = AnalysisPropertyView.objects.get(id=better_building_analysis.analysis_property_view_id)
+        analysis_property_view.parsed_results = results_dict
+        analysis_property_view.save()
 
 
 def _run_better_building_analyses(better_building_analyses, analysis_config, context):
@@ -296,7 +323,7 @@ def _create_better_buildings(better_portfolio_id, context):
                 f'Failed to create building for analysis property view {analysis_property_view_id}',
                 context,
                 analysis_property_view_id,
-                fail_on_error=False
+                fail_on_error=True
             )
             # go to next building
             continue
