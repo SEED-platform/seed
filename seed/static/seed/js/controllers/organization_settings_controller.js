@@ -147,8 +147,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.verify_token = () => {
       analyses_service.verify_token()
       .then((response) =>
-        $scope.token_validity = response.validity ? 
-          {message: 'Valid Token', status: 'valid'} : 
+        $scope.token_validity = response.validity ?
+          {message: 'Valid Token', status: 'valid'} :
           {message: 'Invalid Token', status: 'invalid'}
       )
     }

@@ -27,7 +27,7 @@ from seed.analysis_pipelines.better.helpers import (
     _run_better_portfolio_analysis,
     _store_better_building_analysis_results,
     _store_better_portfolio_analysis_results,
-    _store_better_portfolio_building_analysis_results,
+    _store_better_portfolio_building_analysis_results
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,

@@ -127,8 +127,8 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     better_portfolio_analysis, errors = context.client.get_portfolio_analysis(better_portfolio_id, better_analysis_id)
     portfolio_building_analyses = better_portfolio_analysis.get('portfolio_building_analytics', [])
     portfolio_building_analyses_keys = [
-        {'id': pba['id'], 'building_id': pba['building_id']} 
-        for pba 
+        {'id': pba['id'], 'building_id': pba['building_id']}
+        for pba
         in portfolio_building_analyses
     ]
 
@@ -188,7 +188,7 @@ def _store_better_portfolio_building_analysis_results(better_portfolio_id, bette
     for keys in better_portfolio_building_analyses_keys:
         better_building_analysis = [bba for bba in better_building_analyses if bba.better_building_id == keys['building_id']][0]
         better_building_analysis.better_analysis_id = better_analysis_id
-        analysis_property_view_id = better_building_analysis.analysis_property_view_id 
+        analysis_property_view_id = better_building_analysis.analysis_property_view_id
         results_dict, errors = context.client.get_portfolio_building_analysis(better_portfolio_id, better_analysis_id, keys['id'])
         if errors:
             _check_errors(

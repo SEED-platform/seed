@@ -134,7 +134,7 @@ class BETTERClient:
             return None, [f'Unexpected error getting BETTER portfolio analysis: {e}']
 
         return response.json(), []
-    
+
     def get_portfolio_building_analysis(self, better_portfolio_id, better_analysis_id, better_building_portfolio_analysis_id):
         """Get a portfolio building analysis
 

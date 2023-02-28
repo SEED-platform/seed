@@ -16,11 +16,11 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
+from seed.analysis_pipelines.better.client import BETTERClient
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException
 )
-from seed.analysis_pipelines.better.client import BETTERClient
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
@@ -499,7 +499,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'energy': energy_list2,
             'square_footage': sqftage_list2
         })
-    
+
     @swagger_auto_schema(manual_parameters=[
         AutoSchemaHelper.query_org_id_field(),
     ])
