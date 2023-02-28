@@ -329,27 +329,23 @@ def _start_analysis(self, analysis_id):
                 fail_on_error=True,
             )
 
-    better_building_analyses = _create_better_buildings(better_portfolio_id, context)
+    better_building_analyses, better_portfolio_building_analyses = _create_better_buildings(better_portfolio_id, context)
 
     if better_portfolio_id is not None:
-        better_analysis_id, better_portfolio_building_analyses_keys = _run_better_portfolio_analysis(
+        better_portfolio_building_analyses = _run_better_portfolio_analysis(
             better_portfolio_id,
-            better_building_analyses,
+            better_portfolio_building_analyses,
             analysis.configuration,
             context,
         )
 
         _store_better_portfolio_analysis_results(
-            better_analysis_id,
-            better_building_analyses,
+            better_portfolio_building_analyses,
             context,
         )
 
         _store_better_portfolio_building_analysis_results(
-            better_portfolio_id,
-            better_analysis_id,
-            better_portfolio_building_analyses_keys,
-            better_building_analyses,
+            better_portfolio_building_analyses,
             context,
         )
 
