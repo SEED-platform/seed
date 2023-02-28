@@ -198,8 +198,8 @@ def _store_better_portfolio_building_analysis_results(better_portfolio_building_
     for better_portfolio_building_analysis in better_portfolio_building_analyses:
         analysis_property_view_id = better_portfolio_building_analysis.analysis_property_view_id
         results_dict, errors = context.client.get_portfolio_building_analysis(
-            better_portfolio_building_analysis.better_portfolio_id, 
-            better_portfolio_building_analysis.better_analysis_id, 
+            better_portfolio_building_analysis.better_portfolio_id,
+            better_portfolio_building_analysis.better_analysis_id,
             better_portfolio_building_analysis.better_portfolio_building_analysis_id
             )
         if errors:
@@ -340,7 +340,7 @@ def _create_better_buildings(better_portfolio_id, context):
             )
             # go to next building
             continue
-        
+
         if better_portfolio_id:
             better_portfolio_building_analyses.append(
                 PortfolioBuildingAnalysis(
@@ -361,6 +361,5 @@ def _create_better_buildings(better_portfolio_id, context):
                 )
             )
             logger.info(f'Created BETTER building ({better_building_id}) for AnalysisPropertyView ({analysis_property_view_id})')
-        
-    return better_building_analyses, better_portfolio_building_analyses 
 
+    return better_building_analyses, better_portfolio_building_analyses
