@@ -544,7 +544,6 @@ def _process_results(self, analysis_id):
 
         # create a message for the failed models
         warning_messages = []
-        # None values will error out when rounding
         if not electricity_model_is_valid:
             r2_electricity = simplified_results['better_inverse_r_squared_electricity']
             if r2_electricity is not None:

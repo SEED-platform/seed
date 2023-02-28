@@ -154,11 +154,11 @@ def _store_better_portfolio_analysis_results(better_portfolio_building_analyses,
     """Stores results for portfolio analysis. Analysis should be completed before calling.
 
     :param better_analysis_id: int
-    :param better_portfolio_building_analyses: list[BuildingAnalysis]
+    :param better_portfolio_building_analyses: list[PortfolioBuildingAnalysis]
     :param analysis: Analysis
     :param progress_data: ProgressData
     """
-    # All portfolio_building_analyses within a portfolio have the same analysis_id
+    # portfolio_building_analyses within a portfolio have the same analysis_id
     better_analysis_id = better_portfolio_building_analyses[0].better_analysis_id
     results_dir, errors = context.client.get_portfolio_analysis_standalone_html(better_analysis_id)
     _check_errors(
@@ -352,6 +352,7 @@ def _create_better_buildings(better_portfolio_id, context):
                     None  # better_portfolio_building_analysis_id
                 )
             )
+            logger.info(f'Created BETTER portfolio building ({better_building_id}) for AnalysisPropertyView ({analysis_property_view_id})')
 
         else:
             better_building_analyses.append(
