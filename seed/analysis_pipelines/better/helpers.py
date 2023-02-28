@@ -28,6 +28,7 @@ class BuildingAnalysis:
         self.better_building_id = better_building_id
         self.better_analysis_id = better_analysis_id
 
+
 class PortfolioBuildingAnalysis:
     """Used to track AnalysisPropertyViews and BETTER portfolio building analysis IDs"""
     def __init__(self, analysis_property_view_id, better_portfolio_id, better_building_id, better_analysis_id, better_portfolio_building_analysis_id):
@@ -201,7 +202,7 @@ def _store_better_portfolio_building_analysis_results(better_portfolio_building_
             better_portfolio_building_analysis.better_portfolio_id,
             better_portfolio_building_analysis.better_analysis_id,
             better_portfolio_building_analysis.better_portfolio_building_analysis_id
-            )
+        )
         if errors:
             _check_errors(
                 errors,
@@ -347,8 +348,8 @@ def _create_better_buildings(better_portfolio_id, context):
                     analysis_property_view_id,
                     better_portfolio_id,
                     better_building_id,
-                    None, #better_analysis_id
-                    None #better_portfolio_building_analysis_id
+                    None,  # better_analysis_id
+                    None  # better_portfolio_building_analysis_id
                 )
             )
 
