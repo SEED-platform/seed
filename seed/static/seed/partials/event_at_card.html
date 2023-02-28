@@ -1,30 +1,39 @@
-<div ng-init="scenarios = event.scenarios">
-    <table class="table table-condensed" style="border-collapse:collapse;">
-        <thead>
-            <tr>
-            <th>name</th>
-            <th>annual_electricity_savings</th>
-            <th>annual_peak_electricity_reduction</th>
-            <th>annual_natural_gas_savings</th>
-            </tr>
-        </thead>
-        <tbody>
-                <tr ng-repeat-start="scenario in scenarios" data-toggle="collapse" data-target="#{$ $index $}" ng-click="resizeGridByScenarioId(scenario.id)" class="accordion-toggle">
-                    <td>{$ scenario.name $}</td>
-                    <td>{$ scenario.annual_electricity_savings $}</td>
-                    <td>{$ scenario.annual_peak_electricity_reduction $}</td>
-                    <td>{$ scenario.annual_natural_gas_savings $}</td>
+<div class="event_inventory_document section_content" ng-init="scenarios = event.scenarios" style="width:100%">
+    <div class="table_list_container table_item_detail">
+        <table class="trigger-table table table-striped table_highlight_first table-condensed" style="border-collapse:collapse;">
+            <thead>
+                <tr>
+                <th>name</th>
+                <th>annual_electricity_savings</th>
+                <th>annual_peak_electricity_reduction</th>
+                <th>annual_natural_gas_savings</th>
                 </tr>
-                <tr ng-repeat-end>
-                    <td colspan="6" class="hiddenRow" style="padding: 0px">
-                        <div class="accordian-body collapse" id="{$ $index $}">
-                            <div
-                                ui-grid="measureGridOptionsByScenarioId[scenario.id]">
+            </thead>
+            <tbody>
+                    <tr
+                        ng-repeat-start="scenario in scenarios"
+                        data-toggle="collapse" data-target="#{$ $index $}"
+                        ng-click="resizeGridByScenarioId(scenario.id)"
+                        class="accordion-toggle"
+                    >
+                        <td>{$ scenario.name $}</td>
+                        <td>{$ scenario.annual_electricity_savings $}</td>
+                        <td>{$ scenario.annual_peak_electricity_reduction $}</td>
+                        <td>{$ scenario.annual_natural_gas_savings $}</td>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td colspan="6" class="hiddenRow" style="padding: 0px">
+                            <div class="accordian-body collapse" id="{$ $index $}">
+                                <div
+                                    ng-show="measureGridOptionsByScenarioId[scenario.id].data.length"
+                                    ui-grid="measureGridOptionsByScenarioId[scenario.id]">
+                                </div>
+                                <div ng-show="!measureGridOptionsByScenarioId[scenario.id].data.length">No measures in scenario</div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            </div>
-        </tbody>
-    </table>
+                        </td>
+                    </tr>
+                </div>
+            </tbody>
+        </table>
+    </div>
 </div>

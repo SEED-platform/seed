@@ -4,12 +4,17 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         '$stateParams',
         'inventory_payload',
         'events',
+        'cycles',
         function (
             $scope,
             $stateParams,
             inventory_payload,
             events,
+            cycles,
         ) {
+            $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => {
+                return {...acc, [curr.id]: curr.name}
+            }, {});
             $scope.events = events
             $scope.inventory_type = $stateParams.inventory_type;
             $scope.inventory = {
@@ -207,6 +212,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     "useful_life": measure.useful_life
 
                 }}),
+                minRowsToShow: Math.min(scenario.measures.length, 10),
                 onRegisterApi: function (gridApi) {
                     $scope.gridApiByScenarioId[scenario.id] = gridApi;
                 }
