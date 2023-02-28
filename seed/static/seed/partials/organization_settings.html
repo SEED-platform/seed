@@ -91,6 +91,19 @@
                         <div class="form-group">
                             <div class="col-sm-4">
                                 <p translate="BETTER_TOKEN_TEXT" translate-values="{ link: org.better_host_url }"> {$ org.better_host_url $}.</p>
+                                <button 
+                                    type="button" 
+                                    class="btn btn-primary" 
+                                    ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
+                                    ng-click="verify_token()" 
+                                    style="margin-bottom: 10px;"
+                                    ng-disabled="token_validity.status"
+                                >
+                                    {$ token_validity.message $} 
+                                    <i class="fa fa-check" ng-show="token_validity.status == 'valid'"></i>
+                                    <i class="fa fa-times" ng-show="token_validity.status == 'invalid'"></i>
+                                </button>
+                                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0px" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
