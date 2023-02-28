@@ -128,6 +128,29 @@ class BETTERClient:
 
         try:
             response = requests.request("GET", url, headers=headers)
+            if response.status_code not in [200, 202]:
+                return None, [f'Expected 200 or 202 response from BETTER but got {response.status_code}: {response.content}']
+        except Exception as e:
+            return None, [f'Unexpected error getting BETTER portfolio analysis: {e}']
+
+        return response.json(), []
+    
+    def get_portfolio_building_analysis(self, better_portfolio_id, better_analysis_id, better_building_portfolio_analysis_id):
+        """Get a portfolio building analysis
+
+        :param better_portfolio_id: int, ID of better generated portfolio
+        :param better_analysis_id: int, ID of analysis created for the portfolio
+        :param better_building_portfolio_analysis_id: int, ID of portfolio building analysis
+        :return list[str], list of error messages
+        """
+        url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/{better_analysis_id}/portfolio_building_analytics/{better_building_portfolio_analysis_id}'
+        headers = {
+            'accept': 'application/json',
+            'Authorization': self._token,
+        }
+
+        try:
+            response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
                 return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
         except Exception as e:
@@ -258,7 +281,7 @@ class BETTERClient:
         """Makes request to better analysis endpoint using the provided configuration
 
         :param building_id: int
-        :param config: request body with building_id, savings_target, benchmark_data, min_model_r_squared
+        :param config: request body with building_id, savings_target, benchmark_data_type, min_model_r_squared
         :returns: requests.Response
         """
 
@@ -347,7 +370,7 @@ class BETTERClient:
             return None, ['BETTER analysis could not be completed and got the following response: {message}'.format(
                 message=response.text)]
 
-        # Gotta make sure the analysis is done
+        # Make sure the analysis is done. Poll response until key 'generation_result' is 'COMPLETE'
         url = f"{self.API_URL}/buildings/{building_id}/analytics/"
 
         headers = {
