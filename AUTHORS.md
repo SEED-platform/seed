@@ -1,5 +1,20 @@
+NREL
+
+- Nicholas Long (https://github.com/nllong)
+- Alex Swindler (https://github.com/axelstudios)
+- Edwin Lee (https://github.com/myoldmopar)
+- Katherine Fleming (https://github.com/kflemin)
+- Austin Viveiros (https://github.com/aviveiros)
+- Hannah Eslinger (https://github.com/haneslinger)
+- Alex Chapin (https://github.com/anchapin)
+- Lauren Adams (https://github.com/laurenliz22)
+- Noel Merket (https://github.com/nmerket)
+
+---
+
 LBNL
 
+- Robin Mitchell (https://github.com/RDmitchell)
 - Stephen Czarnecki (https://github.com/StephenCzarnecki)
 - Spencer Dutton (https://github.com/spencerdutton)
 - Megha Sandesh (https://github.com/meghasandesh)
@@ -56,20 +71,6 @@ Windfall Technical
 
 ---
 
-NREL
-
-- Nicholas Long (https://github.com/nllong)
-- Alex Swindler (https://github.com/axelstudios)
-- Edwin Lee (https://github.com/myoldmopar)
-- Katherine Fleming (https://github.com/kflemin)
-- Austin Viveiros (https://github.com/aviveiros)
-- Hannah Eslinger (https://github.com/haneslinger)
-- Alex Chapin (https://github.com/anchapin)
-- Lauren Adams (https://github.com/laurenliz22)
-- Noel Merket (https://github.com/nmerket)
-
----
-
 Earth Advantage
 
 - Fable Turas (https://github.com/fablet)
@@ -103,10 +104,10 @@ Open Green Building Society
 
 ---
 
-Dept / Formerly Devetry
+Dept Agency / Formerly Devetry
 
 - Adrian Lara (https://github.com/adrian-lara)
-- Ted Summer (https://github.com/macintoshpie)
-- Daniel Bressan (https://github.com/danielbressan)
 - Ross Perry (https://github.com/perryr16)
 - Ryo Schulz (https://github.com/Ryoken)
+- Ted Summer (https://github.com/macintoshpie)
+- Daniel Bressan (https://github.com/danielbressan)
