@@ -19,14 +19,10 @@
         <div class="section_action_container left" style="width: 50%;">
             <span>
                 <h2>
-                    <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> :
+                    <span>
+                        <!-- Need to add the sort by drop down code in this section -->
+                        <span translate>Sort by</span> : [add dropdown here]
                     </span>
-                    <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
-                    </span>
-                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ?
-                        'property' : 'taxlot') | translate $}</span>
                 </h2>
             </span>
         </div>
@@ -48,10 +44,10 @@
                         </div>
                     </td>
                     <td >
-                        name: {$ cycleNameById[cycle_id] $}
+                        Cycle: {$ cycleNameById[cycle_id] $}
                     </td>
                     <td>
-                        events: {$ events.length $}
+                        Events: {$ events.length $}
                     </td>
                 </tr>
                 <!-- Events -->
@@ -61,8 +57,7 @@
                             <tbody>
                                 <tr ng-repeat-start="event in events"
                                     ng-class="check_expanded_row(cycle_id) ? 'show' : 'noshow'"
-                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;"
-                                    >
+                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;">
                                         <td width="20">
                                             <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
@@ -70,11 +65,15 @@
                                                 </i>
                                             </div>
                                         </td>
-                                        <td>
-                                            event: {$ format_created(event.created) $}
+                                        <td style="padding: 5px;">
+                                            Event Date: {$ format_created(event.created) $}
                                         </td>
-                                        <td>
-                                            type:  {$ event.event_type $}
+                                        <td style="padding: 5px;">
+                                            <div ng-switch="::event.event_type">
+                                                <div ng-switch-when="NoteEvent" translate>Event Type: Note</div>
+                                                <div ng-switch-when="AnalysisEvent" translate>Event Type: Analysis</div>
+                                                <div ng-switch-when="ATEvent" translate>Event Type: Audit Template File</div>
+                                            </div>
                                         </td>
                                 </tr>
                                 <!-- Triggers -->
