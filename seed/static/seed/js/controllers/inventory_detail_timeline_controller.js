@@ -86,6 +86,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
         })
 
+        $scope.check_expanded_scenario = (index) => {
+            const element = document.getElementById(`indicator-${index}`)
+            const grandparent = element.parentNode.parentNode
+            return grandparent.ariaExpanded == 'true'
+        }
+
         $scope.resizeGridByScenarioId = (scenarioId) => {
             gridApi = $scope.gridApiByScenarioId[scenarioId]
             setTimeout(gridApi.core.handleWindowResize, 50);

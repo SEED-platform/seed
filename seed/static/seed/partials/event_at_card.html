@@ -18,8 +18,8 @@
                         <div class="accordian-body collapse" id="{$ $index $}">
                             <td>
                                 <!-- This is ready other than replacing "true" in ng-class -->
-                                <i class="fa fa-chevron-right" style="color: black;"
-                                ng-class="true ? 'down' : 'right'">
+                                <i class="fa fa-chevron-right" style="color: black;" ng-attr-id="{$ 'indicator-' + $index $}"
+                                ng-class="check_expanded_scenario($index) ? 'down' : 'right'">
                                 </i>
                                 {$ scenario.name $}
                             </td>
