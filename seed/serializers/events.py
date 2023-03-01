@@ -57,6 +57,9 @@ class AnalysisEventSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         result = super().to_representation(obj)
         result["event_type"] = "AnalysisEvent"
+        
+        highlights = obj.analysis.get_highlights(obj.property_id)
+        result["analysis"]["highlights"] = highlights
 
         return result
 
