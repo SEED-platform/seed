@@ -13,12 +13,14 @@ class Meter(models.Model):
     COAL_BITUMINOUS = 2
     COKE = 3
     DIESEL = 4
+    DISTRICT_CHILLED_WATER = 25  # renumber this some day?
     DISTRICT_CHILLED_WATER_ABSORPTION = 5
     DISTRICT_CHILLED_WATER_ELECTRIC = 6
     DISTRICT_CHILLED_WATER_ENGINE = 7
     DISTRICT_CHILLED_WATER_OTHER = 8
     DISTRICT_HOT_WATER = 9
     DISTRICT_STEAM = 10
+    ELECTRICITY = 26  # renumber this some day?
     ELECTRICITY_GRID = 11
     ELECTRICITY_SOLAR = 12
     ELECTRICITY_WIND = 13
@@ -33,6 +35,7 @@ class Meter(models.Model):
     WOOD = 22
     COST = 23
     ELECTRICITY_UNKNOWN = 24
+    CUSTOM_METER = 99
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
@@ -40,12 +43,14 @@ class Meter(models.Model):
         (COAL_BITUMINOUS, 'Coal (bituminous)'),
         (COKE, 'Coke'),
         (DIESEL, 'Diesel'),
+        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
         (DISTRICT_CHILLED_WATER_ABSORPTION, 'District Chilled Water - Absorption'),
         (DISTRICT_CHILLED_WATER_ELECTRIC, 'District Chilled Water - Electric'),
         (DISTRICT_CHILLED_WATER_ENGINE, 'District Chilled Water - Engine'),
         (DISTRICT_CHILLED_WATER_OTHER, 'District Chilled Water - Other'),
         (DISTRICT_HOT_WATER, 'District Hot Water'),
         (DISTRICT_STEAM, 'District Steam'),
+        (ELECTRICITY, 'Electric'),
         (ELECTRICITY_GRID, 'Electric - Grid'),
         (ELECTRICITY_SOLAR, 'Electric - Solar'),
         (ELECTRICITY_WIND, 'Electric - Wind'),
@@ -60,10 +65,13 @@ class Meter(models.Model):
         (WOOD, 'Wood'),
         (COST, 'Cost'),
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
+        (CUSTOM_METER, 'Custom Meter')
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 
-    # list of header strings and their related energy types
+    # list of header strings and their related energy types. These are used
+    # when parsing ESPM files to map the columns headers to the correct meter
+    # types.
     ENERGY_TYPE_BY_HEADER_STRING = {
 
         # these mappings are assumed based on ESPM values [old format]
@@ -113,6 +121,8 @@ class Meter(models.Model):
         (MANUAL_ENTRY, 'Manual Entry'),
     )
 
+    # The alias can be thought of as the "name" of the meter. Not
+    # sure why we don't have a name field.
     alias = models.CharField(max_length=255, null=True, blank=True)
     is_virtual = models.BooleanField(default=False)
 
@@ -180,11 +190,11 @@ class MeterReading(models.Model):
     """
     A meter reading represents the actual usage entry for a given meter.
 
-    NOTE: SEED stores all meter readings in kBtu.  The raw usage reading is converted
+    NOTE: SEED stores all energy readings in kBtu.  The raw usage reading is converted
     on import to kBtu using the conversion_factor which is determined by the meter type and raw units on import,
     therefore, the reading field of this model will always be in kBtu.
 
-    The original units however when being displayed to the user ie. (Property Detail Meters tab)
+    The original units however when being displayed to the user (e.g., on the Property Detail Meters tab)
     will contain the original units and meter readings.
     """
     meter = models.ForeignKey(
