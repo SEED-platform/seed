@@ -2002,9 +2002,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
-          events: ['$stateParams', 'event_service', 'user_service', function ($stateParams, event_service, user_service) {
+          events: ['$stateParams', 'event_service', 'user_service', 'inventory_payload', function ($stateParams, event_service, user_service, inventory_payload) {
             var organization_id = user_service.get_organization().id;
-            return event_service.get_events(organization_id, $stateParams.inventory_type, $stateParams.view_id);
+            const property_id = inventory_payload["property"]["id"]
+            return event_service.get_events(organization_id, $stateParams.inventory_type, property_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
         }
       })

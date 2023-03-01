@@ -9,6 +9,7 @@ from rest_framework import serializers
 from seed.models import AnalysisEvent, ATEvent, Event, NoteEvent
 from seed.serializers.analyses import AnalysisSerializer
 from seed.serializers.notes import NoteSerializer
+from seed.serializers.scenarios import ScenarioSerializer
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -29,6 +30,7 @@ class EventSerializer(serializers.ModelSerializer):
 
 class ATEventSerializer(serializers.ModelSerializer):
     event_type = serializers.CharField(required=False, allow_blank=True)
+    scenarios = ScenarioSerializer(many=True)
 
     class Meta:
         model = ATEvent

@@ -4653,19 +4653,18 @@ ul.r-list {
 }
 
 .subsection_secondary {
-  height: 100%
+  height: 100%;
 }
 
 .show {
-  max-height: 100px;
-  transition: max-height .25s;
+  transition: max-height 0.25s;
 }
 
 .noshow {
   display: none;
   visibility: hidden;
   max-height: 0px;
-  transition: max-height .25s;
+  transition: max-height 0.25s;
 }
 
 .subsection_primary {
@@ -4675,20 +4674,20 @@ ul.r-list {
 
 .right {
   transform: rotate(0turn);
-  transition: transform .25s;
+  transition: transform 0.25s;
 }
 
 .down {
   transform: rotate(0.25turn);
-  transition: transform .25s;
+  transition: transform 0.25s;
 }
 
 .orange-transparent {
-  background-color: rgba(242, 158, 74, 0.4)
+  background-color: rgba(242, 158, 74, 0.4);
 }
 
 .blue-transparent {
-  background-color: rgba(74, 118, 243, 0.4)
+  background-color: rgba(74, 118, 243, 0.4);
 }
 
 .subsection_card {
@@ -4723,7 +4722,6 @@ ul.r-list {
       padding-right: 20px;
     }
   }
-
 }
 
 #cycles-table,
@@ -4737,8 +4735,8 @@ ul.r-list {
   color: white;
   width: 98%;
   margin: 1%;
-  tr{
-    background: black;
+  tr {
+    background: #2d2d2d;
   }
 
   .event-table {
@@ -4748,10 +4746,9 @@ ul.r-list {
       color: black;
       margin-bottom: 0px;
 
-      tr{
+      tr {
         background: white;
       }
     }
   }
-  
 }

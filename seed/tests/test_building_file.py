@@ -56,9 +56,6 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(property_state.property_type, 'Office')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
-        event = ATEvent.objects.filter(property=property_view.property).values("property_id", "cycle_id", "building_file_id")
-        self.assertEqual(event, {"property_id": property_view.property_id, "cycle_id": property_view.cycle_id, "building_file_id": bf.id})
-
     def test_buildingsync_constructor_diff_ns(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_different_namespace.xml')
         with open(filename, 'rb') as f:
@@ -91,6 +88,14 @@ class TestBuildingFiles(TestCase):
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        events = ATEvent.objects.filter(property=property_view.property)
+        self.assertEqual(len(events), 1)
+        event = events[0]
+        self.assertEqual(event.property_id, property_view.property_id)
+        self.assertEqual(event.cycle_id, property_view.cycle_id)
+        self.assertEqual(event.building_file_id, bf.id)
+        self.assertEqual(len(event.scenarios.all()), 1)
 
     def test_buildingsync_bricr_import(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
