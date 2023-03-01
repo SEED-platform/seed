@@ -34,9 +34,9 @@
         <!-- Cycles -->
         <table id="cycles-table">
             <tbody>
-                <tr ng-repeat-start="(cycle_id, events) in timeline" class="cycle-row">
+                <tr ng-repeat-start="(cycle_id, events) in timeline" class="cycle-row" ng-click="expand_row('cycles', cycle_id)">
                     <td width="20">
-                        <div ng-click="expand_row('cycles', cycle_id)" style="padding: 5px;">
+                        <div style="padding: 5px;">
                             <i class="fa fa-chevron-right" style="color: white;"
                                 ng-class="check_expanded_row(cycle_id) ? 'down' : 'right'">
                             </i>
@@ -56,9 +56,11 @@
                             <tbody>
                                 <tr ng-repeat-start="event in events"
                                     ng-class="check_expanded_row(cycle_id) ? 'show' : 'noshow'"
-                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;">
+                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;"
+                                    ng-click="expand_row('events', event.id)"
+                                >
                                         <td width="20">
-                                            <div ng-click="expand_row('events', event.id)" style="padding: 5px;">
+                                            <div style="padding: 5px;">
                                                 <i class="fa fa-chevron-right" style="color: white;"
                                                     ng-class="check_expanded_row(cycle_id, event.id) ? 'down' : 'right'">
                                                 </i>
