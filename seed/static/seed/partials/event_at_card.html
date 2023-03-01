@@ -3,7 +3,7 @@
         <table class="trigger-table table table-striped table_highlight_first table-condensed" style="border-collapse:collapse;">
             <thead>
                 <tr>
-                <th>name</th>
+                <th>Scenarios</th>
                 <th>annual_electricity_savings</th>
                 <th>annual_peak_electricity_reduction</th>
                 <th>annual_natural_gas_savings</th>
@@ -11,15 +11,22 @@
             </thead>
             <tbody>
                     <tr
-                        ng-repeat-start="scenario in scenarios"
+                        ng-repeat-start="scenario in scenarios" class="accordion-toggle"
                         data-toggle="collapse" data-target="#{$ $index $}"
                         ng-click="resizeGridByScenarioId(scenario.id)"
-                        class="accordion-toggle"
                     >
-                        <td>{$ scenario.name $}</td>
-                        <td>{$ scenario.annual_electricity_savings $}</td>
-                        <td>{$ scenario.annual_peak_electricity_reduction $}</td>
-                        <td>{$ scenario.annual_natural_gas_savings $}</td>
+                        <div class="accordian-body collapse" id="{$ $index $}">
+                            <td>
+                                <!-- This is ready other than replacing "true" in ng-class -->
+                                <i class="fa fa-chevron-right" style="color: black;"
+                                ng-class="true ? 'down' : 'right'">
+                                </i>
+                                {$ scenario.name $}
+                            </td>
+                            <td>{$ scenario.annual_electricity_savings | number : 0 $}</td>
+                            <td>{$ scenario.annual_peak_electricity_reduction | number : 0 $}</td>
+                            <td>{$ scenario.annual_natural_gas_savings | number : 0 $}</td>
+                        </div>
                     </tr>
                     <tr ng-repeat-end>
                         <td colspan="6" class="hiddenRow" style="padding: 0px">

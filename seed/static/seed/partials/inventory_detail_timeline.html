@@ -65,7 +65,7 @@
                                             </div>
                                         </td>
                                         <td style="padding: 5px;">
-                                            Event Date: {$ format_created(event.created) $}
+                                            Event Date: {$ event.created | date : "shortDate" $}
                                         </td>
                                         <td style="padding: 5px;">
                                             <div ng-switch="::event.event_type">

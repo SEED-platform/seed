@@ -42,10 +42,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 }
             }
 
-            $scope.format_created = (date) => {
-                return moment(date).format('YYYY/MM/DD')
-            }
-
             format_timeline = (events) => {
                 let eventsByCycle = events.reduce((result, event) => {
                     if (!result[event.cycle]) {
