@@ -22,26 +22,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
             };
 
-            let expanded_rows = {
-                'cycles': {},
-                'events': {}
-            }
-            $scope.expand_row = (type, id) => {
-                if(expanded_rows[type].hasOwnProperty(id)) {
-                    expanded_rows[type][id] = !expanded_rows[type][id]
-                } else {
-                    expanded_rows[type][id] = true
-                }
-            }
-
-            $scope.check_expanded_row = (cycle_id, event_id=null) => {
-                if (event_id) {
-                    return expanded_rows['cycles'][cycle_id] && expanded_rows['events'][event_id]
-                } else {
-                    return expanded_rows['cycles'][cycle_id]
-                }
-            }
-
             format_timeline = (events) => {
                 let eventsByCycle = events.reduce((result, event) => {
                     if (!result[event.cycle]) {
