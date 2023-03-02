@@ -4752,3 +4752,23 @@ ul.r-list {
     }
   }
 }
+
+.accordion-header .indicator {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  vertical-align: middle;
+  content: "";
+  border-top: 5px solid;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  transform: rotate(-90deg);
+}
+
+.accordion-header .accordion-button[aria-expanded="true"] .indicator{
+  border-top: 0;
+  border-bottom: 5px solid;
+  transform: rotate(180deg);
+  color: red;
+}

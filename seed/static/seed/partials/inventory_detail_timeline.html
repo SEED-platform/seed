@@ -100,3 +100,34 @@
         </table>
     </div>
 </div>
+<div>
+    <div class="accordion" id="cycle-container">
+        <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="(cycle_id, events) in timeline">
+            <h4 class="accordion-header">
+                <button class="accordion-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}"><i class="indicator"></i> Cycle: {$ cycleNameById[cycle_id] $}</button>
+                
+            </h4>
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse" >
+                <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
+                    <div class="accordion-header" ng-switch="::event.event_type">
+                        <button class="accordion-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="NoteEvent"><i class="indicator"></i><span translate> Event Type: Note</span></button>
+                        <button class="accordion-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="AnalysisEvent"><i class="indicator"></i><span translate>Event Type: Analysis</span></button>
+                        <button class="accordion-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="ATEvent"><i class="indicator"></i><span translate>Event Type: Audit Template File</span></button>
+                    </div>
+                    <div id="event-{$ event.id $}" class="accordion-body collapse">
+                        <div ng-if="event.event_type == 'NoteEvent'">
+                            <div class="event-trigger" ng-controller="event_inventory_document_controller" ng-include="::urls.static_url + 'seed/partials/event_inventory_document_card.html'"></div>
+                        </div>
+                        <div ng-if="event.event_type == 'AnalysisEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
+                        </div>
+                        <div ng-if="event.event_type == 'ATEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_at_card.html'"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
