@@ -4766,28 +4766,35 @@ ul.r-list {
   transform: rotate(-90deg);
 }
 
-.accordion-header .accordion-button[aria-expanded="true"] i{
-  transform: rotate(90deg);
-  transition: transform 0.5s;
-  color: red;
-}
-.accordion-header .accordion-button[aria-expanded="false"] i {
-  transform: rotate(0);
-  transition: transform 0.5s;
-}
+.accordion-header {
 
-.accordion-button{
-  width: 100%;
-  text-align: left;
-  border: none;
-  padding: 3px 10px;
-}
-.event-button{
-  background-color: gray;
-  color: white;
-  margin-bottom: 1px;
-}
-.cycle-button{
-  background-color: black;
-  color: white;
+  .accordion-button[aria-expanded="true"] i{
+    transform: rotate(90deg);
+    transition: transform 0.5s;
+  }
+  .accordion-button[aria-expanded="false"] i {
+    transform: rotate(0);
+    transition: transform 0.5s;
+  }
+  .accordion-button{
+    width: calc(100% - 20px);
+    text-align: left;
+    border: none;
+    i {
+      margin-right: 10px;
+    }
+  }
+  .cycle-button{
+    background-color: black;
+    color: white;
+    padding: 10px 10px;
+    margin: 0 10px;
+  }
+  .event-button{
+    background-color: gray;
+    color: white;
+    padding: 5px 10px;
+    margin: 1px 10px;
+  }
+
 }

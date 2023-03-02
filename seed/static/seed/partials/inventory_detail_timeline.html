@@ -40,9 +40,9 @@
             <div id="cycle-events-{$ $index $}" class="accordion-body collapse" >
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
                     <div class="accordion-header" ng-switch="::event.event_type">
-                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="NoteEvent"><i class="indicator"></i><span translate> Event Type: Note</span></button>
-                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="AnalysisEvent"><i class="indicator"></i><span translate>Event Type: Analysis</span></button>
-                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="ATEvent"><i class="indicator"></i><span translate>Event Type: Audit Template File</span></button>
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="NoteEvent"><i class="fa fa-chevron-right"></i><span translate> Event Type: Note</span></button>
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="AnalysisEvent"><i class="fa fa-chevron-right"></i><span translate>Event Type: Analysis</span></button>
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="ATEvent"><i class="fa fa-chevron-right"></i><span translate>Event Type: Audit Template File</span></button>
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse">
                         <div ng-if="event.event_type == 'NoteEvent'">
