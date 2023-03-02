@@ -29,7 +29,6 @@
     </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
-
 <div>
     <div class="accordion" id="cycle-container">
         <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="(cycle_id, events) in timeline">
@@ -39,7 +38,7 @@
                     <span>
                         CYCLE NAME: {$ cycleNameById[cycle_id] $}
                     </span>
-                    <span class="event-count" ng-repeat="(event_type, count) in groupByEventType(events)">
+                    <span class="sub-span" ng-repeat="(event_type, count) in groupByEventType(events)">
                         {$ event_type $} {$ count $}
                     </span>
                 </button>
@@ -51,7 +50,7 @@
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}">
                             <i class="fa fa-chevron-right"></i>
                             <span>{$ formatDate(event.modified) $}</span>
-                            <span>{$ eventTypeLookup[event.event_type] $}</span>
+                            <span class="sub-span">{$ eventTypeLookup[event.event_type] $}</span>
                         </button>
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse">
