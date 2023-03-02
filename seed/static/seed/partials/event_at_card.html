@@ -4,9 +4,9 @@
             <thead>
                 <tr>
                 <th>Scenarios</th>
-                <th>annual_electricity_savings</th>
-                <th>annual_peak_electricity_reduction</th>
-                <th>annual_natural_gas_savings</th>
+                <th>Electricity savings (kBtu)</th>
+                <th>Peak electricity reduction (kW)</th>
+                <th>Natural gas savings (kBtu)</th>
                 </tr>
             </thead>
             <tbody>
@@ -17,7 +17,6 @@
                     >
                         <div class="accordian-body collapse" id="{$ $index $}">
                             <td>
-                                <!-- This is ready other than replacing "true" in ng-class -->
                                 <i class="fa fa-chevron-right" style="color: black;" ng-attr-id="{$ 'indicator-' + $index $}"
                                 ng-class="check_expanded_scenario($index) ? 'down' : 'right'">
                                 </i>
