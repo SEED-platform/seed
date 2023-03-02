@@ -86,10 +86,26 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
         })
 
-        $scope.check_expanded_scenario = (index) => {
-            const element = document.getElementById(`indicator-${index}`)
-            const grandparent = element.parentNode.parentNode
-            return grandparent.ariaExpanded == 'true'
+        $scope.eventTypeLookup = {
+            "NoteEvent": "Note",
+            "AnalysisEvent": "Analysis",
+            "ATEvent": "Audit Template File",
+        }
+
+        $scope.formatDate = (date) => {
+            return moment(date).format('YYYY/MM/DD')
+        }
+
+        $scope.groupByEventType = (events) => {
+            let eventTypeCount = events.reduce((acc, cur) => {
+                let event_type = pluralize($scope.eventTypeLookup[cur.event_type])
+                if (!acc[event_type]) {
+                    acc[event_type] = 0
+                }
+                acc[event_type] ++
+                return acc
+            }, {});
+            return eventTypeCount
         }
 
         $scope.resizeGridByScenarioId = (scenarioId) => {

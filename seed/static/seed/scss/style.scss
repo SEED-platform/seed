@@ -4670,16 +4670,28 @@ ul.r-list {
   .cycle-button{
     background-color: black;
     color: white;
-    padding: 10px 10px;
-    margin: 0 10px;
+    padding: 7px 10px;
+    margin: 3px 10px;
+    font-weight: bold;
+    font-size: 16px;
+
   }
   .event-button{
     background-color: gray;
     color: white;
     padding: 5px 10px;
     margin: 1px 10px;
+    font-weight: bold;
   }
-
+  span{
+    display: inline-block;
+    width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: text-bottom;
+  }
+  
 }
 
 .accordion-header[aria-expanded="true"] i{
