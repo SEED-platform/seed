@@ -43,7 +43,8 @@
     "spin.js": "=2.3.2",
     "terraformer": "~1.0.12",
     "terraformer-wkt-parser": "~1.2.1",
-    "ui-grid-draggable-rows": "~0.3.3"
+    "ui-grid-draggable-rows": "~0.3.3",
+    "pluralize": "~8.0.0"
   },
   "devDependencies": {
     "napa": "~3.0.0"
