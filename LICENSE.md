@@ -38,20 +38,25 @@ from the U.S. Department of Energy) and contributors.  All rights reserved.
 
 1. Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
+    
     (1) Redistributions of source code must retain the copyright notice, this
     list of conditions and the following disclaimer.
+    
     (2) Redistributions in binary form must reproduce the copyright notice,
     this list of conditions and the following disclaimer in the documentation
     and/or other materials provided with the distribution.
+    
     (3) Neither the name of the University of California, Lawrence Berkeley
     National Laboratory, U.S. Dept. of Energy nor the names of its
     contributors may be used to endorse or promote products derived from this
     software without specific prior written permission.
+    
     (4) Neither the names Standard Energy Efficiency Data Platform, Standard
     Energy Efficiency Data, SEED Platform, SEED, derivatives thereof nor
     designations containing these names, may be used to endorse or promote
     products derived from this software without specific prior written
     permission from the U.S. Dept. of Energy.
+
 2. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
