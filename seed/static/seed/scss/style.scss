@@ -4766,9 +4766,28 @@ ul.r-list {
   transform: rotate(-90deg);
 }
 
-.accordion-header .accordion-button[aria-expanded="true"] .indicator{
-  border-top: 0;
-  border-bottom: 5px solid;
-  transform: rotate(180deg);
+.accordion-header .accordion-button[aria-expanded="true"] i{
+  transform: rotate(90deg);
+  transition: transform 0.5s;
   color: red;
+}
+.accordion-header .accordion-button[aria-expanded="false"] i {
+  transform: rotate(0);
+  transition: transform 0.5s;
+}
+
+.accordion-button{
+  width: 100%;
+  text-align: left;
+  border: none;
+  padding: 3px 10px;
+}
+.event-button{
+  background-color: gray;
+  color: white;
+  margin-bottom: 1px;
+}
+.cycle-button{
+  background-color: black;
+  color: white;
 }
