@@ -39,7 +39,7 @@
                     <span>
                         CYCLE NAME: {$ cycleNameById[cycle_id] $}
                     </span>
-                    <span ng-repeat="(event_type, count) in groupByEventType(events)">
+                    <span class="event-count" ng-repeat="(event_type, count) in groupByEventType(events)">
                         {$ event_type $} {$ count $}
                     </span>
                 </button>
