@@ -29,74 +29,35 @@
     </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
-<div class="section_content_container">
-    <div class="section">
-        <!-- Cycles -->
-        <table id="cycles-table">
-            <tbody>
-                <tr ng-repeat-start="(cycle_id, events) in timeline" class="cycle-row" ng-click="expand_row('cycles', cycle_id)">
-                    <td width="20">
-                        <div style="padding: 5px;">
-                            <i class="fa fa-chevron-right" style="color: white;"
-                                ng-class="check_expanded_row(cycle_id) ? 'down' : 'right'">
-                            </i>
+
+<div>
+    <div class="accordion" id="cycle-container">
+        <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="(cycle_id, events) in timeline">
+            <h4 class="accordion-header">
+                <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}"><i class="fa fa-chevron-right"></i> Cycle: {$ cycleNameById[cycle_id] $}</button>
+                
+            </h4>
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse" >
+                <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
+                    <div class="accordion-header" ng-switch="::event.event_type">
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="NoteEvent"><i class="indicator"></i><span translate> Event Type: Note</span></button>
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="AnalysisEvent"><i class="indicator"></i><span translate>Event Type: Analysis</span></button>
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-switch-when="ATEvent"><i class="indicator"></i><span translate>Event Type: Audit Template File</span></button>
+                    </div>
+                    <div id="event-{$ event.id $}" class="accordion-body collapse">
+                        <div ng-if="event.event_type == 'NoteEvent'">
+                            <div class="event-trigger" ng-controller="event_inventory_document_controller" ng-include="::urls.static_url + 'seed/partials/event_inventory_document_card.html'"></div>
                         </div>
-                    </td>
-                    <td >
-                        Cycle: {$ cycleNameById[cycle_id] $}
-                    </td>
-                    <td>
-                        Events: {$ events.length $}
-                    </td>
-                </tr>
-                <!-- Events -->
-                <tr ng-repeat-end style="background: white;">
-                    <td colspan="100%">
-                        <table class="event-table">
-                            <tbody>
-                                <tr ng-repeat-start="event in events"
-                                    ng-class="check_expanded_row(cycle_id) ? 'show' : 'noshow'"
-                                    style="background: rgb(112,113,113); border-bottom: 2px solid white;"
-                                    ng-click="expand_row('events', event.id)"
-                                >
-                                        <td width="20">
-                                            <div style="padding: 5px;">
-                                                <i class="fa fa-chevron-right" style="color: white;"
-                                                    ng-class="check_expanded_row(cycle_id, event.id) ? 'down' : 'right'">
-                                                </i>
-                                            </div>
-                                        </td>
-                                        <td style="padding: 5px;">
-                                            Event Date: {$ event.created | date : "shortDate" $}
-                                        </td>
-                                        <td style="padding: 5px;">
-                                            <div ng-switch="::event.event_type">
-                                                <div ng-switch-when="NoteEvent" translate>Event Type: Note</div>
-                                                <div ng-switch-when="AnalysisEvent" translate>Event Type: Analysis</div>
-                                                <div ng-switch-when="ATEvent" translate>Event Type: Audit Template File</div>
-                                            </div>
-                                        </td>
-                                </tr>
-                                <!-- Triggers -->
-                                <tr ng-repeat-end
-                                    ng-class="check_expanded_row(cycle_id, event.id) ? 'show' : 'noshow'"
-                                    style="background: white;"
-                                    >
-                                    <td ng-if="event.event_type == 'NoteEvent'" style="display: block">
-                                        <div class="event-trigger" ng-controller="event_inventory_document_controller" ng-include="::urls.static_url + 'seed/partials/event_inventory_document_card.html'"></div>
-                                    </td>
-                                    <td ng-if="event.event_type == 'AnalysisEvent'" style="display: block">
-                                        <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
-                                    </td>
-                                    <td ng-if="event.event_type == 'ATEvent'" style="display: block">
-                                        <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_at_card.html'"></div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        <div ng-if="event.event_type == 'AnalysisEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
+                        </div>
+                        <div ng-if="event.event_type == 'ATEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_at_card.html'"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
