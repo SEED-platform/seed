@@ -270,6 +270,8 @@ class BETTERClient:
             if response.status_code == 201:
                 data = response.json()
                 building_id = data['id']
+            elif response.status_code == 500:
+                return None, ['Recieved status code 500 Internal Server Error from BETTER API']
             else:
                 return None, [f'Received non 2xx status from BETTER: {response.status_code}: {response.content}']
         except Exception as e:
