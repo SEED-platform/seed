@@ -18,9 +18,9 @@ class EventViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     def list(self, request, property_pk):
         page = request.query_params.get('page', 1)
-        per_page = request.query_params.get('per_page', 1000)
+        per_page = request.query_params.get('per_page', 100000)
 
-        events = Event.objects.filter(property_id=property_pk).order_by("created").select_subclasses()
+        events = Event.objects.filter(property_id=property_pk).order_by("-created").select_subclasses()
 
         paginator = Paginator(events, per_page)
         try:
