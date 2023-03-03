@@ -284,7 +284,6 @@ class BETTERClient:
         :param config: request body with building_id, savings_target, benchmark_data_type, min_model_r_squared
         :returns: requests.Response
         """
-
         url = f"{self.API_URL}/buildings/{building_id}/analytics/"
 
         headers = {
@@ -377,14 +376,26 @@ class BETTERClient:
             'accept': 'application/json',
             'Authorization': self._token,
         }
+
+        def is_ready(res):
+            """
+            :param res: response tuple from get_portfolio_analysis
+            :return: bool
+            """
+            generation_result = res.json()[0]['generation_result'] 
+            return generation_result == 'COMPLETE' or generation_result == 'FAILED'
+        
         try:
             response = polling.poll(
                 lambda: requests.request("GET", url, headers=headers),
-                check_success=lambda response: response.json()[0]['generation_result'] == 'COMPLETE',
+                check_success=is_ready,
                 timeout=60,
                 step=1)
         except TimeoutError:
             return None, ['BETTER analysis timed out']
+
+        if response.json()[0]['generation_result'] == 'FAILED':
+            return [], ['Building Analysis generation status returned "FAILED"']
 
         data = response.json()
         better_analysis_id = data[0]['id']

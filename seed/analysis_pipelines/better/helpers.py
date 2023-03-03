@@ -241,7 +241,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
                 'Failed to run BETTER building analysis',
                 context,
                 analysis_property_view_id=analysis_property_view_id,
-                fail_on_error=False,
+                fail_on_error=True,
             )
             # continue to next building
             continue
