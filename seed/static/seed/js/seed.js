@@ -2010,6 +2010,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({ org_id: user_service.get_organization().id });
+          }],
         }
       })
       .state({
