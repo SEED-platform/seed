@@ -33,7 +33,9 @@
                             <div class="accordian-body collapse" id="scenario-{$ scenario.id $}">
                                 <div
                                     ng-show="measureGridOptionsByScenarioId[scenario.id].data.length"
-                                    ui-grid="measureGridOptionsByScenarioId[scenario.id]">
+                                    ui-grid="measureGridOptionsByScenarioId[scenario.id]"
+                                    ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
+                                    >
                                 </div>
                                 <div ng-show="!measureGridOptionsByScenarioId[scenario.id].data.length">No measures in scenario</div>
                             </div>

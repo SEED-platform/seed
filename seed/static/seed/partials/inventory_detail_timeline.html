@@ -47,7 +47,7 @@
             <div id="cycle-events-{$ $index $}" class="accordion-body collapse" >
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
                     <div class="accordion-header">
-                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}">
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
                             <i class="fa fa-chevron-right"></i>
                             <span>{$ formatDate(event.modified) $}</span>
                             <span class="sub-span">{$ eventTypeLookup[event.event_type] $}</span>
@@ -55,7 +55,12 @@
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse">
                         <div ng-if="event.event_type == 'NoteEvent'">
-                            <div class="event-trigger" ng-controller="event_inventory_document_controller" ng-include="::urls.static_url + 'seed/partials/event_inventory_document_card.html'"></div>
+                            <div 
+                                id="note-{$ event.note.id $}" 
+                                ui-grid="noteGridOptionsByNoteId[event.note.id]"
+                                ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
+                                style="margin: 0 10px;"
+                            ></div>
                         </div>
                         <div ng-if="event.event_type == 'AnalysisEvent'">
                             <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>

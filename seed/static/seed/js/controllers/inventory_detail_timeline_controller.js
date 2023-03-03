@@ -66,6 +66,25 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
         })
 
+        const noteEvents = $scope.events.data.filter(e => e.event_type == "NoteEvent")
+        const notes = noteEvents.map(e => e.note)
+        $scope.noteGridOptionsByNoteId = {}
+        $scope.gridApiByNoteId = {}
+        notes.forEach(note => {
+            noteGridOptions = {
+                data: [{
+                    "Updated": moment(note.updated).format('YYYY/MM/DD'),
+                    "Text": note.text
+                }],
+                minRowsToShow: 1,
+                onRegisterApi: function (gridApi) {
+                    $scope.gridApiByNoteId[note.id] = gridApi
+                }
+            }
+            $scope.noteGridOptionsByNoteId[note.id] = noteGridOptions
+
+        })
+
         $scope.eventTypeLookup = {
             "NoteEvent": "Note",
             "AnalysisEvent": "Analysis",
@@ -92,4 +111,13 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             gridApi = $scope.gridApiByScenarioId[scenarioId]
             setTimeout(gridApi.core.handleWindowResize, 50);
         }
+        $scope.resizeGridByEventType = (event) => {
+            if (event.event_type == 'NoteEvent') {
+                console.log('resize')
+                noteId = event.note.id
+                gridApi = $scope.gridApiByNoteId[noteId]
+                setTimeout(gridApi.core.handleWindowResize, 50);
+            }
+        }
+
         }]);
