@@ -382,9 +382,9 @@ class BETTERClient:
             :param res: response tuple from get_portfolio_analysis
             :return: bool
             """
-            generation_result = res.json()[0]['generation_result'] 
+            generation_result = res.json()[0]['generation_result']
             return generation_result == 'COMPLETE' or generation_result == 'FAILED'
-        
+
         try:
             response = polling.poll(
                 lambda: requests.request("GET", url, headers=headers),
