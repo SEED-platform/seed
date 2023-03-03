@@ -34,56 +34,62 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             }
             format_timeline($scope.events.data)
 
-
-        const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
-        const scenarios = atEvents.reduce((acc, curr) => {
-            return [...acc, ...curr.scenarios]
-        },[]);
-
-        $scope.measureGridOptionsByScenarioId = {}
-        $scope.gridApiByScenarioId = {}
-        scenarios.forEach(scenario => {
-            measureGridOptions = {
-                data: scenario.measures.map(measure => { return {
-                    "category": measure.category,
-                    "name": measure.name,
-                    "recommended": measure.recommended,
-                    "category_affected": measure.category_affected,
-                    "cost_installation": measure.cost_installation,
-                    "cost_material": measure.cost_material,
-                    "cost_residual_value": measure.cost_residual_value,
-                    "cost_total_first": measure.cost_total_first,
-                    "cost_capital_replacement": measure.cost_capital_replacement,
-                    "description": measure.description,
-                    "useful_life": measure.useful_life
-
-                }}),
-                minRowsToShow: Math.min(scenario.measures.length, 10),
-                onRegisterApi: function (gridApi) {
-                    $scope.gridApiByScenarioId[scenario.id] = gridApi;
+        const setMeasureGridOptions = () => {
+            const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
+            const scenarios = atEvents.reduce((acc, curr) => {
+                return [...acc, ...curr.scenarios]
+            },[]);
+    
+            $scope.measureGridOptionsByScenarioId = {}
+            $scope.gridApiByScenarioId = {}
+            scenarios.forEach(scenario => {
+                const measureGridOptions = {
+                    data: scenario.measures.map(measure => { return {
+                        "category": measure.category,
+                        "name": measure.name,
+                        "recommended": measure.recommended,
+                        "category_affected": measure.category_affected,
+                        "cost_installation": measure.cost_installation,
+                        "cost_material": measure.cost_material,
+                        "cost_residual_value": measure.cost_residual_value,
+                        "cost_total_first": measure.cost_total_first,
+                        "cost_capital_replacement": measure.cost_capital_replacement,
+                        "description": measure.description,
+                        "useful_life": measure.useful_life
+    
+                    }}),
+                    minRowsToShow: Math.min(scenario.measures.length, 10),
+                    onRegisterApi: function (gridApi) {
+                        $scope.gridApiByScenarioId[scenario.id] = gridApi;
+                    }
                 }
-            }
-            $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
-        })
-
-        const noteEvents = $scope.events.data.filter(e => e.event_type == "NoteEvent")
-        const notes = noteEvents.map(e => e.note)
-        $scope.noteGridOptionsByNoteId = {}
-        $scope.gridApiByNoteId = {}
-        notes.forEach(note => {
-            noteGridOptions = {
-                data: [{
-                    "Updated": moment(note.updated).format('YYYY/MM/DD'),
-                    "Text": note.text
-                }],
-                minRowsToShow: 1,
-                onRegisterApi: function (gridApi) {
-                    $scope.gridApiByNoteId[note.id] = gridApi
+                $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
+            })
+        }
+        
+        const setNoteGridOptions = () => {
+            const noteEvents = $scope.events.data.filter(e => e.event_type == "NoteEvent")
+            const notes = noteEvents.map(e => e.note)
+            $scope.noteGridOptionsByNoteId = {}
+            $scope.gridApiByNoteId = {}
+            notes.forEach(note => {
+                const noteGridOptions = {
+                    data: [{
+                        "Updated": moment(note.updated).format('YYYY/MM/DD'),
+                        "Text": note.text
+                    }],
+                    minRowsToShow: 1,
+                    onRegisterApi: function (gridApi) {
+                        $scope.gridApiByNoteId[note.id] = gridApi
+                    }
                 }
-            }
-            $scope.noteGridOptionsByNoteId[note.id] = noteGridOptions
+                $scope.noteGridOptionsByNoteId[note.id] = noteGridOptions
+                
+            })
+        }        
 
-        })
+        setMeasureGridOptions()
+        setNoteGridOptions()
 
         $scope.eventTypeLookup = {
             "NoteEvent": "Note",
