@@ -2,18 +2,21 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
     .controller('inventory_detail_timeline_controller', [
         '$scope',
         '$stateParams',
-        'inventory_payload',
-        'users_payload',
-        'events',
         'cycles',
+        'events',
+        'inventory_payload',
+        'urls',
+        'users_payload',
         function (
             $scope,
             $stateParams,
-            inventory_payload,
-            users_payload,
-            events,
             cycles,
+            events,
+            inventory_payload,
+            urls,
+            users_payload,
         ) {
+            $scope.static_url = urls.static_url;
             $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => {
                 return {...acc, [curr.id]: curr.name}
             }, {});
@@ -24,13 +27,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
             };
             $scope.orgUsers = users_payload.users
-            const addUserNameToEvents = () => {
-                $scope.events.data.forEach(event => {
-                    let userName = 'abc'
-                })
-                const x = 1
-            }
-            addUserNameToEvents()
 
             const formatTimeline = (events) => {
                 let eventsByCycle = events.reduce((result, event) => {
@@ -47,6 +43,20 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 return '10 seconds'
             }
 
+            $scope.formatUser = (user_id) => {
+                if (!user_id) {
+                    return
+                }
+                const user = $scope.orgUsers.find(u => u.user_id == user_id)
+                let userName = ''
+                if (user.first_name && user.last_name) {
+                    userName = `${user.first_name} ${user.last_name}`
+                } else {
+                    userName = user.email
+                }
+                return userName
+            }
+
             const setMeasureGridOptions = () => {
                 const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
                 const scenarios = atEvents.reduce((acc, curr) => {
@@ -61,6 +71,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             "category": measure.category,
                             "name": measure.name,
                             "recommended": measure.recommended,
+                            "status": measure.implementation_status,
                             "category_affected": measure.category_affected,
                             "cost_installation": measure.cost_installation,
                             "cost_material": measure.cost_material,
