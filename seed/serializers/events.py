@@ -15,13 +15,16 @@ from seed.serializers.scenarios import ScenarioSerializer
 class EventSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         if isinstance(instance, ATEvent):
-            return ATEventSerializer(instance=instance).data
+            data = ATEventSerializer(instance=instance).data
         elif isinstance(instance, AnalysisEvent):
-            return AnalysisEventSerializer(instance=instance).data
+            data = AnalysisEventSerializer(instance=instance).data
+            data['user_id'] = data['analysis']['user']
         elif isinstance(instance, NoteEvent):
-            return NoteEventSerializer(instance=instance).data
+            data = NoteEventSerializer(instance=instance).data
+            data['user_id'] = data['note']['user_id']
         else:
             raise ValueError
+        return data
 
     class Meta:
         model = Event
