@@ -209,7 +209,7 @@ def _store_better_portfolio_building_analysis_results(better_portfolio_building_
                 'Failed to get BETTER portfolio building analysis results',
                 context,
                 analysis_property_view_id=analysis_property_view_id,
-                fail_on_error=False,
+                fail_on_error=True,
             )
             # continue to next portfolio building analysis
             continue
@@ -241,7 +241,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
                 'Failed to run BETTER building analysis',
                 context,
                 analysis_property_view_id=analysis_property_view_id,
-                fail_on_error=True,
+                fail_on_error=False
             )
             # continue to next building
             continue
@@ -337,7 +337,7 @@ def _create_better_buildings(better_portfolio_id, context):
                 f'Failed to create building for analysis property view {analysis_property_view_id}',
                 context,
                 analysis_property_view_id,
-                fail_on_error=True
+                fail_on_error=False
             )
             # go to next building
             continue

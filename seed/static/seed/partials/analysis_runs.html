@@ -21,9 +21,12 @@
                 </td>
                 <td>
                     <ul>
-                        <li ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
-                            {$:: message['user_message'] $}
-                        </li>
+                        <div ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
+                            <li>
+                                {$:: message['user_message'] $}
+                            </li>
+                            <li ng-if="message['debug_message']"> {$:: message['debug_message'] $}</li>
+                        </div>
                     </ul>
                 </td>
                 <td>
