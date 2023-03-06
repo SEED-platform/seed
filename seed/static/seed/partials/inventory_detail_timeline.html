@@ -54,9 +54,9 @@
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
                             <i class="fa fa-chevron-right"></i>
-                            <span>{$ formatDate(event.modified) $}</span>
-                            <span>{$ event.userName $}</span>
-                            <span class="sub-span">{$ eventTypeLookup[event.event_type] $}</span>
+                            <span class="event-detail">{$ formatDate(event.modified) $}</span>
+                            <span class="event-detail">{$ formatUser(event.user_id) $}</span>
+                            <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
                         </button>
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse">
