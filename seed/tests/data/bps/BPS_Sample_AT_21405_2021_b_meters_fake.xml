@@ -1689,8 +1689,8 @@
             <auc:OMCostAnnualSavings>0.0</auc:OMCostAnnualSavings>
           </auc:MeasureSavingsAnalysis>
           <auc:UsefulLife>20.0</auc:UsefulLife>
-          <auc:MeasureTotalFirstCost>50446.0</auc:MeasureTotalFirstCost>
-          <auc:Recommended>true</auc:Recommended>
+          <auc:MeasureTotalFirstCost>60000.0</auc:MeasureTotalFirstCost>
+          <auc:ImplementationStatus>Completed</auc:ImplementationStatus>
           <auc:UserDefinedFields>
             <auc:UserDefinedField>
               <auc:FieldName>Shared Resource Affected</auc:FieldName>
@@ -1722,7 +1722,7 @@
           </auc:MeasureSavingsAnalysis>
           <auc:UsefulLife>20.0</auc:UsefulLife>
           <auc:MeasureTotalFirstCost>185.0</auc:MeasureTotalFirstCost>
-          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Completed</auc:ImplementationStatus>
           <auc:UserDefinedFields>
             <auc:UserDefinedField>
               <auc:FieldName>Shared Resource Affected</auc:FieldName>
@@ -1738,6 +1738,1614 @@
       <auc:Reports>
         <auc:Report ID="ReportType-70339460514820">
           <auc:Scenarios>
+            <auc:Scenario ID="ScenarioType-69819875985700">
+                <auc:ScenarioName>Audit Template Energy Meter Readings - Electricity</auc:ScenarioName>
+                <auc:TemporalStatus>Current</auc:TemporalStatus>
+                <auc:ScenarioType>
+                  <auc:Other></auc:Other>
+                </auc:ScenarioType>
+                <auc:ResourceUses>
+                  <auc:ResourceUse ID="ResourceUseType-69820015553900">
+                    <auc:EnergyResource>Electricity</auc:EnergyResource>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                    <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                  </auc:ResourceUse>
+                </auc:ResourceUses>
+                <auc:TimeSeriesData>
+                  <auc:TimeSeries ID="TimeSeriesType-69820015576540">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820015851740">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016018240">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016246980">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016443120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016635300">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016838740">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017050820">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017266540">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017484640">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017710360">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017987120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820018293820">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819866871560">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819871023240">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819866959060">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819871242820">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819869887440">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867559260">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819870003320">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868934740">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819871382200">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819871554440">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819890855980">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819862250320">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819862465800">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819876434320">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867651140">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867865040">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819861598680">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819861886420">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820023060040">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820023281100">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868276320">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868532260">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819875694120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2022-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:IntervalReading>0.0</auc:IntervalReading>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015553900"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                </auc:TimeSeriesData>
+                <auc:AllResourceTotals>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820015584000">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>115801.734375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>37.79131022630875</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820015576540</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820015856420">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>94954.71875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>30.98799213242048</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820015851740</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016025800">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>52303.546875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>17.068997943403268</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016018240</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016255760">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>81880.921875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>26.721424656505928</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016246980</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016450040">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>139009.125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>45.364924761410606</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016443120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016655760">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>163599.96875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>53.39002222561199</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016635300</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016859420">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>169318.140625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>55.25611869145328</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016838740</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017071740">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>188353.25</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>61.46813034624282</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017050820</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017272520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>158168.578125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>51.61751537001561</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017266540</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017507460">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>120100.03125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>39.194037668385526</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017484640</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017722940">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>112639.9765625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>36.75948655805773</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017710360</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820018015780">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>123347.3046875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>40.25376892827163</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017987120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820018298160">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>110832.7421875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>36.16970476173241</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820018293820</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819862186520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>96860.671875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>31.60999029343617</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819866871560</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819871031700">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>106228.2578125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>34.66705457789041</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819871023240</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819866967620">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>105640.0078125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>34.475082166072845</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819866959060</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819871251540">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>124651.0</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>40.67922329871937</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819871242820</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819869895860">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>151548.453125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>49.457071064390824</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819869887440</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867566620">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>174974.390625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>57.1020072666222</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867559260</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819870026220">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>166206.25</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>54.240568927588036</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819870003320</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819868940680">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>146289.65625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>47.74088930603563</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868934740</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819871389920">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>110110.3203125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>35.933946037221546</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819871382200</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819871562220">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>103741.96875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>33.855666719320475</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819871554440</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819890861100">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>119109.703125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>38.870849094399944</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819890855980</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819862256960">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>110295.578125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>35.99440398719804</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819862250320</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819862473260">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>88825.734375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>28.98782908531306</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819862465800</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819876457540">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>112434.234375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>36.692343635920885</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819876434320</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867666800">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>116225.8203125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>37.92970852675889</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867651140</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867857260">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>133065.5</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>43.4252528086878</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867865040</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819861614940">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>159531.25</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>52.062216443300294</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819861598680</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819861894040">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>184945.171875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>60.35592129002703</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819861886420</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820023075800">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>177164.546875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>57.81675367983057</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820023060040</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820023305480">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>156224.5625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>50.98309570466535</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820023281100</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819868292520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>121265.796875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>39.574479383039616</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868276320</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819868546260">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>112583.265625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>36.74097923047879</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868532260</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819875698420">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>122929.078125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>40.1172828052129</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819875694120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                </auc:AllResourceTotals>
+                <auc:LinkedPremises>
+                  <auc:Building>
+                    <auc:LinkedBuildingID IDref="BuildingType-69820009470420"></auc:LinkedBuildingID>
+                  </auc:Building>
+                </auc:LinkedPremises>
+                <auc:UserDefinedFields>
+                  <auc:UserDefinedField>
+                    <auc:FieldName>Other Scenario Type</auc:FieldName>
+                    <auc:FieldValue>Audit Template Energy Meter Readings</auc:FieldValue>
+                  </auc:UserDefinedField>
+                </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="ScenarioType-69819876006380">
+                <auc:ScenarioName>Audit Template Energy Meter Readings - Natural gas</auc:ScenarioName>
+                <auc:TemporalStatus>Current</auc:TemporalStatus>
+                <auc:ScenarioType>
+                  <auc:Other></auc:Other>
+                </auc:ScenarioType>
+                <auc:ResourceUses>
+                  <auc:ResourceUse ID="ResourceUseType-69820015721800">
+                    <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:ResourceUnits>therms</auc:ResourceUnits>
+                    <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                  </auc:ResourceUse>
+                </auc:ResourceUses>
+                <auc:TimeSeriesData>
+                  <auc:TimeSeries ID="TimeSeriesType-69820015763180">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820015949660">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016167020">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016345260">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016531520">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016750940">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820016964380">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017175900">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017398360">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017648400">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820017854800">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2019-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820018139520">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2019-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819866934080">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819869199620">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819870900600">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867044680">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819869821940">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867484500">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819889611820">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819870131040">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819869052580">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819871485860">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819890775000">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2020-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819890955640">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2020-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819862390800">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-01-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-02-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819876341120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-02-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-03-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819876581120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-03-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-04-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867772860">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-04-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-05-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819867975120">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-05-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-06-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819861760240">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-06-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-07-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820022953660">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-07-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-08-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69820023163040">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-08-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-09-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868086900">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-09-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-10-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868443900">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-10-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-11-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819868722240">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-11-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2021-12-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                  <auc:TimeSeries ID="TimeSeriesType-69819875860780">
+                    <auc:ReadingType>Peak</auc:ReadingType>
+                    <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                    <auc:StartTimestamp>2021-12-01T00:00:00+00:00</auc:StartTimestamp>
+                    <auc:EndTimestamp>2022-01-01T00:00:00+00:00</auc:EndTimestamp>
+                    <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                    <auc:ResourceUseID IDref="ResourceUseType-69820015721800"></auc:ResourceUseID>
+                  </auc:TimeSeries>
+                </auc:TimeSeriesData>
+                <auc:AllResourceTotals>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820015771160">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>10680.37109375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>56.72345087890625</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820015763180</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820015958520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>10095.0390625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>53.614752460937495</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820015949660</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016175300">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>8239.533203125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>43.760160841796875</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016167020</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016369520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>4904.9072265625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>26.049962280273437</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016345260</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016538360">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3595.18798828125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>19.094043405761717</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016531520</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016757500">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>2487.339111328125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>13.210258020263671</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016750940</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820016973160">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>2434.618896484375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>12.930260959228516</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820016964380</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017182680">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>2164.364013671875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>11.494937276611328</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017175900</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017405200">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3186.06298828125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>16.921180530761717</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017398360</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017660060">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7468.8271484375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>39.66694098535156</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017648400</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820017861440">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7216.9140625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>38.3290305859375</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820017854800</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820018168540">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>8805.3583984375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>46.76525845410156</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820018139520</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819862609920">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7797.4951171875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>41.41249656738281</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819866934080</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819869192780">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7058.251953125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>37.486376123046874</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819869199620</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819870910120">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>5782.32177734375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>30.709910959472655</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819870900600</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867037860">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>4984.09814453125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>26.470545245605468</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867044680</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819869815120">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3503.0029296875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>18.60444855957031</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819869821940</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867493540">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>1350.011962890625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>7.169913534912109</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867484500</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819889630480">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>822.0029907226562</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>4.365657883728026</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819889611820</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819870139280">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>918.0679931640625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>4.875859111694336</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819870131040</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819869058520">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>1863.261962890625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>9.895784284912109</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819869052580</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819871491280">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>4266.43701171875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>22.65904696923828</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819871485860</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819890782400">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>5688.044921875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>30.209206580078124</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819890775000</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819890962500">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>8158.34814453125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>43.32898699560547</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819890955640</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819862400120">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>8718.095703125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>46.30180627929687</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819862390800</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819876383060">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7787.64306640625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>41.36017232568359</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819876341120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819876574080">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>5783.759765625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>30.717548115234376</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819876581120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867781660">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>4355.05517578125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>23.12969803857422</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867772860</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819867992680">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3314.656005859375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>17.60413804711914</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819867975120</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819861769020">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>1728.2900390625</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>9.178948397460937</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819861760240</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820022961020">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>1329.1300048828125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>7.0590094559326175</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820022953660</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69820023171720">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>2211.577880859375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>11.74569012524414</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69820023163040</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819868103920">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3040.39794921875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>16.14755350830078</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868086900</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819868452260">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>3716.35107421875</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>19.73754055517578</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868443900</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819875586880">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>4859.48095703125</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>25.80870336279297</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819868722240</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                  <auc:AllResourceTotal ID="AllResourceTotalType-69819875900320">
+                    <auc:EndUse>All end uses</auc:EndUse>
+                    <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                    <auc:SiteEnergyUse>7000.43896484375</auc:SiteEnergyUse>
+                    <auc:EnergyCost>0.0</auc:EnergyCost>
+                    <auc:AnnualAverageGHGEmissions>35.55947634228515</auc:AnnualAverageGHGEmissions>
+                    <auc:UserDefinedFields>
+                      <auc:UserDefinedField>
+                        <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                        <auc:FieldValue>TimeSeriesType-69819875860780</auc:FieldValue>
+                      </auc:UserDefinedField>
+                    </auc:UserDefinedFields>
+                  </auc:AllResourceTotal>
+                </auc:AllResourceTotals>
+                <auc:LinkedPremises>
+                  <auc:Building>
+                    <auc:LinkedBuildingID IDref="BuildingType-69820009470420"></auc:LinkedBuildingID>
+                  </auc:Building>
+                </auc:LinkedPremises>
+                <auc:UserDefinedFields>
+                  <auc:UserDefinedField>
+                    <auc:FieldName>Other Scenario Type</auc:FieldName>
+                    <auc:FieldValue>Audit Template Energy Meter Readings</auc:FieldValue>
+                  </auc:UserDefinedField>
+                </auc:UserDefinedFields>
+            </auc:Scenario>
             <auc:Scenario ID="ScenarioType-70339460549580">
               <auc:ScenarioName>Audit Template Available Energy</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
