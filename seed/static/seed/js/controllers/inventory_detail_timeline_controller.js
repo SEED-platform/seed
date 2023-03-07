@@ -2,6 +2,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
     .controller('inventory_detail_timeline_controller', [
         '$scope',
         '$stateParams',
+        '$timeout',
         'cycles',
         'events',
         'inventory_payload',
@@ -10,6 +11,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         function (
             $scope,
             $stateParams,
+            $timeout,
             cycles,
             events,
             inventory_payload,
@@ -55,6 +57,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     userName = user.email
                 }
                 return userName
+            }
+
+            $scope.expandAccordions = false
+            $scope.toggleAllAccordions = () => {
+                let accordions = document.getElementsByClassName('accordion-button')
+                $scope.expandAccordions = !$scope.expandAccordions
+                for (let i = 0; i < accordions.length; i++) {
+                    accordions[i].setAttribute('aria-expanded', $scope.expandAccordions);
+                }
+                $timeout(() => {
+                    $scope.$apply();
+                }, 0)
             }
 
             const setMeasureGridOptions = () => {

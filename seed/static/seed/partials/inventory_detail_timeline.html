@@ -30,6 +30,7 @@
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
 <div>
+    <button class="btn btn-primary" style="margin: 10px" ng-click="toggleAllAccordions()">{$ expandAccordions ? 'Collapse All' : 'Expand All'$}</button>
     <div class="accordion" id="cycle-container">
         <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="(cycle_id, events) in timeline">
             <div class="accordion-header">
@@ -49,7 +50,7 @@
                 </button>
                 
             </div>
-            <div id="cycle-events-{$ $index $}" class="accordion-body collapse" >
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse" ng-class="{'in': expandAccordions}">
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
