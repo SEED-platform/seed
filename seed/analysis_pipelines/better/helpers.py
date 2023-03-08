@@ -61,7 +61,7 @@ class BETTERPipelineContext:
 ExtraDataColumnPath = namedtuple('ExtraDataColumnPath', ['column_name', 'column_display_name', 'unit_multiplier', 'json_path'])
 
 
-def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=None, fail_on_error=False):
+def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=None, fail_on_error=False, custom_message=None):
     """Creates error messages for the analysis if any are found.
 
     :param analysis: Analysis
@@ -77,13 +77,14 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
     if not errors:
         return
 
+    user_message = custom_message or 'Unexpected error from BETTER service.'
     for error in errors:
         AnalysisMessage.log_and_create(
             logger=logger,
             type_=AnalysisMessage.ERROR,
             analysis_id=context.analysis.id,
             analysis_property_view_id=analysis_property_view_id,
-            user_message=f'Unexpected error from BETTER service.',
+            user_message=user_message,
             debug_message=f'{what_failed_desc}: {error}',
         )
 
@@ -127,9 +128,10 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
     if errors:
         _check_errors(
             errors,
-            'Failed to generate BETTER portfolio analysis',
+            f'Failed to generate BETTER portfolio analysis: {errors[0]}',
             context,
             fail_on_error=True,
+            custom_message=errors[0]
         )
 
     # Store better_analysis_id and better_portfolio_building_analysis_id in the appropriate better_portfolio_building_analysis
@@ -241,7 +243,8 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
                 'Failed to run BETTER building analysis',
                 context,
                 analysis_property_view_id=analysis_property_view_id,
-                fail_on_error=False
+                fail_on_error=False,
+                custom_message=errors[0]
             )
             # continue to next building
             continue
@@ -310,6 +313,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
                 context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
+                custom_message=errors[0]
             )
             # continue to next building analysis
             continue
