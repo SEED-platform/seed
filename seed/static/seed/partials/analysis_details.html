@@ -35,7 +35,7 @@
                 ng-if="!analysis._finished_with_tasks"></i>
             {$ analysis.status $}
         </td>
-        <td>{$:: (messages | filter : {'analysis_property_view':null})[0]['user_message'] $}</td>
+        <td style="white-space: break-spaces;">{$:: (messages | filter : {'analysis_property_view':null})[0]['user_message'] $}</td>
         <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>
         <td>{$:: analysis | get_run_duration $}</td>
         <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
