@@ -190,20 +190,24 @@ class BETTERClient:
 
             if response['generation_result'] == 'COMPLETE':
                 return True
+            # if portfolio analysis has failed, exit the polling loop.
             elif response['generation_result'] == 'FAILED':
-                generation_message = response['generation_message']
-                raise Exception(f'BETTER failed to generate the portfolio analysis: {generation_message}')
+                return True
             else:
                 return False
 
         POLLING_TIMEOUT_SECS = 300
         try:
-            polling.poll(
+            response = polling.poll(
                 lambda: self.get_portfolio_analysis(better_portfolio_id, better_analysis_id),
                 check_success=is_ready,
                 timeout=POLLING_TIMEOUT_SECS,
                 step=10,  # wait 10 seconds between polls
             )
+
+            if response[0].get('generation_result') == 'FAILED':
+                return [response[0].get('generation_message')]
+
         except polling.TimeoutException as te:
             return [f'BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}']
         except Exception as e:
@@ -346,8 +350,10 @@ class BETTERClient:
         }
         try:
             response = requests.request("GET", url, headers=headers)
+            if response.status_code == 404:
+                return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
             if response.status_code != 200:
-                return None, [f'BETTER analysis could not be fetched: {response.text}']
+                return None, [f'BETTER analysis could not be fetched: Status Code: {response.status_code}']
             response_json = response.json()
         except ConnectionError as e:
             message = f'Failed to connect to BETTER service: {e}'
@@ -399,7 +405,7 @@ class BETTERClient:
 
         if response.json()[0]['generation_result'] == 'FAILED':
             generation_message = response.json()[0]['generation_message']
-            return [], [f'Building Analysis generation status returned "FAILED": {generation_message}']
+            return None, [f'Building Analysis generation status returned "FAILED": {generation_message}']
 
         data = response.json()
         better_analysis_id = data[0]['id']
