@@ -191,7 +191,8 @@ class BETTERClient:
             if response['generation_result'] == 'COMPLETE':
                 return True
             elif response['generation_result'] == 'FAILED':
-                raise Exception(f'BETTER failed to generate the portfolio analysis: {response}')
+                generation_message = response['generation_message']
+                raise Exception(f'BETTER failed to generate the portfolio analysis: {generation_message}')
             else:
                 return False
 
@@ -397,7 +398,8 @@ class BETTERClient:
             return None, ['BETTER analysis timed out']
 
         if response.json()[0]['generation_result'] == 'FAILED':
-            return [], ['Building Analysis generation status returned "FAILED"']
+            generation_message = response.json()[0]['generation_message']
+            return [], [f'Building Analysis generation status returned "FAILED": {generation_message}']
 
         data = response.json()
         better_analysis_id = data[0]['id']

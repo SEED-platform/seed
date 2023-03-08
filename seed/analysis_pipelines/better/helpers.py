@@ -83,7 +83,7 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
             type_=AnalysisMessage.ERROR,
             analysis_id=context.analysis.id,
             analysis_property_view_id=analysis_property_view_id,
-            user_message='Unexpected error from BETTER service. Please confirm your Organization\'s API token is correct and try again or contact the SEED administrators.',
+            user_message=f'Unexpected error from BETTER service.',
             debug_message=f'{what_failed_desc}: {error}',
         )
 
