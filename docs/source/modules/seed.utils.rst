@@ -44,14 +44,6 @@ Organizations
     :undoc-members:
     :show-inheritance:
 
-Projects
---------
-
-.. automodule:: seed.utils.projects
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Time
 ----
 
