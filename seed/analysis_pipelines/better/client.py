@@ -90,7 +90,7 @@ class BETTERClient:
         :param better_portfolio_id: int
         :param analysis_config: dict, Used as analysis configuration, should be structured
             according to API requirements
-        :return: tuple(int, list[str]), ID of analysis followed by list of error messages
+        :return: tuple(int, list[str], list[str]), ID of analysis followed by list of error messages and warning messages
         """
         url = f'{self.API_URL}/portfolios/{better_portfolio_id}/analytics/'
         data = dict(analysis_config)
@@ -108,9 +108,9 @@ class BETTERClient:
                 analysis_id = data['id']
                 warnings = data.get('warning_message', None)
             else:
-                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}'], []
+                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}'], None
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio analysis: {e}'], []
+            return None, [f'Unexpected error creating BETTER portfolio analysis: {e}'], None
 
         return analysis_id, [], [warnings]
 
