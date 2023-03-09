@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         'inventory_payload',
         'urls',
         'users_payload',
+        'organization_payload',
         function (
             $scope,
             $stateParams,
@@ -17,7 +18,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             inventory_payload,
             urls,
             users_payload,
+            organization_payload
         ) {
+            $scope.organization = organization_payload.organization
             $scope.static_url = urls.static_url;
             $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => {
                 return {...acc, [curr.id]: curr.name}
@@ -28,6 +31,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 view_id: $stateParams.view_id,
                 related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
             };
+            $scope.item_state = inventory_payload.state;
             $scope.orgUsers = users_payload.users
 
             const formatTimeline = (events) => {
@@ -59,17 +63,17 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 return userName
             }
 
-            $scope.expandAccordions = false
-            $scope.toggleAllAccordions = () => {
-                let accordions = document.getElementsByClassName('accordion-button')
-                $scope.expandAccordions = !$scope.expandAccordions
-                for (let i = 0; i < accordions.length; i++) {
-                    accordions[i].setAttribute('aria-expanded', $scope.expandAccordions);
-                }
-                $timeout(() => {
-                    $scope.$apply();
-                }, 0)
-            }
+            // $scope.expandAccordions = false
+            // $scope.toggleAllAccordions = () => {
+            //     let accordions = document.getElementsByClassName('accordion-button')
+            //     $scope.expandAccordions = !$scope.expandAccordions
+            //     for (let i = 0; i < accordions.length; i++) {
+            //         accordions[i].setAttribute('aria-expanded', $scope.expandAccordions);
+            //     }
+            //     $timeout(() => {
+            //         $scope.$apply();
+            //     }, 0)
+            // }
 
             const setMeasureGridOptions = () => {
                 const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
@@ -154,7 +158,53 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 })
             }
 
+            $scope.eventSelectGridOptions = {
+                data: [
+                    {
+                        "Type": "Notes",
+                        "eventType": "NoteEvent"
+                    },
+                    {
+                        "Type": "Analyses",
+                        "eventType": "AnalysisEvent"
+                    },
+                    {
+                        "Type": "AT Uploads",
+                        "eventType": "ATEvent"
+                    },
+                ],
+                columnDefs: [
+                    {field: "eventType", visible: false},
+                    {field: "Type"}
+                ],
+                onRegisterApi: (gridApi) => {
+                    $scope.gridApiEventSelection = gridApi;
+                    $scope.gridApiEventSelection.selection.on.rowSelectionChanged($scope, $scope.eventSelect)
+                    $scope.gridApiEventSelection.selection.on.rowSelectionChangedBatch($scope, $scope.eventSelect)
+
+                    init = true;
+                    $scope.gridApiEventSelection.core.on.rowsRendered($scope, function () {
+                        if (init) {
+                            $scope.gridApiEventSelection.selection.selectAllRows();
+                            init = false;
+                        }
+                    })
+                },
+                minRowsToShow: 3,
+                enableColumnMenus: false,
+                enableHorizontalScrollbar: 0,
+            }
             
+            $scope.resizeGridEventSelection = () => {
+                gridApi = $scope.gridApiEventSelection
+                setTimeout(gridApi.core.handleWindowResize, 1);
+            }
+
+            $scope.eventSelect = () => {
+                const selectedEventTypes = $scope.gridApiEventSelection.selection.getSelectedRows().map(event => event.eventType)
+                const selectedEvents = events.data.filter(event => selectedEventTypes.includes(event.event_type))
+                formatTimeline(selectedEvents)
+            }
 
 
             $scope.eventTypeLookup = {
@@ -197,8 +247,23 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 }
             }
 
+            const get_inventory_display_name = function (property_type) {
+                let error = '';
+                let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+                if (!(field in $scope.item_state)) {
+                    error = `${field} does not exist`;
+                    field = 'address_line_1';
+                }
+                if (!$scope.item_state[field]) {
+                    error += `${error === '' ? '' : ' and default '}${field} is blank`;
+                }
+                $scope.inventory_name_error = error;
+                $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
+            };
+
             // Initiate data population
-            formatTimeline($scope.events.data)
+            // formatTimeline($scope.events.data)
+            get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
             setMeasureGridOptions()
             setNoteGridOptions()
             setAnalysisGridOptions()
