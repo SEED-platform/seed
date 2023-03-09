@@ -96,7 +96,24 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
         pipeline.fail(what_failed_desc, logger, progress_data_key=context.progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(what_failed_desc)
+    
+def _check_warnings(warnings, context):
+    """Creates warning messages for the analysis if any are found.
 
+    :param context: BETTERPipelineContext
+    :param warnings: list[str], list of warning messages
+    """
+    if not warnings:
+        return
+
+    for warning in warnings:
+        AnalysisMessage.log_and_create(
+            logger=logger,
+            type_=AnalysisMessage.WARNING,
+            analysis_id=context.analysis.id,
+            user_message=warning,
+            debug_message='Warning'
+        )
 
 def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_building_analyses, analysis_config, context):
     """Create and run an analysis for a BETTER portfolio. Updates all BuildingAnalysis
@@ -110,9 +127,13 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
     :returns: int, better_analysis_id, ID of the analysis which was created and run
     :returns: list[dict], each dict has keys 'building_id' and 'id' where 'id' is the portfolio_analysis ID.
     """
-    better_analysis_id, errors = context.client.create_portfolio_analysis(
+    better_analysis_id, errors, warnings = context.client.create_portfolio_analysis(
         better_portfolio_id,
         analysis_config,
+    )
+    _check_warnings(
+        warnings,
+        context, 
     )
     _check_errors(
         errors,
