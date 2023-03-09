@@ -96,7 +96,8 @@ def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=N
         pipeline.fail(what_failed_desc, logger, progress_data_key=context.progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(what_failed_desc)
-    
+
+
 def _check_warnings(warnings, context):
     """Creates warning messages for the analysis if any are found.
 
@@ -114,6 +115,7 @@ def _check_warnings(warnings, context):
             user_message=warning,
             debug_message='Warning'
         )
+
 
 def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_building_analyses, analysis_config, context):
     """Create and run an analysis for a BETTER portfolio. Updates all BuildingAnalysis
@@ -133,7 +135,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
     )
     _check_warnings(
         warnings,
-        context, 
+        context,
     )
     _check_errors(
         errors,
