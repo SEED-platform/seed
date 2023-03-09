@@ -1301,6 +1301,9 @@ msgstr "INTERNE"
 msgid "INVALID_CSV_EXTENSION_ALERT"
 msgstr "<strong>Désolé!</strong> SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong>.csv</strong> sont pris en charge."
 
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Type de document sélectionné non valide. Les types de fichiers acceptés sont .dxf, .pdf, .idf et .osm"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
 
@@ -2099,8 +2102,8 @@ msgstr "Nom de profil"
 msgid "Program Metric"
 msgstr "Métrique du programme"
 
-msgid "Program Configuration"
-msgstr "Configuration du programme"
+msgid "Program Metric Configuration"
+msgstr "Configuration de la métrique du programme"
 
 msgid "Program Overview"
 msgstr "Métrique du programme"
@@ -2383,6 +2386,9 @@ msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Sélectionner un ensemble de données"
 
+msgid "SELECT_DOC_UPLOAD_TITLE"
+msgstr "Sélectionnez un document à télécharger"
+
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Sélectionnez le type de fichier(s) que vous souhaitez ajouter à {dataset_name}."
 
@@ -2647,6 +2653,9 @@ msgstr "Succès!"
 msgid "Successful upload!"
 msgstr "Téléchargement réussi!"
 
+msgid "Successfully Uploaded"
+msgstr "Téléversé avec succès"
+
 msgid "Switch Profiles"
 msgstr "Changer de profil"
 
@@ -2838,6 +2847,9 @@ msgstr "UBID"
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "Si les propriétés ont été géocodées manuellement, elles ne seront pas mises à jour. Pour mettre à jour le géocodage, supprimez le lat / long."
 
+msgid "UPLOADING_DOCUMENT_TITLE"
+msgstr "Téléchargement du document..."
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Téléchargement de Fichier"
 
@@ -2849,6 +2861,9 @@ msgstr "Téléchargement Complet"
 
 msgid "UPLOAD_DATA_LOGGER_BUTTON"
 msgstr "Créer un enregistreur de données"
+
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Types de fichiers acceptés : .dxf, .pdf, .idf et .osm"
 
 msgid "UPLOAD_FILE"
 msgstr "Téléverser un Fichier"

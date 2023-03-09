@@ -707,6 +707,27 @@ BASE_MAPPING_V2 = {
             }
         }
     },
+    'audit_dates': {
+        'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:AuditDates/auc:AuditDate',
+        'type': 'list',
+        'items': {
+            "date": {
+                'xpath': './auc:Date',
+                'type': 'value',
+                'value': 'text',
+            },
+            "date_type": {
+                'xpath': './auc:DateType',
+                'type': 'value',
+                'value': 'text',
+            },
+            "custom_date_type": {
+                'xpath': './auc:CustomDateType',
+                'type': 'value',
+                'value': 'text',
+            },
+        }
+    },
     'scenarios': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario',
         'type': 'list',
