@@ -44,6 +44,7 @@ from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.postoffice import PostOfficeEmailViewSet, PostOfficeViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
+from seed.views.v3.property_measures import PropertyMeasureViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
@@ -118,6 +119,9 @@ meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', 
 meters_router.register(r'readings', MeterReadingViewSet, basename='property-meter-readings')
 
 
+property_measures_router = nested_routers.NestedSimpleRouter(properties_router, r'scenarios', lookup='scenario')
+property_measures_router.register(r'measures', PropertyMeasureViewSet, basename='property-measures')
+
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
 
@@ -141,6 +145,7 @@ urlpatterns = [
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
     re_path(r'^', include(meters_router.urls)),
+    re_path(r'^', include(property_measures_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
     re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),

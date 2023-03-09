@@ -26,19 +26,19 @@
                             <td ng-class="{'measure-elec': scenario.annual_electricity_savings}">
                                 <img class="legend-icon" ng-src="{$ static_url $}seed/images/timeline_electricity.png" ></img>
                                 <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
-                                    {$ (scenario.annual_electricity_savings || 0) | number : 0 $}
+                                    {$ (scenario.annual_electricity_savings | number: 0) || 'N/A' $}
                                 </span>
                             </td>
                             <td ng-class="{'measure-elec': scenario.annual_peak_electricity_reduction}">
                                 <img ng-src="{$ static_url $}seed/images/timeline_peak_down.png" ></img>
                                 <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
-                                    {$ (scenario.annual_peak_electricity_reduction || 0) | number : 0 $}
+                                    {$ (scenario.annual_peak_electricity_reduction | number: 0) || 'N/A' $}
                                 </span>
                             </td>
                             <td ng-class="{'measure-gas': scenario.annual_natural_gas_savings}">
                                 <img ng-src="{$ static_url $}seed/images/timeline_natural_gas.png" ></img>
                                 <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
-                                    {$ (scenario.annual_natural_gas_savings || 0) | number : 0 $}
+                                    {$ (scenario.annual_natural_gas_savings | number: 0) || 'N/A' $}
                                 </span>
                             </td>
                         </div>
