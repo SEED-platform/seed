@@ -231,6 +231,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
             }
 
+            $scope.eventIconLookup = {
+                'Analyses': 'fa fa-bar-chart',
+                'Audit Template Files': 'fa fa-bolt',
+                'Notes': 'fa fa-sticky-note-o',
+            }
+
             $scope.resizeGridByScenarioId = (scenarioId) => {
                 gridApi = $scope.gridApiByScenarioId[scenarioId]
                 setTimeout(gridApi.core.handleWindowResize, 50);
