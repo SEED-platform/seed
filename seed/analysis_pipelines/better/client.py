@@ -106,12 +106,13 @@ class BETTERClient:
                 data = response.json()
                 logger.info(f'CREATED Analysis: {data}')
                 analysis_id = data['id']
+                warnings = data.get('warning_message', None)
             else:
-                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}']
+                return None, [f'Expected 201 response from BETTER but got {response.status_code}: {response.content}'], []
         except Exception as e:
-            return None, [f'Unexpected error creating BETTER portfolio analysis: {e}']
+            return None, [f'Unexpected error creating BETTER portfolio analysis: {e}'], []
 
-        return analysis_id, []
+        return analysis_id, [], [warnings]
 
     def get_portfolio_analysis(self, better_portfolio_id, better_analysis_id):
         """Get portfolio analysis as dict
