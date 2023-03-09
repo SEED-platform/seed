@@ -45,9 +45,3 @@ from .certification import (    # noqa
     GreenAssessmentProperty,
     GreenAssessmentURL
 )
-
-from .projects import (     # noqa
-    Project,
-    ProjectPropertyView,
-    ProjectTaxLotView,
-)

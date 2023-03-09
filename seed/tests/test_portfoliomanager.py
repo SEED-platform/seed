@@ -9,9 +9,11 @@ All rights reserved.
 """
 import json
 import os
+from pathlib import Path
 from unittest import skip, skipIf
 
 import requests
+import xmltodict
 from django.test import TestCase
 from django.urls import reverse_lazy
 
@@ -328,7 +330,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
         # then for each property, we expect some keys to come back, but if it has the property id, that should suffice
         for prop in body['properties']:
-            self.assertIn('property_id', prop)
+            self.assertIn('portfolioManagerPropertyId', prop)
 
     @pm_skip_test_check
     def test_report_generation_empty_child_template(self):
@@ -428,3 +430,21 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
             content_type='application/json',
         )
         self.assertEqual(200, response.status_code)
+
+
+class PortfolioManagerReportParsingTest(TestCase):
+    """Test the parsing of the resulting PM XML file. This is only for the
+    version 2 parsing"""
+    def test_parse_pm_report(self):
+        pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
+        xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'
+        with open(xml_path, 'r') as file:
+            content_object = xmltodict.parse(file.read(), dict_constructor=dict)
+
+            success, properties = pm._parse_properties_v2(content_object)
+
+            self.assertTrue(success)
+            self.assertEqual(len(properties), 9)
+            self.assertEqual(properties[0]['portfolioManagerPropertyId'], '22178843')
+            self.assertIsNone(properties[0]['parentPropertyId'])
+            self.assertEqual(properties[0]['propertyFloorAreaBuildingsAndParking'], '89250.0')
