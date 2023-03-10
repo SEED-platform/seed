@@ -112,3 +112,25 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         }
 
         return JsonResponse(result, status=status.HTTP_200_OK)
+    
+    @api_endpoint_class
+    @ajax_request_class
+    def destroy(self, request, property_pk=None, pk=None):
+        try:
+            scenario = Scenario.objects.get(pk=pk)
+            measures = scenario.measures.all()
+        except Scenario.DoesNotExist:
+            return JsonResponse({
+                "status": "error",
+                "message": 'No Scenario found with given pks'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+        for property_measure in measures:
+            property_measure.delete()
+        scenario.delete()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Successfully Deleted Scenario'
+        }, status=status.HTTP_204_NO_CONTENT)

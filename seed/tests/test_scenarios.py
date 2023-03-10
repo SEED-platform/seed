@@ -11,11 +11,19 @@ from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter, MeterReading, Property, PropertyView, Scenario
+from seed.models import (
+    Meter, 
+    MeterReading, 
+    Property, 
+    PropertyView, 
+    Scenario, 
+    PropertyMeasure
+)
 from seed.test_helpers.fake import (
     FakePropertyMeasureFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory
+    FakePropertyViewFactory,
+    FakePropertyFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -40,6 +48,8 @@ class TestScenarios(DeleteModelsTestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+
 
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
@@ -106,7 +116,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         # The Scenario view uses PropertyView.id not PropertyState.id
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_state.id, scenario.id]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id + 1]),
             **self.headers
         )
         self.assertEqual(response.status_code, 404)
@@ -117,6 +127,29 @@ class TestScenarios(DeleteModelsTestCase):
             **self.headers
         )
         self.assertEqual(response.status_code, 204)
+        self.assertEqual(Scenario.objects.count(), 0)
+
+    def test_delete_scenarios_with_measures(self):
+        property_state = FakePropertyMeasureFactory(self.org).get_property_state()
+        property = self.property_factory.get_property()
+        property_view = PropertyView.objects.create(property=property, cycle_id=1, state=property_state)
+        scenario = Scenario.objects.create(property_state=property_state)
+        measures = property_state.measure_set.all()
+        property_measures = PropertyMeasure.objects.filter(measure__in=measures)
+
+        #assign property_measures to scneario
+        for pm in property_measures: 
+            pm.scenario_set.set([scenario])
+
+        self.assertEqual(PropertyMeasure.objects.count(), 5)
+        self.assertEqual(Scenario.objects.count(), 1)
+
+        response = self.client.delete(
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]),
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(PropertyMeasure.objects.count(), 0)
         self.assertEqual(Scenario.objects.count(), 0)
 
     def test_update_scenario(self):
