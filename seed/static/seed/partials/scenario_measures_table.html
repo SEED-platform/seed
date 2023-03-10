@@ -1,13 +1,16 @@
 
 <div class="section_content" id="scenario-measures-table">
     
-    <div ng-repeat="cycle_scenario in cycle_scenarios">
-        SCENARIO DATE
+    <div ng-repeat="historical_item in historical_items_with_scenarios">
+        <div style="padding: 12px; font-size:20px; width: 100%; color: white; background: black;">
+            {$ format_epoch(historical_item.date_edited) $}
+        </div>
         <div class="table_list_container table_item_detail">
             <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
                 <thead>
                     <!-- Scenarios Table -->
                     <tr>
+                        <th width="80">Actions</th>
                         <th sd-resizable>Scenario</th>
                         <th sd-resizable class="ellipsis-resizable">Type</th>
                         <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
@@ -15,7 +18,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat-start="scenario in cycle_scenario | orderBy:'$index':true">
+                    <tr ng-repeat-start="scenario in historical_item.state.scenarios | orderBy:'$index':true">
+                        <td>
+                            <button class="btn btn-danger" type="button"
+                                ng-click="delete_scenario(scenario.id, scenario.name)">
+                                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                            </button>
+                        </td>
                         <td> {$ scenario.name $}</td>
                         <td> {$ scenario.temporal_status $}</td>
                         <td>

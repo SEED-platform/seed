@@ -38,6 +38,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'audit_template_service',
     'simple_modal_service',
     'property_measure_service',
+    'scenario_service',
     function (
       $http,
       $state,
@@ -73,6 +74,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       audit_template_service,
       simple_modal_service,
       property_measure_service,
+      scenario_service,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -113,7 +115,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      $scope.cycle_scenarios = $scope.historical_items.map(item => item.state.scenarios)
+      $scope.historical_items_with_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios))
+      $scope.format_epoch = (epoch) => {
+       return moment(epoch).format('YYYY/MM/DD')
+      }
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
@@ -827,6 +832,30 @@ angular.module('BE.seed.controller.inventory_detail', [])
             col_id = $scope.columns.find(col => col.derived_column == result.derived_column_id).id
             $scope.item_derived_values[col_id] = result.value;
           });
+        });
+      };
+
+      $scope.delete_scenario = (scenario_id, scenario_name) => {
+        property_view_id = $stateParams.view_id 
+
+        const modalOptions = {
+          type: 'default',
+          okButtonText: 'Yes',
+          cancelButtonText: 'Cancel',
+          headerText: 'Are you sure?',
+          bodyText: `You're about to permanently delete scenario "${scenario_name}". Would you like to continue?`
+        };
+        //user confirmed, delete it
+        simple_modal_service.showModal(modalOptions).then(() => {
+          scenario_service.delete_scenario($scope.org.id, property_view_id, scenario_id)
+            .then(() => {
+              Notification.success(`Deleted "${scenario_name}"`);  
+              location.reload();
+              })
+            .catch(err => {
+              $log.error(err);
+              Notification.error(`Error attempting to delete "${scenario_name}". Please refresh the page and try again.`);
+            });
         });
       };
 
