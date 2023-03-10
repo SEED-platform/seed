@@ -113,6 +113,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
+      $scope.cycle_scenarios = $scope.historical_items.map(item => item.state.scenarios)
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
@@ -829,33 +830,42 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-      $scope.delete_property_measure = (property_measure_id) => {
+      $scope.delete_property_measure = (property_measure_id, measure_display_name, scenario_id) => {
         property_view_id = $stateParams.view_id 
-        property_measure_id = property_measure_id
-        measure = $scope.item_state.measures.find(m => m.id == property_measure_id)
-        scenario_id = measure.scenario_id
 
         const modalOptions = {
           type: 'default',
           okButtonText: 'Yes',
           cancelButtonText: 'Cancel',
           headerText: 'Are you sure?',
-          bodyText: `You're about to permanently delete measure "${measure.dispaly_name}". Would you like to continue?`
+          bodyText: `You're about to permanently delete measure "${measure_display_name}". Would you like to continue?`
         };
         //user confirmed, delete it
         simple_modal_service.showModal(modalOptions).then(() => {
           property_measure_service.delete_property_measure($scope.org.id, property_view_id, scenario_id, property_measure_id)
             .then(() => {
-              Notification.success(`Deleted "${measure.display_name}"`);  
+              Notification.success(`Deleted "${measure_display_name}"`);  
               location.reload();
               })
             .catch(err => {
               $log.error(err);
-              Notification.error(`Error attempting to delete "${derived_column.name}". Please refresh the page and try again.`);
+              Notification.error(`Error attempting to delete "${measure_display_name}". Please refresh the page and try again.`);
             });
         });
       };
-        
+      
+    $scope.getStatusOfMeasures = (scenario) => {
+      const statusCount = scenario.measures.reduce((acc, measure) => {
+        let status = measure.implementation_status
+        if (!acc[status]) {
+          acc[status] = 0
+        }
+        acc[status]++
+        return acc
+      }, {})
+
+      return statusCount
+    }
 
       /**
        *   init: sets default state of inventory detail page,

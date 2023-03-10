@@ -1,86 +1,82 @@
 
 <div class="section_content" id="scenario-measures-table">
-    <div class="table_list_container table_item_detail">
-        <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-            <thead>
-                <tr>
-                    <th sd-resizable>Scenario</th>
-                    <th sd-resizable class="ellipsis-resizable">Type</th>
-                    <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
-                    <th sd-resizable class="ellipsis-resizable">Status of Measures</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat-start="scenario in item_state.scenarios | orderBy:'$index':true">
-                    <td> {$ scenario.name $}</td>
-                    <td> {$ scenario.temporal_status $}</td>
-                    <td>
-                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
-                        Peak electricity reduction (kW): {$ scenario.annual_peak_electricity_reduction | number : 2
-                        $}<br>
-                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
-                    </td>
-                    <td>2 Implemented</td>
-                </tr>
-                <tr ng-repeat-end>
-
-                    <td colspan=4>
-                        <div>
-                            <div class="accordion-header" style="width: 100%">
-                                <button class="accordion-button" type="button" data-toggle="collapse" data-target="#scenario-{$ scenario.id $}-measures">> Measures</button>
-
+    
+    <div ng-repeat="cycle_scenario in cycle_scenarios">
+        SCENARIO DATE
+        <div class="table_list_container table_item_detail">
+            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                <thead>
+                    <!-- Scenarios Table -->
+                    <tr>
+                        <th sd-resizable>Scenario</th>
+                        <th sd-resizable class="ellipsis-resizable">Type</th>
+                        <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
+                        <th sd-resizable class="ellipsis-resizable">Status of Measures</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat-start="scenario in cycle_scenario | orderBy:'$index':true">
+                        <td> {$ scenario.name $}</td>
+                        <td> {$ scenario.temporal_status $}</td>
+                        <td>
+                            Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
+                            Peak electricity reduction (kW): {$ scenario.annual_peak_electricity_reduction | number : 2
+                            $}<br>
+                            Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
+                        </td>
+                        <td>
+                            <div ng-repeat="(status, count) in getStatusOfMeasures(scenario)">
+                                {$ count $} {$ status $}
                             </div>
-                            <div id="scenario-{$ scenario.id $}-measures" class="accordion-body collapse">
-                                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                                    <thead>
-                                        <tr>
-                                            <th sd-resizable>Category</th>
-                                            <th sd-resizable>Measure Name</th>
-                                            <th sd-resizable>Status</th>
-                                            <th sd-resizable>Recommended</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr ng-repeat="measure in scenario.measures">
-                                            <td>
-                                                {$ measure.category_display_name $}
-                                            </td>
-                                            <td>
-                                                {$ measure.display_name $}
-                                            </td>
-                                            <td>
-                                                {$ measure.implementation_status $}
-                                            </td>
-                                            <td>
-                                                {$ measure.recommended $}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        </td>
+                    </tr>
+                    <tr class="{$ scenario.measures $}" ng-if="!_.isEmpty(scenario.measures)" ng-repeat-end>
+                        <!-- Mesaures Section -->
+                        <td colspan=4>
+                            <div>
+                                <div class="accordion-header" style="width: 100%">
+                                    <button class="accordion-button" type="button" data-toggle="collapse" data-target="#scenario-{$ scenario.id $}-measures">> Measures</button>
+
+                                </div>
+                                <div id="scenario-{$ scenario.id $}-measures" class="accordion-body collapse">
+                                    <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                                        <thead>
+                                            <tr>
+                                                <th width="80">Actions</th>
+                                                <th sd-resizable>Category</th>
+                                                <th sd-resizable>Measure Name</th>
+                                                <th sd-resizable>Status</th>
+                                                <th sd-resizable>Recommended</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="measure in scenario.measures">
+                                                <td>
+                                                    <button class="btn btn-danger" type="button" ng-click="delete_property_measure(measure.id, measure.display_name, scenario.id)">
+                                                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                                    </button>
+                                                </td>
+                                                <td>
+                                                    {$ measure.category_display_name $}
+                                                </td>
+                                                <td>
+                                                    {$ measure.display_name $}
+                                                </td>
+                                                <td>
+                                                    {$ measure.implementation_status $}
+                                                </td>
+                                                <td>
+                                                    {$ measure.recommended $}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <!-- <div>
-                        <table>
-                            {$ scenario $}
-                            <thead>
-                                <tr>
-                                    <th sd-resizable>Measure</th>
-                                    <th sd-rsizable>Category</th>
-                                    <th sd-rsizable>Measure Name</th>
-                                    <th sd-rsizable>Status</th>
-                                    <th sd-rsizable>Recommended</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="measure in scenario">
-                                    <td>{$ measure $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div> -->
-                </tr>
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
