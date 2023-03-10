@@ -8,7 +8,7 @@ import django_extensions.db.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0183_auto_20221216_1221'),
+        ('seed', '0185_auto_20230112_0922'),
     ]
 
     operations = [
