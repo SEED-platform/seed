@@ -36,6 +36,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'labels_payload',
     'organization_payload',
     'audit_template_service',
+    'simple_modal_service',
+    'property_measure_service',
     function (
       $http,
       $state,
@@ -68,7 +70,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
       current_profile,
       labels_payload,
       organization_payload,
-      audit_template_service
+      audit_template_service,
+      simple_modal_service,
+      property_measure_service,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -824,6 +828,34 @@ angular.module('BE.seed.controller.inventory_detail', [])
           });
         });
       };
+
+      $scope.delete_property_measure = (property_measure_id) => {
+        property_view_id = $stateParams.view_id 
+        property_measure_id = property_measure_id
+        measure = $scope.item_state.measures.find(m => m.id == property_measure_id)
+        scenario_id = measure.scenario_id
+
+        const modalOptions = {
+          type: 'default',
+          okButtonText: 'Yes',
+          cancelButtonText: 'Cancel',
+          headerText: 'Are you sure?',
+          bodyText: `You're about to permanently delete measure "${measure.dispaly_name}". Would you like to continue?`
+        };
+        //user confirmed, delete it
+        simple_modal_service.showModal(modalOptions).then(() => {
+          property_measure_service.delete_property_measure($scope.org.id, property_view_id, scenario_id, property_measure_id)
+            .then(() => {
+              Notification.success(`Deleted "${measure.display_name}"`);  
+              location.reload();
+              })
+            .catch(err => {
+              $log.error(err);
+              Notification.error(`Error attempting to delete "${derived_column.name}". Please refresh the page and try again.`);
+            });
+        });
+      };
+        
 
       /**
        *   init: sets default state of inventory detail page,

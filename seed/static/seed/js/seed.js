@@ -185,6 +185,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.note',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
+  'BE.seed.service.property_measure',
   'BE.seed.service.search',
   'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',

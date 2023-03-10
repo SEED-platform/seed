@@ -405,6 +405,7 @@
                                     <th sd-resizable>Category</th>
                                     <th sd-resizable class="ellipsis-resizable">Measure Name</th>
                                     <th sd-resizable class="ellipsis-resizable">Measure Information</th>
+                                    <th width="80">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -425,6 +426,11 @@
                                         Capital Replacement Cost: {$ measure.cost_capital_replacement $} <br>
                                         Description: {$ measure.description $} <br>
                                         Useful Life: {$ measure.useful_life ? measure.useful_life + ' years' : '' $} <br>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-danger" type="button" ng-click="delete_property_measure(measure.id)">
+                                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>

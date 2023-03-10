@@ -26,6 +26,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
     implementation_status = ChoiceField(choices=PropertyMeasure.IMPLEMENTATION_TYPES)
     application_scale = ChoiceField(choices=PropertyMeasure.APPLICATION_SCALE_TYPES)
     category_affected = ChoiceField(choices=PropertyMeasure.CATEGORY_AFFECTED_TYPE)
+    scenario_id = serializers.SerializerMethodField('get_scenario_id')
 
     class Meta:
         model = PropertyMeasure
@@ -49,7 +50,11 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             'cost_capital_replacement',
             'cost_residual_value',
             'useful_life',
+            'scenario_id',
         )
 
     def measure_id_name(self, obj):
         return "{}.{}".format(obj.measure.category, obj.measure.name)
+
+    def get_scenario_id(self, obj):
+        return obj.scenario_set.first().id
