@@ -51,7 +51,7 @@
             <div class="accordion-header">
                 <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
                     <div style="display: flex;">
-                        <i class="fa fa-chevron-right"></i> 
+                        <i class="fa fa-chevron-right accordion-indicator"></i> 
                         <div style="min-width: 300px; width: fit-content;">
                             CYCLE NAME: {$ cycleNameById[cycle_id] $}
                         </div>
@@ -65,11 +65,11 @@
                 </button>
                 
             </div>
-            <div id="cycle-events-{$ $index $}" class="accordion-body">
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse">
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
-                            <i class="fa fa-chevron-right"></i>
+                            <i class="fa fa-chevron-right accordion-indicator"></i>
                             <span class="event-detail">{$ formatDate(event.modified) $}</span>
                             <span class="event-detail">{$ formatUser(event.user_id) $}</span>
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>

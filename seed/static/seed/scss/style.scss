@@ -4649,11 +4649,11 @@ ul.r-list {
 
 .accordion-header {
 
-  .accordion-button[aria-expanded="true"] i{
+  .accordion-button[aria-expanded="true"] .accordion-indicator {
     transform: rotate(90deg);
     transition: transform 0.5s;
   }
-  .accordion-button[aria-expanded="false"] i {
+  .accordion-button[aria-expanded="false"] .accordion-indicator {
     transform: rotate(0);
     transition: transform 0.5s;
   }
@@ -4724,4 +4724,11 @@ ul.r-list {
 .event-select {
   width: 150px;
   margin: 20px 0;
+}
+#scenario-measures-table {
+  .accordion-header{
+    .accordion-button{
+      width: 100%;
+    }
+  }
 }
