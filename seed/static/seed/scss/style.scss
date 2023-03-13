@@ -4747,8 +4747,12 @@ ul.r-list {
   justify-content: center;
 }
 
-.measure-section{
+.measures-header{
   font-weight: bold;
-  padding: 10px 0 20px 0;
+  padding: 3px 10px;
   background: #EFEFEF;
+}
+.measures-footer {
+  background: #EFEFEF;
+  height:10px;
 }
