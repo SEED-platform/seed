@@ -24,6 +24,7 @@ class EventSerializer(serializers.ModelSerializer):
             data['user_id'] = data['note']['user_id']
         else:
             raise ValueError
+        data['cycle_end_date'] = instance.cycle.end
         return data
 
     class Meta:
