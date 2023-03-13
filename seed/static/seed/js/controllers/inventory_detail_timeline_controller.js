@@ -63,6 +63,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 return userName
             }
 
+            // Rough draft for an "Expand All" accordions button
             // $scope.expandAccordions = false
             // $scope.toggleAllAccordions = () => {
             //     let accordions = document.getElementsByClassName('accordion-button')
