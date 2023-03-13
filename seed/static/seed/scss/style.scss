@@ -4649,14 +4649,23 @@ ul.r-list {
 
 .accordion-header {
 
-  .accordion-button[aria-expanded="true"] .accordion-indicator {
+  .accordion-button[aria-expanded="true"] .accordion-indicator-default-closed {
     transform: rotate(90deg);
     transition: transform 0.5s;
   }
-  .accordion-button[aria-expanded="false"] .accordion-indicator {
+  .accordion-button[aria-expanded="false"] .accordion-indicator-default-closed {
     transform: rotate(0);
     transition: transform 0.5s;
   }
+  .accordion-button[aria-expanded="true"] .accordion-indicator-default-open {
+    transform: rotate(0);
+    transition: transform 0.5s;
+  }
+  .accordion-button[aria-expanded="false"] .accordion-indicator-default-open {
+    transform: rotate(-90deg);
+    transition: transform 0.5s;
+  }
+
   .accordion-button{
     width: calc(100% - 20px);
     text-align: left;
@@ -4731,4 +4740,15 @@ ul.r-list {
       width: 100%;
     }
   }
+}
+.grid-actions{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.measure-section{
+  font-weight: bold;
+  padding: 10px 0 20px 0;
+  background: #EFEFEF;
 }
