@@ -391,7 +391,7 @@
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                             <span>
-                                <h2><i class="fa fa-bolt"></i>Scenarios & Measures</h2>
+                                <h2><i class="fa fa-bolt"></i>{$ cycle.name $} - Scenarios & Measures</h2>
                             </span>
                         </div>
                     </div>
@@ -399,9 +399,26 @@
             </div>
             <!-- List of Scenarios and Measures grouped by AuditTemplate File Upload -->
             <div class="section_content_container">    
-                <div ng-repeat="historical_item in historical_items_with_scenarios">
-                    <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
-                        ng-init="scenarios = historical_item.state.scenarios"></div>
+                <div ng-repeat="historical_item in historical_items_with_scenarios" >
+                    <div class="accordion-header" style="margin: 2px 0">
+                        <button 
+                            class="accordion-button"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#historical-item-{$ $index $}"
+                            style="background: #717071; color: white; font-weight:bold; font-size:16px; padding-left: 30px;"
+                        >
+                            <i class="fa fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
+                            {$ format_epoch(historical_item.date_edited) $}
+                        </button>
+                    </div>
+
+                    <div id="historical-item-{$ $index $}" class="accordion-body collapse in">
+                        <div 
+                            ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
+                            ng-init="scenarios = historical_item.state.scenarios">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
