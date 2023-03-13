@@ -51,9 +51,9 @@
             <div class="accordion-header">
                 <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
                     <div style="display: flex;">
-                        <i class="fa fa-chevron-right accordion-indicator"></i> 
+                        <i class="fa fa-chevron-down accordion-indicator-default-open"></i> 
                         <div style="min-width: 300px; width: fit-content;">
-                            CYCLE NAME: {$ cycleNameById[cycle_id] $}
+                            {$ cycleNameById[cycle_id] $}
                         </div>
                         <div>
                             <span ng-repeat="(event_type, count) in groupByEventType(events)"
@@ -65,13 +65,13 @@
                 </button>
                 
             </div>
-            <div id="cycle-events-{$ $index $}" class="accordion-body collapse">
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse in">
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
-                            <i class="fa fa-chevron-right accordion-indicator"></i>
+                            <i class="fa fa-chevron-right accordion-indicator-default-closed"></i>
                             <span class="event-detail">{$ formatDate(event.modified) $}</span>
-                            <span class="event-detail">{$ formatUser(event.user_id) $}</span>
+                            <span class="event-detail" style="min-width: 200px; width: fit-content;">{$ formatUser(event.user_id) $}</span>
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
                         </button>
                     </div>
@@ -88,7 +88,7 @@
                             <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
                         </div>
                         <div ng-if="event.event_type == 'ATEvent'">
-                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_at_card.html'"></div>
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'" ng-init="scenarios = event.scenarios"></div>
                         </div>
                         
                     </div>
