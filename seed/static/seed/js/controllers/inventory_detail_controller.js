@@ -964,6 +964,18 @@ angular.module('BE.seed.controller.inventory_detail', [])
       setTimeout(gridApi.core.handleWindowResize, 50);
     }
 
+    $scope.formatMeasureStatuses = (scenario) => {
+      statuses = scenario.measures.reduce((acc, measure) => {
+        const status = measure.implementation_status
+        if (!acc[status]){
+          acc[status] = 0
+        }
+        acc[status] ++
+        return acc
+      }, {})
+      return statuses
+    }
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs

@@ -268,6 +268,19 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
             };
 
+            $scope.formatMeasureStatuses = (scenario) => {
+                statuses = scenario.measures.reduce((acc, measure) => {
+                    const status = measure.implementation_status
+                    if (!acc[status]) {
+                        acc[status] = 0
+                    }
+                    acc[status]++
+                    return acc
+                }, {})
+                return statuses
+            }
+
+
             // Initiate data population
             // formatTimeline($scope.events.data)
             get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
