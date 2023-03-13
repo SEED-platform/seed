@@ -80,6 +80,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.organization = organization_payload.organization;
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = {id: organization_payload.organization.id};
+      $scope.static_url = urls.static_url;
+      $scope.show_at_scenario_actions = true
+
 
       // Detail Column List Profile
       $scope.profiles = profiles;
@@ -859,7 +862,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-      $scope.delete_property_measure = (property_measure_id, measure_display_name, scenario_id) => {
+      $scope.delete_property_measure = (property_measure) => {
         property_view_id = $stateParams.view_id 
 
         const modalOptions = {
@@ -867,18 +870,18 @@ angular.module('BE.seed.controller.inventory_detail', [])
           okButtonText: 'Yes',
           cancelButtonText: 'Cancel',
           headerText: 'Are you sure?',
-          bodyText: `You're about to permanently delete measure "${measure_display_name}". Would you like to continue?`
+          bodyText: `You're about to permanently delete measure "${property_measure.name}". Would you like to continue?`
         };
         //user confirmed, delete it
         simple_modal_service.showModal(modalOptions).then(() => {
-          property_measure_service.delete_property_measure($scope.org.id, property_view_id, scenario_id, property_measure_id)
+          property_measure_service.delete_property_measure($scope.org.id, property_view_id, property_measure.scenario_id, property_measure.id)
             .then(() => {
-              Notification.success(`Deleted "${measure_display_name}"`);  
+              Notification.success(`Deleted "${property_measure.name}"`);  
               location.reload();
               })
             .catch(err => {
               $log.error(err);
-              Notification.error(`Error attempting to delete "${measure_display_name}". Please refresh the page and try again.`);
+              Notification.error(`Error attempting to delete "${property_measure.name}". Please refresh the page and try again.`);
             });
         });
       };
@@ -896,6 +899,71 @@ angular.module('BE.seed.controller.inventory_detail', [])
       return statusCount
     }
 
+    const setMeasureGridOptions = () => {
+      $scope.measureGridOptionsByScenarioId = {}
+      $scope.gridApiByScenarioId = {}
+
+      const at_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)).map(item => item.state.scenarios)
+      const scenarios = [].concat(...at_scenarios)
+      scenarios.forEach(scenario => {
+        const scenario_id = scenario.id
+        const measureGridOptions = {
+          data: scenario.measures.map(measure => {
+            return {
+              "category": measure.category,
+              "name": measure.display_name,
+              "recommended": measure.recommended,
+              "status": measure.implementation_status,
+              "category_affected": measure.category_affected,
+              "cost_installation": measure.cost_installation,
+              "cost_material": measure.cost_material,
+              "cost_residual_value": measure.cost_residual_value,
+              "cost_total_first": measure.cost_total_first,
+              "cost_capital_replacement": measure.cost_capital_replacement,
+              "description": measure.description,
+              "useful_life": measure.useful_life,
+              "id": measure.id,
+              "scenario_id": scenario_id
+            }
+          }),
+          columnDefs: [
+            {
+              field: 'actions',
+              displayName: 'Actions',
+              cellClass: 'grid-actions',
+              width: '60',
+              cellTemplate: '<button class="btn btn-danger" type="button" ng-click="grid.appScope.delete_property_measure(row.entity)"><span class="glyphicon glyphicon-remove" style="font-size: 14px;" aria-hidden="true"></span></button>'
+            },
+            {field: "category"},
+            {field: "name"},
+            {field: "recommended"},
+            {field: "status"},
+            {field: "category_affected"},
+            {field: "cost_installation"},
+            {field: "cost_material"},
+            {field: "cost_residual_value"},
+            {field: "cost_total_first"},
+            {field: "cost_capital_replacement"},
+            {field: "description"},
+            {field: "useful_life"},
+            {field: "id", visible: false},
+            {field: "scenario_id", visible: false}
+
+          ],
+          minRowsToShow: Math.min(scenario.measures.length, 10),
+          rowHeight:40,
+          onRegisterApi: function (gridApi) {
+            $scope.gridApiByScenarioId[scenario.id] = gridApi;
+          }
+        }
+        $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
+      })
+    }
+    $scope.resizeGridByScenarioId = (scenarioId) => {
+      gridApi = $scope.gridApiByScenarioId[scenarioId]
+      setTimeout(gridApi.core.handleWindowResize, 50);
+    }
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs
@@ -911,6 +979,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }
 
         evaluate_derived_columns();
+        setMeasureGridOptions()
       };
 
       init();
