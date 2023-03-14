@@ -1,6 +1,12 @@
 <div class="event_inventory_document section_content" style="width:100%">
     <div class="table_list_container table_item_detail">
-        <table class="trigger-table table table-bordered table-striped table-condensed" style="border-collapse:collapse;">
+        <div ng-if="scenarios.length == 0" style="font-weight: bold; font-size: 14px; padding: 5px 20px;">
+            No Scenarios Found
+        </div>
+        <table ng-if="scenarios.length > 0" 
+            class="trigger-table table table-bordered table-striped table-condensed" 
+            style="border-collapse:collapse;"
+            >
             <thead>
                 <tr>
                 <th width="50" ng-if="show_at_scenario_actions">Actions</th>
