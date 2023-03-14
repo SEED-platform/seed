@@ -33,6 +33,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             };
             $scope.item_state = inventory_payload.state;
             $scope.orgUsers = users_payload.users
+            $scope.show_at_scenario_actions = false
 
             const formatTimeline = (events) => {
                 let eventsByCycle = []

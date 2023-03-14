@@ -3,9 +3,7 @@
         <table class="trigger-table table table-bordered table-striped table-condensed" style="border-collapse:collapse;">
             <thead>
                 <tr>
-                <!-- <th width="40" ng-if="show_at_scenario_actions">ACTIONS</th> -->
-                <th width="50">Actions</th>
-
+                <th width="50" ng-if="show_at_scenario_actions">Actions</th>
                 <th sd-resizable>Scenarios</th>
                 <th sd-resizable>Electricity savings (kBtu)</th>
                 <th sd-resizable>Peak electricity reduction (kW)</th>
@@ -22,7 +20,7 @@
                         ng-click="resizeGridByScenarioId(scenario.id)"
                     >
                         <div>
-                            <td>
+                            <td ng-if="show_at_scenario_actions">
                                 <button class="btn btn-danger" type="button" ng-click="delete_scenario(scenario.id, scenario.name)">
                                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                                 </button>
