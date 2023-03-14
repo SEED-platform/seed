@@ -5,7 +5,6 @@
 :author
 """
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from seed.models.compliance_metrics import ComplianceMetric

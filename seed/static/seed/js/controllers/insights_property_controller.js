@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.insights_property', [])
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
         $scope.selected_metric = $scope.compliance_metric.id;
-        
+
       }
 
       // chart data

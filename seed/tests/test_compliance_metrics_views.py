@@ -5,11 +5,9 @@
 :author
 """
 import json
-from datetime import datetime
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from seed.models import Column, ComplianceMetric, FilterGroup, User
 from seed.test_helpers.fake import FakeCycleFactory
@@ -71,7 +69,7 @@ class ComplianceMetricViewTests(TestCase):
             emission_metric_type=1,
             filter_group=self.filter_group
         )
-        self.compliance_metric1.cycles.set(self.cycle1)
+        self.compliance_metric1.cycles.set(self.cycles1)
         self.compliance_metric1.x_axis_columns.set(self.x_axes1)
 
         # 2nd metric (just energy without filter group)
@@ -83,7 +81,7 @@ class ComplianceMetricViewTests(TestCase):
             energy_metric_type=0
         )
         self.compliance_metric2.x_axis_columns.set(self.x_axes2)
-        self.compliance_metric2.cycles.set(self.cycle2)
+        self.compliance_metric2.cycles.set(self.cycles2)
 
     def test_compliance_metric_model(self):
         compliance_metrics = ComplianceMetric.objects.all().order_by('created')
