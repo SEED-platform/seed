@@ -47,16 +47,16 @@
 <div>
     <!-- <button class="btn btn-primary" style="margin: 10px" ng-click="toggleAllAccordions()">{$ expandAccordions ? 'Collapse All' : 'Expand All'$}</button> -->
     <div class="accordion" id="cycle-container">
-        <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="(cycle_id, events) in timeline">
+        <div class="accordion-item" id="cycle-{$ cycle_id $}" ng-repeat="cycle in timeline">
             <div class="accordion-header">
                 <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
                     <div style="display: flex;">
                         <i class="fa fa-chevron-down accordion-indicator-default-open"></i> 
                         <div style="min-width: 300px; width: fit-content;">
-                            {$ cycleNameById[cycle_id] $}
+                            {$ cycleNameById[cycle.cycle] $}
                         </div>
                         <div>
-                            <span ng-repeat="(event_type, count) in groupByEventType(events)"
+                            <span ng-repeat="(event_type, count) in groupByEventType(cycle.events)"
                                 style="width: fit-content; margin-right: 40px;">
                                 <i class="{$ eventIconLookup[event_type] $}"></i>{$ event_type $} {$ count $}
                             </span>
@@ -66,7 +66,7 @@
                 
             </div>
             <div id="cycle-events-{$ $index $}" class="accordion-body collapse in">
-                <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in events">
+                <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in cycle.events">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
                             <i class="fa fa-chevron-right accordion-indicator-default-closed"></i>

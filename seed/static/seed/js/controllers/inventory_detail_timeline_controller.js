@@ -35,13 +35,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.orgUsers = users_payload.users
 
             const formatTimeline = (events) => {
-                let eventsByCycle = events.reduce((result, event) => {
-                    if (!result[event.cycle]) {
-                        result[event.cycle] = []
+                let eventsByCycle = []
+                events.forEach(event => {
+                    const index = eventsByCycle.findIndex(e => e.cycle == event.cycle)
+                    if (index == -1) {
+                        let entry = {cycle: event.cycle, cycle_end_date: event.cycle_end_date, events:[event]}
+                        eventsByCycle.push(entry)
+                    } else {
+                        let element = eventsByCycle[index]
+                        element.events.push(event)
                     }
-                    result[event.cycle].push(event)
-                    return result
-                }, {})
+                })
+                eventsByCycle.sort((a,b) => new Date(b.cycle_end_date) - new Date(a.cycle_end_date))
                 $scope.timeline = eventsByCycle
             }
 
