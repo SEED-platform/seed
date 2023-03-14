@@ -17,7 +17,6 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
     emission_metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES, required=False)
     organization_id = serializers.IntegerField(required=True)
 
-
     class Meta:
         model = ComplianceMetric
         fields = ('id', 'name', 'organization_id', 'cycles', 'actual_energy_column', 'target_energy_column', 'energy_metric_type', 'actual_emission_column', 'target_emission_column', 'emission_metric_type', 'filter_group', 'x_axis_columns',)
