@@ -217,6 +217,7 @@
   "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information.": "Des e-mails personnalisés peuvent être envoyés aux propriétaires d'immeubles à l'aide des modèles définis ci-dessous. L'e-mail sera envoyé à l'adresse e-mail du propriétaire de l'enregistrement SEED et n'est actuellement pas configurable. L'adresse e-mail \"de\" est la même que l'adresse e-mail du serveur qui est également utilisée pour envoyer aux utilisateurs leurs informations de compte par e-mail.",
   "Cycle": "Cycle",
   "Cycle Name": "Nom du cycle",
+  "Cycles to Include in Compliance Period": "Cycles à inclure dans la periode de conformité",
   "Cycle updated.": "Cycle mis à jour.",
   "Cycle:": "Cycle:",
   "Cycles": "Cycles",

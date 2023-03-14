@@ -29,8 +29,6 @@ class ComplianceMetric(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='compliance_metrics', blank=True, null=True)
     name = models.CharField(max_length=255)
-    start = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
-    end = models.DateTimeField(null=True, blank=True)  # only care about year, but adding as a DateTime
     created = models.DateTimeField(auto_now_add=True)
     # TODO: could these be derived columns?
     actual_energy_column = models.ForeignKey(Column, related_name="actual_energy_column", null=True, on_delete=models.CASCADE)
@@ -41,6 +39,7 @@ class ComplianceMetric(models.Model):
     emission_metric_type = models.IntegerField(choices=METRIC_TYPES, blank=True, null=True)
     filter_group = models.ForeignKey(FilterGroup, related_name="filter_group", null=True, on_delete=models.CASCADE)
     x_axis_columns = models.ManyToManyField(Column, related_name="x_axis_columns", blank=True)
+    cycles = models.ManyToManyField(Cycle, related_name="cycles", blank=True)
 
     def __str__(self):
         return 'Program Metric - %s' % self.name
@@ -64,11 +63,10 @@ class ComplianceMetric(models.Model):
             query_dict.update(self.filter_group.query_dict)
         # print(f"query dict: {query_dict}")
 
-        # grab cycles within start and end dates
-        cycles = Cycle.objects.filter(organization_id=self.organization.id, start__lte=self.end, end__gte=self.start).order_by('start')
-        cycle_ids = cycles.values_list('pk', flat=True)
-        response['graph_data']['labels'] = list(cycles.values_list('name', flat=True))
-        response['cycles'] = list(cycles.values('id', 'name'))
+        # grab cycles
+        cycle_ids = self.cycles.values_list('pk', flat=True).order_by('start')
+        response['graph_data']['labels'] = list(self.cycles.values_list('name', flat=True).order_by('start'))
+        response['cycles'] = list(self.cycles.values('id', 'name'))
 
         # get properties (no filter)
         # property_response = properties_across_cycles(self.organization_id, -1, cycle_ids)
@@ -116,7 +114,8 @@ class ComplianceMetric(models.Model):
             'actual_emission_column_name': None,
             'target_emission_column': None,
             'emission_metric_type': self.emission_metric_type,
-            'fliter_group': None,
+            'filter_group': None,
+            'cycles': list(self.cycles.all().values('id', 'name')),
             'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:

@@ -16,7 +16,6 @@
 </div>
 
 <div class="section">
-
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
@@ -73,14 +72,22 @@
                                         <li class="r-list-header" translate>Program Definition</li>
                                         <li class="r-row r-row-centered">
                                             <label for="input-metric-name" class="r-no-wrap r-margin-right-5" translate>Name</label>
-                                            <input id="input-metric-name" type="text" class="form-control" ng-model="selected_compliance_metric.name" ng-change="program_settings_changed()"/>
+                                            <input id="input-metric-name" type="text" class="form-control r-margin-bottom-10" ng-model="selected_compliance_metric.name" ng-change="program_settings_changed()"/>
                                         </li>
-                                        <li class="r-row r-row-centered">
-                                            <label for="input-compliance-period-start" class="r-no-wrap r-margin-right-5" translate>Compliance Period (years)</label>
-                                            <input id="input-compliance-period-start" type="number" min=1000 max=9000 class="form-control" ng-model="fields.start_year" ng-change="program_settings_changed()"/>
-                                            <span class="r-margin-left-5 r-margin-right-5">to</span>
-                                            <input id="input-compliance-period-end" type="number" min=1000 max=9000 class="form-control" ng-model="fields.end_year" />
+                                    </ul>
+                                    <ul class="r-list">
+                                        <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
+                                        <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
+                                            <span class="r-grow">{$:: get_cycle_display(item) $}</span>
+                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_cycle(item)" ng-show="auth.requires_owner || auth.requires_member"></i>
                                         </li>
+                                        <li class="r-row r-row-centered" ng-show="auth.requires_owner || auth.requires_member">
+                                            <select id="select-cycle" class="form-control" ng-change="select_cycle(); program_settings_changed()" ng-model="cycle_selection">
+                                                <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$:: cycle.name $}</option>
+                                            </select>
+                                        </li>
+                                    </ul>
+                                    <ul class="r-list">
                                         <li class="r-row r-row-centered">
                                             <label for="select-filter-group" class="r-no-wrap r-margin-right-5" translate>Filter Group</label>
                                             <select id="select-filter-group" class="form-control" ng-model="selected_compliance_metric.filter_group" ng-change="program_settings_changed()">
