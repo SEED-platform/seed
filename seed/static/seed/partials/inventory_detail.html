@@ -391,10 +391,19 @@
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                             <span>
-                                <h2><i class="fa fa-bolt"></i>{$ cycle.name $} - Scenarios & Measures</h2>
+                                <h2>
+                                    <!-- <i class="fa fa-bolt"></i> -->
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg"></img>
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0;"></img>
+
+                                    Scenarios & Measures
+                                </h2>
                             </span>
                         </div>
                     </div>
+                </div>
+                <div class="scenario-cycle" style="">
+                    {$ cycle.name $}
                 </div>
             </div>
             <!-- List of Scenarios and Measures grouped by AuditTemplate File Upload -->
