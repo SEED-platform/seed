@@ -402,11 +402,10 @@
                 <div ng-repeat="historical_item in historical_items_with_scenarios" >
                     <div class="accordion-header" style="margin: 2px 0">
                         <button 
-                            class="accordion-button"
+                            class="accordion-button at-date"
                             type="button"
                             data-toggle="collapse"
                             data-target="#historical-item-{$ $index $}"
-                            style="background: #717071; color: white; font-weight:bold; font-size:16px; padding-left: 30px;"
                         >
                             <i class="fa fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
                             {$ format_epoch(historical_item.date_edited) $}
