@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name='NoteEvent',
             fields=[
                 ('event_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='seed.event')),
-                ('note', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.note')),
+                ('note', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.note')),
             ],
             options={
                 'get_latest_by': 'modified',
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             name='AnalysisEvent',
             fields=[
                 ('event_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='seed.event')),
-                ('analysis', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='seed.analysis')),
+                ('analysis', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='seed.analysis')),
             ],
             options={
                 'get_latest_by': 'modified',

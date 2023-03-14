@@ -18,8 +18,8 @@ class ATEvent(Event):
 
 
 class AnalysisEvent(Event):
-    analysis = models.ForeignKey("Analysis", on_delete=models.PROTECT)
+    analysis = models.ForeignKey("Analysis", on_delete=models.CASCADE)
 
 
 class NoteEvent(Event):
-    note = models.ForeignKey("Note", on_delete=models.PROTECT)
+    note = models.ForeignKey("Note", on_delete=models.CASCADE)
