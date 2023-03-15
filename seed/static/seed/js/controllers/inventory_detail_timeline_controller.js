@@ -85,19 +85,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 return userName
             }
 
-            // Rough draft for an "Expand All" accordions button
-            // $scope.expandAccordions = false
-            // $scope.toggleAllAccordions = () => {
-            //     let accordions = document.getElementsByClassName('accordion-button')
-            //     $scope.expandAccordions = !$scope.expandAccordions
-            //     for (let i = 0; i < accordions.length; i++) {
-            //         accordions[i].setAttribute('aria-expanded', $scope.expandAccordions);
-            //     }
-            //     $timeout(() => {
-            //         $scope.$apply();
-            //     }, 0)
-            // }
-
             const setMeasureGridOptions = () => {
                 const atEvents = $scope.events.data.filter(e => e.event_type == "ATEvent");
                 const scenarios = atEvents.reduce((acc, curr) => {
@@ -330,7 +317,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
 
             // Initiate data population
-            // formatTimeline($scope.events.data)
             getInventoryDisplayName($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
             setMeasureGridOptions()
             setNoteGridOptions()
