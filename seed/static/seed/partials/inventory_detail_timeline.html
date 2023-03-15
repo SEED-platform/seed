@@ -35,32 +35,34 @@
         </div>
     </div>
 </div>
-<div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding" style="display:flex; justify-content:space-between">
+<div class="section_header_container" style="padding-left: 10px;">
+    <div class="section_header fixed_height_short" style="padding: 0">
         <div class="event-select">
             <div class="bold" style="font-size: 16px;">Event Selection</div>
             <div ui-grid="eventSelectGridOptions" ui-grid-selection ></div>
         </div>
-        <div style="padding: 16px;">
-            <button class="btn btn-primary" type="button" ng-click="closeAll()">close all</button>
-        </div>
-    </div>
-    <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()" style="margin: 10px;">
-        <span>
-            <span class="bold">Sort By:</span>
-            <span uib-dropdown-toggle style="border: 1px solid black; border-radius: 2px; padding: 3px;">
-                {$ orderDesc ? 'Date, Oldest to Newest' : 'Date, Newest to Oldest' $} <span class="caret"></span>
+        <div>
+            <span>
+                <button class="btn btn-primary" type="button" ng-click="toggleAccordions(!accordionsCollapsed)"
+                    style="padding: 1px 10px; margin-bottom: 2px">{$ accordionsCollapsed ? 'Collapse All' : 'Expand All' $}</button>
             </span>
-        </span>
-        <ul ui-dropdown-menu class="dropdown-menu" role="menu" style="margin-left: 47px;">
-            <li role="menuitem" >
-                <a ng-click="setDesc(false)"> Date, Newest to Oldest</a>
-            </li>
-            <li role="menuitem" >
-                <a ng-click="setDesc(true)"> Date, Oldest to Newest</a>
-            </li>
-
-        </ul>
+            <span uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()" style="margin: 10px;">
+                <span>
+                    <span class="bold" style="padding-right: 5px;">Sort By:</span>
+                    <span uib-dropdown-toggle style="border: 1px solid gray; border-radius: 3px; padding: 3px;">
+                        {$ orderDesc ? 'Date, Oldest to Newest' : 'Date, Newest to Oldest' $} <span class="caret"></span>
+                    </span>
+                </span>
+                <ul ui-dropdown-menu class="dropdown-menu" role="menu" style="margin-left: 47px;">
+                    <li role="menuitem" >
+                        <a ng-click="setDesc(false)"> Date, Newest to Oldest</a>
+                    </li>
+                    <li role="menuitem" >
+                        <a ng-click="setDesc(true)"> Date, Oldest to Newest</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
     </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->

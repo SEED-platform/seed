@@ -290,10 +290,13 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
             };
 
-            $scope.closeAll = () => {
-                $('.cycle-collapse').collapse("hide")
-                $('.event-collapse').collapse("hide")
-                $('.scenario-collapse').collapse("hide")
+            $scope.accordionsCollapsed = true
+            $scope.toggleAccordions = (show) => {
+                $scope.accordionsCollapsed = show
+                const action = show ? 'show' : 'hide'
+                $('.cycle-collapse').collapse(action)
+                $('.event-collapse').collapse(action)
+                $('.scenario-collapse').collapse(action)
             }
 
             $scope.formatMeasureStatuses = (scenario) => {
