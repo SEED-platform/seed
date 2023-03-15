@@ -38,18 +38,18 @@
 <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
         <div class="event-select">
-            <div style="font-size: 16px; font-weight: bold">Event Selection</div>
+            <div class="bold" style="font-size: 16px;">Event Selection</div>
             <div ui-grid="eventSelectGridOptions" ui-grid-selection ></div>
         </div>
     </div>
-    <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+    <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()" style="margin: 10px;">
         <span>
-            Sort By:
-            <button type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
+            <span class="bold">Sort By:</span>
+            <span uib-dropdown-toggle style="border: 1px solid black; border-radius: 2px; padding: 3px;">
                 {$ orderDesc ? 'Date, Oldest to Newest' : 'Date, Newest to Oldest' $} <span class="caret"></span>
-            </button>
+            </span>
         </span>
-        <ul ui-dropdown-menu class="dropdown-menu" role="menu">
+        <ul ui-dropdown-menu class="dropdown-menu" role="menu" style="margin-left: 47px;">
             <li role="menuitem" >
                 <a ng-click="setDesc(false)"> Date, Newest to Oldest</a>
             </li>
