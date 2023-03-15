@@ -12,18 +12,18 @@ from django.utils.dateparse import parse_datetime
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Meter, 
-    MeterReading, 
-    Property, 
-    PropertyView, 
-    Scenario, 
-    PropertyMeasure
+    Meter,
+    MeterReading,
+    Property,
+    PropertyMeasure,
+    PropertyView,
+    Scenario
 )
 from seed.test_helpers.fake import (
+    FakePropertyFactory,
     FakePropertyMeasureFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
-    FakePropertyFactory
+    FakePropertyViewFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -49,7 +49,6 @@ class TestScenarios(DeleteModelsTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
-
 
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
@@ -137,8 +136,8 @@ class TestScenarios(DeleteModelsTestCase):
         measures = property_state.measure_set.all()
         property_measures = PropertyMeasure.objects.filter(measure__in=measures)
 
-        #assign property_measures to scneario
-        for pm in property_measures: 
+        # assign property_measures to scneario
+        for pm in property_measures:
             pm.scenario_set.set([scenario])
 
         self.assertEqual(PropertyMeasure.objects.count(), 5)

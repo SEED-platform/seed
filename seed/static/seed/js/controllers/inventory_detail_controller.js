@@ -839,7 +839,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.delete_scenario = (scenario_id, scenario_name) => {
-        property_view_id = $stateParams.view_id 
+        property_view_id = $stateParams.view_id
 
         const modalOptions = {
           type: 'default',
@@ -852,7 +852,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         simple_modal_service.showModal(modalOptions).then(() => {
           scenario_service.delete_scenario($scope.org.id, property_view_id, scenario_id)
             .then(() => {
-              Notification.success(`Deleted "${scenario_name}"`);  
+              Notification.success(`Deleted "${scenario_name}"`);
               location.reload();
               })
             .catch(err => {
@@ -863,7 +863,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.delete_property_measure = (property_measure) => {
-        property_view_id = $stateParams.view_id 
+        property_view_id = $stateParams.view_id
 
         const modalOptions = {
           type: 'default',
@@ -876,7 +876,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         simple_modal_service.showModal(modalOptions).then(() => {
           property_measure_service.delete_property_measure($scope.org.id, property_view_id, property_measure.scenario_id, property_measure.id)
             .then(() => {
-              Notification.success(`Deleted "${property_measure.name}"`);  
+              Notification.success(`Deleted "${property_measure.name}"`);
               location.reload();
               })
             .catch(err => {
@@ -885,7 +885,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             });
         });
       };
-      
+
     $scope.getStatusOfMeasures = (scenario) => {
       const statusCount = scenario.measures.reduce((acc, measure) => {
         let status = measure.implementation_status

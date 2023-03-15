@@ -4648,7 +4648,6 @@ ul.r-list {
 }
 
 .accordion-header {
-
   .accordion-button[aria-expanded="true"] .accordion-indicator-default-closed {
     transform: rotate(90deg);
     transition: transform 0.5s;
@@ -4666,23 +4665,23 @@ ul.r-list {
     transition: transform 0.5s;
   }
 
-  .accordion-button{
+  .accordion-button {
     width: calc(100% - 20px);
     text-align: left;
     border: none;
     i {
       margin-right: 10px;
     }
-    .sub-span{
+    .sub-span {
       width: fit-content;
       margin: 0 20px;
     }
-    .event-detail{
+    .event-detail {
       min-width: 100px;
       margin: 0 30px;
     }
   }
-  .at-date{
+  .at-date {
     background: #717071;
     color: white;
     font-weight: bold;
@@ -4690,23 +4689,22 @@ ul.r-list {
     padding-left: 30px;
     margin-left: 10px;
   }
-  .cycle-button{
+  .cycle-button {
     background-color: black;
     color: white;
     padding: 7px 10px;
     margin: 3px 10px;
     font-weight: bold;
     font-size: 16px;
-
   }
-  .event-button{
+  .event-button {
     background-color: gray;
     color: white;
     padding: 5px 10px;
     margin: 1px 10px;
     font-weight: bold;
   }
-  span{
+  span {
     display: inline-block;
     // width: 400px;
     white-space: nowrap;
@@ -4714,17 +4712,16 @@ ul.r-list {
     text-overflow: ellipsis;
     vertical-align: text-bottom;
   }
-  
 }
 
-.accordion-header[aria-expanded="true"] i{
-    transform: rotate(90deg);
-      transition: transform 0.5s;
+.accordion-header[aria-expanded="true"] i {
+  transform: rotate(90deg);
+  transition: transform 0.5s;
 }
 
-.accordion-header[aria-expanded="false"] i{
-    transform: rotate(0deg);
-      transition: transform 0.5s;
+.accordion-header[aria-expanded="false"] i {
+  transform: rotate(0deg);
+  transition: transform 0.5s;
 }
 
 .measure-elec {
@@ -4743,38 +4740,38 @@ ul.r-list {
   margin: 20px 0;
 }
 #scenario-measures-table {
-  .accordion-header{
-    .accordion-button{
+  .accordion-header {
+    .accordion-button {
       width: 100%;
     }
   }
 }
-.grid-actions{
+.grid-actions {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.measures-header{
+.measures-header {
   font-weight: bold;
   padding: 3px 10px;
-  background: #EFEFEF;
+  background: #efefef;
 }
 .measures-footer {
-  background: #EFEFEF;
-  height:10px;
+  background: #efefef;
+  height: 10px;
 }
 .icon-small-black {
   height: 25px;
   filter: brightness(0%);
   margin: 0 -5px;
 }
-.scenario-cycle{
-  width: calc(100% - 20px); 
-  color: white; 
-  background: black; 
-  padding: 5px 10px; 
-  font-size:16px;
+.scenario-cycle {
+  width: calc(100% - 20px);
+  color: white;
+  background: black;
+  padding: 5px 10px;
+  font-size: 16px;
   font-weight: bold;
   margin: 0 10px;
 }

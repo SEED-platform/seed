@@ -26,7 +26,7 @@
                         <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                     </span>
                     <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
-                    <span ng-if="!inventory_name">({$:: inventory_name_error $}) 
+                    <span ng-if="!inventory_name">({$:: inventory_name_error $})
                         <i class="glyphicon glyphicon-question-sign"
                             title="This can be changed from the organization settings page."></i>
                     </span>
@@ -40,7 +40,7 @@
         <div class="event-select">
             <div style="font-size: 16px; font-weight: bold">Event Selection</div>
             <div ui-grid="eventSelectGridOptions" ui-grid-selection ></div>
-        </div>     
+        </div>
     </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
@@ -51,7 +51,7 @@
             <div class="accordion-header">
                 <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
                     <div style="display: flex;">
-                        <i class="fa fa-chevron-down accordion-indicator-default-open"></i> 
+                        <i class="fa fa-chevron-down accordion-indicator-default-open"></i>
                         <div style="min-width: 300px; width: fit-content;">
                             {$ cycleNameById[cycle.cycle] $}
                         </div>
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                 </button>
-                
+
             </div>
             <div id="cycle-events-{$ $index $}" class="accordion-body collapse in">
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in cycle.events">
@@ -77,8 +77,8 @@
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse">
                         <div ng-if="event.event_type == 'NoteEvent'">
-                            <div 
-                                id="note-{$ event.note.id $}" 
+                            <div
+                                id="note-{$ event.note.id $}"
                                 ui-grid="noteGridOptionsById[event.note.id]"
                                 ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
                                 style="margin: 0 10px;"
@@ -90,7 +90,7 @@
                         <div ng-if="event.event_type == 'ATEvent'">
                             <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'" ng-init="scenarios = event.scenarios"></div>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>

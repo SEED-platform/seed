@@ -1,10 +1,10 @@
 <div class="event_analysis section_content" ng-init="analysis = event.analysis">
-    <div 
+    <div
         id="analysis-{$ analysis.id $}"
         ui-grid="analysisGridOptionsById[analysis.id]"
         ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
         style="margin: 0 10px"
-    ></div> 
+    ></div>
     <div style="padding: 10px">
         <div  ng-controller="analysis_details_controller"
             ng-include="::urls.static_url + 'seed/partials/analysis_card.html'"
