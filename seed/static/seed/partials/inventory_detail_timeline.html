@@ -36,10 +36,13 @@
     </div>
 </div>
 <div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding">
+    <div class="section_header fixed_height_short has_no_padding" style="display:flex; justify-content:space-between">
         <div class="event-select">
             <div style="font-size: 16px; font-weight: bold">Event Selection</div>
             <div ui-grid="eventSelectGridOptions" ui-grid-selection ></div>
+        </div>
+        <div style="padding: 16px;">
+            <button class="btn btn-primary" type="button" ng-click="closeAll()">close all</button>
         </div>
     </div>
 </div>
@@ -65,7 +68,7 @@
                 </button>
 
             </div>
-            <div id="cycle-events-{$ $index $}" class="accordion-body collapse in">
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse in cycle-collapse">
                 <div class="accordion-item" id="cycle-event-{$ event.id $}" ng-repeat="event in cycle.events">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
@@ -75,7 +78,7 @@
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
                         </button>
                     </div>
-                    <div id="event-{$ event.id $}" class="accordion-body collapse">
+                    <div id="event-{$ event.id $}" class="accordion-body collapse event-collapse">
                         <div ng-if="event.event_type == 'NoteEvent'">
                             <div
                                 id="note-{$ event.note.id $}"
