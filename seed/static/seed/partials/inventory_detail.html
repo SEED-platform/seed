@@ -42,9 +42,9 @@
             </div>
         </div>
     </div>
-    
 
-    
+
+
     <div class="section_content_container">
         <div class="section_content with_padding" style="display:flex;margin:10px 0;">
             <div style="flex-grow:1;display:flex;flex-direction:column;row-gap:10px;">
@@ -407,10 +407,10 @@
                 </div>
             </div>
             <!-- List of Scenarios and Measures grouped by AuditTemplate File Upload -->
-            <div class="section_content_container">    
+            <div class="section_content_container">
                 <div ng-repeat="historical_item in historical_items_with_scenarios" >
                     <div class="accordion-header" style="margin: 2px 0">
-                        <button 
+                        <button
                             class="accordion-button at-date"
                             type="button"
                             data-toggle="collapse"
@@ -422,7 +422,7 @@
                     </div>
 
                     <div id="historical-item-{$ $index $}" class="accordion-body collapse in">
-                        <div 
+                        <div
                             ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
                             ng-init="scenarios = historical_item.state.scenarios">
                         </div>

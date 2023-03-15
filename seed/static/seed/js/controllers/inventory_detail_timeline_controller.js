@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 const scenarios = atEvents.reduce((acc, curr) => {
                     return [...acc, ...curr.scenarios]
                 },[]);
-        
+
                 $scope.measureGridOptionsByScenarioId = {}
                 $scope.gridApiByScenarioId = {}
                 scenarios.forEach(scenario => {
@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             "cost_capital_replacement": measure.cost_capital_replacement,
                             "description": measure.description,
                             "useful_life": measure.useful_life
-        
+
                         }}),
                         minRowsToShow: Math.min(scenario.measures.length, 10),
                         onRegisterApi: function (gridApi) {
@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
                 })
             }
-            
+
             const setNoteGridOptions = () => {
                 const noteEvents = $scope.events.data.filter(e => e.event_type == "NoteEvent")
                 const notes = noteEvents.map(e => e.note)
@@ -133,9 +133,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         }
                     }
                     $scope.noteGridOptionsById[note.id] = noteGridOptions;
-                    
+
                 })
-            }     
+            }
 
             const setAnalysisGridOptions = () => {
                 const analysisEvents = $scope.events.data.filter(e => e.event_type == 'AnalysisEvent')
@@ -201,7 +201,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 enableColumnMenus: false,
                 enableHorizontalScrollbar: 0,
             }
-            
+
             $scope.resizeGridEventSelection = () => {
                 gridApi = $scope.gridApiEventSelection
                 setTimeout(gridApi.core.handleWindowResize, 1);
@@ -283,6 +283,23 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     acc[status]++
                     return acc
                 }, {})
+                // TESTING
+                // if (statuses['Complete']) {
+                //     statuses['Complete'] ++
+                // } else {
+                //     statuses['Complete'] = 2
+                // }
+                // if (statuses['Proposed']) {
+                //     statuses['Proposed'] ++
+                // } else {
+                //     statuses['Proposed'] = 1
+                // }
+                // if (statuses['Evaluated']) {
+                //     statuses['Evaluated'] ++
+                // } else {
+                //     statuses['Evaluated'] = 3
+                // }
+
                 return statuses
             }
 
