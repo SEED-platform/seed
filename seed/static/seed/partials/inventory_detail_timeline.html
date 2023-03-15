@@ -42,6 +42,23 @@
             <div ui-grid="eventSelectGridOptions" ui-grid-selection ></div>
         </div>
     </div>
+    <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+        <span>
+            Sort By:
+            <button type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
+                {$ orderDesc ? 'Date, Oldest to Newest' : 'Date, Newest to Oldest' $} <span class="caret"></span>
+            </button>
+        </span>
+        <ul ui-dropdown-menu class="dropdown-menu" role="menu">
+            <li role="menuitem" >
+                <a ng-click="setDesc(false)"> Date, Newest to Oldest</a>
+            </li>
+            <li role="menuitem" >
+                <a ng-click="setDesc(true)"> Date, Oldest to Newest</a>
+            </li>
+
+        </ul>
+    </div>
 </div>
 <!-- Timeline: cycles -> events -> trigger -->
 <div>

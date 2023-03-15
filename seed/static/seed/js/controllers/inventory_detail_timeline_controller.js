@@ -34,9 +34,21 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.item_state = inventory_payload.state;
             $scope.orgUsers = users_payload.users
             $scope.show_at_scenario_actions = false
+            $scope.orderDesc = false 
+            $scope.setDesc = (selection) => {
+                if (selection == $scope.orderDesc) {
+                    return
+                } 
+                $scope.orderDesc = selection
+                formatTimeline($scope.selectedEvents)
+            }
+
 
             const formatTimeline = (events) => {
                 let eventsByCycle = []
+                if ($scope.orderDesc) {
+                    events.sort((a,b) => new Date(a.modified) - new Date(b.modified))
+                }
                 events.forEach(event => {
                     const index = eventsByCycle.findIndex(e => e.cycle == event.cycle)
                     if (index == -1) {
@@ -47,7 +59,11 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         element.events.push(event)
                     }
                 })
-                eventsByCycle.sort((a,b) => new Date(b.cycle_end_date) - new Date(a.cycle_end_date))
+                if ($scope.orderDesc) {
+                    eventsByCycle.sort((a,b) => new Date(a.cycle_end_date) - new Date(b.cycle_end_date))
+                } else {
+                    eventsByCycle.sort((a,b) => new Date(b.cycle_end_date) - new Date(a.cycle_end_date))
+                }
                 $scope.timeline = eventsByCycle
             }
 
@@ -209,8 +225,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
             $scope.eventSelect = () => {
                 const selectedEventTypes = $scope.gridApiEventSelection.selection.getSelectedRows().map(event => event.eventType)
-                const selectedEvents = events.data.filter(event => selectedEventTypes.includes(event.event_type))
-                formatTimeline(selectedEvents)
+                $scope.selectedEvents = events.data.filter(event => selectedEventTypes.includes(event.event_type))
+                formatTimeline($scope.selectedEvents)
             }
 
 
@@ -260,7 +276,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 }
             }
 
-            const get_inventory_display_name = function (property_type) {
+            const getInventoryDisplayName = function (property_type) {
                 let error = '';
                 let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
                 if (!(field in $scope.item_state)) {
@@ -306,7 +322,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
             // Initiate data population
             // formatTimeline($scope.events.data)
-            get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
+            getInventoryDisplayName($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
             setMeasureGridOptions()
             setNoteGridOptions()
             setAnalysisGridOptions()
