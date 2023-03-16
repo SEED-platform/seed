@@ -27,7 +27,7 @@
                     >
                         <div>
                             <td ng-if="show_at_scenario_actions">
-                                <button class="btn btn-danger" type="button" ng-click="delete_scenario(scenario.id, scenario.name)">
+                                <button class="btn btn-danger" type="button" ng-click="delete_scenario(scenario.id, scenario.name); $event.stopPropagation()">
                                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                                 </button>
                             </td>
