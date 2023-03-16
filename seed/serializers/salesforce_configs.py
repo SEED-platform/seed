@@ -13,10 +13,6 @@ from seed.models.salesforce_configs import SalesforceConfig
 class SalesforceConfigSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(required=True)
 
-    def to_representation(self, instance):
-
-        return super().to_representation(instance)
-
     class Meta:
         model = SalesforceConfig
         fields = ('id', 'organization_id', 'indication_label', 'violation_label', 'compliance_label', 'account_rec_type', 'contact_rec_type',
