@@ -87,7 +87,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def list(self, request):
         organization_id = self.get_organization(request)
         salesforce_configs = SalesforceConfig.objects.filter(organization=organization_id)
@@ -172,7 +172,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_viewer')
+    @has_perm_class('requires_owner')
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
