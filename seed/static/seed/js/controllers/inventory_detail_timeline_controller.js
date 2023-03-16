@@ -43,12 +43,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 formatTimeline($scope.selectedEvents)
             }
 
-
             const formatTimeline = (events) => {
                 let eventsByCycle = []
-                if ($scope.orderDesc) {
-                    events.sort((a,b) => new Date(a.modified) - new Date(b.modified))
-                }
+                events.sort((a, b) => $scope.orderDesc ? 
+                    new Date(a.modified) - new Date(b.modified) :
+                    new Date(b.modified) - new Date(a.modified)
+                )
                 events.forEach(event => {
                     const index = eventsByCycle.findIndex(e => e.cycle == event.cycle)
                     if (index == -1) {
@@ -59,16 +59,36 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         element.events.push(event)
                     }
                 })
-                if ($scope.orderDesc) {
-                    eventsByCycle.sort((a,b) => new Date(a.cycle_end_date) - new Date(b.cycle_end_date))
-                } else {
-                    eventsByCycle.sort((a,b) => new Date(b.cycle_end_date) - new Date(a.cycle_end_date))
-                }
+                
+                eventsByCycle.sort((a,b) =>  $scope.orderDesc? 
+                    new Date(a.cycle_end_date) - new Date(b.cycle_end_date) :
+                    new Date(b.cycle_end_date) - new Date(a.cycle_end_date)
+                )
+
                 $scope.timeline = eventsByCycle
             }
 
             const formatDuration = (start, end) => {
-                return '10 seconds'
+                if (!start || !end) {
+                    return
+                }
+                const miliseconds = moment(end) - moment(start);
+                const seconds = Math.floor(miliseconds / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (days) {
+                    return days + ' days';
+                } else if (hours) {
+                    return hours + ' hours';
+                } else if (minutes) {
+                    return minutes + ' minutes'
+                } else if (seconds) {
+                    return seconds + ' seconds'
+                } else {
+                    return miliseconds + ' ms'
+                }
             }
 
             $scope.formatUser = (user_id) => {
@@ -284,6 +304,11 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $('.cycle-collapse').collapse(action)
                 $('.event-collapse').collapse(action)
                 $('.scenario-collapse').collapse(action)
+                
+                // Without resizing ui-grids will appear empty
+                if (action) {
+                    $scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event))
+                }
             }
 
             $scope.formatMeasureStatuses = (scenario) => {
@@ -296,11 +321,11 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     return acc
                 }, {})
                 // TESTING
-                // if (statuses['Complete']) {
-                //     statuses['Complete'] ++
-                // } else {
-                //     statuses['Complete'] = 2
-                // }
+                if (statuses['Complete']) {
+                    statuses['Complete'] ++
+                } else {
+                    statuses['Complete'] = 2
+                }
                 // if (statuses['Proposed']) {
                 //     statuses['Proposed'] ++
                 // } else {
