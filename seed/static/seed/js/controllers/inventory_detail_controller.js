@@ -927,13 +927,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
             }
           }),
           columnDefs: [
-            {
-              field: 'actions',
-              displayName: 'Actions',
-              cellClass: 'grid-actions',
-              width: '60',
-              cellTemplate: '<button class="btn btn-danger" type="button" ng-click="grid.appScope.delete_property_measure(row.entity)"><span class="glyphicon glyphicon-remove" style="font-size: 14px;" aria-hidden="true"></span></button>'
-            },
             {field: "category"},
             {field: "name"},
             {field: "recommended"},
