@@ -307,7 +307,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 
                 // Without resizing ui-grids will appear empty
                 if (action) {
-                    $scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event))
+                    setTimeout($scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event)), 1)
                 }
             }
 
