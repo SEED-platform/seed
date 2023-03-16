@@ -392,6 +392,7 @@ class BuildingFile(models.Model):
             property=property_view.property,
             cycle=property_view.cycle,
             building_file=self,
+            audit_date=property_state.extra_data.get('audit_date', ''),
         )
         event.scenarios.set(scenarios)
         event.save()

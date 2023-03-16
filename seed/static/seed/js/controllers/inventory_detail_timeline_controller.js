@@ -246,6 +246,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.formatDate = (date) => {
                 return moment(date).format('YYYY/MM/DD')
             }
+            $scope.styleDate = (date) => {
+                return date.replace(/-/g, '/')
+            }
 
             $scope.groupByEventType = (events) => {
                 let eventTypeCount = events.reduce((acc, cur) => {

@@ -94,6 +94,7 @@
                             <span class="event-detail">{$ formatDate(event.modified) $}</span>
                             <span class="event-detail" style="min-width: 200px; width: fit-content;">{$ formatUser(event.user_id) $}</span>
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
+                            <span class="event-detail" ng-if="event.audit_date">Audit Date: {$ styleDate(event.audit_date) $}</span>
                         </button>
                     </div>
                     <div id="event-{$ event.id $}" class="accordion-body collapse event-collapse">

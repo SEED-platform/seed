@@ -2,7 +2,7 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from model_utils.managers import InheritanceManager
 
-from seed.models import Cycle, Property
+from seed.models import Cycle, Property, PropertyState
 
 
 class Event(TimeStampedModel):
@@ -14,6 +14,7 @@ class Event(TimeStampedModel):
 
 class ATEvent(Event):
     building_file = models.ForeignKey("BuildingFile", on_delete=models.PROTECT)
+    audit_date = models.CharField(max_length=100, default='')
     # has a one to many with Scenario
 
 
