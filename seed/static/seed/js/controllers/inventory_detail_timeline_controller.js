@@ -272,7 +272,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 setTimeout(gridApi.core.handleWindowResize, 50);
             }
             $scope.resizeGridByEventType = (event) => {
-                console.log('called')
                 if (event.event_type == 'NoteEvent') {
                     noteId = event.note.id
                     gridApi = $scope.gridApiByNoteId[noteId]
@@ -319,13 +318,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     acc[status]++
                     return acc
                 }, {})
-                // TESTING
-                // if (statuses['Complete']) {
-                //     statuses['Complete'] ++
-                // } else {
-                //     statuses['Complete'] = 2
-                // }
-
                 return statuses
             }
 
