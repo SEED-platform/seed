@@ -4781,3 +4781,11 @@ ul.r-list {
 .measure-status-evaluated {
   color: orange;
 }
+#event-select-ui-grid {
+  .ui-grid-header{
+    color: white;
+    .ui-grid-top-panel{
+      background: #808080;
+    }
+  }
+}
