@@ -499,8 +499,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     Non-polygon data
                     """
                     if key == "_meters":
-                        # do something with meters
-                        feature["properties"]["meters"] = value
+                        if feature["properties"].get("meters") is None:
+                            feature["properties"]["meters"] = value
+                        else:
+                            logging.warning("meters already exists in properties, not adding")
                     else:
                         display_key = column_name_mappings.get(key, key)
                         feature["properties"][display_key] = value
