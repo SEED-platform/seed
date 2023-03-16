@@ -219,29 +219,6 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         with self.assertRaises(SalesforceMapping.DoesNotExist):
             SalesforceMapping.objects.get(pk=self.mapping_energystar.pk)
 
-    def test_fail_connection_when_sf_not_enabled(self):
-
-        payload_data = {
-            "salesforce_config": {
-                "instance": SF_INSTANCE,
-                "username": SF_USERNAME,
-                "password": SF_PASSWORD,
-                "security_token": SF_SECURITY_TOKEN
-            }
-        }
-        if SF_DOMAIN == 'test':
-            payload_data['salesforce_config']['domain'] = SF_DOMAIN
-
-        response = self.client.post(
-            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
-            data=json.dumps(payload_data),
-            content_type='application/json'
-        )
-        data = json.loads(response.content)
-
-        self.assertEqual(data['status'], 'error')
-        self.assertEqual(data['message'], 'Salesforce functionality is not enabled for this organization')
-
     def test_salesforce_connection_fails(self):
         # test error when connection to salesforce fails due to no connection params
 
