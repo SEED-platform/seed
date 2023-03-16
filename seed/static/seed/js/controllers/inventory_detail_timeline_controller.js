@@ -116,8 +116,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 scenarios.forEach(scenario => {
                     const measureGridOptions = {
                         data: scenario.measures.map(measure => { return {
-                            "category": measure.category,
-                            "name": measure.name,
+                            "category": measure.category_display_name,
+                            "name": measure.display_name,
                             "recommended": measure.recommended,
                             "status": measure.implementation_status,
                             "category_affected": measure.category_affected,
