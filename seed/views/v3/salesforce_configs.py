@@ -27,7 +27,6 @@ from seed.utils.api_schema import (
 from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.salesforce import (
     auto_sync_salesforce_properties,
-    check_salesforce_enabled,
     schedule_sync,
     test_connection
 )
@@ -109,22 +108,20 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['POST'])
     def salesforce_connection(self, request, pk=None):
         """
-        Tests connection to Salesforce using saved credentials
+        Tests connection to Salesforce using passed-in credentials (may not be saved yet)
         """
 
-        org_id = self.get_organization(request)
-        # first ensure salesforce is enabled
-        if not check_salesforce_enabled(org_id):
-            return JsonResponse({'status': 'error', 'message': 'Salesforce functionality is not enabled for this organization'},
-                                status=status.HTTP_400_BAD_REQUEST)
+        self.get_organization(request)
 
         body = request.data
         # conf = SalesforceConfig.objects.get(pk=pk)
         data = body.get('salesforce_config', None)
+
         if data is None:
             return JsonResponse({'status': 'error', 'message': 'malformed request'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
+        # assume salesforce is enabled if you can get to this view
         # get values from form (they may not be saved yet)
         params = {}
         params['instance_url'] = data.get('url', None)
