@@ -2,7 +2,7 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from model_utils.managers import InheritanceManager
 
-from seed.models import Cycle, Property, PropertyState
+from seed.models import Cycle, Property
 
 
 class Event(TimeStampedModel):

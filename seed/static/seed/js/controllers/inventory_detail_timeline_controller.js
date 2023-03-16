@@ -34,18 +34,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.item_state = inventory_payload.state;
             $scope.orgUsers = users_payload.users
             $scope.show_at_scenario_actions = false
-            $scope.orderDesc = false 
+            $scope.orderDesc = false
             $scope.setDesc = (selection) => {
                 if (selection == $scope.orderDesc) {
                     return
-                } 
+                }
                 $scope.orderDesc = selection
                 formatTimeline($scope.selectedEvents)
             }
 
             const formatTimeline = (events) => {
                 let eventsByCycle = []
-                events.sort((a, b) => $scope.orderDesc ? 
+                events.sort((a, b) => $scope.orderDesc ?
                     new Date(a.modified) - new Date(b.modified) :
                     new Date(b.modified) - new Date(a.modified)
                 )
@@ -59,8 +59,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         element.events.push(event)
                     }
                 })
-                
-                eventsByCycle.sort((a,b) =>  $scope.orderDesc? 
+
+                eventsByCycle.sort((a,b) =>  $scope.orderDesc?
                     new Date(a.cycle_end_date) - new Date(b.cycle_end_date) :
                     new Date(b.cycle_end_date) - new Date(a.cycle_end_date)
                 )
@@ -307,7 +307,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $('.cycle-collapse').collapse(action)
                 $('.event-collapse').collapse(action)
                 $('.scenario-collapse').collapse(action)
-                
+
                 // Without resizing ui-grids will appear empty
                 show && setTimeout($scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event)), 1)
             }
