@@ -381,7 +381,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             serializer.save()
             # decrypt pwd in response
             return_data = serializer.data
-            return_data['password'] = decrypt(return_data['password'])[0]
+            if 'password' in return_data and return_data['password'] is not None:
+                return_data['password'] = decrypt(return_data['password'])[0]
 
             return JsonResponse({
                 'status': 'success',
