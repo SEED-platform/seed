@@ -321,20 +321,10 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     return acc
                 }, {})
                 // TESTING
-                if (statuses['Complete']) {
-                    statuses['Complete'] ++
-                } else {
-                    statuses['Complete'] = 2
-                }
-                // if (statuses['Proposed']) {
-                //     statuses['Proposed'] ++
+                // if (statuses['Complete']) {
+                //     statuses['Complete'] ++
                 // } else {
-                //     statuses['Proposed'] = 1
-                // }
-                // if (statuses['Evaluated']) {
-                //     statuses['Evaluated'] ++
-                // } else {
-                //     statuses['Evaluated'] = 3
+                //     statuses['Complete'] = 2
                 // }
 
                 return statuses

@@ -7,7 +7,7 @@
             ng-if="!analysis._finished_with_tasks"></i>
         {$ analysis.status $}
     </span>
-    <span>
+    <span ng-if="allowActions">
         <i class="glyphicon glyphicon-play link" title="Start Analysis" aria-hidden="true"
            ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
         <i class="glyphicon glyphicon-stop link" title="Stop Analysis" aria-hidden="true"
