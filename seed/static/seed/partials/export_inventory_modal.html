@@ -32,7 +32,7 @@
 
         <div class="section_content_container">
             <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="include-label-header" translate>Include CSV Label Header</label>
+                <label class="control-label col-sm-4" for="include-label-header" translate>CSV - Include Label Header</label>
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
                         <div class="col-sm-6">
@@ -43,6 +43,18 @@
             </div>
         </div>
 
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <label class="control-label col-sm-4" for="include-meter-readings" translate>GeoJSON - Include Meter Readings (only recommended if exporting a few buildings)</label>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="checkbox" checked class="checkbox" id="include-meter-readings" ng-model="include_meter_readings">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 <div class="modal-footer">
