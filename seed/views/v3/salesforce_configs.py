@@ -94,7 +94,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         s_data = SalesforceConfigSerializer(salesforce_configs, many=True).data
         for item in s_data:
-            item['password'] = decrypt(item['password'])[0]
+            if 'password' in item and item['password'] is not None:
+                item['password'] = decrypt(item['password'])[0]
 
         return JsonResponse({
             'status': 'success',
@@ -190,7 +191,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         else:
             try:
                 data = SalesforceConfigSerializer(SalesforceConfig.objects.get(id=pk, organization=organization)).data
-                data['password'] = decrypt(data['password'])[0]
+                if 'password' in data and data['password'] is not None:
+                    data['password'] = decrypt(data['password'])[0]
                 return JsonResponse({
                     'status': 'success',
                     'salesforce_config': data
