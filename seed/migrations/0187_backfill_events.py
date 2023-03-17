@@ -24,7 +24,8 @@ def backfill_at_events(apps, schema_editor):
             cycle=propertyview.cycle,
             building_file=building_file,
             created=building_file.created,
-            modified=building_file.created,         
+            modified=building_file.created,     
+            audit_date=propertyview.state.extra_data.get('audit_date', '')    
         )
         scenarios = Scenario.objects.filter(property_state = propertyview.state_id)
         for scenario in scenarios:
