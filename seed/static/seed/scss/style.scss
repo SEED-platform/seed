@@ -4778,6 +4778,12 @@ ul.r-list {
   background: black;
   padding: 5px 10px;
   font-size: 16px;
+.scenario-cycle {
+  width: calc(100% - 20px);
+  color: white;
+  background: black;
+  padding: 5px 10px;
+  font-size: 16px;
   font-weight: bold;
   margin: 0 10px;
 }
