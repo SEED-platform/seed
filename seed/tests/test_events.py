@@ -94,6 +94,7 @@ class EventTests(TransactionTestCase):
         )
 
         # Assertion
+
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', response.json()["status"])
         self.assertDictEqual({
@@ -107,37 +108,44 @@ class EventTests(TransactionTestCase):
         }, response.json()["pagination"])
         self.assertEqual(
             {
-                "event_type",
-                "building_file",
                 "created",
+                "cycle",
+                "cycle_end_date",
+                "event_type",
                 "id",
                 "modified",
+                "note",
                 "property",
-                "cycle",
+                "user_id"
             },
             set(response.json()["data"][0].keys())
         )
         self.assertEqual(
             {
-                "event_type",
                 "analysis",
+                "cycle",
+                "cycle_end_date",
                 "created",
+                "event_type",
                 "id",
                 "modified",
                 "property",
-                "cycle",
+                "user_id"
             },
             set(response.json()["data"][1].keys())
         )
         self.assertEqual(
             {
-                "event_type",
-                "note",
+                "audit_date",
+                "building_file",
                 "created",
+                "cycle_end_date",
+                "cycle",
+                "event_type",
                 "id",
                 "modified",
                 "property",
-                "cycle",
+                "scenarios"
             },
             set(response.json()["data"][2].keys())
         )
