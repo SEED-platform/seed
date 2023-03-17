@@ -118,7 +118,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      $scope.historical_items_with_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios))
+      $scope.historical_items_with_scenarios = $scope.historical_items ? 
+        $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) :
+        []
       $scope.format_epoch = (epoch) => {
        return moment(epoch).format('YYYY/MM/DD')
       }
@@ -858,30 +860,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .catch(err => {
               $log.error(err);
               Notification.error(`Error attempting to delete "${scenario_name}". Please refresh the page and try again.`);
-            });
-        });
-      };
-
-      $scope.delete_property_measure = (property_measure) => {
-        property_view_id = $stateParams.view_id
-
-        const modalOptions = {
-          type: 'default',
-          okButtonText: 'Yes',
-          cancelButtonText: 'Cancel',
-          headerText: 'Are you sure?',
-          bodyText: `You're about to permanently delete measure "${property_measure.name}". Would you like to continue?`
-        };
-        //user confirmed, delete it
-        simple_modal_service.showModal(modalOptions).then(() => {
-          property_measure_service.delete_property_measure($scope.org.id, property_view_id, property_measure.scenario_id, property_measure.id)
-            .then(() => {
-              Notification.success(`Deleted "${property_measure.name}"`);
-              location.reload();
-              })
-            .catch(err => {
-              $log.error(err);
-              Notification.error(`Error attempting to delete "${property_measure.name}". Please refresh the page and try again.`);
             });
         });
       };
