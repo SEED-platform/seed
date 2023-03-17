@@ -1,8 +1,9 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author nicholas.long@nrel.gov
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
-File contains settings needed to run SEED with docker
+:author nicholas.long@nrel.gov
+:description File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
 

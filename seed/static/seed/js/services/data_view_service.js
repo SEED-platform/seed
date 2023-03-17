@@ -1,3 +1,7 @@
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ */
 angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
   '$http',
   '$log',

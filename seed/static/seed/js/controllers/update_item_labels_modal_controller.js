@@ -1,14 +1,12 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  *
  * Controller for the Update Labels modal window.
  * Manages applying labels to a single Property or Tax Lot, as
  * well as allowing for the creation of new labels.
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
- *
- *
  */
 angular.module('BE.seed.controller.update_item_labels_modal', [])
   .controller('update_item_labels_modal_controller', [
