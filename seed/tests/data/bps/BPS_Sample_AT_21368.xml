@@ -37,6 +37,7 @@
               </auc:Address>
               <auc:ConditionedFloorsAboveGrade>30</auc:ConditionedFloorsAboveGrade>
               <auc:ConditionedFloorsBelowGrade>1</auc:ConditionedFloorsBelowGrade>
+              <auc:Ownership>Individual</auc:Ownership>
               <auc:BuildingAutomationSystem>false</auc:BuildingAutomationSystem>
               <auc:HistoricalLandmark>false</auc:HistoricalLandmark>
               <auc:FloorAreas>
@@ -56,7 +57,7 @@
                   <auc:FloorAreaType>Heated only</auc:FloorAreaType>
                   <auc:FloorAreaValue>1000.0</auc:FloorAreaValue>
                 </auc:FloorArea>
-    </auc:FloorAreas>
+              </auc:FloorAreas>
               <auc:TotalExteriorAboveGradeWallArea>142000.0</auc:TotalExteriorAboveGradeWallArea>
               <auc:OverallWindowToWallRatio>0.15000000596046448</auc:OverallWindowToWallRatio>
               <auc:YearOfConstruction>1983</auc:YearOfConstruction>
@@ -158,7 +159,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Direct metering</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Commercial Tenant Metering Configuration For Electricity Is Direct metering Is Not Applicable</auc:FieldName>
@@ -234,7 +235,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Multi Tenant</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Multi Tenant Is Not Applicable</auc:FieldName>
@@ -242,7 +243,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Number Of Facilities On Site Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>false</auc:FieldValue>
+                  <auc:FieldValue>true</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Onsite Generation Operation Average Annual Hours Is Not Applicable</auc:FieldName>
@@ -314,7 +315,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Premises Identifier For Portfolio Manager Building ID Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Premises Notes For Not Applicable</auc:FieldName>
@@ -342,7 +343,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Direct metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter with sub metering</auc:FieldName>
@@ -350,7 +351,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter with sub metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter without sub metering</auc:FieldName>
@@ -358,7 +359,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Electricity Is Master meter without sub metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Direct metering</auc:FieldName>
@@ -366,7 +367,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Direct metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter with sub metering</auc:FieldName>
@@ -374,7 +375,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter with sub metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter without sub metering</auc:FieldName>
@@ -382,7 +383,7 @@
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Residential Tenant Metering Configuration For Natural gas Is Master meter without sub metering Is Not Applicable</auc:FieldName>
-                  <auc:FieldValue>true</auc:FieldValue>
+                  <auc:FieldValue>false</auc:FieldValue>
                 </auc:UserDefinedField>
                 <auc:UserDefinedField>
                   <auc:FieldName>Retrocommissioning Date Is Not Applicable</auc:FieldName>
