@@ -876,12 +876,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
     }
 
     const setMeasureGridOptions = () => {
+      if (!$scope.historical_items) {
+        return
+      }
+
       $scope.measureGridOptionsByScenarioId = {}
       $scope.gridApiByScenarioId = {}
 
-      const at_scenarios = $scope.historical_items ? 
-        $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)).map(item => item.state.scenarios) :
-        []
+      const at_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)).map(item => item.state.scenarios)
       const scenarios = [].concat(...at_scenarios)
       scenarios.forEach(scenario => {
         const scenario_id = scenario.id
