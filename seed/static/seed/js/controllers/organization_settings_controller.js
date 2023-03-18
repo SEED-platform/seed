@@ -274,17 +274,13 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
         return Promise.all(promises)
         .then(function(results) {
-            return results.join();
             $scope.changes_possible = false;
-
             // retrieve mappings again
             salesforce_mapping_service.get_salesforce_mappings()
             .then(function (response) {
               $scope.salesforce_mappings = response;
             });
         });
-
-
       }
     };
 
