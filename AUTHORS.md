@@ -4,7 +4,7 @@ NREL
 - Alex Swindler (https://github.com/axelstudios)
 - Edwin Lee (https://github.com/myoldmopar)
 - Katherine Fleming (https://github.com/kflemin)
-- Austin Viveiros (https://github.com/aviveiros)
+- Austin Viveiros (https://github.com/aviveiros11)
 - Hannah Eslinger (https://github.com/haneslinger)
 - Alex Chapin (https://github.com/anchapin)
 - Lauren Adams (https://github.com/laurenliz22)
