@@ -1481,14 +1481,9 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.update_salesforce = function (selectedViewIds) {
         inventory_service.update_salesforce(selectedViewIds).then(function (result) {
-          setTimeout(() => {
-            Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
-          }, 1000);
-
+          Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
         }).catch( function (result) {
-          setTimeout(() => {
             Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
-          }, 1000);
         });
       }
 
