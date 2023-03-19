@@ -16,8 +16,6 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
         }
       }).then(function (response) {
         return response.data.salesforce_mappings;
-      }).catch(function (response) {
-        return response.data;
       });
     };
 
@@ -29,8 +27,6 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
-      }).catch(function (response) {
-        return response.data;
       });
     };
 
@@ -46,8 +42,6 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
         }
       }).then(function (response) {
         return response.data;
-      }).catch(function (response) {
-        return response.data;
       });
     };
 
@@ -59,8 +53,6 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
-      }).catch(function (response) {
-        return response.data;
       });
     };
 
@@ -72,8 +64,6 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
-      }).catch(function (response) {
-        return response.data;
       });
     };
 

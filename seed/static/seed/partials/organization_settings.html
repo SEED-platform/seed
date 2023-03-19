@@ -148,7 +148,6 @@
                 <div class="section_content with_padding">
                     <h3 translate>Property Display Field</h3>
                     <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
-                    <small>{$ all_columns $}</small>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
@@ -163,7 +162,6 @@
                 <div class="section_content with_padding">
                     <h3 translate>Taxlot Display Field</h3>
                     <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
-                    <small>{$ all_columns $}</small>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
@@ -236,17 +234,17 @@
             </div>
             <div class="section_content_container">
                 <div class="section_content with_padding">
+                    <h3 translate>Enable Salesforce Integration</h3>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
-                            <label class="col-sm-3 control-label" for="salesforce_enabled" translate>Enable Salesforce Integration</label>
                             <div class="col-sm-4">
-                                <input type="checkbox" class="form-control" id="salesforce_enabled" style="width: 34px;" ng-model="org.salesforce_enabled" ng-disabled="::!auth.requires_owner">
+                                <input type="checkbox" class="form-control" style="width: 34px;" ng-model="org.salesforce_enabled" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-            <div ng-if="org.salesforce_enabled">
+            <div ng-if="org.salesforce_enabled" class="salesforce-form">
                 <div class="section_header_container has_btm_margin">
                     <div class="section_header">
                         <h2><i class="fa fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>

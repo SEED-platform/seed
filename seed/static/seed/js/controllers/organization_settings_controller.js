@@ -244,29 +244,27 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       let promises = [];
       if ($scope.changes_possible) {
         _.forEach($scope.salesforce_mappings, function (mapping) {
-          let promise = null;
+          let promise;
           if (mapping.id) {
             // has ID, update call
             promise = salesforce_mapping_service.update_salesforce_mapping(mapping.id, mapping)
             .catch(function (response) {
-              if (response.data && response.data.status == 'error') {
+              if (response.data?.status === 'error') {
                 $scope.table_errors = response.data.message;
               } else {
                 $scope.table_errors = 'An unknown error has occurred';
               }
-              // console.log("TABLE ERRORS: ", $scope.table_errors);
               Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
             });
           } else {
             // no ID, save new
             promise = salesforce_mapping_service.new_salesforce_mapping(mapping)
             .catch(function (response) {
-              if (response.data && response.data.status == 'error'){
+              if (response.data?.status === 'error'){
                 $scope.table_errors = response.data.message;
               } else {
                 $scope.table_errors = 'An unknown error has occurred';
               }
-              // console.log("TABLE ERRORS: ", $scope.table_errors);
               Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
             });
           }

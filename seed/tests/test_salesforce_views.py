@@ -238,7 +238,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             payload_data['salesforce_config']['domain'] = SF_DOMAIN
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:salesforce_configs-salesforce-connection') + '?organization_id=' + str(self.org.id),
             data=json.dumps(payload_data),
             content_type='application/json'
         )
@@ -267,7 +267,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             payload_data['salesforce_config']['domain'] = SF_DOMAIN
 
         response = self.client.post(
-            reverse('api:v3:salesforce_configs-salesforce-connection', args=[self.sf_config.id]) + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:salesforce_configs-salesforce-connection') + '?organization_id=' + str(self.org.id),
             data=json.dumps(payload_data),
             content_type='application/json'
         )

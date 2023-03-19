@@ -32,7 +32,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
-* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 4 --max-tasks-per-child=1000 --events -B --scheduler django_celery_beat.schedulers:DatabaseScheduler`
+* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler`
 * navigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
 * main app runs at `127.0.0.1:8000/app`
 

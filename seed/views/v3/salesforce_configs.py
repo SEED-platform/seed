@@ -7,6 +7,7 @@
 from copy import deepcopy
 
 import django.core.exceptions
+from django.db import IntegrityError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -105,8 +106,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['POST'])
-    def salesforce_connection(self, request, pk=None):
+    @action(detail=False, methods=['POST'])
+    def salesforce_connection(self, request):
         """
         Tests connection to Salesforce using passed-in credentials (may not be saved yet)
         """
@@ -296,6 +297,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'success',
                 'salesforce_config': serializer.data
             }, status=status.HTTP_200_OK)
+        except IntegrityError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Only one Salesforce config can be created per organization'
+            }, status=status.HTTP_400_BAD_REQUEST)
         except django.core.exceptions.ValidationError as e:
 
             message_dict = e.message_dict

@@ -11,7 +11,7 @@ echo "Saving API data"
 ./manage.py create_test_user_json --username demo@example.com --file ./seed/tests/api/api_test_user.json &> tox_test_user.log
 echo "starting celery"
 free -tm
-celery -A seed worker -l INFO -c 2 --events --max-tasks-per-child 1000 -B --scheduler django_celery_beat.schedulers:DatabaseScheduler &> celery_console.log &
+celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler &> celery_console.log &
 echo "starting server"
 echo $(free -tm)
 ./manage.py runserver &

@@ -1444,7 +1444,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Use an array so it can update one or more properties
         """
         org_id = self.get_organization(request)
-        ids = request.data['params'].get('property_view_ids', [])
+        ids = request.data.get('property_view_ids', [])
         try:
             the_status, messages = update_salesforce_properties(org_id, ids)
             if not the_status:
@@ -1469,7 +1469,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse({
                 'status': 'error',
-                'message': message
+                'message': 'failed to sync with Salesforce'
             }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['DELETE'])

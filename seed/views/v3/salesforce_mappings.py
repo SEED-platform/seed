@@ -7,6 +7,7 @@
 from copy import deepcopy
 
 import django.core.exceptions
+from django.db import IntegrityError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -162,7 +163,6 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_owner')
     def update(self, request, pk):
         org_id = self.get_organization(request)
-        salesforce_mapping = None
         try:
             salesforce_mapping = SalesforceMapping.objects.get(id=pk, organization=org_id)
         except SalesforceMapping.DoesNotExist:
@@ -187,6 +187,11 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'success',
                 'salesforce_mapping': serializer.data,
             }, status=status.HTTP_200_OK)
+        except IntegrityError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Duplicate records are not allowed',
+            }, status=status.HTTP_400_BAD_REQUEST)
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
 

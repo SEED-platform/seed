@@ -26,4 +26,5 @@ if [ -z ${NUMBER_OF_WORKERS} ]; then
 fi
 
 echo "Number of workers will be set to: $NUMBER_OF_WORKERS"
-celery -A seed worker -l info -c $NUMBER_OF_WORKERS --max-tasks-per-child 1000 --uid 1000 --events -B --scheduler django_celery_beat.schedulers:DatabaseScheduler
+celery -A seed beat -l INFO --uid 1000 -S django_celery_beat.schedulers:DatabaseScheduler &
+celery -A seed worker -l INFO -c $NUMBER_OF_WORKERS --max-tasks-per-child 1000 --uid 1000 -E
