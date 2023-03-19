@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -28,6 +29,10 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     pagination_class = None
     orgfilter = 'property_state__organization_id'
 
+    enum_validators = {
+        'temporal_status': Scenario.str_to_temporal_status
+    }
+
     def get_queryset(self):
         # Authorization is partially implicit in that users can't try to query
         # on an org_id for an Organization that they are not a member of.
@@ -42,23 +47,6 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                "measures": [
-                    {
-                        "application_scale": "integer",
-                        "category_affected": "integer",
-                        "cost_capital_replacement": "integer",
-                        "cost_installation": "integer",
-                        "cost_material": "integer",
-                        "cost_mv": "integer",
-                        "cost_residual_value": "integer",
-                        "cost_total_first": "integer",
-                        "description": "string",
-                        "implementation_status": "integer",
-                        "property_measure_name": "string",
-                        "recommended": "string",
-                        "useful_life": "integer",
-                    }
-                ],
                 "annual_cost_savings": "integer",
                 "annual_electricity_energy": "integer",
                 "annual_electricity_savings": "integer",
@@ -78,10 +66,8 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 "hdd": "integer",
                 "hdd_base_temperature": "integer",
                 "name": "string",
-                "property_state": "integer",
-                "reference_case": "integer",
                 "summer_peak_load_reduction": "integer",
-                "temporal_status": "integer",
+                "temporal_status": Scenario.TEMPORAL_STATUS_TYPES,
                 "winter_peak_load_reduction": "integer",
             }
         )
@@ -92,11 +78,27 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         """
         Where property_pk is the associated PropertyView.id
         """
-        scenario = Scenario.objects.get(pk=pk)
-        possible_fields = [f.name for f in scenario._meta.get_fields()]
+        try:
+            scenario = Scenario.objects.get(pk=pk)
+        except Scenario.DoesNotExist:
+            return JsonResponse({
+                "status": "error",
+                "message": 'No scenario found with given pks'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        possible_fields = [f.name for f in scenario._meta.get_fields() if f.name not in ['measures', 'property_state', 'reference_case']]
 
         for key, value in request.data.items():
             if key in possible_fields:
+                # Handle enums
+                if key in self.enum_validators.keys():
+                    value = self.enum_validators[key](value)
+                    if value is None:
+                        return JsonResponse({
+                            "Success": False,
+                            "Message": f"Invalid {key} value"
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
                 setattr(scenario, key, value)
             else:
                 return JsonResponse({
@@ -104,7 +106,13 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                     "Message": f'"{key}" is not a valid scenario field'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        scenario.save()
+        try:
+            scenario.save()
+        except ValidationError as e:
+            return JsonResponse({
+                "Success": False,
+                "Message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             "status": "success",
