@@ -8,7 +8,7 @@ import django_extensions.db.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0185_auto_20230112_0922'),
+        ('seed', '0186_salesforce_configs'),
     ]
 
     operations = [

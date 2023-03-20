@@ -69,7 +69,7 @@ def backfill_note_events(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0186_auto_20230217_1652'),
+        ('seed', '0187_auto_20230217_1652'),
     ]
 
     operations = [
