@@ -536,6 +536,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.loadLabelsForFilter = function (query) {
+        // Find all labels associated with the current cycle.
         return _.filter($scope.labels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
@@ -1086,7 +1087,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
         }
-
         return fn(
           page,
           chunk,
@@ -1185,6 +1185,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.update_cycle = function (cycle) {
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
+        get_labels();
         $scope.load_inventory(1);
       };
 
@@ -1203,7 +1204,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var get_labels = function () {
-        label_service.get_labels($scope.inventory_type).then(function (current_labels) {
+        label_service.get_labels($scope.inventory_type, undefined, $scope.cycle.selected_cycle.id).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
@@ -1424,6 +1425,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
+          case 'update_salesforce': $scope.update_salesforce(selectedViewIds); break;
           default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
         }
         $scope.model_actions = 'none';
@@ -1479,6 +1481,14 @@ angular.module('BE.seed.controller.inventory_list', [])
           // Modal dismissed, do nothing
         });
       };
+
+      $scope.update_salesforce = function (selectedViewIds) {
+        inventory_service.update_salesforce(selectedViewIds).then(function (result) {
+          Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
+        }).catch( function (result) {
+            Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
+        });
+      }
 
       $scope.view_notes = function (record) {
         $uibModal.open({
