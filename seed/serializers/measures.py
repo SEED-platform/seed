@@ -18,7 +18,6 @@ class MeasureSerializer(serializers.ModelSerializer):
 
 
 class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='measure.id')
     measure_id = serializers.SerializerMethodField('measure_id_name')
     name = serializers.ReadOnlyField(source='measure.name')
     display_name = serializers.ReadOnlyField(source='measure.display_name')

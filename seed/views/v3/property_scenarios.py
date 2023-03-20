@@ -4,27 +4,34 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from django.utils.decorators import method_decorator
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
+from seed.decorators import ajax_request_class
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
+from seed.utils.api import api_endpoint_class
+from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
 
-@method_decorator(name='list', decorator=swagger_auto_schema_org_query_param)
-@method_decorator(name='retrieve', decorator=swagger_auto_schema_org_query_param)
-class PropertyScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
+class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
-    API View for Scenarios. This only includes retrieve and list for now.
+    API View for Scenarios.
     """
     serializer_class = ScenarioSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     pagination_class = None
     orgfilter = 'property_state__organization_id'
+
+    enum_validators = {
+        'temporal_status': Scenario.str_to_temporal_status
+    }
 
     def get_queryset(self):
         # Authorization is partially implicit in that users can't try to query
@@ -36,3 +43,80 @@ class PropertyScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
             property_state__organization_id=org_id,
             property_state__propertyview=property_view_id,
         ).order_by('id')
+
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "annual_cost_savings": "integer",
+                "annual_electricity_energy": "integer",
+                "annual_electricity_savings": "integer",
+                "annual_natural_gas_energy": "integer",
+                "annual_natural_gas_savings": "integer",
+                "annual_peak_demand": "integer",
+                "annual_peak_electricity_reduction": "integer",
+                "annual_site_energy": "integer",
+                "annual_site_energy_savings": "integer",
+                "annual_site_energy_use_intensity": "integer",
+                "annual_source_energy": "integer",
+                "annual_source_energy_savings": "integer",
+                "annual_source_energy_use_intensity": "integer",
+                "cdd": "integer",
+                "cdd_base_temperature": "integer",
+                "description": "string",
+                "hdd": "integer",
+                "hdd_base_temperature": "integer",
+                "name": "string",
+                "summer_peak_load_reduction": "integer",
+                "temporal_status": Scenario.TEMPORAL_STATUS_TYPES,
+                "winter_peak_load_reduction": "integer",
+            }
+        )
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    def update(self, request, property_pk=None, pk=None):
+        """
+        Where property_pk is the associated PropertyView.id
+        """
+        try:
+            scenario = Scenario.objects.get(pk=pk)
+        except Scenario.DoesNotExist:
+            return JsonResponse({
+                "status": "error",
+                "message": 'No scenario found with given pks'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        possible_fields = [f.name for f in scenario._meta.get_fields() if f.name not in ['measures', 'property_state', 'reference_case']]
+
+        for key, value in request.data.items():
+            if key in possible_fields:
+                # Handle enums
+                if key in self.enum_validators.keys():
+                    value = self.enum_validators[key](value)
+                    if value is None:
+                        return JsonResponse({
+                            "Success": False,
+                            "Message": f"Invalid {key} value"
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
+                setattr(scenario, key, value)
+            else:
+                return JsonResponse({
+                    "Success": False,
+                    "Message": f'"{key}" is not a valid scenario field'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            scenario.save()
+        except ValidationError as e:
+            return JsonResponse({
+                "Success": False,
+                "Message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        result = {
+            "status": "success",
+            "data": ScenarioSerializer(scenario).data
+        }
+
+        return JsonResponse(result, status=status.HTTP_200_OK)

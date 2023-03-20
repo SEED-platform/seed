@@ -133,7 +133,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def schema_factory(cls, obj, **kwargs):
         """Translates an object into an openapi Schema
 
-        This can handle nested objects (lists, dicts), and "types" defined as strings
+        This can handle nested objects (lists, dicts, enum tuples), and "types" defined as strings
         For example:
         {
             'hello': ['string'],
@@ -147,6 +147,13 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         :param obj: str, list, dict[str, obj]
         :return: drf_yasg.openapi.Schema
         """
+        if isinstance(obj, tuple):
+            return openapi.Schema(
+                type=openapi.TYPE_STRING,
+                enum=[t[1] for t in obj],
+                **kwargs
+            )
+
         if isinstance(obj, str):
             openapi_type = cls._openapi_type(obj)
             return openapi.Schema(
