@@ -20,7 +20,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
     orgfilter = 'property__organization'
 
     def get_queryset(self):
-        # return the orgarization id from the request. This also check
+        # return the organization id from the request. This also check
         # the permissions for the user
         org_id = self.get_organization(self.request)
         # get the property id - since the meter is associated with the property (not the property view)

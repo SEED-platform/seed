@@ -697,6 +697,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.update_salesforce = function () {
+        inventory_service.update_salesforce([$scope.inventory.view_id]).then(function (result) {
+          Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
+        }).catch( function (result) {
+            Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
+        });
+      };
+
       $scope.match_merge_link_record = function () {
         var new_view_id;
         if ($scope.inventory_type === 'properties') {
