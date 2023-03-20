@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+from typing import List
 
 import github3
 
@@ -19,8 +20,8 @@ print(repo)
 # Initialize some data
 header = ["Github URL", "Order", "Title", "Category", "Priority", "Impact", "Estimate", "Weighted Priority", "Note", "Github ID",
           "Type/Labels", "Pivotal URL"]
-lines = []
-ids_added = []
+lines: List[List] = []
+ids_added: List[int] = []
 
 
 def add_issue_to_csv(issue):
