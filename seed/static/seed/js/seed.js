@@ -1063,9 +1063,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member','requires_viewer'])
+            return auth_service.is_authorized(organization_id, ['requires_member'])
               .then(function (data) {
-                if (data.auth.requires_viewer) {
+                if (data.auth.requires_member) {
                   return data;
                 } else {
                   return $q.reject('not authorized');
@@ -2001,6 +2001,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_program.html',
         controller: 'insights_program_controller',
         resolve: {
+          auth_payload: ['auth_service', 'user_service', function (auth_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member']);
+          }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
           }],
@@ -2019,6 +2023,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/insights_property.html',
         controller: 'insights_property_controller',
         resolve: {
+          auth_payload: ['auth_service', 'user_service', function (auth_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member']);
+          }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
           }],
@@ -2036,6 +2044,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {
+          auth_payload: ['auth_service', 'user_service', function (auth_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member']);
+          }],
           valid_column_data_types: [function () {
               return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];
           }],
@@ -2077,6 +2089,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/data_view.html',
         controller: 'data_view_controller',
         resolve: {
+          auth_payload: ['auth_service', 'user_service', function (auth_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member']);
+          }],
           valid_column_data_types: [function () {
               return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];
           }],
