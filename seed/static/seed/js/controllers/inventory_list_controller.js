@@ -551,6 +551,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
+        $scope.load_inventory(1);
         $scope.isModified();
       };
 
