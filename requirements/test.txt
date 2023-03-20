@@ -34,4 +34,4 @@ hypothesis==6.12.0
 uWSGI==2.0.18
 
 # static type checking
-mypy==0.910
+mypy==1.0.0

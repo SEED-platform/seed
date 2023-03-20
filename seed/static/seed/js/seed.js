@@ -183,6 +183,8 @@ angular.module('BE.seed.services', [
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.search',
+  'BE.seed.service.salesforce_config',
+  'BE.seed.service.salesforce_mapping',
   'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',
   'BE.seed.service.ubid',
@@ -947,11 +949,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           property_column_names: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var organization_id = $stateParams.organization_id;
-            return inventory_service.get_property_column_names_for_org(organization_id);
+            return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
           }],
           taxlot_column_names: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var organization_id = $stateParams.organization_id;
             return inventory_service.get_taxlot_column_names_for_org(organization_id);
+          }],
+          labels_payload: ['label_service', '$stateParams', function (label_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return label_service.get_labels_for_org(organization_id);
+          }],
+          salesforce_mappings_payload: ['salesforce_mapping_service', '$stateParams', function (salesforce_mapping_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return salesforce_mapping_service.get_salesforce_mappings(organization_id);
+          }],
+          salesforce_configs_payload: ['salesforce_config_service', '$stateParams', function (salesforce_config_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return salesforce_config_service.get_salesforce_configs(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;

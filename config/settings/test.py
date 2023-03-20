@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
+import importlib.util
 import logging
 import os
 
@@ -79,3 +79,12 @@ else:
 # suppress some logging on faker -- only show warnings or greater
 logging.getLogger('faker.factory').setLevel(logging.ERROR)
 logging.disable(logging.WARNING)
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')
