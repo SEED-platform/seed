@@ -536,6 +536,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.loadLabelsForFilter = function (query) {
+        // Find all labels associated with the current cycle.
         return _.filter($scope.labels, function (lbl) {
           if (_.isEmpty(query)) {
             // Empty query so return the whole list.
@@ -1086,7 +1087,6 @@ angular.module('BE.seed.controller.inventory_list', [])
             exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
         }
-
         return fn(
           page,
           chunk,
@@ -1185,6 +1185,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.update_cycle = function (cycle) {
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
+        get_labels();
         $scope.load_inventory(1);
       };
 
@@ -1203,7 +1204,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var get_labels = function () {
-        label_service.get_labels($scope.inventory_type).then(function (current_labels) {
+        label_service.get_labels($scope.inventory_type, undefined, $scope.cycle.selected_cycle.id).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
