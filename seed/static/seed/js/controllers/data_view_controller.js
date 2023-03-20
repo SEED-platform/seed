@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.data_view', [])
       $scope.create_errors = [];
       $scope.data_views_error = null;
       $scope.cycles = cycles.cycles;
-      $scope.auth_payload = auth_payload
+      $scope.auth = auth_payload.auth;
       $scope.fields = {
         'filter_group_checkboxes': {},
         'cycle_checkboxes': {},
@@ -515,7 +515,7 @@ angular.module('BE.seed.controller.data_view', [])
       }
 
       const _assign_datasets = () => {
-        console.log('assgin dataset start')
+        console.log('assign dataset start')
         if (!$scope.data.graph_data) {
           spinner_utility.hide()
           return

@@ -67,7 +67,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_member')
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -98,7 +98,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_member')
     def create(self, request):
         org_id = self.get_organization(request)
         data = deepcopy(request.data)
@@ -143,7 +143,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_member')
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -227,7 +227,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def inventory(self, request, pk):
         organization = self.get_organization(request)
