@@ -8,7 +8,6 @@ angular.module('BE.seed.controller.insights_property', [])
     'compliance_metric_service',
     'organization_payload',
     'spinner_utility',
-    'cycles',
     'auth_payload',
     function (
       $scope,
@@ -19,12 +18,10 @@ angular.module('BE.seed.controller.insights_property', [])
       compliance_metric_service,
       organization_payload,
       spinner_utility,
-      cycles,
       auth_payload
     ) {
 
       $scope.id = $stateParams.id;
-      $scope.cycles = cycles.cycles;
       $scope.static_url = urls.static_url;
       $scope.organization =  organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -45,8 +42,9 @@ angular.module('BE.seed.controller.insights_property', [])
       $scope.chart_datasets = {};
 
       // default settings / dropdowns
-      $scope.chart_cycle = _.last($scope.cycles).id;
-      $scope.chart_cycle_name = _.last($scope.cycles).name;
+      $scope.chart_cycle = null;
+      $scope.chart_cycle_name = null;
+      $scope.cycles = [];
       $scope.chart_metric = null;
       $scope.chart_xaxis = null;
       $scope.x_axis_options = [];
@@ -60,11 +58,21 @@ angular.module('BE.seed.controller.insights_property', [])
           return;
         }
         spinner_utility.show();
-        let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
+        compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
         }).then(() => {
           if ($scope.data) {
             // set options
+            // cycles
+            $scope.cycles = $scope.data.metric.cycles;
+            if (_.size($scope.cycles) > 0){
+              // don't clear out a valid existing selection
+              if($scope.chart_cycle == null || _.find($scope.cycles, function(o) { return o.id == $scope.chart_cycle}) == undefined) {
+                $scope.chart_cycle = _.first($scope.cycles).id
+                $scope.chart_cycle_name = _.first($scope.cycles).name
+              }
+            }
+
             // x axis
             $scope.x_axis_options = $scope.data.metric.x_axis_columns;
 
@@ -114,9 +122,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       $scope.update = function() {
         spinner_utility.show();
-        // console.log('chart_cycle is now: ', $scope.chart_cycle)
-        // console.log('xaxis is now: ', $scope.chart_xaxis)
-        // console.log('Metric is now: ', $scope.chart_metric)
+
         let record = _.find($scope.cycles, function(o) {
           return o.id == $scope.chart_cycle;
         });

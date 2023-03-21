@@ -5,11 +5,9 @@
 :author
 """
 import json
-from datetime import datetime
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from seed.models import Column, ComplianceMetric, FilterGroup, User
 from seed.test_helpers.fake import FakeCycleFactory
@@ -48,6 +46,9 @@ class ComplianceMetricViewTests(TestCase):
         self.x_axes1 = [self.column5, self.column6, self.column7]
         self.x_axes2 = [self.column7]
 
+        self.cycles1 = [self.cycle1, self.cycle2, self.cycle3]
+        self.cycles2 = [self.cycle4]
+
         self.filter_group = FilterGroup.objects.create(
             name='filter group 1',
             organization_id=self.org.id,
@@ -60,8 +61,6 @@ class ComplianceMetricViewTests(TestCase):
         self.compliance_metric1 = ComplianceMetric.objects.create(
             name='compliance metric 1',
             organization=self.org,
-            start=datetime(2017, 1, 1, tzinfo=timezone.utc),
-            end=datetime(2021, 12, 31, tzinfo=timezone.utc),
             actual_energy_column=self.column1,
             target_energy_column=self.column2,
             energy_metric_type=0,
@@ -70,20 +69,19 @@ class ComplianceMetricViewTests(TestCase):
             emission_metric_type=1,
             filter_group=self.filter_group
         )
-
+        self.compliance_metric1.cycles.set(self.cycles1)
         self.compliance_metric1.x_axis_columns.set(self.x_axes1)
 
         # 2nd metric (just energy without filter group)
         self.compliance_metric2 = ComplianceMetric.objects.create(
             name='compliance metric 2',
             organization=self.org,
-            start=datetime(2018, 1, 1, tzinfo=timezone.utc),
-            end=datetime(2022, 12, 31, tzinfo=timezone.utc),
             actual_energy_column=self.column1,
             target_energy_column=self.column2,
             energy_metric_type=0
         )
         self.compliance_metric2.x_axis_columns.set(self.x_axes2)
+        self.compliance_metric2.cycles.set(self.cycles2)
 
     def test_compliance_metric_model(self):
         compliance_metrics = ComplianceMetric.objects.all().order_by('created')
@@ -97,12 +95,14 @@ class ComplianceMetricViewTests(TestCase):
         compliance_metrics1.x_axis_columns.all()
 
         self.assertEqual(len(compliance_metrics1.x_axis_columns.all()), 3)
+        self.assertEqual(len(compliance_metrics1.cycles.all()), 3)
 
         compliance_metrics2 = compliance_metrics[1]
         self.assertIsNotNone(compliance_metrics2.energy_metric_type)
         self.assertIsNone(compliance_metrics2.actual_emission_column)
         self.assertIsNone(compliance_metrics2.target_emission_column)
         self.assertEqual(len(compliance_metrics2.x_axis_columns.all()), 1)
+        self.assertEqual(len(compliance_metrics2.cycles.all()), 1)
         self.assertIsNone(compliance_metrics2.filter_group)
 
     def test_compliance_metric_create_endpoint(self):
@@ -119,12 +119,11 @@ class ComplianceMetricViewTests(TestCase):
             reverse('api:v3:compliance_metrics-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 "name": "compliance metric 3",
-                "start": "2018-01-01",
-                "end": "2022-12-31",
                 "actual_emission_column": self.column3.id,
                 "target_emission_column": self.column4.id,
                 "emission_metric_type": "Target > Actual for Compliance",
                 "filter_group": self.filter_group.id,
+                "cycles": [self.cycle1.id, self.cycle2.id],
                 "x_axis_columns": [self.column5.id, self.column6.id]
 
             }),
@@ -138,6 +137,7 @@ class ComplianceMetricViewTests(TestCase):
         self.assertEqual(data['compliance_metric']['actual_emission_column'], self.column3.id)
         self.assertEqual(data['compliance_metric']['target_emission_column'], self.column4.id)
         self.assertEqual(len(data['compliance_metric']['x_axis_columns']), 2)
+        self.assertEqual(len(data['compliance_metric']['cycles']), 2)
         self.assertTrue(bool(data['compliance_metric']['filter_group']))
 
         self.assertEqual(3, len(ComplianceMetric.objects.all()))
