@@ -83,10 +83,10 @@
                         <div class="form-row" style="padding-top: 1em; padding-bottom: 1em;">
                             <div class="btn-group">
                                 <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select'">Select Meter Data Range</label>
+                                <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
                             </div>
                         </div>
-                        <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'select'" style="padding-bottom: 1em;">
+                        <div class="form-row" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-bottom: 1em;">
 
                             <div class="col-md-6" ng-class="{'has-error' : invalidDates }" style="padding-bottom: 1em;">
                                 <label for="from-date">{$:: 'From date' | translate $}:</label>

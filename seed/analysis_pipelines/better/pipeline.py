@@ -163,7 +163,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
     )
 
     # check if dates are ok
-    if 'select_meters' in config and config['select_meters'] == 'select':
+    if 'select_meters' in config and config['select_meters'] == 'date_range':
         try:
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
@@ -176,7 +176,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
 
     if preprocess_meters:
         for meter in meters:
-            if 'select_meters' in config and config['select_meters'] == 'select':
+            if 'select_meters' in config and config['select_meters'] == 'date_range':
                 try:
                     meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
                 except Exception as err:
@@ -206,7 +206,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
-            if 'select_meters' in config and config['select_meters'] == 'select':
+            if 'select_meters' in config and config['select_meters'] == 'date_range':
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
