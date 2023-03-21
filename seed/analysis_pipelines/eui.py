@@ -69,7 +69,7 @@ def _get_valid_meters(property_view_ids, config):
         end_time = cycle.end
         start_time = cycle.start
     else:
-        AnalysisPipelineException("configuation.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
+        AnalysisPipelineException("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:

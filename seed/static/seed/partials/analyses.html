@@ -46,9 +46,9 @@
                         <td>{$:: analysis.service $}</td>
                         <td>
                             <ul ng-repeat="(config, setting) in analysis.configuration">
-                                <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
+                                <li ng-if="!_.isObject(setting)">{$:: config $} = {$:: setting $}</li>
                             </ul>
-                            <ul ng-if="analysis.configuration.select_meters && analysis.configuration.select_meters == 'select'">
+                            <ul ng-if="analysis.configuration.select_meters && analysis.configuration.select_meters == 'date_range'">
                                 <li>
                                 meter start date = {$:: analysis.configuration.meter.start_date | date : "shortDate" $}</li>
                                 <li>
