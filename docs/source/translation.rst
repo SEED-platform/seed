@@ -9,8 +9,8 @@ Translating SEED
 
    .. code:: bash
 
-      script/get_python_translations
-      script/get_angular_translations
+      script/get_python_translations.sh
+      script/get_angular_translations.sh
 
 4. Uncomment the ``useMissingTranslationHandlerLog`` line seed.js to log untranslated strings to the console for review
 
