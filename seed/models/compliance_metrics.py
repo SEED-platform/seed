@@ -4,6 +4,7 @@
 """
 
 
+import numbers
 from typing import Union
 
 from django.db import models
@@ -89,6 +90,9 @@ class ComplianceMetric(models.Model):
 
         for col in self.x_axis_columns.all():
             column_ids.append(col.id)
+
+        # Unique ids
+        column_ids = [*set(column_ids)]
 
         property_response = properties_across_cycles_with_filters(
             self.organization_id,
@@ -196,14 +200,14 @@ class ComplianceMetric(models.Model):
         actual_col = self.actual_energy_column if metric_type == 'energy' else self.actual_emission_column
         target_col = self.target_energy_column if metric_type == 'energy' else self.target_emission_column
         actual_val = self._get_column_data(the_property, actual_col)
-        if actual_val is None:
+        if not isinstance(actual_val, numbers.Number):
             return 'u'
 
         if bool_metric:
-            return 'y' if actual_val > 0 else 'n'
+            return 'y' if bool(actual_val) else 'n'
 
         target_val = self._get_column_data(the_property, target_col)
-        if target_val is None:
+        if not isinstance(target_val, numbers.Number):
             return 'u'
 
         # test metric type
