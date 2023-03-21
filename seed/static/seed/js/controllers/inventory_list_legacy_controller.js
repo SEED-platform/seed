@@ -1199,8 +1199,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
                 return !_.has(row, '$$treeLevel');
               }), 'property_view_id');
             },
-            cycles: cycles.cycles,
-            current_cycle: _.constant($scope.cycle.selected_cycle),
+            cycles: _.constant(cycles.cycles),
+            current_cycle: _.constant($scope.cycle.selected_cycle)
           }
         });
         modalInstance.result.then(function (data) {
