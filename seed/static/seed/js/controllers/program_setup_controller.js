@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     spinner_utility.show();
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
-    $scope.cycles = cycles_payload['cycles'];
+    $scope.cycles = cycles_payload.cycles;
     $scope.compliance_metrics_error = [];
     $scope.program_settings_not_changed = true;
     $scope.program_settings_changed = function () {
@@ -61,15 +61,16 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
     };
 
+    $scope.available_cycles = () => {
+      return $scope.cycles.filter(({id}) => !$scope.selected_compliance_metric?.cycles.includes(id));
+    }
+
     $scope.select_cycle = function () {
       $scope.program_settings_changed();
       let selection = $scope.cycle_selection;
       $scope.cycle_selection = '';
       if (!$scope.selected_compliance_metric.cycles) {
         $scope.selected_compliance_metric.cycles = [];
-      }
-      if ($scope.selected_compliance_metric.cycles.includes(selection)) {
-        return;
       }
       $scope.selected_compliance_metric.cycles.push(selection);
     };
@@ -87,6 +88,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
     };
 
+    $scope.available_x_axis_columns = () => {
+      return $scope.x_axis_columns.filter(({id}) => !$scope.selected_compliance_metric?.x_axis_columns.includes(id));
+    }
+
     $scope.x_axis_selection = '';
 
     $scope.select_x_axis = function () {
@@ -95,9 +100,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.x_axis_selection = '';
       if (!$scope.selected_compliance_metric.x_axis_columns) {
         $scope.selected_compliance_metric.x_axis_columns = [];
-      }
-      if ($scope.selected_compliance_metric.x_axis_columns.includes(selection)) {
-        return;
       }
       $scope.selected_compliance_metric.x_axis_columns.push(selection);
     };
@@ -190,10 +192,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       });
 
       // display messages
-          setTimeout(() => {
-            Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
-            Notification.success({message: 'Program Setup Saved!', delay: 5000});
-          }, 1000);
+      Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
+      Notification.success({message: 'Program Setup Saved!', delay: 5000});
+
       $scope.program_settings_not_changed = true;
       spinner_utility.hide();
 

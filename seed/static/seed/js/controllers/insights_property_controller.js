@@ -58,9 +58,8 @@ angular.module('BE.seed.controller.insights_property', [])
           return;
         }
         spinner_utility.show();
-        let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
+        compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
-          // console.log('data: ', $scope.data)
         }).then(() => {
           if ($scope.data) {
             // set options

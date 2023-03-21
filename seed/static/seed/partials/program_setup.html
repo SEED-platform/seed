@@ -79,20 +79,20 @@
                                         <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
                                         <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
                                             <span class="r-grow">{$:: get_cycle_display(item) $}</span>
-                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_cycle(item)" ng-show="auth.requires_owner || auth.requires_member"></i>
+                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
                                         </li>
-                                        <li class="r-row r-row-centered" ng-show="auth.requires_owner || auth.requires_member">
-                                            <select id="select-cycle" class="form-control" ng-change="select_cycle(); program_settings_changed()" ng-model="cycle_selection">
-                                                <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$:: cycle.name $}</option>
+                                        <li class="r-row r-row-centered">
+                                            <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection">
+                                                <option ng-repeat="cycle in available_cycles()" ng-value="cycle.id">{$:: cycle.name $}</option>
                                             </select>
                                         </li>
                                     </ul>
                                     <ul class="r-list">
+                                        <li class="r-list-header" translate>Filter Group</li>
                                         <li class="r-row r-row-centered">
-                                            <label for="select-filter-group" class="r-no-wrap r-margin-right-5" translate>Filter Group</label>
-                                            <select id="select-filter-group" class="form-control" ng-model="selected_compliance_metric.filter_group" ng-change="program_settings_changed()">
+                                            <select class="form-control" ng-model="selected_compliance_metric.filter_group" ng-change="program_settings_changed()">
                                                 <option value=""></option>
-                                                <option ng-repeat="filter_group in filter_groups" ng-value="{$ filter_group.id $}">{$:: filter_group.name $}</option>
+                                                <option ng-repeat="filter_group in filter_groups" ng-value="filter_group.id">{$:: filter_group.name $}</option>
                                             </select>
                                         </li>
                                     </ul>
@@ -111,8 +111,8 @@
                                             <i class="fa fa-times r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
                                         </li>
                                         <li class="r-row r-row-centered">
-                                            <select id="select-x-axis" class="form-control" ng-change="select_x_axis(); program_settings_changed()" ng-model="x_axis_selection">
-                                                <option ng-repeat="x_axis_column in x_axis_columns" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
+                                            <select id="select-x-axis" class="form-control" ng-change="select_x_axis()" ng-model="x_axis_selection">
+                                                <option ng-repeat="x_axis_column in available_x_axis_columns()" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
                                             </select>
                                         </li>
                                     </ul>
