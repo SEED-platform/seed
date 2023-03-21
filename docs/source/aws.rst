@@ -180,6 +180,6 @@ can be started:
 
 .. code-block:: console
 
-    celery -A seed worker -l INFO -c 2 -B --events --max-tasks-per-child 1000
+    celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
 .. _Celery: http://www.celeryproject.org/

@@ -13,6 +13,7 @@ class SaveSettingsOrgFieldSerializer(serializers.Serializer):
 
 
 class SaveSettingsOrganizationSerializer(serializers.Serializer):
+
     query_threshold = serializers.IntegerField()
     name = serializers.CharField(max_length=100)
     fields = SaveSettingsOrgFieldSerializer(many=True)
@@ -35,6 +36,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     at_organization_token = serializers.CharField(max_length=128)
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
+    salesforce_enabled = serializers.BooleanField()
 
 
 class SaveSettingsSerializer(serializers.Serializer):
