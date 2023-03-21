@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.insights_property', [])
     'compliance_metric_service',
     'organization_payload',
     'spinner_utility',
+    'auth_payload',
     function (
       $scope,
       $stateParams,
@@ -17,11 +18,13 @@ angular.module('BE.seed.controller.insights_property', [])
       compliance_metric_service,
       organization_payload,
       spinner_utility,
+      auth_payload
     ) {
 
       $scope.id = $stateParams.id;
       $scope.static_url = urls.static_url;
       $scope.organization =  organization_payload.organization;
+      $scope.auth = auth_payload.auth;
 
       // compliance metric
       $scope.compliance_metrics = compliance_metrics;
@@ -32,7 +35,6 @@ angular.module('BE.seed.controller.insights_property', [])
       if (compliance_metrics.length > 0) {
         $scope.compliance_metric = compliance_metrics[0];
         $scope.selected_metric = $scope.compliance_metric.id;
-
       }
 
       // chart data

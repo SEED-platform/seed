@@ -11,7 +11,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   'Notification',
   'organization_payload',
   'cycles_payload',
-  'auth_payload',
   'property_columns',
   'spinner_utility',
   'x_axis_columns',
@@ -24,7 +23,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     Notification,
     organization_payload,
     cycles_payload,
-    auth_payload,
     property_columns,
     spinner_utility,
     x_axis_columns
@@ -32,7 +30,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     spinner_utility.show();
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
-    $scope.auth = auth_payload.auth;
     $scope.cycles = cycles_payload['cycles'];
     $scope.compliance_metrics_error = [];
     $scope.program_settings_not_changed = true;
