@@ -24,7 +24,7 @@
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration.model_type" ng-dropdown required>
-                        <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$:: model $}</option>
+                        <option ng-repeat="model in bsyncr_models" selected="selected" ng-value="model">{$:: model $}</option>
                     </select>
                 </div>
 
@@ -44,10 +44,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="control-label sectionLabel text-muted">
-                                        Benchmark Data
+                                        Benchmark Data Type
                                         <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
                                     </label>
-                                    <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
+                                    <select class="form-control" ng-model="new_analysis.configuration.benchmark_data_type" ng-dropdown required>
                                         <option ng-repeat="model in better_benchmark_options" selected="selected"
                                                 ng-value=model>{$:: model $}
                                         </option>
@@ -80,19 +80,17 @@
                         </div>
                         <div class="btn-group">
                             <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select'">Select Meter Data Range</label>
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
                         </div>
-                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select'" style="padding-top: 1em">
+                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
                             <div class="row">
                                 <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
                                     <label for="from-date">{$:: 'From date' | translate $}:</label>
-
                                     <div class="input-group date-input">
                                         <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="datePickersOpen.start" ng-model="new_analysis.configuration.meter.start_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                                         <span class="input-group-btn">
                                             <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
                                         </span>
-
                                     </div>
                                 </div>
                                 <div class="col-md-6">

@@ -116,7 +116,7 @@ class Analysis(models.Model):
                 }, {
                     'name': ['BETTER Inverse Model R^2 (Electricity', 'Fossil Fuel)'],
                     'value_template': ['{json_value:,.2f}', '{json_value:,.2f}'],
-                    'json_path': ['inverse_model.Electricity.r2', 'inverse_model.Fossil Fuel.r2'],
+                    'json_path': ['inverse_model.ELECTRICITY.r2', 'inverse_model.FOSSIL_FUEL.r2'],
                 }
             ]
 
