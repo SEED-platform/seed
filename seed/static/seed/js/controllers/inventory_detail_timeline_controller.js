@@ -301,15 +301,15 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             };
 
             $scope.accordionsCollapsed = true
-            $scope.toggleAccordions = (show) => {
-                $scope.accordionsCollapsed = show
-                const action = show ? 'show' : 'hide'
+            $scope.collapseAccordions = (collapseAll) => {
+                $scope.accordionsCollapsed = collapseAll
+                const action = collapseAll ? 'hide' : 'show'
                 $('.cycle-collapse').collapse(action)
                 $('.event-collapse').collapse(action)
                 $('.scenario-collapse').collapse(action)
 
                 // Without resizing ui-grids will appear empty
-                show && setTimeout($scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event)), 1)
+                action == 'show' && setTimeout($scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event)), 1)
             }
 
             $scope.formatMeasureStatuses = (scenario) => {
