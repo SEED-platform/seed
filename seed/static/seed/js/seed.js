@@ -1037,6 +1037,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             return organization_service.get_organization($stateParams.organization_id);
           }],
+          cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+            return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          }],
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
                 columns = _.reject(columns, (item) => {
@@ -1094,6 +1097,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             return organization_service.get_organization($stateParams.organization_id);
           }],
+          cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+            return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          }],
           property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
             return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
                 columns = _.reject(columns, (item) => {
@@ -1120,9 +1126,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member','requires_viewer'])
+            return auth_service.is_authorized(organization_id, ['requires_member'])
               .then(function (data) {
-                if (data.auth.requires_viewer) {
+                if (data.auth.requires_member) {
                   return data;
                 } else {
                   return $q.reject('not authorized');
@@ -2029,9 +2035,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           compliance_metrics: ['compliance_metric_service', function (compliance_metric_service) {
             return compliance_metric_service.get_compliance_metrics();
-          }],
-          cycles: ['cycle_service', function (cycle_service) {
-            return cycle_service.get_cycles();
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);

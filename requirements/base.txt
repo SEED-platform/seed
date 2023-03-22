@@ -38,7 +38,7 @@ django-filter==2.4.0
 drf-nested-routers==0.91
 
 # Server monitoring
-sentry-sdk==1.7.2
+sentry-sdk==1.14.0
 
 # Various packages
 jellyfish==0.8.2
