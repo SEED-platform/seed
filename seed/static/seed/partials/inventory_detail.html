@@ -48,7 +48,7 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="display:flex;margin:10px 0;">
             <div style="flex-grow:1;display:flex;flex-direction:column;row-gap:10px;">
-                <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <div uib-dropdown class="btn-group pointer">
                     <button id="btnInventoryActions"
                             type="button"
                             uib-dropdown-toggle
@@ -142,7 +142,7 @@
             <div class="progress_bar_container" ng-show="uploader.in_progress">
                 <div class="progress_bar_copy_top"
                          translate="UPLOADING_PROGRESS"
-                         translate-values="{ dataset_filename: uploader.filename }"></div>
+                         translate-values="{ dataset_filename: uploader.filename, cycle_name: cycle.name }"></div>
 
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
@@ -341,10 +341,8 @@
                                         {$:: file.filename $} - {$:: file.id $}
                                     </td>
                                     <td style="border-left:0px; text-align:right;">
-                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}">
-                                        <i class="fa fa-download" aria-hidden="true"></i>
-                                    </a>
-                                    <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
+                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa fa-download" aria-hidden="true"></i></a>
+                                        <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
                                     </td>
                                     <td> {$ file.file_type $}</td>
                                     <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
@@ -397,8 +395,8 @@
                             <span>
                                 <h2>
                                     <!-- <i class="fa fa-bolt"></i> -->
-                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg"></img>
-                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0;"></img>
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg">
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0;">
 
                                     Scenarios & Measures
                                 </h2>
@@ -406,13 +404,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="scenario-cycle" style="">
+                <div class="scenario-cycle">
                     {$ cycle.name $}
                 </div>
             </div>
             <!-- List of Scenarios and Measures grouped by AuditTemplate File Upload -->
             <div class="section_content_container">
-                <div ng-repeat="historical_item in historical_items_with_scenarios" >
+                <div ng-repeat="historical_item in historical_items_with_scenarios">
                     <div class="accordion-header" style="margin: 2px 0">
                         <button
                             class="accordion-button at-date"

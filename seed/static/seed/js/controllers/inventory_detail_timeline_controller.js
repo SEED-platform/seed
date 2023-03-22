@@ -3,6 +3,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
         '$scope',
         '$stateParams',
         '$timeout',
+        'uiGridConstants',
         'cycles',
         'events',
         'inventory_payload',
@@ -13,6 +14,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope,
             $stateParams,
             $timeout,
+            uiGridConstants,
             cycles,
             events,
             inventory_payload,
@@ -36,9 +38,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.show_at_scenario_actions = false
             $scope.orderDesc = false
             $scope.setDesc = (selection) => {
-                if (selection == $scope.orderDesc) {
-                    return
-                }
+                if (selection === $scope.orderDesc) return;
                 $scope.orderDesc = selection
                 formatTimeline($scope.selectedEvents)
             }
@@ -65,15 +65,20 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     new Date(b.cycle_end_date) - new Date(a.cycle_end_date)
                 )
 
-                $scope.timeline = eventsByCycle
+                // Preprocess total number of events by type
+                for (const cycle of eventsByCycle) {
+                  cycle.eventTotals = $scope.groupByEventType(cycle.events);
+                }
+
+                $scope.timeline = eventsByCycle;
             }
 
             const formatDuration = (start, end) => {
                 if (!start || !end) {
                     return
                 }
-                const miliseconds = moment(end) - moment(start);
-                const seconds = Math.floor(miliseconds / 1000);
+                const milliseconds = moment(end) - moment(start);
+                const seconds = Math.floor(milliseconds / 1000);
                 const minutes = Math.floor(seconds / 60);
                 const hours = Math.floor(minutes / 60);
                 const days = Math.floor(hours / 24);
@@ -87,7 +92,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 } else if (seconds) {
                     return seconds + ' seconds'
                 } else {
-                    return miliseconds + ' ms'
+                    return milliseconds + ' ms'
                 }
             }
 
@@ -150,6 +155,10 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             "Updated": moment(note.updated).format('YYYY/MM/DD'),
                             "Text": note.text
                         }],
+                        enableColumnMenus: false,
+                        enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+                        enableSorting: false,
+                        enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
                         minRowsToShow: 1,
                         onRegisterApi: function (gridApi) {
                             $scope.gridApiByNoteId[note.id] = gridApi;
@@ -176,6 +185,10 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                                 "Status": analysis.status
                             }
                         ],
+                        enableColumnMenus: false,
+                        enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
+                        enableSorting: false,
+                        enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
                         minRowsToShow: 1,
                         onRegisterApi: (gridApi) => {
                             $scope.gridApiByAnalysisId[analysis.id] = gridApi;
@@ -207,6 +220,10 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                     {field: "eventType", visible: false},
                     {field: "Select All"}
                 ],
+                enableColumnMenus: false,
+                enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+                enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+                minRowsToShow: 3,
                 onRegisterApi: (gridApi) => {
                     $scope.gridApiEventSelection = gridApi;
                     $scope.gridApiEventSelection.selection.on.rowSelectionChanged($scope, $scope.eventSelect)
@@ -219,10 +236,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             init = false;
                         }
                     })
-                },
-                minRowsToShow: 3,
-                enableColumnMenus: false,
-                enableHorizontalScrollbar: 0,
+                }
             }
 
             $scope.resizeGridEventSelection = () => {
@@ -277,11 +291,11 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
 
             $scope.resizeGridByEventType = (event, resizeMeasures=false) => {
                 if (event.event_type == 'NoteEvent') {
-                    gridApi = $scope.gridApiByNoteId[event.note.id]
-                    setTimeout(gridApi.core.handleWindowResize, 50);
+                    const gridApi = $scope.gridApiByNoteId[event.note.id]
+                    if (gridApi) setTimeout(gridApi.core.handleWindowResize, 50);
                 } else if (event.event_type == 'AnalysisEvent') {
-                    gridApi = $scope.gridApiByAnalysisId[event.analysis.id]
-                    setTimeout(gridApi.core.handleWindowResize, 50)
+                    const gridApi = $scope.gridApiByAnalysisId[event.analysis.id]
+                    if (gridApi) setTimeout(gridApi.core.handleWindowResize, 50)
                 } else if (resizeMeasures && event.event_type == 'ATEvent') {
                     event.scenarios.forEach(scenario => {
                         $scope.resizeGridByScenarioId(scenario.id)

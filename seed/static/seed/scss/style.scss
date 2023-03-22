@@ -4064,8 +4064,12 @@ FAQ page
     color: #999;
 
     &:hover {
-      cursor: pointer;
       color: black;
+      text-decoration: none;
+    }
+
+    &:focus {
+      text-decoration: none;
     }
   }
 
@@ -4850,6 +4854,9 @@ ul.r-list {
     .ui-grid-top-panel {
       background: #808080;
     }
+  }
+  .ui-grid-row:last-child .ui-grid-cell {
+    border-bottom-width: 1px;
   }
 }
 

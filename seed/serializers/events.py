@@ -65,8 +65,8 @@ class AnalysisEventSerializer(serializers.ModelSerializer):
         highlights = obj.analysis.get_highlights(obj.property_id)
         result["analysis"]["highlights"] = highlights
 
-        analysis_property_view = obj.analysis.get_property_view_info(obj.property_id)["views"]
-        result["analysis"]["views"] = analysis_property_view
+        analysis_property_views = obj.analysis.get_property_view_info(obj.property_id)["views"]
+        result["analysis"]["views"] = analysis_property_views
 
         return result
 

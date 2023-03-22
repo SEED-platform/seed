@@ -40,22 +40,22 @@
     				<div class="title">Chart Legend</div>
     				<p class="small-text">Click a series to show/hide on the chart</p>
     				<div class="legend-row row" ng-click="toggle_dataset_visibility(0)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker"></img></div>
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker"></div>
     					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[0].hidden">Compliant</div>
     					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[0].hidden">Compliant</div>
     				</div>
     				<div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker"></img></div>
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker"></div>
     					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
     					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
     				</div>
     				<div class="legend-row row" ng-click="toggle_dataset_visibility(2)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker"></img></div>
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker"></div>
     					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[2].hidden">Unknown</div>
     					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[2].hidden">Unknown</div>
     				</div>
     				<div class="legend-row row" ng-click="toggle_annotation_visibility()">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker"></img></div>
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker"></div>
     					<div class="col-md-9 text" ng-hide="!display_annotation">Distance to Target</div>
     					<div class="col-md-9 text strikethrough" ng-hide="display_annotation">Distance to Target</div>
     				</div>

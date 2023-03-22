@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$location',
     '$window',
     '$q',
+    'uiGridConstants',
     'Notification',
     'urls',
     'spinner_utility',
@@ -52,6 +53,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $location,
       $window,
       $q,
+      uiGridConstants,
       Notification,
       urls,
       spinner_utility,
@@ -955,6 +957,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
               {field: "scenario_id", visible: false}
 
             ],
+            enableColumnMenus: false,
+            enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+            enableVerticalScrollbar: scenario.measures.length <= 10 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
             minRowsToShow: Math.min(scenario.measures.length, 10),
             rowHeight:40,
             onRegisterApi: function (gridApi) {

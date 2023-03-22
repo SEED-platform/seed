@@ -57,4 +57,6 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
         return "{}.{}".format(obj.measure.category, obj.measure.name)
 
     def get_scenario_id(self, obj):
-        return obj.scenario_set.first().id
+        scenario = obj.scenario_set.first()
+        if scenario:
+            return scenario.id
