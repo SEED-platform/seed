@@ -1468,6 +1468,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             inventory_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
+            cycles: _.constant(cycles.cycles),
             current_cycle: _.constant($scope.cycle.selected_cycle),
           }
         });
