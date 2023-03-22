@@ -382,14 +382,18 @@ angular.module('BE.seed.controller.data_view', [])
         spinner_utility.hide();
       };
 
-      $scope.click_delete = function (data_view=null) {
+      $scope.click_delete = function (data_view) {
         spinner_utility.show();
-        if (!data_view) {
-          data_view = $scope.selected_data_view
+
+        // if new data_view, just click cancel
+        if (data_view.id == undefined){
+          $scope.click_cancel();
+          return;
         }
+
         if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
           delete_id = data_view.id;
-          let delete_data_view = data_view_service.delete_data_view(delete_id).then((data) => {
+          data_view_service.delete_data_view(delete_id).then((data) => {
             if (data.status == 'success') {
                 $scope.data_views = $scope.data_views.filter(data_view => data_view.id != delete_id);
                 if ($scope.selected_data_view.id == data_view.id) {
