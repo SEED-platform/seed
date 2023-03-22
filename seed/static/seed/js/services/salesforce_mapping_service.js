@@ -1,18 +1,16 @@
 angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_mapping_service', [
   '$http',
   '$log',
-  'user_service',
   function (
     $http,
-    $log,
-    user_service
+    $log
   ) {
 
   	// get all salesforce_mappings defined
-  	const get_salesforce_mappings = function () {
+  	const get_salesforce_mappings = function (organization_id) {
       return $http.get('/api/v3/salesforce_mappings/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_mappings;
@@ -20,10 +18,10 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
     };
 
     // retrieve salesforce_mapping
-    const get_salesforce_mapping = function (id) {
+    const get_salesforce_mapping = function (organization_id, id) {
       return $http.get('/api/v3/salesforce_mappings/' + id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
@@ -31,14 +29,14 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
     };
 
     // delete
-    const delete_salesforce_mapping = function (id) {
+    const delete_salesforce_mapping = function (organization_id, id) {
       if (_.isNil(id)) {
         $log.error('#salesforce_mapping_service.get_salesforce_mapping(): id is undefined');
         throw new Error('Invalid Parameter');
       }
       return $http.delete('/api/v3/salesforce_mappings/' + id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data;
@@ -46,10 +44,10 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
     };
 
     // update
-    const update_salesforce_mapping = function (id, data) {
+    const update_salesforce_mapping = function (organization_id, id, data) {
       return $http.put('/api/v3/salesforce_mappings/' + id + '/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
@@ -57,10 +55,10 @@ angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_map
     };
 
     // create
-    const new_salesforce_mapping = function (data) {
+    const new_salesforce_mapping = function (organization_id, data) {
       return $http.post('/api/v3/salesforce_mappings/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_mapping;
