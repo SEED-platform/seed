@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'urls',
   'organization_payload',
   'auth_payload',
+  'analyses_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
@@ -25,6 +26,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     urls,
     organization_payload,
     auth_payload,
+    analyses_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
@@ -51,6 +53,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.taxlot_column_names = taxlot_column_names;
     $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
+    $scope.token_validity = { message: 'Verify Token' };
     $scope.labels = labels_payload;
     $scope.test_sf = false;
     $scope.test_sf_msg = null;
@@ -172,11 +175,21 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       input.style.height = input.scrollHeight + 'px';
     };
 
+    $scope.verify_token = () => {
+      analyses_service.verify_token()
+      .then((response) =>
+        $scope.token_validity = response.validity ?
+          {message: 'Valid Token', status: 'valid'} :
+          {message: 'Invalid Token', status: 'invalid'}
+      )
+    }
+
     /**
      * saves the updates settings
      */
     $scope.save_settings = function () {
       $scope.settings_updated = false;
+      $scope.token_validity = { message: 'Verify Token' };
       $scope.form_errors = null;
       update_display_unit_for_scoped_org();
       organization_service.save_org_settings($scope.org).then(function () {

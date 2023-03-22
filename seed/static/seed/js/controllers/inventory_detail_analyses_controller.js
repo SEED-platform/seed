@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
     'analyses_service',
     'Notification',
     'uploader_service',
+    'cycle_service',
     function (
       $state,
       $scope,
@@ -34,7 +35,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $log,
       analyses_service,
       Notification,
-      uploader_service
+      uploader_service,
+      cycle_service,
     ) {
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
@@ -139,6 +141,11 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
           resolve: {
             inventory_ids: function () {
               return [$scope.inventory.view_id];
+            },
+            cycles: function () {
+              return cycle_service.get_cycles().then(function (result) {
+                return result.cycles;
+              });
             },
             current_cycle: {},
           }

@@ -36,6 +36,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'labels_payload',
     'organization_payload',
     'audit_template_service',
+    'cycle_service',
     'simple_modal_service',
     'property_measure_service',
     'scenario_service',
@@ -72,6 +73,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       labels_payload,
       organization_payload,
       audit_template_service,
+      cycle_service,
       simple_modal_service,
       property_measure_service,
       scenario_service,
@@ -120,7 +122,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
       $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
       $scope.format_epoch = (epoch) => {
-       return moment(epoch).format('YYYY/MM/DD')
+        return moment(epoch).format('YYYY/MM/DD')
       }
 
       // stores derived column values -- updated later once we fetch the data
@@ -576,6 +578,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
               return [$scope.inventory.view_id];
             },
             current_cycle: _.constant($scope.cycle),
+            cycles: function () {
+              return cycle_service.get_cycles().then(function (result) {
+                return result.cycles;
+              });
+            },
           }
         });
       };

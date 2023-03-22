@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.insights_program', [])
     'spinner_utility',
     'organization_payload',
     'cycles',
+    'auth_payload',
     function (
       $scope,
       $stateParams,
@@ -18,13 +19,15 @@ angular.module('BE.seed.controller.insights_program', [])
       compliance_metric_service,
       spinner_utility,
       organization_payload,
-      cycles
+      cycles,
+      auth_payload
     ) {
 
       $scope.id = $stateParams.id;
       $scope.cycles = cycles.cycles;
       $scope.organization = organization_payload.organization;
       $scope.initialize_chart = true;
+      $scope.auth = auth_payload.auth;
 
       // compliance metric
       $scope.compliance_metric = {};

@@ -4071,8 +4071,6 @@ FAQ page
   }
 
   & .card-stats {
-    color: rgba(0, 0, 0, 0.5);
-
     & ul {
       list-style-type: none;
       padding: 0;
@@ -4093,6 +4091,20 @@ FAQ page
       font-size: 3em;
       font-weight: bold;
       line-height: 1em;
+    }
+
+    & .card-stats-highlight-score {
+      color: rgba(0, 0, 0, 0.7);
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 1em;
+      text-align: center;
+    }
+
+    & .card-stats-highlight-title {
+      font-size: 1.5em;
+      line-height: 1em;
+      color: rgba(0, 0, 0, 0.7);
     }
 
     & .card-highlight-title {

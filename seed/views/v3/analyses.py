@@ -16,6 +16,7 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
+from seed.analysis_pipelines.better.client import BETTERClient
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException
@@ -28,6 +29,7 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Cycle,
+    Organization,
     PropertyState,
     PropertyView
 )
@@ -509,4 +511,22 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'year_built': year_built_list,
             'energy': energy_list2,
             'square_footage': sqftage_list2
+        })
+
+    @swagger_auto_schema(manual_parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+    ])
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['get'])
+    def verify_better_token(self, request):
+        """Check the validity of organization's BETTER API token
+        """
+        organization_id = int(self.get_organization(request))
+        organization = Organization.objects.get(pk=organization_id)
+        client = BETTERClient(organization.better_analysis_api_key)
+        validity = client.token_is_valid()
+        return JsonResponse({
+            'token': organization.better_analysis_api_key,
+            'validity': validity
         })
