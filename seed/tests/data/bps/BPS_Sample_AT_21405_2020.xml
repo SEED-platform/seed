@@ -5,7 +5,7 @@
       <auc:Sites>
         <auc:Site ID="SiteType-70339460483620">
           <auc:Buildings>
-            <auc:Building ID="3303 Water Street">
+            <auc:Building ID="BuildingType-70339516221660">
               <auc:PremisesName>3303 Water Street</auc:PremisesName>
               <auc:PremisesNotes/>
               <auc:PremisesIdentifiers>
@@ -573,7 +573,7 @@
             </auc:Plants>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
           </auc:HVACSystem>
@@ -744,7 +744,7 @@
             </auc:HVACControlSystemTypes>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -910,7 +910,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -975,7 +975,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1040,7 +1040,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1104,7 +1104,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1168,7 +1168,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1233,7 +1233,7 @@
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1299,7 +1299,7 @@
             </auc:DomesticHotWaterType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
               <auc:Section>
                 <auc:LinkedSectionID IDref="Section-70339516983700">
@@ -1447,7 +1447,7 @@
             <auc:ITSystemType>Server</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1481,7 +1481,7 @@
             <auc:ITSystemType>Other</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1503,7 +1503,7 @@
             <auc:ITSystemType>Other</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1525,7 +1525,7 @@
             <auc:ITSystemType>UPS</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1545,7 +1545,7 @@
             <auc:PlugLoadType>Broadcast Antenna</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1559,7 +1559,7 @@
             <auc:PlugLoadType>Kitchen Equipment</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1577,7 +1577,7 @@
             <auc:PlugLoadType>Other</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1595,7 +1595,7 @@
             <auc:PlugLoadType>Signage Display</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1613,7 +1613,7 @@
             <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1645,7 +1645,7 @@
             <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                <auc:LinkedBuildingID IDref="Building-21405"/>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -1673,7 +1673,7 @@
         <auc:Measure ID="MeasureType-70339513408900">
           <auc:LinkedPremises>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+              <auc:LinkedBuildingID IDref="Building-21405"/>
             </auc:Building>
           </auc:LinkedPremises>
           <auc:TechnologyCategories>
@@ -1690,7 +1690,7 @@
           </auc:MeasureSavingsAnalysis>
           <auc:UsefulLife>20.0</auc:UsefulLife>
           <auc:MeasureTotalFirstCost>50446.0</auc:MeasureTotalFirstCost>
-          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Completed</auc:ImplementationStatus>
           <auc:UserDefinedFields>
             <auc:UserDefinedField>
               <auc:FieldName>Shared Resource Affected</auc:FieldName>
@@ -1705,7 +1705,7 @@
         <auc:Measure ID="MeasureType-70339467570280">
           <auc:LinkedPremises>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+              <auc:LinkedBuildingID IDref="Building-21405"/>
             </auc:Building>
           </auc:LinkedPremises>
           <auc:TechnologyCategories>
@@ -1816,7 +1816,7 @@
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -1853,7 +1853,7 @@
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
@@ -1878,7 +1878,7 @@
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
@@ -1898,7 +1898,7 @@
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
@@ -1940,7 +1940,7 @@
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -1988,7 +1988,7 @@
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2023,7 +2023,7 @@
               </auc:TimeSeriesData>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2153,7 +2153,7 @@
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2302,7 +2302,7 @@
               </auc:ScenarioType>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2451,7 +2451,7 @@
               </auc:ScenarioType>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+                  <auc:LinkedBuildingID IDref="Building-21405"/>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2472,7 +2472,7 @@
           <auc:AuditorContactID IDref="ContactType-70339468635100"/>
           <auc:LinkedPremisesOrSystem>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-70339516221660"/>
+              <auc:LinkedBuildingID IDref="Building-21405"/>
             </auc:Building>
           </auc:LinkedPremisesOrSystem>
           <auc:UserDefinedFields>
