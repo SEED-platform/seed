@@ -189,7 +189,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
      */
     $scope.save_settings = function () {
       $scope.settings_updated = false;
-      $scope.token_validity = { 'message': 'Verify Token' };
+      $scope.token_validity = { message: 'Verify Token' };
       $scope.form_errors = null;
       update_display_unit_for_scoped_org();
       organization_service.save_org_settings($scope.org).then(function () {

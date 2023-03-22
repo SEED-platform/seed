@@ -126,7 +126,6 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_portfolio_buildin
     :param analysis_config: dict, config for the analysis API
     :param analysis: Analysis
     :param progress_data: ProgressData
-    :returns: int, better_analysis_id, ID of the analysis which was created and run
     :returns: list[dict], each dict has keys 'building_id' and 'id' where 'id' is the portfolio_analysis ID.
     """
     better_analysis_id, errors, warnings = context.client.create_portfolio_analysis(
@@ -213,9 +212,9 @@ def _store_better_portfolio_analysis_results(better_portfolio_building_analyses,
 
 
 def _store_better_portfolio_building_analysis_results(better_portfolio_building_analyses, context):
-    """Stores results for a portfolio buidling analysis in an AnalysisPropertyView.parsed_results. A portfolio building analysis were introduced in v2 of the BETTER API
+    """Stores results for a portfolio building analysis in an AnalysisPropertyView.parsed_results. A portfolio building analysis were introduced in v2 of the BETTER API
 
-    :param bettter_portfolio_id: int
+    :param better_portfolio_id: int
     :param better_analysis_id: int
     :param better_portfolio_building_analyses_keys: list[dict], each dict has keys 'building_id' and 'id' where 'id' is the portfolio_analysis ID.
     :param better_building_analyses: list[BuildingAnalysis]

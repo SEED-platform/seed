@@ -154,7 +154,7 @@ angular.module('BE.seed.service.analyses', [])
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/progress_key/',
           method: 'GET',
-          params: { organization_id: organization_id }
+          params: { organization_id }
         }).then(function (response) {
           return response.data;
         }).catch(function (response) {
