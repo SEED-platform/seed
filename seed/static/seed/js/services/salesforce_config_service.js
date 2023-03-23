@@ -1,18 +1,16 @@
 angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_config_service', [
   '$http',
   '$log',
-  'user_service',
   function (
     $http,
-    $log,
-    user_service
+    $log
   ) {
 
   	// get all salesforce_configs defined
-  	const get_salesforce_configs = function () {
+  	const get_salesforce_configs = function (organization_id) {
       return $http.get('/api/v3/salesforce_configs/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_configs;
@@ -22,10 +20,10 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // retrieve salesforce_config
-    const get_salesforce_config = function (id) {
+    const get_salesforce_config = function (organization_id, id) {
       return $http.get('/api/v3/salesforce_configs/' + id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.salesforce_config;
@@ -35,14 +33,14 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // delete
-    const delete_salesforce_config = function (id) {
+    const delete_salesforce_config = function (organization_id, id) {
       if (_.isNil(id)) {
         $log.error('#salesforce_config_service.get_salesforce_config(): id is undefined');
         throw new Error('Invalid Parameter');
       }
       return $http.delete('/api/v3/salesforce_configs/' + id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data;
@@ -52,11 +50,11 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // update
-    const update_salesforce_config = function (id, data, timezone=null) {
+    const update_salesforce_config = function (organization_id, id, data, timezone = null) {
       return $http.put('/api/v3/salesforce_configs/' + id + '/', data, {
         params: {
-          'organization_id': user_service.get_organization().id,
-          'timezone': timezone
+          organization_id,
+          timezone
         }
       }).then(function (response) {
         return response.data.salesforce_config;
@@ -66,11 +64,11 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     };
 
     // create
-    const new_salesforce_config = function (data, timezone=null) {
+    const new_salesforce_config = function (organization_id, data, timezone=null) {
       return $http.post('/api/v3/salesforce_configs/', data, {
         params: {
-          'organization_id': user_service.get_organization().id,
-          'timezone': timezone
+          organization_id,
+          timezone
         }
       }).then(function (response) {
         return response.data.salesforce_config;
@@ -94,11 +92,11 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
     /**
      * automatic sync of properties with Salesforce Benchmarks
     */
-    const sync_salesforce = function () {
+    const sync_salesforce = function (organization_id) {
       // todo: check that this works before configs are saved for the first time
-      return $http.post('/api/v3/salesforce_configs/sync/', {
+      return $http.post('/api/v3/salesforce_configs/sync/', undefined, {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data;

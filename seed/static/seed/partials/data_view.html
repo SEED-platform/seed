@@ -21,7 +21,7 @@
                     <li class="r-list-header" translate>Custom Reports</li>
                     <li ng-if="selected_data_view" class="r-selected r-row r-row-centered">
                         <span class="r-grow">{$ selected_data_view.name $}</span>
-                        <i ng-if="auth.requires_member" class="fa fa-times r-margin-left-5" ng-click="click_delete(data_view)"></i>
+                        <i ng-if="auth.requires_member" class="fa fa-times r-margin-left-5" ng-click="click_delete(selected_data_view)"></i>
                     </li>
                 </ul>
                 <ul class="r-list r-scrollable">

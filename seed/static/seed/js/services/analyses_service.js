@@ -136,12 +136,11 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      const verify_token = () => {
-        const organization_id = user_service.get_organization().id;
+      const verify_token = (organization_id) => {
         return $http({
           url: '/api/v3/analyses/verify_better_token/',
           method: 'GET',
-          params: { organization_id: organization_id }
+          params: { organization_id }
         }).then((response) => {
           return response.data;
         }).catch((response) => {
