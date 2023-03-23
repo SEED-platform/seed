@@ -164,7 +164,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         backdrop: 'static',
         keyboard: false,
         resolve: {
-          org: org
+          org
         }
       });
     };
@@ -176,7 +176,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     $scope.verify_token = () => {
-      analyses_service.verify_token()
+      analyses_service.verify_token($scope.org.id)
       .then((response) =>
         $scope.token_validity = response.validity ?
           {message: 'Valid Token', status: 'valid'} :
@@ -212,7 +212,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       if ($scope.org.salesforce_enabled) {
         if ($scope.conf.id){
           // update
-          salesforce_config_service.update_salesforce_config($scope.conf.id, $scope.conf, $scope.timezone)
+          salesforce_config_service.update_salesforce_config($scope.org.id, $scope.conf.id, $scope.conf, $scope.timezone)
           .then(function (response) {
             if (response.status == 'error'){
               $scope.config_errors = response.errors;
@@ -234,7 +234,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           });
         } else {
           // create
-          salesforce_config_service.new_salesforce_config($scope.conf, $scope.timezone)
+          salesforce_config_service.new_salesforce_config($scope.org.id, $scope.conf, $scope.timezone)
           .then(function () {
             salesforce_config_service.get_salesforce_configs($scope.org.id)
             .then( function (data) {
@@ -260,7 +260,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           let promise;
           if (mapping.id) {
             // has ID, update call
-            promise = salesforce_mapping_service.update_salesforce_mapping(mapping.id, mapping)
+            promise = salesforce_mapping_service.update_salesforce_mapping($scope.org.id, mapping.id, mapping)
             .catch(function (response) {
               if (response.data?.status === 'error') {
                 $scope.table_errors = response.data.message;
@@ -271,7 +271,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             });
           } else {
             // no ID, save new
-            promise = salesforce_mapping_service.new_salesforce_mapping(mapping)
+            promise = salesforce_mapping_service.new_salesforce_mapping($scope.org.id, mapping)
             .catch(function (response) {
               if (response.data?.status === 'error'){
                 $scope.table_errors = response.data.message;
@@ -287,7 +287,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         .then(function(results) {
             $scope.changes_possible = false;
             // retrieve mappings again
-            salesforce_mapping_service.get_salesforce_mappings()
+            salesforce_mapping_service.get_salesforce_mappings($scope.org.id)
             .then(function (response) {
               $scope.salesforce_mappings = response;
             });
@@ -316,7 +316,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.remove_column = function (index) {
       if ($scope.salesforce_mappings[index].id) {
         // remove from db
-        salesforce_mapping_service.delete_salesforce_mapping($scope.salesforce_mappings[index].id)
+        salesforce_mapping_service.delete_salesforce_mapping($scope.org.id, $scope.salesforce_mappings[index].id)
         .then(function () {
           $scope.salesforce_mappings.splice(index, 1);
         })
@@ -350,7 +350,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.sync_salesforce = function () {
       $scope.sync_sf = null;
       $scope.sync_sf_msg = null;
-      salesforce_config_service.sync_salesforce().then(function (response) {
+      salesforce_config_service.sync_salesforce($scope.org.id).then(function (response) {
         $scope.sync_sf = 'success';
         // reload configs to grab new update date
         salesforce_config_service.get_salesforce_configs($scope.org.id)
