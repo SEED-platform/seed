@@ -868,8 +868,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
           scenario_service.delete_scenario($scope.org.id, property_view_id, scenario_id)
             .then(() => {
               Notification.success(`Deleted "${scenario_name}"`);
-              location.reload();
+              // location.reload();
+              // Prevent page from reloading, retain user's scoll location
+              let promise;
+              if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(property_view_id);
+              else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(property_view_id);
+              promise.then(data => {
+                $scope.historical_items = data.history;
+                $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
               })
+            })
             .catch(err => {
               $log.error(err);
               Notification.error(`Error attempting to delete "${scenario_name}". Please refresh the page and try again.`);
@@ -877,120 +885,120 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-    $scope.getStatusOfMeasures = (scenario) => {
-      const statusCount = scenario.measures.reduce((acc, measure) => {
-        let status = measure.implementation_status
-        if (!acc[status]) {
-          acc[status] = 0
-        }
-        acc[status]++
-        return acc
-      }, {})
+      $scope.getStatusOfMeasures = (scenario) => {
+        const statusCount = scenario.measures.reduce((acc, measure) => {
+          let status = measure.implementation_status
+          if (!acc[status]) {
+            acc[status] = 0
+          }
+          acc[status]++
+          return acc
+        }, {})
 
-      return statusCount
-    }
-
-    const setMeasureGridOptions = () => {
-      if (!$scope.historical_items) {
-        return
+        return statusCount
       }
 
-      $scope.measureGridOptionsByScenarioId = {}
-      $scope.gridApiByScenarioId = {}
+      const setMeasureGridOptions = () => {
+        if (!$scope.historical_items) {
+          return
+        }
 
-      const at_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)).map(item => item.state.scenarios)
-      const scenarios = [].concat(...at_scenarios)
-      scenarios.forEach(scenario => {
-        const scenario_id = scenario.id
-        const measureGridOptions = {
-          data: scenario.measures.map(measure => {
-            return {
-              "category": measure.category,
-              "name": measure.display_name,
-              "recommended": measure.recommended,
-              "status": measure.implementation_status,
-              "category_affected": measure.category_affected,
-              "cost_installation": measure.cost_installation,
-              "cost_material": measure.cost_material,
-              "cost_residual_value": measure.cost_residual_value,
-              "cost_total_first": measure.cost_total_first,
-              "cost_capital_replacement": measure.cost_capital_replacement,
-              "description": measure.description,
-              "useful_life": measure.useful_life,
-              "id": measure.id,
-              "scenario_id": scenario_id
+        $scope.measureGridOptionsByScenarioId = {}
+        $scope.gridApiByScenarioId = {}
+
+        const at_scenarios = $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)).map(item => item.state.scenarios)
+        const scenarios = [].concat(...at_scenarios)
+        scenarios.forEach(scenario => {
+          const scenario_id = scenario.id
+          const measureGridOptions = {
+            data: scenario.measures.map(measure => {
+              return {
+                "category": measure.category,
+                "name": measure.display_name,
+                "recommended": measure.recommended,
+                "status": measure.implementation_status,
+                "category_affected": measure.category_affected,
+                "cost_installation": measure.cost_installation,
+                "cost_material": measure.cost_material,
+                "cost_residual_value": measure.cost_residual_value,
+                "cost_total_first": measure.cost_total_first,
+                "cost_capital_replacement": measure.cost_capital_replacement,
+                "description": measure.description,
+                "useful_life": measure.useful_life,
+                "id": measure.id,
+                "scenario_id": scenario_id
+              }
+            }),
+            columnDefs: [
+              {field: "category"},
+              {field: "name"},
+              {field: "recommended"},
+              {field: "status"},
+              {field: "category_affected"},
+              {field: "cost_installation"},
+              {field: "cost_material"},
+              {field: "cost_residual_value"},
+              {field: "cost_total_first"},
+              {field: "cost_capital_replacement"},
+              {field: "description"},
+              {field: "useful_life"},
+              {field: "id", visible: false},
+              {field: "scenario_id", visible: false}
+
+            ],
+            minRowsToShow: Math.min(scenario.measures.length, 10),
+            rowHeight:40,
+            onRegisterApi: function (gridApi) {
+              $scope.gridApiByScenarioId[scenario.id] = gridApi;
             }
-          }),
-          columnDefs: [
-            {field: "category"},
-            {field: "name"},
-            {field: "recommended"},
-            {field: "status"},
-            {field: "category_affected"},
-            {field: "cost_installation"},
-            {field: "cost_material"},
-            {field: "cost_residual_value"},
-            {field: "cost_total_first"},
-            {field: "cost_capital_replacement"},
-            {field: "description"},
-            {field: "useful_life"},
-            {field: "id", visible: false},
-            {field: "scenario_id", visible: false}
-
-          ],
-          minRowsToShow: Math.min(scenario.measures.length, 10),
-          rowHeight:40,
-          onRegisterApi: function (gridApi) {
-            $scope.gridApiByScenarioId[scenario.id] = gridApi;
           }
-        }
-        $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
-      })
-    }
-    $scope.resizeGridByScenarioId = (scenarioId) => {
-      gridApi = $scope.gridApiByScenarioId[scenarioId]
-      setTimeout(gridApi.core.handleWindowResize, 50);
-    }
+          $scope.measureGridOptionsByScenarioId[scenario.id] = measureGridOptions;
+        })
+      }
+      $scope.resizeGridByScenarioId = (scenarioId) => {
+        gridApi = $scope.gridApiByScenarioId[scenarioId]
+        setTimeout(gridApi.core.handleWindowResize, 50);
+      }
 
-    $scope.formatMeasureStatuses = (scenario) => {
-      statuses = scenario.measures.reduce((acc, measure) => {
-        const status = measure.implementation_status
-        if (!acc[status]){
-          acc[status] = 0
-        }
-        acc[status] ++
-        return acc
-      }, {})
-      return statuses
-    }
+      $scope.formatMeasureStatuses = (scenario) => {
+        statuses = scenario.measures.reduce((acc, measure) => {
+          const status = measure.implementation_status
+          if (!acc[status]){
+            acc[status] = 0
+          }
+          acc[status] ++
+          return acc
+        }, {})
+        return statuses
+      }
 
-      /**
-       *   init: sets default state of inventory detail page,
-       *   sets the field arrays for each section, performs
-       *   some date string manipulation for better display rendering,
-       *   and gets all the extra_data fields
-       *
-       */
-      var init = function () {
-        if ($scope.inventory_type === 'properties') {
-          $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
-        } else if ($scope.inventory_type === 'taxlots') {
-          $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
-        }
+        /**
+         *   init: sets default state of inventory detail page,
+         *   sets the field arrays for each section, performs
+         *   some date string manipulation for better display rendering,
+         *   and gets all the extra_data fields
+         *
+         */
+        var init = function () {
+          if ($scope.inventory_type === 'properties') {
+            $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
+          } else if ($scope.inventory_type === 'taxlots') {
+            $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
+          }
 
-        evaluate_derived_columns();
-        setMeasureGridOptions()
-      };
+          evaluate_derived_columns();
+          setMeasureGridOptions()
+        };
 
-      init();
+        init();
 
-      $scope.toggle_freeze = function () {
-        var table_div = document.getElementById('pin');
-        if (table_div.className === 'section_content_container table-xscroll-unfrozen') {
-          table_div.className = 'section_content_container table-xscroll-frozen';
-        } else {
-          table_div.className = 'section_content_container table-xscroll-unfrozen';
-        }
-      };
-
-    }]);
+        $scope.toggle_freeze = function () {
+          var table_div = document.getElementById('pin');
+          if (table_div.className === 'section_content_container table-xscroll-unfrozen') {
+            table_div.className = 'section_content_container table-xscroll-frozen';
+          } else {
+            table_div.className = 'section_content_container table-xscroll-unfrozen';
+          }
+        };
+    
+  }]);
