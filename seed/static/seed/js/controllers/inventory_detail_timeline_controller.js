@@ -191,21 +191,21 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
             $scope.eventSelectGridOptions = {
                 data: [
                     {
-                        "Type": "Notes",
+                        "Select All": "Notes",
                         "eventType": "NoteEvent"
                     },
                     {
-                        "Type": "Analyses",
+                        "Select All": "Analyses",
                         "eventType": "AnalysisEvent"
                     },
                     {
-                        "Type": "AT Uploads",
+                        "Select All": "AT Uploads",
                         "eventType": "ATEvent"
                     },
                 ],
                 columnDefs: [
                     {field: "eventType", visible: false},
-                    {field: "Type"}
+                    {field: "Select All"}
                 ],
                 onRegisterApi: (gridApi) => {
                     $scope.gridApiEventSelection = gridApi;
