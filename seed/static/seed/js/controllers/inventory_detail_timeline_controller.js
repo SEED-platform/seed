@@ -274,15 +274,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 gridApi = $scope.gridApiByScenarioId[scenarioId]
                 setTimeout(gridApi.core.handleWindowResize, 50);
             }
-            $scope.resizeGridByEventType = (event) => {
+
+            $scope.resizeGridByEventType = (event, resizeMeasures=false) => {
                 if (event.event_type == 'NoteEvent') {
-                    noteId = event.note.id
-                    gridApi = $scope.gridApiByNoteId[noteId]
+                    gridApi = $scope.gridApiByNoteId[event.note.id]
                     setTimeout(gridApi.core.handleWindowResize, 50);
                 } else if (event.event_type == 'AnalysisEvent') {
-                    analysisId = event.analysis.id
-                    gridApi = $scope.gridApiByAnalysisId[analysisId]
+                    gridApi = $scope.gridApiByAnalysisId[event.analysis.id]
                     setTimeout(gridApi.core.handleWindowResize, 50)
+                } else if (resizeMeasures && event.event_type == 'ATEvent') {
+                    event.scenarios.forEach(scenario => {
+                        $scope.resizeGridByScenarioId(scenario.id)
+                    })
                 }
             }
 
@@ -309,7 +312,9 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $('.scenario-collapse').collapse(action)
 
                 // Without resizing ui-grids will appear empty
-                action == 'show' && setTimeout($scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event)), 1)
+                if (action == 'show'){
+                    $scope.selectedEvents.forEach(event => $scope.resizeGridByEventType(event, resizeMeasures=true))
+                }
             }
 
             $scope.formatMeasureStatuses = (scenario) => {
