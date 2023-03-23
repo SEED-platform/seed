@@ -1000,5 +1000,5 @@ angular.module('BE.seed.controller.inventory_detail', [])
             table_div.className = 'section_content_container table-xscroll-unfrozen';
           }
         };
-    
+
   }]);
