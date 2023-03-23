@@ -147,7 +147,7 @@
                 </div>
             </div>
 
-            <div ng-if="selected_data_view && auth.requires_member" class="r-column r-panel">
+            <div ng-if="selected_data_view && auth.requires_member" class="r-column r-panel" style="flex: 0">
                 <ul class="r-list r-margin-bottom-10"><li class="r-list-header">Actions</li></ul>
 
                 <div ng-if="!editing && selected_data_view" class="r-row">
@@ -168,13 +168,19 @@
                         <button class="btn btn-primary" ng-click="click_save_changes()" translate>Save Changes</button>
                     </div>
                 </div>
+                <button
+                    ng-if="selected_data_view && selected_data_view.id"
+                    style="margin-top: 10px"
+                    class="btn btn-primary"
+                    ng-click="downloadChart()"
+                    translate>
+                    Download Chart
+                </button>
             </div>
-
         </div>
     </div>
 </div>
 <div class="graph" ng-if="selected_data_view" style="margin-left: 15vw; margin-right: 5vw">
-    <div class="glyphicon glyphicon-save" style="float: right;" ng-click="downloadChart()" aria-hidden="true"></div>
     <canvas id="data-view-chart"></canvas>
 </div>
 
