@@ -147,39 +147,36 @@
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column">
-                <div ng-if="selected_data_view && auth.requires_member" class="r-column r-panel">
-                    <ul class="r-list r-margin-bottom-10"><li class="r-list-header">Actions</li></ul>
+            <div ng-if="selected_data_view && auth.requires_member" class="r-column r-panel">
+                <ul class="r-list r-margin-bottom-10"><li class="r-list-header">Actions</li></ul>
 
-                    <div ng-if="!editing && selected_data_view" class="r-row">
-                        <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
-                        <button class="btn btn-primary" ng-click="click_edit()" translate>Edit</button>
+                <div ng-if="!editing && selected_data_view" class="r-row">
+                    <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+                    <button class="btn btn-primary" ng-click="click_edit()" translate>Edit</button>
+                </div>
+
+                <div ng-if="editing">
+                    <div class="r-row r-row-centered r-margin-bottom-10">
+                        <label for="input-name" class="r-pad-right-5" translate>Name</label>
+                        <input id="input-name" class="form-control" type="text" ng-model="fields.name"/>
                     </div>
-
-                    <div ng-if="editing">
-                        <div class="r-row r-row-centered r-margin-bottom-10">
-                            <label for="input-name" class="r-pad-right-5" translate>Name</label>
-                            <input id="input-name" class="form-control" type="text" ng-model="fields.name"/>
-                        </div>
-                        <div ng-if="create_errors.length > 0" class="r-panel r-error r-margin-bottom-10">
-                            <ul class="r-list"><li ng-repeat="error in create_errors">{$ error $}</li></ul>
-                        </div>
-                        <div class="r-row">
-                            <button class="btn btn-info r-margin-right-5" ng-click="click_cancel()" translate>Cancel</button>
-                            <button class="btn btn-primary" ng-click="click_save_changes()" translate>Save Changes</button>
-                        </div>
+                    <div ng-if="create_errors.length > 0" class="r-panel r-error r-margin-bottom-10">
+                        <ul class="r-list"><li ng-repeat="error in create_errors">{$ error $}</li></ul>
+                    </div>
+                    <div class="r-row">
+                        <button class="btn btn-info r-margin-right-5" ng-click="click_cancel()" translate>Cancel</button>
+                        <button class="btn btn-primary" ng-click="click_save_changes()" translate>Save Changes</button>
                     </div>
                 </div>
                 <button
                     ng-if="selected_data_view && selected_data_view.id"
-                    style="margin: 10px 0px"
+                    style="margin-top: 10px"
                     class="btn btn-primary"
                     ng-click="downloadChart()"
                     translate>
                     Download Chart
                 </button>
             </div>
-
         </div>
     </div>
 </div>
