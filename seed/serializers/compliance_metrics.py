@@ -15,11 +15,12 @@ class ComplianceMetricSerializer(serializers.ModelSerializer):
     energy_metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES, required=False)
     emission_metric_type = ChoiceField(choices=ComplianceMetric.METRIC_TYPES, required=False)
     organization_id = serializers.IntegerField(required=True)
-    x_axis_columns = serializers.SerializerMethodField(read_only=True)
 
-    def get_x_axis_columns(self, model):
-        qs = model.x_axis_columns.order_by('id')
-        return list(qs.values_list("id", flat=True))
+    def to_representation(self, instance):
+        """Override the to_representation method to guarantee x_axis_columns sort order"""
+        ret = super().to_representation(instance)
+        ret['x_axis_columns'] = sorted(ret['x_axis_columns'])
+        return ret
 
     class Meta:
         model = ComplianceMetric
