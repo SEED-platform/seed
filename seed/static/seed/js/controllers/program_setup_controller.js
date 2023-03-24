@@ -162,7 +162,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
       // update the compliance metric
       console.log("about to update the metric");
-      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
+      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then(data => {
         if ('status' in data && data.status == 'error') {
           for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
             $scope.compliance_metrics_error.push(key + ': ' + error);
@@ -217,7 +217,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         filter_group: null,
         x_axis_columns: []
       };
-      compliance_metric_service.new_compliance_metric(template_compliance_metric).then(data => {
+      compliance_metric_service.new_compliance_metric(template_compliance_metric, $scope.org.id).then(data => {
         $scope.selected_compliance_metric = data;
         window.location =
         '#/accounts/' +
@@ -237,7 +237,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
       if (confirm('Are you sure you want to delete the Program Metric "' + compliance_metric.name + '"?')) {
         let delete_id = compliance_metric.id;
-        compliance_metric_service.delete_compliance_metric(delete_id).then((data) => {
+        compliance_metric_service.delete_compliance_metric(delete_id, $scope.org.id).then((data) => {
           if (data.status == 'success') {
             $scope.compliance_metrics = $scope.compliance_metrics.filter(compliance_metric => compliance_metric.id != delete_id);
             if ($scope.selected_compliance_metric.id == delete_id) {
