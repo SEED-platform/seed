@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      
+
       $scope.order_historical_items_with_scenarios = () => {
         $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
         $scope.historical_items_with_scenarios.sort((a,b) => {
