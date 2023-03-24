@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.controller.program_setup', []).controller('program_setup_controller', [
   '$scope',
+  '$state',
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
@@ -16,6 +17,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
   'x_axis_columns',
   function (
     $scope,
+    $state,
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
@@ -28,6 +30,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     x_axis_columns
   ) {
     spinner_utility.show();
+    $scope.state = $state.current;
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
     $scope.cycles = cycles_payload.cycles;

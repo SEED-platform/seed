@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.data_view', [])
   .controller('data_view_controller', [
     '$scope',
+    '$state',
     '$stateParams',
     '$uibModal',
     'urls',
@@ -19,6 +20,7 @@ angular.module('BE.seed.controller.data_view', [])
     'valid_column_data_types',
     function (
       $scope,
+      $state,
       $stateParams,
       $uibModal,
       urls,
@@ -33,6 +35,7 @@ angular.module('BE.seed.controller.data_view', [])
       valid_column_data_types
     ) {
       spinner_utility.show();
+      $scope.state = $state.current;
       $scope.id = $stateParams.id;
       $scope.valid_column_data_types = valid_column_data_types;
       $scope.editing = false;
