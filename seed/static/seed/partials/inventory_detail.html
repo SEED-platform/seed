@@ -421,7 +421,9 @@
                             data-target="#historical-item-{$ $index $}"
                         >
                             <i class="fa fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
-                            {$ format_epoch(historical_item.date_edited) $}
+                            <span class="event-detail">Audit Date: {$ historical_item.state.extra_data.audit_date $}</span>
+                            <span class="event-detail">Upload Date: {$ format_epoch(historical_item.date_edited) $}</span>
+                            <span class="event-detail">{$ historical_item.state.extra_data.audit_date_type $}</span>
                         </button>
                     </div>
 

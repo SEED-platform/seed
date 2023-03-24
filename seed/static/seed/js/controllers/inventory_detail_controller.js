@@ -120,7 +120,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
+      
+      $scope.order_historical_items_with_scenarios = () => {
+        $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
+        $scope.historical_items_with_scenarios.sort((a,b) => {
+          let dateA = a.state.extra_data.audit_date ? new Date(a.state.extra_data.audit_date) : 1
+          let dateB = b.state.extra_data.audit_date ? new Date(b.state.extra_data.audit_date) : 1
+          return dateB - dateA
+        })
+      }
+      $scope.order_historical_items_with_scenarios($scope.historical_items)
       $scope.format_epoch = (epoch) => {
         return moment(epoch).format('YYYY/MM/DD')
       }
