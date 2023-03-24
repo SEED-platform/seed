@@ -185,7 +185,7 @@ class ComplianceMetricViewTests(TestCase):
         data = json.loads(response.content)
         self.assertEqual('success', data['status'])
         self.assertEqual('compliance metric 1', data['compliance_metric']['name'])
-        self.assertEqual(self.column5.id, data['compliance_metric']['x_axis_columns'][0])
+        self.assertEqual([self.column5.id, self.column6.id, self.column7.id], data['compliance_metric']['x_axis_columns'])
 
         response = self.client.get(
             reverse('api:v3:compliance_metrics-detail', args=[99999999]) + '?organization_id=' + str(self.org.id)
