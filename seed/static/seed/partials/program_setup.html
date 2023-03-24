@@ -99,7 +99,7 @@
                                 </div>
                                 <div class="r-panel">
                                     <div class="r-small-header">
-                                        <p class="r-small-header">Visualization Settings</p>
+                                        <p class="r-small-header" translate>Visualization Settings</p>
                                     </div>
                                     <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
                                         Select at least one field which will serve as the x-axis for visualizations on the <b><a ui-sref="insights_property(::{organization_id: org.id})" ui-sref-active="active" translate>property insights</a></b> page. Multiple fields can be selected.
@@ -121,9 +121,9 @@
                             <div class="r-column">
                                 <div class="r-panel r-margin-bottom-10">
                                     <div class="r-small-header">
-                                            <p class="r-small-header">Metric Type Settings</p>
+                                            <p class="r-small-header" translate>Metric Type Settings</p>
                                         </div>
-                                        <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                                        <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10" translate>
                                         The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance.
                                         </div>
                                     <div class="r-columns r-no-margin">
@@ -147,8 +147,8 @@
                                                 <label for="select-energy-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
                                                 <select id="select-energy-metric-type" class="form-control" ng-model="selected_compliance_metric.energy_metric_type" ng-change="program_settings_changed()">
                                                     <option value=""></option>
-                                                    <option value="Target > Actual for Compliance" translatee>Target > Actual for Compliance</option>
-                                                    <option value="Target < Actual for Compliance" translatee>Target < Actual for Compliance</option>
+                                                    <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
+                                                    <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
                                                 </select>
                                             </li>
                                         </ul>
@@ -172,8 +172,8 @@
                                                 <label for="select-emission-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
                                                 <select id="select-emission-metric-type" class="form-control" ng-model="selected_compliance_metric.emission_metric_type" ng-change="program_settings_changed()">
                                                     <option value=""></option>
-                                                    <option value="Target > Actual for Compliance" translate>Target > Actual for Compliance</option>
-                                                    <option value="Target < Actual for Compliance" translate>Target < Actual for Compliance</option>
+                                                    <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
+                                                    <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
                                                 </select>
                                             </li>
                                         </ul>
