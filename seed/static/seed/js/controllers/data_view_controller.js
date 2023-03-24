@@ -338,8 +338,6 @@ angular.module('BE.seed.controller.data_view', [])
             "location": 'second_axis',
             "aggregations": $scope.selected_data_view.second_axis_aggregations
           });
-        spinner_utility.show();
-        window.location.reload();
         }
 
         let _done = function (data) {
@@ -365,14 +363,26 @@ angular.module('BE.seed.controller.data_view', [])
             for (let i in data.errors) {
               $scope.create_errors.push(data.errors[i]);
             }
-            spinner_utility.hide();
         };
 
         if ($scope.selected_data_view.id) {
-          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
+          data_view_service.update_data_view(
+            $scope.selected_data_view.id,
+            $scope.fields.name,
+            checked_filter_groups,
+            checked_cycles,
+            aggregations
+          ).then(_done);
         } else {
-          let new_data_view = data_view_service.create_data_view($scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
+          data_view_service.create_data_view(
+            $scope.fields.name,
+            checked_filter_groups,
+            checked_cycles,
+            aggregations
+          ).then(_done);
         };
+
+        spinner_utility.hide();
       };
 
       $scope.click_cancel = function () {
