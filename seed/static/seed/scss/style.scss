@@ -3895,6 +3895,10 @@ $pairedCellWidth: 60px;
   padding-left: 20px;
 }
 
+.pad-left-10 {
+  padding-left: 10px;
+}
+
 .pad-left-5 {
   padding-left: 5px;
 }
@@ -4321,19 +4325,36 @@ iframe.analysis-results {
 // program overview / compliance-setup
 .compliance-setup {
   background-color: #eeeeee;
-  padding: 2em;
+  padding: 1.5em;
+  p {
+    margin: 0;
+  }
 }
 
 .margin-top-20 {
   margin-top: 20px;
 }
 
+.margin-top-10 {
+  margin-top: 10px;
+}
+
+.button-grid {
+  display: flex;
+}
+
+.flex-button-child {
+  flex: 1;
+}
+
+.flex-button-child:first-child {
+  margin-right: 10px;
+}
+
 .chart-legend {
-  margin-top: 3em;
+  margin-top: 15px;
   margin-left: 0em;
   .title {
-    padding-top: 1em;
-    padding-bottom: 1em;
     font-size: 1.4em;
   }
   .legend-icon {
@@ -4347,7 +4368,7 @@ iframe.analysis-results {
   }
 
   .legend-row {
-    margin: 0.5em 1em 0.5em 0em;
+    margin: 0.25em 1em 0.25em 0em;
   }
   .box {
     min-height: 2em;
@@ -4370,10 +4391,16 @@ iframe.analysis-results {
     font-size: 1.2em;
     vertical-align: middle;
   }
+  .small-text {
+    font-size: 1em !important;
+  }
 }
 
 .title-row {
-  padding: 0px 0px 20px 0px;
+  padding: 0px 0px 10px 0px;
+  h2 {
+    margin-top: 10px;
+  }
 }
 
 // "namespacing" with "r-" until css cleanup

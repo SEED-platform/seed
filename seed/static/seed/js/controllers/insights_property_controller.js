@@ -1,6 +1,7 @@
 angular.module('BE.seed.controller.insights_property', [])
   .controller('insights_property_controller', [
     '$scope',
+    '$state',
     '$stateParams',
     '$uibModal',
     'urls',
@@ -11,6 +12,7 @@ angular.module('BE.seed.controller.insights_property', [])
     'auth_payload',
     function (
       $scope,
+      $state,
       $stateParams,
       $uibModal,
       urls,
@@ -20,7 +22,6 @@ angular.module('BE.seed.controller.insights_property', [])
       spinner_utility,
       auth_payload
     ) {
-
       $scope.id = $stateParams.id;
       $scope.static_url = urls.static_url;
       $scope.organization =  organization_payload.organization;
@@ -264,10 +265,10 @@ angular.module('BE.seed.controller.insights_property', [])
         let text = ''
         tooltipItems.forEach(function(tooltipItem) {
           if (tooltipItem.raw.name) {
-            text = 'Property - ' + tooltipItem.raw.name;
+            text = 'Property: ' + tooltipItem.raw.name;
           } else {
             // revise this in future
-            text = 'Property ID - ' + tooltipItem.raw.id;
+            text = 'Property ID: ' + tooltipItem.raw.id;
           }
         });
 
@@ -296,7 +297,7 @@ angular.module('BE.seed.controller.insights_property', [])
                 if (activePoints[0]) {
                   var activePoint = activePoints[0]
                   var item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index]
-                  window.open('/app/#/properties/' + item["id"])
+                  $state.go('inventory_detail', {inventory_type: 'properties', view_id: item.id});
                 }
               },
               elements: {
@@ -379,7 +380,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       const _update_chart = () => {
         let x_index = _.findIndex($scope.data.metric.x_axis_columns, {'id': $scope.chart_xaxis});
-        let x_axis_name = $scope.data.metric.x_axis_columns[x_index].display_name;
+        let x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
 
         let y_axis_name = null;
         if ($scope.chart_metric ==  0){
@@ -444,6 +445,22 @@ angular.module('BE.seed.controller.insights_property', [])
       }
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
+
+      $scope.visibleIds = () => {
+        const visibleDatasets = $scope.insightsChart?.data.datasets.filter((d, i) => $scope.insightsChart.isDatasetVisible(i)) ?? [];
+        return visibleDatasets.reduce((acc, dataset) => [...acc, ...dataset.data.map(({id}) => id)], []);
+      };
+
+      $scope.open_update_labels_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
+          controller: 'update_item_labels_modal_controller',
+          resolve: {
+            inventory_ids: $scope.visibleIds,
+            inventory_type: () => 'properties'
+          }
+        });
+      };
     }
 
   ]);
