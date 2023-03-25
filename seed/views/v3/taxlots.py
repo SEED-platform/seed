@@ -62,10 +62,17 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     _organization = None
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=True),
+            AutoSchemaHelper.query_integer_field(
+                name='cycle_id',
+                required=False,
+                description="Optional cycle id to restrict is_applied ids to only those in the specified cycle"
+            ),
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'selected': ['integer'],
+                'selected': 'integer',
             },
             description='IDs for taxlots to be checked for which labels are applied.'
         )

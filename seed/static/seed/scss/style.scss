@@ -4075,8 +4075,6 @@ FAQ page
   }
 
   & .card-stats {
-    color: rgba(0, 0, 0, 0.5);
-
     & ul {
       list-style-type: none;
       padding: 0;
@@ -4097,6 +4095,20 @@ FAQ page
       font-size: 3em;
       font-weight: bold;
       line-height: 1em;
+    }
+
+    & .card-stats-highlight-score {
+      color: rgba(0, 0, 0, 0.7);
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 1em;
+      text-align: center;
+    }
+
+    & .card-stats-highlight-title {
+      font-size: 1.5em;
+      line-height: 1em;
+      color: rgba(0, 0, 0, 0.7);
     }
 
     & .card-highlight-title {
@@ -4494,7 +4506,7 @@ ul.r-list {
 
   &.r-scrollable {
     max-height: 200px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 }
 
@@ -4543,11 +4555,25 @@ ul.r-list {
     border: 1px solid $errorBorder;
   }
 
+  &.r-success {
+    color: $successText;
+    background-color: $successBackground;
+    border: 1px solid $successBorder;
+  }
+
   &.r-info {
     color: $infoText;
     background-color: $infoBackground;
     border: 1px solid $infoBorder;
   }
+}
+
+.r-error-msg {
+  color: $errorText;
+  background-color: $errorBackground;
+  border: 1px solid $errorBorder;
+  margin: 5px;
+  padding: 5px;
 }
 
 .r-no-margin {
@@ -4568,6 +4594,10 @@ ul.r-list {
 
 .r-margin-right-5 {
   margin-right: 5px !important;
+}
+
+.r-margin-right-10 {
+  margin-right: 10px !important;
 }
 
 .r-margin-top-10 {
@@ -4647,6 +4677,12 @@ ul.r-list {
   }
 }
 
+.updated_date_field {
+  background-color: #eee;
+  opacity: 1;
+  font-weight: bold;
+}
+
 .col-form-label {
   padding-top: 5px !important;
 }
@@ -4678,4 +4714,10 @@ ul.r-list {
 .meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
   overflow: auto;
   max-height: 112px;
+}
+
+.salesforce-form {
+  p {
+    padding-top: 7px;
+  }
 }

@@ -136,12 +136,24 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      const verify_token = (organization_id) => {
+        return $http({
+          url: '/api/v3/analyses/verify_better_token/',
+          method: 'GET',
+          params: { organization_id }
+        }).then((response) => {
+          return response.data;
+        }).catch((response) => {
+          return response.data;
+        })
+      }
+
       const get_progress_key = function (analysis_id) {
         const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/progress_key/',
           method: 'GET',
-          params: { organization_id: organization_id }
+          params: { organization_id }
         }).then(function (response) {
           return response.data;
         }).catch(function (response) {
@@ -248,7 +260,8 @@ angular.module('BE.seed.service.analyses', [])
         delete_analysis: delete_analysis,
         get_summary: get_summary,
         get_progress_key: get_progress_key,
-        check_progress_loop: check_progress_loop
+        check_progress_loop: check_progress_loop,
+        verify_token: verify_token,
       };
 
       return analyses_factory;

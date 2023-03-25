@@ -79,9 +79,11 @@ class MeterReadingSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         result = super().to_representation(obj)
 
+        # TODO: we need to actually read the units from the meter, then convert accordingly.
         # SEED stores all energy data in kBtus
         result['units'] = 'kBtu'
         result['id'] = obj.pk
+
         # put the ID first
         result.move_to_end('id', last=False)
 

@@ -178,6 +178,8 @@ class Column(models.Model):
         'boolean': lambda v: v.lower() == 'true',
         'area': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
         'eui': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg_intensity': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -1294,7 +1296,7 @@ class Column(models.Model):
         """
         Similar to keys, except it returns a list of tuples of the columns that are in the database
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),
@@ -1514,7 +1516,7 @@ class Column(models.Model):
         """
         Return the list of priorities for the columns. Result will be in the form of:
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
                 'PropertyState': {
@@ -1557,7 +1559,7 @@ class Column(models.Model):
         """
         Return list of all columns for an organization as a tuple.
 
-        .. code-block:: json
+        .. code-block:: python
 
             [
               ('PropertyState', 'address_line_1'),

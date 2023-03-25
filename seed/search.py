@@ -226,7 +226,7 @@ def search_inventory(inventory_type, q, fieldnames=None, queryset=None):
     return queryset.filter(qgroup)
 
 
-def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_orgs=None):
+def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_orgs=None, cycle_id=None):
     """creates a queryset of properties or taxlots within orgs.
     If ``other_orgs``, properties/taxlots in both orgs and other_orgs
     will be represented in the queryset.
@@ -243,8 +243,10 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     if not inventory_type:
         return []
     Model = {
-        'property': Property, 'property_view': PropertyView,
-        'taxlot': TaxLot, 'taxlot_view': TaxLotView,
+        'property': Property,
+        'property_view': PropertyView,
+        'taxlot': TaxLot,
+        'taxlot_view': TaxLotView,
     }[inventory_type]
 
     distinct_order_by = order_by.lstrip('-')
@@ -265,6 +267,9 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
             ),
         ).exclude(**exclude).distinct(distinct_order_by, 'pk')
     else:
+        if inventory_type.endswith('view') and cycle_id is not None and cycle_id.isdigit():
+            orgs_filter_dict['cycle_id'] = cycle_id
+
         result = Model.objects.order_by(order_by, 'pk').filter(
             **orgs_filter_dict
         ).exclude(**exclude).distinct(distinct_order_by, 'pk')
@@ -272,7 +277,7 @@ def create_inventory_queryset(inventory_type, orgs, exclude, order_by, other_org
     return result
 
 
-def inventory_search_filter_sort(inventory_type, params, user):
+def inventory_search_filter_sort(inventory_type, params, user, cycle_id=None):
     """
     Given a parsed set of params, perform the search, filter, and sort for
     Properties or Taxlots
@@ -294,6 +299,7 @@ def inventory_search_filter_sort(inventory_type, params, user):
         params['exclude'],
         order_by,
         other_orgs=other_orgs,
+        cycle_id=cycle_id,
     )
 
     if inventory:

@@ -42,7 +42,9 @@ COMPRESS_OFFLINE = compress
 ALLOWED_HOSTS = ['*']
 
 # LBNL's BETTER tool host
-BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov')
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-staging.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
@@ -127,3 +129,12 @@ if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
 else:
     from config.settings.local_untracked import *  # noqa
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')

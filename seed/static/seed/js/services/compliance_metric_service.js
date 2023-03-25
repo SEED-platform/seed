@@ -9,10 +9,10 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
   ) {
 
   	// get all compliance metrics defined
-  	const get_compliance_metrics = function () {
+  	const get_compliance_metrics = function (organization_id = user_service.get_organization().id) {
       return $http.get('/api/v3/compliance_metrics/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.compliance_metrics;
@@ -22,10 +22,10 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // retrieve compliance metric
-    const get_compliance_metric = function (metric_id) {
+    const get_compliance_metric = function (metric_id, organization_id = user_service.get_organization().id) {
       return $http.get('/api/v3/compliance_metrics/' + metric_id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.compliance_metric;
@@ -35,14 +35,14 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // delete
-    const delete_compliance_metric = function (metric_id) {
+    const delete_compliance_metric = function (metric_id, organization_id = user_service.get_organization().id) {
       if (_.isNil(metric_id)) {
         $log.error('#compliance_metric_service.get_compliance_metric(): metric_id is undefined');
         throw new Error('Invalid Parameter');
       }
       return $http.delete('/api/v3/compliance_metrics/' + metric_id + '/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data;
@@ -52,10 +52,10 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // evaluate
-    const evaluate_compliance_metric = function (metric_id) {
+    const evaluate_compliance_metric = function (metric_id, organization_id = user_service.get_organization().id) {
       return $http.get('/api/v3/compliance_metrics/' + metric_id + '/evaluate/', {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.data;
@@ -65,10 +65,10 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // update
-    const update_compliance_metric = function (metric_id, data) {
+    const update_compliance_metric = function (metric_id, data, organization_id = user_service.get_organization().id) {
       return $http.put('/api/v3/compliance_metrics/' + metric_id + '/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.compliance_metric;
@@ -78,10 +78,10 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // create
-    const new_compliance_metric = function (data) {
+    const new_compliance_metric = function (data, organization_id = user_service.get_organization().id) {
       return $http.post('/api/v3/compliance_metrics/', data, {
         params: {
-          'organization_id': user_service.get_organization().id
+          organization_id
         }
       }).then(function (response) {
         return response.data.compliance_metric;
@@ -90,14 +90,12 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
       });
     };
 
-    const compliance_metric_factory = {
-      'get_compliance_metrics': get_compliance_metrics,
-      'get_compliance_metric': get_compliance_metric,
-      'delete_compliance_metric': delete_compliance_metric,
-      'evaluate_compliance_metric': evaluate_compliance_metric,
-      'update_compliance_metric': update_compliance_metric,
-      'new_compliance_metric': new_compliance_metric
+    return {
+      get_compliance_metrics,
+      get_compliance_metric,
+      delete_compliance_metric,
+      evaluate_compliance_metric,
+      update_compliance_metric,
+      new_compliance_metric
     };
-
-	return compliance_metric_factory;
   }]);

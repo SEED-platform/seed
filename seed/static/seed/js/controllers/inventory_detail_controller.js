@@ -36,6 +36,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'labels_payload',
     'organization_payload',
     'audit_template_service',
+    'cycle_service',
     function (
       $http,
       $state,
@@ -68,7 +69,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       current_profile,
       labels_payload,
       organization_payload,
-      audit_template_service
+      audit_template_service,
+      cycle_service,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
@@ -563,6 +565,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
               return [$scope.inventory.view_id];
             },
             current_cycle: _.constant($scope.cycle),
+            cycles: function () {
+              return cycle_service.get_cycles().then(function (result) {
+                return result.cycles;
+              });
+            },
           }
         });
       };
@@ -681,6 +688,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $state.go('inventory_detail', {
           inventory_type: $scope.inventory_type,
           view_id: view_id
+        });
+      };
+
+      $scope.update_salesforce = function () {
+        inventory_service.update_salesforce([$scope.inventory.view_id]).then(function (result) {
+          Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
+        }).catch( function (result) {
+            Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
         });
       };
 
