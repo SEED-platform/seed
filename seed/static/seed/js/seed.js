@@ -95,6 +95,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
+  'BE.seed.controller.inventory_detail_timeline',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
@@ -166,6 +167,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.dataset',
   'BE.seed.service.data_view',
   'BE.seed.service.derived_columns',
+  'BE.seed.service.event',
   'BE.seed.service.meter',
   'BE.seed.service.filter_groups',
   'BE.seed.service.flippers',
@@ -182,7 +184,9 @@ angular.module('BE.seed.services', [
   'BE.seed.service.note',
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
+  'BE.seed.service.property_measure',
   'BE.seed.service.search',
+  'BE.seed.service.scenario',
   'BE.seed.service.salesforce_config',
   'BE.seed.service.salesforce_mapping',
   'BE.seed.service.sensor',
@@ -1993,6 +1997,40 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_timeline',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/timeline',
+        templateUrl: static_url + 'seed/partials/inventory_detail_timeline.html',
+        controller: 'inventory_detail_timeline_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise = inventory_service.get_property(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
+              }
+            });
+            return promise;
+          }],
+          events: ['$stateParams', 'event_service', 'user_service', 'inventory_payload', function ($stateParams, event_service, user_service, inventory_payload) {
+            var organization_id = user_service.get_organization().id;
+            const property_id = inventory_payload["property"]["id"]
+            return event_service.get_events(organization_id, $stateParams.inventory_type, property_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({ org_id: user_service.get_organization().id });
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);

@@ -6,19 +6,24 @@
 
 <div class="modal-body" ng-switch on="step.number">
     <div class="data_upload_steps container-fluid" ng-switch-when="1">
-        <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px;" translate="INVALID_DOC_FILE_EXTENSION_ALERT"></div>
+        <div ng-if="!(uploader.invalid_file_contents || uploader.invalid_file_extension_alert)" translate>UPLOAD_DOC_ACCEPTED_FILE_TYPES</div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px;" translate>INVALID_DOC_FILE_EXTENSION_ALERT</div>
         <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px;" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
     </div>
 
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
         <div class="progress_bar_container">
             <div class="progress_bar_copy_top"
-                 translate="UPLOADING_PROGRESS"
+                 translate="UPLOADING_PROGRESS_NO_CYCLE"
                  translate-values="{ dataset_filename: filename }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
             <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
         </div>
+    </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="3">
+        <div><span translate>Successfully Uploaded</span> <strong>{$ uploader.filename $}</strong></div>
     </div>
 
 </div>

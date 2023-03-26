@@ -120,6 +120,9 @@ msgstr "Actual > Target"
 msgid "Actual Column"
 msgstr "Actual Column"
 
+msgid "Actual Field"
+msgstr "Actual Field"
+
 msgid "Add"
 msgstr "Add"
 
@@ -621,6 +624,9 @@ msgstr "Create a New Project"
 
 msgid "Create a New Sub-Organization"
 msgstr "Create a New Sub-Organization"
+
+msgid "Create a Program to get started!"
+msgstr "Create a Program to get started!"
 
 msgid "Create a new rule"
 msgstr "Create a new rule"
@@ -1738,6 +1744,9 @@ msgstr "Metric Target Column"
 msgid "Metric Type"
 msgstr "Metric Type"
 
+msgid "Metric Type Settings"
+msgstr "Metric Type Settings"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1844,6 +1853,12 @@ msgstr "No filters added."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "No labels available. Add a label above to get started."
+
+msgid "No program created"
+msgstr "No program created"
+
+msgid "No program selected"
+msgstr "No program selected"
 
 msgid "No warnings/errors"
 msgstr "No warnings/errors"
@@ -2123,6 +2138,12 @@ msgstr "Profile Information"
 
 msgid "Profile Name"
 msgstr "Profile Name"
+
+msgid "Program"
+msgstr "Program"
+
+msgid "Program Definition"
+msgstr "Program Definition"
 
 msgid "Program Metric"
 msgstr "Program Metric"
@@ -2624,6 +2645,9 @@ msgstr "Select None"
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
 
+msgid "Select a Program to get started!"
+msgstr "Select a Program to get started!"
+
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 
@@ -2806,11 +2830,20 @@ msgstr "Please type <strong>{org}</strong> to confirm."
 msgid "Table Name"
 msgstr "Table Name"
 
+msgid "Target <= Actual for Compliance"
+msgstr "Target <= Actual for Compliance"
+
 msgid "Target > Actual"
 msgstr "Target > Actual"
 
+msgid "Target >= Actual for Compliance"
+msgstr "Target >= Actual for Compliance"
+
 msgid "Target Column"
 msgstr "Target Column"
+
+msgid "Target Field"
+msgstr "Target Field"
 
 msgid "Tax Lot"
 msgstr "Tax Lot"
@@ -2908,6 +2941,9 @@ msgstr "The following is a list of the fields we use to match up properties/tax 
 msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 msgstr "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 
+msgid "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
+msgstr "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
+
 #: seed/landing/templates/landing/password_reset_confirm.html:41
 msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
 msgstr "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
@@ -2993,6 +3029,9 @@ msgstr "Uploading File"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Uploading <strong>{dataset_filename}</strong> to cycle <strong>{cycle_name}</strong>"
+
+msgid "UPLOADING_PROGRESS_NO_CYCLE"
+msgstr "Uploading <strong>{dataset_filename}</strong>"
 
 msgid "UPLOAD_COMPLETE_TITLE"
 msgstr "Upload Complete"
@@ -3158,6 +3197,9 @@ msgstr "Violation Label"
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visit the BETTER website to run a portfolio analysis"
 
+msgid "Visualization Settings"
+msgstr "Visualization Settings"
+
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
 
@@ -3215,6 +3257,9 @@ msgstr "X Axis Column Types for Plotting:"
 
 msgid "X-Axis Columns"
 msgstr "X-Axis Columns"
+
+msgid "X-Axis Field Options"
+msgstr "X-Axis Field Options"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
