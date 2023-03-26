@@ -7,7 +7,7 @@
             ng-if="!analysis._finished_with_tasks"></i>
         {$ analysis.status $}
     </span>
-    <span>
+    <span ng-if="allowActions">
         <i class="glyphicon glyphicon-play link" title="Start Analysis" aria-hidden="true"
            ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
         <i class="glyphicon glyphicon-stop link" title="Stop Analysis" aria-hidden="true"
@@ -24,13 +24,10 @@
             <div class="card-highlight-score">{$:: highlight.value $}</div>
             <div class="card-highlight-title">{$:: highlight.name $}</div>
         </div>
-    </div>
-    <div class="card-stats grow">
-        <ul ng-if="(analysis.configuration | json) != '{}'" ng-repeat="(config, setting) in analysis.configuration">
-            <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
-        </ul>
-        <div ng-if="(analysis.configuration | json) == '{}'">
-            No configuration.
+        <div class="card-highlight" ng-if="(analysis.configuration | json) != '{}' && analysis.configuration.select_meters">
+            <div class="card-stats-highlight-score">Meter Selection: {$:: analysis.configuration.select_meters | titleCase $}</div>
+            <div ng-if="analysis.configuration.meter" class="card-stats-highlight-title">{$:: analysis.configuration.meter.start_date | date : 'MM/dd/yyyy' $} - {$:: analysis.configuration.meter.end_date | date : 'MM/dd/yyyy' $}</div>
+            <div ng-if="analysis.configuration.cycle_name" class="card-stats-highlight-title">{$:: analysis.configuration.cycle_name $}</div>
         </div>
     </div>
 </div>
@@ -42,7 +39,7 @@
         </div>
         <small>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</small>
     </div>
-    <div class="link" ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">
+    <a class="link" ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">
         Full Analysis <i class="glyphicon glyphicon-log-out"></i>
-    </div>
+    </a>
 </div>

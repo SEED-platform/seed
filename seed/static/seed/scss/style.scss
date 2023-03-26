@@ -3895,6 +3895,10 @@ $pairedCellWidth: 60px;
   padding-left: 20px;
 }
 
+.pad-left-10 {
+  padding-left: 10px;
+}
+
 .pad-left-5 {
   padding-left: 5px;
 }
@@ -4060,8 +4064,12 @@ FAQ page
     color: #999;
 
     &:hover {
-      cursor: pointer;
       color: black;
+      text-decoration: none;
+    }
+
+    &:focus {
+      text-decoration: none;
     }
   }
 
@@ -4071,8 +4079,6 @@ FAQ page
   }
 
   & .card-stats {
-    color: rgba(0, 0, 0, 0.5);
-
     & ul {
       list-style-type: none;
       padding: 0;
@@ -4093,6 +4099,20 @@ FAQ page
       font-size: 3em;
       font-weight: bold;
       line-height: 1em;
+    }
+
+    & .card-stats-highlight-score {
+      color: rgba(0, 0, 0, 0.7);
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 1em;
+      text-align: center;
+    }
+
+    & .card-stats-highlight-title {
+      font-size: 1.5em;
+      line-height: 1em;
+      color: rgba(0, 0, 0, 0.7);
     }
 
     & .card-highlight-title {
@@ -4309,19 +4329,36 @@ iframe.analysis-results {
 // program overview / compliance-setup
 .compliance-setup {
   background-color: #eeeeee;
-  padding: 2em;
+  padding: 1.5em;
+  p {
+    margin: 0;
+  }
 }
 
 .margin-top-20 {
   margin-top: 20px;
 }
 
+.margin-top-10 {
+  margin-top: 10px;
+}
+
+.button-grid {
+  display: flex;
+}
+
+.flex-button-child {
+  flex: 1;
+}
+
+.flex-button-child:first-child {
+  margin-right: 10px;
+}
+
 .chart-legend {
-  margin-top: 3em;
+  margin-top: 15px;
   margin-left: 0em;
   .title {
-    padding-top: 1em;
-    padding-bottom: 1em;
     font-size: 1.4em;
   }
   .legend-icon {
@@ -4335,7 +4372,7 @@ iframe.analysis-results {
   }
 
   .legend-row {
-    margin: 0.5em 1em 0.5em 0em;
+    margin: 0.25em 1em 0.25em 0em;
   }
   .box {
     min-height: 2em;
@@ -4358,10 +4395,16 @@ iframe.analysis-results {
     font-size: 1.2em;
     vertical-align: middle;
   }
+  .small-text {
+    font-size: 1em !important;
+  }
 }
 
 .title-row {
-  padding: 0px 0px 20px 0px;
+  padding: 0px 0px 10px 0px;
+  h2 {
+    margin-top: 10px;
+  }
 }
 
 // "namespacing" with "r-" until css cleanup
@@ -4466,7 +4509,7 @@ ul.r-list {
 
   &.r-scrollable {
     max-height: 200px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 }
 
@@ -4515,11 +4558,25 @@ ul.r-list {
     border: 1px solid $errorBorder;
   }
 
+  &.r-success {
+    color: $successText;
+    background-color: $successBackground;
+    border: 1px solid $successBorder;
+  }
+
   &.r-info {
     color: $infoText;
     background-color: $infoBackground;
     border: 1px solid $infoBorder;
   }
+}
+
+.r-error-msg {
+  color: $errorText;
+  background-color: $errorBackground;
+  border: 1px solid $errorBorder;
+  margin: 5px;
+  padding: 5px;
 }
 
 .r-no-margin {
@@ -4540,6 +4597,10 @@ ul.r-list {
 
 .r-margin-right-5 {
   margin-right: 5px !important;
+}
+
+.r-margin-right-10 {
+  margin-right: 10px !important;
 }
 
 .r-margin-top-10 {
@@ -4619,6 +4680,12 @@ ul.r-list {
   }
 }
 
+.updated_date_field {
+  background-color: #eee;
+  opacity: 1;
+  font-weight: bold;
+}
+
 .col-form-label {
   padding-top: 5px !important;
 }
@@ -4647,7 +4714,154 @@ ul.r-list {
   text-decoration: line-through;
 }
 
+.accordion-header {
+  .accordion-button[aria-expanded="true"] .accordion-indicator-default-closed {
+    transform: rotate(90deg);
+    transition: transform 0.5s;
+  }
+  .accordion-button[aria-expanded="false"] .accordion-indicator-default-closed {
+    transform: rotate(0);
+    transition: transform 0.5s;
+  }
+  .accordion-button[aria-expanded="true"] .accordion-indicator-default-open {
+    transform: rotate(0);
+    transition: transform 0.5s;
+  }
+  .accordion-button[aria-expanded="false"] .accordion-indicator-default-open {
+    transform: rotate(-90deg);
+    transition: transform 0.5s;
+  }
+
+  .accordion-button {
+    width: calc(100% - 20px);
+    text-align: left;
+    border: none;
+    i {
+      margin-right: 10px;
+    }
+    .sub-span {
+      width: fit-content;
+      margin: 0 20px;
+    }
+    .event-detail {
+      min-width: 100px;
+      margin: 0 30px;
+    }
+  }
+  .at-date {
+    background: #717071;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    padding-left: 30px;
+    margin-left: 10px;
+  }
+  .cycle-button {
+    background-color: black;
+    color: white;
+    padding: 7px 10px;
+    margin: 3px 10px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .event-button {
+    background-color: gray;
+    color: white;
+    padding: 5px 10px;
+    margin: 1px 10px;
+    font-weight: bold;
+  }
+  span {
+    display: inline-block;
+    // width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: text-bottom;
+  }
+}
+
+.accordion-header[aria-expanded="true"] i {
+  transform: rotate(90deg);
+  transition: transform 0.5s;
+}
+
+.accordion-header[aria-expanded="false"] i {
+  transform: rotate(0deg);
+  transition: transform 0.5s;
+}
+
+.measure-elec {
+  background-color: rgba(243, 158, 72, 0.2);
+}
+
+.measure-gas {
+  background-color: rgba(75, 119, 242, 0.2);
+}
 .meters-detail .ui-grid-menu-button .ui-grid-menu .ui-grid-menu-mid {
   overflow: auto;
   max-height: 112px;
+}
+
+.event-select {
+  width: 150px;
+  margin: 20px 0;
+}
+#scenario-measures-table {
+  .accordion-header {
+    .accordion-button {
+      width: 100%;
+    }
+  }
+}
+.grid-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.measures-header {
+  font-weight: bold;
+  padding: 3px 10px;
+  background: #efefef;
+}
+.measures-footer {
+  background: #efefef;
+  height: 10px;
+}
+.icon-small-black {
+  height: 25px;
+  filter: brightness(0%);
+  margin: 0 -5px;
+}
+.scenario-cycle {
+  color: white;
+  background: black;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 10px;
+}
+.measure-status-complete {
+  color: green;
+}
+.measure-status-evaluated {
+  color: orange;
+}
+#event-select-ui-grid {
+  .ui-grid-header {
+    color: white;
+    .ui-grid-top-panel {
+      background: #808080;
+    }
+  }
+  .ui-grid-row:last-child .ui-grid-cell {
+    border-bottom-width: 1px;
+  }
+}
+
+.salesforce-form {
+  p {
+    padding-top: 7px;
+  }
 }

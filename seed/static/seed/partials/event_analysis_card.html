@@ -1,0 +1,16 @@
+<div class="event_analysis section_content" ng-init="analysis = event.analysis">
+    <div
+        id="analysis-{$ analysis.id $}"
+        ui-grid="analysisGridOptionsById[analysis.id]"
+        ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
+        style="margin: 0 10px"
+    ></div>
+    <div style="padding: 10px">
+        <div  ng-controller="analysis_details_controller"
+            ng-include="::urls.static_url + 'seed/partials/analysis_card.html'"
+            class="tab-content-card"
+            style="color: black; width: max-content"
+            ng-init="allowActions = false">
+        </div>
+    </div>
+</div>

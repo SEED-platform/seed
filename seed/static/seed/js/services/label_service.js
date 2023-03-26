@@ -61,11 +61,12 @@ angular.module('BE.seed.service.label', [])
       // Passing no arguments will return all labels, but no information about what properties/taxlots they're applied to
       // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
       // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
-      function get_labels (inventory_type, filter_ids) {
-        return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids);
+      // Passing cycle_id will restrict is_applied ids to only those in the specified cycle
+      function get_labels (inventory_type, filter_ids, cycle_id) {
+        return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids, cycle_id);
       }
 
-      function get_labels_for_org (org_id, inventory_type, filter_ids) {
+      function get_labels_for_org (org_id, inventory_type, filter_ids, cycle_id) {
         var params = {
           organization_id: org_id
         };
@@ -85,7 +86,10 @@ angular.module('BE.seed.service.label', [])
         }
 
         return $http.post(`/api/v3/${endpoint}/`, body, {
-          params: params
+          params: {
+            ...params,
+            cycle_id
+          }
         }).then(map_labels);
       }
 

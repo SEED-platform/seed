@@ -13,8 +13,12 @@ angular.module('BE.seed.controller.analysis_details', [])
       $state,
       analyses_service
     ) {
+      $scope.is_object = _.isObject;
+
       let stop_func = () => {};
       const starting_analysis_status = $scope.analysis.status;
+
+      $scope.allowActions = true
 
       $scope.$on('$destroy', () => {
         stop_func();

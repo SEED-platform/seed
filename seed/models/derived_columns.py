@@ -83,8 +83,8 @@ class ExpressionEvaluator:
         """Transforms expression tree into a result by applying operations.
         Should be used with the expression grammar above
         """
-        from operator import add, mod, mul, neg, sub
-        from operator import truediv as div
+        from operator import add, mod, mul, neg, sub  # type: ignore[misc]
+        from operator import truediv as div  # type: ignore[misc]
 
         number = float
         min = min

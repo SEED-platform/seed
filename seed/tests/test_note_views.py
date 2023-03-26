@@ -13,6 +13,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
+from seed.models import NoteEvent
 from seed.test_helpers.fake import (
     FakeNoteFactory,
     FakePropertyViewFactory,
@@ -94,6 +95,11 @@ class NoteViewTests(TestCase):
         self.assertTrue('taxlot_view_id' not in result)
         self.assertEqual(result['organization_id'], self.org.pk)
         self.assertEqual(result['user_id'], self.user.pk)
+
+        events = NoteEvent.objects.all().values()
+        self.assertEqual(1, len(events))
+        event = events[0]
+        self.assertEqual(result["id"], event["note_id"])
 
     def test_create_note_taxlot(self):
         url = reverse('api:v3:taxlot-notes-list', args=[self.tl.pk])

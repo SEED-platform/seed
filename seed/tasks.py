@@ -34,10 +34,12 @@ from seed.models import (
     Property,
     PropertyState,
     PropertyView,
+    SalesforceConfig,
     TaxLot,
     TaxLotState,
     TaxLotView
 )
+from seed.utils.salesforce import auto_sync_salesforce_properties
 
 logger = get_task_logger(__name__)
 
@@ -155,6 +157,26 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
+
+
+def send_salesforce_error_log(org_pk, errors):
+    """ send salesforce error log to logging email when errors are encountered during scheduled sync """
+    sf_conf = SalesforceConfig.objects.get(organization_id=org_pk)
+    org = Organization.objects.get(pk=org_pk)
+
+    if sf_conf.logging_email:
+
+        context = {
+            'organization_name': org.name,
+            'errors': errors
+        }
+
+        subject = 'Salesforce Automatic Update Errors'
+        email_body = loader.render_to_string(
+            'seed/salesforce_update_errors.html',
+            context
+        )
+        send_mail(subject, email_body, settings.SERVER_EMAIL, [sf_conf.logging_email])
 
 
 def delete_organization(org_pk):
@@ -412,6 +434,14 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
+
+
+@shared_task
+def sync_salesforce(org_id):
+    status, messages = auto_sync_salesforce_properties(org_id)
+    if not status:
+        # send email with errors
+        send_salesforce_error_log(org_id, messages)
 
 
 @shared_task

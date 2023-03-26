@@ -19,6 +19,7 @@ from seed.lib.merging.merging import merge_state
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
+    ATEvent,
     Column,
     Measure,
     Meter,
@@ -222,6 +223,7 @@ class BuildingFile(models.Model):
         }
         # add in scenarios
         linked_meters = []
+        scenarios = []
         for s in data.get('scenarios', []):
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
@@ -282,6 +284,7 @@ class BuildingFile(models.Model):
                 scenario.measures.add(measure)
 
             scenario.save()
+            scenarios.append(scenario)
 
             # meters
             energy_types = dict(Meter.ENERGY_TYPES)
@@ -386,6 +389,15 @@ class BuildingFile(models.Model):
             property_view = property_state.promote(cycle)
         else:
             return True, property_state, None, messages
+
+        event = ATEvent.objects.create(
+            property=property_view.property,
+            cycle=property_view.cycle,
+            building_file=self,
+            audit_date=property_state.extra_data.get('audit_date', ''),
+        )
+        event.scenarios.set(scenarios)
+        event.save()
 
         for meter in linked_meters:
             meter.property = property_view.property

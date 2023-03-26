@@ -76,6 +76,17 @@ describe('controller: organization_settings_controller', function () {
           is_parent_org_owner: false
         }
       },
+      labels_payload: [{
+        id: 47,
+        name: "Add to Salesforce",
+        organization_id: 4
+      }],
+      salesforce_mappings_payload: [],
+      salesforce_configs_payload: [{
+        id: 1,
+        organization_id: 4,
+        unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
+      }],
       property_column_names: { 'column_name': 'test', 'display_name': 'test' },
       taxlot_column_names: { 'column_name': 'test', 'display_name': 'test' }
     });

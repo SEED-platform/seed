@@ -212,6 +212,9 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
+    # Salesforce Functionality
+    salesforce_enabled = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.

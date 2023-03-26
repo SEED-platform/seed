@@ -107,3 +107,9 @@ class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
     """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
     create, and destroy actions.
     """
+
+
+class SEEDOrgNoPatchNoCreateModelViewSet(SEEDOrgReadOnlyModelViewSet, DestroyModelMixin, UpdateWithoutPatchModelMixin):
+    """
+    Extends SEEDOrgReadOnlyModelViewSet to include update (without patch), and destroy actions
+    """

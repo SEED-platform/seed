@@ -27,6 +27,8 @@ from .auditlog import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa
 from .meters import *  # noqa
+from .salesforce_configs import *  # noqa
+from .salesforce_mappings import *  # noqa
 from .sensors import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
@@ -38,6 +40,7 @@ from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
 from .postoffice import *  # noqa
 from .filter_group import *  # noqa
+from .events import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

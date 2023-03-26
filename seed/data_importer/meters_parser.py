@@ -499,10 +499,18 @@ class MetersParser(object):
                 if units is None:
                     raise Exception(f'Invalid units "{units_match}"')
 
+                # Get the correct Property ID depending on the version of meter file
+                if not raw_reading.get('Property Id'):
+                    # This is the new format as of around 3/22/2023
+                    property_id = raw_reading.get('Portfolio Manager Property ID')
+                else:
+                    # This is the previous format
+                    property_id = raw_reading.get('Property Id')
+
                 reading = {
                     'Start Date': start_date.strftime('%Y-%m-%d %H:%M:%S'),
                     'End Date': end_date.strftime('%Y-%m-%d %H:%M:%S'),
-                    'Portfolio Manager ID': raw_reading['Property Id'],
+                    'Portfolio Manager ID': property_id,
                     'Portfolio Manager Meter ID': 'Unknown',
                     'Meter Type': meter_type,
                     'Usage/Quantity': raw_reading[reading_type],

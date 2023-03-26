@@ -30,6 +30,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
+    $scope.include_meter_readings = false;
     $scope.inventory_type = inventory_type;
     $scope.exporting = false;
     $scope.exporter_progress = {
@@ -57,6 +58,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
           profile_id: profile_id,
           export_type: export_type,
           include_notes: $scope.include_notes,
+          include_meter_readings: $scope.include_meter_readings,
           progress_key: data.data.progress_key
         }, {
           params: {
