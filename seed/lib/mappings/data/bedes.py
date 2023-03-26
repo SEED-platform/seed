@@ -1,12 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-# flake8: noqa
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
-'''
 These field names will have everything in parentheses stripped off and stores
 internally as units by migration 0030. So, this file was manually edited to
 include some of that information in the field name after stripping, causing
@@ -15,7 +12,8 @@ columns are not stored at the moment.
 
 For instance, 'Annual Fuel Use Consistent Units (Consistent Units)' becomes
 'Annual Fuel Use Consistent Units'
-'''
+"""
+# flake8: noqa
 
 schema = {
     'AC Adjusted': 'string',

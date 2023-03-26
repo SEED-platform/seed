@@ -1,14 +1,12 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 Collects the various utility functions for doing a last-moment collapse of the
 Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
 that's where the display preference lives.
 """
-
 import re
 from builtins import str
 

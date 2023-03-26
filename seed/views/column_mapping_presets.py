@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from django.http import JsonResponse
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
