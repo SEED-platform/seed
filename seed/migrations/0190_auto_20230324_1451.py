@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0187_update_compliance_metric_cycles'),
+        ('seed', '0189_backfill_events'),
     ]
 
     operations = [
