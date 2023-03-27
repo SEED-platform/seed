@@ -121,6 +121,9 @@ msgstr "Réel > Cible"
 msgid "Actual Column"
 msgstr "Colonne réelle"
 
+msgid "Actual Field"
+msgstr "Champ réel"
+
 msgid "Add"
 msgstr "Ajouter"
 
@@ -628,6 +631,9 @@ msgstr "Créer un nouveau projet"
 
 msgid "Create a New Sub-Organization"
 msgstr "Créer une nouvelle sous-organisation"
+
+msgid "Create a Program to get started!"
+msgstr "Créez un programme pour commencer !"
 
 msgid "Create a new rule"
 msgstr "Créer une nouvelle règle"
@@ -1752,6 +1758,9 @@ msgstr "Colonne Cible de métrique"
 msgid "Metric Type"
 msgstr "Type de métrique"
 
+msgid "Metric Type Settings"
+msgstr "Type de métrique"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1858,6 +1867,12 @@ msgstr "Aucun filtre ajouté."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour commencer."
+
+msgid "No program created"
+msgstr "Aucun programme créé"
+
+msgid "No program selected"
+msgstr "Aucun programme sélectionné"
 
 msgid "No warnings/errors"
 msgstr "Aucun avertissement/erreur"
@@ -2137,6 +2152,12 @@ msgstr "Informations sur le profil"
 
 msgid "Profile Name"
 msgstr "Nom de profil"
+
+msgid "Program"
+msgstr "Programme"
+
+msgid "Program Definition"
+msgstr "Définition du programme"
 
 msgid "Program Metric"
 msgstr "Métrique du programme"
@@ -2646,6 +2667,9 @@ msgstr "Sélectionnez Aucun"
 msgid "Select a Custom Report to get started!"
 msgstr "Sélectionnez un rapport personnalisé pour commencer !"
 
+msgid "Select a Program to get started!"
+msgstr "Sélectionnez un programme pour commencer !"
+
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
 
@@ -2828,11 +2852,20 @@ msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 msgid "Table Name"
 msgstr "Nom de la table"
 
+msgid "Target <= Actual for Compliance"
+msgstr "Cible <= Réel pour la conformité"
+
 msgid "Target > Actual"
 msgstr "Cible > Réel"
 
+msgid "Target >= Actual for Compliance"
+msgstr "Cible >= Réel pour la conformité"
+
 msgid "Target Column"
 msgstr "Colonne cible"
+
+msgid "Target Field"
+msgstr "Champ cible"
 
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
@@ -2930,6 +2963,9 @@ msgstr "Voici une liste des champs que nous utilisons pour faire correspondre le
 msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 msgstr "Le lien d'invitation était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle invitation."
 
+msgid "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
+msgstr "La métrique globale peut être composée d'une métrique d'énergie, d'une métrique d'émission, ou des deux. Au moins un type de métrique est requis et si deux sont définis, les deux métriques doivent être respectées pour la conformité."
+
 #: seed/landing/templates/landing/password_reset_confirm.html:41
 msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
 msgstr "Le lien de mot de passe était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle réinitialisation du mot de passe."
@@ -3015,6 +3051,9 @@ msgstr "Téléchargement de Fichier"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Importation de <strong> {dataset_filename} </strong> pour faire un cycle <strong> {cycle_name} </strong>"
+
+msgid "UPLOADING_PROGRESS_NO_CYCLE"
+msgstr "Importation de <strong>{dataset_filename}</strong>"
 
 msgid "UPLOAD_COMPLETE_TITLE"
 msgstr "Téléchargement Complet"
@@ -3182,6 +3221,9 @@ msgstr "Étiquette de Violation"
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
 
+msgid "Visualization Settings"
+msgstr "Paramètres de visualisation"
+
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
 
@@ -3239,6 +3281,9 @@ msgstr "Types de colonne de l'axe X pour le traçage:"
 
 msgid "X-Axis Columns"
 msgstr "Colonnes de l'axe X"
+
+msgid "X-Axis Field Options"
+msgstr "Options de champ de l'axe X"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"

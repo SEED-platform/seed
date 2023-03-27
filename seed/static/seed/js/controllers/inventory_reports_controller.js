@@ -1,11 +1,10 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
- */
-/**
- This controller handles the inventory reports page, watching for and remembering
- the user's selections for chart parameters like date range and x and y variables,
- and then updating the chart directives when the user clicks the update chart button.
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
+ * This controller handles the inventory reports page, watching for and remembering
+ * the user's selections for chart parameters like date range and x and y variables,
+ * and then updating the chart directives when the user clicks the update chart button.
  */
 
 angular.module('BE.seed.controller.inventory_reports', [])

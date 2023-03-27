@@ -1,10 +1,12 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author Claudine Custodio / Baptiste Ravache
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
+:author Claudine Custodio
+:author Baptiste Ravache
+
 API Testing for remote SEED installations.
 
 Instructions:
@@ -33,9 +35,7 @@ Those information can be listed as follow in the .ini file contained with the sc
 Outputs:
 The script will create a .txt file that contains the log of the test, i.e., the success/failure of each apps test and the results of
 some apps.
-
 """
-
 import base64
 import datetime as dt
 import json

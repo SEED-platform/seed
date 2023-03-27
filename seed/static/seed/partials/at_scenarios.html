@@ -1,0 +1,86 @@
+<div class="section_content" style="width:100%">
+    <div class="table_list_container table_item_detail">
+        <div ng-if="scenarios.length === 0" style="font-weight: bold; font-size: 14px; padding: 5px 20px;">
+            No Scenarios Found
+        </div>
+        <table ng-if="scenarios.length > 0"
+            class="trigger-table table table-bordered table-striped table-condensed"
+            style="border-collapse:collapse;"
+            >
+            <thead>
+                <tr>
+                <th width="50" ng-if="show_at_scenario_actions">Actions</th>
+                <th sd-resizable>Scenarios</th>
+                <th sd-resizable>Electricity savings (kBtu)</th>
+                <th sd-resizable>Peak electricity reduction (kW)</th>
+                <th sd-resizable>Natural gas savings (kBtu)</th>
+                <th sd-resizable>Status of Measures</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <tr
+                        ng-repeat-start="scenario in scenarios track by scenario.id"
+                        class="accordion-toggle accordion-header"
+                        data-toggle="collapse"
+                        data-target="#scenario-{$ scenario.id $}"
+                        ng-click="resizeGridByScenarioId(scenario.id)"
+                    >
+                        <div>
+                            <td ng-if="show_at_scenario_actions">
+                                <button class="btn btn-danger" type="button" ng-click="delete_scenario(scenario.id, scenario.name); $event.stopPropagation()">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </button>
+                            </td>
+                            <td style="vertical-align: middle;">
+                                <i class="fa fa-chevron-right"  id="indicator-{$ $index  $}">
+                                </i>
+                                {$ scenario.name $}
+                            </td>
+                            <td ng-class="{'measure-elec': scenario.annual_electricity_savings > 0}">
+                                <img class="legend-icon" ng-src="{$ static_url $}seed/images/timeline_electricity.svg" style="height: 40px;">
+                                <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
+                                    {$ (scenario.annual_electricity_savings | number: 0) || 'N/A' $}
+                                </span>
+                            </td>
+                            <td ng-class="{'measure-elec': scenario.annual_peak_electricity_reduction > 0}">
+                                <img ng-src="{$ static_url $}seed/images/timeline_peak_down.svg" style="height: 40px;">
+                                <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
+                                    {$ (scenario.annual_peak_electricity_reduction | number: 0) || 'N/A' $}
+                                </span>
+                            </td>
+                            <td ng-class="{'measure-gas': scenario.annual_natural_gas_savings > 0}">
+                                <img ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="height: 40px;">
+                                <span style="font-weight: bold; font-size: 14px; margin-left: 10px;">
+                                    {$ (scenario.annual_natural_gas_savings | number: 0) || 'N/A' $}
+                                </span>
+                            </td>
+                            <td>
+                                <div ng-repeat="(status, count) in formatMeasureStatuses(scenario)" class="measure-status-{$ status.toLowerCase() $}" style="font-weight: bold;">
+                                    {$ count $} {$ status $}
+                                </div>
+                            </td>
+                        </div>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td colspan="6" class="hiddenRow" style="padding: 0px">
+                            <div class="accordian-body collapse measure-section scenario-collapse" id="scenario-{$ scenario.id $}">
+                                <div class="measures-header" ng-if="measureGridOptionsByScenarioId[scenario.id].data.length">
+                                    MEASURES
+                                </div>
+                                <div
+                                    ng-show="measureGridOptionsByScenarioId[scenario.id].data.length"
+                                    ui-grid="measureGridOptionsByScenarioId[scenario.id]"
+                                    ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
+                                    >
+                                </div>
+                                <div ng-if="!measureGridOptionsByScenarioId[scenario.id].data.length" class="measures-header">No Measures in Scenario</div>
+                                <div class="measures-footer">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </div>
+            </tbody>
+        </table>
+    </div>
+</div>

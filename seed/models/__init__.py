@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 # Do not isort these since order is important
 # The precommit call has a skip for this file.
@@ -40,6 +40,7 @@ from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
 from .postoffice import *  # noqa
 from .filter_group import *  # noqa
+from .events import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

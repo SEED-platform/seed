@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.data_view', [])
   .controller('data_view_controller', [
@@ -57,11 +57,9 @@ angular.module('BE.seed.controller.data_view', [])
         {id: 5, name: 'Count'}
       ];
       $scope.filter_groups = filter_groups
-      console.log('filter_groups',$scope.filter_groups)
 
       $scope.show_config = true
       $scope.toggle_config = () => {
-        console.log('toggle config')
         $scope.show_config = !$scope.show_config
       }
 
@@ -165,7 +163,7 @@ angular.module('BE.seed.controller.data_view', [])
           return;
         }
         spinner_utility.show();
-        let data = data_view_service.evaluate_data_view($scope.selected_data_view.id, Object.values($scope.source_column_by_location).filter(item => item).map(item => item.id)).then((data) => {
+        return data_view_service.evaluate_data_view($scope.selected_data_view.id, Object.values($scope.source_column_by_location).filter(item => item).map(item => item.id)).then((data) => {
           $scope.data = data;
           spinner_utility.hide();
         }).then(() => {
@@ -187,7 +185,6 @@ angular.module('BE.seed.controller.data_view', [])
         } else {
           $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
         }
-        console.log('_assign_datasets toggle filter group')
         $scope.click_edit();
         _assign_datasets();
       };
@@ -199,10 +196,7 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.selected_cycles[cycle_id] = Object.assign({}, $scope.used_cycles[cycle_id]);
         }
         $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
-        console.log('selected cycles', $scope.selected_cycles)
-        console.log('used cycles', $scope.used_cycles)
         $scope.click_edit();
-        console.log('_assign_datasets toggle cycle')
         _assign_datasets();
       };
 
@@ -228,7 +222,6 @@ angular.module('BE.seed.controller.data_view', [])
           aggregations.push(aggregation_id);
         }
         if ($scope.dataViewChart) {
-          console.log('_assign_datasets toggle agg')
           $scope.click_edit();
           _assign_datasets()
         }
@@ -248,7 +241,6 @@ angular.module('BE.seed.controller.data_view', [])
             $scope.selected_data_view.first_axis_aggregations = [];
             break;
           case 'second_axis':
-            console.log('set second axis [] 236')
             $scope.selected_data_view.second_axis_aggregations = [];
             break;
          default:
@@ -259,7 +251,6 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.click_edit();
         }
 
-        console.log('_assign_datasets select source column')
         _assign_datasets();
       };
 
@@ -318,7 +309,6 @@ angular.module('BE.seed.controller.data_view', [])
 
         // any errors?
         if ($scope.create_errors.length > 0) {
-          console.log('errors', $scope.create_errors)
           spinner_utility.hide();
           return;
         }
@@ -338,8 +328,6 @@ angular.module('BE.seed.controller.data_view', [])
             "location": 'second_axis',
             "aggregations": $scope.selected_data_view.second_axis_aggregations
           });
-        spinner_utility.show();
-        window.location.reload();
         }
 
         let _done = function (data) {
@@ -365,14 +353,24 @@ angular.module('BE.seed.controller.data_view', [])
             for (let i in data.errors) {
               $scope.create_errors.push(data.errors[i]);
             }
-            spinner_utility.hide();
         };
 
         if ($scope.selected_data_view.id) {
-          let new_data_view = data_view_service.update_data_view($scope.selected_data_view.id, $scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
+          data_view_service.update_data_view(
+            $scope.selected_data_view.id,
+            $scope.fields.name,
+            checked_filter_groups,
+            checked_cycles,
+            aggregations
+          ).then(_done).finally(spinner_utility.hide);
         } else {
-          let new_data_view = data_view_service.create_data_view($scope.fields.name, checked_filter_groups, checked_cycles, aggregations).then(_done);
-        };
+          data_view_service.create_data_view(
+            $scope.fields.name,
+            checked_filter_groups,
+            checked_cycles,
+            aggregations
+          ).then(_done).finally(spinner_utility.hide);
+        }
       };
 
       $scope.click_cancel = function () {
@@ -522,7 +520,6 @@ angular.module('BE.seed.controller.data_view', [])
       }
 
       const _assign_datasets = () => {
-        console.log('assign dataset start')
         if (!$scope.data.graph_data) {
           spinner_utility.hide()
           return
@@ -565,13 +562,11 @@ angular.module('BE.seed.controller.data_view', [])
           i = 0
           axis2_column = $scope.source_column_by_location.second_axis.column_name
           let second_axis_name = $scope.source_column_by_location.second_axis.displayName
-          console.log('second axis name', second_axis_name)
 
           $scope.dataViewChart.options.scales.y2.display = true
           $scope.dataViewChart.options.scales.y2.title.text = second_axis_name
           $scope.dataViewChart.options.scales.y2.title.display = true
 
-          console.log('axis 2 aggs', axis2_aggregations)
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
               if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
@@ -599,7 +594,6 @@ angular.module('BE.seed.controller.data_view', [])
         $scope.dataViewChart.data.datasets = datasets
         $scope.dataViewChart.options.plugins.title.text = $scope.selected_data_view.name
         $scope.dataViewChart.update()
-        console.log('_assign_data COMPLETE ')
       }
 
       _init_fields();
