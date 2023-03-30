@@ -131,7 +131,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           return dateB - dateA
         })
       }
-      $scope.order_historical_items_with_scenarios($scope.historical_items)
+      $scope.order_historical_items_with_scenarios()
       $scope.format_epoch = (epoch) => moment(epoch).format('YYYY-MM-DD');
 
       // stores derived column values -- updated later once we fetch the data
