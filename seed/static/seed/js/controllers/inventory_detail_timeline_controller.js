@@ -156,7 +156,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 notes.forEach(note => {
                     const noteGridOptions = {
                         data: [{
-                            "Updated": moment(note.updated).format('YYYY/MM/DD'),
+                            "Updated": moment(note.updated).format('YYYY-MM-DD'),
                             "Text": note.text
                         }],
                         enableColumnMenus: false,
@@ -184,7 +184,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                             {
                                 "Name": analysis.name,
                                 "Service": analysis.service,
-                                "Created": moment(analysis.created_at).format('YYYY/MM/DD'),
+                                "Created": moment(analysis.created_at).format('YYYY-MM-DD'),
                                 "Run Duration": formatDuration(analysis.start_time, analysis.end_time),
                                 "Status": analysis.status
                             }
@@ -261,12 +261,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 "ATEvent": "Audit Template File",
             }
 
-            $scope.formatDate = (date) => {
-                return moment(date).format('YYYY/MM/DD')
-            }
-            $scope.styleDate = (date) => {
-                return date.replace(/-/g, '/')
-            }
+            $scope.formatDate = (date) => moment(date).format('YYYY-MM-DD');
 
             $scope.groupByEventType = (events) => {
                 let eventTypeCount = events.reduce((acc, cur) => {
