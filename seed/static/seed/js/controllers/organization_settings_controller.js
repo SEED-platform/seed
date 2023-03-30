@@ -394,7 +394,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.test_sf_msg = null;
 
       // test connection: if works, set to success, if fails set to error.
-      salesforce_config_service.salesforce_connection($scope.conf).then(function (response) {
+      salesforce_config_service.salesforce_connection($scope.org.id, $scope.conf).then(function (response) {
         $scope.test_sf = 'success';
       })
       .catch(function (response) {
