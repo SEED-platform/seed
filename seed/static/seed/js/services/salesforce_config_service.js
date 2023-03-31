@@ -81,9 +81,13 @@ angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_conf
      * test the Salesforce connection
      * @param {obj} conf - salesforce config object
      */
-    const salesforce_connection = function (conf) {
+    const salesforce_connection = function (organization_id, conf) {
       return $http.post('/api/v3/salesforce_configs/salesforce_connection/', {
         salesforce_config: conf
+      }, {
+        params: {
+          organization_id
+        }
       }).then(function (response) {
         return response.data;
       });
