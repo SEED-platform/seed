@@ -1,3 +1,7 @@
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ */
 angular.module('BE.seed.controller.inventory_detail_meters', [])
   .controller('inventory_detail_meters_controller', [
     '$state',
@@ -16,7 +20,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     'urls',
     'user_service',
     'organization_payload',
-    '$log',
     function (
       $state,
       $scope,
@@ -33,8 +36,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       spinner_utility,
       urls,
       user_service,
-      organization_payload,
-      $log
+      organization_payload
     ) {
       spinner_utility.show();
       $scope.item_state = inventory_payload.state;
@@ -75,10 +77,16 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           {field: "scenario_name"},
           {field: "actions", cellTemplate: deleteButton},
         ],
+        enableGridMenu: true,
+        enableSelectAll: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter.csv`,
         enableColumnResizing: true,
         flatEntityAccess: true,
-        rowIdentity: (meter) => {return meter.id},
         fastWatch: true,
+        gridMenuShowHideColumns: false,
+        rowIdentity: (meter) => {return meter.id},
         minRowsToShow: Math.min($scope.sorted_meters.length, 10),
         onRegisterApi: function (meterGridApi) {
           $scope.meterGridApi = meterGridApi;
@@ -108,11 +116,17 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.meterReadGridOptions = {
         data: 'data',
         columnDefs: property_meter_usage.column_defs,
+        enableGridMenu: true,
+        enableSelectAll: true,
+        exporterMenuPdf: false,
+        exporterMenuExcel: false,
+        exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter_readings.csv`,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
         fastWatch: true,
-        minRowsToShow: Math.min($scope.data.length, 10),
+        gridMenuShowHideColumns: false,
+        minRowsToShow: Math.min($scope.data.length, 15),
         onRegisterApi: function (readingGridApi) {
           $scope.readingGridApi = readingGridApi;
 
@@ -278,21 +292,22 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         });
       };
 
-      $scope.inventory_display_name = function (property_type) {
+      const get_inventory_display_name = function (property_type) {
         let error = '';
-        let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+        let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
         if (!(field in $scope.item_state)) {
-          error = field + ' does not exist';
+          error = `${field} does not exist`;
           field = 'address_line_1';
         }
         if (!$scope.item_state[field]) {
-          error += (error == '' ? '' : ' and default ') + field + ' is blank';
+          error += `${error === '' ? '' : ' and default '}${field} is blank`;
         }
-        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+        $scope.inventory_name_error = error;
+        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
       };
 
       $scope.updateHeight = function () {
-        var height = 0;
+        let height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], function (selector) {
           var element = angular.element(selector)[0];
           if (element) height += element.offsetHeight;
@@ -302,4 +317,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         $scope.readingGridApi.core.handleWindowResize();
         $scope.meterGridApi.core.handleWindowResize();
       };
+
+      get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
     }]);

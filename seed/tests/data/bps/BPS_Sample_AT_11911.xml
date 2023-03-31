@@ -5,7 +5,7 @@
       <auc:Sites>
         <auc:Site ID="SiteType-70339502137240">
           <auc:Buildings>
-            <auc:Building ID="Medstar POB South Tower">
+            <auc:Building ID="BuildingType-70339502439620">
               <auc:PremisesName>Medstar POB South Tower</auc:PremisesName>
               <auc:PremisesNotes/>
               <auc:PremisesIdentifiers>
@@ -17,7 +17,7 @@
                 <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
                   <auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
-                  <auc:IdentifierVal/>
+                  <auc:IdentifierValue/>
                 </auc:PremisesIdentifier>
                 <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
@@ -102,8 +102,8 @@
                 </auc:Section>
                 <auc:Section ID="Section-70339502896160">
                   <auc:SectionType>Space function</auc:SectionType>
-                  <auc:OccupancyClassification>Medical Office</auc:OccupancyClassification>
-                  <auc:OriginalOccupancyClassification>Medical Office</auc:OriginalOccupancyClassification>
+                  <auc:OccupancyClassification>Health care-Outpatient non-diagnostic</auc:OccupancyClassification>
+                  <auc:OriginalOccupancyClassification>Health care-Outpatient non-diagnostic</auc:OriginalOccupancyClassification>
                   <auc:OccupancyLevels>
                     <auc:OccupancyLevel>
                       <auc:OccupantQuantityType>Peak total occupants</auc:OccupantQuantityType>

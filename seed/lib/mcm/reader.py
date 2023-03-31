@@ -1,14 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
-
 """
 import json
 import logging
@@ -263,7 +261,8 @@ class GeoJSONParser(object):
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
 
-        self.headers = [self._display_name(col) for col in raw_column_names]
+        # add in the property footprint to the headers/columns
+        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
@@ -272,7 +271,7 @@ class GeoJSONParser(object):
             properties = feature.get('properties')
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["bounding_box"] = self._get_bounding_box(feature)
+            entry["property_footprint"] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
@@ -287,7 +286,7 @@ class GeoJSONParser(object):
         return f"POLYGON (({', '.join(coords_strings)}))"
 
     def _capture_row(self, feature):
-        stringified_values = [str(value) for value in feature.get('properties').values()]
+        stringified_values = [str(value) for value in feature.get('properties').values()] + ['Property Footprint - Not Displayed']
         return "|#*#|".join(stringified_values)
 
     def num_columns(self):

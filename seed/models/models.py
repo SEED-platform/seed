@@ -1,16 +1,20 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
+
+# The MAX_NAME_LENGTH was taken out of Projects when it was removed.
+# It really isn't used in many models and doesn't really add value, but
+# we are leaving it for posterity sake.
+MAX_NAME_LENGTH = 255
 
 ASSESSED_RAW = 0
 PORTFOLIO_RAW = 1
@@ -18,7 +22,6 @@ ASSESSED_BS = 2
 PORTFOLIO_BS = 3
 COMPOSITE_BS = 4
 BUILDINGSYNC_RAW = 5
-
 SEED_DATA_SOURCES = (
     (ASSESSED_RAW, 'Assessed Raw'),
     (ASSESSED_BS, 'Assessed'),
@@ -58,16 +61,6 @@ MERGE_STATE = (
     (MERGE_STATE_DELETE, 'Delete Record'),  # typically set after unmerging two records
 )
 
-# Used by compliance model but imported elsewhere
-BENCHMARK_COMPLIANCE_CHOICE = 'Benchmarking'
-AUDITING_COMPLIANCE_CHOICE = 'Auditing'
-RETRO_COMMISSIONING_COMPLIANCE_CHOICE = 'Retro Commissioning'
-COMPLIANCE_CHOICES = (
-    (BENCHMARK_COMPLIANCE_CHOICE, _('Benchmarking')),
-    (AUDITING_COMPLIANCE_CHOICE, _('Auditing')),
-    (RETRO_COMMISSIONING_COMPLIANCE_CHOICE, _('Retro Commissioning')),
-)
-
 
 class StatusLabel(TimeStampedModel):
     RED_CHOICE = 'red'
@@ -88,7 +81,7 @@ class StatusLabel(TimeStampedModel):
         (GRAY_CHOICE, _('gray')),
     )
 
-    name = models.CharField(_('name'), max_length=Project.PROJECT_NAME_MAX_LENGTH)
+    name = models.CharField(_('name'), max_length=MAX_NAME_LENGTH)
     color = models.CharField(
         _('compliance_type'),
         max_length=30,
@@ -128,31 +121,6 @@ class StatusLabel(TimeStampedModel):
 
     def __str__(self):
         return '{0} - {1}'.format(self.name, self.color)
-
-    def to_dict(self):
-        return obj_to_dict(self)
-
-
-# Note that the compliance model is related to Projects which has been disabled for a long time. Delete this model and corresponding code.
-class Compliance(TimeStampedModel):
-    compliance_type = models.CharField(
-        _('compliance_type'),
-        max_length=30,
-        choices=COMPLIANCE_CHOICES,
-        default=BENCHMARK_COMPLIANCE_CHOICE
-    )
-    start_date = models.DateField(_('start_date'), null=True, blank=True)
-    end_date = models.DateField(_('end_date'), null=True, blank=True)
-    deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name=_('Project'), )
-
-    class Meta:
-        ordering = ('-modified', '-created',)
-
-    def __str__(self):
-        return 'Compliance %s for project %s' % (
-            self.compliance_type, self.project
-        )
 
     def to_dict(self):
         return obj_to_dict(self)

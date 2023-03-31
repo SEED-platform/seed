@@ -1,8 +1,7 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import copy
 from datetime import datetime
 
@@ -705,6 +704,27 @@ BASE_MAPPING_V2 = {
                 'value': 'text',
                 'formatter': to_float
             }
+        }
+    },
+    'audit_dates': {
+        'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:AuditDates/auc:AuditDate',
+        'type': 'list',
+        'items': {
+            "date": {
+                'xpath': './auc:Date',
+                'type': 'value',
+                'value': 'text',
+            },
+            "date_type": {
+                'xpath': './auc:DateType',
+                'type': 'value',
+                'value': 'text',
+            },
+            "custom_date_type": {
+                'xpath': './auc:CustomDateType',
+                'type': 'value',
+                'value': 'text',
+            },
         }
     },
     'scenarios': {

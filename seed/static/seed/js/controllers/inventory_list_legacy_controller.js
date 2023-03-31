@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_list_legacy', [])
   .controller('inventory_list_legacy_controller', [
@@ -1199,8 +1199,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
                 return !_.has(row, '$$treeLevel');
               }), 'property_view_id');
             },
-            cycles: cycles.cycles,
-            current_cycle: _.constant($scope.cycle.selected_cycle),
+            cycles: _.constant(cycles.cycles),
+            current_cycle: _.constant($scope.cycle.selected_cycle)
           }
         });
         modalInstance.result.then(function (data) {

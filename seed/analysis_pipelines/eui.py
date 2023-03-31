@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import datetime
 import logging
@@ -69,7 +69,7 @@ def _get_valid_meters(property_view_ids, config):
         end_time = cycle.end
         start_time = cycle.start
     else:
-        AnalysisPipelineException("configuation.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
+        AnalysisPipelineException("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:

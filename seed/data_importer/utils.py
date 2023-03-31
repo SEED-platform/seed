@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
-"""
-"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 Utility methods pertaining to data import tasks (save, mapping, matching).
 """
 from collections import defaultdict
@@ -104,6 +103,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Coke']['MLbs. (million pounds)'] = 12399999.00
         factors['Coke']['Tonnes (metric)'] = 27338.67
         factors['Coke']['Tons'] = 24800.00
+        factors['Default']['GJ'] = 947.82
+        factors['Default']['Btu'] = 0.001
+        factors['Default']['kBtu (thousand Btu)'] = 1.00
+        factors['Default']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Default']['ton hours'] = 12.00
         factors['Diesel']['Gallons (UK)'] = 165.73
         factors['Diesel']['Gallons (US)'] = 138.00
         factors['Diesel']['GJ'] = 947.82
@@ -111,6 +115,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Diesel']['kBtu (thousand Btu)'] = 1.00
         factors['Diesel']['Liters'] = 36.46
         factors['Diesel']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['GJ'] = 947.82
+        factors['District Chilled Water']['Btu'] = 0.001
+        factors['District Chilled Water']['kBtu (thousand Btu)'] = 1.00
+        factors['District Chilled Water']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['ton hours'] = 12.00
         factors['District Chilled Water - Absorption']['GJ'] = 947.82
         factors['District Chilled Water - Absorption']['Btu'] = 0.001
         factors['District Chilled Water - Absorption']['kBtu (thousand Btu)'] = 1.00
@@ -145,6 +154,13 @@ def kbtu_thermal_conversion_factors(country):
         factors['District Steam']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['District Steam']['MLbs. (million pounds)'] = 1194000.00
         factors['District Steam']['therms'] = 100.00
+        factors['Electric']['GJ'] = 947.82
+        factors['Electric']['Btu'] = 0.001
+        factors['Electric']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric']['Wh (Watt-hours)'] = 0.00341
+        factors['Electric']['kWh (thousand Watt-hours)'] = 3.41
+        factors['Electric']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Electric']['MWh (million Watt-hours)'] = 3412.00
         factors['Electric - Grid']['GJ'] = 947.82
         factors['Electric - Grid']['Btu'] = 0.001
         factors['Electric - Grid']['kBtu (thousand Btu)'] = 1.00
@@ -265,6 +281,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Coke']['MLbs. (million pounds)'] = 12394875.00
         factors['Coke']['Tonnes (metric)'] = 27325.56
         factors['Coke']['Tons'] = 24789.75
+        factors['Default']['GJ'] = 947.82
+        factors['Default']['Btu'] = 0.001
+        factors['Default']['kBtu (thousand Btu)'] = 1.00
+        factors['Default']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Default']['ton hours'] = 12.00
         factors['Diesel']['Gallons (UK)'] = 165.03
         factors['Diesel']['Gallons (US)'] = 137.42
         factors['Diesel']['GJ'] = 947.82
@@ -272,6 +293,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Diesel']['kBtu (thousand Btu)'] = 1.00
         factors['Diesel']['Liters'] = 36.30
         factors['Diesel']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['GJ'] = 947.82
+        factors['District Chilled Water']['Btu'] = 0.001
+        factors['District Chilled Water']['kBtu (thousand Btu)'] = 1.00
+        factors['District Chilled Water']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['District Chilled Water']['ton hours'] = 12.00
         factors['District Chilled Water - Absorption']['GJ'] = 947.82
         factors['District Chilled Water - Absorption']['Btu'] = 0.001
         factors['District Chilled Water - Absorption']['kBtu (thousand Btu)'] = 1.00
@@ -306,6 +332,13 @@ def kbtu_thermal_conversion_factors(country):
         factors['District Steam']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['District Steam']['MLbs. (million pounds)'] = 1194000.00
         factors['District Steam']['therms'] = 100.00
+        factors['Electric']['GJ'] = 947.82
+        factors['Electric']['Btu'] = 0.001
+        factors['Electric']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric']['Wh (Watt-hours)'] = 0.00341
+        factors['Electric']['kWh (thousand Watt-hours)'] = 3.41
+        factors['Electric']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Electric']['MWh (million Watt-hours)'] = 3412.00
         factors['Electric - Grid']['GJ'] = 947.82
         factors['Electric - Grid']['Btu'] = 0.001
         factors['Electric - Grid']['kBtu (thousand Btu)'] = 1.00

@@ -71,8 +71,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
-author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2017, 2023, Alliance for Sustainable Energy, LLC, and other contributors.'
+author = 'Alliance for Sustainable Energy, LLC, and other contributors.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -201,7 +201,6 @@ html_show_sourcelink = False
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 html_show_sphinx = False
 
-# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will

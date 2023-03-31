@@ -1,26 +1,29 @@
-#
-# Basic flipper library for hiding OGBS features for dark-launch
-#
-# Could get super-complicated with this (eg. see https://github.com/disqus/gutter)
-# but our needs are pretty simple:
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
-# - easily greppable to remove them later
-# - boolean-only gate is fine (no progressive roll-out, deploy groups needed yet)
-# - redeploy to toggle is OK, ie. no real persistence beyond the filesystem
-#
-# Most of the adds here are based on some experience in doing dark-launch, in
-# that a major hazard is that this counts as high-interest technical debt and
-# can get out of hand if we don't clean them up:
-#
-# - will get a unit test failure if the flipper is too old
-# - will get a noisy log message if used past the expires date to discourage
-#   flippers from hanging around after they're needed.
+Basic flipper library for hiding OGBS features for dark-launch
 
-# no point in following any particular API since:
-#   - if we need something more complicated we'll use a better lib
-#   - flippers shouldn't stick around long so we don't want to encourage
-#     sticking around by future-proofing the API.
+Could get super-complicated with this (eg. see https://github.com/disqus/gutter)
+but our needs are pretty simple:
 
+  - easily greppable to remove them later
+  - boolean-only gate is fine (no progressive roll-out, deploy groups needed yet)
+  - redeploy to toggle is OK, ie. no real persistence beyond the filesystem
+
+Most of the adds here are based on some experience in doing dark-launch, in
+that a major hazard is that this counts as high-interest technical debt and
+can get out of hand if we don't clean them up:
+
+  - will get a unit test failure if the flipper is too old
+  - will get a noisy log message if used past the expires date to discourage
+    flippers from hanging around after they're needed.
+
+no point in following any particular API since:
+  - if we need something more complicated we'll use a better lib
+  - flippers shouldn't stick around long so we don't want to encourage
+    sticking around by future-proofing the API.
+"""
 import datetime
 
 import pytz

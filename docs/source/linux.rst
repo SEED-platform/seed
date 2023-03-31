@@ -177,13 +177,13 @@ create a superuser to access the system
 Running celery the background task worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Celery`_ is used for background tasks (saving data, matching, creating
-projects, etc) and must be connected to the message broker queue. From the
-project directory, ``celery`` can be started:
+`Celery`_ is used for background tasks (saving data, matching, data quality checks, etc.)
+and must be connected to the message broker queue. From the project directory, ``celery``
+can be started:
 
 .. code-block:: console
 
-    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 2 -B --events --max-tasks-per-child=1000
+    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
 .. _Celery: http://www.celeryproject.org/
 

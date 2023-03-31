@@ -1,14 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author nicholas.long@nrel.gov
 """
-
 import copy
 import logging
 import os
 import re
+from datetime import datetime
 from io import BytesIO, StringIO
 
 import xmlschema
@@ -356,6 +358,11 @@ class BuildingSync(object):
 
             scenarios.append(seed_scenario)
 
+        # get most recent audit date
+        audit_dates = result["audit_dates"]
+        audit_dates.sort(key=lambda x: datetime.strptime(x["date"], "%Y-%m-%d"))
+        most_recent_audit_date = {} if len(audit_dates) == 0 else audit_dates[-1]
+
         property_ = result['property']
         res = {
             'measures': measures,
@@ -378,6 +385,8 @@ class BuildingSync(object):
             'net_floor_area': property_['net_floor_area'],
             'footprint_floor_area': property_['footprint_floor_area'],
             'audit_template_building_id': property_['audit_template_building_id'],
+            'audit_date': most_recent_audit_date.get("date"),
+            'audit_date_type': most_recent_audit_date.get("custom_date_type"),
         }
 
         return res
