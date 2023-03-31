@@ -1459,7 +1459,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       $scope.open_analyses_modal = function (selectedViewIds) {
-        console.log(cycles.cycles)
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analyses_modal_controller',
