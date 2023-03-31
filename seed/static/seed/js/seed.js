@@ -1500,6 +1500,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         url: '/accounts/{organization_id:int}/derived_columns/edit/:derived_column_id',
         templateUrl: static_url + 'seed/partials/derived_columns_editor.html',
         controller: 'derived_columns_editor_controller',
+        params: {
+          inventory_type: 'properties'
+        },
         resolve: {
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
