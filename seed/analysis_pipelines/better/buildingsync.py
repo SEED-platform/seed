@@ -110,6 +110,9 @@ def _build_better_input(analysis_property_view, meters_and_readings):
         nsmap=nsmap
     )
 
+    if not (property_state.city and property_state.state and property_state.postal_code):
+        return None, ["Invalid Property. Properties must have a 'City', 'State', and 'Postal Code'"]
+    
     doc = (
         E.BuildingSync(
             {
