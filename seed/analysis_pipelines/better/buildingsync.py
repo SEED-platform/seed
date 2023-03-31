@@ -1,3 +1,7 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
@@ -74,9 +78,7 @@ def _build_better_input(analysis_property_view, meters_and_readings):
         errors.append("BETTER analysis requires the property's state.")
     if property_state.gross_floor_area is None:
         errors.append("BETTER analysis requires the property's gross floor area.")
-    if property_state.property_type is None:
-        errors.append("BETTER analysis requires the property's type (office, retail, etc).")
-    if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
+    if property_state.property_type is None or property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
         errors.append(
             f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
 

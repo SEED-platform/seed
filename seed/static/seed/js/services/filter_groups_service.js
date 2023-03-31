@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_service', [
   '$http',
@@ -11,11 +11,11 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
 
     var filter_groups_factory = {};
 
-    filter_groups_factory.get_filter_groups = function (inventory_type) {
+    filter_groups_factory.get_filter_groups = function (inventory_type, organization_id = user_service.get_organization().id) {
       return $http.get('/api/v3/filter_groups/', {
         params: {
-          organization_id: user_service.get_organization().id,
-          inventory_type: inventory_type,
+          organization_id,
+          inventory_type,
         }
       }).then(function (response) {
         var filter_groups = response.data.data.sort(function (a, b) {

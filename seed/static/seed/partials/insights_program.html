@@ -19,7 +19,7 @@
                 <div class="title-row">
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
                 </div>
-                <div class="compliance-setup">
+                <div ng-if="auth.requires_member" class="compliance-setup">
                     <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.
                     </p>
                 </div>
@@ -32,7 +32,7 @@
                     <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
                 </div>
     			<!-- compliance setup -->
-    			<div class="compliance-setup">
+    			<div ng-if="auth.requires_member" class="compliance-setup">
     				<p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.
                     </p>
     			</div>

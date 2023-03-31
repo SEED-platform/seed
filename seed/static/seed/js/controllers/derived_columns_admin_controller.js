@@ -1,8 +1,7 @@
-/*
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-
 angular.module('BE.seed.controller.derived_columns_admin', [])
   .controller('derived_columns_admin_controller', [
     '$scope',
@@ -27,10 +26,12 @@ angular.module('BE.seed.controller.derived_columns_admin', [])
       organization_payload,
       derived_columns_payload
     ) {
-
+      $scope.state = $state.current;
       $scope.auth = auth_payload.auth;
       $scope.org = organization_payload.organization;
       $scope.derived_columns = derived_columns_payload.derived_columns;
+
+      $scope.inventory_type = $stateParams.inventory_type;
 
       // used to determine column sorting. 0 = no sort, 1 = ascending, 2 = descending
       $scope.column_sorting = 0;

@@ -1,41 +1,40 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.program_setup', []).controller('program_setup_controller', [
   '$scope',
+  '$state',
   '$stateParams',
   'compliance_metrics',
   'compliance_metric_service',
   'filter_groups',
   'Notification',
   'organization_payload',
-  'auth_payload',
+  'cycles_payload',
   'property_columns',
   'spinner_utility',
   'x_axis_columns',
   function (
     $scope,
+    $state,
     $stateParams,
     compliance_metrics,
     compliance_metric_service,
     filter_groups,
     Notification,
     organization_payload,
-    auth_payload,
+    cycles_payload,
     property_columns,
     spinner_utility,
     x_axis_columns
   ) {
     spinner_utility.show();
+    $scope.state = $state.current;
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
-    $scope.auth = auth_payload.auth;
+    $scope.cycles = cycles_payload.cycles;
     $scope.compliance_metrics_error = [];
-    $scope.fields = {
-      start_year: '',
-      end_year: ''
-    };
     $scope.program_settings_not_changed = true;
     $scope.program_settings_changed = function () {
       $scope.program_settings_not_changed = false;
@@ -45,12 +44,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     if ($scope.id) {
       $scope.selected_compliance_metric = $scope.compliance_metrics.find(item => item.id === $scope.id);
-    }
-    if ($scope.selected_compliance_metric) {
-      // truncate start and end dates to only show years YYYY
-      $scope.fields.start_year = $scope.selected_compliance_metric.start ? parseInt($scope.selected_compliance_metric.start.split('-')[0]) : null;
-      $scope.fields.end_year = $scope.selected_compliance_metric.end ? parseInt($scope.selected_compliance_metric.end.split('-')[0]) : null;
-
     }
     $scope.property_columns = property_columns;
     $scope.x_axis_columns = x_axis_columns;
@@ -62,12 +55,45 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
     };
 
+    // cycles
+    $scope.cycle_selection = '';
+    $scope.get_cycle_display = function (id) {
+      let record = _.find($scope.cycles, {id: id});
+      if (record) {
+        return record.name;
+      }
+    };
+
+    $scope.available_cycles = () => {
+      return $scope.cycles.filter(({id}) => !$scope.selected_compliance_metric?.cycles.includes(id));
+    }
+
+    $scope.select_cycle = function () {
+      $scope.program_settings_changed();
+      let selection = $scope.cycle_selection;
+      $scope.cycle_selection = '';
+      if (!$scope.selected_compliance_metric.cycles) {
+        $scope.selected_compliance_metric.cycles = [];
+      }
+      $scope.selected_compliance_metric.cycles.push(selection);
+    };
+
+    $scope.click_remove_cycle = function (id) {
+      $scope.program_settings_changed();
+      $scope.selected_compliance_metric.cycles = $scope.selected_compliance_metric.cycles.filter(item => item != id);
+    };
+
+    // x-axes
     $scope.get_x_axis_display = function (id) {
       let record = _.find($scope.x_axis_columns, {id: id});
       if (record) {
         return record.displayName;
       }
     };
+
+    $scope.available_x_axis_columns = () => {
+      return $scope.x_axis_columns.filter(({id}) => !$scope.selected_compliance_metric?.x_axis_columns.includes(id));
+    }
 
     $scope.x_axis_selection = '';
 
@@ -77,9 +103,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.x_axis_selection = '';
       if (!$scope.selected_compliance_metric.x_axis_columns) {
         $scope.selected_compliance_metric.x_axis_columns = [];
-      }
-      if ($scope.selected_compliance_metric.x_axis_columns.includes(selection)) {
-        return;
       }
       $scope.selected_compliance_metric.x_axis_columns.push(selection);
     };
@@ -108,11 +131,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (!$scope.selected_compliance_metric.name) {
         $scope.compliance_metrics_error.push('A name is required!');
       }
-      if (!$scope.fields.start_year) {
-        $scope.compliance_metrics_error.push('A compliance period start year (XXXX) is required!');
-      }
-      if (!$scope.fields.end_year) {
-        $scope.compliance_metrics_error.push('A compliance period end year (XXXX) is required!');
+      if ($scope.selected_compliance_metric.cycles) {
+        if ($scope.selected_compliance_metric.cycles.length < 1) {
+          $scope.compliance_metrics_error.push('At least one cycle is required!');
+        }
       }
       let has_energy_metric = $scope.selected_compliance_metric.actual_energy_column && $scope.selected_compliance_metric.energy_metric_type;
       let has_emission_metric = $scope.selected_compliance_metric.actual_emission_column && $scope.selected_compliance_metric.emission_metric_type;
@@ -140,13 +162,10 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         spinner_utility.hide();
         return;
       }
-      // just for saving
-      $scope.selected_compliance_metric.start = $scope.fields.start_year + '-01-01';
-      $scope.selected_compliance_metric.end = $scope.fields.end_year + '-12-31';
 
       // update the compliance metric
       console.log("about to update the metric");
-      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric).then(data => {
+      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then(data => {
         if ('status' in data && data.status == 'error') {
           for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
             $scope.compliance_metrics_error.push(key + ': ' + error);
@@ -166,14 +185,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
           $scope.selected_compliance_metric = data;
 
-          //reset for displaying
-          $scope.selected_compliance_metric.start = parseInt(
-            $scope.selected_compliance_metric.start.split('-')[0]
-          );
-          $scope.selected_compliance_metric.end = parseInt(
-            $scope.selected_compliance_metric.end.split('-')[0]
-          );
-
           window.location =
           '#/accounts/' +
           $scope.org.id +
@@ -184,10 +195,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       });
 
       // display messages
-          setTimeout(() => {
-            Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
-            Notification.success({message: 'Program Setup Saved!', delay: 5000});
-          }, 1000);
+      Notification.primary({message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000});
+      Notification.success({message: 'Program Setup Saved!', delay: 5000});
+
       $scope.program_settings_not_changed = true;
       spinner_utility.hide();
 
@@ -200,8 +210,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       // way it will have an id
       let template_compliance_metric = {
         name: 'New Program',
-        start_year: null,
-        end_year: null,
+        cycles: [],
         actual_energy_column: null,
         target_energy_column: null,
         energy_metric_type: '',
@@ -211,7 +220,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         filter_group: null,
         x_axis_columns: []
       };
-      compliance_metric_service.new_compliance_metric(template_compliance_metric).then(data => {
+      compliance_metric_service.new_compliance_metric(template_compliance_metric, $scope.org.id).then(data => {
         $scope.selected_compliance_metric = data;
         window.location =
         '#/accounts/' +
@@ -231,7 +240,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
       if (confirm('Are you sure you want to delete the Program Metric "' + compliance_metric.name + '"?')) {
         let delete_id = compliance_metric.id;
-        compliance_metric_service.delete_compliance_metric(delete_id).then((data) => {
+        compliance_metric_service.delete_compliance_metric(delete_id, $scope.org.id).then((data) => {
           if (data.status == 'success') {
             $scope.compliance_metrics = $scope.compliance_metrics.filter(compliance_metric => compliance_metric.id != delete_id);
             if ($scope.selected_compliance_metric.id == delete_id) {

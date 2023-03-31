@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import dateutil.parser
 from django.db.utils import IntegrityError
@@ -79,9 +79,11 @@ class MeterReadingSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         result = super().to_representation(obj)
 
+        # TODO: we need to actually read the units from the meter, then convert accordingly.
         # SEED stores all energy data in kBtus
         result['units'] = 'kBtu'
         result['id'] = obj.pk
+
         # put the ID first
         result.move_to_end('id', last=False)
 

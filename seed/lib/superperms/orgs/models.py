@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -211,6 +211,9 @@ class Organization(models.Model):
     at_organization_token = models.CharField(blank=True, max_length=128, default='')
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
+
+    # Salesforce Functionality
+    salesforce_enabled = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

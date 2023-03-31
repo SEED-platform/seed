@@ -1,9 +1,9 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
+ * Provides methods to access email templates and to send emails on the server
  */
-
-/* Provides methods to access email templates and to send emails on the server */
 angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
   '$http',
   '$q',

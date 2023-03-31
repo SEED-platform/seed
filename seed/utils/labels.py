@@ -1,9 +1,6 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
@@ -22,6 +19,10 @@ def filter_labels_for_inv_type(request, inventory_type=None):
     # Since this is being passed in as a query string, the object ends up
     # coming through as a string.
     params['filter_params'] = json.loads(params.get('filter_params', '{}'))
+
+    # If cycle_id is passed with an inventory_type limit the inventory filter
+    cycle_id = params.get('cycle_id', None) if inventory_type is not None else None
+
     params = search.process_search_params(
         params=params,
         user=request.user,
@@ -31,6 +32,7 @@ def filter_labels_for_inv_type(request, inventory_type=None):
         inventory_type,
         params=params,
         user=request.user,
+        cycle_id=cycle_id,
     )
     if 'selected' in request.data:
         # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all

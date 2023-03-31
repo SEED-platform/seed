@@ -1,9 +1,8 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import json
 import logging
 from collections import defaultdict
@@ -78,6 +77,7 @@ from seed.utils.organizations import (
     create_suborganization
 )
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.salesforce import toggle_salesforce_sync
 
 _log = logging.getLogger(__name__)
 
@@ -153,6 +153,7 @@ def _dict_org(request, organizations):
             'audit_template_user': o.audit_template_user,
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
+            'salesforce_enabled': o.salesforce_enabled,
         }
         orgs.append(org)
 
@@ -186,6 +187,7 @@ def _dict_org_brief(request, organizations):
             'id': o.id,
             'user_role': user_role,
             'display_decimal_places': o.display_decimal_places,
+            'salesforce_enabled': o.salesforce_enabled,
         }
         orgs.append(org)
 
@@ -634,6 +636,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_password = posted_org.get('audit_template_password', False)
         if audit_template_password != org.audit_template_password:
             org.audit_template_password = audit_template_password
+
+        salesforce_enabled = posted_org.get('salesforce_enabled', False)
+        if salesforce_enabled != org.salesforce_enabled:
+            org.salesforce_enabled = salesforce_enabled
+            # if salesforce_enabled was toggled, must start/stop auto sync functionality
+            toggle_salesforce_sync(salesforce_enabled, org.id)
 
         org.save()
 

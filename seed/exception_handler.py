@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
 :author Fable Turas <fable@raintechpdx.com>
-
-provides function for handling exceptions not otherwise handled by DRF
+:description provides function for handling exceptions not otherwise handled by DRF
 """
-
 from django.db.models.deletion import ProtectedError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status

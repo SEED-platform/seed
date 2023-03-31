@@ -1,10 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author nicholas.long@nrel.gov
 """
-
 from rest_framework import serializers
 
 from seed.models import Measure, PropertyMeasure
@@ -18,7 +19,6 @@ class MeasureSerializer(serializers.ModelSerializer):
 
 
 class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='measure.id')
     measure_id = serializers.SerializerMethodField('measure_id_name')
     name = serializers.ReadOnlyField(source='measure.name')
     display_name = serializers.ReadOnlyField(source='measure.display_name')
@@ -27,6 +27,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
     implementation_status = ChoiceField(choices=PropertyMeasure.IMPLEMENTATION_TYPES)
     application_scale = ChoiceField(choices=PropertyMeasure.APPLICATION_SCALE_TYPES)
     category_affected = ChoiceField(choices=PropertyMeasure.CATEGORY_AFFECTED_TYPE)
+    scenario_id = serializers.SerializerMethodField('get_scenario_id')
 
     class Meta:
         model = PropertyMeasure
@@ -50,7 +51,13 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             'cost_capital_replacement',
             'cost_residual_value',
             'useful_life',
+            'scenario_id',
         )
 
     def measure_id_name(self, obj):
         return "{}.{}".format(obj.measure.category, obj.measure.name)
+
+    def get_scenario_id(self, obj):
+        scenario = obj.scenario_set.first()
+        if scenario:
+            return scenario.id
