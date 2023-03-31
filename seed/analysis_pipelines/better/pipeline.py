@@ -165,8 +165,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
 
     # check if dates are ok
 
-    if 'select_meters' in config and config['select_meters'] == 'date_range':
-        try:
+    try:
+        if 'select_meters' in config and config['select_meters'] == 'date_range':
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00

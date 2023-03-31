@@ -105,7 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               min_model_r_squared: null,
               portfolio_analysis: false,
               preprocess_meters: false,
-              select_meters: 'date_range',
+              select_meters: 'select_cycle',
               enable_pvwatts: false,
               meter: {
                 start_date: null,
