@@ -1,3 +1,46 @@
+# SEED Version 2.18.0
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Implement Salesforce integration by @kflemin in https://github.com/SEED-platform/seed/pull/3840
+* Add option to export meter data in GeoJSON by @nllong in https://github.com/SEED-platform/seed/pull/3900
+* Create property timeline view by @perryr16 in https://github.com/SEED-platform/seed/pull/3899
+### Improvements 📈
+* Update Evaluate Permissions by @haneslinger in https://github.com/SEED-platform/seed/pull/3864
+* select cycles instead of start/end dates by @kflemin in https://github.com/SEED-platform/seed/pull/3895
+* Specify cycle in eui analysis by @haneslinger in https://github.com/SEED-platform/seed/pull/3820
+* Add labels button on property insights page by @haneslinger in https://github.com/SEED-platform/seed/pull/3860
+* Bump yargs-parser and protractor by @dependabot in https://github.com/SEED-platform/seed/pull/3939
+* Modularized nginx, added gzip, added cache expiration by @axelstudios in https://github.com/SEED-platform/seed/pull/3940
+### Maintenance 🧹
+* Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
+* Bump sentry-sdk from 1.7.2 to 1.14.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3907
+* Migrate BETTER API from V1 to V2 by @perryr16 in https://github.com/SEED-platform/seed/pull/3881
+* Update copyright and copyright years by @nllong in https://github.com/SEED-platform/seed/pull/3903
+### Bug Fixes 🐛
+* Filter cycle specific labels on inventory list by @perryr16 in https://github.com/SEED-platform/seed/pull/3858
+* Fix casting of GHG metrics on Program Insight page by @haneslinger in https://github.com/SEED-platform/seed/pull/3880
+* Fix deletion of new custom report by @haneslinger in https://github.com/SEED-platform/seed/pull/3924
+* Fix saving BETTER/Salesforce data for non-active orgs by @axelstudios in https://github.com/SEED-platform/seed/pull/3925
+* Fix GitHub Actions Masking by @axelstudios in https://github.com/SEED-platform/seed/pull/3930
+* adding >= and <= to display by @kflemin in https://github.com/SEED-platform/seed/pull/3928
+* Fix custom reports download button by @haneslinger in https://github.com/SEED-platform/seed/pull/3926
+* Updated the meter import process to work with latest format from EnergyStar Portfolio Manager by @anchapin in https://github.com/SEED-platform/seed/pull/3927
+* Fix active nav for deep URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/3931
+* Fixed saving Program Setup data for non-active orgs by @axelstudios in https://github.com/SEED-platform/seed/pull/3932
+* Make test_compliance_metric_retrieve_endpoint deterministic by @haneslinger in https://github.com/SEED-platform/seed/pull/3934
+* Fix custom report creation reload by @haneslinger in https://github.com/SEED-platform/seed/pull/3936
+* Fixed issue with filtering Property columns from Tax Lot tab of Inventory by @anchapin in https://github.com/SEED-platform/seed/pull/3943
+* Increase AnalysisMessage.user_message length by @perryr16 in https://github.com/SEED-platform/seed/pull/3935
+* Fixes Timeline Bugs by @perryr16 in https://github.com/SEED-platform/seed/pull/3944
+* Fix editing a derived column without changing the name by @axelstudios in https://github.com/SEED-platform/seed/pull/3949
+* Fix Salesforce connection requests for non-superusers by @axelstudios in https://github.com/SEED-platform/seed/pull/3947
+### Other Changes
+* None
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.4...v2.18.0
+
 # SEED Version 2.17.4
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
 
