@@ -79,9 +79,9 @@
                             </div>
                         </div>
                         <div class="btn-group">
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
                             <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
                             <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
                         </div>
                         <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
                             <div class="row">
