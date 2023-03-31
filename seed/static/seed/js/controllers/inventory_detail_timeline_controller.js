@@ -154,11 +154,16 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                 $scope.noteGridOptionsById = {}
                 $scope.gridApiByNoteId = {}
                 notes.forEach(note => {
+                    const rowHeight = 25 * Math.ceil(note.text.length / 180)
                     const noteGridOptions = {
                         data: [{
                             "Updated": moment(note.updated).format('YYYY/MM/DD'),
                             "Text": note.text
                         }],
+                        columnDefs: [
+                            { field: 'Updated', width: '20%', cellClass: 'ui-grid-vcenter' },
+                            { field: 'Text', width: '80%', cellClass: 'ui-grid-vcenter', cellTemplate: '<div class="ui-grid-cell-contents" style="white-space: normal;">{{COL_FIELD}}</div>' }
+                        ],
                         enableColumnMenus: false,
                         enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
                         enableSorting: false,
@@ -166,7 +171,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', [])
                         minRowsToShow: 1,
                         onRegisterApi: function (gridApi) {
                             $scope.gridApiByNoteId[note.id] = gridApi;
-                        }
+                        },
+                        rowHeight: rowHeight,
                     }
                     $scope.noteGridOptionsById[note.id] = noteGridOptions;
 
