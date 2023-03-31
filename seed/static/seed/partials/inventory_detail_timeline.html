@@ -94,7 +94,7 @@
                             <span class="event-detail">{$ formatDate(event.modified) $}</span>
                             <span class="event-detail" style="min-width: 200px; width: fit-content;">{$ formatUser(event.user_id) $}</span>
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
-                            <span class="event-detail" ng-if="event.audit_date">Audit Date: {$ styleDate(event.audit_date) $}</span>
+                            <span class="event-detail" ng-if="event.audit_date">Audit Date: {$ event.audit_date $}</span>
                             <span class="event-detail" ng-if="event.analysis">{$ event.analysis.service $}</span>
                         </button>
                     </div>

@@ -404,6 +404,10 @@
                         </div>
                     </div>
                 </div>
+                <span style="margin: 10px;">
+                    <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)"
+                        style="padding: 1px 10px; margin-bottom: 2px">{$ accordionsCollapsed ? 'Expand All' : 'Collapse All' $}</button>
+                </span>
                 <div class="scenario-cycle">
                     {$ cycle.name $}
                 </div>
@@ -425,7 +429,7 @@
                         </button>
                     </div>
 
-                    <div id="historical-item-{$ $index $}" class="accordion-body collapse in">
+                    <div id="historical-item-{$ $index $}" class="accordion-body event-collapse collapse in">
                         <div
                             ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
                             ng-init="scenarios = historical_item.state.scenarios">

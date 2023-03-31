@@ -131,10 +131,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
           return dateB - dateA
         })
       }
-      $scope.order_historical_items_with_scenarios($scope.historical_items)
-      $scope.format_epoch = (epoch) => {
-        return moment(epoch).format('YYYY/MM/DD')
-      }
+      $scope.order_historical_items_with_scenarios()
+      $scope.format_epoch = (epoch) => moment(epoch).format('YYYY-MM-DD');
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
@@ -886,7 +884,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
               else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(property_view_id);
               promise.then(data => {
                 $scope.historical_items = data.history;
-                $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
+                $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : [];
+                $scope.order_historical_items_with_scenarios();
               })
             })
             .catch(err => {
@@ -984,6 +983,20 @@ angular.module('BE.seed.controller.inventory_detail', [])
           return acc
         }, {})
         return statuses
+      }
+
+      $scope.accordionsCollapsed = true
+      $scope.collapseAccordions = (collapseAll) => {
+        $scope.accordionsCollapsed = collapseAll
+        const action = collapseAll ? 'hide' : 'show'
+        $('.event-collapse').collapse(action)
+        $('.scenario-collapse').collapse(action)
+
+        // Without resizing ui-grids will appear empty
+        if (action == 'show') {
+          const scenarios = $scope.historical_items_with_scenarios.map(item => item.state.scenarios).flat()
+          scenarios.forEach(scenario => $scope.resizeGridByScenarioId(scenario.id))
+        }
       }
 
         /**
