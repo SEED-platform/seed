@@ -89,6 +89,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           case 'EUI':
             $scope.new_analysis.configuration = {
               select_meters: 'all',
+              // cycle_id is ignored unless select_meters: 'select_cycle'
+              cycle_id: current_cycle.id,
             };
             break;
 
@@ -106,6 +108,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               portfolio_analysis: false,
               preprocess_meters: false,
               select_meters: 'select_cycle',
+              cycle_id: current_cycle.id,
               enable_pvwatts: false,
               meter: {
                 start_date: null,
