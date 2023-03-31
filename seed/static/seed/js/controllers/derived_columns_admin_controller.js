@@ -26,10 +26,12 @@ angular.module('BE.seed.controller.derived_columns_admin', [])
       organization_payload,
       derived_columns_payload
     ) {
-
+      $scope.state = $state.current;
       $scope.auth = auth_payload.auth;
       $scope.org = organization_payload.organization;
       $scope.derived_columns = derived_columns_payload.derived_columns;
+
+      $scope.inventory_type = $stateParams.inventory_type;
 
       // used to determine column sorting. 0 = no sort, 1 = ascending, 2 = descending
       $scope.column_sorting = 0;
