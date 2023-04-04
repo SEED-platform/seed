@@ -84,7 +84,6 @@ def _build_better_input(analysis_property_view, meters_and_readings):
     if property_state.postal_code is None:
         errors.append("BETTER analysis requires the property's postal code.")
 
-
     if errors:
         return None, errors
 
