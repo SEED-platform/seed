@@ -229,7 +229,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
-        message = 'SEED Unique Benchmark ID Column data is undefined. Update your property record with this information.'
+        message = f"SEED Unique Benchmark ID Column data on property id {property_view.id} is undefined. Update your property record with this information."
         return status, message
 
     """ CONTACT/ACCOUNT CREATION """
