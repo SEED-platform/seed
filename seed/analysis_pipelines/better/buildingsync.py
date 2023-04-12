@@ -81,6 +81,8 @@ def _build_better_input(analysis_property_view, meters_and_readings):
     if property_state.property_type is None or property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
         errors.append(
             f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
+    if property_state.postal_code is None:
+        errors.append("BETTER analysis requires the property's postal code.")
 
     if errors:
         return None, errors
