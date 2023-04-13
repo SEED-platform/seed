@@ -323,16 +323,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     /** Update Salesforce for specified property views and organization
      *
-     * @param view_ids        List of Property View IDs
+     * @param property_view_ids        List of Property View IDs
      *
      * @returns {Promise}
      */
-    inventory_service.update_salesforce = function(view_ids) {
+    inventory_service.update_salesforce = function (property_view_ids) {
       spinner_utility.show();
       return $http.post('/api/v3/properties/update_salesforce/', {
+        property_view_ids
+      }, {
         params: {
-          organization_id: user_service.get_organization().id,
-          property_view_ids: view_ids
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;
