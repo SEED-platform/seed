@@ -46,6 +46,7 @@
                 <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
                 <li><a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a></li>
                 <li><a ui-sref="organization_sub_orgs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a></li>
+                <li><a ui-sref="organization_access_level_tree({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Access Level Tree</a></li>
 
 
                 <!--<li>

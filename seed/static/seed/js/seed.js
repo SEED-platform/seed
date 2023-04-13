@@ -82,6 +82,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.meter_deletion_modal',
+  'BE.seed.controller.organization_add_access_level_modal',
+  'BE.seed.controller.organization_add_access_level_instance_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',
@@ -112,6 +114,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.organization_sharing',
+  'BE.seed.controller.organization_access_level_tree',
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.postoffice_modal',
@@ -1396,6 +1399,42 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }]
+        }
+      })
+      .state({
+        name: 'organization_access_level_tree',
+        url: '/accounts/{organization_id:int}/access_level_tree',
+        templateUrl: static_url + 'seed/partials/organization_access_level_tree.html',
+        controller: 'organization_access_level_tree_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id)
+              .then(function (data) {
+                if (data.organization.is_parent) {
+                  return data;
+                } else {
+                  return $q.reject('Your page could not be located!');
+                }
+              });
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }],
+          access_level_tree: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_access_level_tree(organization_id);
+          }],
         }
       })
       .state({
