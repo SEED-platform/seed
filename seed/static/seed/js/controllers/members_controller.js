@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.members', [])
     'auth_service',
     'organization_service',
     'user_profile_payload',
+    'access_level_tree',
     'urls',
     function (
       $scope,
@@ -22,6 +23,7 @@ angular.module('BE.seed.controller.members', [])
       auth_service,
       organization_service,
       user_profile_payload,
+      access_level_tree,
       urls
     ) {
       $scope.ownerRoles = [
@@ -80,6 +82,12 @@ angular.module('BE.seed.controller.members', [])
           resolve: {
             organization: function () {
               return $scope.org;
+            },
+            access_level_tree: function() {
+              return access_level_tree.access_level_tree
+            },
+            level_names: function() {
+              return access_level_tree.access_level_names
             }
           }
         });

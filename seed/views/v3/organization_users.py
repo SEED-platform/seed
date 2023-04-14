@@ -13,6 +13,7 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -50,7 +51,9 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 'last_name': user.last_name,
                 'number_of_orgs': user_orgs,
                 'user_id': user.pk,
-                'role': _get_js_role(u.role_level)
+                'role': _get_js_role(u.role_level),
+                'access_level_instance_name': u.access_level_instance.name,
+                'access_level': org.access_level_names[u.access_level_instance.depth - 1],
             })
 
         return JsonResponse({'status': 'success', 'users': users})
@@ -65,8 +68,9 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
+        root = AccessLevelInstance.objects.get(organization=self.parent_org, depth=1)
 
-        _orguser, status = org.add_member(user)
+        _orguser, status = org.add_member(user, access_level_instance_id=root.id)
 
         # Send an email if a new user has been added to the organization
         if status:
