@@ -63,6 +63,7 @@ class OrganizationUser(models.Model):
     role_level = models.IntegerField(
         default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES
     )
+    access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -249,12 +250,12 @@ class Organization(models.Model):
         """Return True if user object has a relation to this organization."""
         return user in self.users.all()
 
-    def add_member(self, user, role=ROLE_OWNER):
+    def add_member(self, user, access_level_instance_id, role=ROLE_OWNER):
         """Add a user to an organization."""
         # Ensure that the user can login in case they had previously been deactivated due to no org associations
         user.is_active = True
         user.save()
-        return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        return OrganizationUser.objects.get_or_create(user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role)
 
     def remove_member(self, user):
         """Remove user from organization."""

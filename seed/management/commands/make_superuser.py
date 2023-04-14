@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
 
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import User
 
 
@@ -62,7 +62,8 @@ class Command(BaseCommand):
 
         for org in organizations:
             print("Adding user to {}.".format(org))
-            org.add_member(user)
+            root = AccessLevelInstance.objects.get(organization=org, depth=1)
+            org.add_member(user, access_level_instance_id=root.id)
         else:
             # NL added this but is not going to make it the default because it may cause
             # security issues for others. Not sure yet. Comment here if you think we should

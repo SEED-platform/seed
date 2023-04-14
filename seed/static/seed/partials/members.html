@@ -32,6 +32,8 @@
                         <tr>
                             <th translate>Member Name</th>
                             <th translate>Member Email</th>
+                            <th translate>Member Access Level</th>
+                            <th translate>Member Access Level Instance</th>
                             <th translate>Member Role</th>
                             <th ng-if="auth.can_remove_member"></th>
                         </tr>
@@ -41,6 +43,12 @@
                             </th>
                             <th class="sub_head">
                                 <input type="text" placeholder="{$:: 'member email' | translate $}" class="form-control input-sm" ng-model="filter_params.email" ng-class="{active: filter_params.email.length}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text" placeholder="{$:: 'access level' | translate $}" class="form-control input-sm" ng-model="filter_params.access_level" ng-class="{active: filter_params.access_level.length}">
+                            </th>
+                            <th class="sub_head">
+                                <input type="text" placeholder="{$:: 'access level instance name' | translate $}" class="form-control input-sm" ng-model="filter_params.access_level_instance_name" ng-class="{active: filter_params.access_level_instance_name.length}">
                             </th>
                             <th class="sub_head">
                                 <input type="text" placeholder="{$:: 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
@@ -55,6 +63,12 @@
                             </td>
                             <td>
                                 {$:: u.email $}
+                            </td>
+                            <td>
+                                {$:: u.access_level $}
+                            </td>
+                            <td>
+                                {$:: u.access_level_instance_name $}
                             </td>
                             <td>
                                 <div class="row">
