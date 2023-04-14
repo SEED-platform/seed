@@ -79,7 +79,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert result["access_level_names"] == ["my org"]
 
         # get update access level names
-        url = reverse_lazy('api:v3:organization-access_levels-level-names', args=[self.org.id])
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
             data=json.dumps({"access_level_names": ["new name", "boo"]}),
@@ -92,7 +92,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
     def test_edit_access_level_names_bad_names(self):
         # get try to clear access_level_names
-        url = reverse_lazy('api:v3:organization-access_levels-level-names', args=[self.org.id])
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
             data=json.dumps({"access_level_names": []}),
@@ -107,7 +107,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.org.add_new_access_level_instance(root.id, "aunt")
 
         # get try to add to few levels
-        url = reverse_lazy('api:v3:organization-access_levels-level-names', args=[self.org.id])
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
             data=json.dumps({"access_level_names": ["just one"]}),
@@ -116,7 +116,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert raw_result.status_code == 400
 
         # adding multiple works
-        url = reverse_lazy('api:v3:organization-access_levels-level-names', args=[self.org.id])
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
             data=json.dumps({"access_level_names": ["one", "two"]}),
