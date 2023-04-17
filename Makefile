@@ -1,6 +1,6 @@
 BASE_IMAGE_TAG = 3.9
 
-PROJECT_NAME=i79d-seedweb
+PROJECT_NAME=nreli79d-seedweb
 REGISTRY-IDS = 991404956194
 REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
 
