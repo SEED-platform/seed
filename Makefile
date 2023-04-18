@@ -5,7 +5,7 @@ PROJECT_NAME=nrel179d-seedweb
 ifdef AWS_ACCOUNT_ID
   REGISTRY-IDS=$(AWS_ACCOUNT_ID)
 else
-  $(error ACCOUNT_ID is not set)
+  $(error AWS_ACCOUNT_ID is not set)
 endif
 
 REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
