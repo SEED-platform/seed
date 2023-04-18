@@ -2,10 +2,7 @@ BASE_IMAGE_TAG = 3.9
 
 PROJECT_NAME=nrel179d-seedweb
 
-
-ifdef ACCOUNT_ID
-  REGISTRY-IDS=$(ACCOUNT_ID)
-else ifdef AWS_ACCOUNT_ID
+ifdef AWS_ACCOUNT_ID
   REGISTRY-IDS=$(AWS_ACCOUNT_ID)
 else
   $(error ACCOUNT_ID is not set)
