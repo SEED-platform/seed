@@ -44,7 +44,7 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=True, related_name="taxlots")
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
