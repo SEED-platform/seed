@@ -1,7 +1,16 @@
 BASE_IMAGE_TAG = 3.9
 
 PROJECT_NAME=nrel179d-seedweb
-REGISTRY-IDS = 991404956194
+
+
+ifdef ACCOUNT_ID
+  REGISTRY-IDS=$(ACCOUNT_ID)
+else ifdef AWS_ACCOUNT_ID
+  REGISTRY-IDS=$(AWS_ACCOUNT_ID)
+else
+  $(error ACCOUNT_ID is not set)
+endif
+
 REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
 
 ifdef RELEASE_SHA
