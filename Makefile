@@ -10,27 +10,29 @@ endif
 
 REPO = $(REGISTRY-IDS).dkr.ecr.us-west-2.amazonaws.com/nrel-$(PROJECT_NAME)
 
-ifdef RELEASE_SHA
-  HEAD_VER=$(RELEASE_SHA)
-else ifdef CODEBUILD_SOURCE_VERSION
-  HEAD_VER=$(CODEBUILD_SOURCE_VERSION)
+ifdef RELEASE_SHA2
+  HEAD_VER=$(RELEASE_SHA2)
+else ifdef RELEASE_SHA1
+  HEAD_VER=$(RELEASE_SHA1)
 else
 	HEAD_VER=$(shell git log -1 --pretty=tformat:%h)
 endif
 
 $(info HEAD_VER="$(HEAD_VER)")
-ifdef BRANCH_NAME
-  RELEASE_TAG ?= $(BRANCH_NAME)-$(HEAD_VER)
-else ifdef CODEBUILD_WEBHOOK_HEAD_REF
-  RELEASE_TAG ?= $(CODEBUILD_WEBHOOK_HEAD_REF)-$(HEAD_VER)
+
+ifdef BRANCH_NAME2
+	BRANCH_NAME=$(BRANCH_NAME2)
+else ifdef BRANCH_NAME1
+	BRANCH_NAME=$(BRANCH_NAME1)
 else
-	RELEASE_TAG = $(HEAD_VER)
+	BRANCH_NAME ?= $(shell git rev-parse --abbrev-ref HEAD)
 endif
 
-$(info RELEASE_TAG="$(RELEASE_TAG)")
+$(info BRANCH_NAME="$(BRANCH_NAME)")
+
 # git release version - use for rollbacks
-#3.9-dev VS 3.9-a51016d
-TAG ?= $(BASE_IMAGE_TAG)-$(RELEASE_TAG)
+
+TAG ?= $(BASE_IMAGE_TAG)-$(BRANCH_NAME)-$(HEAD_VER)
 
 .PHONY: build push
 
