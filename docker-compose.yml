@@ -38,6 +38,7 @@ services:
       - POSTGRES_PASSWORD=super-secret-password
       # - REDIS_HOST=optional-need-to-configure-redis
       # - REDIS_PASSWORD=optional-need-to-configure-redis
+      # - WEB_HOST=optional-if-web-container-not-named-web
       - SEED_ADMIN_USER=user@seed-platform.org
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default

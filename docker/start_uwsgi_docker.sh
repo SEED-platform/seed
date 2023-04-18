@@ -19,7 +19,7 @@ else
     REDIS_ACTUAL_HOST=db-redis
 fi
 
-/usr/local/wait-for-it.sh --strict REDIS_ACTUAL_HOST:6379
+/usr/local/wait-for-it.sh --strict $REDIS_ACTUAL_HOST:6379
 
 # collect static resources before starting and compress the assets
 ./manage.py collectstatic --no-input -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
