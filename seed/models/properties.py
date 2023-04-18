@@ -70,7 +70,7 @@ class Property(models.Model):
     The property can also reference a parent property.
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=True, related_name="properties")
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="properties")
 
     # Handle properties that may have multiple properties (e.g., buildings)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
