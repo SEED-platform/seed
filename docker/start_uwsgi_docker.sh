@@ -12,7 +12,14 @@ fi
 /usr/local/wait-for-it.sh --strict $POSTGRES_ACTUAL_HOST:$POSTGRES_PORT
 
 echo "Waiting for redis to start"
-/usr/local/wait-for-it.sh --strict db-redis:6379
+if [ -v REDIS_HOST ];
+then
+    REDIS_ACTUAL_HOST=$REDIS_HOST
+else
+    REDIS_ACTUAL_HOST=db-redis
+fi
+
+/usr/local/wait-for-it.sh --strict REDIS_ACTUAL_HOST:6379
 
 # collect static resources before starting and compress the assets
 ./manage.py collectstatic --no-input -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
