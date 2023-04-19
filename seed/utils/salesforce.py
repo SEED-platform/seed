@@ -239,7 +239,60 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     if config.contact_email_column_id and config.account_name_column_id and config.benchmark_contact_fieldname:
         fields = {'email': config.contact_email_column_id,
                   'contact_name': config.contact_name_column_id,
-                  'account_name': config.account_name_column_id}
+                  'account_name': config.account_name_column_id,
+                  }
+        contact_info = {}
+        for key, val in fields.items():
+            colname = Column.objects.get(pk=val)
+            contact_info[key] = ""
+            if colname.display_name and colname.display_name in flat_state:
+                contact_info[key] = flat_state[colname.display_name]
+            elif colname.column_name in flat_state:
+                contact_info[key] = flat_state[colname.column_name]
+        try:
+            contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
+        except Exception as e:
+            message = str(e)
+            return status, message
+
+        if not contact_record:
+            # Create Account first, then Contact (Salesforce Requirement)
+            account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            if not account_record:
+                # create account
+                a_details = {}
+                if config.account_rec_type:
+                    a_details['RecordTypeId'] = config.account_rec_type
+                try:
+                    account_record = salesforce_client.create_account(contact_info['account_name'], **a_details)
+                    print(f"created account record: {account_record}")
+                except Exception as e:
+                    message = str(e)
+                    return status, message
+
+            account_id = account_record['Id']
+            # Note: Salesforce doesn't seem to allow direct access to the Contact "Name" field
+            # but instead concatenates FirstName + LastName to make Name
+            # push the Contact Name field into LastName only
+            c_details = {'AccountId': account_id, 'LastName': contact_info['contact_name']}
+            if config.contact_rec_type:
+                c_details['RecordTypeId'] = config.contact_rec_type
+
+            # Create contact: mapping name and email (PK) to Name and Email native Salesforce Contact Fields (no customization).
+            try:
+                contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
+            except Exception as e:
+                message = str(e)
+                return status, message
+        # add contact ID to params
+        params[config.benchmark_contact_fieldname] = contact_record['Id']
+
+    """ DATA ADMIN CONTACT CREATION """
+    if config.data_admin_email_column_id and config.account_name_column_id and config.data_admin_contact_fieldname:
+        fields = {'email': config.data_admin_email_column_id,
+                  'contact_name': config.data_admin_name_column_id,
+                  'account_name': config.account_name_column_id,
+                  }
         contact_info = {}
         for key, val in fields.items():
             colname = Column.objects.get(pk=val)
@@ -316,7 +369,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         for mapping in mappings:
             params[mapping.salesforce_fieldname] = None
             colname = Column.objects.get(pk=mapping.column_id)
-
+            field_val = None
             if colname.display_name and colname.display_name in flat_state:
                 field_val = flat_state[colname.display_name]
             elif colname.column_name in flat_state:
