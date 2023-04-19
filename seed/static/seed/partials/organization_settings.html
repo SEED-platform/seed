@@ -642,7 +642,7 @@
                         </form>
                     </div>
                 </div>
-               <!--  <div class="section_content_container">
+                <div class="section_content_container">
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
                             <div class="form-group">
@@ -667,8 +667,20 @@
                             </div>
                         </form>
                     </div>
-                </div> -->
-
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-2 col-sm-offset-1 control-label" for="data_admin_contact_fieldname" translate>Data Administrator Contact Field</label>
+                                <div class="col-sm-5">
+                                    <p translate="SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"></p>
+                                    <input type="text" class="form-control" id="data_admin_contact_fieldname" ng-model="conf.data_admin_contact_fieldname" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="section_header_container has_btm_margin">
                     <div class="section_header">
                         <h2><i class="fa fa-gear"></i> {$:: 'Salesforce Field Mappings' | translate $}</h2>
