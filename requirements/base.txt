@@ -6,7 +6,7 @@ django-autoslug==1.9.8
 django-crispy-forms==1.8.1
 
 # Persistence stores
-psycopg2-binary==2.8.4
+psycopg2-binary==2.9.6
 
 # Shapely 2.X fails to build. Force to use
 # the previous version
