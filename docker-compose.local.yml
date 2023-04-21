@@ -62,6 +62,8 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       # - REDIS_PASSWORD
+      # - REDIS_HOST
+      # - WEB_HOST
       - SEED_ADMIN_USER
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG

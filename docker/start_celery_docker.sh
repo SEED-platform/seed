@@ -12,10 +12,24 @@ fi
 /usr/local/wait-for-it.sh --strict -t 0 $POSTGRES_ACTUAL_HOST:$POSTGRES_PORT
 
 echo "Waiting for redis to start"
-/usr/local/wait-for-it.sh --strict -t 0 db-redis:6379
+if [ -v REDIS_HOST ];
+then
+    REDIS_ACTUAL_HOST=$REDIS_HOST
+else
+    REDIS_ACTUAL_HOST=db-redis
+fi
+
+/usr/local/wait-for-it.sh --strict -t 0 $REDIS_ACTUAL_HOST:6379
 
 echo "Waiting for web to start"
-/usr/local/wait-for-it.sh --strict -t 0 web:80
+if [ -v WEB_HOST ];
+then
+    WEB_ACTUAL_HOST=$WEB_HOST
+else
+    WEB_ACTUAL_HOST=web
+fi
+
+/usr/local/wait-for-it.sh --strict -t 0 $WEB_ACTUAL_HOST:80
 
 # check if the number of workers is set in the env
 if [ -z ${NUMBER_OF_WORKERS} ]; then
