@@ -24,7 +24,7 @@ SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'REDIS_HOST', 'DJANGO_EMAIL_BACKEND',
+                     'REDIS_PASSWORD', 'REDIS_HOST', 'REDIS_AWS_ELASTICACHE', 'REDIS_URL', 'DJANGO_EMAIL_BACKEND',
                      'POSTGRES_HOST'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
@@ -72,11 +72,29 @@ DATABASES = {
 }
 
 # Redis / Celery config
-if 'REDIS_PASSWORD' in os.environ:
+if 'REDIS_AWS_ELASTICACHE' in os.environ:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.environ.get('REDIS_URL'),
+            'OPTIONS': {
+                'DB': 1,
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                'PASSWORD': os.environ.get('REDIS_PASSWORD')
+            },
+            'TIMEOUT': 300
+        }
+    }
+    CELERY_BROKER_URL = 'rediss://:%s@%s/%s' % (
+        CACHES['default']['OPTIONS']['PASSWORD'],
+        CACHES['default']['LOCATION'],
+        CACHES['default']['OPTIONS']['DB']
+    )
+elif 'REDIS_PASSWORD' in os.environ:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis') + ':6379',
             'OPTIONS': {
                 'DB': 1,
                 'PASSWORD': REDIS_PASSWORD,  # noqa F405
