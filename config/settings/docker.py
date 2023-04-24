@@ -72,11 +72,28 @@ DATABASES = {
 }
 
 # Redis / Celery config
-if 'REDIS_PASSWORD' in os.environ:
+if 'REDIS_CLUSTER_MODE' in os.environ:
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST:6379', 'db-redis:6379'),
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.environ.get('REDIS_URL'),
+            'OPTIONS': {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                'PASSWORD': os.environ.get('REDIS_PASSWORD')
+            },
+            'TIMEOUT': 300
+        }
+    }
+    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+        CACHES['default']['OPTIONS']['PASSWORD'],
+        CACHES['default']['LOCATION'],
+        CACHES['default']['OPTIONS']['DB']
+    )
+elif 'REDIS_PASSWORD' in os.environ:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis') + ':6379',
             'OPTIONS': {
                 'DB': 1,
                 'PASSWORD': REDIS_PASSWORD,  # noqa F405
