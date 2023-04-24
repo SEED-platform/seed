@@ -698,9 +698,13 @@
                           <table class="table table-striped">
                               <thead>
                                   <tr>
-                                      <th class="source_data"><translate>Salesforce Field Name</translate></th>
-                                      <th class="source_data"><translate>SEED Field Name</translate></th>
-                                      <th class="source_data"></th>
+                                      <th class="source_data"
+                                        ng-click="toggle_sf_name_order_sort()">
+                                        <span><translate>Salesforce Field Name</translate>&nbsp;<i class="glyphicon glyphicon-sort"></i></span>
+                                        </th>
+                                      <th class="source_data">
+                                        <span><translate>SEED Field Name</translate></span>
+                                      </th>
                                   </tr>
                               </thead>
 

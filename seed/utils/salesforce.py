@@ -229,7 +229,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
-        message = f"SEED Unique Benchmark ID Column data on property id {property_view.id} is undefined. Update your property record with this information."
+        message = f"SEED Unique Benchmark ID Column data on property {property_view.id} is undefined. Update your property record with this information."
         return status, message
 
     """ CONTACT/ACCOUNT CREATION """
@@ -247,17 +247,29 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             contact_info[key] = ""
             if colname.display_name and colname.display_name in flat_state:
                 contact_info[key] = flat_state[colname.display_name]
+                if not contact_info[key]:
+                    # validate that field is not blank
+                    message = f"SEED {colname.display_name} Column on property {property_view.id} is undefined. Update your property record with this information."
+                    return status, message
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
+                if not contact_info[key]:
+                    # validate that field is not blank
+                    message = f"SEED {colname.column_name} Column on property {property_view.id} is undefined. Update your property record with this information."
+                    return status, message
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = str(e)
+            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
             return status, message
 
         if not contact_record:
             # Create Account first, then Contact (Salesforce Requirement)
-            account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            try:
+                account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            except Exception as e:
+                message = f"Error retrieving Salesforce Account by name for property {property_view.id}: {str(e)}"
+                return status, message
             if not account_record:
                 # create account
                 a_details = {}
@@ -265,9 +277,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     a_details['RecordTypeId'] = config.account_rec_type
                 try:
                     account_record = salesforce_client.create_account(contact_info['account_name'], **a_details)
-                    print(f"created account record: {account_record}")
+                    # print(f"created account record: {account_record}")
                 except Exception as e:
-                    message = str(e)
+                    message = f"Error creating Salesforce Account for SEED property {property_view.id}: {str(e)}"
                     return status, message
 
             account_id = account_record['Id']
@@ -282,7 +294,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = str(e)
+                message = f"Error creating Salesforce Contact for SEED property {property_view.id}: {str(e)}"
                 return status, message
         # add contact ID to params
         params[config.benchmark_contact_fieldname] = contact_record['Id']
@@ -299,17 +311,30 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             contact_info[key] = ""
             if colname.display_name and colname.display_name in flat_state:
                 contact_info[key] = flat_state[colname.display_name]
+                if not contact_info[key]:
+                    # validate that field is not blank
+                    message = f"SEED {colname.display_name} Column on property id {property_view.id} is undefined. Update your property record with this information."
+                    return status, message
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
+                if not contact_info[key]:
+                    # validate that field is not blank
+                    message = f"SEED {colname.column_name} Column on property id {property_view.id} is undefined. Update your property record with this information."
+                    return status, message
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = str(e)
+            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
             return status, message
 
         if not contact_record:
             # Create Account first, then Contact (Salesforce Requirement)
-            account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            try:
+                account_record = salesforce_client.find_account_by_name(contact_info['account_name'])
+            except Exception as e:
+                message = f"Error retrieving Salesforce Account by name for property {property_view.id}: {str(e)}"
+                return status, message
+
             if not account_record:
                 # create account
                 a_details = {}
@@ -319,7 +344,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_record = salesforce_client.create_account(contact_info['account_name'], **a_details)
                     print(f"created account record: {account_record}")
                 except Exception as e:
-                    message = str(e)
+                    message = f"Error creating Salesforce Account for property {property_view.id}: {str(e)}"
                     return status, message
 
             account_id = account_record['Id']
@@ -334,7 +359,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = str(e)
+                message = f"Error creating Salesforce Contact for property {property_view.id}: {str(e)}"
                 return status, message
         # add contact ID to params
         params[config.benchmark_contact_fieldname] = contact_record['Id']
@@ -350,7 +375,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             params[config.status_fieldname] = config.violation_label.name
 
     if config.labels_fieldname:
-        params[config.labels_fieldname] = ".".join(result['label_names'])
+        params[config.labels_fieldname] = ";".join(result['label_names'])
 
     # add cycle, labels, status (if used)
     if config.cycle_fieldname:
