@@ -296,7 +296,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             except Exception as e:
                 message = f"Error creating Salesforce Contact for SEED property {property_view.id}: {str(e)}"
                 return status, message
-        # add contact ID to params
+        # add contact ID to benchmark contact params
         params[config.benchmark_contact_fieldname] = contact_record['Id']
 
     """ DATA ADMIN CONTACT CREATION """
@@ -361,8 +361,8 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             except Exception as e:
                 message = f"Error creating Salesforce Contact for property {property_view.id}: {str(e)}"
                 return status, message
-        # add contact ID to params
-        params[config.benchmark_contact_fieldname] = contact_record['Id']
+        # add contact ID to data admin param
+        params[config.data_admin_contact_fieldname] = contact_record['Id']
 
     """ SPECIAL FIELD MAPPINGS FOR LABELS AND CYCLE NAME """
     # create benchmark params
