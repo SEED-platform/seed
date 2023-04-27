@@ -77,6 +77,12 @@ angular.module('BE.seed.controller.insights_program', [])
           // console.log( "DATA: ", $scope.data)
           _build_chart();
 
+          // build chart name
+          compliance_metric_cycles = $scope.cycles.filter(c => $scope.compliance_metric.cycles.includes(c.id))
+          first_cycle = compliance_metric_cycles.reduce((prev, curr) => prev.start < curr.start ? prev : curr);
+          last_cycle = compliance_metric_cycles.reduce((prev, curr) => prev.end > curr.end ? prev : curr);
+          cycle_range = first_cycle == last_cycle? first_cycle.name: first_cycle.name + " - " + last_cycle.name;
+          $scope.chart_name = $scope.compliance_metric.name + ": " + cycle_range;
         }).finally(() => {
           spinner_utility.hide()
         })
