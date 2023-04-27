@@ -39,6 +39,8 @@ angular.module('BE.seed.controller.insights_property', [])
         chart_cycle: null,
         chart_metric: null,
         chart_xaxis: null,
+        dataset_visibility: saved_configs && saved_configs.hasOwnProperty("dataset_visibility")? saved_configs.dataset_visibility: [true, true, true],
+        annotation_visibility: saved_configs && saved_configs.hasOwnProperty("annotation_visibility")? saved_configs.annotation_visibility: true,
       };
 
       // compliance metric
@@ -82,6 +84,8 @@ angular.module('BE.seed.controller.insights_property', [])
           chart_cycle: new_configs.chart_cycle,
           chart_metric: new_configs.chart_metric,
           chart_xaxis: new_configs.chart_xaxis,
+          dataset_visibility: new_configs.dataset_visibility,
+          annotation_visibility: new_configs.annotation_visibility,
         }
         localStorage.setItem('insights.property.configs',  JSON.stringify(local_storage_configs));
       }, true);
@@ -492,6 +496,12 @@ angular.module('BE.seed.controller.insights_property', [])
           $scope.insightsChart.data.labels = labels;
         }
 
+        // set visiblity
+        $scope.configs.dataset_visibility.forEach( (is_visibile, index) => {
+          $scope.insightsChart.setDatasetVisibility(index, is_visibile);
+        });
+        $scope.display_annotation = saved_configs.annotation_visibility;
+
         $scope.insightsChart.update()
       }
 
@@ -499,11 +509,15 @@ angular.module('BE.seed.controller.insights_property', [])
         is_visibile = $scope.insightsChart.isDatasetVisible(index);
         $scope.insightsChart.setDatasetVisibility(index, !is_visibile);
         $scope.insightsChart.update();
+
+        $scope.configs.dataset_visibility[index] = !is_visibile;
       }
 
       $scope.toggle_annotation_visibility = () => {
         $scope.display_annotation = !$scope.display_annotation;
         $scope.insightsChart.update();
+
+        $scope.configs.annotation_visibility = $scope.display_annotation;
       }
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
