@@ -23,6 +23,7 @@ from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     AUDIT_USER_EDIT,
+    AUDIT_USER_CREATE,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
@@ -989,6 +990,85 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def create(self, request):
+        """
+        Create a propertyState and propertyView via promote for 
+        given cycle 
+
+        request data expecting: state, cycle, optional property_id
+        """
+        org_id = self.get_organization(self.request)
+        data = request.data
+        # get state data
+        property_state_data = data['state']
+        cycle_pk = data['cycle_id']
+        result = {}
+        property_id = data.get('property_id', None)
+
+        # get cycle
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Exception as e:
+            result.update({
+                'status': 'error',
+                'message': 'Invalid data with errors: {}'.format(
+                    str(e))}
+            )
+            return JsonResponse(result, encoder=PintJSONEncoder,
+                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        # set empty strings to None
+        for key, val in property_state_data.items():
+            if val == '':
+                property_state_data[key] = None
+
+        property_state_serializer = PropertyStateSerializer(
+            data=property_state_data
+        )
+        if property_state_serializer.is_valid():
+            # create the new property state, and perform an initial save
+            new_state = property_state_serializer.save()
+
+            #
+
+            # Log this appropriately - "Import Creation" ?
+            PropertyAuditLog.objects.create(organization_id=org_id,
+                                        parent1=None,
+                                        parent2=None,
+                                        parent_state1=None,
+                                        parent_state2=None,
+                                        state=new_state,
+                                        name='Import Creation',
+                                        description='Created by API',
+                                        import_filename=None,
+                                        record_type=AUDIT_USER_CREATE)
+
+            # promote (pass is property_id to make new view on existing property)
+            view = new_state.promote(cycle, property_id)
+
+            result.update({
+                'status': 'success',
+                'property_state_id': new_state.id,
+                'view': PropertyViewSerializer(view).data
+            })
+
+            return JsonResponse(result, encoder=PintJSONEncoder,
+                                status=status.HTTP_200_OK)
+
+        else:
+            # invalid request
+            result.update({
+                'status': 'error',
+                'message': 'Invalid data with errors: {}'.format(
+                    property_state_serializer.errors)}
+            )
+            return JsonResponse(result, encoder=PintJSONEncoder,
+                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class

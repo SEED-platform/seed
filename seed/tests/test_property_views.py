@@ -45,6 +45,7 @@ from seed.models import (
     TaxLotView
 )
 from seed.models.sensors import DataLogger, Sensor, SensorReading
+from seed.serializers.properties import PropertyStateSerializer
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
@@ -90,6 +91,20 @@ class PropertyViewTests(DataMappingBaseTestCase):
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
+
+    def test_create_property(self):
+        state = self.property_state_factory.get_property_state()
+        cycle_id = self.cycle.id
+
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data
+        })
+
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        response = self.client.post(url, params, content_type='application/json')
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
 
     def test_get_and_edit_properties(self):
         state = self.property_state_factory.get_property_state()
