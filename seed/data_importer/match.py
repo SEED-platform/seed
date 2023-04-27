@@ -13,6 +13,7 @@ from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
 from django.db.models import Subquery
+from django.core.exceptions import ObjectDoesNotExist
 
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
@@ -454,6 +455,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
+    except ObjectDoesNotExist as e:
+        raise IntegrityError("Could not place property in tree: %s" % (e))
 
     new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge

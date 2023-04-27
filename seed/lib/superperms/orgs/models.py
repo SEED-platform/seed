@@ -12,8 +12,14 @@ from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from treebeard.ns_tree import NS_Node
-
+from django.db.models.signals import (
+    m2m_changed,
+    post_save,
+    pre_delete,
+    pre_save
+)
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
+from django.db import IntegrityError, transaction
 
 _log = logging.getLogger(__name__)
 
@@ -94,6 +100,7 @@ class AccessLevelInstance(NS_Node):
     name = models.CharField(max_length=100, null=False)
     # organization _could_ be extrapolate from the tree, but is often needed and it's not a readable query.
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    path = models.JSONField(null=False)
 
     node_order_by = ['name']
 
@@ -114,6 +121,24 @@ class AccessLevelInstance(NS_Node):
         access_level_name = self.organization.access_level_names[self.depth - 1]
         return f"{self.name}: {self.organization.name} Access Level {access_level_name}"
 
+
+@receiver(pre_save, sender=AccessLevelInstance)
+def set_path(sender, instance, **kwargs):
+    # if instance is new, set path
+    if instance.id is None:
+        instance.path = instance.get_path()
+    
+    # else, if we updated the name...
+    else:
+        previous = AccessLevelInstance.objects.get(pk=instance.id)
+        if instance.name != previous.name:
+            level_name = instance.organization.access_level_names[instance.depth - 1]
+            # update our path
+            instance.path[level_name] = instance.name 
+            # update our children's path
+            for ali in instance.get_descendants():
+                ali.path[level_name] = instance.name
+        
 
 class Organization(models.Model):
     """A group of people that optionally contains another sub group."""
@@ -355,6 +380,31 @@ def organization_pre_delete(sender, instance, **kwargs):
 pre_delete.connect(organization_pre_delete, sender=Organization)
 
 
+@receiver(pre_save, sender=Organization)
+def presave_organization(sender, instance, **kwargs):
+    """if instance.access_level_names changed, update the ali.paths
+    """
+    if instance.id is None:
+        return
+    
+    previous = Organization.objects.get(pk=instance.id)
+    previous_access_level_names = previous.access_level_names
+    alis = AccessLevelInstance.objects.filter(organization=instance)
+    min_len = min(len(previous_access_level_names), len(instance.access_level_names))
+
+    with transaction.atomic():
+        for i in range(min_len):
+            previous_access_level_name = previous_access_level_names[i]
+            current_access_level_name = instance.access_level_names[i]
+
+            if previous_access_level_name != current_access_level_name:
+                for ali in alis:
+                    if previous_access_level_name in ali.path:
+                        ali.path[current_access_level_name] = ali.path[previous_access_level_name]
+                        del ali.path[previous_access_level_name]
+                        ali.save()
+                
+                
 @receiver(post_save, sender=Organization)
 def post_save_organization(sender, instance, created, **kwargs):
     """
@@ -362,9 +412,10 @@ def post_save_organization(sender, instance, created, **kwargs):
     record receives an updated datetime
     """
     if created:
-        root = AccessLevelInstance.add_root(organization=instance, name="root")
-        root.save()
-
         if instance.access_level_names == []:
             instance.access_level_names = [instance.name]
-            instance.save()
+    
+        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root.save()
+        instance.save()
+
