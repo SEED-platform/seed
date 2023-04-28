@@ -22,8 +22,8 @@ from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
-    AUDIT_USER_EDIT,
     AUDIT_USER_CREATE,
+    AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
@@ -997,8 +997,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @has_perm_class('can_modify_data')
     def create(self, request):
         """
-        Create a propertyState and propertyView via promote for 
-        given cycle 
+        Create a propertyState and propertyView via promote for
+        given cycle
 
         request data expecting: state, cycle, optional property_id
         """
@@ -1038,15 +1038,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
             # Log this appropriately - "Import Creation" ?
             PropertyAuditLog.objects.create(organization_id=org_id,
-                                        parent1=None,
-                                        parent2=None,
-                                        parent_state1=None,
-                                        parent_state2=None,
-                                        state=new_state,
-                                        name='Import Creation',
-                                        description='Created by API',
-                                        import_filename=None,
-                                        record_type=AUDIT_USER_CREATE)
+                                            parent1=None,
+                                            parent2=None,
+                                            parent_state1=None,
+                                            parent_state2=None,
+                                            state=new_state,
+                                            name='Import Creation',
+                                            description='Created by API',
+                                            import_filename=None,
+                                            record_type=AUDIT_USER_CREATE)
 
             # promote (pass is property_id to make new view on existing property)
             view = new_state.promote(cycle, property_id)
