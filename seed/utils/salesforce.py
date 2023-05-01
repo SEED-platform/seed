@@ -276,7 +276,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 account_name = None
                 if 'account_name' in contact_info:
                     # validate account name
-                    if valid_name(contact_info['account_name']) is True:
+                    if valid_name(contact_info['account_name']):
                         account_name = contact_info['account_name']
                     elif config.default_contact_account_name:
                         # use default
@@ -339,13 +339,13 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 contact_info[key] = flat_state[colname.display_name]
                 if not contact_info[key]:
                     # validate that field is not blank
-                    message = f"SEED {colname.display_name} Column on property id {property_view.id} is undefined. Update your property record with this information."
+                    message = f"SEED {colname.display_name} Column on property {property_view.id} is undefined. Update your property record with this information."
                     return status, message
             elif colname.column_name in flat_state:
                 contact_info[key] = flat_state[colname.column_name]
                 if not contact_info[key]:
                     # validate that field is not blank
-                    message = f"SEED {colname.column_name} Column on property id {property_view.id} is undefined. Update your property record with this information."
+                    message = f"SEED {colname.column_name} Column on property {property_view.id} is undefined. Update your property record with this information."
                     return status, message
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
@@ -366,7 +366,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                         account_name = config.default_data_admin_account_name
                 elif config.default_data_admin_account_name:
                     account_name = config.default_data_admin_account_name
-                if not account_name:
+                if account_name is None:
                     # error, no valid account name
                     message = f"No data administrator account name specified in SEED or default data administrator account name given for SEED property {property_view.id}."
                     return status, message
@@ -536,8 +536,5 @@ def auto_sync_salesforce_properties(org_id):
 
 
 def valid_name(name):
-    invalid_vals = ['', 'none', 'n/a', 'not available']
-    if name.lower() in invalid_vals:
-        return False
-    else:
-        return True
+    invalid_names = ['', 'none', 'n/a', 'not available']
+    return name.lower() not in invalid_names
