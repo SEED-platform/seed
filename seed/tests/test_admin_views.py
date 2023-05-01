@@ -16,6 +16,7 @@ from django.utils.http import urlsafe_base64_encode
 
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -106,11 +107,13 @@ class AdminViewsTest(TestCase):
         org, org_user, _user_created = create_organization(
             self.admin_user, name='Existing Org'
         )
+        root = AccessLevelInstance.objects.get(organization=org, depth=1)
         data = {
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER'
+            'role_level': 'ROLE_MEMBER',
+            'access_level_instance_id': root.id,
         }
 
         res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
