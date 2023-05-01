@@ -296,15 +296,15 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     $scope.column_sort = 'sf_name_asc';
-    var sf_name_order_sort = function (direction) {
-      $scope.salesforce_mappings = _.orderBy($scope.salesforce_mappings, 'salesforce_fieldname', direction);
+    const sf_name_order_sort = (direction) => {
+      $scope.salesforce_mappings = _.orderBy($scope.salesforce_mappings, ['salesforce_fieldname'], [direction]);
     };
 
     // ascending sort is default
     sf_name_order_sort('asc');
 
-    $scope.toggle_sf_name_order_sort = function () {
-      if (($scope.column_sort == 'sf_name_asc')) {
+    $scope.toggle_sf_name_order_sort = () => {
+      if ($scope.column_sort === 'sf_name_asc') {
         sf_name_order_sort('desc');
         $scope.column_sort = 'sf_name_desc';
       } else {
