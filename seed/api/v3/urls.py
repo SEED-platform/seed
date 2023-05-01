@@ -9,6 +9,7 @@ from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.main import celery_queue
+from seed.views.v3.access_levels import AccessLevelViewSet
 from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
@@ -106,6 +107,7 @@ data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, basen
 
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
 organizations_router.register(r'users', OrganizationUserViewSet, basename='organization-users')
+organizations_router.register(r'access_levels', AccessLevelViewSet, basename='organization-access_levels')
 
 analysis_views_router = nested_routers.NestedSimpleRouter(api_v3_router, r'analyses', lookup='analysis')
 analysis_views_router.register(r'views', AnalysisPropertyViewViewSet, basename='analysis-views')

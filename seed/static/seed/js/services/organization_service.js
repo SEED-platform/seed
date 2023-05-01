@@ -82,6 +82,28 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.get_organization_access_level_tree = function (org_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/' + 'access_levels/tree').then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.update_organization_access_level_names = function (org_id, new_access_level_names) {
+      return $http.post('/api/v3/organizations/' + org_id + '/' + 'access_levels/access_level_names/',
+        {"access_level_names": new_access_level_names}
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.create_organization_access_level_instance = function (org_id, parent_id, name) {
+      return $http.post('/api/v3/organizations/' + org_id + '/' + 'access_levels/add_instance/',
+        {"parent_id": parent_id, "name": name}
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user
