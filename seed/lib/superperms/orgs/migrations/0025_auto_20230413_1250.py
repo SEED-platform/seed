@@ -47,6 +47,7 @@ class Migration(migrations.Migration):
                 ('depth', models.PositiveIntegerField(db_index=True)),
                 ('name', models.CharField(max_length=100)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
+                ('path', models.JSONField(null=True))
             ],
             options={
                 'abstract': False,

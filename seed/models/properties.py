@@ -132,9 +132,9 @@ class Property(models.Model):
 
 @receiver(pre_save, sender=Property)
 def set_default_access_level_instance(sender, instance, **kwargs):
-    if instance.access_level_instance is None:
-        root = AccessLevelInstance.objects.get(organization=instance.org, depth=1)
-        instance.acces_level_instance = root
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
 
 
 class PropertyState(models.Model):
@@ -366,7 +366,25 @@ class PropertyState(models.Model):
                     _log.error("Could not promote this property")
                     return None
             else:
-                prop = Property.objects.create(organization=self.organization)
+                access_level_info = {
+                    k: v for k, v in self.extra_data.items()
+                    if k in self.organization.access_level_names
+                }
+                self.extra_data = {
+                    k: v for k, v in self.extra_data.items()
+                    if k not in access_level_info
+                }
+                root = AccessLevelInstance.objects.get(organization=self.organization, depth=1)
+                access_level_info[self.organization.access_level_names[0]] = root.name
+                access_level_info = {k: v for k, v in access_level_info.items() if v is not None}
+                access_level_instance = AccessLevelInstance.objects.get(path=access_level_info, organization=self.organization)
+
+                _log.error("+++++++++++++++++++++")
+                _log.error(access_level_info)
+                _log.error(access_level_instance)
+                _log.error("+++++++++++++++++++++")
+
+                prop = Property.objects.create(organization=self.organization, access_level_instance=access_level_instance)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 

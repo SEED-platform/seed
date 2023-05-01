@@ -37,9 +37,14 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         result = json.loads(raw_result.content)
         assert result == {
             'access_level_names': ['my org'],
-            'access_level_tree': [
-                {'id': root.pk, 'data': {'name': 'root', 'organization': self.org.id}},
-            ],
+            'access_level_tree': [{
+                'id': root.pk,
+                'data': {
+                    'name': 'root', 
+                    'organization': self.org.id,
+                    'path': {'my org': 'root'},
+                }
+            },],
         }
 
         # populate tree
@@ -57,15 +62,35 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             'access_level_names': ['my org', "2nd gen", "3rd gen"],
             'access_level_tree': [{
                 'id': root.pk,
-                'data': {'name': 'root', 'organization': self.org.id},
+                'data': {
+                    'name': 'root',
+                    'organization': self.org.id,
+                    'path': {'my org': 'root'},
+                },
                 'children': [
-                    {'id': aunt.pk, 'data': {'name': 'aunt', 'organization': self.org.id}},
+                    {
+                        'id': aunt.pk, 
+                        'data': {
+                            'name': 'aunt', 
+                            'organization': self.org.id,
+                            'path': {'my org': 'root', '2nd gen': 'aunt'},
+                        }
+                    },
                     {
                         'id': mom.pk,
-                        'data': {'name': 'mom', 'organization': self.org.id},
-                        'children': [
-                            {'id': me.pk, 'data': {'name': 'me', 'organization': self.org.id}}
-                        ]
+                        'data': {
+                            'name': 'mom', 
+                            'organization': self.org.id,
+                            'path': {'my org': 'root', '2nd gen': 'mom'},
+                        },
+                        'children': [{
+                            'id': me.pk, 
+                            'data': {
+                                'name': 'me', 
+                                'organization': self.org.id,
+                                'path': {'my org': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
+                            }
+                        }]
                     }
                 ]
             }],
@@ -148,9 +173,18 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             'access_level_names': ["1st gen", "2nd gen"],
             'access_level_tree': [{
                 'id': root.pk,
-                'data': {'name': 'root', 'organization': self.org.id},
-                'children': [
-                    {'id': boo  .pk, 'data': {'name': 'boo', 'organization': self.org.id}},
-                ]
+                'data': {
+                    'name': 'root',
+                    'organization': self.org.id,
+                    'path': {'1st gen': 'root'},
+                },
+                'children': [{
+                    'id': boo.pk,
+                    'data': {
+                        'name': 'boo', 
+                        'organization': self.org.id,
+                        'path': {'1st gen': 'root', '2nd gen': 'boo'},
+                    }
+                }]
             }],
         }

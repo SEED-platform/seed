@@ -35,7 +35,11 @@ class TestOrganizationAccessLevels(TestCase):
         assert fake_org.get_access_tree() == [
             {
                 'id': root.pk,
-                'data': {'name': 'root', 'organization': fake_org.id},
+                'data': {
+                    'name': 'root',
+                    'organization': fake_org.id,
+                    'path': {'Organization A': 'root'},
+                },
             }
         ]
 
@@ -62,14 +66,36 @@ class TestOrganizationAccessLevels(TestCase):
         assert fake_org.get_access_tree() == [
             {
                 'id': root.pk,
-                'data': {'name': 'root', 'organization': fake_org.id},
+                'data': {
+                    'name': 'root',
+                    'organization': fake_org.id,
+                    'path': {'Organization A': 'root'},
+                },
                 'children': [
-                    {'id': aunt.pk, 'data': {'name': 'aunt', 'organization': fake_org.id}},
+                    {
+                        'id': aunt.pk, 
+                        'data': {
+                            'name': 'aunt', 
+                            'organization': fake_org.id,
+                            'path': {'Organization A': 'root', '2nd gen': 'aunt'},
+                        }
+                    },
                     {
                         'id': mom.pk,
-                        'data': {'name': 'mom', 'organization': fake_org.id},
+                        'data': {
+                            'name': 'mom', 
+                            'organization': fake_org.id,
+                            'path': {'Organization A': 'root', '2nd gen': 'mom'},
+                        },
                         'children': [
-                            {'id': me.pk, 'data': {'name': 'me', 'organization': fake_org.id}}
+                            {
+                                'id': me.pk, 
+                                'data': {
+                                    'name': 'me', 
+                                    'organization': fake_org.id,
+                                    'path': {'Organization A': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
+                                }
+                            }
                         ]
                     }
                 ]
@@ -89,5 +115,6 @@ class TestOrganizationAccessLevels(TestCase):
 
         assert me.get_path() == {
             "Organization A": "root",
-            "2nd gen": "mom"
+            "2nd gen": "mom",
+            "3rd gen": "me",
         }
