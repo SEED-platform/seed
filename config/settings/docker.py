@@ -24,7 +24,7 @@ SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND',
+                     'REDIS_PASSWORD', 'REDIS_HOST', 'DJANGO_EMAIL_BACKEND',
                      'POSTGRES_HOST'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
@@ -76,7 +76,7 @@ if 'REDIS_PASSWORD' in os.environ:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "db-redis:6379",
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
             'OPTIONS': {
                 'DB': 1,
                 'PASSWORD': REDIS_PASSWORD,  # noqa F405
@@ -93,7 +93,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "db-redis:6379",
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
             'OPTIONS': {
                 'DB': 1
             },
