@@ -802,23 +802,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
 
-      const access_level_columns = $scope.organization.access_level_names.map(name => {
-        return {
-          name: name,
-          displayName: name,
-          enableColumnMenu: false,
-          enableColumnMoving: false,
-          enableColumnResizing: false,
-          enableFiltering: false,
-          enableHiding: false,
-          enableSorting: false,
-          exporterSuppressExport: true,
-          pinnedLeft: true,
-          visible: true,
-          width: 150,
-        }
-      });
-
       // The meters_exist_indicator column is only applicable to properties
       if ($stateParams.inventory_type == 'properties') {
         $scope.columns.unshift({
@@ -919,8 +902,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           visible: true,
           width: $scope.get_label_column_width(),
           maxWidth: $scope.max_label_width
-        }, ...access_level_columns
-        );
+        });
       } else {
         $scope.columns.unshift({
           name: 'merged_indicator',
@@ -1001,8 +983,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           visible: true,
           width: $scope.get_label_column_width(),
           maxWidth: $scope.max_label_width
-        }, ...access_level_columns
-        );
+        });
       }
 
       // disable sorting (but not filtering) on related data until the backend can filter/sort over two models

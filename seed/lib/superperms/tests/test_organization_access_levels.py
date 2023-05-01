@@ -75,19 +75,3 @@ class TestOrganizationAccessLevels(TestCase):
                 ]
             }
         ]
-
-    def test_get_path(self):
-        fake_org, _, _ = create_organization(self.fake_user, 'Organization A')
-
-        # populate tree
-        fake_org.access_level_names += ["2nd gen", "3rd gen"]
-        fake_org.save()
-        root = AccessLevelInstance.objects.get(organization=fake_org)
-        fake_org.add_new_access_level_instance(root.id, "aunt")
-        mom = fake_org.add_new_access_level_instance(root.id, "mom")
-        me = fake_org.add_new_access_level_instance(mom.id, "me")
-
-        assert me.get_path() == {
-            "Organization A": "root",
-            "2nd gen": "mom"
-        }

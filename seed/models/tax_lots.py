@@ -16,7 +16,7 @@ from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
-from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.lib.superperms.orgs.models import Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -44,7 +44,6 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -52,13 +51,6 @@ class TaxLot(models.Model):
 
     def __str__(self):
         return 'TaxLot - %s' % self.pk
-
-
-@receiver(pre_save, sender=TaxLot)
-def set_default_access_level_instance(sender, instance, **kwargs):
-    if instance.access_level_instance is None:
-        root = AccessLevelInstance.objects.get(organization=instance.org, depth=1)
-        instance.acces_level_instance = root
 
 
 class TaxLotState(models.Model):
