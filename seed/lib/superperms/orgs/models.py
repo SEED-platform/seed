@@ -97,6 +97,19 @@ class AccessLevelInstance(NS_Node):
 
     node_order_by = ['name']
 
+    def get_path(self):
+        """get a dictionary detailing the ancestors of this Access Level Instance
+        """
+        level_names = self.organization.access_level_names
+        ancestors = {
+            level_names[depth - 1]: name
+            for depth, name
+            in self.get_ancestors().values_list("depth", "name")
+        }
+        ancestors[level_names[self.depth - 1]] = self.name
+
+        return ancestors
+
     def __str__(self):
         access_level_name = self.organization.access_level_names[self.depth - 1]
         return f"{self.name}: {self.organization.name} Access Level {access_level_name}"

@@ -264,6 +264,11 @@ class TaxLotProperty(models.Model):
             if obj_dict.get('measures'):
                 del obj_dict['measures']
 
+            if this_cls == 'Property':
+                obj_dict.update(obj.property.access_level_instance.get_path())
+            else:
+                obj_dict.update(obj.taxlot.access_level_instance.get_path())
+
             results.append(obj_dict)
 
         return results
