@@ -1466,7 +1466,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           user_profile_payload: ['user_service', function (user_service) {
             return user_service.get_user_profile();
-          }]
+          }],
+          access_level_tree: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_access_level_tree(organization_id);
+          }],
         }
       })
       .state({

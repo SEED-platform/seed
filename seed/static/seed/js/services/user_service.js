@@ -56,7 +56,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         last_name: user.last_name,
         email: user.email,
         org_name: user.org_name,
-        role: user.role
+        role: user.role,
+        access_level_instance_id: user.access_level_instance_id,
       };
 
       const params = {};

@@ -31,6 +31,20 @@
                 </select>
             </div>
         </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3" for="newMemberAccessLevel" translate>Access Level:</label>
+            <div class="col-sm-8">
+                <select class="form-control" ng-model="level_name_index" ng-click="change_selected_level_index()" ng-options="i as name for (i, name) in level_names">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3" for="newMemberAccessLevel" translate>Access Level Instance:</label>
+            <div class="col-sm-8">
+                <select class="form-control" ng-model="user.access_level_instance_id" ng-options="potental_level_instance.id as potental_level_instance.name for potental_level_instance in potental_level_instances">
+                </select>
+            </div>
+        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>

@@ -9,6 +9,7 @@ from json import load
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -120,10 +121,11 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     organization = Organization.objects.create(
         name=org_name
     )
+    root = AccessLevelInstance.objects.get(organization=organization, depth=1)
 
     if user:
         organization_user, user_added = OrganizationUser.objects.get_or_create(
-            user=user, organization=organization
+            user=user, organization=organization, access_level_instance=root
         )
 
     for label in Label.DEFAULT_LABELS:
@@ -168,7 +170,8 @@ def create_suborganization(user, current_org, suborg_name='', user_role=ROLE_MEM
         # upon initializing an organization, create the default columns
         _create_default_columns(sub_org.id)
 
-    ou, _ = OrganizationUser.objects.get_or_create(user=user, organization=sub_org)
+    root = AccessLevelInstance.objects.get(organization=sub_org, depth=1)
+    ou, _ = OrganizationUser.objects.get_or_create(user=user, organization=sub_org, access_level_instance=root)
     ou.role_level = user_role
     ou.save()
 
