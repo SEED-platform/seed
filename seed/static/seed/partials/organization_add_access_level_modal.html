@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h4> {$:: 'Add Levels to the Organizational Structure' | translate $} </h4>
+
+    <div style="display: flex; flex-direction: column;">
+        <ul style="padding: 0px;">
+            <div ng-repeat="(i, level_name) in new_access_level_names track by i">
+                <input style="margin: 10px 0px;" type="text" class="form-control" ng-model="new_access_level_names[i]">
+            </div>
+        </ul>
+
+        <button  style="width: 5rem;" type="button" class="btn btn-primary" ng-click="add_level()">
+            <i class="fa fa-plus-circle"></i>
+        </button>
+    </div>
+
+    <button type="button" class="btn btn-primary" ng-click="save_access_level_names()" ng-disabled="!is_modifed()">
+        {$:: 'Save' | translate $}
+    </button>
+</div>

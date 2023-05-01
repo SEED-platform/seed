@@ -9,7 +9,9 @@ import logging
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
+from treebeard.ns_tree import NS_Node
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -85,6 +87,18 @@ class OrganizationUser(models.Model):
         return 'OrganizationUser: {0} <{1}> ({2})'.format(
             self.user.username, self.organization.name, self.pk
         )
+
+
+class AccessLevelInstance(NS_Node):
+    name = models.CharField(max_length=100, null=False)
+    # organization _could_ be extrapolate from the tree, but is often needed and it's not a readable query.
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+
+    node_order_by = ['name']
+
+    def __str__(self):
+        access_level_name = self.organization.access_level_names[self.depth - 1]
+        return f"{self.name}: {self.organization.name} Access Level {access_level_name}"
 
 
 class Organization(models.Model):
@@ -215,6 +229,8 @@ class Organization(models.Model):
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
 
+    access_level_names = models.JSONField(default=list)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
@@ -294,6 +310,22 @@ class Organization(models.Model):
             return self.id
         return self.parent_org.id
 
+    def add_new_access_level_instance(self, parent_id: int, name: str) -> AccessLevelInstance:
+        parent = AccessLevelInstance.objects.get(pk=parent_id)
+
+        if len(self.access_level_names) < parent.depth + 1:
+            raise UserWarning('Cannot create child at an unnamed level')
+
+        new_access_level_instance = parent.add_child(organization=self, name=name)
+        new_access_level_instance.save()
+
+        return new_access_level_instance
+
+    def get_access_tree(self) -> dict:
+        root = AccessLevelInstance.objects.get(organization=self, depth=1)
+
+        return AccessLevelInstance.dump_bulk(root)
+
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
 
@@ -307,3 +339,18 @@ def organization_pre_delete(sender, instance, **kwargs):
 
 
 pre_delete.connect(organization_pre_delete, sender=Organization)
+
+
+@receiver(post_save, sender=Organization)
+def post_save_organization(sender, instance, created, **kwargs):
+    """
+    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the
+    record receives an updated datetime
+    """
+    if created:
+        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root.save()
+
+        if instance.access_level_names == []:
+            instance.access_level_names = [instance.name]
+            instance.save()
