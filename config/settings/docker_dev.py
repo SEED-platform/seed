@@ -1,8 +1,9 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author nicholas.long@nrel.gov
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 
-File contains settings needed to run SEED with docker
+:author nicholas.long@nrel.gov
+:description File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
 
@@ -42,7 +43,9 @@ COMPRESS_OFFLINE = compress
 ALLOWED_HOSTS = ['*']
 
 # LBNL's BETTER tool host
-BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov')
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-staging.herokuapp.com')
+# BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get('AUDIT_TEMPLATE_HOST', 'https://api.labworks.org')
@@ -72,7 +75,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "db-redis:6379",
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
             'OPTIONS': {
                 'DB': 1
             },
@@ -127,3 +130,12 @@ if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
 else:
     from config.settings.local_untracked import *  # noqa
+
+# salesforce testing
+if 'SF_INSTANCE' not in vars():
+    # use env vars
+    SF_INSTANCE = os.environ.get('SF_INSTANCE', '')
+    SF_USERNAME = os.environ.get('SF_USERNAME', '')
+    SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
+    SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
+    SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')

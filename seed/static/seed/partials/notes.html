@@ -37,7 +37,7 @@
                 <td style="white-space: nowrap;">{$:: note.note_type $}</td>
                 <td style="white-space: nowrap;">{$:: note.name $}</td>
 
-                <td ng-if="note.note_type == 'Note'">{$ note.text $}</td>
+                <td ng-if="note.note_type == 'Note'" class="text-wrap">{$ note.text $}</td>
                 <td ng-if="note.note_type == 'Log'">
                     <div>Edit(s): </div>
                     <ul>

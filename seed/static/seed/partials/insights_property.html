@@ -20,7 +20,7 @@
           <div class="title-row">
               <h2 style="font-size:18px;"> {$:: 'Property Insights' | translate $}</h2>
           </div>
-          <div class="compliance-setup">
+          <div ng-if="auth.requires_member" class="compliance-setup">
             <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.
             </p>
           </div>
@@ -32,9 +32,33 @@
 	    		<div class="title-row">
 	        	<h2 style="font-size:18px;"> {$:: 'Property Insights' | translate $}</h2>
 	      	</div>
-	      	<div class="compliance-setup">
+	      	<div ng-if="auth.requires_member" class="compliance-setup">
     				<p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.
             </p>
+    			</div>
+    			<div class="chart-legend">
+    				<div class="title">Chart Legend</div>
+    				<p class="small-text">Click a series to show/hide on the chart</p>
+    				<div class="legend-row row" ng-click="toggle_dataset_visibility(0)">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker"></div>
+    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[0].hidden">Compliant</div>
+    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[0].hidden">Compliant</div>
+    				</div>
+    				<div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker"></div>
+    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
+    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
+    				</div>
+    				<div class="legend-row row" ng-click="toggle_dataset_visibility(2)">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker"></div>
+    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[2].hidden">Unknown</div>
+    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[2].hidden">Unknown</div>
+    				</div>
+    				<div class="legend-row row" ng-click="toggle_annotation_visibility()">
+    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker"></div>
+    					<div class="col-md-9 text" ng-hide="!display_annotation">Distance to Target</div>
+    					<div class="col-md-9 text strikethrough" ng-hide="display_annotation">Distance to Target</div>
+    				</div>
     			</div>
       	  <div class="form-group margin-top-20">
               <label for="program">Program</label>
@@ -60,33 +84,11 @@
  				    </select>
 				  </div>
 
-    			<div class="margin-top-20">
-    				<button type="button" class="btn btn-primary" ng-click="downloadChart()">
+    			<div class="button-grid">
+    				<div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="downloadChart()">
     					<i class="fa fa-share-square-o" aria-hidden="true"></i> <span translate>Export</span>
-    				</button>
-    			</div>
-    			<div class="chart-legend">
-    				<div class="title">Chart Legend</div>
-    				<div class="legend-row row" ng-click="toggle_dataset_visibility(0)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker"></img></div>
-    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[0].hidden">Compliant</div>
-    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[0].hidden">Compliant</div>
-    				</div>
-    				<div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker"></img></div>
-    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
-    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
-    				</div>
-    				<div class="legend-row row" ng-click="toggle_dataset_visibility(2)">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker"></img></div>
-    					<div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[2].hidden">Unknown</div>
-    					<div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[2].hidden">Unknown</div>
-    				</div>
-    				<div class="legend-row row" ng-click="toggle_annotation_visibility()">
-    					<div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker"></img></div>
-    					<div class="col-md-9 text" ng-hide="!display_annotation">Distance to Target</div>
-    					<div class="col-md-9 text strikethrough" ng-hide="display_annotation">Distance to Target</div>
-    				</div>
+    				</button></div>
+    				<div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Labels</button></div>
     			</div>
 	    	</div>
 	    	<div class="col-md-10">

@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import copy
 import csv
 import logging
@@ -178,6 +177,8 @@ class Column(models.Model):
         'boolean': lambda v: v.lower() == 'true',
         'area': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
         'eui': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg_intensity': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
+        'ghg': lambda v: float(v.replace(',', '') if isinstance(v, basestring) else v),
     }
 
     # These are the default columns (also known as the fields in the database)

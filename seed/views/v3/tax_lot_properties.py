@@ -1,11 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import datetime
@@ -35,6 +32,8 @@ from seed.models import (
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
+from seed.serializers.meter_readings import MeterReadingSerializer
+from seed.serializers.meters import MeterSerializer
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import update_inventory_metadata
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -70,12 +69,16 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 'export_type': 'string',
                 'profile_id': 'integer',
                 'proress_key': 'string',
+                'include_notes': 'boolean',
+                'include_meter_readings': 'boolean',
             },
             description='- ids: (View) IDs for records to be exported\n'
                         '- filename: desired filename including extension (defaulting to \'ExportedData.{export_type}\')\n'
                         '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
                         '- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created.'
+                        '- include_notes: (Optional) Include notes in the export. Defaults to False.'
+                        '- include_meter_readings: (Optional) Include notes in the export. Defaults to False.'
         ),
     )
     @api_endpoint_class
@@ -145,6 +148,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         column_name_mappings.update({dc.name: dc.name for dc in derived_columns})
         progress_data.step('Exporting Inventory...')
 
+        export_type = request.data.get('export_type', 'csv')
+
         # add labels, notes, and derived columns
         include_notes = request.data.get('include_notes', True)
         batch_size = math.ceil(len(model_views) / 98)
@@ -163,6 +168,17 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             if hasattr(record, 'property'):
                 data[i]['property_labels'] = ','.join(label_string)
                 data[i]['property_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
+
+                include_meter_data = request.data.get('include_meter_readings', False)
+                if include_meter_data and export_type == 'geojson':
+                    meters = []
+                    for meter in record.property.meters.all():
+                        meters.append(MeterSerializer(meter).data)
+                        meters[-1]['readings'] = []
+                        for meter_reading in meter.meter_readings.all().order_by('start_time'):
+                            meters[-1]['readings'].append(MeterReadingSerializer(meter_reading).data)
+
+                    data[i]['_meters'] = meters
             elif hasattr(record, 'taxlot'):
                 data[i]['taxlot_labels'] = ','.join(label_string)
                 data[i]['taxlot_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
@@ -182,7 +198,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             else:
                 view_id_str = 'taxlot_view_id'
             data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
-        export_type = request.data.get('export_type', 'csv')
 
         filename = request.data.get('filename', f"ExportedData.{export_type}")
         progress_data.finish_with_success()
@@ -480,8 +495,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     """
                     Non-polygon data
                     """
-                    display_key = column_name_mappings.get(key, key)
-                    feature["properties"][display_key] = value
+                    if key == "_meters":
+                        if feature["properties"].get("meters") is None:
+                            feature["properties"]["meters"] = value
+                        else:
+                            logging.warning("meters already exists in properties, not adding")
+                    else:
+                        display_key = column_name_mappings.get(key, key)
+                        feature["properties"][display_key] = value
 
             # now add in the geometry data depending on how many geometries were found
             if len(feature_geometries) == 0:
@@ -564,13 +585,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         # make array unique
         if is_property:
-
-            unique = [dict(p) for p in set(tuple(i.items())
-                                           for i in related)]
-
+            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
         else:
-            unique = [dict(p) for p in set(tuple(i.items())
-                                           for i in related)]
+            unique = [dict(p) for p in set(tuple(i.items()) for i in related)]
 
         return unique
 

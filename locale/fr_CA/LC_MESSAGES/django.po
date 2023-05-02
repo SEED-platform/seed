@@ -121,6 +121,9 @@ msgstr "Réel > Cible"
 msgid "Actual Column"
 msgstr "Colonne réelle"
 
+msgid "Actual Field"
+msgstr "Champ réel"
+
 msgid "Add"
 msgstr "Ajouter"
 
@@ -132,6 +135,9 @@ msgstr "Ajouter des fichiers de données"
 
 msgid "Add Label"
 msgstr "Ajouter une étiquette"
+
+msgid "Add Mapping"
+msgstr "Ajouter une configuration"
 
 msgid "Add Shared Properties"
 msgstr "Ajouter des propriétés partagées"
@@ -521,6 +527,9 @@ msgstr "Conformité"
 msgid "Compliance Information"
 msgstr "Informations de conformité"
 
+msgid "Compliance Label"
+msgstr "Étiquette de Conformité"
+
 msgid "Compliance Period"
 msgstr "Période de conformité"
 
@@ -556,8 +565,20 @@ msgstr "Confirmer la supprimation"
 msgid "Confirm new password"
 msgstr "Confirmer le nouveau mot de passe"
 
+msgid "Connection"
+msgstr "Connexion"
+
 msgid "Contact"
 msgstr "Contact"
+
+msgid "Contact Account Name Column"
+msgstr "Colonne Nom du compte de contact"
+
+msgid "Contact Benchmark Field"
+msgstr "Nom de champ Contact pour l'object Benchmark"
+
+msgid "Contacts and Accounts"
+msgstr "Contacts et Comptes"
 
 msgid "Continue to data mapping"
 msgstr "Continuer à la mappage de données"
@@ -613,6 +634,9 @@ msgstr "Créer un nouveau projet"
 
 msgid "Create a New Sub-Organization"
 msgstr "Créer une nouvelle sous-organisation"
+
+msgid "Create a Program to get started!"
+msgstr "Créez un programme pour commencer !"
 
 msgid "Create a new rule"
 msgstr "Créer une nouvelle règle"
@@ -700,6 +724,9 @@ msgstr "Cycle:"
 msgid "Cycles"
 msgstr "Cycles"
 
+msgid "Cycles to Include in Compliance Period"
+msgstr "Cycles à inclure dans la periode de conformité"
+
 msgid "DATASET_FILENAME_UPLOADED_TO"
 msgstr "<strong> {dataset_filename} </strong> a été importé dans <strong> {dataset_name} </strong> , sous le cycle <strong> {cycle_name} </strong> ."
 
@@ -735,6 +762,15 @@ msgstr "Si vous souhaitez géocoder vos données à l'aide du service MapQuest, 
 
 msgid "Data"
 msgstr "Les données"
+
+msgid "Data Administrator Account Name Column"
+msgstr "Colonne Nom du compte de l'administrateur de données"
+
+msgid "Data Administrator Contact Field"
+msgstr "Champ de contact de l'administrateur des données"
+
+msgid "Data Administrator Contact Settings"
+msgstr "Paramètres de contact de l'administrateur de données"
 
 msgid "Data File Header"
 msgstr "En-tête du fichier de données"
@@ -798,6 +834,12 @@ msgstr "Date limite:"
 
 msgid "Decode UBID/ULID"
 msgstr "Décoder UBID/ULID"
+
+msgid "Default Contact Account Name"
+msgstr "Nom du compte de contact par défaut"
+
+msgid "Default Data Administrator Account Name"
+msgstr "Nom du compte d'administrateur de données par défaut"
 
 msgid "Default Display Fields"
 msgstr "Champs d'affichage par défaut"
@@ -879,6 +921,9 @@ msgstr "District"
 msgid "Documentation"
 msgstr "Documentation"
 
+msgid "Domain"
+msgstr "Domaine"
+
 msgid "Done"
 msgstr "Fait"
 
@@ -959,6 +1004,9 @@ msgstr "Activer la fonctionnalité ComStock"
 
 msgid "Enable Geocoding"
 msgstr "Activer le géocodage"
+
+msgid "Enable Salesforce Integration"
+msgstr "Activer la fonctionnalité Salesforce"
 
 msgid "Energy"
 msgstr "Énergie"
@@ -1277,6 +1325,9 @@ msgstr "Points forts de la Plate-Forme SEED™"
 msgid "Home Energy Score ID"
 msgstr "ID de score d'énergie domestique"
 
+msgid "Hour"
+msgstr "Hour"
+
 msgid "ID"
 msgstr "ID"
 
@@ -1300,6 +1351,9 @@ msgstr "INTERNE"
 
 msgid "INVALID_CSV_EXTENSION_ALERT"
 msgstr "<strong>Désolé!</strong> SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong>.csv</strong> sont pris en charge."
+
+msgid "INVALID_DOC_FILE_EXTENSION_ALERT"
+msgstr "Type de document sélectionné non valide. Les types de fichiers acceptés sont .dxf, .pdf, .idf et .osm"
 
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, et <strong>.xml</strong> sont pris en charge."
@@ -1349,6 +1403,9 @@ msgstr "Inclure l'en-tête d'étiquette CSV"
 
 msgid "Include Notes"
 msgstr "Inclure des notes"
+
+msgid "Indication Label"
+msgstr "Étiquette d'indication"
 
 msgid "Ineligible"
 msgstr "Inéligible"
@@ -1439,6 +1496,9 @@ msgstr "Nom de famille"
 msgid "Last Name:"
 msgstr "Nom de famille:"
 
+msgid "Last Salesforce Update"
+msgstr "Dernière Mise á Jour Salesforce"
+
 msgid "Last name is required."
 msgstr "Le nom de famille est requis."
 
@@ -1472,6 +1532,9 @@ msgstr "S'identifier"
 #: seed/landing/templates/landing/home.html:16
 msgid "Log in to SEED Platform"
 msgstr "Connectez-vous à SEED Platform"
+
+msgid "Logging Email"
+msgstr "Adresse courriel pour reportage"
 
 msgid "Logout"
 msgstr "Déconnexion"
@@ -1542,6 +1605,9 @@ msgstr "<strong>Remarque:</strong> seule la première feuille de fichiers Excel 
 
 msgid "Main"
 msgstr "Principale"
+
+msgid "Main Contact Settings"
+msgstr "Principaux paramètres de contact"
 
 msgid "Maintenance"
 msgstr "Maintenance"
@@ -1713,6 +1779,9 @@ msgstr "Colonne Cible de métrique"
 msgid "Metric Type"
 msgstr "Type de métrique"
 
+msgid "Metric Type Settings"
+msgstr "Type de métrique"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1724,6 +1793,9 @@ msgstr "Minimum"
 
 msgid "Minimum Sq Ft"
 msgstr "Pi/Ca Minimum"
+
+msgid "Minute"
+msgstr "Minute"
 
 msgid "Modifying Data Quality Rules"
 msgstr "Modification des règles de qualité des données"
@@ -1816,6 +1888,12 @@ msgstr "Aucun filtre ajouté."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour commencer."
+
+msgid "No program created"
+msgstr "Aucun programme créé"
+
+msgid "No program selected"
+msgstr "Aucun programme sélectionné"
 
 msgid "No warnings/errors"
 msgstr "Aucun avertissement/erreur"
@@ -2096,11 +2174,17 @@ msgstr "Informations sur le profil"
 msgid "Profile Name"
 msgstr "Nom de profil"
 
+msgid "Program"
+msgstr "Programme"
+
+msgid "Program Definition"
+msgstr "Définition du programme"
+
 msgid "Program Metric"
 msgstr "Métrique du programme"
 
-msgid "Program Configuration"
-msgstr "Configuration du programme"
+msgid "Program Metric Configuration"
+msgstr "Configuration de la métrique du programme"
 
 msgid "Program Overview"
 msgstr "Métrique du programme"
@@ -2362,6 +2446,9 @@ msgstr "ID d'exécution"
 msgid "Run Status"
 msgstr "État de l'exécution"
 
+msgid "SEED Field Name"
+msgstr "Nom du champ SEED"
+
 msgid "SEED Header"
 msgstr "En-tête SEED"
 
@@ -2373,6 +2460,9 @@ msgstr "Plate-forme SEED"
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
 
+msgid "SEED Unique Benchmark ID Fieldname"
+msgstr "Unique nom de champ pour Benchmark ID SEED"
+
 msgid "SEED doesn't currently support that file format"
 msgstr "SEED ne prend pas actuellement en charge ce format de fichier"
 
@@ -2382,6 +2472,10 @@ msgstr "SEED est un logiciel simple, flexible et rentable conçu pour aider les 
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Sélectionner un ensemble de données"
+
+#, fuzzy
+msgid "SELECT_DOC_UPLOAD_TITLE"
+msgstr "Sélectionner un document à télécharger"
 
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Sélectionnez le type de fichier(s) que vous souhaitez ajouter à {dataset_name}."
@@ -2397,6 +2491,106 @@ msgstr "Lectures de capteur"
 
 msgid "SENSOR_READING_COUNTS_TITLE"
 msgstr "Compte de lecture du capteur"
+
+#, fuzzy
+msgid "SF_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Selectionez le champ qui contient le nom de compte du contact. Ex: 'Organization'"
+
+msgid "SF_ACCOUNT_RECORD_TYPE_TEXT"
+msgstr "Si votre Salesforce a plusieurs types de Compte, fournissez le 'Record Type ID' à utiliser lorsqu'un compte est automatiquement créé par SEED"
+
+msgid "SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"
+msgstr "Si votre objet Benchmark a un champ pour capturer le Contact, inscrivez le nom du champ dans l'application Salesforce, ex: Contact_Name__c"
+
+msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
+msgstr "Nom du champ dans l'application Salesforce utilisé pour identifier uniquement un object 'Benchmark'. Example: 'Salesforce_Benchmark_ID__c'"
+
+msgid "SF_COMPLIANCE_LABEL_TEXT"
+msgstr "Étiquette qui signale qu'une propriété est en conformité. Example: 'Comforme'"
+
+msgid "SF_CONFIGURATION_TEXT"
+msgstr "Configurez les paramètres necessaires pour transferez les données à Salesforce"
+
+msgid "SF_CONNECTION_TEXT"
+msgstr "Inscrivez vos détails pour la connexion Salesforce"
+
+msgid "SF_CONTACTS_AND_ACCOUNTS_TEXT"
+msgstr "Configurez les paramètres pour les notifications Salesforce reliées aux objets de type Benchmark"
+
+msgid "SF_CONTACT_EMAIL_FIELDNAME_TEXT"
+msgstr "Selectionez le champ qui contient l'adresse courriel du contact pour l'object Benchmark. Ex:'Email'"
+
+msgid "SF_CONTACT_HEADER_TEXT"
+msgstr "Les champs suivants seront utilisés pour récupérer ou créer un contact principal à associer à l'objet Benchmark dans Salesforce. Laissez vide si votre instance n'utilise pas cette fonctionnalité."
+
+msgid "SF_CONTACT_NAME_FIELDNAME_TEXT"
+msgstr "Selectionez le champ qui contient le nom du contact pour l'object Benchmark. Ex: 'On Behalf Of'"
+
+msgid "SF_CONTACT_RECORD_TYPE_TEXT"
+msgstr "Si votre Salesforce a plusieurs types de Contact, fournissez le 'Record Type ID' à utiliser lorsqu'un contact est automatiquement créé par SEED"
+
+msgid "SF_CYCLE_FIELDNAME_TEXT"
+msgstr "Si votre objet Benchmark a un champ pour capturer le nom du cycle, inscrivez le nom du champ dans l'application Salesforce, ex: Cycle__c"
+
+msgid "SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Sélectionnez le champ SEED contenant le nom de compte pour l'enregistrement de contact de l'administrateur de données à créer dans Salesforce. Ex : \"Organisation\""
+
+msgid "SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"
+msgstr "Si votre enregistrement de référence Salesforce stocke une relation de contact Salesforce pour un administrateur de données de propriété, indiquez le nom du champ Salesforce ici, par exemple : Property_Data_Administrator__c"
+
+msgid "SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"
+msgstr "Selectionez le champ qui contient l'adresse courriel de l'administrateur de données pour l'objet Salesforce. Ex: 'Property Data Administrator - Email'"
+
+msgid "SF_DATA_ADMIN_HEADER_TEXT"
+msgstr "Les champs suivants seront utilisés pour récupérer ou créer un contact d'administrateur de données de propriété à associer à l'objet Benchmark dans Salesforce. Laissez vide si votre instance n'utilise pas cette fonctionnalité."
+
+msgid "SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"
+msgstr "Selectionez le champ qui contient le nom de l'administrateur de données pour l'objet Salesforce. Ex: 'Property Data Administrator'"
+
+msgid "SF_DEFAULT_ACCOUNT_NAME_TEXT"
+msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsqu'il n'y a pas de données valides dans la colonne Nom du compte de contact spécifiée ci-dessus. Laissez ce champ vide pour signaler une erreur et abandonner la synchronisation lorsque la colonne Nom du compte de contact est vide."
+
+msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
+msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsqu'il n'y a pas de données valides dans la colonne Nom du compte de l'administrateur de données spécifiée ci-dessus. Laissez ce champ vide pour signaler une erreur et abandonner la synchronisation lorsque la colonne Nom du compte de l'administrateur de données est vide."
+
+msgid "SF_DOMAIN_TEXT"
+msgstr "Si votre instance Salesforce est un environment de test (sandbox), inscrivez 'test'; sinon lassez le champ vide."
+
+msgid "SF_INDICATION_LABEL_TEXT"
+msgstr "Étiquette qui signale qu'une propriété devrait être mise á jour dans Salesforce. Example: 'Ajouter à Salesforce'"
+
+msgid "SF_INTEGRATION_TEXT"
+msgstr "Cochez cette case si vous voulez synchronize vos données entre SEED et Salesforce"
+
+msgid "SF_LABELS_FIELDNAME_TEXT"
+msgstr "Si votre objet Benchmark a un champ pour capturer tous les étiquettes SEED, inscrivez le nom du champ dans l'application Salesforce, ex: SEED_Labels__c"
+
+msgid "SF_LOGGING_EMAIL_TEXT"
+msgstr "Inscrivez l'adresse courriel à utiliser pour le reportage des errors rencontrée pendant la mise à jour Salesforce"
+
+msgid "SF_MAPPINGS_TEXT"
+msgstr "Associez les champs de données de votre objet Benchmark dans l'application Salesforce avec le nom du champ dans l'application SEED. Vous pouvez utiliser le gestionnaire d'object dans Salesforce pour trouver les noms de champs (et non les étiquettes de champs)"
+
+msgid "SF_SCHEDULED_UPDATE_TEXT"
+msgstr "Si vous désirez faire une mise à jour automatique de l'application Salesforce quotidiennement, configurez les champs ci-dessous"
+
+msgid "SF_SECURITY_TOKEN_TEXT"
+msgstr "Jeton d'authentification Salesforce"
+
+msgid "SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT"
+msgstr "Nom du champ dans SEED utilisé pour identifier uniquement un object 'Benchmark'. Example: 'Salesforce Benchmark ID'"
+
+msgid "SF_STATUS_FIELDNAME_TEXT"
+msgstr "Si votre objet Benchmark a un champ pour capturer le Statut (ex: violation ou conforme), inscrivez le nom du champ dans l'application Salesforce, ex: Status__c"
+
+msgid "SF_UPDATE_HOUR_TEXT"
+msgstr "Selectionez l'heure à quelle devrait s'effectuer la mise à jour quotidienne (0-23)"
+
+msgid "SF_UPDATE_MINUTE_TEXT"
+msgstr "Selectionez à quelle minute après l'heure devrait s'effectuer la mise à jour quotidienne (0-59)"
+
+msgid "SF_VIOLATION_LABEL_TEXT"
+msgstr "Étiquette qui signale qu'une propriété a une violation.  Example: 'Violation - Données Insufficientes'"
 
 msgid "SHARE DATA WITH"
 msgstr "PARTAGE DE DONNÉES AVEC"
@@ -2436,6 +2630,30 @@ msgstr "Veuillez vérifier les points suivants avant de continuer."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
 
+msgid "Salesforce"
+msgstr "Salesforce"
+
+msgid "Salesforce Account Object Record Type"
+msgstr "Type d'enregistrement pour Compte Salesforce"
+
+msgid "Salesforce Connection Parameters"
+msgstr "Paramètres pour la Connexion Salesforce"
+
+msgid "Salesforce Contact Object Record Type"
+msgstr "Type d'enregistrement pour Contact Salesforce"
+
+msgid "Salesforce Field Mappings"
+msgstr "Attribution de champs Salesforce"
+
+msgid "Salesforce Field Name"
+msgstr "Nom du champ Salesforce"
+
+msgid "Salesforce Instance URL"
+msgstr "Salesforce URL"
+
+msgid "Salesforce Unique Benchmark ID Fieldname"
+msgstr "Unique nom de champ pour Benchmark ID Salesforce"
+
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -2451,6 +2669,9 @@ msgstr "Enregistrer les mappages"
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
 
+msgid "Scheduled Daily Update"
+msgstr "Mise à jour programmée quotidienne"
+
 msgid "Search column name"
 msgstr "Rechercher le nom de la colonne"
 
@@ -2465,6 +2686,9 @@ msgstr "Rechercher le nom de la table"
 
 msgid "Security"
 msgstr "Sécurité"
+
+msgid "Security Token"
+msgstr "Jeton d'authentification"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -2482,6 +2706,9 @@ msgstr "Sélectionnez Aucun"
 
 msgid "Select a Custom Report to get started!"
 msgstr "Sélectionnez un rapport personnalisé pour commencer !"
+
+msgid "Select a Program to get started!"
+msgstr "Sélectionnez un programme pour commencer !"
 
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
@@ -2647,6 +2874,9 @@ msgstr "Succès!"
 msgid "Successful upload!"
 msgstr "Téléchargement réussi!"
 
+msgid "Successfully Uploaded"
+msgstr "Téléversé avec succès"
+
 msgid "Switch Profiles"
 msgstr "Changer de profil"
 
@@ -2662,11 +2892,20 @@ msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 msgid "Table Name"
 msgstr "Nom de la table"
 
+msgid "Target <= Actual for Compliance"
+msgstr "Cible <= Réel pour la conformité"
+
 msgid "Target > Actual"
 msgstr "Cible > Réel"
 
+msgid "Target >= Actual for Compliance"
+msgstr "Cible >= Réel pour la conformité"
+
 msgid "Target Column"
 msgstr "Colonne cible"
+
+msgid "Target Field"
+msgstr "Champ cible"
 
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
@@ -2704,6 +2943,9 @@ msgstr "Conditions d'utilisation"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:6
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Conditions de service à partir de% (tos.created | date: \"SHORT_DATE_FORMAT\") s"
+
+msgid "Test Connection"
+msgstr "Tester la Connexion"
 
 msgid "Text"
 msgstr "Texte"
@@ -2760,6 +3002,9 @@ msgstr "Voici une liste des champs que nous utilisons pour faire correspondre le
 #: seed/landing/templates/landing/signup.html:41
 msgid "The invite link was invalid, possibly because it has already been used.  Please request a new invitation."
 msgstr "Le lien d'invitation était invalide, peut-être parce qu'il a déjà été utilisé. Veuillez demander une nouvelle invitation."
+
+msgid "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
+msgstr "La métrique globale peut être composée d'une métrique d'énergie, d'une métrique d'émission, ou des deux. Au moins un type de métrique est requis et si deux sont définis, les deux métriques doivent être respectées pour la conformité."
 
 #: seed/landing/templates/landing/password_reset_confirm.html:41
 msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
@@ -2838,17 +3083,26 @@ msgstr "UBID"
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "Si les propriétés ont été géocodées manuellement, elles ne seront pas mises à jour. Pour mettre à jour le géocodage, supprimez le lat / long."
 
+msgid "UPLOADING_DOCUMENT_TITLE"
+msgstr "Téléchargement du document..."
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Téléchargement de Fichier"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Importation de <strong> {dataset_filename} </strong> pour faire un cycle <strong> {cycle_name} </strong>"
 
+msgid "UPLOADING_PROGRESS_NO_CYCLE"
+msgstr "Importation de <strong>{dataset_filename}</strong>"
+
 msgid "UPLOAD_COMPLETE_TITLE"
 msgstr "Téléchargement Complet"
 
 msgid "UPLOAD_DATA_LOGGER_BUTTON"
 msgstr "Créer un enregistreur de données"
+
+msgid "UPLOAD_DOC_ACCEPTED_FILE_TYPES"
+msgstr "Types de fichiers acceptés : .dxf, .pdf, .idf et .osm"
 
 msgid "UPLOAD_FILE"
 msgstr "Téléverser un Fichier"
@@ -2890,6 +3144,9 @@ msgstr "Mettre à jour les graphiques"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"
+
+msgid "Update Salesforce"
+msgstr "Mettre à jour Salesforce"
 
 msgid "Update with BuildingSync"
 msgstr "Mettre à jour avec BuildingSync"
@@ -2998,8 +3255,14 @@ msgstr "Voir mes propriétés"
 msgid "Viewer"
 msgstr "Spectateur"
 
+msgid "Violation Label"
+msgstr "Étiquette de Violation"
+
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
+
+msgid "Visualization Settings"
+msgstr "Paramètres de visualisation"
 
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "Lorsque vous cliquez sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , le programme affiche une grille avec les nouveaux noms de champs comme en-têtes de colonne et vos données dans les lignes. Dans cette vue, vous pouvez toujours revenir à l'écran de mappage initial et modifier le mappage de champ."
@@ -3058,6 +3321,9 @@ msgstr "Types de colonne de l'axe X pour le traçage:"
 
 msgid "X-Axis Columns"
 msgstr "Colonnes de l'axe X"
+
+msgid "X-Axis Field Options"
+msgstr "Options de champ de l'axe X"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"

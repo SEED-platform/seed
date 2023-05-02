@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -20,7 +23,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
     orgfilter = 'property__organization'
 
     def get_queryset(self):
-        # return the orgarization id from the request. This also check
+        # return the organization id from the request. This also check
         # the permissions for the user
         org_id = self.get_organization(self.request)
         # get the property id - since the meter is associated with the property (not the property view)

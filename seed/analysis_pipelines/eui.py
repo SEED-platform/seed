@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import datetime
 import logging
@@ -24,6 +24,7 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
+    Cycle,
     Meter,
     MeterReading,
     PropertyView
@@ -47,7 +48,7 @@ VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICI
 TIME_PERIOD = datetime.timedelta(days=365)
 
 
-def _get_valid_meters(property_view_ids):
+def _get_valid_meters(property_view_ids, config):
     """Performs basic validation of the properties for running EUI and returns any errors.
 
     :param analysis: property_view_ids
@@ -56,6 +57,20 @@ def _get_valid_meters(property_view_ids):
     invalid_area = []
     invalid_meter = []
     meter_readings_by_property_view = {}
+
+    select_meters = config.get("select_meters")
+    if select_meters == "all":
+        pass  # different for each view
+    elif select_meters == "date_range":
+        end_time = config["meter"]["end_date"]
+        start_time = config["meter"]["start_date"]
+    elif select_meters == "select_cycle":
+        cycle = Cycle.objects.get(pk=config["cycle_id"])
+        end_time = cycle.end
+        start_time = cycle.start
+    else:
+        AnalysisPipelineException("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
+
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
 
@@ -64,15 +79,17 @@ def _get_valid_meters(property_view_ids):
             invalid_area.append(property_view.id)
             continue
 
-        # get the most recent electric meter reading's end_time
-        try:
-            end_time = MeterReading.objects.filter(
-                meter__property=property_view.property,
-                meter__type__in=VALID_METERS
-            ).order_by('end_time').last().end_time
-        except Exception:
-            invalid_meter.append(property_view.id)
-            continue
+        if select_meters == "all":
+            # get the most recent electric meter reading's end_time
+            try:
+                end_time = MeterReading.objects.filter(
+                    meter__property=property_view.property,
+                    meter__type__in=VALID_METERS
+                ).order_by('end_time').last().end_time
+                start_time = end_time - TIME_PERIOD
+            except Exception:
+                invalid_meter.append(property_view.id)
+                continue
 
         # get all readings that started AND ended between end_time and a year prior
         property_meter_readings = [
@@ -81,7 +98,7 @@ def _get_valid_meters(property_view_ids):
                 meter__property=property_view.property,
                 meter__type__in=VALID_METERS,
                 end_time__lte=end_time,
-                start_time__gte=end_time - TIME_PERIOD
+                start_time__gte=start_time
             ).order_by('start_time')
         ]
 
@@ -134,7 +151,8 @@ class EUIPipeline(AnalysisPipeline):
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implementation will *always* start the analysis immediately
 
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters(property_view_ids)
+        analysis = Analysis.objects.get(id=self._analysis_id)
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters(property_view_ids, analysis.configuration)
         if not meter_readings_by_property_view:
             AnalysisMessage.log_and_create(
                 logger=logger,

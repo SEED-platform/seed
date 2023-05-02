@@ -1,12 +1,10 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  *
  * Controller for the analysis modal.
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
- *
- *
  */
 angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
   .controller('inventory_detail_analyses_modal_controller', [
@@ -17,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     'analyses_service',
     'inventory_ids',
     'current_cycle',
+    'cycles',
     function (
       $scope,
       $log,
@@ -24,11 +23,13 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       Notification,
       analyses_service,
       inventory_ids,
-      current_cycle
+      current_cycle,
+      cycles,
     ) {
       $scope.inventory_count = inventory_ids.length;
       // used to disable buttons on submit
       $scope.waiting_for_server = false;
+      $scope.cycles = cycles
 
       $scope.new_analysis = {
         name: null,
@@ -55,26 +56,27 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       ];
 
       // Datepickers
-      $scope.startDatePickerOpen = false;
-      $scope.endDatePickerOpen = false;
+      $scope.datePickersOpen = {
+        start: false,
+        end: false
+      };
       $scope.invalidDates = false; // set this to true when startDate >= endDate;
 
       // Handle datepicker open/close events
       $scope.openStartDatePicker = function ($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        $scope.startDatePickerOpen = true;
+        $scope.datePickersOpen.start = true;
       };
       $scope.openEndDatePicker = function ($event) {
         $event.preventDefault();
         $event.stopPropagation();
-        $scope.endDatePickerOpen = true;
+        $scope.datePickersOpen.end = true;
       };
 
       // TODO:
       // if it's BETTER and selectMeters is 1
       // need to find start date and end date of meters data for first inventory?
-
       $scope.initializeAnalysisConfig = () => {
         switch ($scope.new_analysis.service) {
 
@@ -85,7 +87,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             break;
 
           case 'EUI':
-            $scope.new_analysis.configuration = {};
+            $scope.new_analysis.configuration = {
+              select_meters: 'all',
+            };
             break;
 
           case 'CO2':
@@ -97,11 +101,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           case 'BETTER':
             $scope.new_analysis.configuration = {
               savings_target: null,
-              benchmark_data: null,
+              benchmark_data_type: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
               preprocess_meters: false,
               select_meters: 'all',
+              enable_pvwatts: false,
               meter: {
                 start_date: null,
                 end_date: null
@@ -160,7 +165,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       });
 
       $scope.checkInvalidDate = function () {
-        $scope.invalidDates = ($scope.new_analysis.configuration.meter.end_date < $scope.new_analysis.configuration.meter.start_date);
+        const { start_date, end_date } = $scope.new_analysis.configuration.meter ?? {};
+        $scope.invalidDates = end_date < start_date;
       };
 
+      $scope.changeCycle = (cycle_id) => {
+        const selected_cycle = $scope.cycles.find(c => c.id == cycle_id)
+        $scope.new_analysis.configuration.cycle_name = selected_cycle.name
+      }
     }]);

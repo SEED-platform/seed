@@ -42,10 +42,13 @@
             </div>
         </div>
     </div>
+
+
+
     <div class="section_content_container">
         <div class="section_content with_padding" style="display:flex;margin:10px 0;">
             <div style="flex-grow:1;display:flex;flex-direction:column;row-gap:10px;">
-                <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <div uib-dropdown class="btn-group pointer">
                     <button id="btnInventoryActions"
                             type="button"
                             uib-dropdown-toggle
@@ -83,6 +86,10 @@
 
                         <li role="menuitem">
                             <a ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')">Merge and Link Matches</a>
+                        </li>
+
+                        <li role="menuitem" ng-if="organization.salesforce_enabled">
+                            <a ng-click="update_salesforce()">{$:: 'Update Salesforce' | translate $}</a>
                         </li>
 
                         <li class="divider"></li>
@@ -135,7 +142,7 @@
             <div class="progress_bar_container" ng-show="uploader.in_progress">
                 <div class="progress_bar_copy_top"
                          translate="UPLOADING_PROGRESS"
-                         translate-values="{ dataset_filename: uploader.filename }"></div>
+                         translate-values="{ dataset_filename: uploader.filename, cycle_name: cycle.name }"></div>
 
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
@@ -334,10 +341,8 @@
                                         {$:: file.filename $} - {$:: file.id $}
                                     </td>
                                     <td style="border-left:0px; text-align:right;">
-                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}">
-                                        <i class="fa fa-download" aria-hidden="true"></i>
-                                    </a>
-                                    <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
+                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa fa-download" aria-hidden="true"></i></a>
+                                        <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
                                     </td>
                                     <td> {$ file.file_type $}</td>
                                     <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
@@ -382,99 +387,53 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Measures Section -->
-            <div class="section">
-                <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
-                    <div class="section_header fixed_height_short has_no_padding">
-                        <div class="section_action_container left" style="width: 50%;">
-                        <span>
-                            <h2><i class="fa fa-cogs"></i> Measures</h2>
-                        </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="section_content_container">
-                <!-- List of measures -->
-                <div class="section_content">
-                    <div class="table_list_container table_item_detail">
-                        <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                            <thead>
-                                <tr>
-                                    <th sd-resizable>Category</th>
-                                    <th sd-resizable class="ellipsis-resizable">Measure Name</th>
-                                    <th sd-resizable class="ellipsis-resizable">Measure Information</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="measure in item_state.measures">
-                                    <td>
-                                        <div id="measureAnchor{$ measure.id $}">{$ measure.category_display_name $}</div>
-                                    </td>
-                                    <td> {$ measure.display_name $}</td>
-                                    <td> Status: {$ measure.implementation_status $} <br>
-                                        Recommended: {$ measure.recommended $} <br>
-                                        Scale: {$ measure.application_scale $} <br>
-                                        Category Affected: {$ measure.category_affected $} <br>
-                                        Installation Cost: {$ measure.cost_installation $} <br>
-                                        Material Cost: {$ measure.cost_material $} <br>
-                                        M&V Cost: {$ measure.cost_mv $} <br>
-                                        Residual Cost: {$ measure.cost_residual_value $} <br>
-                                        Total First Cost: {$ measure.cost_total_first $} <br>
-                                        Capital Replacement Cost: {$ measure.cost_capital_replacement $} <br>
-                                        Description: {$ measure.description $} <br>
-                                        Useful Life: {$ measure.useful_life ? measure.useful_life + ' years' : '' $} <br>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Scenarios Section -->
+            <!-- Scenarios and Measures Section -->
             <div class="section">
                 <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                             <span>
-                                <h2><i class="fa fa-sitemap"></i> Scenarios</h2>
+                                <h2>
+                                    <!-- <i class="fa fa-bolt"></i> -->
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg">
+                                    <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0;">
+
+                                    Scenarios & Measures
+                                </h2>
                             </span>
                         </div>
                     </div>
                 </div>
+                <span style="margin: 10px;">
+                    <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)"
+                        style="padding: 1px 10px; margin-bottom: 2px">{$ accordionsCollapsed ? 'Expand All' : 'Collapse All' $}</button>
+                </span>
+                <div class="scenario-cycle">
+                    {$ cycle.name $}
+                </div>
             </div>
+            <!-- List of Scenarios and Measures grouped by AuditTemplate File Upload -->
             <div class="section_content_container">
-                <!-- List of measures -->
-                <div class="section_content">
-                    <div class="table_list_container table_item_detail">
-                        <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
-                            <thead>
-                                <tr>
-                                    <th sd-resizable>Scenario</th>
-                                    <th sd-resizable class="ellipsis-resizable">Type</th>
-                                    <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
-                                    <th sd-resizable class="ellipsis-resizable">Measures</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
-                                    <td> {$ scenario.name $}</td>
-                                    <td> {$ scenario.temporal_status $}</td>
-                                    <td>
-                                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
-                                        Peak electricity reduction (kW): {$ scenario.annual_peak_electricity_reduction | number : 2 $}<br>
-                                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
-                                    </td>
-                                    <td>
-                                        <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
-                                            <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div ng-repeat="historical_item in historical_items_with_scenarios">
+                    <div class="accordion-header" style="margin: 2px 0">
+                        <button
+                            class="accordion-button at-date"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#historical-item-{$ $index $}"
+                        >
+                            <i class="fa fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
+                            <span class="event-detail">Audit Date: {$ historical_item.state.extra_data.audit_date $}</span>
+                            <span class="event-detail">Upload Date: {$ format_epoch(historical_item.date_edited) $}</span>
+                            <span class="event-detail">{$ historical_item.state.extra_data.audit_date_type $}</span>
+                        </button>
+                    </div>
+
+                    <div id="historical-item-{$ $index $}" class="accordion-body event-collapse collapse in">
+                        <div
+                            ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
+                            ng-init="scenarios = historical_item.state.scenarios">
+                        </div>
                     </div>
                 </div>
             </div>
