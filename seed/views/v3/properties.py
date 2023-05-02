@@ -1053,7 +1053,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
             result.update({
                 'status': 'success',
+                'property_view_id': view.id,
                 'property_state_id': new_state.id,
+                'property_id': view.property.id,
                 'view': PropertyViewSerializer(view).data
             })
 
