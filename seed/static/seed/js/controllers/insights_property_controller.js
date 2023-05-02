@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.insights_property', [])
 
       // configs ($scope.configs set to saved_configs where still applies.
       // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
-      const saved_configs = JSON.parse(localStorage.getItem('insights.property.configs'));
+      const saved_configs = JSON.parse(localStorage.getItem('insights.property.configs.'+ $scope.organization.id));
       $scope.configs = {
         compliance_metric: {},
         chart_cycle: null,
@@ -83,7 +83,7 @@ angular.module('BE.seed.controller.insights_property', [])
           ..._.omit(new_configs, 'compliance_metric'),
           compliance_metric_id: new_configs.compliance_metric.id
         }
-        localStorage.setItem('insights.property.configs',  JSON.stringify(local_storage_configs));
+        localStorage.setItem('insights.property.configs.' + $scope.organization.id,  JSON.stringify(local_storage_configs));
       }, true);
 
       // load data
