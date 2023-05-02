@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -31,6 +31,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     page = request.query_params.get('page')
     per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
+    access_level_instance_id = request.query_params.get('access_level_instance_id')
     cycle_id = request.query_params.get('cycle')
     ids_only = request.query_params.get('ids_only', 'false').lower() == 'true'
     # check if there is a query parameter for the profile_id. If so, then use that one
@@ -42,6 +43,11 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
             status=status.HTTP_400_BAD_REQUEST)
     org = Organization.objects.get(id=org_id)
+    if not access_level_instance_id:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Need to pass access_level_instance_id as query parameter'},
+            status=status.HTTP_400_BAD_REQUEST)
+    access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
 
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -72,12 +78,19 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if inventory_type == 'property':
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle)
+            .filter(property__organization_id=org_id, cycle=cycle,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
         )
     elif inventory_type == 'taxlot':
         views_list = (
             TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
-            .filter(taxlot__organization_id=org_id, cycle=cycle)
+            .filter(
+                taxlot__organization_id=org_id, cycle=cycle,
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
         )
 
     include_related = (

@@ -50,11 +50,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return {order_by: sorts};
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, access_level_instance_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
+        access_level_instance_id: access_level_instance_id,
         include_related: include_related,
         ids_only: ids_only,
         shown_column_ids: shown_column_ids,
@@ -364,11 +365,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, access_level_instance_id=null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
+        access_level_instance_id: access_level_instance_id,
         include_related: include_related,
         ids_only: ids_only,
         shown_column_ids: shown_column_ids,

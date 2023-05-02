@@ -1682,6 +1682,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization_brief(user_service.get_organization().id);
           }],
+          access_level_instance_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return user_service.get_access_level_instance();
+          }],
           derived_columns_payload: ['$stateParams', 'derived_columns_service', 'organization_payload', function ($stateParams, derived_columns_service, organization_payload) {
             return derived_columns_service.get_derived_columns(organization_payload.organization.id, $stateParams.inventory_type);
           }]

@@ -143,7 +143,20 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
-            taxlot = TaxLot.objects.create(organization=self.organization)
+            access_level_info = {
+                k: v for k, v in self.extra_data.items()
+                if k in self.organization.access_level_names
+            }
+            self.extra_data = {
+                k: v for k, v in self.extra_data.items()
+                if k not in access_level_info
+            }
+            root = AccessLevelInstance.objects.get(organization=self.organization, depth=1)
+            access_level_info[self.organization.access_level_names[0]] = root.name
+            access_level_info = {k: v for k, v in access_level_info.items() if v is not None}
+            access_level_instance = AccessLevelInstance.objects.get(path=access_level_info, organization=self.organization)
+
+            taxlot = TaxLot.objects.create(organization=self.organization, access_level_instance=access_level_instance)
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 
