@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0192_remove_null_taxlot_views'),
+        ('seed', '0193_remove_null_taxlot_views'),
     ]
 
     operations = [

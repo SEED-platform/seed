@@ -15,7 +15,7 @@ def remove_null_taxlot_views(apps, _schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0191_add_data_admin_to_sf'),
+        ('seed', '0192_sf_default_account_fields'),
     ]
 
     operations = [
