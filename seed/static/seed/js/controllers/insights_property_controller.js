@@ -322,6 +322,22 @@ angular.module('BE.seed.controller.insights_property', [])
                     footer: tooltip_footer,
                   }
                 },
+                zoom: {
+                  limits: {
+                    x: { min: 'original', max: 'original', minRange: 50 },
+                    y: { min: 'original', max: 'original', minRange: 50 }
+                  },
+                  pan: {
+                    enabled: true,
+                    mode: 'xy',
+                  },
+                  zoom: {
+                    wheel: {
+                      enabled: true,
+                    },
+                    mode: 'xy',
+                  },
+                },
                 annotation: {
                   annotations: {
                     // box1: {
