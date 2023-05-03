@@ -89,7 +89,6 @@ def geocode_buildings(buildings):
         return
 
     address_geocoding_results = _address_geocoding_results(id_addresses, mapquest_api_key)
-    print(address_geocoding_results)
 
     id_geocoding_results = _id_geocodings(id_addresses, address_geocoding_results)
 
@@ -284,9 +283,22 @@ def _analyze_location(result):
     is_acceptable_granularity = granularity_level in ["P1", "L1"]
     is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
-    # The Geocoded data will look something lie this:
+    # The Geocoded data will look something like this:
     # [{'providedLocation': {'street': '18741 e 71st ave, Colorado'},
-    # 'locations': [{'street': '18741 E 71st Ave', 'adminArea6': 'Denver International Airport', 'adminArea6Type': 'Neighborhood', 'adminArea5': 'Denver', 'adminArea5Type': 'City', 'adminArea4': 'Denver', 'adminArea4Type': 'County', 'adminArea3': 'CO', 'adminArea3Type': 'State', 'adminArea1': 'US', 'adminArea1Type': 'Country', 'postalCode': '80249-7375', 'geocodeQualityCode': 'P1AAA', 'geocodeQuality': 'ADDRESS', 'dragPoint': False, 'sideOfStreet': 'L', 'linkId': '0', 'unknownInput': '', 'type': 's', 'latLng': {'lat': 39.82612, 'lng': -104.76877}, 'displayLatLng': {'lat': 39.82622, 'lng': -104.76898}, 'mapUrl': ''}]}]
+    #   'locations': [
+    #     {'street': '18741 E 71st Ave',
+    #      'adminArea6': 'Denver International Airport', 'adminArea6Type': 'Neighborhood',
+    #      'adminArea5': 'Denver', 'adminArea5Type': 'City',
+    #      'adminArea4': 'Denver', 'adminArea4Type': 'County',
+    #      'adminArea3': 'CO', 'adminArea3Type': 'State',
+    #      'adminArea1': 'US', 'adminArea1Type': 'Country',
+    #      'postalCode': '80249-7375', 'geocodeQualityCode': 'P1AAA',
+    #      'geocodeQuality': 'ADDRESS', 'dragPoint': False, 'sideOfStreet': 'L',
+    #      'linkId': '0', 'unknownInput': '', 'type': 's',
+    #      'latLng': {'lat': 39.82612, 'lng': -104.76877},
+    #      'displayLatLng': {'lat': 39.82622, 'lng': -104.76898}, 'mapUrl': ''}
+    #   ]
+    # }]
     if is_acceptable_confidence and is_acceptable_granularity:
         long = result.get('locations')[0].get('displayLatLng').get('lng')
         lat = result.get('locations')[0].get('displayLatLng').get('lat')
@@ -296,7 +308,7 @@ def _analyze_location(result):
         for i in range(1, 7):
             if result.get('locations')[0].get(f'adminArea{i}Type') is None:
                 continue
-            admin_areas[result.get('locations')[0].get(f'adminArea{i}Type')] =  result.get('locations')[0].get(f'adminArea{i}')
+            admin_areas[result.get('locations')[0].get(f'adminArea{i}Type')] = result.get('locations')[0].get(f'adminArea{i}')
 
         return {
             "is_valid": True,
