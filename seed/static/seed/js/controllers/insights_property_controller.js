@@ -503,26 +503,26 @@ angular.module('BE.seed.controller.insights_property', [])
             labels = _.uniq(_.concat(labels, _.map(ds['data'], 'x')))
           });
           labels = labels.filter(function( element ) {
-             return element !== undefined;
+            return element !== undefined;
           });
           $scope.insightsChart.data.labels = labels;
         }
 
-        // set visiblity
-        $scope.configs.dataset_visibility.forEach( (is_visibile, index) => {
-          $scope.insightsChart.setDatasetVisibility(index, is_visibile);
+        // set visibility
+        $scope.configs.dataset_visibility.forEach( (is_visible, index) => {
+          $scope.insightsChart.setDatasetVisibility(index, is_visible);
         });
-        $scope.display_annotation = saved_configs.annotation_visibility;
+        $scope.display_annotation = saved_configs?.annotation_visibility ?? true;
 
         $scope.insightsChart.update()
       }
 
       $scope.toggle_dataset_visibility = (index) => {
-        is_visibile = $scope.insightsChart.isDatasetVisible(index);
-        $scope.insightsChart.setDatasetVisibility(index, !is_visibile);
+        const is_visible = $scope.insightsChart.isDatasetVisible(index);
+        $scope.insightsChart.setDatasetVisibility(index, !is_visible);
         $scope.insightsChart.update();
 
-        $scope.configs.dataset_visibility[index] = !is_visibile;
+        $scope.configs.dataset_visibility[index] = !is_visible;
       }
 
       $scope.toggle_annotation_visibility = () => {
