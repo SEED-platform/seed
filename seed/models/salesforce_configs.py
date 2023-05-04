@@ -46,6 +46,7 @@ class SalesforceConfig(models.Model):
     logging_email = models.CharField(blank=True, max_length=128, null=True)
     update_at_hour = models.IntegerField(blank=True, null=True)
     update_at_minute = models.IntegerField(blank=True, null=True)
+    delete_label_after_sync = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

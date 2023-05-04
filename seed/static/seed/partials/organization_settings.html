@@ -467,6 +467,20 @@
                     <div class="section_content with_padding">
                         <form class="form-horizontal" role="form">
                             <div class="form-group">
+                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="delete_label_after_sync" translate>Delete Indication Label After Successful Salesforce Update</label>
+                                 <div class="col-sm-5">
+                                    <p translate="SF_DELETE_LABEL_AFTER_SYNC_TEXT"></p>
+
+                                    <input type="checkbox" id="delete_label_after_sync" class="form-control" style="width: 34px;" ng-model="conf.delete_label_after_sync" ng-disabled="::!auth.requires_owner">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_violation" translate>Violation Label</label>
                                 <div class="col-sm-5">
                                     <p translate="SF_VIOLATION_LABEL_TEXT"></p>
