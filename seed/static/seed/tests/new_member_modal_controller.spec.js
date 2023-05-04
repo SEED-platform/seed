@@ -38,7 +38,16 @@ describe('controller: new_member_modal_controller', function () {
           modal_state = 'dismiss';
         }
       },
-      organization: {organization_id: 1}
+      organization: {organization_id: 1},
+      access_level_tree: [{
+        'id': "1",
+        'data': {
+            'name': 'root',
+            'organization': "1",
+            'path': {'my org': 'root'},
+        }
+      }],
+      level_names: ["my org"]
     });
   }
 
