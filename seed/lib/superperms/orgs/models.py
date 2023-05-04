@@ -91,12 +91,16 @@ class OrganizationUser(models.Model):
 
 
 class AccessLevelInstance(NS_Node):
+    """Node in the Accountibilty Hiarchy tree"""
     name = models.CharField(max_length=100, null=False)
-    # organization _could_ be extrapolate from the tree, but is often needed and it's not a readable query.
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    # path automaticly mantained dict of ancestors names by access level names.
+    # See get_path and set_path.
     path = models.JSONField(null=False)
 
     node_order_by = ['name']
+
+    # TODO: Add constraint that siblings cannot have same name.
 
     def get_path(self):
         """get a dictionary detailing the ancestors of this Access Level Instance
@@ -376,7 +380,7 @@ pre_delete.connect(organization_pre_delete, sender=Organization)
 
 @receiver(pre_save, sender=Organization)
 def presave_organization(sender, instance, **kwargs):
-    """if instance.access_level_names changed, update the ali.paths
+    """For each instance.access_level_names item changed, update the ali.paths
     """
     if instance.id is None:
         return
@@ -387,10 +391,12 @@ def presave_organization(sender, instance, **kwargs):
     min_len = min(len(previous_access_level_names), len(instance.access_level_names))
 
     with transaction.atomic():
+        # for each name in access_level_name...
         for i in range(min_len):
             previous_access_level_name = previous_access_level_names[i]
             current_access_level_name = instance.access_level_names[i]
 
+            # If the name was changed, alter the paths of the ALIs.
             if previous_access_level_name != current_access_level_name:
                 for ali in alis:
                     if previous_access_level_name in ali.path:
@@ -402,8 +408,7 @@ def presave_organization(sender, instance, **kwargs):
 @receiver(post_save, sender=Organization)
 def post_save_organization(sender, instance, created, **kwargs):
     """
-    When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the
-    record receives an updated datetime
+    Give new Orgs a Accountibilty Hiarchy root.
     """
     if created:
         if instance.access_level_names == []:

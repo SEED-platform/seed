@@ -56,6 +56,7 @@ class TaxLot(models.Model):
 
 @receiver(pre_save, sender=TaxLot)
 def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this TaxLot   as the root."""
     if instance.access_level_instance is None:
         root = AccessLevelInstance.objects.get(organization=instance.org, depth=1)
         instance.acces_level_instance = root
@@ -143,6 +144,7 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
+            # remove access_level_info from extra data
             access_level_info = {
                 k: v for k, v in self.extra_data.items()
                 if k in self.organization.access_level_names
@@ -151,6 +153,8 @@ class TaxLotState(models.Model):
                 k: v for k, v in self.extra_data.items()
                 if k not in access_level_info
             }
+
+            # use access_level_info to find ALI
             root = AccessLevelInstance.objects.get(organization=self.organization, depth=1)
             access_level_info[self.organization.access_level_names[0]] = root.name
             access_level_info = {k: v for k, v in access_level_info.items() if v is not None}

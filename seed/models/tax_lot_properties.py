@@ -264,6 +264,7 @@ class TaxLotProperty(models.Model):
             if obj_dict.get('measures'):
                 del obj_dict['measures']
 
+            # TODO: this should happen in the annotations, not the serizalers.
             if this_cls == 'Property':
                 obj_dict.update(obj.property.access_level_instance.get_path())
             else:

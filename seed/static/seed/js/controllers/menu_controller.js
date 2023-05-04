@@ -197,7 +197,6 @@ angular.module('BE.seed.controller.menu', [])
         $scope.mouseout_org();
         await user_service.set_organization(org);
         $scope.menu.user.organization = org;
-        console.log($scope.menu);
         $state.reload();
         init();
       };

@@ -80,6 +80,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(
                 property__organization_id=org_id, cycle=cycle,
+                # this is a m-to-1-to-1, so the joins not _that_ bad
+                # should it prove to be un-preformant, I think we can make it a "through" field
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
@@ -89,6 +91,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
             .filter(
                 taxlot__organization_id=org_id, cycle=cycle,
+                # this is a m-to-1-to-1, so the joins not _that_ bad
+                # should it prove to be un-preformant, I think we can make it a "through" field
                 taxlot__access_level_instance__lft__gte=access_level_instance.lft,
                 taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )

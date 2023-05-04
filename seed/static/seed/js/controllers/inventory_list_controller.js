@@ -72,12 +72,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       gridUtil,
       uiGridGridMenuService
     ) {
-
-      console.log("--- inventory_list_controller ---")
-      console.log(access_level_instance_payload);
-      $scope.access_level_instance = access_level_instance_payload;
-      console.log("-------")
-
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -810,6 +804,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
 
+      // TODO: surely, this can be accomplished more elegantly.
       const access_level_columns = $scope.organization.access_level_names.map(name => {
         return {
           name: name,
