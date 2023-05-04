@@ -43,9 +43,6 @@ angular.module('BE.seed.controller.insights_program', [])
         $scope.selected_metric = $scope.compliance_metric.id;
       }
 
-      // table row toggles
-      $scope.show_properties_for_dataset = {'y': false, 'n': false, 'u': false};
-
       $scope.data = null;
 
       $scope.updateSelectedMetric = () => {
@@ -87,18 +84,6 @@ angular.module('BE.seed.controller.insights_program', [])
         a.href = $scope.insightsChart.toBase64Image();
         a.download = 'Property Overview.png';
         a.click();
-      }
-
-      $scope.get_display_field_value = function(cycle_id, prop_id) {
-        let name = null
-        let record = _.find($scope.data.properties_by_cycles[cycle_id], {'property_view_id': prop_id})
-        if (record) {
-          name = _.find(record, function(v,k) {
-            return _.startsWith(k, $scope.organization.property_display_field)
-          });
-        }
-
-        return name ? name : prop_id
       }
 
       // CHARTS
