@@ -30,8 +30,8 @@ def assign_taxlots_to_root_acces_level(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0026_organizationuser_access_level_instance'),
-        ('seed', '0190_auto_20230324_1451'),
+        ('orgs', '0025_auto_20230413_1250'),
+        ('seed', '0194_alter_taxlotview_taxlot'),
     ]
 
     operations = [

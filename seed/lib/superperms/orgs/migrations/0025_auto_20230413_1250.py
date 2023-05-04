@@ -19,11 +19,23 @@ def give_org_access_level_root(apps, schema_editor):
             tree_id=i,
             organization=org,
             name="root",
+            path={org.access_level_names[0]: "root"}, 
             depth=1,
             lft=1,
             rgt=2,
         ).save()
 
+
+@transaction.atomic
+def assign_users_to_root_acces_level(apps, schema_editor):
+    OrganizationUser = apps.get_model('orgs', 'OrganizationUser')
+    AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
+
+    users = OrganizationUser.objects.all()
+    for user in users:
+        root = AccessLevelInstance.objects.get(depth=1, organization=user.organization)
+        user.access_level_instance = root
+        user.save()
 
 class Migration(migrations.Migration):
 
@@ -47,11 +59,22 @@ class Migration(migrations.Migration):
                 ('depth', models.PositiveIntegerField(db_index=True)),
                 ('name', models.CharField(max_length=100)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
-                ('path', models.JSONField(null=True))
+                ('path', models.JSONField(null=False))
             ],
             options={
                 'abstract': False,
             },
         ),
         migrations.RunPython(give_org_access_level_root),
+        migrations.AddField(
+            model_name='organizationuser',
+            name='access_level_instance',
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.accesslevelinstance', related_name="users"),
+        ),
+        migrations.RunPython(assign_users_to_root_acces_level, reverse_code=migrations.RunPython.noop),
+        migrations.AlterField(
+            model_name='organizationuser',
+            name='access_level_instance',
+            field=models.ForeignKey(null=False, on_delete=django.db.models.deletion.CASCADE, to='orgs.accesslevelinstance', related_name="users"),
+        )
     ]
