@@ -11,9 +11,9 @@ from functools import reduce
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.db.models import Subquery
-from django.core.exceptions import ObjectDoesNotExist
 
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track

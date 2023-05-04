@@ -8,18 +8,12 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import post_save, pre_delete
+from django.db import models, transaction
+from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from treebeard.ns_tree import NS_Node
-from django.db.models.signals import (
-    m2m_changed,
-    post_save,
-    pre_delete,
-    pre_save
-)
+
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
-from django.db import IntegrityError, transaction
 
 _log = logging.getLogger(__name__)
 
@@ -127,18 +121,18 @@ def set_path(sender, instance, **kwargs):
     # if instance is new, set path
     if instance.id is None:
         instance.path = instance.get_path()
-    
+
     # else, if we updated the name...
     else:
         previous = AccessLevelInstance.objects.get(pk=instance.id)
         if instance.name != previous.name:
             level_name = instance.organization.access_level_names[instance.depth - 1]
             # update our path
-            instance.path[level_name] = instance.name 
+            instance.path[level_name] = instance.name
             # update our children's path
             for ali in instance.get_descendants():
                 ali.path[level_name] = instance.name
-        
+
 
 class Organization(models.Model):
     """A group of people that optionally contains another sub group."""
@@ -386,7 +380,7 @@ def presave_organization(sender, instance, **kwargs):
     """
     if instance.id is None:
         return
-    
+
     previous = Organization.objects.get(pk=instance.id)
     previous_access_level_names = previous.access_level_names
     alis = AccessLevelInstance.objects.filter(organization=instance)
@@ -403,8 +397,8 @@ def presave_organization(sender, instance, **kwargs):
                         ali.path[current_access_level_name] = ali.path[previous_access_level_name]
                         del ali.path[previous_access_level_name]
                         ali.save()
-                
-                
+
+
 @receiver(post_save, sender=Organization)
 def post_save_organization(sender, instance, created, **kwargs):
     """
@@ -414,8 +408,7 @@ def post_save_organization(sender, instance, created, **kwargs):
     if created:
         if instance.access_level_names == []:
             instance.access_level_names = [instance.name]
-    
+
         root = AccessLevelInstance.add_root(organization=instance, name="root")
         root.save()
         instance.save()
-

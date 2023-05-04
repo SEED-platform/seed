@@ -644,12 +644,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         return {
             'status': 'success',
             "user": {
-                    "id": ou.id,
-                    "access_level_instance": {
-                        "id": ou.access_level_instance.id,
-                        "name": ou.access_level_instance.name,
-                    }
+                "id": ou.id,
+                "access_level_instance": {
+                    "id": ou.access_level_instance.id,
+                    "name": ou.access_level_instance.name,
                 }
+            }
         }
 
     @has_perm_class('requires_superuser')

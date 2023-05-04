@@ -78,7 +78,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if inventory_type == 'property':
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle,
+            .filter(
+                property__organization_id=org_id, cycle=cycle,
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )

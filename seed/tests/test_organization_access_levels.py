@@ -40,7 +40,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             'access_level_tree': [{
                 'id': root.pk,
                 'data': {
-                    'name': 'root', 
+                    'name': 'root',
                     'organization': self.org.id,
                     'path': {'my org': 'root'},
                 }
@@ -69,9 +69,9 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 },
                 'children': [
                     {
-                        'id': aunt.pk, 
+                        'id': aunt.pk,
                         'data': {
-                            'name': 'aunt', 
+                            'name': 'aunt',
                             'organization': self.org.id,
                             'path': {'my org': 'root', '2nd gen': 'aunt'},
                         }
@@ -79,14 +79,14 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                     {
                         'id': mom.pk,
                         'data': {
-                            'name': 'mom', 
+                            'name': 'mom',
                             'organization': self.org.id,
                             'path': {'my org': 'root', '2nd gen': 'mom'},
                         },
                         'children': [{
-                            'id': me.pk, 
+                            'id': me.pk,
                             'data': {
-                                'name': 'me', 
+                                'name': 'me',
                                 'organization': self.org.id,
                                 'path': {'my org': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
                             }
@@ -181,7 +181,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 'children': [{
                     'id': boo.pk,
                     'data': {
-                        'name': 'boo', 
+                        'name': 'boo',
                         'organization': self.org.id,
                         'path': {'1st gen': 'root', '2nd gen': 'boo'},
                     }

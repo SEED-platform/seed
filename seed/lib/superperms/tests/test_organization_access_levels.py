@@ -73,9 +73,9 @@ class TestOrganizationAccessLevels(TestCase):
                 },
                 'children': [
                     {
-                        'id': aunt.pk, 
+                        'id': aunt.pk,
                         'data': {
-                            'name': 'aunt', 
+                            'name': 'aunt',
                             'organization': fake_org.id,
                             'path': {'Organization A': 'root', '2nd gen': 'aunt'},
                         }
@@ -83,15 +83,15 @@ class TestOrganizationAccessLevels(TestCase):
                     {
                         'id': mom.pk,
                         'data': {
-                            'name': 'mom', 
+                            'name': 'mom',
                             'organization': fake_org.id,
                             'path': {'Organization A': 'root', '2nd gen': 'mom'},
                         },
                         'children': [
                             {
-                                'id': me.pk, 
+                                'id': me.pk,
                                 'data': {
-                                    'name': 'me', 
+                                    'name': 'me',
                                     'organization': fake_org.id,
                                     'path': {'Organization A': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
                                 }
