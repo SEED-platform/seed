@@ -359,12 +359,14 @@ class Organization(models.Model):
         return new_access_level_instance
 
     def get_access_tree(self) -> dict:
-        root = AccessLevelInstance.objects.get(organization=self, depth=1)
-
-        return AccessLevelInstance.dump_bulk(root)
+        return AccessLevelInstance.dump_bulk(self.root)
 
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
+
+    @property
+    def root(self):
+        return AccessLevelInstance.objects.get(organization=self, depth=1)
 
 
 def organization_pre_delete(sender, instance, **kwargs):

@@ -20,7 +20,6 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
-    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -207,8 +206,7 @@ class UserViewSet(viewsets.ViewSet):
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
         if not org.is_member(user):
-            root = AccessLevelInstance.objects.get(organization=org, depth=1)
-            org.add_member(user, access_level_instance_id=root.id)
+            org.add_member(user, access_level_instance=org.root)
 
         if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'

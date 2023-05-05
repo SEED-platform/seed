@@ -43,10 +43,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
             status=status.HTTP_400_BAD_REQUEST)
     org = Organization.objects.get(id=org_id)
-    if not access_level_instance_id:
-        return JsonResponse(
-            {'status': 'error', 'message': 'Need to pass access_level_instance_id as query parameter'},
-            status=status.HTTP_400_BAD_REQUEST)
     access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
 
     if cycle_id:

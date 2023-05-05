@@ -28,7 +28,7 @@ class TestOrganizationAccessLevels(TestCase):
 
         # has right AccessLevelInstances
         assert AccessLevelInstance.objects.filter(organization=fake_org).count() == 1
-        root = AccessLevelInstance.objects.get(organization=fake_org)
+        root = fake_org.root
         assert root.name == "root"
 
         # get right access_tree
@@ -45,11 +45,10 @@ class TestOrganizationAccessLevels(TestCase):
 
     def test_create_level_instance_without_name(self):
         fake_org, _, _ = create_organization(self.fake_user, 'Organization A')
-        root = AccessLevelInstance.objects.get(organization=fake_org)
 
         # create access level instance on an unnamed Instance
         with self.assertRaises(Exception):
-            fake_org.add_new_access_level_instance(root.id, "mom")
+            fake_org.add_new_access_level_instance(fake_org.root.id, "mom")
 
     def test_build_out_tree(self):
         fake_org, _, _ = create_organization(self.fake_user, 'Organization A')
@@ -57,15 +56,14 @@ class TestOrganizationAccessLevels(TestCase):
         # populate tree
         fake_org.access_level_names += ["2nd gen", "3rd gen"]
         fake_org.save()
-        root = AccessLevelInstance.objects.get(organization=fake_org)
-        aunt = fake_org.add_new_access_level_instance(root.id, "aunt")
-        mom = fake_org.add_new_access_level_instance(root.id, "mom")
+        aunt = fake_org.add_new_access_level_instance(fake_org.root.id, "aunt")
+        mom = fake_org.add_new_access_level_instance(fake_org.root.id, "mom")
         me = fake_org.add_new_access_level_instance(mom.id, "me")
 
         # get tree
         assert fake_org.get_access_tree() == [
             {
-                'id': root.pk,
+                'id': fake_org.root.pk,
                 'data': {
                     'name': 'root',
                     'organization': fake_org.id,
@@ -108,9 +106,8 @@ class TestOrganizationAccessLevels(TestCase):
         # populate tree
         fake_org.access_level_names += ["2nd gen", "3rd gen"]
         fake_org.save()
-        root = AccessLevelInstance.objects.get(organization=fake_org)
-        fake_org.add_new_access_level_instance(root.id, "aunt")
-        mom = fake_org.add_new_access_level_instance(root.id, "mom")
+        fake_org.add_new_access_level_instance(fake_org.root.id, "aunt")
+        mom = fake_org.add_new_access_level_instance(fake_org.root.id, "mom")
         me = fake_org.add_new_access_level_instance(mom.id, "me")
 
         assert me.get_path() == {

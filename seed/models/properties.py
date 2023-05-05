@@ -378,8 +378,7 @@ class PropertyState(models.Model):
                 }
 
                 # use access_level_info to find ALI
-                root = AccessLevelInstance.objects.get(organization=self.organization, depth=1)
-                access_level_info[self.organization.access_level_names[0]] = root.name
+                access_level_info[self.organization.access_level_names[0]] = self.organization.root.name
                 access_level_info = {k: v for k, v in access_level_info.items() if v is not None}
                 access_level_instance = AccessLevelInstance.objects.get(path=access_level_info, organization=self.organization)
 

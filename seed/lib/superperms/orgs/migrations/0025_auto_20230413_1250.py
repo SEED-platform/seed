@@ -33,8 +33,7 @@ def assign_users_to_root_acces_level(apps, schema_editor):
 
     users = OrganizationUser.objects.all()
     for user in users:
-        root = AccessLevelInstance.objects.get(depth=1, organization=user.organization)
-        user.access_level_instance = root
+        user.access_level_instance = user.organization.root
         user.save()
 
 class Migration(migrations.Migration):

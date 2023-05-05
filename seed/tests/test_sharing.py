@@ -12,7 +12,6 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
-    AccessLevelInstance,
     Organization
 )
 
@@ -31,8 +30,7 @@ class SharingViewTests(TestCase):
         }
         self.admin_user = User.objects.create_superuser(**self.admin_details)
         self.parent_org = Organization.objects.create(name='Parent')
-        root = AccessLevelInstance.objects.get(organization=self.parent_org, depth=1)
-        self.parent_org.add_member(self.admin_user, ROLE_OWNER, access_level_instance_id=root)
+        self.parent_org.add_member(self.admin_user, ROLE_OWNER, access_level_instance=self.parent_org.root)
 
         self.eng_user_details = {
             'username': 'eng_owner@demo.com',
@@ -42,8 +40,7 @@ class SharingViewTests(TestCase):
         self.eng_user = User.objects.create_user(**self.eng_user_details)
         self.eng_org = Organization.objects.create(parent_org=self.parent_org,
                                                    name='Engineers')
-        root = AccessLevelInstance.objects.get(organization=self.eng_org, depth=1)
-        self.eng_org.add_member(self.eng_user, ROLE_OWNER, access_level_instance_id=root.id)
+        self.eng_org.add_member(self.eng_user, ROLE_OWNER, access_level_instance=self.eng_org.root)
 
         self.des_user_details = {
             'username': 'des_owner@demo.com',
@@ -53,7 +50,6 @@ class SharingViewTests(TestCase):
         self.des_user = User.objects.create_user(**self.des_user_details)
         self.des_org = Organization.objects.create(parent_org=self.parent_org,
                                                    name='Designers')
-        root = AccessLevelInstance.objects.get(organization=self.des_org, depth=1)
         self.des_org.add_member(self.des_user, ROLE_MEMBER)
 
     def test_scenario(self):

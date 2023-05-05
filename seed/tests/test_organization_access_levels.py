@@ -30,7 +30,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
     def test_access_level_tree(self):
         url = reverse_lazy('api:v3:organization-access_levels-tree', args=[self.org.id],)
-        root = AccessLevelInstance.objects.get(organization=self.org)
 
         # get tree
         raw_result = self.client.get(url)
@@ -38,7 +37,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert result == {
             'access_level_names': ['my org'],
             'access_level_tree': [{
-                'id': root.pk,
+                'id': self.org.root.pk,
                 'data': {
                     'name': 'root',
                     'organization': self.org.id,
@@ -50,9 +49,8 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         # populate tree
         self.org.access_level_names += ["2nd gen", "3rd gen"]
         self.org.save()
-        root = AccessLevelInstance.objects.get(organization=self.org)
-        aunt = self.org.add_new_access_level_instance(root.id, "aunt")
-        mom = self.org.add_new_access_level_instance(root.id, "mom")
+        aunt = self.org.add_new_access_level_instance(self.org.root.id, "aunt")
+        mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
         me = self.org.add_new_access_level_instance(mom.id, "me")
 
         # get tree
@@ -61,7 +59,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert result == {
             'access_level_names': ['my org', "2nd gen", "3rd gen"],
             'access_level_tree': [{
-                'id': root.pk,
+                'id': self.org.root.pk,
                 'data': {
                     'name': 'root',
                     'organization': self.org.id,
@@ -128,8 +126,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         # populate tree
         self.org.access_level_names += ["2nd gen", "3rd gen"]
         self.org.save()
-        root = AccessLevelInstance.objects.get(organization=self.org)
-        self.org.add_new_access_level_instance(root.id, "aunt")
+        self.org.add_new_access_level_instance(self.org.root.id, "aunt")
 
         # get try to add to few levels
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
@@ -151,7 +148,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert Organization.objects.get(pk=self.org.id).access_level_names == ["one", "two"]
 
     def test_add_new_access_level_instance(self):
-        root = AccessLevelInstance.objects.get(organization=self.org)
         self.org.access_level_names = ["1st gen", "2nd gen"]
         self.org.save()
 
@@ -159,7 +155,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         url = reverse_lazy('api:v3:organization-access_levels-add-instance', args=[self.org.id])
         raw_result = self.client.post(
             url,
-            data=json.dumps({"parent_id": root.pk, "name": "boo"}),
+            data=json.dumps({"parent_id": self.org.root.pk, "name": "boo"}),
             content_type='application/json',
         )
         assert raw_result.status_code == 201
@@ -172,7 +168,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         assert result == {
             'access_level_names': ["1st gen", "2nd gen"],
             'access_level_tree': [{
-                'id': root.pk,
+                'id': self.org.root.pk,
                 'data': {
                     'name': 'root',
                     'organization': self.org.id,

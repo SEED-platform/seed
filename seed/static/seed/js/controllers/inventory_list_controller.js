@@ -34,7 +34,6 @@ angular.module('BE.seed.controller.inventory_list', [])
     'uiGridConstants',
     'i18nService', // from ui-grid
     'organization_payload',
-    'access_level_instance_payload',
     'gridUtil',
     'uiGridGridMenuService',
     function (
@@ -68,7 +67,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       uiGridConstants,
       i18nService,
       organization_payload,
-      access_level_instance_payload,
       gridUtil,
       uiGridGridMenuService
     ) {
@@ -1118,7 +1116,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           exclude_ids,
           true,
           $scope.organization.id,
-          access_level_instance_payload.id, // access level instance
           true,
           $scope.column_filters,
           $scope.column_sorts,
