@@ -235,7 +235,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
-        message = f"SEED Unique Benchmark ID Column data on property {str(property_view.id)} is undefined. Update your property record with this information."
+        message = f"SEED Unique Benchmark ID Column data on property {property_view.id} is undefined. Update your property record with this information."
         return status, message
 
     """ CONTACT/ACCOUNT CREATION """
@@ -279,7 +279,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = f"Error retrieving Salesforce Contact by email for property {str(property_view.id)}: {str(e)}"
+            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
             return status, message
 
         if not contact_record:
@@ -298,14 +298,14 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 if account_name is None:
                     # error, no valid account name
                     message = f"No contact account name specified in SEED or default contact account name given \
-                            for SEED property {str(property_view.id)}. This information is needed to create a \
+                            for SEED property {property_view.id}. This information is needed to create a \
                             Salesforce Contact. Update the property record or enter a default account name on \
                             the organization settings page."
                     return status, message
 
                 account_record = salesforce_client.find_account_by_name(account_name)
             except Exception as e:
-                message = f"Error retrieving Salesforce Account '{account_name}' by name for property {str(property_view.id)}: {str(e)}"
+                message = f"Error retrieving Salesforce Account '{account_name}' by name for property {property_view.id}: {str(e)}"
                 return status, message
             if not account_record:
                 # create account
@@ -316,7 +316,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     account_record = salesforce_client.create_account(account_name, **a_details)
                     # print(f"created account record: {account_record}")
                 except Exception as e:
-                    message = f"Error creating Salesforce Account for SEED property {str(property_view.id)}: {str(e)}"
+                    message = f"Error creating Salesforce Account for SEED property {property_view.id}: {str(e)}"
                     return status, message
 
             account_id = account_record['Id']
@@ -331,7 +331,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = f"Error creating Salesforce Contact for SEED property {str(property_view.id)}: {str(e)}"
+                message = f"Error creating Salesforce Contact for SEED property {property_view.id}: {str(e)}"
                 return status, message
         # add contact ID to benchmark contact params
         params[config.benchmark_contact_fieldname] = contact_record['Id']
@@ -354,7 +354,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 contact_info[key] = flat_state[colname.display_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.display_name} Column on property {str(property_view.id)} is undefined. \
+                    message = f"SEED {colname.display_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Data Administration Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
                                 organization settings page."
@@ -363,7 +363,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 contact_info[key] = flat_state[colname.column_name]
                 if not contact_info[key] and key != 'account_name':
                     # validate that field is not blank
-                    message = f"SEED {colname.column_name} Column on property {str(property_view.id)} is undefined. \
+                    message = f"SEED {colname.column_name} Column on property {property_view.id} is undefined. \
                                 This information is needed for Salesforce Data Administrator Contact creation. Update your property record with \
                                 this information or clear out the contact creation Salesforce functionality on your \
                                 organization settings page."
@@ -371,7 +371,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         try:
             contact_record = salesforce_client.find_contact_by_email(contact_info['email'])
         except Exception as e:
-            message = f"Error retrieving Salesforce Contact by email for property {str(property_view.id)}: {str(e)}"
+            message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {str(e)}"
             return status, message
 
         if not contact_record:
@@ -390,7 +390,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 if account_name is None:
                     # error, no valid account name
                     message = f"No data administrator account name specified in SEED or default data administrator account \
-                            name given for SEED property {str(property_view.id)}. This information is needed to create a \
+                            name given for SEED property {property_view.id}. This information is needed to create a \
                             Salesforce Contact. Update the property record or enter a default account name on \
                             the organization settings page."
                     return status, message
@@ -398,7 +398,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                 account_record = salesforce_client.find_account_by_name(account_name)
 
             except Exception as e:
-                message = f"Error retrieving Salesforce Account by name for property {str(property_view.id)}: {str(e)}"
+                message = f"Error retrieving Salesforce Account by name for property {property_view.id}: {str(e)}"
                 return status, message
 
             if not account_record:
@@ -425,7 +425,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             try:
                 contact_record = salesforce_client.create_contact(contact_info['email'], **c_details)
             except Exception as e:
-                message = f"Error creating Salesforce Contact for property {str(property_view.id)}: {str(e)}"
+                message = f"Error creating Salesforce Contact for property {property_view.id}: {str(e)}"
                 return status, message
         # add contact ID to data admin param
         params[config.data_admin_contact_fieldname] = contact_record['Id']
