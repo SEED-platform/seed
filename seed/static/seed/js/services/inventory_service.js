@@ -55,7 +55,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       var params = {
         organization_id: organization_id,
-        access_level_instance_id: access_level_instance_id,
         include_related: include_related,
         ids_only: ids_only,
         shown_column_ids: shown_column_ids,

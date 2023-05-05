@@ -1118,7 +1118,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           exclude_ids,
           true,
           $scope.organization.id,
-          $scope.access_level_instance.id, // access level instance
+          access_level_instance_payload.id, // access level instance
           true,
           $scope.column_filters,
           $scope.column_sorts,
