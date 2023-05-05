@@ -850,6 +850,9 @@ msgstr "Supprimer"
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
 
+msgid "Delete Indication Label After Successful Salesforce Update"
+msgstr "Supprimer l'étiquette d'indication après une mise à jour réussie de Salesforce"
+
 msgid "Delete Organization"
 msgstr "Supprimer l'organisation"
 
@@ -2552,6 +2555,9 @@ msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsq
 
 msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
 msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsqu'il n'y a pas de données valides dans la colonne Nom du compte de l'administrateur de données spécifiée ci-dessus. Laissez ce champ vide pour signaler une erreur et abandonner la synchronisation lorsque la colonne Nom du compte de l'administrateur de données est vide."
+
+msgid "SF_DELETE_LABEL_AFTER_SYNC_TEXT"
+msgstr "Cochez cette case pour supprimer automatiquement l'étiquette d'indication des propriétés qui ont été mises à jour avec succès dans Salesforce afin d'empêcher de futures mises à jour automatiques."
 
 msgid "SF_DOMAIN_TEXT"
 msgstr "Si votre instance Salesforce est un environment de test (sandbox), inscrivez 'test'; sinon lassez le champ vide."
