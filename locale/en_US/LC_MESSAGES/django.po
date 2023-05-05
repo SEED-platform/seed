@@ -564,6 +564,9 @@ msgstr "Connection"
 msgid "Contact"
 msgstr "Contact"
 
+msgid "Contact Account Name Column"
+msgstr "Contact Account Name Column"
+
 msgid "Contact Benchmark Field"
 msgstr "Contact Benchmark Field"
 
@@ -752,6 +755,15 @@ msgstr "If you'd like to geocode your data using the MapQuest service, please pr
 msgid "Data"
 msgstr "Data"
 
+msgid "Data Administrator Account Name Column"
+msgstr "Data Administrator Account Name Column"
+
+msgid "Data Administrator Contact Field"
+msgstr "Data Administrator Contact Field"
+
+msgid "Data Administrator Contact Settings"
+msgstr "Data Administrator Contact Settings"
+
 msgid "Data File Header"
 msgstr "Data File Header"
 
@@ -815,6 +827,12 @@ msgstr "Deadline:"
 msgid "Decode UBID/ULID"
 msgstr "Decode UBID/ULID"
 
+msgid "Default Contact Account Name"
+msgstr "Default Contact Account Name"
+
+msgid "Default Data Administrator Account Name"
+msgstr "Default Data Administrator Account Name"
+
 msgid "Default Display Fields"
 msgstr "Default Display Fields"
 
@@ -823,6 +841,9 @@ msgstr "Delete"
 
 msgid "Delete All Mappings"
 msgstr "Delete All Mappings"
+
+msgid "Delete Indication Label After Successful Salesforce Update"
+msgstr "Delete Indication Label After Successful Salesforce Update"
 
 msgid "Delete Organization"
 msgstr "Delete Organization"
@@ -1574,6 +1595,9 @@ msgstr "<strong>Note:</strong> only the first sheet of multi-sheet Excel files w
 
 msgid "Main"
 msgstr "Main"
+
+msgid "Main Contact Settings"
+msgstr "Main Contact Settings"
 
 msgid "Maintenance"
 msgstr "Maintenance"
@@ -2452,7 +2476,7 @@ msgid "SENSOR_READING_COUNTS_TITLE"
 msgstr "Sensor Reading Counts"
 
 msgid "SF_ACCOUNT_NAME_FIELDNAME_TEXT"
-msgstr "Select the SEED field that holds the account name for the contact record. Ex: 'Organization'"
+msgstr "Select the SEED field that holds the account name for the contact record to be created in Salesforce. Ex: 'Organization'"
 
 msgid "SF_ACCOUNT_RECORD_TYPE_TEXT"
 msgstr "If your Salesforce instance has multiple account types, provide the Record Type ID of the type of account to use when accounts are automatically created from SEED"
@@ -2478,6 +2502,9 @@ msgstr "Configure the contact information used for benchmark status notification
 msgid "SF_CONTACT_EMAIL_FIELDNAME_TEXT"
 msgstr "Select the SEED field that holds the contact email for the benchmark record. Ex: 'Email'"
 
+msgid "SF_CONTACT_HEADER_TEXT"
+msgstr "The following fields will be used to retrieve or create a main contact to associate with the Benchmark object in Salesforce. Leave blank if your instance does not use this functionality."
+
 msgid "SF_CONTACT_NAME_FIELDNAME_TEXT"
 msgstr "Select the SEED field that holds the contact name for the benchmark record. Ex: 'On Behalf Of'"
 
@@ -2487,11 +2514,29 @@ msgstr "If your Salesforce instance has multiple contact types, provide the Reco
 msgid "SF_CYCLE_FIELDNAME_TEXT"
 msgstr "If your Salesforce Benchmark Record stores cycle name, please enter the name of the salesforce field here, ex: Cycle__c"
 
+msgid "SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Select the SEED field that holds the account name for the data administrator contact record to be created in Salesforce. Ex: 'Organization'"
+
+msgid "SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"
+msgstr "If your Salesforce Benchmark Record stores a Salesforce Contact relation for a Property Data Administrator, provide the Salesforce field name here, ex: Property_Data_Administrator__c"
+
 msgid "SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"
 msgstr "Select the SEED field that holds the property data administrator's email for the benchmark record. Ex: 'Property Data Administrator - Email'"
 
+msgid "SF_DATA_ADMIN_HEADER_TEXT"
+msgstr "The following fields will be used to retrieve or create a property data administrator contact to associate with the Benchmark object in Salesforce. Leave blank if your instance does not use this functionality."
+
 msgid "SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"
 msgstr "Select the SEED field that holds the property data administrator's name for the benchmark record. Ex: 'Property Data Administrator'"
+
+msgid "SF_DEFAULT_ACCOUNT_NAME_TEXT"
+msgstr "Provide a default account name for Salesforce to use when there is no valid data in the Contact Account Name Column specified above.  Leave this field blank to report an error and abort sync instead when the Contact Account Name Column is blank."
+
+msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
+msgstr "Provide a default account name for Salesforce to use when there is no valid data in the Data Administrator Account Name Column specified above.  Leave this field blank to report an error and abort sync instead when the Data Administrator Account Name Column is blank."
+
+msgid "SF_DELETE_LABEL_AFTER_SYNC_TEXT"
+msgstr "Check this checkbox to automatically remove the Indication Label from properties that were successfully updated in Salesforce in order to prevent future automatic updates."
 
 msgid "SF_DOMAIN_TEXT"
 msgstr "If your Salesforce instance is a sandbox, set this field to the value 'test'; otherwise leave blank."

@@ -377,7 +377,7 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views')
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 

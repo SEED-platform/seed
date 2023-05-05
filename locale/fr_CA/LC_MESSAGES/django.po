@@ -571,6 +571,9 @@ msgstr "Connexion"
 msgid "Contact"
 msgstr "Contact"
 
+msgid "Contact Account Name Column"
+msgstr "Colonne Nom du compte de contact"
+
 msgid "Contact Benchmark Field"
 msgstr "Nom de champ Contact pour l'object Benchmark"
 
@@ -760,6 +763,15 @@ msgstr "Si vous souhaitez géocoder vos données à l'aide du service MapQuest, 
 msgid "Data"
 msgstr "Les données"
 
+msgid "Data Administrator Account Name Column"
+msgstr "Colonne Nom du compte de l'administrateur de données"
+
+msgid "Data Administrator Contact Field"
+msgstr "Champ de contact de l'administrateur des données"
+
+msgid "Data Administrator Contact Settings"
+msgstr "Paramètres de contact de l'administrateur de données"
+
 msgid "Data File Header"
 msgstr "En-tête du fichier de données"
 
@@ -823,6 +835,12 @@ msgstr "Date limite:"
 msgid "Decode UBID/ULID"
 msgstr "Décoder UBID/ULID"
 
+msgid "Default Contact Account Name"
+msgstr "Nom du compte de contact par défaut"
+
+msgid "Default Data Administrator Account Name"
+msgstr "Nom du compte d'administrateur de données par défaut"
+
 msgid "Default Display Fields"
 msgstr "Champs d'affichage par défaut"
 
@@ -831,6 +849,9 @@ msgstr "Supprimer"
 
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
+
+msgid "Delete Indication Label After Successful Salesforce Update"
+msgstr "Supprimer l'étiquette d'indication après une mise à jour réussie de Salesforce"
 
 msgid "Delete Organization"
 msgstr "Supprimer l'organisation"
@@ -1587,6 +1608,9 @@ msgstr "<strong>Remarque:</strong> seule la première feuille de fichiers Excel 
 
 msgid "Main"
 msgstr "Principale"
+
+msgid "Main Contact Settings"
+msgstr "Principaux paramètres de contact"
 
 msgid "Maintenance"
 msgstr "Maintenance"
@@ -2471,6 +2495,7 @@ msgstr "Lectures de capteur"
 msgid "SENSOR_READING_COUNTS_TITLE"
 msgstr "Compte de lecture du capteur"
 
+#, fuzzy
 msgid "SF_ACCOUNT_NAME_FIELDNAME_TEXT"
 msgstr "Selectionez le champ qui contient le nom de compte du contact. Ex: 'Organization'"
 
@@ -2498,6 +2523,9 @@ msgstr "Configurez les paramètres pour les notifications Salesforce reliées au
 msgid "SF_CONTACT_EMAIL_FIELDNAME_TEXT"
 msgstr "Selectionez le champ qui contient l'adresse courriel du contact pour l'object Benchmark. Ex:'Email'"
 
+msgid "SF_CONTACT_HEADER_TEXT"
+msgstr "Les champs suivants seront utilisés pour récupérer ou créer un contact principal à associer à l'objet Benchmark dans Salesforce. Laissez vide si votre instance n'utilise pas cette fonctionnalité."
+
 msgid "SF_CONTACT_NAME_FIELDNAME_TEXT"
 msgstr "Selectionez le champ qui contient le nom du contact pour l'object Benchmark. Ex: 'On Behalf Of'"
 
@@ -2507,11 +2535,29 @@ msgstr "Si votre Salesforce a plusieurs types de Contact, fournissez le 'Record 
 msgid "SF_CYCLE_FIELDNAME_TEXT"
 msgstr "Si votre objet Benchmark a un champ pour capturer le nom du cycle, inscrivez le nom du champ dans l'application Salesforce, ex: Cycle__c"
 
+msgid "SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"
+msgstr "Sélectionnez le champ SEED contenant le nom de compte pour l'enregistrement de contact de l'administrateur de données à créer dans Salesforce. Ex : \"Organisation\""
+
+msgid "SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"
+msgstr "Si votre enregistrement de référence Salesforce stocke une relation de contact Salesforce pour un administrateur de données de propriété, indiquez le nom du champ Salesforce ici, par exemple : Property_Data_Administrator__c"
+
 msgid "SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"
 msgstr "Selectionez le champ qui contient l'adresse courriel de l'administrateur de données pour l'objet Salesforce. Ex: 'Property Data Administrator - Email'"
 
+msgid "SF_DATA_ADMIN_HEADER_TEXT"
+msgstr "Les champs suivants seront utilisés pour récupérer ou créer un contact d'administrateur de données de propriété à associer à l'objet Benchmark dans Salesforce. Laissez vide si votre instance n'utilise pas cette fonctionnalité."
+
 msgid "SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"
 msgstr "Selectionez le champ qui contient le nom de l'administrateur de données pour l'objet Salesforce. Ex: 'Property Data Administrator'"
+
+msgid "SF_DEFAULT_ACCOUNT_NAME_TEXT"
+msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsqu'il n'y a pas de données valides dans la colonne Nom du compte de contact spécifiée ci-dessus. Laissez ce champ vide pour signaler une erreur et abandonner la synchronisation lorsque la colonne Nom du compte de contact est vide."
+
+msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
+msgstr "Fournissez un nom de compte par défaut à utiliser par Salesforce lorsqu'il n'y a pas de données valides dans la colonne Nom du compte de l'administrateur de données spécifiée ci-dessus. Laissez ce champ vide pour signaler une erreur et abandonner la synchronisation lorsque la colonne Nom du compte de l'administrateur de données est vide."
+
+msgid "SF_DELETE_LABEL_AFTER_SYNC_TEXT"
+msgstr "Cochez cette case pour supprimer automatiquement l'étiquette d'indication des propriétés qui ont été mises à jour avec succès dans Salesforce afin d'empêcher de futures mises à jour automatiques."
 
 msgid "SF_DOMAIN_TEXT"
 msgstr "Si votre instance Salesforce est un environment de test (sandbox), inscrivez 'test'; sinon lassez le champ vide."

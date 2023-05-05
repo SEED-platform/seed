@@ -36,13 +36,17 @@ class SalesforceConfig(models.Model):
     contact_email_column = models.ForeignKey(Column, related_name="contact_email_column", null=True, on_delete=models.CASCADE)
     contact_name_column = models.ForeignKey(Column, related_name="contact_name_column", null=True, on_delete=models.CASCADE)
     account_name_column = models.ForeignKey(Column, related_name="account_name_column", null=True, on_delete=models.CASCADE)
+    default_contact_account_name = models.CharField(blank=True, max_length=200, null=True)
     benchmark_contact_fieldname = models.CharField(blank=True, max_length=128, null=True)
     data_admin_email_column = models.ForeignKey(Column, related_name="data_admin_email_column", null=True, on_delete=models.CASCADE)
     data_admin_name_column = models.ForeignKey(Column, related_name="data_admin_name_column", null=True, on_delete=models.CASCADE)
     data_admin_contact_fieldname = models.CharField(blank=True, max_length=128, null=True)
+    data_admin_account_name_column = models.ForeignKey(Column, related_name="data_admin_account_name_column", null=True, on_delete=models.CASCADE)
+    default_data_admin_account_name = models.CharField(blank=True, max_length=200, null=True)
     logging_email = models.CharField(blank=True, max_length=128, null=True)
     update_at_hour = models.IntegerField(blank=True, null=True)
     update_at_minute = models.IntegerField(blank=True, null=True)
+    delete_label_after_sync = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
