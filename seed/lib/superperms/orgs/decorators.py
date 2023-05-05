@@ -193,16 +193,15 @@ def has_perm_class(perm_name):
     def decorator(fn):
         @wraps(fn)
         def _wrapped(self, request, *args, **kwargs):
-            # Skip perms checks if settings allow super_users to bypass.
-            if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
-                return fn(self, request, *args, **kwargs)
-
             org_id = get_org_id(request)
-
             try:
                 org = Organization.objects.get(pk=org_id)
             except Organization.DoesNotExist:
                 return _make_resp('org_dne')
+
+            # Skip perms checks if settings allow super_users to bypass.
+            if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+                return fn(self, request, *args, **kwargs)
 
             try:
                 org_user = OrganizationUser.objects.get(

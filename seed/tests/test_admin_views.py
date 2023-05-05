@@ -129,9 +129,11 @@ class AdminViewsTest(TestCase):
         """
         Create a new user and a new org at the same time.
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'org_name': 'New Org',
                 'first_name': 'New',
                 'last_name': 'Owner',
+                'organization_id': org.id,
                 'email': 'new_owner@testserver'}
         res = self._post_json(self.add_user_url, data)
 
@@ -164,9 +166,11 @@ class AdminViewsTest(TestCase):
         account creation by an admin to receiving the signup email
         to confirming the account and setting a password.
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'first_name': 'New',
                 'last_name': 'User',
                 'email': 'new_user@testserver',
+                'organization_id': org.id,
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user
@@ -214,9 +218,11 @@ class AdminViewsTest(TestCase):
         """
         Simulates the signup and login forcing login username to lowercase
         """
+        org, _, _ = create_organization(self.user, "test-organization-a")
         data = {'first_name': 'New',
                 'last_name': 'User',
                 'email': 'New_Lower_User@testserver.com',
+                'organization_id': org.id,
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
         self.client.logout()  # stop being the admin user
