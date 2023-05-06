@@ -26,8 +26,6 @@ AUTO_SYNC_NAME = "salesforce_sync_org-"
 def test_connection(params):
     """ test Salesforce connection with credentials stored in the salesforce_config model
     """
-    print("++ test_connection ++")
-    print(params)
     status = False
     message = None
     try:
@@ -36,7 +34,6 @@ def test_connection(params):
             status = True
         return status, message, sf
     except Exception as e:
-        print("++ error ++")
         message = " ".join(["Salesforce Authentication Failed:", str(e)])
         return status, message, None
 
@@ -167,7 +164,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     message = None
     params = {}
 
-    print("a")
     """ INITIALIZATION """
     # if client is initialized, use it, otherwise initialize it
     if salesforce_client is None:
@@ -176,7 +172,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             # connection failed
             return connection_status, message
 
-    print("b")
     # get salesforce config object
     if config is None:
         try:
@@ -189,7 +184,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     if len(mappings) == 0:
         mappings = SalesforceMapping.objects.filter(organization_id=org_id)
 
-    print("c")
     # get property view
     result = _get_property_view(property_id, org_id)
     if result.get('status', None) == 'error':
@@ -201,7 +195,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     label_names = _get_label_names(result['labels'])
     result['label_names'] = label_names
 
-    print("d")
     # check if indication label is applied (used for manual sync on inventory detail page)
     if not config.indication_label_id or config.indication_label_id not in result['labels']:
         message = 'Cannot update Property ' + str(property_id) + ': missing indication \
