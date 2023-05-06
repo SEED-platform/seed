@@ -110,7 +110,6 @@ def retrieve_connection_params(org_id):
 
     if len(config) >= 1:
         config = config.first()
-        params['organization_id'] = org_id
         params['instance'] = config.url
         params['username'] = config.username
         params['password'] = decrypt(config.password)[0] if config.password else None
