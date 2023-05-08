@@ -137,13 +137,13 @@ angular.module('BE.seed.controller.insights_program', [])
                   shown_dataset_index = activePoint.datasetIndex;
 
                   // update locally stored insights_property configs
-                  const property_configs = JSON.parse(localStorage.getItem('insights.property.configs'));
+                  const property_configs = JSON.parse(localStorage.getItem('insights.property.configs.' + $scope.organization.id)) ?? {};
                   property_configs.compliance_metric_id = $scope.selected_metric;
                   property_configs.chart_cycle = cycle.id;
                   property_configs.dataset_visibility = [false, false, false];
                   property_configs.dataset_visibility[shown_dataset_index] = true;
                   property_configs.annotation_visibility = shown_dataset_index == 1;
-                  localStorage.setItem('insights.property.configs',  JSON.stringify(property_configs));
+                  localStorage.setItem('insights.property.configs.' + $scope.organization.id,  JSON.stringify(property_configs));
 
                   $state.go('insights_property');
                 }
