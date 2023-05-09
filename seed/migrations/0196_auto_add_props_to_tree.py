@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0025_auto_20230413_1250'),
-        ('seed', '0194_alter_taxlotview_taxlot'),
+        ('seed', '0195_sf_delete_label_checkbox'),
     ]
 
     operations = [

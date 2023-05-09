@@ -367,22 +367,9 @@ class PropertyState(models.Model):
                     _log.error("Could not promote this property")
                     return None
             else:
-                # remove access_level_info from extra data
-                access_level_info = {
-                    k: v for k, v in self.extra_data.items()
-                    if k in self.organization.access_level_names
-                }
-                self.extra_data = {
-                    k: v for k, v in self.extra_data.items()
-                    if k not in access_level_info
-                }
-
-                # use access_level_info to find ALI
-                access_level_info[self.organization.access_level_names[0]] = self.organization.root.name
-                access_level_info = {k: v for k, v in access_level_info.items() if v is not None}
-                access_level_instance = AccessLevelInstance.objects.get(path=access_level_info, organization=self.organization)
-
-                prop = Property.objects.create(organization=self.organization, access_level_instance=access_level_instance)
+                access_level_instance_id = self.extra_data["access_level_instance_id"]
+                del self.extra_data["access_level_instance_id"]
+                prop = Property.objects.create(organization=self.organization, access_level_instance_id=access_level_instance_id)
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 

@@ -53,7 +53,7 @@ from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.lib.xml_mapping import reader as xml_reader
 from seed.models import (
     ASSESSED_BS,
@@ -246,6 +246,30 @@ def _build_cleaner(org):
     return cleaners.Cleaner(ontology)
 
 
+def prep_access_level_instance(model):
+    # remove access_level_info from extra data
+    access_level_info = {
+        k: v for k, v in model.extra_data.items()
+        if k in model.organization.access_level_names
+    }
+    model.extra_data = {
+        k: v for k, v in model.extra_data.items()
+        if k not in access_level_info
+    }
+
+    # use access_level_info to find ALI
+    access_level_info[model.organization.access_level_names[0]] = model.organization.root.name
+    access_level_info = {k: v for k, v in access_level_info.items() if v is not None}
+
+    try:
+        access_level_instance = AccessLevelInstance.objects.get(path=access_level_info, organization=model.organization)
+    except AccessLevelInstance.DoesNotExist:
+        access_level_instance = model.organization.root
+
+    # set models access_level_instance
+    model.extra_data["access_level_instance_id"] = access_level_instance.id
+
+
 @shared_task(ignore_result=True)
 def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -385,6 +409,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
+
+                        prep_access_level_instance(map_model_obj)
+
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
                         if hasattr(map_model_obj, 'clean'):
