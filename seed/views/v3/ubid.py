@@ -142,3 +142,39 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         }
 
         return result
+
+
+    @api_endpoint_class
+    @action(detail=False, methods=['GET'])
+    def dog(self, request):
+        return 'dog'
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def create(self, request):
+        return 'create'
+
+    @api_endpoint_class
+    @ajax_request_class
+    def list(self, request):
+        return 'list'
+
+    @api_endpoint_class
+    @ajax_request_class
+    def retrieve(self, request, pk):
+        return 'retrieve'
+
+    @api_endpoint_class
+    @ajax_request_class
+    def update(self, request, pk):
+        return 'update'
+
+    @api_endpoint_class
+    @ajax_request_class
+    def destroy(self, request, pk):
+        return 'destroy'
+    

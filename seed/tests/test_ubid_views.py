@@ -245,3 +245,42 @@ class UbidViewTests(TestCase):
         }
 
         self.assertEqual(result_dict, expectation)
+
+
+    def test_ubid_crud_endpoint(self):
+        response = self.client.post(
+            reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        response = response.json()
+        self.assertEqual(response, 'create')
+
+        response = self.client.get(
+            reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        response = response.json()
+        self.assertEqual(response, 'list')
+
+        response = self.client.get(
+            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        response = response.json()
+        self.assertEqual(response, 'retrieve')
+
+        response = self.client.put(
+            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        response = response.json()
+        self.assertEqual(response, 'update')
+
+        response = self.client.delete(
+            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        response = response.json()
+        self.assertEqual(response, 'destroy')
+
+
