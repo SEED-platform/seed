@@ -12,6 +12,7 @@ from django.urls import reverse
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
+from seed.models.ubids import Ubid
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -43,10 +44,19 @@ class UbidViewTests(TestCase):
     def test_ubid_decode_by_id_endpoint_base(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
-        property_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        # property_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
 
         property = PropertyState(**property_details)
         property.save()
+
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'property': property
+        }
+
+        ubid = Ubid(**ubid_details)
+        ubid.save()
 
         property_view = self.property_view_factory.get_property_view(state=property)
 
@@ -75,6 +85,7 @@ class UbidViewTests(TestCase):
 
         # Need to check that these are almost equal. Underlying gdal methods
         # vary slightly on linux vs mac
+
         for index, coord in enumerate(wkt_to_polygon(bounding_box_wkt(refreshed_property))['coordinates'][0]):
             self.assertAlmostEqual(coord[0], known_property_bounding_box[index][0])
             self.assertAlmostEqual(coord[1], known_property_bounding_box[index][1])
@@ -93,7 +104,6 @@ class UbidViewTests(TestCase):
 
         property_correctly_populated_details = self.property_state_factory.get_details()
         property_correctly_populated_details["organization_id"] = self.org.id
-        property_correctly_populated_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
         property_correctly_populated_details['bounding_box'] = (
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
@@ -111,11 +121,18 @@ class UbidViewTests(TestCase):
         property_correctly_populated = PropertyState(**property_correctly_populated_details)
         property_correctly_populated.save()
 
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'property': property_correctly_populated
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
+
         property_correctly_populated_view = self.property_view_factory.get_property_view(state=property_correctly_populated)
 
         property_not_decoded_details = self.property_state_factory.get_details()
         property_not_decoded_details["organization_id"] = self.org.id
-        property_not_decoded_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
         # bounding_box could be populated from a GeoJSON import
         property_not_decoded_details['bounding_box'] = (
             "POLYGON ((-87.56021875000002 41.74504999999999, "
@@ -126,6 +143,14 @@ class UbidViewTests(TestCase):
         )
         property_not_decoded = PropertyState(**property_not_decoded_details)
         property_not_decoded.save()
+
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'property': property_not_decoded
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
 
         property_not_decoded_view = self.property_view_factory.get_property_view(state=property_not_decoded)
 

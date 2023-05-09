@@ -7,7 +7,7 @@ from django.db import models
 from seed.models import PropertyState, TaxLotState 
 
 class Ubid(models.Model):
-    ubid = models.CharField(max_length=255, null=False)
-    property = models.ForeignKey(PropertyState, on_delete=models.CASCADE, null=True, related_name="ubid_set")
-    taxlot = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, null=True, related_name="ubid_set")
+    ubid = models.CharField(max_length=255, null=False, blank=True)
+    property = models.ForeignKey(PropertyState, on_delete=models.CASCADE, null=True)
+    taxlot = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, null=True)
     preferred = models.BooleanField(default=False)

@@ -166,7 +166,8 @@ class PropertyState(models.Model):
     audit_template_building_id = models.CharField(max_length=255, null=True, blank=True)
 
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    ubid = models.CharField(max_length=255, null=True, blank=True)
+    # UBIDs are moving to their own model, once old code has been migrated, this needs to be deleted
+    ubid_dead = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
     # for all the properties. The main campus record will have the pm_property_id

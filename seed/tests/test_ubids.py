@@ -14,8 +14,12 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory
 )
+from unittest import skip
+from django.db.models import Q
 
-class UbidTests(TransactionTestCase):
+
+
+class UbidModelTests(TransactionTestCase):
 
     def setUp(self):
         user_details = {
@@ -63,7 +67,7 @@ class UbidTests(TransactionTestCase):
             ubid="3333AAAA+3333AAA-3333-3333-3333-3333",
             property=ps3,
         )
-
+        breakpoint()
         # model properties
         self.assertEqual(ubid1a.property, ps1)
         self.assertEqual(ubid1b.property, ps1)
@@ -95,3 +99,30 @@ class UbidTests(TransactionTestCase):
 
         ubid3.delete() 
         self.assertEqual(PropertyState.objects.count(), 1)
+        breakpoint()
+
+
+# class UbidViewTests(TransactionTestCase):
+    
+#     def setUp(self):
+#         user_details = {
+#             'username': 'test_user@demo.com',
+#             'password': 'test_pass',
+#             'email': 'test_user@demo.com'
+#         }
+#         self.user = User.objects.create_superuser(**user_details)
+#         self.user.generate_key()
+#         self.org, _, _ = create_organization(self.user)
+
+#         auth_string = base64.urlsafe_b64encode(bytes(
+#             '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
+#         ))
+#         self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
+#         self.headers = {'Authorization': self.auth_string}
+
+#         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+#         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
+
+#     def test_pass(self):
+#         self.assertEqual(1, 1)
