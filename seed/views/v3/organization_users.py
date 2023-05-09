@@ -61,15 +61,15 @@ class OrganizationUserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['PUT'])
     def add(self, request, organization_pk, pk):
         """
-        Adds an existing user to an organization.
+        Adds an existing user to an organization as an owner.
         """
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        _orguser, status = org.add_member(user)
+        created = org.add_member(user)
 
         # Send an email if a new user has been added to the organization
-        if status:
+        if created:
             try:
                 domain = request.get_host()
             except Exception:
