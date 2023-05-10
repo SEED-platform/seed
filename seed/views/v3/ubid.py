@@ -17,13 +17,17 @@ from seed.models.tax_lots import TaxLotState, TaxLotView
 from seed.models import Ubid 
 from seed.serializers.ubids import UbidSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
 from seed.utils.ubid import decode_unique_ids
 
 
 class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
     model = Ubid 
     serializer_class = UbidSerializer
+    queryset = Ubid.objects.all()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -148,16 +152,13 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
 
         return result
 
-
-    # def get_queryset(self):
-    #     org_id = self.get_organization(self.request)
-    #     return Ubid.objects.filter(Q(property__organization=org_id) | Q(taxlot__organization=org_id))
-    
+    # overrode endpoint to set response to json, not OrderedDict
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class 
     def list(self, request):
-        org_id = self.get_organization(request)
-        ubids = Ubid.objects.filter(Q(property__organization=org_id) | Q(taxlot__organization=org_id))
+        org = self.get_organization(request)
+        ubids = Ubid.objects.filter(Q(property__organization=org) | Q(taxlot__organization=org))
 
         return JsonResponse(
             {
@@ -166,53 +167,56 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK
         )
-
+    
+    # overrode endpoint to set response to json, not OrderedDict
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk):
-        org_id = self.get_organization(request)
-        ubid = Ubid.objects.get(id=pk)
+        org = self.get_organization(request)
+        try:
+            ubid = Ubid.objects.get(
+                Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
+            )
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "data": self.serializer_class(ubid).data
+                },
+                status=status.HTTP_200_OK
+            )
+        except Ubid.DoesNotExist:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Ubid with id {pk} does not exist'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
 
-
-        return JsonResponse(
-            {
-                "status": "success",
-                "data": self.serializer_class(ubid).data
-            },
-            status=status.HTTP_200_OK
-        )
-
-    # @api_endpoint_class
-    # @action(detail=False, methods=['GET'])
-    # def dog(self, request):
-    #     return 'dog'
-
-    # @swagger_auto_schema(
-    #     manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-    #     request_body=AutoSchemaHelper.schema_factory(
-    #         {'ubid': 'string'},
-    #         description='Unique Building Identifier (UBID)'
-    #     )
-    # )
-    # @api_endpoint_class
-    # @ajax_request_class
-    # @has_perm_class('can_modify_data')
-    # def create(self, request):
-    #     body = request.data 
-    #     org_id = int(self.get_organization(request))
-    #     breakpoint()
-    #     return 'create'
-
- 
-
-
+    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk):
-        return 'update'
+        org = self.get_organization(request)
+        ubid = Ubid.objects.get(
+            Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
+        )
+        valid_fields = [field.name for field in Ubid._meta.fields]
 
-    @api_endpoint_class
-    @ajax_request_class
-    def destroy(self, request, pk):
-        return 'destroy'
-    
+        for field, value in request.data.items():
+            if field in valid_fields:
+                setattr(ubid, field, value)
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Invalid field '{field}' given. Accepted fields are {valid_fields}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        ubid.save()
+        return JsonResponse({
+            'status': 'success',
+            'data': UbidSerializer(ubid).data,
+        }, status=status.HTTP_200_OK)

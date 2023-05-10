@@ -442,12 +442,43 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(self.taxlot.id, ubid['taxlot'])
 
     def test_retrieve_endpoint(self):
+        # Retrieve property ubid
         response = self.client.get(
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-        x = response
-        self.assertEqual(1,1)
+
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual('success', data['status'])
+        self.assertEqual('A+A-1-1-1-1', data['data']['ubid'])
+        self.assertEqual(True, data['data']['preferred'])
+        self.assertEqual(self.property.id, data['data']['property'])
+        self.assertEqual(None, data['data']['taxlot'])
+
+        # retrieve taxlot ubid
+        response = self.client.get(
+            reverse('api:v3:ubid-detail', args=[self.ubid1c.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual('success', data['status'])
+        self.assertEqual('C+C-3-3-3-3', data['data']['ubid'])
+        self.assertEqual(True, data['data']['preferred'])
+        self.assertEqual(None, data['data']['property'])
+        self.assertEqual(self.taxlot.id, data['data']['taxlot'])
+
+        response = self.client.get(
+            reverse('api:v3:ubid-detail', args=[9999999]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+
+        self.assertEqual(404, response.status_code)
+        data = response.json()
+        self.assertEqual('error', data['status'])
+        self.assertEqual('Ubid with id 9999999 does not exist', data['message'])
         
 
     def test_create_endpoint(self):
@@ -495,3 +526,68 @@ class UbidViewCrudTests(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(5, Ubid.objects.count())
+        
+    def test_update_endpoint(self):
+        # Valid Data
+        self.assertEqual('A+A-1-1-1-1', self.ubid1a.ubid)
+        response = self.client.put(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'ubid': 'Z+Z-1-1-1-1'
+            }),
+            content_type='application/json'
+        )
+
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual('success', data['status'])
+        self.assertEqual(self.ubid1a.id, data['data']['id'])
+        self.assertEqual('Z+Z-1-1-1-1', data['data']['ubid'])
+        self.assertEqual(True, data['data']['preferred'])
+        self.assertEqual(self.property.id, data['data']['property'])
+        self.assertEqual(None, data['data']['taxlot'])
+
+        response = self.client.put(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'preferred': False
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual('Z+Z-1-1-1-1', data['data']['ubid'])
+        self.assertEqual(False, data['data']['preferred'])
+
+        # Invalid Data 
+        response = self.client.put(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'invalid': 'data'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(400, response.status_code)
+        data = response.json()
+        self.assertEqual(False, data['success'])
+        self.assertEqual("Invalid field 'invalid' given. Accepted fields are ['id', 'ubid', 'property', 'taxlot', 'preferred']", data['message'])
+
+    def test_destroy_endpoint(self):
+        # Valid id
+        self.assertEqual(4, Ubid.objects.count())
+        self.assertTrue(self.ubid1a in Ubid.objects.all())
+        response = self.client.delete(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        ) 
+        self.assertEqual(204, response.status_code)
+        self.assertEqual(3, Ubid.objects.count())
+        self.assertTrue(self.ubid1a not in Ubid.objects.all())
+
+        # Invalid id
+        response = self.client.delete(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        ) 
+        self.assertEqual(404, response.status_code)
+        self.assertEqual('Not found.', response.json()['detail'])
