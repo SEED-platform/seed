@@ -165,10 +165,6 @@ class PropertyState(models.Model):
     # Audit Template has their own building id
     audit_template_building_id = models.CharField(max_length=255, null=True, blank=True)
 
-    # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    # UBIDs are moving to their own model, once old code has been migrated, this needs to be deleted
-    ubid_dead = models.CharField(max_length=255, null=True, blank=True)
-
     # If the property is a campus then the pm_parent_property_id is the same
     # for all the properties. The main campus record will have the pm_property_id
     # set to be the same as the pm_parent_property_id
@@ -595,7 +591,6 @@ class PropertyState(models.Model):
                     ps.pm_parent_property_id,
                     ps.custom_id_1,
                     ps.audit_template_building_id,
-                    ps.ubid,
                     ps.address_line_1,
                     ps.address_line_2,
                     ps.city,
@@ -651,7 +646,7 @@ class PropertyState(models.Model):
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
         keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
-                       'audit_template_building_id', 'ubid', 'address_line_1', 'address_line_2',
+                       'audit_template_building_id', 'address_line_1', 'address_line_2',
                        'city', 'state', 'postal_code', 'longitude', 'latitude',
                        'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
                        'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',

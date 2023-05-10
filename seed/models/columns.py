@@ -214,12 +214,6 @@ class Column(models.Model):
             'column_description': 'ULID',
             'data_type': 'string',
         }, {
-            'column_name': 'ubid',
-            'table_name': 'PropertyState',
-            'display_name': 'UBID',
-            'column_description': 'UBID',
-            'data_type': 'string',
-        }, {
             'column_name': 'custom_id_1',
             'table_name': 'PropertyState',
             'display_name': 'Custom ID 1',
