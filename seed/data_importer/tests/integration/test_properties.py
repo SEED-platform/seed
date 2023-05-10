@@ -87,7 +87,8 @@ class TestProperties(DataMappingBaseTestCase):
     def test_get_history(self):
         # This is the last property state of the object that is in test_coparent test above
         property_state = PropertyState.objects.filter(
-            ubid='86HJX5QV+FJ3-2-3-2-2',
+            # a Ubid model needs to be generated on import
+            # ubid='86HJX5QV+FJ3-2-3-2-2',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()
@@ -105,7 +106,8 @@ class TestProperties(DataMappingBaseTestCase):
         # test a complicated case where there is matching on itself
         # International House   93029 Wellington Blvd   Rust    13334485;23810533   Residence
         property_state = PropertyState.objects.filter(
-            ubid='86HJX66G+P7C-2-3-2-3',
+            # a Ubid model needs to be genreated on import
+            # ubid='86HJX66G+P7C-2-3-2-3',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()

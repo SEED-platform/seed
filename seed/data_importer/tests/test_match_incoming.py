@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import os.path as osp
 from datetime import datetime
+from unittest import skip
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -274,6 +275,8 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rtls_5.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rtls_5.merge_state, MERGE_STATE_NEW)
 
+    # Matching inventory by UBID is on hold.
+    @skip
     def test_match_properties_on_ubid(self):
         base_details = {
             'ubid': '86HJPCWQ+2VV-1-3-2-3',
@@ -723,7 +726,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # Define matching values
         matching_pm_property_id = '11111'
         matching_address_line_1 = '123 Match Street'
-        matching_ubid = '86HJPCWQ+2VV-1-3-2-3'
         matching_custom_id_1 = 'MatchingID12345'
 
         # For first file, create properties with no duplicates or matches
@@ -741,8 +743,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(**base_details_file_1)
         base_details_file_1['address_line_1'] = matching_address_line_1
         self.property_state_factory.get_property_state(**base_details_file_1)
-        base_details_file_1['ubid'] = matching_ubid
-        self.property_state_factory.get_property_state(**base_details_file_1)
         base_details_file_1['custom_id_1'] = matching_custom_id_1
         self.property_state_factory.get_property_state(**base_details_file_1)
 
@@ -756,7 +756,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             PropertyState.objects.count(),
             PropertyView.objects.count(),
         ]
-        self.assertEqual([5, 5, 5], counts)
+        self.assertEqual([4, 4, 4], counts)
 
         """
         For second file, create several properties that are one or many of the following:
@@ -785,8 +785,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # (outcome: 2 additional -States, 2 new Property/-View)
         base_details_file_2['custom_id_1'] = matching_custom_id_1
         ps_3 = self.property_state_factory.get_property_state(**base_details_file_2)
-        base_details_file_2['ubid'] = matching_ubid
-        ps_4 = self.property_state_factory.get_property_state(**base_details_file_2)
 
         # Create 3 properties - with 1 duplicate and 1 match within it's own file that will
         # eventually become 1 completely new property
@@ -812,9 +810,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.import_file_2.save()
         geocode_and_match_buildings_task(self.import_file_2.id)
 
-        self.assertEqual(9, Property.objects.count())
-        self.assertEqual(9, PropertyView.objects.count())
-        self.assertEqual(18, PropertyState.objects.count())
+        self.assertEqual(7, Property.objects.count())
+        self.assertEqual(7, PropertyView.objects.count())
+        self.assertEqual(16, PropertyState.objects.count())
 
         ps_ids_of_deleted = PropertyState.objects.filter(
             data_state=DATA_STATE_DELETE
@@ -836,7 +834,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         ps_ids_of_all_promoted = PropertyView.objects.values_list('state_id', flat=True)
         self.assertIn(ps_2.id, ps_ids_of_all_promoted)
         self.assertIn(ps_3.id, ps_ids_of_all_promoted)
-        self.assertIn(ps_4.id, ps_ids_of_all_promoted)
 
         rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
         results = rimport_file_2.matching_results_data
@@ -846,11 +843,11 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_records': None,  # This is calculated in a separate process
             'property_duplicates_against_existing': 1,
             'property_duplicates_within_file': 2,
-            'property_initial_incoming': 10,
+            'property_initial_incoming': 9,
             'property_merges_against_existing': 1,
             'property_merges_between_existing': 0,
             'property_merges_within_file': 2,
-            'property_new': 4,
+            'property_new': 3,
             'tax_lot_duplicates_against_existing': 0,
             'tax_lot_duplicates_within_file': 0,
             'tax_lot_initial_incoming': 0,
@@ -865,7 +862,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # Define matching values
         matching_jurisdiction_tax_lot_id = '11111'
         matching_address_line_1 = '123 Match Street'
-        matching_ulid = '86HJPCWQ+2VV-1-3-2-3'
         matching_custom_id_1 = 'MatchingID12345'
 
         # For first file, create taxlots with no duplicates or matches
@@ -883,8 +879,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
         base_details_file_1['address_line_1'] = matching_address_line_1
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
-        base_details_file_1['ulid'] = matching_ulid
-        self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
         base_details_file_1['custom_id_1'] = matching_custom_id_1
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
 
@@ -898,7 +892,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             TaxLotState.objects.count(),
             TaxLotView.objects.count(),
         ]
-        self.assertEqual([5, 5, 5], counts)
+        self.assertEqual([4, 4, 4], counts)
 
         """
         For second file, create several taxlots that are one or many of the following:
@@ -923,8 +917,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # (outcome: 2 additional -States, 2 new TaxLot/-View)
         base_details_file_2['custom_id_1'] = matching_custom_id_1
         tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
-        base_details_file_2['ulid'] = matching_ulid
-        tls_4 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
 
         # Create 3 taxlots - with 1 duplicate and 1 match within it's own file that will
         # eventually become 1 completely new property
@@ -950,9 +942,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.import_file_2.save()
         geocode_and_match_buildings_task(self.import_file_2.id)
 
-        self.assertEqual(8, TaxLot.objects.count())
-        self.assertEqual(8, TaxLotView.objects.count())
-        self.assertEqual(18, TaxLotState.objects.count())
+        self.assertEqual(6, TaxLot.objects.count())
+        self.assertEqual(6, TaxLotView.objects.count())
+        self.assertEqual(16, TaxLotState.objects.count())
 
         tls_ids_of_deleted = TaxLotState.objects.filter(
             data_state=DATA_STATE_DELETE
@@ -973,7 +965,6 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         tls_ids_of_all_promoted = TaxLotView.objects.values_list('state_id', flat=True)
         self.assertIn(tls_3.id, tls_ids_of_all_promoted)
-        self.assertIn(tls_4.id, tls_ids_of_all_promoted)
 
         rimport_file_2 = ImportFile.objects.get(pk=self.import_file_2.id)
         results = rimport_file_2.matching_results_data
@@ -990,11 +981,11 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'property_new': 0,
             'tax_lot_duplicates_against_existing': 1,
             'tax_lot_duplicates_within_file': 3,
-            'tax_lot_initial_incoming': 10,
+            'tax_lot_initial_incoming': 9,
             'tax_lot_merges_against_existing': 1,
             'tax_lot_merges_between_existing': 0,
             'tax_lot_merges_within_file': 2,
-            'tax_lot_new': 3,
+            'tax_lot_new': 2,
         }
         self.assertEqual(results, expected)
 
