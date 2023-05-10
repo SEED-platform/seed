@@ -303,7 +303,7 @@ angular.module('BE.seed.controller.insights_property', [])
             a_diff = Math.abs(a["y"] - a["target"]);
             b_diff = Math.abs(b["y"] - b["target"]);
 
-            return a_diff < b_diff;
+            return b_diff - a_diff;
           });
           non_compliant.data.forEach((d, i) => {
             d['x'] = i;
