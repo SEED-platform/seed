@@ -10,6 +10,7 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
+from seed.models import Ubid
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
@@ -73,10 +74,19 @@ class UbidUtilMethods(TestCase):
     def test_decode_ubids_is_successful_when_valid_UBID_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
-        property_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
+        # property_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
 
         property = PropertyState(**property_details)
         property.save()
+
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'property': property,
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
+
         properties = PropertyState.objects.filter(pk=property.id)
 
         decode_unique_ids(properties)
@@ -114,9 +124,17 @@ class UbidUtilMethods(TestCase):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
         taxlot_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
-
         taxlot = TaxLotState(**taxlot_details)
         taxlot.save()
+
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'taxlot': taxlot,
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
+        
         taxlots = TaxLotState.objects.filter(pk=taxlot.id)
 
         decode_unique_ids(taxlots)
