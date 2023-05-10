@@ -121,7 +121,7 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
             address_line_1 |
             jurisdiction_property_id |
             custom_id_1 |
-            pm_property_id 
+            pm_property_id
         )
         return queryset.filter(query).order_by('-state__id')
 

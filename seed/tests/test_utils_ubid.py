@@ -8,9 +8,9 @@ from django.contrib.gis.geos import Polygon
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
+from seed.models import Ubid
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.models import Ubid
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
@@ -134,7 +134,7 @@ class UbidUtilMethods(TestCase):
         }
         ubid = Ubid(**ubid_details)
         ubid.save()
-        
+
         taxlots = TaxLotState.objects.filter(pk=taxlot.id)
 
         decode_unique_ids(taxlots)

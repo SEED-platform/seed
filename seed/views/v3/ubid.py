@@ -98,9 +98,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         ubid_unpopulated = 0
         ubid_successfully_decoded = 0
         ubid_not_decoded = 0
-        ulid_unpopulated = 0
-        ulid_successfully_decoded = 0
-        ulid_not_decoded = 0
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
         if property_view_ids:

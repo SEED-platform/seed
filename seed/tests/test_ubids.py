@@ -203,7 +203,7 @@ class UbidViewTests(TestCase):
         )
         taxlot_correctly_populated = TaxLotState(**taxlot_correctly_populated_details)
         taxlot_correctly_populated.save()
-    
+
         ubid_details = {
             'ubid': '86HJPCWQ+2VV-1-3-2-3',
             'preferred': True,
@@ -235,7 +235,6 @@ class UbidViewTests(TestCase):
         }
         ubid = Ubid(**ubid_details)
         ubid.save()
-
 
         taxlot_not_decoded_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_not_decoded)
 
