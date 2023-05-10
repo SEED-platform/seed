@@ -1669,7 +1669,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
-        # ('ulid',),
+        # ('ulid',),  # How should this be updated to the related model Ubid? Taxlot.ubid_set.first().ubid
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),
@@ -1677,7 +1677,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     prop_cmp_fmt = [
         ('lot_number', 'custom_id_1'),
-        # ('ubid',), # How should this be updated to the related model Ubid?
+        # ('ubid',),  # How should this be updated to the related model Ubid? Property.ubid_set.first().ubid
         ('custom_id_1',),
         ('normalized_address',),
         ('pm_property_id',),
