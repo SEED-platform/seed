@@ -171,9 +171,6 @@ class UbidViewTests(TestCase):
             "ubid_unpopulated": 1,
             "ubid_successfully_decoded": 1,
             "ubid_not_decoded": 1,
-            "ulid_unpopulated": 0,
-            "ulid_successfully_decoded": 0,
-            "ulid_not_decoded": 0
         }
 
         self.assertEqual(result_dict, expectation)
@@ -188,7 +185,8 @@ class UbidViewTests(TestCase):
 
         taxlot_correctly_populated_details = self.taxlot_state_factory.get_details()
         taxlot_correctly_populated_details["organization_id"] = self.org.id
-        taxlot_correctly_populated_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        # taxlot_correctly_populated_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+
         taxlot_correctly_populated_details['bounding_box'] = (
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
@@ -205,6 +203,14 @@ class UbidViewTests(TestCase):
         )
         taxlot_correctly_populated = TaxLotState(**taxlot_correctly_populated_details)
         taxlot_correctly_populated.save()
+    
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'taxlot': taxlot_correctly_populated,
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
 
         taxlot_correctly_populated_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_correctly_populated)
 
@@ -222,6 +228,15 @@ class UbidViewTests(TestCase):
         taxlot_not_decoded = TaxLotState(**taxlot_not_decoded_details)
         taxlot_not_decoded.save()
 
+        ubid_details = {
+            'ubid': '86HJPCWQ+2VV-1-3-2-3',
+            'preferred': True,
+            'taxlot': taxlot_not_decoded,
+        }
+        ubid = Ubid(**ubid_details)
+        ubid.save()
+
+
         taxlot_not_decoded_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_not_decoded)
 
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
@@ -237,12 +252,9 @@ class UbidViewTests(TestCase):
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = {
-            "ubid_unpopulated": 0,
-            "ubid_successfully_decoded": 0,
-            "ubid_not_decoded": 0,
-            "ulid_unpopulated": 1,
-            "ulid_successfully_decoded": 1,
-            "ulid_not_decoded": 1
+            "ubid_unpopulated": 1,
+            "ubid_successfully_decoded": 1,
+            "ubid_not_decoded": 1,
         }
 
         self.assertEqual(result_dict, expectation)
