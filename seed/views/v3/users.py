@@ -347,7 +347,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves the a user's first_name, last_name, email
+        Retrieves user's first_name, last_name, email
         and api key if exists by user ID (pk).
         """
 
