@@ -24,7 +24,6 @@ class Migration(migrations.Migration):
                 ('preferred', models.BooleanField(default=False)),
                 ('property', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.propertystate')),
                 ('taxlot', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.taxlotstate')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
 
             ],
         ),
