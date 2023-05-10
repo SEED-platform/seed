@@ -276,28 +276,27 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rtls_5.merge_state, MERGE_STATE_NEW)
 
     # Matching inventory by UBID is on hold.
-    @skip
-    def test_match_properties_on_ubid(self):
-        base_details = {
-            'ubid': '86HJPCWQ+2VV-1-3-2-3',
-            'import_file_id': self.import_file.id,
-            'data_state': DATA_STATE_MAPPING,
-            'no_default_data': False,
-        }
-        # Create set of properties that match each other
-        self.property_state_factory.get_property_state(**base_details)
-        base_details['city'] = 'Denver'
-        self.property_state_factory.get_property_state(**base_details)
+    # def test_match_properties_on_ubid(self):
+    #     base_details = {
+    #         'ubid': '86HJPCWQ+2VV-1-3-2-3',
+    #         'import_file_id': self.import_file.id,
+    #         'data_state': DATA_STATE_MAPPING,
+    #         'no_default_data': False,
+    #     }
+    #     # Create set of properties that match each other
+    #     self.property_state_factory.get_property_state(**base_details)
+    #     base_details['city'] = 'Denver'
+    #     self.property_state_factory.get_property_state(**base_details)
 
-        # set import_file mapping done so that matching can occur.
-        self.import_file.mapping_done = True
-        self.import_file.save()
-        geocode_and_match_buildings_task(self.import_file.id)
+    #     # set import_file mapping done so that matching can occur.
+    #     self.import_file.mapping_done = True
+    #     self.import_file.save()
+    #     geocode_and_match_buildings_task(self.import_file.id)
 
-        # 1 Property, 1 PropertyView, 3 PropertyStates (2 imported, 1 merge result)
-        self.assertEqual(Property.objects.count(), 1)
-        self.assertEqual(PropertyView.objects.count(), 1)
-        self.assertEqual(PropertyState.objects.count(), 3)
+    #     # 1 Property, 1 PropertyView, 3 PropertyStates (2 imported, 1 merge result)
+    #     self.assertEqual(Property.objects.count(), 1)
+    #     self.assertEqual(PropertyView.objects.count(), 1)
+    #     self.assertEqual(PropertyState.objects.count(), 3)
 
     def test_match_properties_normalized_address_used_instead_of_address_line_1(self):
         base_details = {
