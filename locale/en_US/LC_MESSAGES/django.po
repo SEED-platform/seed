@@ -842,6 +842,9 @@ msgstr "Delete"
 msgid "Delete All Mappings"
 msgstr "Delete All Mappings"
 
+msgid "Delete Indication Label After Successful Salesforce Update"
+msgstr "Delete Indication Label After Successful Salesforce Update"
+
 msgid "Delete Organization"
 msgstr "Delete Organization"
 
@@ -2531,6 +2534,9 @@ msgstr "Provide a default account name for Salesforce to use when there is no va
 
 msgid "SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"
 msgstr "Provide a default account name for Salesforce to use when there is no valid data in the Data Administrator Account Name Column specified above.  Leave this field blank to report an error and abort sync instead when the Data Administrator Account Name Column is blank."
+
+msgid "SF_DELETE_LABEL_AFTER_SYNC_TEXT"
+msgstr "Check this checkbox to automatically remove the Indication Label from properties that were successfully updated in Salesforce in order to prevent future automatic updates."
 
 msgid "SF_DOMAIN_TEXT"
 msgstr "If your Salesforce instance is a sandbox, set this field to the value 'test'; otherwise leave blank."

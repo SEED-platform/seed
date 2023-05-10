@@ -37,10 +37,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $translate,
       $uibModal
     ) {
-      $scope.inventory_type = $stateParams.inventory_type;
 
       var org_id = organization_payload.organization.id;
-      var base_storage_key = 'report.' + org_id + '.' + $scope.inventory_type;
+      var base_storage_key = 'report.' + org_id;
 
       var pretty_unit = function (pint_spec) {
         var mappings = {
