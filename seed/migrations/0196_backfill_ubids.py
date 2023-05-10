@@ -14,7 +14,8 @@ def backfill_ubids(apps, schema_editor):
         ubid = Ubid.objects.create(
             ubid = state.ubid_dead,
             property=state,
-            preferred=True
+            preferred=True,
+            organization=state.organization
         )
         ubid.save()
     
@@ -23,7 +24,8 @@ def backfill_ubids(apps, schema_editor):
         ubid = Ubid.objects.create(
             ubid = state.ulid,
             taxlot=state,
-            preferred=True
+            preferred=True,
+            organization=state.organization
         )
         ubid.save()
 

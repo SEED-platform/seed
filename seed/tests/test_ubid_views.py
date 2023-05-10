@@ -5,6 +5,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import ast
+import json
 
 from django.test import TestCase
 from django.urls import reverse
@@ -12,7 +13,7 @@ from django.urls import reverse
 from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.models.ubids import Ubid
+from seed.models import Ubid
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -52,7 +53,8 @@ class UbidViewTests(TestCase):
         ubid_details = {
             'ubid': '86HJPCWQ+2VV-1-3-2-3',
             'preferred': True,
-            'property': property
+            'property': property,
+            'organization': self.org
         }
 
         ubid = Ubid(**ubid_details)
@@ -124,7 +126,8 @@ class UbidViewTests(TestCase):
         ubid_details = {
             'ubid': '86HJPCWQ+2VV-1-3-2-3',
             'preferred': True,
-            'property': property_correctly_populated
+            'property': property_correctly_populated,
+            'organization': self.org
         }
         ubid = Ubid(**ubid_details)
         ubid.save()
@@ -147,7 +150,8 @@ class UbidViewTests(TestCase):
         ubid_details = {
             'ubid': '86HJPCWQ+2VV-1-3-2-3',
             'preferred': True,
-            'property': property_not_decoded
+            'property': property_not_decoded,
+            'organization': self.org
         }
         ubid = Ubid(**ubid_details)
         ubid.save()
@@ -247,40 +251,180 @@ class UbidViewTests(TestCase):
         self.assertEqual(result_dict, expectation)
 
 
-    def test_ubid_crud_endpoint(self):
+    # def test_ubid_crud_endpoint(self):
+        # response = self.client.post(
+        #     reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # response = response.json()
+        # self.assertEqual(response, 'create')
+
+        # response = self.client.get(
+        #     reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # response = response.json()
+        # self.assertEqual(response, 'list')
+
+        # response = self.client.get(
+        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # response = response.json()
+        # self.assertEqual(response, 'retrieve')
+
+        # response = self.client.put(
+        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # response = response.json()
+        # self.assertEqual(response, 'update')
+
+        # response = self.client.delete(
+        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # response = response.json()
+        # self.assertEqual(response, 'destroy')
+
+class UbidViewCrudTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        self.property = PropertyState(**property_details)
+        self.property.save()
+
+        taxlot_details = self.taxlot_state_factory.get_details()
+        taxlot_details["organization_id"] = self.org.id
+        self.taxlot = TaxLotState(**taxlot_details)
+        self.taxlot.save()
+
+        self.ubid1a = Ubid.objects.create(
+            property=self.property,
+            preferred=True,
+            ubid='A+A-1-1-1-1',
+            organization=self.org
+        )
+        self.ubid1b = Ubid.objects.create(
+            property=self.property,
+            preferred=False,
+            ubid='B+B-2-2-2-2',
+            organization=self.org
+        )
+
+        self.ubid1c = Ubid.objects.create(
+            taxlot=self.taxlot,
+            preferred=True,
+            ubid='C+C-3-3-3-3',
+            organization=self.org
+        )
+
+        # create a second org
+        self.org2, _, _ = create_organization(self.user)
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org2.id
+        self.property2 = PropertyState(**property_details)
+        self.property2.save()
+        self.ubid2 = Ubid.objects.create(
+            property=self.property2,
+            ubid='D+D-4-4-4-4',
+            organization=self.org2
+        )
+    
+    
+    def test_list_endpoint(self):
+        response = self.client.get(
+            reverse('api:v3:ubid-list') +'?organization_id=' + str(self.org.id),
+            content_type='application/json' 
+        )
+
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+        self.assertEqual('success', data['status'])
+        self.assertEqual(3, len(data['data']))
+
+        ubid = data['data'][0]
+        self.assertEqual('A+A-1-1-1-1', ubid['ubid'])
+        self.assertEqual(True, ubid['preferred'])
+        self.assertEqual(self.property.id, ubid['property'])
+        ubid = data['data'][1]
+        self.assertEqual('B+B-2-2-2-2', ubid['ubid'])
+        self.assertEqual(False, ubid['preferred'])
+        self.assertEqual(self.property.id, ubid['property'])
+        ubid = data['data'][2]
+        self.assertEqual('C+C-3-3-3-3', ubid['ubid'])
+        self.assertEqual(True, ubid['preferred'])
+        self.assertEqual(None, ubid['property'])
+        self.assertEqual(self.taxlot.id, ubid['taxlot'])
+
+    def test_retrieve_endpoint(self):
+        response = self.client.get(
+            reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        x = response
+        self.assertEqual(1,1)
+        
+
+    def test_create_endpoint(self):
+        self.assertEqual(4, Ubid.objects.count())
+
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property = PropertyState(**property_details)
+        property.save()
+
+        # Successful creation
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'ubid': 'A+A-1-1-1-1',
+                'preferred': True,
+                'property': property.id,
+                'organization': self.org.id
+            }),
             content_type='application/json'
         )
-        response = response.json()
-        self.assertEqual(response, 'create')
+        data = response.json()
+        self.assertEqual('A+A-1-1-1-1', data['ubid'])
+        self.assertEqual(property.id, data['property'])
+        self.assertEqual(None, data['taxlot'])
+        self.assertEqual(True, data['preferred'])
+        self.assertEqual(self.org.id, data['organization'])
+        self.assertEqual(5, Ubid.objects.count())
 
-        response = self.client.get(
+        # Invalid data
+        response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'test': 1,
+                'not_valid': 'data'
+            }),
             content_type='application/json'
         )
-        response = response.json()
-        self.assertEqual(response, 'list')
-
-        response = self.client.get(
-            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
+        self.assertEqual(400, response.status_code)
+        response = self.client.post(
+            reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'ubid': 'A+A-1-1-1-1',
+                'not_valid': 'no taxlot or property'
+            }),
             content_type='application/json'
         )
-        response = response.json()
-        self.assertEqual(response, 'retrieve')
-
-        response = self.client.put(
-            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
-        )
-        response = response.json()
-        self.assertEqual(response, 'update')
-
-        response = self.client.delete(
-            reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
-            content_type='application/json'
-        )
-        response = response.json()
-        self.assertEqual(response, 'destroy')
-
-
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(5, Ubid.objects.count())

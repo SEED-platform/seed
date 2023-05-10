@@ -4,22 +4,27 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.db.models import Subquery
+from django.db.models import Subquery, Q
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
+from seed.models import Ubid 
+from seed.serializers.ubids import UbidSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.ubid import decode_unique_ids
 
 
-class UbidViewSet(viewsets.ViewSet, OrgMixin):
+class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
+    model = Ubid 
+    serializer_class = UbidSerializer
+
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
@@ -144,29 +149,62 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
 
+    # def get_queryset(self):
+    #     org_id = self.get_organization(self.request)
+    #     return Ubid.objects.filter(Q(property__organization=org_id) | Q(taxlot__organization=org_id))
+    
     @api_endpoint_class
-    @action(detail=False, methods=['GET'])
-    def dog(self, request):
-        return 'dog'
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('can_modify_data')
-    def create(self, request):
-        return 'create'
-
-    @api_endpoint_class
-    @ajax_request_class
+    @ajax_request_class 
     def list(self, request):
-        return 'list'
+        org_id = self.get_organization(request)
+        ubids = Ubid.objects.filter(Q(property__organization=org_id) | Q(taxlot__organization=org_id))
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": self.serializer_class(ubids, many=True).data
+            },
+            status=status.HTTP_200_OK
+        )
 
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk):
-        return 'retrieve'
+        org_id = self.get_organization(request)
+        ubid = Ubid.objects.get(id=pk)
+
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": self.serializer_class(ubid).data
+            },
+            status=status.HTTP_200_OK
+        )
+
+    # @api_endpoint_class
+    # @action(detail=False, methods=['GET'])
+    # def dog(self, request):
+    #     return 'dog'
+
+    # @swagger_auto_schema(
+    #     manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+    #     request_body=AutoSchemaHelper.schema_factory(
+    #         {'ubid': 'string'},
+    #         description='Unique Building Identifier (UBID)'
+    #     )
+    # )
+    # @api_endpoint_class
+    # @ajax_request_class
+    # @has_perm_class('can_modify_data')
+    # def create(self, request):
+    #     body = request.data 
+    #     org_id = int(self.get_organization(request))
+    #     breakpoint()
+    #     return 'create'
+
+ 
+
 
     @api_endpoint_class
     @ajax_request_class

@@ -4,12 +4,17 @@
 # SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 # See also https://github.com/seed-platform/seed/main/LICENSE.md
 # """
-# from rest_framework import serializers
+from rest_framework import serializers
 
-# from seed.models import Ubid 
+from seed.models import Ubid 
 
-# class UbidSerializer(serializers.ModelSerializer):
+class UbidSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model = Ubid
-#         fields = '__all__'
+    class Meta:
+        model = Ubid
+        fields = '__all__'
+
+    def validate(self, data):
+        if not data.get('property') and not data.get('taxlot'):
+            raise serializers.ValidationError('A UBID is required to have a Property or Taxlot')
+        return data

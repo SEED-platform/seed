@@ -20,10 +20,12 @@ class Migration(migrations.Migration):
             name='Ubid',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ubid', models.CharField(blank=True, max_length=255)),
+                ('ubid', models.CharField(max_length=255)),
                 ('preferred', models.BooleanField(default=False)),
                 ('property', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.propertystate')),
                 ('taxlot', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.taxlotstate')),
+                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
+
             ],
         ),
     ]
