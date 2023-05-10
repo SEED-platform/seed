@@ -116,14 +116,12 @@ class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
         jurisdiction_property_id = Q(state__jurisdiction_property_id__icontains=value)
         custom_id_1 = Q(state__custom_id_1__icontains=value)
         pm_property_id = Q(state__pm_property_id__icontains=value)
-        ubid = Q(state__ubid__icontains=value)
 
         query = (
             address_line_1 |
             jurisdiction_property_id |
             custom_id_1 |
-            pm_property_id |
-            ubid
+            pm_property_id 
         )
         return queryset.filter(query).order_by('-state__id')
 

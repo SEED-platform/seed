@@ -120,7 +120,6 @@ class StateFieldsTest(TestCase):
                     ('total_ghg_emissions_intensity', 'total_ghg_emissions_intensity'),
                     ('total_marginal_ghg_emissions', 'total_marginal_ghg_emissions'),
                     ('total_marginal_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity'),
-                    ('ubid', 'ubid'),
                     ('use_description', 'use_description'),
                     ('year_built', 'year_built'),
                     ('year_ending', 'year_ending'))
