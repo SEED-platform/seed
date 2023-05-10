@@ -85,7 +85,6 @@ class EquivalencePartitioner(object):
     @classmethod
     def make_propertystate_equivalence(kls):
         property_equivalence_fields = [
-            ("ubid",),
             ("pm_property_id", "custom_id_1"),
             ("custom_id_1",),
             ("normalized_address",)
