@@ -31,7 +31,7 @@ def backfill_ubids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0195_auto_20230508_1413'),
+        ('seed', '0196_auto_20230508_1413'),
     ]
 
     operations = [

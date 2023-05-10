@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0194_alter_taxlotview_taxlot'),
+        ('seed', '0195_sf_delete_label_checkbox'),
     ]
 
     operations = [
