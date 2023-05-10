@@ -11,8 +11,8 @@ def remove_duplicate_users_for_org(apps, _schema_editor):
         .annotate(count=Count('user_id')) \
         .filter(count__gt=1)
 
-    for duplicateGroup in duplicate_groups:
-        duplicates = OrganizationUser.objects.filter(**{x: duplicateGroup[x] for x in unique_fields}) \
+    for duplicate_group in duplicate_groups:
+        duplicates = OrganizationUser.objects.filter(**{x: duplicate_group[x] for x in unique_fields}) \
             .order_by('-role_level', 'id')
 
         # Keep the oldest record with the highest role_level
