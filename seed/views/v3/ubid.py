@@ -4,7 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.db.models import Subquery, Q
+from django.db.models import Q, Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -12,9 +12,9 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import Ubid
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
-from seed.models import Ubid 
 from seed.serializers.ubids import UbidSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -25,7 +25,7 @@ from seed.utils.ubid import decode_unique_ids
 
 
 class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
-    model = Ubid 
+    model = Ubid
     serializer_class = UbidSerializer
     queryset = Ubid.objects.all()
 
@@ -155,7 +155,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
     # overrode endpoint to set response to json, not OrderedDict
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
-    @ajax_request_class 
+    @ajax_request_class
     def list(self, request):
         org = self.get_organization(request)
         ubids = Ubid.objects.filter(Q(property__organization=org) | Q(taxlot__organization=org))
@@ -167,7 +167,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK
         )
-    
+
     # overrode endpoint to set response to json, not OrderedDict
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -193,9 +193,8 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-        
 
-    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields 
+    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class

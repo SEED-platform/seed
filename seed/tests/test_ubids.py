@@ -11,9 +11,9 @@ from django.test import TestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
+from seed.models import Ubid
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.models import Ubid
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -248,43 +248,8 @@ class UbidViewTests(TestCase):
         self.assertEqual(result_dict, expectation)
 
 
-    # def test_ubid_crud_endpoint(self):
-        # response = self.client.post(
-        #     reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
-        #     content_type='application/json'
-        # )
-        # response = response.json()
-        # self.assertEqual(response, 'create')
-
-        # response = self.client.get(
-        #     reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
-        #     content_type='application/json'
-        # )
-        # response = response.json()
-        # self.assertEqual(response, 'list')
-
-        # response = self.client.get(
-        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
-        #     content_type='application/json'
-        # )
-        # response = response.json()
-        # self.assertEqual(response, 'retrieve')
-
-        # response = self.client.put(
-        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
-        #     content_type='application/json'
-        # )
-        # response = response.json()
-        # self.assertEqual(response, 'update')
-
-        # response = self.client.delete(
-        #     reverse('api:v3:ubid-detail', args=[1]) + '?organization_id=' + str(self.org.id),
-        #     content_type='application/json'
-        # )
-        # response = response.json()
-        # self.assertEqual(response, 'destroy')
 class UbidModelTests(TestCase):
-    
+
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -298,7 +263,7 @@ class UbidModelTests(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
-    
+
     def test_pass(self):
         self.assertTrue(True)
 
@@ -345,7 +310,7 @@ class UbidModelTests(TestCase):
         self.assertEqual(ps3.ubid_set.first().preferred, False)
 
         ubid = ps3.ubid_set.first()
-        ubid.preferred = True 
+        ubid.preferred = True
         ubid.save()
         self.assertEqual(ps3.ubid_set.first().preferred, True)
 
@@ -356,7 +321,7 @@ class UbidModelTests(TestCase):
         ps2.delete()
         self.assertEqual(Ubid.objects.count(), 1)
 
-        ubid3.delete() 
+        ubid3.delete()
         self.assertEqual(PropertyState.objects.count(), 1)
 
 
@@ -414,12 +379,11 @@ class UbidViewCrudTests(TestCase):
             property=self.property2,
             ubid='D+D-4-4-4-4',
         )
-    
-    
+
     def test_list_endpoint(self):
         response = self.client.get(
-            reverse('api:v3:ubid-list') +'?organization_id=' + str(self.org.id),
-            content_type='application/json' 
+            reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
         )
 
         self.assertEqual(200, response.status_code)
@@ -479,7 +443,6 @@ class UbidViewCrudTests(TestCase):
         data = response.json()
         self.assertEqual('error', data['status'])
         self.assertEqual('Ubid with id 9999999 does not exist', data['message'])
-        
 
     def test_create_endpoint(self):
         self.assertEqual(4, Ubid.objects.count())
@@ -526,7 +489,7 @@ class UbidViewCrudTests(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(5, Ubid.objects.count())
-        
+
     def test_update_endpoint(self):
         # Valid Data
         self.assertEqual('A+A-1-1-1-1', self.ubid1a.ubid)
@@ -559,7 +522,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual('Z+Z-1-1-1-1', data['data']['ubid'])
         self.assertEqual(False, data['data']['preferred'])
 
-        # Invalid Data 
+        # Invalid Data
         response = self.client.put(
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
@@ -579,7 +542,7 @@ class UbidViewCrudTests(TestCase):
         response = self.client.delete(
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
-        ) 
+        )
         self.assertEqual(204, response.status_code)
         self.assertEqual(3, Ubid.objects.count())
         self.assertTrue(self.ubid1a not in Ubid.objects.all())
@@ -588,6 +551,6 @@ class UbidViewCrudTests(TestCase):
         response = self.client.delete(
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
-        ) 
+        )
         self.assertEqual(404, response.status_code)
         self.assertEqual('Not found.', response.json()['detail'])

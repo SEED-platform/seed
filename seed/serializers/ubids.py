@@ -6,10 +6,11 @@
 # """
 from rest_framework import serializers
 
-from seed.models import Ubid 
+from seed.models import Ubid
+
 
 class UbidSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Ubid
         fields = '__all__'
