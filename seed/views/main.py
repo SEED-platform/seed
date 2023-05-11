@@ -21,10 +21,7 @@ from seed import tasks
 from seed.celery import app
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import (
-    has_perm_class,
-    requires_superuser
-)
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
 
