@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_perm, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Measure
 from seed.serializers.measures import MeasureSerializer
 from seed.utils.api import OrgMixin
@@ -23,11 +23,11 @@ from seed.utils.api_schema import (
 
 
 @method_decorator(name='retrieve', decorator=[
-    has_perm('can_view_data'),
+    has_perm_class('can_view_data'),
     swagger_auto_schema_org_query_param,
 ])
 @method_decorator(name='list', decorator=[
-    has_perm('can_view_data'),
+    has_perm_class('can_view_data'),
     swagger_auto_schema_org_query_param,
 ])
 class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
