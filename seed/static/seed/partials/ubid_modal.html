@@ -1,7 +1,7 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'verify'">Decode UBIDs/ULIDs</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'decoding'">Decoding UBID/ULID now...</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'result'">Decoding UBIDs/ULIDs Complete</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'verify'">Decode UBIDs</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'decoding'">Decoding UBID now...</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'result'">Decoding UBIDs Complete</h4>
 </div>
 <div class="modal-body">
 
@@ -54,7 +54,7 @@
 
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-primary" ng-click="decode_ubids()" ng-show="decode_ubid_state === 'verify'">Decode UBID/ULID</button>
+  <button type="button" class="btn btn-primary" ng-click="decode_ubids()" ng-show="decode_ubid_state === 'verify'">Decode UBID</button>
   <button type="button" class="btn btn-default" ng-show="decode_ubid_state === 'verify'" ng-click="cancel()">Cancel</button>
   <button type="button" class="btn btn-default" ng-show="decode_ubid_state === 'result'" ng-click="close()">Close</button>
 </div>

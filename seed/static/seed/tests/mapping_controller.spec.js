@@ -174,8 +174,8 @@ describe('controller: mapping_controller', function () {
     }, {
       column_name: 'ubid',
       data_type: 'string',
-      display_name: 'ULID',
-      column_description: 'ULID',
+      display_name: 'UBID',
+      column_description: 'UBID',
       id: 10,
       is_extra_data: false,
       name: 'ubid_10',

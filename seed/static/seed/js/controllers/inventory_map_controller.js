@@ -189,7 +189,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           return new ol.source.Vector({features: features});
         };
 
-        // Define taxlot ULID bounding box
+        // Define taxlot UBID bounding box
         var taxlotBB = function (taxlot) {
           var format = new ol.format.WKT();
 
@@ -201,7 +201,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           return feature;
         };
 
-        // Define taxlot ULID centroid box
+        // Define taxlot UBID centroid box
         var taxlotCentroid = function (taxlot) {
           var format = new ol.format.WKT();
 
