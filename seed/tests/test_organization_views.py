@@ -45,7 +45,8 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 'address_line_1',
                 'custom_id_1',
                 'pm_property_id',
-                'ubid',
+                # ubid threshold matching needs to be developed
+                # 'ubid',
             ],
             'TaxLotState': [
                 'address_line_1',

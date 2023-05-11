@@ -503,7 +503,7 @@ class AccountsViewTests(TestCase):
         url = reverse_lazy('api:v3:organizations-save-settings', args=[self.org.pk])
 
         columns = list(Column.objects.filter(organization=self.org).values('id', 'table_name', 'column_name'))
-        ubid_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid'][0]['id']
+        # ubid_id = [c for c in columns if c['table_name'] == 'PropertyState' and c['column_name'] == 'ubid'][0]['id']
         address_line_1_id = [c for c in columns if c['table_name'] == 'PropertyState'
                              and c['column_name'] == 'address_line_1'][0]['id']
 
@@ -515,17 +515,18 @@ class AccountsViewTests(TestCase):
                 'query_threshold': 2,
                 'name': self.org.name,
                 'public_fields': [
+                    # {
+                    #     "id": ubid_id,
+                    #     "displayName": "UBID",
+                    #     "name": "ubid",
+                    #     "dataType": "string",
+                    #     "related": False,
+                    #     "sharedFieldType": "Public",
+                    #     "table_name": "PropertyState",
+                    #     "column_name": "ubid",
+                    #     "public_checked": True
+                    # }, 
                     {
-                        "id": ubid_id,
-                        "displayName": "UBID",
-                        "name": "ubid",
-                        "dataType": "string",
-                        "related": False,
-                        "sharedFieldType": "Public",
-                        "table_name": "PropertyState",
-                        "column_name": "ubid",
-                        "public_checked": True
-                    }, {
                         "id": address_line_1_id,
                         "displayName": "Address Line 1 (Property)",
                         "name": "address_line_1",
@@ -546,9 +547,9 @@ class AccountsViewTests(TestCase):
             'table_name', 'column_name')
 
         # fields = self.org.exportable_fields.values_list('name', flat=True)
-        self.assertTrue(('PropertyState', 'ubid') in fields)
+        # self.assertTrue(('PropertyState', 'ubid') in fields)
         self.assertTrue(('PropertyState', 'address_line_1') in fields)
-        self.assertEqual(len(fields), 2)
+        self.assertEqual(len(fields), 1)
 
     # def test_get_data_quality_rules_matching(self):
     #     dq = DataQualityCheck.retrieve(self.org)
