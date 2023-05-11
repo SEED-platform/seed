@@ -91,9 +91,7 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    # Note that ulid is not an actual project at the moment, but it is similar to UBID in that it
-    # is a unique string that represents the bounding box of the Land (or Lot)
-    ulid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 

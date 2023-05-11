@@ -48,7 +48,7 @@ class TestMatching(DataMappingBaseTestCase):
         )
         self.import_file.save()
 
-    def query_property_matches(self, properties, pm_id, custom_id, ubid, ulid):
+    def query_property_matches(self, properties, pm_id, custom_id, ubid):
         """
         Helper method to return a queryset of PropertyStates that match at least one of the specified
         ids
@@ -57,7 +57,6 @@ class TestMatching(DataMappingBaseTestCase):
         :param pm_id: string, PM Property ID
         :param custom_id: String, Custom ID
         :param ubid: String, Unique Building Identifier
-        :param ulid: String, Unique Land/Lot Identifier
         :return: QuerySet of objects that meet criteria.
         """
 
@@ -78,8 +77,7 @@ class TestMatching(DataMappingBaseTestCase):
             params.append(Q(pm_property_id=ubid))
             params.append(Q(custom_id_1=ubid))
             params.append(Q(ubid=ubid))
-        if ulid:
-            params.append(Q(ulid=ulid))
+
 
         if not params:
             # Return an empty QuerySet if we don't have any params.

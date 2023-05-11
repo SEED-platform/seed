@@ -865,7 +865,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # Define matching values
         matching_jurisdiction_tax_lot_id = '11111'
         matching_address_line_1 = '123 Match Street'
-        matching_ulid = '86HJPCWQ+2VV-1-3-2-3'
+        matching_ubid = '86HJPCWQ+2VV-1-3-2-3'
         matching_custom_id_1 = 'MatchingID12345'
 
         # For first file, create taxlots with no duplicates or matches
@@ -883,7 +883,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
         base_details_file_1['address_line_1'] = matching_address_line_1
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
-        base_details_file_1['ulid'] = matching_ulid
+        base_details_file_1['ubid'] = matching_ubid
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
         base_details_file_1['custom_id_1'] = matching_custom_id_1
         self.taxlot_state_factory.get_taxlot_state(**base_details_file_1)
@@ -923,7 +923,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         # (outcome: 2 additional -States, 2 new TaxLot/-View)
         base_details_file_2['custom_id_1'] = matching_custom_id_1
         tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
-        base_details_file_2['ulid'] = matching_ulid
+        base_details_file_2['ubid'] = matching_ubid
         tls_4 = self.taxlot_state_factory.get_taxlot_state(**base_details_file_2)
 
         # Create 3 taxlots - with 1 duplicate and 1 match within it's own file that will

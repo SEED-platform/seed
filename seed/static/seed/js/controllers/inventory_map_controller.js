@@ -284,7 +284,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           });
         };
 
-        // style for taxlot ulid bounding and centroid boxes
+        // style for taxlot ubid bounding and centroid boxes
         var taxlotStyle = function (/*feature*/) {
           return new ol.style.Style({
             stroke: new ol.style.Stroke({

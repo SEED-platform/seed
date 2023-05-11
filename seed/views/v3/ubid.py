@@ -89,9 +89,6 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         ubid_unpopulated = 0
         ubid_successfully_decoded = 0
         ubid_not_decoded = 0
-        ulid_unpopulated = 0
-        ulid_successfully_decoded = 0
-        ulid_not_decoded = 0
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
         if property_view_ids:
@@ -120,15 +117,15 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
             )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
 
-            ulid_unpopulated = taxlot_states.filter(ulid__isnull=True).count()
-            ulid_successfully_decoded = taxlot_states.filter(
-                ulid__isnull=False,
+            ubid_unpopulated = taxlot_states.filter(ubid__isnull=True).count()
+            ubid_successfully_decoded = taxlot_states.filter(
+                ubid__isnull=False,
                 bounding_box__isnull=False,
                 centroid__isnull=False
             ).count()
-            # for ulid_not_decoded, bounding_box could be populated from a GeoJSON import
-            ulid_not_decoded = taxlot_states.filter(
-                ulid__isnull=False,
+            # for ubid_not_decoded, bounding_box could be populated from a GeoJSON import
+            ubid_not_decoded = taxlot_states.filter(
+                ubid__isnull=False,
                 centroid__isnull=True
             ).count()
 
@@ -136,9 +133,7 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
             "ubid_unpopulated": ubid_unpopulated,
             "ubid_successfully_decoded": ubid_successfully_decoded,
             "ubid_not_decoded": ubid_not_decoded,
-            "ulid_unpopulated": ulid_unpopulated,
-            "ulid_successfully_decoded": ulid_successfully_decoded,
-            "ulid_not_decoded": ulid_not_decoded,
+
         }
 
         return result

@@ -145,14 +145,11 @@ class UbidViewTests(TestCase):
             "ubid_unpopulated": 1,
             "ubid_successfully_decoded": 1,
             "ubid_not_decoded": 1,
-            "ulid_unpopulated": 0,
-            "ulid_successfully_decoded": 0,
-            "ulid_not_decoded": 0
         }
 
         self.assertEqual(result_dict, expectation)
 
-    def test_decode_ulid_results_returns_a_summary_dictionary(self):
+    def test_decode_taxlot_ubid_results_returns_a_summary_dictionary(self):
         taxlot_none_details = self.taxlot_state_factory.get_details()
         taxlot_none_details["organization_id"] = self.org.id
         taxlot_none = TaxLotState(**taxlot_none_details)
@@ -162,7 +159,7 @@ class UbidViewTests(TestCase):
 
         taxlot_correctly_populated_details = self.taxlot_state_factory.get_details()
         taxlot_correctly_populated_details["organization_id"] = self.org.id
-        taxlot_correctly_populated_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        taxlot_correctly_populated_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
         taxlot_correctly_populated_details['bounding_box'] = (
             "POLYGON ((-87.56021875000002 41.74504999999999, "
             "-87.56021875000002 41.74514999999997, "
@@ -184,7 +181,7 @@ class UbidViewTests(TestCase):
 
         taxlot_not_decoded_details = self.taxlot_state_factory.get_details()
         taxlot_not_decoded_details["organization_id"] = self.org.id
-        taxlot_not_decoded_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        taxlot_not_decoded_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
         # bounding_box could be populated from a GeoJSON import
         taxlot_not_decoded_details['bounding_box'] = (
             "POLYGON ((-87.56021875000002 41.74504999999999, "
@@ -211,12 +208,9 @@ class UbidViewTests(TestCase):
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = {
-            "ubid_unpopulated": 0,
-            "ubid_successfully_decoded": 0,
-            "ubid_not_decoded": 0,
-            "ulid_unpopulated": 1,
-            "ulid_successfully_decoded": 1,
-            "ulid_not_decoded": 1
+            "ubid_unpopulated": 1,
+            "ubid_successfully_decoded": 1,
+            "ubid_not_decoded": 1,
         }
 
         self.assertEqual(result_dict, expectation)

@@ -28,20 +28,16 @@ def decode_unique_ids(qs):
     if len(qs) == 0:
         return True
 
-    if isinstance(qs.first(), PropertyState):
-        filtered_qs = qs.exclude(ubid__isnull=True)
-        unique_id = 'ubid'
-    elif isinstance(qs.first(), TaxLotState):
-        filtered_qs = qs.exclude(ulid__isnull=True)
-        unique_id = 'ulid'
-    else:
+    if not isinstance(qs.first(), (PropertyState, TaxLotState)):
         return False
+    
+    filtered_qs = qs.exclude(ubid__isnull=True)
 
     for item in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(item, unique_id))
+            bounding_box_obj = decode(getattr(item, 'ubid'))
         except ValueError:
-            _log.error(f'Could not decode UBID of {getattr(item, unique_id)}')
+            _log.error(f'Could not decode UBID of {getattr(item, "unique_id")}')
             continue  # property with an incorrectly formatted UBID/ULID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
