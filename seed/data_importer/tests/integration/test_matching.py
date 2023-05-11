@@ -78,7 +78,6 @@ class TestMatching(DataMappingBaseTestCase):
             params.append(Q(custom_id_1=ubid))
             params.append(Q(ubid=ubid))
 
-
         if not params:
             # Return an empty QuerySet if we don't have any params.
             return properties.none()

@@ -30,7 +30,7 @@ def decode_unique_ids(qs):
 
     if not isinstance(qs.first(), (PropertyState, TaxLotState)):
         return False
-    
+
     filtered_qs = qs.exclude(ubid__isnull=True)
 
     for item in filtered_qs.iterator():
