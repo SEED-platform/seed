@@ -4,22 +4,31 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.db.models import Subquery
+from django.db.models import Q, Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
+from seed.models import UbidModel
+from seed.serializers.ubid_models import UbidModelSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
 from seed.utils.ubid import decode_unique_ids
 
 
-class UbidViewSet(viewsets.ViewSet, OrgMixin):
+class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
+    model = UbidModel
+    serializer_class = UbidModelSerializer
+    queryset = UbidModel.objects.all()
+    
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
@@ -137,3 +146,71 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         }
 
         return result
+
+    # override endpoint to set response to json, not OrderedDict
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    def list(self, request):
+        org = self.get_organization(request)
+        ubids = UbidModel.objects.filter(Q(property__organization=org) | Q(taxlot__organization=org))
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": self.serializer_class(ubids, many=True).data
+            },
+            status=status.HTTP_200_OK
+        )
+
+    # overrode endpoint to set response to json, not OrderedDict
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    def retrieve(self, request, pk):
+        org = self.get_organization(request)
+        try:
+            ubid = UbidModel.objects.get(
+                Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
+            )
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "data": self.serializer_class(ubid).data
+                },
+                status=status.HTTP_200_OK
+            )
+        except UbidModel.DoesNotExist:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Ubid with id {pk} does not exist'
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    def update(self, request, pk):
+        org = self.get_organization(request)
+        ubid = UbidModel.objects.get(
+            Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
+        )
+        valid_fields = [field.name for field in UbidModel._meta.fields]
+
+        for field, value in request.data.items():
+            if field in valid_fields:
+                setattr(ubid, field, value)
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Invalid field '{field}' given. Accepted fields are {valid_fields}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        ubid.save()
+        return JsonResponse({
+            'status': 'success',
+            'data': UbidModelSerializer(ubid).data,
+        }, status=status.HTTP_200_OK)
