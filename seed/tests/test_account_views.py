@@ -525,7 +525,7 @@ class AccountsViewTests(TestCase):
                     #     "table_name": "PropertyState",
                     #     "column_name": "ubid",
                     #     "public_checked": True
-                    # }, 
+                    # },
                     {
                         "id": address_line_1_id,
                         "displayName": "Address Line 1 (Property)",
