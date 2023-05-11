@@ -115,11 +115,12 @@ def can_view_data(org_user):
 
 
 PERMS = {
+    # requires_superuser is the only role that can be on organization-agnostic endpoints
+    'requires_superuser': requires_superuser,
     'requires_parent_org_owner': requires_parent_org_owner,
     'requires_owner': requires_owner,
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
-    'requires_superuser': requires_superuser,
     'can_create_sub_org': can_create_sub_org,
     'can_remove_org': can_remove_org,
     'can_invite_member': can_invite_member,
@@ -154,9 +155,10 @@ def _make_resp(message_name):
 
 
 # Return nothing if valid, otherwise return Forbidden response
-def validate_permissions(perm_name, request):
-    # 'requires_superuser' endpoints don't have org_id params
-    if perm_name == 'requires_superuser':
+def _validate_permissions(perm_name, request, requires_org):
+    if not requires_org:
+        if perm_name != 'requires_superuser':
+            raise AssertionError('requires_org=False can only be combined with requires_superuser')
         if request.user.is_superuser:
             return
         else:
@@ -183,17 +185,19 @@ def validate_permissions(perm_name, request):
         return _make_resp('perm_denied')
 
 
-def has_perm_class(perm_name):
+def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
+
     def decorator(fn):
-        if 'self' in signature(fn).parameters:
+        params = list(signature(fn).parameters)
+        if params and params[0] == 'self':
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return validate_permissions(perm_name, request) or fn(self, request, *args, **kwargs)
+                return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return validate_permissions(perm_name, request) or fn(request, *args, **kwargs)
+                return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
 
         return _wrapped
 

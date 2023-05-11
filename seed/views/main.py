@@ -82,6 +82,7 @@ def home(request):
 @api_endpoint
 @ajax_request
 @api_view(['GET'])
+@has_perm_class('requires_superuser', False)
 def celery_queue(request):
     """
     Returns the number of running and queued celery tasks. This action can only be performed by superusers
@@ -95,12 +96,6 @@ def celery_queue(request):
             'maxConcurrency': The maximum number of active tasks
         }
     """
-    if not requires_superuser(request):
-        return JsonResponse({
-            'status': 'error',
-            'message': 'request is restricted to superusers'
-        }, status=status.HTTP_403_FORBIDDEN)
-
     celery_tasks = app.control.inspect()
     results = {}
 
@@ -109,7 +104,7 @@ def celery_queue(request):
         result = getattr(celery_tasks, method)()
         if result is None or 'error' in result:
             results[method] = 'Error'
-            return
+            continue
         for worker, response in result.items():
             if method == 'stats':
                 results['maxConcurrency'] = response['pool']['max-concurrency']
