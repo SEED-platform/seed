@@ -198,7 +198,7 @@ class UbidUtilMethods(TestCase):
     def test_decode_taxlot_ubids_doesnt_throw_an_error_if_an_invalid_ubid_is_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
-        taxlot_details['ubid'] = 'invaliduid'
+        taxlot_details['ubid'] = 'invalidubid'
 
         taxlot = TaxLotState(**taxlot_details)
         taxlot.save()

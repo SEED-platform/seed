@@ -100,9 +100,9 @@ class TestMatching(DataMappingBaseTestCase):
         property_states = tasks.list_canonical_property_states(self.org)
         self.assertEqual(len(property_states), 1)
 
-        matches = self.query_property_matches(property_states, None, None, None, None)
+        matches = self.query_property_matches(property_states, None, None, None)
         self.assertEqual(len(matches), 0)
-        matches = self.query_property_matches(property_states, '2264', None, None, None)
+        matches = self.query_property_matches(property_states, '2264', None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps)
 
@@ -128,32 +128,32 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(len(property_states), 2)
 
         # no arguments passed should return no results
-        matches = self.query_property_matches(property_states, None, None, None, None)
+        matches = self.query_property_matches(property_states, None, None, None)
         self.assertEqual(len(matches), 0)
         # should return 2 properties
-        matches = self.query_property_matches(property_states, None, '13', None, None)
+        matches = self.query_property_matches(property_states, None, '13', None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # should return only the second property
-        matches = self.query_property_matches(property_states, '2342', None, None, None)
+        matches = self.query_property_matches(property_states, '2342', None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
         # should return both properties, the first one should be the pm match, i.e., the first prop
-        matches = self.query_property_matches(property_states, '481516', '13', None, None)
+        matches = self.query_property_matches(property_states, '481516', '13', None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # if passing in the second pm then it will not be the first
-        matches = self.query_property_matches(property_states, '2342', '13', None, None)
+        matches = self.query_property_matches(property_states, '2342', '13', None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[1], ps_test_2)
         # pass the pm id into the custom id. it should still return the correct buildings.
         # not sure that this is the right behavior, but this is what it does, so just testing.
-        matches = self.query_property_matches(property_states, None, '2342', None, None)
+        matches = self.query_property_matches(property_states, None, '2342', None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
-        matches = self.query_property_matches(property_states, '13', None, None, None)
+        matches = self.query_property_matches(property_states, '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
