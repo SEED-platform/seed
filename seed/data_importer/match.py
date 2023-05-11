@@ -109,6 +109,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     property_initial_incoming_count = incoming_properties.count()
     incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
     tax_lot_initial_incoming_count = incoming_tax_lots.count()
+    # import remote_pdb; remote_pdb.set_trace()
 
     if incoming_properties.exists():
         # If importing BuildingSync, we will not just skip duplicates like we normally
