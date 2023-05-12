@@ -404,15 +404,16 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(None, data['data']['property'])
         self.assertEqual(self.taxlot.id, data['data']['taxlot'])
 
+        # invalid id
         response = self.client.get(
-            reverse('api:v3:ubid-detail', args=[9999999]) + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-detail', args=[-1]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
 
         self.assertEqual(404, response.status_code)
         data = response.json()
         self.assertEqual('error', data['status'])
-        self.assertEqual('Ubid with id 9999999 does not exist', data['message'])
+        self.assertEqual('Ubid with id -1 does not exist', data['message'])
 
     def test_create_endpoint(self):
         self.assertEqual(4, UbidModel.objects.count())
@@ -524,3 +525,110 @@ class UbidViewCrudTests(TestCase):
         )
         self.assertEqual(404, response.status_code)
         self.assertEqual('Not found.', response.json()['detail'])
+
+
+class UbidModelSignalCreationTests(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+
+        # property_details = self.property_state_factory.get_details()
+        # property_details['organization_id'] = self.org.id
+        # self.property = PropertyState(**property_details)
+        # self.property.save()
+
+        # taxlot_details = self.taxlot_state_factory.get_details()
+        # taxlot_details["organization_id"] = self.org.id
+        # self.taxlot = TaxLotState(**taxlot_details)
+        # self.taxlot.save()
+
+    def test_create_ubid_from_property_state_singal(self):
+        self.assertEqual(0, UbidModel.objects.count())
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['ubid'] = 'A+A-1-1-1-1'
+        property1 = PropertyState(**property_details)
+        property1.save()
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['ubid'] = 'B+B-1-1-1-1'
+        property2 = PropertyState(**property_details)
+        property2.save()
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['ubid'] = 'C+C-1-1-1-1'
+        property3 = PropertyState(**property_details)
+        property3.save()
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property4 = PropertyState(**property_details)
+        property4.save()
+
+        self.assertEqual(3, UbidModel.objects.count())
+
+        # avoid duplicate ubid models
+        property1.ubid = 'A+A-1-1-1-1'
+        property1.save()
+        self.assertEqual(3, UbidModel.objects.count())
+
+        property1.ubid = 'X+X-1-1-1-1'
+        property1.save()
+        self.assertEqual(4, UbidModel.objects.count())
+        self.assertEqual(2, property1.ubidmodel_set.count())
+        ubidx = UbidModel.objects.get(ubid='X+X-1-1-1-1')
+        self.assertFalse(ubidx.preferred)
+        self.assertEqual(property1, ubidx.property)
+        self.assertEqual(None, ubidx.taxlot)
+
+        property4.ubid = 'D+D-1-1-1-1'
+        property4.save()
+        self.assertEqual(5, UbidModel.objects.count())
+
+    def test_create_ubid_from_taxlot_state_signal(self):
+        self.assertEqual(0, UbidModel.objects.count())
+        taxlot_details = self.taxlot_state_factory.get_details()
+        taxlot_details['organization_id'] = self.org.id
+        taxlot_details['ubid'] = 'E+E-1-1-1-1'
+        taxlot1 = TaxLotState(**taxlot_details)
+        taxlot1.save()
+        taxlot_details = self.taxlot_state_factory.get_details()
+        taxlot_details['organization_id'] = self.org.id
+        taxlot_details['ubid'] = 'F+F-1-1-1-1'
+        taxlot2 = TaxLotState(**taxlot_details)
+        taxlot2.save()
+        taxlot_details = self.taxlot_state_factory.get_details()
+        taxlot_details['organization_id'] = self.org.id
+        taxlot3 = TaxLotState(**taxlot_details)
+        taxlot3.save()
+
+        self.assertEqual(2, UbidModel.objects.count())
+
+        # avoid duplicate ubid models
+        taxlot1.ubid = 'E+E-1-1-1-1'
+        taxlot1.save()
+        self.assertEqual(2, UbidModel.objects.count())
+
+        taxlot1.ubid = 'Y+Y-1-1-1-1'
+        taxlot1.save()
+        self.assertEqual(3, UbidModel.objects.count())
+        self.assertEqual(2, taxlot1.ubidmodel_set.count())
+        ubidy = UbidModel.objects.get(ubid='Y+Y-1-1-1-1')
+        self.assertFalse(ubidy.preferred)
+        self.assertEqual(taxlot1, ubidy.taxlot)
+        self.assertEqual(None, ubidy.property)
+
+        taxlot3.ubid = 'D+D-1-1-1-1'
+        taxlot3.save()
+        self.assertEqual(4, UbidModel.objects.count())

@@ -782,25 +782,26 @@ def pre_delete_state(sender, **kwargs):
 @receiver(post_save, sender=PropertyState)
 def post_save_property_state(sender, **kwargs):
     """
+    Generate UbidModels for a PropertyState if the ubid field is present
     """
     instance = kwargs.get('instance')
     if not instance:
         return
     
-    try:
-        ubid = getattr(instance, 'ubid')
-        if ubid:
-            preferred = not instance.ubidmodel_set.filter(preferred=True).exists()
-            ubid_details = {
-                'preferred': preferred,
-                'property': instance,
-                'ubid': ubid
-            }
-            ubid_model = instance.ubidmodel_set.create(**ubid_details)
-            logging.error(f'>>> Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
+    ubid = getattr(instance, 'ubid')
+    if not ubid:
+        return 
 
-    except:
-        pass
+    preferred = not instance.ubidmodel_set.filter(preferred=True).exists()
+    matching_ubid = instance.ubidmodel_set.filter(property=instance, ubid=ubid)
+    if not matching_ubid:
+        ubid_details = {
+            'preferred': preferred,
+            'property': instance,
+            'ubid': ubid
+        }
+        ubid_model = instance.ubidmodel_set.create(**ubid_details)
+        logging.info(f'>>> Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
 
 class PropertyView(models.Model):
     """

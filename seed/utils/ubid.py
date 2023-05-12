@@ -63,22 +63,3 @@ def decode_unique_ids(qs):
         item.latitude, item.longitude = bounding_box_obj.latlng()
 
         item.save()
-
-# def create_ubid_models_for_states(states, field):
-#     # avoid circular import
-#     from seed.models import UbidModel
-
-#     if not states:
-#         return
-    
-#     for state in states.exclude(ubid__isnull=True):
-#         # If a preferred UBID exists, set the new preferred field to False
-#         preferred = not state.ubidmodel_set.filter(preferred=True).exists()
-#         # If an exact UBID exists, skip it.
-#         matching_ubid_models = state.ubidmodel_set.filter(**{field:state, 'ubid':state.ubid})
-#         if not matching_ubid_models:
-#             UbidModel.objects.create(
-#                 ubid=state.ubid,
-#                 **{field:state},
-#                 preferred=preferred
-#             )

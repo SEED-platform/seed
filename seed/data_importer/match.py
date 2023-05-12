@@ -43,7 +43,6 @@ from seed.utils.match import (
     update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
-# from seed.utils.ubid import create_ubid_models_for_states
 
 _log = get_task_logger(__name__)
 
@@ -112,7 +111,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     tax_lot_initial_incoming_count = incoming_tax_lots.count()
 
     if incoming_properties.exists():
-        create_ubid_models_for_states(incoming_properties, 'property')
         # If importing BuildingSync, we will not just skip duplicates like we normally
         # do. Since we don't skip them, they will eventually get merged into their "duplicate".
         # We do this b/c though the property data might be the same, the Scenarios, Measures,
@@ -159,7 +157,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         )
 
     if incoming_tax_lots.exists():
-        create_ubid_models_for_states(incoming_tax_lots, 'taxlot')
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
         promoted_tax_lot_ids, tax_lot_duplicates_within_file_count = filter_duplicate_states(

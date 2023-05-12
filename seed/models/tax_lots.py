@@ -372,6 +372,30 @@ class TaxLotState(models.Model):
     def merge_relationships(cls, merged_state, state1, state2):
         """Stub to implement if merging TaxLotState relationships is needed"""
         return None
+    
+@receiver(post_save, sender=TaxLotState)
+def post_save_taxlot_state(sender, **kwargs):
+    """
+    Generate UbidModels for a TaxLotState if the ubid field is present
+    """
+    instance = kwargs.get('instance')
+    if not instance:
+        return
+    
+    ubid = getattr(instance, 'ubid')
+    if not ubid:
+        return 
+
+    preferred = not instance.ubidmodel_set.filter(preferred=True).exists()
+    matching_ubid = instance.ubidmodel_set.filter(taxlot=instance, ubid=ubid)
+    if not matching_ubid:
+        ubid_details = {
+            'preferred': preferred,
+            'taxlot': instance,
+            'ubid': ubid
+        }
+        ubid_model = instance.ubidmodel_set.create(**ubid_details)
+        logging.info(f'>>> Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
 
 
 class TaxLotView(models.Model):
