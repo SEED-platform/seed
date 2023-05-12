@@ -10,7 +10,7 @@ def backfill_ubids(apps, schema_editor):
     TaxLotState = apps.get_model("seed", "TaxLotState")
     UbidModel = apps.get_model("seed", "UbidModel")
 
-    property_states = PropertyState.objects.all()
+    property_states = PropertyState.objects.exclude(ubid__isnull=True)
     for state in property_states:
         ubid_model = UbidModel.objects.create(
             ubid = state.ubid,
@@ -19,7 +19,7 @@ def backfill_ubids(apps, schema_editor):
         )
         ubid_model.save()
 
-    taxlot_states = TaxLotState.objects.all()
+    taxlot_states = TaxLotState.objects.exclude(ubid__isnull=True)
     for state in taxlot_states:
         ubid_model = UbidModel.objects.create(
             ubid = state.ubid,
