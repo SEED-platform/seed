@@ -12,9 +12,9 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import UbidModel
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
-from seed.models import UbidModel
 from seed.serializers.ubid_models import UbidModelSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -28,7 +28,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
     model = UbidModel
     serializer_class = UbidModelSerializer
     queryset = UbidModel.objects.all()
-    
+
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(

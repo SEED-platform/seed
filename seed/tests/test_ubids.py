@@ -11,9 +11,9 @@ from django.test import TestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
+from seed.models import UbidModel
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.models import UbidModel
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,

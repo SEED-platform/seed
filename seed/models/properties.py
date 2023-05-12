@@ -779,6 +779,7 @@ def pre_delete_state(sender, **kwargs):
     # isn't working here.
     kwargs['instance'].propertymeasure_set.all().delete()
 
+
 @receiver(post_save, sender=PropertyState)
 def post_save_property_state(sender, **kwargs):
     """
@@ -787,10 +788,10 @@ def post_save_property_state(sender, **kwargs):
     instance = kwargs.get('instance')
     if not instance:
         return
-    
+
     ubid = getattr(instance, 'ubid')
     if not ubid:
-        return 
+        return
 
     preferred = not instance.ubidmodel_set.filter(preferred=True).exists()
     matching_ubid = instance.ubidmodel_set.filter(property=instance, ubid=ubid)
@@ -801,7 +802,8 @@ def post_save_property_state(sender, **kwargs):
             'ubid': ubid
         }
         ubid_model = instance.ubidmodel_set.create(**ubid_details)
-        logging.info(f'>>> Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
+        logging.info(f'Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
+
 
 class PropertyView(models.Model):
     """
