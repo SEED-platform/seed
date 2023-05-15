@@ -1161,7 +1161,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_column_list_profile = function (id) {
-      return $http.get('/api/v3/column_list_profiles/' + id, {
+      return $http.get('/api/v3/column_list_profiles/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id,
         }
