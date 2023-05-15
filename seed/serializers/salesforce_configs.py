@@ -47,4 +47,5 @@ class SalesforceConfigSerializer(serializers.ModelSerializer):
             'benchmark_contact_fieldname',
             'update_at_hour',
             'update_at_minute',
+            'delete_label_after_sync'
         )

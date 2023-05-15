@@ -254,7 +254,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         }
     )
     @ajax_request_class
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
@@ -347,7 +347,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves the a user's first_name, last_name, email
+        Retrieves user's first_name, last_name, email
         and api key if exists by user ID (pk).
         """
 
@@ -632,7 +632,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.save()
         return {'status': 'success'}
 
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):

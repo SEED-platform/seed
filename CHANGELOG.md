@@ -1,3 +1,29 @@
+# SEED Version 2.18.1
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Codebuild & Elasticache Redis integration support by @dhaley in https://github.com/SEED-platform/seed/pull/3981
+### Improvements 📈
+* Add better error messaging that includes the property view ID by @kflemin in https://github.com/SEED-platform/seed/pull/3973
+* Add Salesforce fields to store data admin contact by @kflemin in https://github.com/SEED-platform/seed/pull/3985
+* Add salesforce mappings sort and more error checking and messaging by @kflemin in https://github.com/SEED-platform/seed/pull/3992
+* Add zoom and panning to insights property page by @haneslinger in https://github.com/SEED-platform/seed/pull/3879
+* Remove program overview tabular data by @haneslinger in https://github.com/SEED-platform/seed/pull/4007
+* Save Insight property config locally by @haneslinger in https://github.com/SEED-platform/seed/pull/3994
+* Add Salesforce delete_label_on_sync setting by @kflemin in https://github.com/SEED-platform/seed/pull/4022
+* Replace seed getting started guide for v2.18 by @kflemin in https://github.com/SEED-platform/seed/pull/4026
+* Add in the start and end cycle year to the title by @haneslinger in https://github.com/SEED-platform/seed/pull/4014
+### Bug Fixes 🐛
+* Validate property state before creating BuildingSync document by @perryr16 in https://github.com/SEED-platform/seed/pull/3953
+* Fix Update-Salesforce requests by @axelstudios in https://github.com/SEED-platform/seed/pull/3978
+* Enforce non-null `taxlot_id` attached to `TaxlotView`s by @axelstudios in https://github.com/SEED-platform/seed/pull/4006
+
+## New Contributors
+* @dhaley made their first contribution in https://github.com/SEED-platform/seed/pull/3981
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.0...v2.18.1
+
 # SEED Version 2.18.0
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
 

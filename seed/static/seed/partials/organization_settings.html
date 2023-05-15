@@ -424,8 +424,9 @@
                                 <div class="col-sm-2">
                                     <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}
                                     </button>
-                                    <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
-                                    </button>
+                                    <!-- leaving it here in case we want to move this functionality to the background in the future -->
+                                    <!-- <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
+                                    </button> -->
                                 </div>
                                 <div class="col-sm-11">
                                     <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
@@ -458,6 +459,20 @@
                                     <select class="form-control" id="sf_ind" ng-options="label.id as label.name for label in labels" ng-model="conf.indication_label">
                                         <option value=""></option>
                                     </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="section_content_container">
+                    <div class="section_content with_padding">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="delete_label_after_sync" translate>Delete Indication Label After Successful Salesforce Update</label>
+                                 <div class="col-sm-5">
+                                    <p translate="SF_DELETE_LABEL_AFTER_SYNC_TEXT"></p>
+
+                                    <input type="checkbox" id="delete_label_after_sync" class="form-control" style="width: 34px;" ng-model="conf.delete_label_after_sync" ng-disabled="::!auth.requires_owner">
                                 </div>
                             </div>
                         </form>
