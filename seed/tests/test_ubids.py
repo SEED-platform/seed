@@ -667,9 +667,7 @@ class UbidJaccardTests(TestCase):
         from django.db import connection
 
         def calc_jaccard(ubid1, ubid2):
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    WITH decoded AS (
+            sql = """ WITH decoded AS (
                         SELECT
                             public.UBID_Decode(%s) AS left_code_area,
                             public.UBID_Decode(%s) AS right_code_area
@@ -677,8 +675,10 @@ class UbidJaccardTests(TestCase):
                     SELECT
                         public.UBID_CodeArea_Jaccard(left_code_area, right_code_area)
                     FROM
-                        decoded
-                """, [ubid1, ubid2])
+                        decoded """
+
+            with connection.cursor() as cursor:
+                cursor.execute(sql, [ubid1, ubid2])
                 result = cursor.fetchone()[0]
             return result\
 
