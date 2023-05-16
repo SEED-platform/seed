@@ -12,516 +12,516 @@ class Migration(migrations.Migration):
     operations = [
 
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_CodeArea_Jaccard(left_code_area record, right_code_area record) RETURNS numeric
-        AS $$
-        DECLARE
-        intersection_lat_lo numeric := GREATEST(left_code_area.lat_lo, right_code_area.lat_lo);
-        intersection_lat_hi numeric := LEAST(left_code_area.lat_hi, right_code_area.lat_hi);
-        intersection_lng_lo numeric := GREATEST(left_code_area.lng_lo, right_code_area.lng_lo);
-        intersection_lng_hi numeric := LEAST(left_code_area.lng_hi, right_code_area.lng_hi);
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_CodeArea_Jaccard(left_code_area record, right_code_area record) RETURNS numeric
+            AS $$
+            DECLARE
+            intersection_lat_lo numeric := GREATEST(left_code_area.lat_lo, right_code_area.lat_lo);
+            intersection_lat_hi numeric := LEAST(left_code_area.lat_hi, right_code_area.lat_hi);
+            intersection_lng_lo numeric := GREATEST(left_code_area.lng_lo, right_code_area.lng_lo);
+            intersection_lng_hi numeric := LEAST(left_code_area.lng_hi, right_code_area.lng_hi);
 
-        intersection_area numeric;
+            intersection_area numeric;
 
-        left_area numeric;
-        right_area numeric;
-        BEGIN
-        IF ((intersection_lat_lo > intersection_lat_hi) OR (intersection_lng_lo > intersection_lng_hi)) THEN
-            RETURN 0;
-        END IF;
+            left_area numeric;
+            right_area numeric;
+            BEGIN
+            IF ((intersection_lat_lo > intersection_lat_hi) OR (intersection_lng_lo > intersection_lng_hi)) THEN
+                RETURN 0;
+            END IF;
 
-        intersection_area := (intersection_lat_hi - intersection_lat_lo) * (intersection_lng_hi - intersection_lng_lo);
+            intersection_area := (intersection_lat_hi - intersection_lat_lo) * (intersection_lng_hi - intersection_lng_lo);
 
-        left_area := (left_code_area.lat_hi - left_code_area.lat_lo) * (left_code_area.lng_hi - left_code_area.lng_lo);
-        right_area := (right_code_area.lat_hi - right_code_area.lat_lo) * (right_code_area.lng_hi - right_code_area.lng_lo);
+            left_area := (left_code_area.lat_hi - left_code_area.lat_lo) * (left_code_area.lng_hi - left_code_area.lng_lo);
+            right_area := (right_code_area.lat_hi - right_code_area.lat_lo) * (right_code_area.lng_hi - right_code_area.lng_lo);
 
-        RETURN intersection_area / (left_area + right_area - intersection_area);
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
+            RETURN intersection_area / (left_area + right_area - intersection_area);
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),        
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_Decode(code text) RETURNS record
-        AS $$
-        DECLARE
-        result record := UBID_Parse(code);
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_Decode(code text) RETURNS record
+            AS $$
+            DECLARE
+            result record := UBID_Parse(code);
 
-        lat_measure numeric := result.centroid_lat_hi - result.centroid_lat_lo;
-        lng_measure numeric := result.centroid_lng_hi - result.centroid_lng_lo;
+            lat_measure numeric := result.centroid_lat_hi - result.centroid_lat_lo;
+            lng_measure numeric := result.centroid_lng_hi - result.centroid_lng_lo;
 
-        lat_lo numeric := result.centroid_lat_lo - (result.south * lat_measure);
-        lng_lo numeric := result.centroid_lng_lo - (result.west * lng_measure);
-        lat_hi numeric := result.centroid_lat_hi + (result.north * lat_measure);
-        lng_hi numeric := result.centroid_lng_hi + (result.east * lng_measure);
-        BEGIN
-        RETURN UBID_CodeArea(lat_lo, lng_lo, lat_hi, lng_hi, result.centroid_lat_lo, result.centroid_lng_lo, result.centroid_lat_hi, result.centroid_lng_hi, result.centroid_code_length);
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
+            lat_lo numeric := result.centroid_lat_lo - (result.south * lat_measure);
+            lng_lo numeric := result.centroid_lng_lo - (result.west * lng_measure);
+            lat_hi numeric := result.centroid_lat_hi + (result.north * lat_measure);
+            lng_hi numeric := result.centroid_lng_hi + (result.east * lng_measure);
+            BEGIN
+            RETURN UBID_CodeArea(lat_lo, lng_lo, lat_hi, lng_hi, result.centroid_lat_lo, result.centroid_lng_lo, result.centroid_lat_hi, result.centroid_lng_hi, result.centroid_code_length);
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_Parse(code text) RETURNS TABLE(centroid_lat_lo numeric, centroid_lng_lo numeric, centroid_lat_hi numeric, centroid_lng_hi numeric, centroid_code_length integer, north integer, east integer, south integer, west integer)
-        AS $$
-        DECLARE
-        SEPARATOR_ text := '-';
-        NON_NEGATIVE_INTEGER_PATTERN_ text := '^(?:0|[1-9][0-9]*)$';
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_Parse(code text) RETURNS TABLE(centroid_lat_lo numeric, centroid_lng_lo numeric, centroid_lat_hi numeric, centroid_lng_hi numeric, centroid_code_length integer, north integer, east integer, south integer, west integer)
+            AS $$
+            DECLARE
+            SEPARATOR_ text := '-';
+            NON_NEGATIVE_INTEGER_PATTERN_ text := '^(?:0|[1-9][0-9]*)$';
 
-        parts text[] := regexp_split_to_array(code, SEPARATOR_);
+            parts text[] := regexp_split_to_array(code, SEPARATOR_);
 
-        centroid_code_area record;
-        BEGIN
-        IF (array_length(parts, 1) != 5) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The code must have exactly five parts, separated by hyphen "-" characters.';
-        ELSIF (pluscode_isFull(parts[1]) IS FALSE) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The first part of the code must be a full Open Location Code.';
-        ELSIF (parts[2] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The second part of the code must be a non-negative integer.';
-        ELSIF (parts[3] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The third part of the code must be a non-negative integer.';
-        ELSIF (parts[4] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The fourth part of the code must be a non-negative integer.';
-        ELSIF (parts[5] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
-            RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The fifth part of the code must be a non-negative integer.';
-        ELSE
-            centroid_code_area := pluscode_decode(parts[1]);
+            centroid_code_area record;
+            BEGIN
+            IF (array_length(parts, 1) != 5) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The code must have exactly five parts, separated by hyphen "-" characters.';
+            ELSIF (pluscode_isFull(parts[1]) IS FALSE) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The first part of the code must be a full Open Location Code.';
+            ELSIF (parts[2] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The second part of the code must be a non-negative integer.';
+            ELSIF (parts[3] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The third part of the code must be a non-negative integer.';
+            ELSIF (parts[4] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The fourth part of the code must be a non-negative integer.';
+            ELSIF (parts[5] !~ NON_NEGATIVE_INTEGER_PATTERN_) THEN
+                RAISE EXCEPTION 'Passed UBID is not a valid code - %', code
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The fifth part of the code must be a non-negative integer.';
+            ELSE
+                centroid_code_area := pluscode_decode(parts[1]);
+
+                RETURN QUERY SELECT
+                centroid_code_area.lat_lo AS centroid_lat_lo,
+                centroid_code_area.lng_lo AS centroid_lng_lo,
+                centroid_code_area.lat_hi AS centroid_lat_hi,
+                centroid_code_area.lng_hi AS centroid_lng_hi,
+                centroid_code_area.code_length::integer AS centroid_code_length,
+                to_number(parts[2], repeat('9', char_length(parts[2])))::integer AS north,
+                to_number(parts[3], repeat('9', char_length(parts[3])))::integer AS east,
+                to_number(parts[4], repeat('9', char_length(parts[4])))::integer AS south,
+                to_number(parts[5], repeat('9', char_length(parts[5])))::integer AS west;
+            END IF;
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
+        ),
+        migrations.RunSQL(
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_CodeArea(_lat_lo numeric, _lng_lo numeric, _lat_hi numeric, _lng_hi numeric, _centroid_lat_lo numeric, _centroid_lng_lo numeric, _centroid_lat_hi numeric, _centroid_lng_hi numeric, _centroid_code_length integer) RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, centroid_lat_lo numeric, centroid_lng_lo numeric, centroid_lat_hi numeric, centroid_lng_hi numeric, centroid_code_length integer)
+            AS $$
+            DECLARE
+            PAIR_CODE_LENGTH_ integer := 10;
+
+            valid_lat boolean := UBID_ValidateLatitude(_lat_lo, _lat_hi, _centroid_lat_lo, _centroid_lat_hi);
+            valid_lng boolean := UBID_ValidateLongitude(_lng_lo, _lng_hi, _centroid_lng_lo, _centroid_lng_hi);
+            BEGIN
+            IF ((_centroid_code_length < 2) OR ((_centroid_code_length < PAIR_CODE_LENGTH_) AND (_centroid_code_length % 2 = 1))) THEN
+                RAISE EXCEPTION 'Invalid Open Location Code length - %', _centroid_code_length
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The Open Location Code length must be 2, 4, 6, 8, 10, 11, 12, 13, 14, or 15.';
+            END IF;
 
             RETURN QUERY SELECT
-            centroid_code_area.lat_lo AS centroid_lat_lo,
-            centroid_code_area.lng_lo AS centroid_lng_lo,
-            centroid_code_area.lat_hi AS centroid_lat_hi,
-            centroid_code_area.lng_hi AS centroid_lng_hi,
-            centroid_code_area.code_length::integer AS centroid_code_length,
-            to_number(parts[2], repeat('9', char_length(parts[2])))::integer AS north,
-            to_number(parts[3], repeat('9', char_length(parts[3])))::integer AS east,
-            to_number(parts[4], repeat('9', char_length(parts[4])))::integer AS south,
-            to_number(parts[5], repeat('9', char_length(parts[5])))::integer AS west;
-        END IF;
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
+                _lat_lo AS lat_lo,
+                _lng_lo AS lng_lo,
+                _lat_hi AS lat_hi,
+                _lng_hi AS lng_hi,
+                _centroid_lat_lo AS centroid_lat_lo,
+                _centroid_lng_lo AS centroid_lng_lo,
+                _centroid_lat_hi AS centroid_lat_hi,
+                _centroid_lng_hi AS centroid_lng_hi,
+                _centroid_code_length AS centroid_code_length;
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_CodeArea(_lat_lo numeric, _lng_lo numeric, _lat_hi numeric, _lng_hi numeric, _centroid_lat_lo numeric, _centroid_lng_lo numeric, _centroid_lat_hi numeric, _centroid_lng_hi numeric, _centroid_code_length integer) RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, centroid_lat_lo numeric, centroid_lng_lo numeric, centroid_lat_hi numeric, centroid_lng_hi numeric, centroid_code_length integer)
-        AS $$
-        DECLARE
-        PAIR_CODE_LENGTH_ integer := 10;
-
-        valid_lat boolean := UBID_ValidateLatitude(_lat_lo, _lat_hi, _centroid_lat_lo, _centroid_lat_hi);
-        valid_lng boolean := UBID_ValidateLongitude(_lng_lo, _lng_hi, _centroid_lng_lo, _centroid_lng_hi);
-        BEGIN
-        IF ((_centroid_code_length < 2) OR ((_centroid_code_length < PAIR_CODE_LENGTH_) AND (_centroid_code_length % 2 = 1))) THEN
-            RAISE EXCEPTION 'Invalid Open Location Code length - %', _centroid_code_length
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The Open Location Code length must be 2, 4, 6, 8, 10, 11, 12, 13, 14, or 15.';
-        END IF;
-
-        RETURN QUERY SELECT
-            _lat_lo AS lat_lo,
-            _lng_lo AS lng_lo,
-            _lat_hi AS lat_hi,
-            _lng_hi AS lng_hi,
-            _centroid_lat_lo AS centroid_lat_lo,
-            _centroid_lng_lo AS centroid_lng_lo,
-            _centroid_lat_hi AS centroid_lat_hi,
-            _centroid_lng_hi AS centroid_lng_hi,
-            _centroid_code_length AS centroid_code_length;
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
-        ),
-        migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_ValidateLatitude(lat_lo numeric, lat_hi numeric, centroid_lat_lo numeric, centroid_lat_hi numeric) RETURNS boolean
-        AS $$
-        DECLARE
-        LATITUDE_MAX_ integer := 90;
-        BEGIN
-        IF (lat_hi > LATITUDE_MAX_) THEN
-            RAISE EXCEPTION 'Invalid maximum latitude coordinate - %', lat_hi
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The maximum latitude coordinate must be less than or equal to ' || LATITUDE_MAX_ || '.';
-        ELSIF (centroid_lat_hi > lat_hi) THEN
-            RAISE EXCEPTION 'Invalid centroid maximum latitude coordinate - %', centroid_lat_hi
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The centroid latitude coordinate cannot be greater than the maximum latitude coordinate.';
-        ELSIF (lat_lo > centroid_lat_lo) THEN
-            RAISE EXCEPTION 'Invalid centroid minimum latitude coordinate - %', centroid_lat_lo
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum latitude coordinate cannot be greater than the centroid latitude coordinate.';
-        ELSIF (lat_lo < (-LATITUDE_MAX_)) THEN
-            RAISE EXCEPTION 'Invalid minimum latitude coordinate - %', lat_lo
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum latitude coordinate must be greater than or equal to ' || (-LATITUDE_MAX_) || '.';
-        ELSE
-            RETURN TRUE;
-        END IF;
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
-        ),
-        migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.UBID_ValidateLongitude(lng_lo numeric, lng_hi numeric, centroid_lng_lo numeric, centroid_lng_hi numeric) RETURNS boolean
-        AS $$
-        DECLARE
-        LONGITUDE_MAX_ integer := 180;
-        BEGIN
-        IF (lng_hi > LONGITUDE_MAX_) THEN
-            RAISE EXCEPTION 'Invalid maximum longitude coordinate - %', lng_hi
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The maximum longitude coordinate must be less than or equal to ' || LONGITUDE_MAX_ || '.';
-        ELSIF (centroid_lng_hi > lng_hi) THEN
-            RAISE EXCEPTION 'Invalid centroid maximum longitude coordinate - %', centroid_lng_hi
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The centroid longitude coordinate cannot be greater than the maximum longitude coordinate.';
-        ELSIF (lng_lo > centroid_lng_lo) THEN
-            RAISE EXCEPTION 'Invalid centroid minimum longitude coordinate - %', centroid_lng_lo
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum longitude coordinate cannot be greater than the centroid longitude coordinate.';
-        ELSIF (lng_lo < (-LONGITUDE_MAX_)) THEN
-            RAISE EXCEPTION 'Invalid minimum longitude coordinate - %', lng_lo
-            USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum longitude coordinate must be greater than or equal to ' || (-LONGITUDE_MAX_) || '.';
-        ELSE
-            RETURN TRUE;
-        END IF;
-        END;
-        $$ LANGUAGE plpgsql;
-        """,
-        reverse_sql=migrations.RunSQL.noop
-        ),
-        migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.pluscode_isfull(
-            code text)
-        RETURNS boolean
-            LANGUAGE 'plpgsql'
-            COST 100
-            IMMUTABLE
-        AS $BODY$
-        DECLARE
-        code_alphabet text := '23456789CFGHJMPQRVWX';
-        first_lat_val int:= 0;
-        first_lng_val int:= 0;
-        encoding_base_ int := char_length(code_alphabet);
-        latitude_max_ int := 90;
-        longitude_max_ int := 180;
-        BEGIN
-            IF (pluscode_isvalid(code)) is FALSE THEN
-                RETURN FALSE;
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_ValidateLatitude(lat_lo numeric, lat_hi numeric, centroid_lat_lo numeric, centroid_lat_hi numeric) RETURNS boolean
+            AS $$
+            DECLARE
+            LATITUDE_MAX_ integer := 90;
+            BEGIN
+            IF (lat_hi > LATITUDE_MAX_) THEN
+                RAISE EXCEPTION 'Invalid maximum latitude coordinate - %', lat_hi
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The maximum latitude coordinate must be less than or equal to ' || LATITUDE_MAX_ || '.';
+            ELSIF (centroid_lat_hi > lat_hi) THEN
+                RAISE EXCEPTION 'Invalid centroid maximum latitude coordinate - %', centroid_lat_hi
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The centroid latitude coordinate cannot be greater than the maximum latitude coordinate.';
+            ELSIF (lat_lo > centroid_lat_lo) THEN
+                RAISE EXCEPTION 'Invalid centroid minimum latitude coordinate - %', centroid_lat_lo
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum latitude coordinate cannot be greater than the centroid latitude coordinate.';
+            ELSIF (lat_lo < (-LATITUDE_MAX_)) THEN
+                RAISE EXCEPTION 'Invalid minimum latitude coordinate - %', lat_lo
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum latitude coordinate must be greater than or equal to ' || (-LATITUDE_MAX_) || '.';
+            ELSE
+                RETURN TRUE;
             END IF;
-            -- If is short --> not full.
-            IF (pluscode_isshort(code)) is TRUE THEN
-                RETURN FALSE;
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
+        ),
+        migrations.RunSQL(
+            """
+            CREATE OR REPLACE FUNCTION public.UBID_ValidateLongitude(lng_lo numeric, lng_hi numeric, centroid_lng_lo numeric, centroid_lng_hi numeric) RETURNS boolean
+            AS $$
+            DECLARE
+            LONGITUDE_MAX_ integer := 180;
+            BEGIN
+            IF (lng_hi > LONGITUDE_MAX_) THEN
+                RAISE EXCEPTION 'Invalid maximum longitude coordinate - %', lng_hi
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The maximum longitude coordinate must be less than or equal to ' || LONGITUDE_MAX_ || '.';
+            ELSIF (centroid_lng_hi > lng_hi) THEN
+                RAISE EXCEPTION 'Invalid centroid maximum longitude coordinate - %', centroid_lng_hi
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The centroid longitude coordinate cannot be greater than the maximum longitude coordinate.';
+            ELSIF (lng_lo > centroid_lng_lo) THEN
+                RAISE EXCEPTION 'Invalid centroid minimum longitude coordinate - %', centroid_lng_lo
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum longitude coordinate cannot be greater than the centroid longitude coordinate.';
+            ELSIF (lng_lo < (-LONGITUDE_MAX_)) THEN
+                RAISE EXCEPTION 'Invalid minimum longitude coordinate - %', lng_lo
+                USING ERRCODE = 'invalid_parameter_value', HINT = 'The minimum longitude coordinate must be greater than or equal to ' || (-LONGITUDE_MAX_) || '.';
+            ELSE
+                RETURN TRUE;
             END IF;
-            --Check latitude for first lat char
-            first_lat_val := (POSITION( UPPER(LEFT(code,1)) IN  code_alphabet  )-1) * encoding_base_;
-            IF (first_lat_val >= latitude_max_ * 2) THEN
-                RETURN FALSE;
-            END IF;
-            IF (char_length(code) > 1) THEN
-                --Check longitude for first lng char
-                first_lng_val := (POSITION( UPPER(SUBSTRING(code FROM 2 FOR 1)) IN  code_alphabet)-1) * encoding_base_;
-                IF (first_lng_val >= longitude_max_ *2) THEN
+            END;
+            $$ LANGUAGE plpgsql;
+            """,
+            reverse_sql=migrations.RunSQL.noop
+        ),
+        migrations.RunSQL(
+            """
+            CREATE OR REPLACE FUNCTION public.pluscode_isfull(
+                code text)
+            RETURNS boolean
+                LANGUAGE 'plpgsql'
+                COST 100
+                IMMUTABLE
+            AS $BODY$
+            DECLARE
+            code_alphabet text := '23456789CFGHJMPQRVWX';
+            first_lat_val int:= 0;
+            first_lng_val int:= 0;
+            encoding_base_ int := char_length(code_alphabet);
+            latitude_max_ int := 90;
+            longitude_max_ int := 180;
+            BEGIN
+                IF (pluscode_isvalid(code)) is FALSE THEN
                     RETURN FALSE;
                 END IF;
-            END IF;
-            RETURN TRUE;
-        END;
-        $BODY$;
+                -- If is short --> not full.
+                IF (pluscode_isshort(code)) is TRUE THEN
+                    RETURN FALSE;
+                END IF;
+                --Check latitude for first lat char
+                first_lat_val := (POSITION( UPPER(LEFT(code,1)) IN  code_alphabet  )-1) * encoding_base_;
+                IF (first_lat_val >= latitude_max_ * 2) THEN
+                    RETURN FALSE;
+                END IF;
+                IF (char_length(code) > 1) THEN
+                    --Check longitude for first lng char
+                    first_lng_val := (POSITION( UPPER(SUBSTRING(code FROM 2 FOR 1)) IN  code_alphabet)-1) * encoding_base_;
+                    IF (first_lng_val >= longitude_max_ *2) THEN
+                        RETURN FALSE;
+                    END IF;
+                END IF;
+                RETURN TRUE;
+            END;
+            $BODY$;
 
-        """,
-        reverse_sql=migrations.RunSQL.noop
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.pluscode_isvalid(
-            code text)
-        RETURNS boolean
-            LANGUAGE 'plpgsql'
-            COST 100
-            IMMUTABLE
-        AS $BODY$
-        DECLARE
-        separator_ text := '+';
-        separator_position int := 8;
-        padding_char text:= '0';
-        padding_int_pos integer:=0;
-        padding_one_int_pos integer:=0;
-        stripped_code text := replace(replace(code,'0',''),'+','');
-        code_alphabet_ text := '23456789CFGHJMPQRVWX';
-        idx int := 1;
-        BEGIN
-        code := code::text;
-        --Code Without "+" char
-        IF (POSITION(separator_ in code) = 0) THEN
-            RETURN FALSE;
-        END IF;
-        --Code beginning with "+" char
-        IF (POSITION(separator_ in code) = 1) THEN
-            RETURN FALSE;
-        END IF;
-        --Code with illegal position separator
-        IF ( (POSITION(separator_ in code) > separator_position+1) OR ((POSITION(separator_ in code)-1) % 2 = 1)  ) THEN
-            RETURN FALSE;
-        END IF;
-        --Code contains padding characters "0"
-        IF (POSITION(padding_char in code) > 0) THEN
-            IF (POSITION(separator_ in code) < 9) THEN
+            """
+            CREATE OR REPLACE FUNCTION public.pluscode_isvalid(
+                code text)
+            RETURNS boolean
+                LANGUAGE 'plpgsql'
+                COST 100
+                IMMUTABLE
+            AS $BODY$
+            DECLARE
+            separator_ text := '+';
+            separator_position int := 8;
+            padding_char text:= '0';
+            padding_int_pos integer:=0;
+            padding_one_int_pos integer:=0;
+            stripped_code text := replace(replace(code,'0',''),'+','');
+            code_alphabet_ text := '23456789CFGHJMPQRVWX';
+            idx int := 1;
+            BEGIN
+            code := code::text;
+            --Code Without "+" char
+            IF (POSITION(separator_ in code) = 0) THEN
                 RETURN FALSE;
             END IF;
+            --Code beginning with "+" char
             IF (POSITION(separator_ in code) = 1) THEN
                 RETURN FALSE;
             END IF;
-            --Check if there are many "00" groups (only one is legal)
-            padding_int_pos := (select ROW_NUMBER() OVER( ORDER BY REGEXP_MATCHES(code,'('||padding_char||'+)' ,'g') ) order by 1 DESC limit 1);
-            padding_one_int_pos := char_length( (select REGEXP_MATCHES(code,'('||padding_char||'+)' ,'g')  limit 1)[1] );
-            IF (padding_int_pos > 1 ) THEN
+            --Code with illegal position separator
+            IF ( (POSITION(separator_ in code) > separator_position+1) OR ((POSITION(separator_ in code)-1) % 2 = 1)  ) THEN
                 RETURN FALSE;
             END IF;
-            --Check if the first group is % 2 = 0
-            IF ((padding_one_int_pos % 2) = 1 ) THEN
+            --Code contains padding characters "0"
+            IF (POSITION(padding_char in code) > 0) THEN
+                IF (POSITION(separator_ in code) < 9) THEN
+                    RETURN FALSE;
+                END IF;
+                IF (POSITION(separator_ in code) = 1) THEN
+                    RETURN FALSE;
+                END IF;
+                --Check if there are many "00" groups (only one is legal)
+                padding_int_pos := (select ROW_NUMBER() OVER( ORDER BY REGEXP_MATCHES(code,'('||padding_char||'+)' ,'g') ) order by 1 DESC limit 1);
+                padding_one_int_pos := char_length( (select REGEXP_MATCHES(code,'('||padding_char||'+)' ,'g')  limit 1)[1] );
+                IF (padding_int_pos > 1 ) THEN
+                    RETURN FALSE;
+                END IF;
+                --Check if the first group is % 2 = 0
+                IF ((padding_one_int_pos % 2) = 1 ) THEN
+                    RETURN FALSE;
+                END IF;
+                --Lastchar is a separator
+                IF (RIGHT(code,1) <> separator_) THEN
+                    RETURN FALSE;
+                END IF;
+            END IF;
+            --If there is just one char after '+'
+            IF (char_length(code) - POSITION(separator_ in code) = 1 ) THEN
                 RETURN FALSE;
             END IF;
-            --Lastchar is a separator
-            IF (RIGHT(code,1) <> separator_) THEN
-                RETURN FALSE;
-            END IF;
-        END IF;
-        --If there is just one char after '+'
-        IF (char_length(code) - POSITION(separator_ in code) = 1 ) THEN
+            --Check if each char is in code_alphabet_
+            FOR i IN 1..char_length(stripped_code) LOOP
+                IF (POSITION( UPPER(substring(stripped_code from i for 1)) in code_alphabet_ ) = 0) THEN
+                    RETURN FALSE;
+                END IF;
+            END LOOP;
+            RETURN TRUE;
+            END;
+            $BODY$;
+
+            """,
+            reverse_sql=migrations.RunSQL.noop
+        ),
+        migrations.RunSQL(
+            """
+            CREATE OR REPLACE FUNCTION public.pluscode_isshort(
+                code text)
+            RETURNS boolean
+                LANGUAGE 'plpgsql'
+                COST 100
+                IMMUTABLE
+            AS $BODY$
+            DECLARE
+            separator_ text := '+';
+            separator_position int := 9;
+            BEGIN
+                -- the pluscode is valid ?
+                IF (pluscode_isvalid(code)) is FALSE THEN
+                    RETURN FALSE;
+                END IF;
+                -- the pluscode contain a '+' at a correct place
+                IF ((POSITION(separator_ in code)>0) AND (POSITION(separator_ in code)< separator_position)) THEN
+                    RETURN TRUE;
+                END IF;
             RETURN FALSE;
-        END IF;
-        --Check if each char is in code_alphabet_
-        FOR i IN 1..char_length(stripped_code) LOOP
-            IF (POSITION( UPPER(substring(stripped_code from i for 1)) in code_alphabet_ ) = 0) THEN
-                RETURN FALSE;
-            END IF;
-        END LOOP;
-        RETURN TRUE;
-        END;
-        $BODY$;
-
-        """,
-        reverse_sql=migrations.RunSQL.noop
+            END;
+            $BODY$;
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.pluscode_isshort(
-            code text)
-        RETURNS boolean
-            LANGUAGE 'plpgsql'
-            COST 100
-            IMMUTABLE
-        AS $BODY$
-        DECLARE
-        separator_ text := '+';
-        separator_position int := 9;
-        BEGIN
-            -- the pluscode is valid ?
-            IF (pluscode_isvalid(code)) is FALSE THEN
-                RETURN FALSE;
-            END IF;
-            -- the pluscode contain a '+' at a correct place
-            IF ((POSITION(separator_ in code)>0) AND (POSITION(separator_ in code)< separator_position)) THEN
-                RETURN TRUE;
-            END IF;
-        RETURN FALSE;
-        END;
-        $BODY$;
-        """,
-        reverse_sql=migrations.RunSQL.noop
-        ),
-        migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.pluscode_decode(
-            code text)
-        RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, code_length numeric, lat_center numeric, lng_center numeric)
-            LANGUAGE 'plpgsql'
-            COST 100
-            IMMUTABLE
-            ROWS 1000
-        AS $BODY$
-        DECLARE
-        lat_out float := 0;
-        lng_out float := 0;
-        latitude_max_ int := 90;
-        longitude_max_ int := 180;
-        lat_precision numeric := 0;
-        lng_precision numeric:= 0;
-        code_alphabet text := '23456789CFGHJMPQRVWX';
-        stripped_code text := UPPER(replace(replace(code,'0',''),'+',''));
-        encoding_base_ int := char_length(code_alphabet);
-        pair_precision_ numeric := power(encoding_base_::double precision, 3::double precision);
-        normal_lat numeric:= -latitude_max_ * pair_precision_;
-        normal_lng numeric:= -longitude_max_ * pair_precision_;
-        grid_lat_ numeric:= 0;
-        grid_lng_ numeric:= 0;
-        max_digit_count_ int:= 15;
-        pair_code_length_ int:=10;
-        digits int:= 0;
-        pair_first_place_value_ numeric:= power(encoding_base_, (pair_code_length_/2)-1);
-        pv int:= 0;
-        iterator int:=0;
-        iterator_d int:=0;
-        digit_val int := 0;
-        row_ numeric := 0;
-        col_ numeric := 0;
-        return_record record;
-        grid_code_length_ int:= max_digit_count_ - pair_code_length_;
-        grid_columns_ int := 4;
-        grid_rows_  int := 5;
-        grid_lat_first_place_value_ int := power(grid_rows_, (grid_code_length_ - 1));
-        grid_lng_first_place_value_ int := power(grid_columns_, (grid_code_length_ - 1));
-        final_lat_precision_ numeric := pair_precision_ * power(grid_rows_, (max_digit_count_ - pair_code_length_));
-        final_lng_precision_ numeric := pair_precision_ * power(grid_columns_, (max_digit_count_ - pair_code_length_));
-        rowpv numeric := grid_lat_first_place_value_;
-        colpv numeric := grid_lng_first_place_value_;
+            """
+            CREATE OR REPLACE FUNCTION public.pluscode_decode(
+                code text)
+            RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, code_length numeric, lat_center numeric, lng_center numeric)
+                LANGUAGE 'plpgsql'
+                COST 100
+                IMMUTABLE
+                ROWS 1000
+            AS $BODY$
+            DECLARE
+            lat_out float := 0;
+            lng_out float := 0;
+            latitude_max_ int := 90;
+            longitude_max_ int := 180;
+            lat_precision numeric := 0;
+            lng_precision numeric:= 0;
+            code_alphabet text := '23456789CFGHJMPQRVWX';
+            stripped_code text := UPPER(replace(replace(code,'0',''),'+',''));
+            encoding_base_ int := char_length(code_alphabet);
+            pair_precision_ numeric := power(encoding_base_::double precision, 3::double precision);
+            normal_lat numeric:= -latitude_max_ * pair_precision_;
+            normal_lng numeric:= -longitude_max_ * pair_precision_;
+            grid_lat_ numeric:= 0;
+            grid_lng_ numeric:= 0;
+            max_digit_count_ int:= 15;
+            pair_code_length_ int:=10;
+            digits int:= 0;
+            pair_first_place_value_ numeric:= power(encoding_base_, (pair_code_length_/2)-1);
+            pv int:= 0;
+            iterator int:=0;
+            iterator_d int:=0;
+            digit_val int := 0;
+            row_ numeric := 0;
+            col_ numeric := 0;
+            return_record record;
+            grid_code_length_ int:= max_digit_count_ - pair_code_length_;
+            grid_columns_ int := 4;
+            grid_rows_  int := 5;
+            grid_lat_first_place_value_ int := power(grid_rows_, (grid_code_length_ - 1));
+            grid_lng_first_place_value_ int := power(grid_columns_, (grid_code_length_ - 1));
+            final_lat_precision_ numeric := pair_precision_ * power(grid_rows_, (max_digit_count_ - pair_code_length_));
+            final_lng_precision_ numeric := pair_precision_ * power(grid_columns_, (max_digit_count_ - pair_code_length_));
+            rowpv numeric := grid_lat_first_place_value_;
+            colpv numeric := grid_lng_first_place_value_;
 
-        BEGIN
-            IF (pluscode_isfull(code)) is FALSE THEN
-                RAISE EXCEPTION 'NOT A VALID FULL CODE: %', code;
-            END IF;
-            --strip 0 and + chars
-            code:= stripped_code;
-            normal_lat := -latitude_max_ * pair_precision_;
-            normal_lng := -longitude_max_ * pair_precision_;
+            BEGIN
+                IF (pluscode_isfull(code)) is FALSE THEN
+                    RAISE EXCEPTION 'NOT A VALID FULL CODE: %', code;
+                END IF;
+                --strip 0 and + chars
+                code:= stripped_code;
+                normal_lat := -latitude_max_ * pair_precision_;
+                normal_lng := -longitude_max_ * pair_precision_;
 
-            --how many digits must be used
-            IF (char_length(code) > pair_code_length_) THEN
-                digits := pair_code_length_;
-            ELSE
-                digits := char_length(code);
-            END IF;
-            pv := pair_first_place_value_;
-            WHILE iterator < digits
-                LOOP
-                    normal_lat := normal_lat + (POSITION( SUBSTRING(code FROM iterator+1 FOR 1) IN code_alphabet)-1 )* pv;
-                    normal_lng := normal_lng + (POSITION( SUBSTRING(code FROM iterator+1+1 FOR 1) IN code_alphabet)-1  ) * pv;
-                    IF (iterator < (digits -2)) THEN
-                        pv := pv/encoding_base_;
-                    END IF;
-                    iterator := iterator + 2;
-
-                END LOOP;
-
-            --convert values to degrees
-            lat_precision := pv/ pair_precision_;
-            lng_precision := pv/ pair_precision_;
-
-            IF (char_length(code) > pair_code_length_) THEN
-                IF (char_length(code) > max_digit_count_) THEN
-                    digits := max_digit_count_;
+                --how many digits must be used
+                IF (char_length(code) > pair_code_length_) THEN
+                    digits := pair_code_length_;
                 ELSE
                     digits := char_length(code);
                 END IF;
-                iterator_d := pair_code_length_;
-                WHILE iterator_d < digits
-                LOOP
-                    digit_val := (POSITION( SUBSTRING(code FROM iterator_d+1 FOR 1) IN code_alphabet)-1);
-                    row_ := ceil(digit_val/grid_columns_);
-                    col_ := digit_val % grid_columns_;
-                    grid_lat_ := grid_lat_ +(row_*rowpv);
-                    grid_lng_ := grid_lng_ +(col_*colpv);
-                    IF ( iterator_d < (digits -1) ) THEN
-                        rowpv := rowpv / grid_rows_;
-                        colpv := colpv / grid_columns_;
+                pv := pair_first_place_value_;
+                WHILE iterator < digits
+                    LOOP
+                        normal_lat := normal_lat + (POSITION( SUBSTRING(code FROM iterator+1 FOR 1) IN code_alphabet)-1 )* pv;
+                        normal_lng := normal_lng + (POSITION( SUBSTRING(code FROM iterator+1+1 FOR 1) IN code_alphabet)-1  ) * pv;
+                        IF (iterator < (digits -2)) THEN
+                            pv := pv/encoding_base_;
+                        END IF;
+                        iterator := iterator + 2;
+
+                    END LOOP;
+
+                --convert values to degrees
+                lat_precision := pv/ pair_precision_;
+                lng_precision := pv/ pair_precision_;
+
+                IF (char_length(code) > pair_code_length_) THEN
+                    IF (char_length(code) > max_digit_count_) THEN
+                        digits := max_digit_count_;
+                    ELSE
+                        digits := char_length(code);
                     END IF;
-                    iterator_d := iterator_d + 1;
-                END LOOP;
-                --adjust precision
-                lat_precision := rowpv / final_lat_precision_;
-                lng_precision := colpv / final_lng_precision_;
-            END IF;
+                    iterator_d := pair_code_length_;
+                    WHILE iterator_d < digits
+                    LOOP
+                        digit_val := (POSITION( SUBSTRING(code FROM iterator_d+1 FOR 1) IN code_alphabet)-1);
+                        row_ := ceil(digit_val/grid_columns_);
+                        col_ := digit_val % grid_columns_;
+                        grid_lat_ := grid_lat_ +(row_*rowpv);
+                        grid_lng_ := grid_lng_ +(col_*colpv);
+                        IF ( iterator_d < (digits -1) ) THEN
+                            rowpv := rowpv / grid_rows_;
+                            colpv := colpv / grid_columns_;
+                        END IF;
+                        iterator_d := iterator_d + 1;
+                    END LOOP;
+                    --adjust precision
+                    lat_precision := rowpv / final_lat_precision_;
+                    lng_precision := colpv / final_lng_precision_;
+                END IF;
 
-            --merge the normal and extra precision of the code
-            lat_out := normal_lat / pair_precision_ + grid_lat_ / final_lat_precision_;
-            lng_out := normal_lng / pair_precision_ + grid_lng_ / final_lng_precision_;
+                --merge the normal and extra precision of the code
+                lat_out := normal_lat / pair_precision_ + grid_lat_ / final_lat_precision_;
+                lng_out := normal_lng / pair_precision_ + grid_lng_ / final_lng_precision_;
 
-            IF (char_length(code) > max_digit_count_ ) THEN
-                digits := max_digit_count_;
-                RAISE NOTICE 'lat_out max_digit_count_ %', lat_out;
-            ELSE
-                digits := char_length(code);
-                RAISE NOTICE 'digits char_length%', digits;
-            END IF ;
+                IF (char_length(code) > max_digit_count_ ) THEN
+                    digits := max_digit_count_;
+                    RAISE NOTICE 'lat_out max_digit_count_ %', lat_out;
+                ELSE
+                    digits := char_length(code);
+                    RAISE NOTICE 'digits char_length%', digits;
+                END IF ;
 
-            return_record := pluscode_codearea(
-                    lat_out::numeric,
-                    lng_out::numeric,
-                    (lat_out+lat_precision)::numeric,
-                    (lng_out+lng_precision)::numeric,
-                    digits::int
-            );
-            RETURN QUERY SELECT
-                return_record.lat_lo,
-                return_record.lng_lo,
-                return_record.lat_hi,
-                return_record.lng_hi,
-                return_record.code_length,
-                return_record.lat_center,
-                return_record.lng_center
-            ;
-        END;
-        $BODY$;
-        """,
-        reverse_sql=migrations.RunSQL.noop
+                return_record := pluscode_codearea(
+                        lat_out::numeric,
+                        lng_out::numeric,
+                        (lat_out+lat_precision)::numeric,
+                        (lng_out+lng_precision)::numeric,
+                        digits::int
+                );
+                RETURN QUERY SELECT
+                    return_record.lat_lo,
+                    return_record.lng_lo,
+                    return_record.lat_hi,
+                    return_record.lng_hi,
+                    return_record.code_length,
+                    return_record.lat_center,
+                    return_record.lng_center
+                ;
+            END;
+            $BODY$;
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
         migrations.RunSQL(
-        """
-        CREATE OR REPLACE FUNCTION public.pluscode_codearea(
-            latitudelo numeric,
-            longitudelo numeric,
-            latitudehi numeric,
-            longitudehi numeric,
-            codelength integer)
-        RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, code_length numeric, lat_center numeric, lng_center numeric)
-            LANGUAGE 'plpgsql'
-            COST 100
-            IMMUTABLE
-            ROWS 1000
-        AS $BODY$
-        DECLARE
-            rlatitudeLo numeric:= latitudeLo;
-            rlongitudeLo numeric:= longitudeLo;
-            rlatitudeHi numeric:= latitudeHi;
-            rlongitudeHi numeric:= longitudeHi;
-            rcodeLength numeric:= codeLength;
-            rlatitudeCenter numeric:= 0;
-            rlongitudeCenter numeric:= 0;
-            latitude_max_ int:= 90;
-            longitude_max_ int:= 180;
-        BEGIN
-            --calculate the latitude center
-            IF (((latitudeLo + (latitudeHi - latitudeLo))/ 2) > latitude_max_) THEN
-                rlatitudeCenter := latitude_max_;
-            ELSE
-                rlatitudeCenter := (latitudeLo + (latitudeHi - latitudeLo)/ 2);
-            END IF;
-            --calculate the longitude center
-            IF (((longitudeLo + (longitudeHi - longitudeLo))/ 2) > longitude_max_) THEN
-                rlongitudeCenter := longitude_max_;
-            ELSE
-                rlongitudeCenter := (longitudeLo + (longitudeHi - longitudeLo)/ 2);
-            END IF;
+            """
+            CREATE OR REPLACE FUNCTION public.pluscode_codearea(
+                latitudelo numeric,
+                longitudelo numeric,
+                latitudehi numeric,
+                longitudehi numeric,
+                codelength integer)
+            RETURNS TABLE(lat_lo numeric, lng_lo numeric, lat_hi numeric, lng_hi numeric, code_length numeric, lat_center numeric, lng_center numeric)
+                LANGUAGE 'plpgsql'
+                COST 100
+                IMMUTABLE
+                ROWS 1000
+            AS $BODY$
+            DECLARE
+                rlatitudeLo numeric:= latitudeLo;
+                rlongitudeLo numeric:= longitudeLo;
+                rlatitudeHi numeric:= latitudeHi;
+                rlongitudeHi numeric:= longitudeHi;
+                rcodeLength numeric:= codeLength;
+                rlatitudeCenter numeric:= 0;
+                rlongitudeCenter numeric:= 0;
+                latitude_max_ int:= 90;
+                longitude_max_ int:= 180;
+            BEGIN
+                --calculate the latitude center
+                IF (((latitudeLo + (latitudeHi - latitudeLo))/ 2) > latitude_max_) THEN
+                    rlatitudeCenter := latitude_max_;
+                ELSE
+                    rlatitudeCenter := (latitudeLo + (latitudeHi - latitudeLo)/ 2);
+                END IF;
+                --calculate the longitude center
+                IF (((longitudeLo + (longitudeHi - longitudeLo))/ 2) > longitude_max_) THEN
+                    rlongitudeCenter := longitude_max_;
+                ELSE
+                    rlongitudeCenter := (longitudeLo + (longitudeHi - longitudeLo)/ 2);
+                END IF;
 
-            RETURN QUERY SELECT
-                rlatitudeLo::double precision::numeric as lat_lo,
-                rlongitudeLo::double precision::numeric as lng_lo,
-                rlatitudeHi::double precision::numeric as lat_hi,
-                rlongitudeHi::double precision::numeric as lng_hi,
-                rcodeLength as code_length,
-                rlatitudeCenter::double precision::numeric,
-                rlongitudeCenter::double precision::numeric;
-        END;
-        $BODY$;
+                RETURN QUERY SELECT
+                    rlatitudeLo::double precision::numeric as lat_lo,
+                    rlongitudeLo::double precision::numeric as lng_lo,
+                    rlatitudeHi::double precision::numeric as lat_hi,
+                    rlongitudeHi::double precision::numeric as lng_hi,
+                    rcodeLength as code_length,
+                    rlatitudeCenter::double precision::numeric,
+                    rlongitudeCenter::double precision::numeric;
+            END;
+            $BODY$;
 
-        """,
-        reverse_sql=migrations.RunSQL.noop
+            """,
+            reverse_sql=migrations.RunSQL.noop
         ),
     ]
