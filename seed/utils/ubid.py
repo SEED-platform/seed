@@ -8,6 +8,7 @@ import logging
 
 from buildingid.code import decode
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
 
 _log = logging.getLogger(__name__)
 
@@ -63,3 +64,31 @@ def decode_unique_ids(qs):
         item.latitude, item.longitude = bounding_box_obj.latlng()
 
         item.save()
+
+
+
+def get_jaccard_index(ubid1, ubid2):
+    """
+    Calculates the Jaccard index given 2 property_state.ubid's
+
+    The Jaccard index is a value between zero and one. The Jaccard index is the area of the intersection divided by the intersection of the union.
+    Not a Match (0.0) <-----> (1.0) Perfect Match
+
+    @param ubid1 [text] A Property State Ubid
+    @param ubid2 [text] A Property State Ubid
+    @return [numeric] The Jaccard index.
+    """
+    sql = """ WITH decoded AS (
+                SELECT
+                    public.UBID_Decode(%s) AS left_code_area,
+                    public.UBID_Decode(%s) AS right_code_area
+            )
+            SELECT
+                public.UBID_CodeArea_Jaccard(left_code_area, right_code_area)
+            FROM
+                decoded """
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [ubid1, ubid2])
+        result = cursor.fetchone()[0]
+    return result

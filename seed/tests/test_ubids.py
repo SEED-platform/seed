@@ -22,7 +22,7 @@ from seed.test_helpers.fake import (
 )
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import centroid_wkt
+from seed.utils.ubid import centroid_wkt, get_jaccard_index
 
 
 class UbidViewTests(TestCase):
@@ -664,51 +664,34 @@ class UbidJaccardTests(TestCase):
 
     def test_jaccard(self):
 
-        from django.db import connection
-
-        def calc_jaccard(ubid1, ubid2):
-            sql = """ WITH decoded AS (
-                        SELECT
-                            public.UBID_Decode(%s) AS left_code_area,
-                            public.UBID_Decode(%s) AS right_code_area
-                    )
-                    SELECT
-                        public.UBID_CodeArea_Jaccard(left_code_area, right_code_area)
-                    FROM
-                        decoded """
-
-            with connection.cursor() as cursor:
-                cursor.execute(sql, [ubid1, ubid2])
-                result = cursor.fetchone()[0]
-            return result\
 
         # nrel cafe
         ubid_cafe = '85FPPRR9+3C-0-0-0-0'
         ubid_cafe_larger = '85FPPRR9+3C-1-1-1-1'
         ubid_cafe_north = '85FPPRR9+4C-0-0-1-0'
 
-        # nrel FTLB 
+        # nrel FTLB
         ubid_ftlb = '85FPPRR9+38-0-0-0-0'
         ubid_ftlb_west = '85FPPRR9+38-0-0-0-2'
         ubid_ftlb_south = '85FPPRR9+28-1-0-0-1'
 
         # exact
-        jaccard = calc_jaccard(ubid_cafe, ubid_cafe)
+        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe)
         self.assertEqual(1.0, float(jaccard))
-        jaccard = calc_jaccard(ubid_ftlb, ubid_ftlb)
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb)
         self.assertEqual(1.0, float(jaccard))
 
-        # partial 
-        jaccard = calc_jaccard(ubid_cafe, ubid_cafe_larger)
+        # partial
+        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_larger)
         self.assertEqual((1/9), float(jaccard))
-        jaccard = calc_jaccard(ubid_cafe, ubid_cafe_north)
+        jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_north)
         self.assertEqual(0.5, float(jaccard))
 
-        jaccard = calc_jaccard(ubid_ftlb, ubid_ftlb_west)
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_west)
         self.assertEqual((1/3), float(jaccard))
-        jaccard = calc_jaccard(ubid_ftlb, ubid_ftlb_south)
+        jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_south)
         self.assertEqual(0.25, float(jaccard))
 
         # different
-        jaccard = calc_jaccard(ubid_cafe, ubid_ftlb) 
+        jaccard = get_jaccard_index(ubid_cafe, ubid_ftlb)
         self.assertEqual(0, float(jaccard))
