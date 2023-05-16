@@ -114,7 +114,7 @@ def finish_checking(progress_key):
     """
     Chord that is called after the data quality check is complete
 
-    :param identifier: import file primary key
+    :param progress_key: import file primary key
     :return: dict, results from queue
     """
     progress_data = ProgressData.from_key(progress_key)

@@ -5,12 +5,12 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.conf import settings
-from django.conf.urls import re_path
 from django.contrib.auth.views import (
     PasswordChangeDoneView,
     PasswordChangeView,
     logout_then_login
 )
+from django.urls import re_path
 
 from seed.landing.views import (
     account_activation_sent,

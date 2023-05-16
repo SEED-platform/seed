@@ -5,10 +5,9 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.conf import settings
-from django.conf.urls import include, re_path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import path
+from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -74,6 +73,7 @@ urlpatterns = [
 ]
 
 handler404 = 'seed.views.main.error404'
+handler410 = 'seed.views.main.error410'
 handler500 = 'seed.views.main.error500'
 
 

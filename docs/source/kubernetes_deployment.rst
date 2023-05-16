@@ -148,9 +148,6 @@ This chart contains the deployment specification for the SEED web container.  Re
           value: <reCAPTCHA-site-key>
         - name: GOOGLE_RECAPTCHA_SECRET_KEY
           value: <reCAPTCHA-key>
-        # Toggles the v2 version of the SEED API
-        - name: INCLUDE_SEED_V2_APIS
-          value: TRUE
         image: seedplatform/seed:<insert deployment image version>
         #versions can be found here https://github.com/SEED-platform/seed/releases/tag/v2.9.3
 

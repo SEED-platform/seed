@@ -25,9 +25,9 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.tests.util import FakeRequest
 from seed.utils.organizations import create_organization
+from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
-from seed.views.organizations import _dict_org
-from seed.views.users import _get_js_role, _get_role_from_js
+from seed.views.v3.organizations import _dict_org
 
 
 class AccountsViewTests(TestCase):
@@ -343,15 +343,15 @@ class AccountsViewTests(TestCase):
                 'message': 'Organization does not exist'
             })
 
-    def test__get_js_role(self):
-        self.assertEqual(_get_js_role(ROLE_OWNER), 'owner')
-        self.assertEqual(_get_js_role(ROLE_MEMBER), 'member')
-        self.assertEqual(_get_js_role(ROLE_VIEWER), 'viewer')
+    def test_get_js_role(self):
+        self.assertEqual(get_js_role(ROLE_OWNER), 'owner')
+        self.assertEqual(get_js_role(ROLE_MEMBER), 'member')
+        self.assertEqual(get_js_role(ROLE_VIEWER), 'viewer')
 
-    def test__get_role_from_js(self):
-        self.assertEqual(_get_role_from_js('owner'), ROLE_OWNER)
-        self.assertEqual(_get_role_from_js('member'), ROLE_MEMBER)
-        self.assertEqual(_get_role_from_js('viewer'), ROLE_VIEWER)
+    def test_get_role_from_js(self):
+        self.assertEqual(get_role_from_js('owner'), ROLE_OWNER)
+        self.assertEqual(get_role_from_js('member'), ROLE_MEMBER)
+        self.assertEqual(get_role_from_js('viewer'), ROLE_VIEWER)
 
     def test_update_role(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -549,78 +549,6 @@ class AccountsViewTests(TestCase):
         self.assertTrue(('PropertyState', 'ubid') in fields)
         self.assertTrue(('PropertyState', 'address_line_1') in fields)
         self.assertEqual(len(fields), 2)
-
-    # def test_get_data_quality_rules_matching(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'category': CATEGORY_MISSING_MATCHING_FIELD,
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_get_data_quality_rules_values(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'category': CATEGORY_MISSING_VALUES,
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_get_data_quality_rules_range(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_save_data_quality_rules(self):
-    #     payload = {
-    #         'organization_id': self.org.pk,
-    #         'data_quality_rules': {
-    #             'missing_matching_field': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'address_line_1',
-    #                     'severity': 'error'
-    #                 }
-    #             ],
-    #             'missing_values': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'address_line_1',
-    #                     'severity': 'error'
-    #                 }
-    #             ],
-    #             'in_range_checking': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'conditioned_floor_area',
-    #                     'enabled': True,
-    #                     'type': 'number',
-    #                     'min': None,
-    #                     'max': 7000000,
-    #                     'severity': 'error',
-    #                     'units': 'square feet'
-    #                 },
-    #             ]
-    #         }
-    #     }
-    #
-    #     resp = self.client.put(
-    #         reverse_lazy('api:v2:organizations-save-data-quality-rules', args=[self.org.pk]),
-    #         data=json.dumps(payload),
-    #         content_type='application/json',
-    #     )
-    #     self.assertEqual('success', json.loads(resp.content)['status'])
 
     def test_update_user(self):
         """test for update_user"""
