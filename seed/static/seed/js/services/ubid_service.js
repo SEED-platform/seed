@@ -35,6 +35,19 @@ angular.module('BE.seed.service.ubid', [])
         });
       };
 
+      ubid_factory.compare_ubids = (property_view_ids, taxlot_view_ids) => {
+        return $http.post('/api/v3/ubid/get_jaccard_index/', {
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data;
+        });
+      };
+
       return ubid_factory;
     }
   ]);

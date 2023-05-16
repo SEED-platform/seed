@@ -123,6 +123,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.ubid_jaccard_index_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal',

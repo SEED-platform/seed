@@ -1235,6 +1235,32 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_ubid_jaccard_index_modal = function (selectedViewIds) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_jaccard_index_modal.html',
+          controller: 'ubid_jaccard_index_modal_controller',
+          resolve: {
+            property_view_ids: function () {
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
+            },
+            taxlot_view_ids: function () {
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
+            },
+            ubids: function () {
+              let ubid_column;
+              return inventory_service.get_mappable_property_columns()
+              .then((columns) => {
+                ubid_column = columns.find(c => c.column_name == 'ubid')
+                return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds)
+              })
+              .then(function (inventory_data) {
+                  return inventory_data.results.map(d => d[ubid_column.name])
+              });
+            },
+          }
+        });
+      };
+
       $scope.open_geocode_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
@@ -1421,6 +1447,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
           case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
+          case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
