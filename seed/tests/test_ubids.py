@@ -633,6 +633,7 @@ class UbidModelSignalCreationTests(TestCase):
         taxlot3.save()
         self.assertEqual(4, UbidModel.objects.count())
 
+
 class UbidJaccardTests(TestCase):
     def setUp(self):
         user_details = {
@@ -663,8 +664,6 @@ class UbidJaccardTests(TestCase):
         self.property2.save()
 
     def test_jaccard(self):
-
-
         # nrel cafe
         ubid_cafe = '85FPPRR9+3C-0-0-0-0'
         ubid_cafe_larger = '85FPPRR9+3C-1-1-1-1'
@@ -683,12 +682,12 @@ class UbidJaccardTests(TestCase):
 
         # partial
         jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_larger)
-        self.assertEqual((1/9), float(jaccard))
+        self.assertEqual((1 / 9), float(jaccard))
         jaccard = get_jaccard_index(ubid_cafe, ubid_cafe_north)
         self.assertEqual(0.5, float(jaccard))
 
         jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_west)
-        self.assertEqual((1/3), float(jaccard))
+        self.assertEqual((1 / 3), float(jaccard))
         jaccard = get_jaccard_index(ubid_ftlb, ubid_ftlb_south)
         self.assertEqual(0.25, float(jaccard))
 

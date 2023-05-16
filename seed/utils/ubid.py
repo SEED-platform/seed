@@ -66,7 +66,6 @@ def decode_unique_ids(qs):
         item.save()
 
 
-
 def get_jaccard_index(ubid1, ubid2):
     """
     Calculates the Jaccard index given 2 property_state.ubid's
