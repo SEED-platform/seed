@@ -635,33 +635,6 @@ class UbidModelSignalCreationTests(TestCase):
 
 
 class UbidJaccardTests(TestCase):
-    def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
-        self.org, _, _ = create_organization(self.user)
-        self.client.login(**user_details)
-
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
-
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        property_details['ubid'] = '85FJGMWJ+93-0-0-0-0'
-        self.property1 = PropertyState(**property_details)
-        self.property1.save()
-
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        property_details['ubid'] = '85FJGMWJ+93-0-0-0-1'
-        self.property2 = PropertyState(**property_details)
-        self.property2.save()
 
     def test_jaccard(self):
         # nrel cafe
