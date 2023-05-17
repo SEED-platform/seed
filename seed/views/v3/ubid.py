@@ -259,7 +259,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                 setattr(ubid, field, value)
             else:
                 return JsonResponse({
-                    'success': False,
+                    'status': 'failed',
                     'message': f"Invalid field '{field}' given. Accepted fields are {valid_fields}"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
@@ -267,4 +267,61 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         return JsonResponse({
             'status': 'success',
             'data': UbidModelSerializer(ubid).data,
+        }, status=status.HTTP_200_OK)
+    
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'view_id': 'integer',
+                'type': 'string'
+            },
+            description='Retrieve Ubid Models for a given Property View'
+        )
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['POST'])
+    def ubids_by_state(self, request):
+        body = dict(request.data)
+        org_id = self.get_organization(request)
+        view_id = body.get('view_id')
+        type = body.get('type')
+        accepted_types = ['property', 'taxlot']
+        if not view_id or not type or type.lower() not in accepted_types:
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'A View ID and type (property or taxlot) are required'
+            },  status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if type.lower() == 'property': 
+                view_class = PropertyView
+                state_class = PropertyState 
+            else:
+                view_class = TaxLotView 
+                state_class = TaxLotState
+            
+            view = view_class.objects.get(
+                id=view_id,
+                cycle__organization_id=org_id
+            )
+
+            state = state_class.objects.get(
+                id=view.state.id
+            )
+            ubids = state.ubidmodel_set.all()
+
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'failed',
+                'message': f'No ubids found for given inputs'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+        return JsonResponse({
+            'status': 'success',
+            'data': self.serializer_class(ubids, many=True).data
         }, status=status.HTTP_200_OK)
