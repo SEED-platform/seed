@@ -1261,6 +1261,27 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_ubid_upsert_modal = function (selectedViewId) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_upsert_modal.html',
+          controller: 'ubid_upsert_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? selectedViewId[0] : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? selectedViewId[0] : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
+            }],
+            ubid_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
+            }],
+          }
+        });
+      };
+
       $scope.open_geocode_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
@@ -1449,6 +1470,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
+          case 'open_ubid_upsert_modal': $scope.open_ubid_upsert_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
