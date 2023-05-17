@@ -1263,6 +1263,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.open_ubid_upsert_modal = function (selectedViewId) {
         $uibModal.open({
+          backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/ubid_upsert_modal.html',
           controller: 'ubid_upsert_modal_controller',
           resolve: {

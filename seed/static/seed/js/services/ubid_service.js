@@ -49,10 +49,32 @@ angular.module('BE.seed.service.ubid', [])
       };
 
       ubid_factory.get_ubid_models_by_state = (view_id, state_type) => {
-        return $http.post('/api/v3/ubid/get_ubid_models_by_state/', {
+        return $http.post('/api/v3/ubid/ubids_by_state/', {
           view_id: view_id,
           type: state_type
         }, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data
+        })
+      }
+      
+      ubid_factory.create_ubid = (type, state_id, ubid_details) => {
+        ubid_details[type] = state_id
+        return $http.post('/api/v3/ubid/',
+          ubid_details, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data
+        })
+      }
+
+      ubid_factory.delete_ubid = (ubid_id) => {
+        return $http.delete(`/api/v3/ubid/${ubid_id}`, {
           params: {
             organization_id: user_service.get_organization().id
           }

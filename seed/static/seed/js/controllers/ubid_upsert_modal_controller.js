@@ -20,16 +20,52 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
             inventory_service,
             ubid_service,
         ) {
-            // $scope.property_view_ids = property_view_id;
-            // $scope.taxlot_view_ids = taxlot_view_id;
-            $scope.inventory_payload = inventory_payload
+            $scope.inventory_payload = inventory_payload;
+            $scope.editing = false
+            const reset_new_ubid = () => {
+                $scope.creating = false
+                $scope.new_ubid = { ubid: '', preferred: false }
+            }
 
-            // $scope.x 
-            // inventory_service.get_property(property_view_id).then(res => {
-            //     console.log('get prop')
-            // })
+            const  view_id = property_view_id || taxlot_view_id;
+            const inventory_type = property_view_id ? 'property' : 'taxlot';
+            $scope.ubids = [];
+            const refresh_ubids = () => {
+                ubid_service.get_ubid_models_by_state(view_id, inventory_type).then(results => {
+                    if ('data' in results){
+                        $scope.ubids = results.data;
+                    } else {
+                        $scope.message = results.message;
+                    }
+                });
+            }
 
-            $scope.ubid_upsert_state = 'verify'
+
+            $scope.ubid_upsert_state = 'verify';
+            $scope.create_ubid = () => {
+                const state_id = inventory_payload.state.id
+                if (inventory_type == 'property') {
+                    ubid_service.create_ubid(inventory_type, state_id, $scope.new_ubid)
+                }
+                reset_new_ubid()
+                refresh_ubids()
+            }
+            $scope.edit_ubids = () => {
+                console.log('edit ubid')
+                $scope.editing = true
+            }
+            $scope.delete_ubid = (ubid_id) => {
+                console.log('delete ubid')
+                ubid_service.delete_ubid(ubid_id)
+                refresh_ubids()
+            }
+            $scope.update_ubid = (ubid) => {
+                console.log('ubid: ', ubid.ubid)
+                $scope.editing = false
+            }
+            $scope.update_preferred = (id, preferred) => {
+                console.log('update preferred')
+            }
 
             /**
              * cancel: dismisses the modal
@@ -52,7 +88,9 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
                     taxlot_view_ids: $scope.taxlot_view_ids
                 });
             };
-
-            console.log('ubid modal jaccard index controller')
+            
+            // init
+            reset_new_ubid()
+            refresh_ubids()
         }
     ]);
