@@ -22,7 +22,6 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW
 )
-from seed.data_importer.views import ImportFileViewSet
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization
@@ -44,7 +43,10 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from seed.views.v3.import_files import convert_first_five_rows_to_list
+from seed.views.v3.import_files import (
+    ImportFileViewSet,
+    convert_first_five_rows_to_list
+)
 
 
 class TestSensorViewSet(DataMappingBaseTestCase):

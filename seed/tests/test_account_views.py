@@ -57,34 +57,49 @@ class AccountsViewTests(TestCase):
         """_dict_org turns our org structure into a json payload."""
 
         expected_single_org_payload = {
-            'sub_orgs': [],
+            'name': 'my org',
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'number_of_users': 1,
+            'user_is_owner': True,
+            'user_role': 'owner',
             'owners': [{
                 'first_name': 'Johnny',
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
-                'id': self.user.pk}],
-            'number_of_users': 1,
-            'name': 'my org',
-            'display_decimal_places': 2,
-            'display_units_area': 'ft**2',
-            'display_units_eui': 'kBtu/ft**2/year',
-            'user_role': 'owner',
+                'id': self.user.pk
+            }],
+            'sub_orgs': [],
             'is_parent': True,
-            'mapquest_api_key': '',
-            'display_meter_units': Organization._default_display_meter_units,
-            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
+            'display_units_eui': 'kBtu/ft**2/year',
+            'display_units_area': 'ft**2',
+            'display_decimal_places': 2,
             'cycles': [{
-                'num_taxlots': 0,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk,
                 'num_properties': 0,
-                'name': str(self.cal_year_name),
-                'cycle_id': self.cycle.pk
+                'num_taxlots': 0
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'mapquest_api_key': '',
+            'geocoding_enabled': True,
+            'better_analysis_api_key': '',
+            'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
+            'property_display_field': 'address_line_1',
+            'taxlot_display_field': 'address_line_1',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'comstock_enabled': False,
+            'new_user_email_from': 'info@seed-platform.org',
+            'new_user_email_subject': 'New SEED account',
+            'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+            'new_user_email_signature': 'The SEED Team',
+            'at_organization_token': '',
+            'audit_template_user': '',
+            'audit_template_password': '',
+            'at_host_url': 'https://api.labworks.org',
+            'salesforce_enabled': False
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -113,7 +128,7 @@ class AccountsViewTests(TestCase):
             expected_single_org_payload
         )
 
-    def test_dic_org_w_member_in_parent_and_child(self):
+    def test_dict_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
 
         new_org, _, _ = create_organization(self.user, "sub")
@@ -122,63 +137,93 @@ class AccountsViewTests(TestCase):
         new_cycle = Cycle.objects.filter(organization=new_org).first()
 
         expected_multiple_org_payload = {
-            'sub_orgs': [{
-                'sub_orgs': [],
-                'owners': [{
-                    'first_name': 'Johnny',
-                    'last_name': 'Energy',
-                    'email': 'test_user@demo.com',
-                    'id': self.user.pk}],
-                'number_of_users': 1,
-                'name': 'sub',
-                'user_role': 'owner',
-                'is_parent': False,
-                'mapquest_api_key': '',
-                'display_meter_units': Organization._default_display_meter_units,
-                'thermal_conversion_assumption': Organization.US,
-                'parent_id': self.org.pk,
-                'org_id': new_org.pk,
-                'id': new_org.pk,
-                'user_is_owner': True,
-                'display_units_area': 'ft**2',
-                'display_units_eui': 'kBtu/ft**2/year',
-                'display_decimal_places': 2,
-                'cycles': [{
-                    'num_taxlots': 0,
-                    'num_properties': 0,
-                    'name': str(self.cal_year_name),
-                    'cycle_id': new_cycle.pk
-                }],
-                'created': self.org.created.strftime('%Y-%m-%d'),
-                'comstock_enabled': False,
-            }],
+            'name': 'my org',
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'number_of_users': 1,
+            'user_is_owner': True,
+            'user_role': 'owner',
             'owners': [{
                 'first_name': 'Johnny',
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
-                'id': self.user.pk}],
-            'number_of_users': 1,
-            'name': 'my org',
-            'user_role': 'owner',
+                'id': self.user.pk
+            }],
+            'sub_orgs': [{
+                'name': 'sub',
+                'org_id': new_org.pk,
+                'id': new_org.pk,
+                'number_of_users': 1,
+                'user_is_owner': True,
+                'user_role': 'owner',
+                'owners': [{
+                    'first_name': 'Johnny',
+                    'last_name': 'Energy',
+                    'email': 'test_user@demo.com',
+                    'id': self.user.pk
+                }],
+                'sub_orgs': [],
+                'is_parent': False,
+                'parent_id': self.org.pk,
+                'display_units_eui': 'kBtu/ft**2/year',
+                'display_units_area': 'ft**2',
+                'display_decimal_places': 2,
+                'cycles': [{
+                    'name': self.cal_year_name,
+                    'cycle_id': new_cycle.pk,
+                    'num_properties': 0,
+                    'num_taxlots': 0
+                }],
+                'created': new_org.created.strftime('%Y-%m-%d'),
+                'mapquest_api_key': '',
+                'geocoding_enabled': True,
+                'better_analysis_api_key': '',
+                'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
+                'property_display_field': 'address_line_1',
+                'taxlot_display_field': 'address_line_1',
+                'display_meter_units': Organization._default_display_meter_units,
+                'thermal_conversion_assumption': Organization.US,
+                'comstock_enabled': False,
+                'new_user_email_from': 'info@seed-platform.org',
+                'new_user_email_subject': 'New SEED account',
+                'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+                'new_user_email_signature': 'The SEED Team',
+                'at_organization_token': '',
+                'audit_template_user': '',
+                'audit_template_password': '',
+                'at_host_url': 'https://api.labworks.org',
+                'salesforce_enabled': False
+            }],
             'is_parent': True,
-            'mapquest_api_key': '',
-            'display_meter_units': Organization._default_display_meter_units,
-            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
-            'display_decimal_places': 2,
-            'display_units_area': 'ft**2',
             'display_units_eui': 'kBtu/ft**2/year',
+            'display_units_area': 'ft**2',
+            'display_decimal_places': 2,
             'cycles': [{
-                'num_taxlots': 0,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk,
                 'num_properties': 0,
-                'name': str(self.cal_year_name),
-                'cycle_id': self.cycle.pk
+                'num_taxlots': 0
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'mapquest_api_key': '',
+            'geocoding_enabled': True,
+            'better_analysis_api_key': '',
+            'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
+            'property_display_field': 'address_line_1',
+            'taxlot_display_field': 'address_line_1',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'comstock_enabled': False,
+            'new_user_email_from': 'info@seed-platform.org',
+            'new_user_email_subject': 'New SEED account',
+            'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+            'new_user_email_signature': 'The SEED Team',
+            'at_organization_token': '',
+            'audit_template_user': '',
+            'audit_template_password': '',
+            'at_host_url': 'https://api.labworks.org',
+            'salesforce_enabled': False
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
