@@ -5,6 +5,8 @@
 angular.module('BE.seed.controller.ubid_upsert_modal', [])
     .controller('ubid_upsert_modal_controller', [
         '$scope',
+        '$state',
+        '$q',
         '$uibModalInstance',
         'property_view_id',
         'taxlot_view_id',
@@ -13,6 +15,8 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
         'ubid_service',
         function (
             $scope,
+            $state,
+            $q,
             $uibModalInstance,
             property_view_id,
             taxlot_view_id,
@@ -21,7 +25,8 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
             ubid_service,
         ) {
             $scope.inventory_payload = inventory_payload;
-            $scope.editing = false
+            $scope.editing = false;
+            let refresh = false;
             const reset_new_ubid = () => {
                 $scope.creating = false
                 $scope.new_ubid = { ubid: '', preferred: false }
@@ -48,11 +53,13 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
             }
             $scope.create_ubid = () => {
                 const state_id = inventory_payload.state.id
+                refresh = true
                 if ($scope.inventory_type == 'property') {
-                    ubid_service.create_ubid($scope.inventory_type, state_id, $scope.new_ubid);
+                    ubid_service.create_ubid($scope.inventory_type, state_id, $scope.new_ubid).then(() => {
+                        reset_new_ubid();
+                        refresh_ubids();
+                    });
                 }
-                reset_new_ubid();
-                refresh_ubids();
             }
             $scope.cancel_edit = () => {
                 $scope.editing = false;
@@ -60,13 +67,23 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
             }
             
             $scope.delete_ubid = (ubid_id) => {
-                ubid_service.delete_ubid(ubid_id)
-                refresh_ubids()
+                ubid_service.delete_ubid(ubid_id).then(() => {
+                    refresh = true
+                    refresh_ubids()
+                })
             }
+
             $scope.update_ubids = () => {
+                refresh = true
                 $scope.editing = false;
-                $scope.ubids.forEach(ubid => ubid_service.update_ubid(ubid));
-                refresh_ubids();
+                let promises = [];
+                $scope.ubids.forEach(ubid => {
+                    const promise = ubid_service.update_ubid(ubid)
+                    promises.push(promise)
+                })
+                $q.all(promises).then(() => {
+                    refresh_ubids();
+                });
             }
 
 
@@ -74,6 +91,7 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
              * close: closes the modal
              */
             $scope.close = function () {
+                refresh && $state.reload()
                 $uibModalInstance.close({
                     ubid_upsert_state: $scope.ubid_upsert_state,
                     property_view_ids: $scope.property_view_ids,
