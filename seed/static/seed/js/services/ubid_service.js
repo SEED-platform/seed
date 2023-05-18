@@ -74,7 +74,22 @@ angular.module('BE.seed.service.ubid', [])
       }
 
       ubid_factory.delete_ubid = (ubid_id) => {
-        return $http.delete(`/api/v3/ubid/${ubid_id}`, {
+        return $http.delete(`/api/v3/ubid/${ubid_id}/`, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data
+        })
+      }
+
+      ubid_factory.update_ubid = (ubid) => {
+        const ubid_details = {
+          ubid: ubid.ubid,
+          preferred: ubid.preferred,
+        }
+        return $http.put(`/api/v3/ubid/${ubid.id}/`, 
+          ubid_details, {
           params: {
             organization_id: user_service.get_organization().id
           }

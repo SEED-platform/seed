@@ -2,26 +2,30 @@
     <h4 class="modal-title" id="exportModalLabel">
             <i class="fa fa-building-o"></i>
             <i class="fa fa-map-o"></i>
-        <span>UBID ABC</span>
+        <span>UBIDs</span>
     </h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="ubid_upsert_state === 'result'">UBID 2</h4>
 </div>
-<div class="modal-body">
-    <div class="section_action_container right_40 section_action_btn pull-right" style="margin: 5px 20px">
-        <button ng-show="!editing" type="button" class="btn btn-primary" ng-click="edit_ubids()">
-            Edit UBID<span ng-show="ubids.length > 1">s</span>
-        </button>
-        <button ng-show="editing" class="btn btn-success" type="button" ng-click="update_ubid(1)" tooltip-placement="bottom"
-            uib-tooltip="Update">
-            Update
-        </button>
-        <button ng-show="editing" type="button" class="btn btn-default" ng-click="editing = false">
-            Cancel
-        </button>
-    </div>
-    
+<div class="modal-body">    
     <div class="section">
         <div class="section_content_container">
+            <div ng-show="ubids.length > 0" style="text-align: right; margin-right: 20px">
+                <div ng-show="!editing">
+                    <button type="button" class="btn btn-primary" ng-click="editing = true">
+                        Edit UBID<span ng-if="ubids.length > 1">s</span>
+                    </button>
+                </div>
+                <div ng-show="editing">
+                    <span class="alert alert-danger" ng-show="num_preferred > 1">
+                        A {$ inventory_type $} may only have one 'Preferred' ubid.
+                    </span>
+                    <button class="btn btn-success" type="button" ng-click="update_ubids()" tooltip-placement="bottom" uib-tooltip="Update" ng-disabled="num_preferred > 1">
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    </button>
+                    <button class="btn btn-default" type="button" ng-click="cancel_edit()" tooltip-placement="bottom" uib-tooltip="Cancel">
+                        <i class="fa fa-undo"></i>
+                    </button>
+                </div>
+            </div>
             <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
                 <div class="table_list_container has_borders" >
                     <table id="column-table" class="table has_no_btm_margin">
@@ -42,7 +46,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr ng-if="ubids.length > 0" ng-repeat="ubid in ubids">
+                            <tr ng-if="ubids.length > 0" ng-repeat="ubid in ubids" style="height: 52px">
                                 <td ng-show="!editing">
                                     <span>{$ ubid.ubid $}</span>
                                 </td>
@@ -51,28 +55,20 @@
                                 </td>
                                 <td ng-show="editing">
                                     <input type="text" ng-model="ubid.ubid"/>
-                                    <button class="btn btn-success" type="button" ng-click="update_ubid(ubid)" tooltip-placement="bottom" uib-tooltip="Update">
-                                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                                    </button>
                                 </td>
                                 <td ng-show="editing">
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" ng-model="ubid.preferred">
+                                            <input type="checkbox" ng-model="ubid.preferred" ng-change="preferred_change()">
                                             Preferred
                                         </label>
                                     </div>
                                 </td>
                                 <td class="text-center">
-
-                                    <button class="btn btn-info" type="button" ng-click="edit_ubid(ubid.id)">
-                                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                                    </button>
-                                    <button class="btn btn-danger" type="button" ng-click="delete_ubid(ubid.id)">
+                                    <button class="btn btn-danger" type="button" ng-click="delete_ubid(ubid.id)" ng-disabled="editing">
                                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                                     </button>
                                 </td>
-                            </tr>
                             <tr>
                                 <td>
                                     <input ng-show="creating" type="text" ng-model="new_ubid.ubid">
