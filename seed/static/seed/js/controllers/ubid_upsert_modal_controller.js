@@ -54,9 +54,6 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
                 reset_new_ubid();
                 refresh_ubids();
             }
-            $scope.edit_ubid = () => {
-                $scope.editing = true;
-            }
             $scope.cancel_edit = () => {
                 $scope.editing = false;
                 refresh_ubids();
