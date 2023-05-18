@@ -433,7 +433,10 @@ class UbidViewCrudTests(TestCase):
             }),
             content_type='application/json'
         )
-        data = response.json()
+        ubid1 = property.ubidmodel_set.first()
+        self.assertEqual(201, response.status_code)
+        self.assertEqual('success', response.json()['status'])
+        data = response.json()['data']
         self.assertEqual('A+A-1-1-1-1', data['ubid'])
         self.assertEqual(property.id, data['property'])
         self.assertEqual(None, data['taxlot'])
@@ -460,6 +463,23 @@ class UbidViewCrudTests(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(5, UbidModel.objects.count())
+
+        # 2 Preferred Ubids
+        response = self.client.post(
+            reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                'ubid': 'B+B-1-1-1-1',
+                'preferred': True,
+                'property': property.id,
+            }),
+            content_type='application/json'
+        )
+
+        ubid2 = property.ubidmodel_set.last()
+        self.assertFalse(ubid1.preferred)
+        self.assertTrue(ubid2.preferred)
+
+
 
     def test_update_endpoint(self):
         # Valid Data

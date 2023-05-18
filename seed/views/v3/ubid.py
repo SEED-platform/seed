@@ -243,6 +243,46 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    def create(self, request):
+        serializer = UbidModelSerializer(data = request.data)
+        if not serializer.is_valid():
+            return JsonResponse({
+                'status': 'failed',
+                'errors': 'serializer.errors',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        ubid_model = serializer.save()
+        # if new ubid is preferred, set others to false
+        if ubid_model.preferred:
+            # find preferred ubids that are not self
+            if ubid_model.property:
+                ubids = UbidModel.objects.filter(
+                    ~Q(id=ubid_model.id), 
+                    property=ubid_model.property, 
+                    preferred=True
+                )
+            else:
+                ubids = UbidModel.objects.filter(
+                    ~Q(id=ubid_model.id), 
+                    taxlot=ubid_model.taxlot, 
+                    preferred=True
+                )
+
+            for ubid in ubids:
+                ubid.preferred = False
+                ubid.save()
+            
+        return JsonResponse({
+            'status': 'success',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+        
+        
+
     # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
