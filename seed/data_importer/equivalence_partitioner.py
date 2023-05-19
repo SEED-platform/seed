@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from __future__ import absolute_import
 
 import collections
+import logging
 
 from celery.utils.log import get_task_logger
 
@@ -151,9 +152,11 @@ class EquivalencePartitioner(object):
 
     @staticmethod
     def calculate_key_equivalence(key1, key2):
+        logging.error('>>> calculate_key_equivalence %s %s', key1, key2)
         for key1_value, key2_value in list(zip(key1, key2)):
             if key1_value == key2_value and key1_value is not None:
                 return True
+            import remote_pdb; remote_pdb.set_trace()
         else:
             return False
 

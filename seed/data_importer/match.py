@@ -7,12 +7,13 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import datetime as dt
 import math
 from functools import reduce
+import logging 
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
-from django.db.models import Subquery
+from django.db.models import Subquery, F
 
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
@@ -43,6 +44,7 @@ from seed.utils.match import (
     update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
+from seed.utils.ubid import get_jaccard_index
 
 _log = get_task_logger(__name__)
 
@@ -74,6 +76,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     :param file_pk: ImportFile Primary Key
     :return results: dict
     """
+    logging.error('>>> match_and_link_incoming_properties_and_taxlots - ps:%s', PropertyState.objects.count())
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -268,6 +271,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
+    logging.error('>>> inclusive_match_and_merge - ps:%s', PropertyState.objects.count())
     column_names = matching_criteria_column_names(org.id, StateClass.__name__)
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
@@ -285,7 +289,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     unmatched_state_ids = list(
         set(unmatched_state_ids) - set(promoted_ids)
     )
-
     # Group IDs by -States that match each other
     matched_id_groups = StateClass.objects.\
         filter(id__in=unmatched_state_ids).\
@@ -319,7 +322,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
-
     return promoted_ids, merges_within_file
 
 
@@ -345,6 +347,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         instead of skipping them. This is used when importing BuildingSync files.
     :return: processed_views, duplicate_count, new + matched counts
     """
+    logging.error('>>> states_to_views - ps: %s', PropertyState.objects.count())
     table_name = StateClass.__name__
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
@@ -394,22 +397,34 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
+
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
+        # compare ubids via jaccard index instead of a direct match
+        ubid = matching_criteria.pop('ubid')
+            
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
-            **matching_criteria
+            **matching_criteria,
         )
-        count = existing_state_matches.count()
+
+        existing_state_matches = [
+            state 
+            for state in existing_state_matches 
+            if get_jaccard_index(ubid, state.ubid) > 0
+        ]
+
+        count = len(existing_state_matches)
 
         if count > 1:
             merged_between_existing_count += count
-            existing_state_ids = list(existing_state_matches.order_by('updated').values_list('id', flat=True))
+            existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
+            # existing_state_ids = list(existing_state_matches.order_by('updated').values_list('id', flat=True))
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
-            merge_state_pairs.append((existing_state_matches.first(), state))
+            merge_state_pairs.append((existing_state_matches[0], state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
