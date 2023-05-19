@@ -1431,7 +1431,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }],
-          access_level_tree: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams) {
+          access_level_tree: ['organization_service', '$stateParams', '$q', function (organization_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization_access_level_tree(organization_id);
           }],

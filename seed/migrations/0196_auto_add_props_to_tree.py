@@ -12,7 +12,8 @@ def assign_properties_to_root_acces_level(apps, schema_editor):
 
     properties = Property.objects.all()
     for property in properties:
-        property.access_level_instance = property.organization.root
+        root = AccessLevelInstance.objects.get(organization=property.organization, depth=1)
+        property.access_level_instance = root
         property.save()
 
 @transaction.atomic
@@ -22,7 +23,8 @@ def assign_taxlots_to_root_acces_level(apps, schema_editor):
 
     taxlots = TaxLot.objects.all()
     for taxlot in taxlots:
-        taxlot.access_level_instance = taxlot.organization.root
+        root = AccessLevelInstance.objects.get(organization=taxlot.organization, depth=1)
+        taxlot.access_level_instance = root
         taxlot.save()
 
 class Migration(migrations.Migration):
