@@ -475,7 +475,10 @@ class UbidViewCrudTests(TestCase):
             content_type='application/json'
         )
 
+        self.assertEqual(ubid1.id, property.ubidmodel_set.first().id)
+        ubid1 = property.ubidmodel_set.first()
         ubid2 = property.ubidmodel_set.last()
+        self.assertFalse(ubid1 == ubid2)
         self.assertFalse(ubid1.preferred)
         self.assertTrue(ubid2.preferred)
 
