@@ -41,16 +41,16 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
             const refresh_ubids = () => {
                 ubid_service.get_ubid_models_by_state(view_id, $scope.inventory_type).then(results => {
                     if ('data' in results){
-                        $scope.ubids = results.data;
+                        $scope.ubids = results.data.sort((a,b) => {
+                            return a.preferred ? -1 : 1
+                        });
                     } else {
                         $scope.message = results.message;
                     }
                 });
             }
 
-            $scope.preferred_change = () => {
-                $scope.num_preferred = $scope.ubids.filter(ubid => ubid.preferred).length
-            }
+
             $scope.create_ubid = () => {
                 const state_id = inventory_payload.state.id
                 refresh = true
@@ -86,6 +86,10 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
                 });
             }
 
+            $scope.toggle_preferred = (ubid) => {
+                ubid.preferred = !ubid.preferred
+                $scope.num_preferred = $scope.ubids.filter(ubid => ubid.preferred).length
+            }
 
             /**
              * close: closes the modal
