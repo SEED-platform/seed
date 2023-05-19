@@ -65,7 +65,7 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
                 $scope.editing = false;
                 refresh_ubids();
             }
-            
+
             $scope.delete_ubid = (ubid_id) => {
                 ubid_service.delete_ubid(ubid_id).then(() => {
                     refresh = true
@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.ubid_upsert_modal', [])
                     taxlot_view_ids: $scope.taxlot_view_ids
                 });
             };
-            
+
             // init
             reset_new_ubid()
             refresh_ubids()

@@ -11,10 +11,10 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
         'ubids',
         'ubid_service',
         function (
-            $scope, 
-            $uibModalInstance, 
-            property_view_ids, 
-            taxlot_view_ids, 
+            $scope,
+            $uibModalInstance,
+            property_view_ids,
+            taxlot_view_ids,
             ubids,
             ubid_service,
         ) {

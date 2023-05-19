@@ -5,10 +5,10 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db import models
-
-from seed.models import PropertyState, TaxLotState
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+
+from seed.models import PropertyState, TaxLotState
 
 
 class UbidModel(models.Model):
@@ -26,15 +26,15 @@ def post_save_ubid_model(sender, **kwargs):
     instance = kwargs.get('instance')
     if not instance or not instance.preferred:
         return
-    
+
     if getattr(instance, 'property'):
         property = instance.property
-        property.ubid = instance.ubid 
+        property.ubid = instance.ubid
         property.save()
 
     elif getattr(instance, 'taxlot'):
-        taxlot = instance.taxlot 
-        taxlot.ubid = instance.ubid 
+        taxlot = instance.taxlot
+        taxlot.ubid = instance.ubid
         taxlot.save()
 
 
@@ -46,18 +46,13 @@ def pre_delete_ubid_model(sender, **kwargs):
     instance = kwargs.get('instance')
     if not instance or not instance.preferred:
         return
-    
+
     if getattr(instance, 'property'):
         property = instance.property
         property.ubid = None
         property.save()
 
     elif getattr(instance, 'taxlot'):
-        taxlot = instance.taxlot 
+        taxlot = instance.taxlot
         taxlot.ubid = None
         taxlot.save()
-
-    
-    
-
-

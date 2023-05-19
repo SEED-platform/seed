@@ -146,7 +146,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         }
 
         return result
-    
+
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
@@ -195,13 +195,13 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         if len(ubids) == 2:
             jaccard_index = get_jaccard_index(ubids[0], ubids[1])
 
-            return JsonResponse({'status': 'success', 'data': jaccard_index })
-    
+            return JsonResponse({'status': 'success', 'data': jaccard_index})
+
         else:
             return JsonResponse({'status': 'failed', 'message': 'exactly 2 property or taxlot records are required'})
 
-
     # override endpoint to set response to json, not OrderedDict
+
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
@@ -218,6 +218,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         )
 
     # overrode endpoint to set response to json, not OrderedDict
+
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
@@ -247,41 +248,38 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     def create(self, request):
-        serializer = UbidModelSerializer(data = request.data)
+        serializer = UbidModelSerializer(data=request.data)
         if not serializer.is_valid():
             return JsonResponse({
                 'status': 'failed',
                 'errors': 'serializer.errors',
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         ubid_model = serializer.save()
         # if new ubid is preferred, set others to false
         if ubid_model.preferred:
             # find preferred ubids that are not self
             if ubid_model.property:
                 ubids = UbidModel.objects.filter(
-                    ~Q(id=ubid_model.id), 
-                    property=ubid_model.property, 
+                    ~Q(id=ubid_model.id),
+                    property=ubid_model.property,
                     preferred=True
                 )
             else:
                 ubids = UbidModel.objects.filter(
-                    ~Q(id=ubid_model.id), 
-                    taxlot=ubid_model.taxlot, 
+                    ~Q(id=ubid_model.id),
+                    taxlot=ubid_model.taxlot,
                     preferred=True
                 )
 
             for ubid in ubids:
                 ubid.preferred = False
                 ubid.save()
-            
+
         return JsonResponse({
             'status': 'success',
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
-
-        
-        
 
     # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
     @swagger_auto_schema_org_query_param
@@ -308,7 +306,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             'status': 'success',
             'data': UbidModelSerializer(ubid).data,
         }, status=status.HTTP_200_OK)
-    
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -334,16 +331,16 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             return JsonResponse({
                 'status': 'failed',
                 'message': 'A View ID and type (property or taxlot) are required'
-            },  status=status.HTTP_400_BAD_REQUEST)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            if type.lower() == 'property': 
+            if type.lower() == 'property':
                 view_class = PropertyView
-                state_class = PropertyState 
+                state_class = PropertyState
             else:
-                view_class = TaxLotView 
+                view_class = TaxLotView
                 state_class = TaxLotState
-            
+
             view = view_class.objects.get(
                 id=view_id,
                 cycle__organization_id=org_id
@@ -357,9 +354,8 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'failed',
-                'message': f'No ubids found for given inputs'
+                'message': 'No ubids found for given inputs'
             }, status=status.HTTP_404_NOT_FOUND)
-
 
         return JsonResponse({
             'status': 'success',

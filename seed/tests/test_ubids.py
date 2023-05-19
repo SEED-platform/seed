@@ -479,8 +479,6 @@ class UbidViewCrudTests(TestCase):
         self.assertFalse(ubid1.preferred)
         self.assertTrue(ubid2.preferred)
 
-
-
     def test_update_endpoint(self):
         # Valid Data
         self.assertEqual('A+A-1-1-1-1', self.ubid1a.ubid)
@@ -555,7 +553,7 @@ class UbidViewCrudTests(TestCase):
             data=json.dumps({
                 'view_id': property_view.id,
                 'type': 'property'
-        }),
+            }),
             content_type='application/json'
         )
 
@@ -585,7 +583,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual('failed', response.json()['status'])
         self.assertEqual('A View ID and type (property or taxlot) are required', response.json()['message'])
 
-        # invalid view id 
+        # invalid view id
         response = self.client.post(
             reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
@@ -624,6 +622,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', response.json()['status'])
         self.assertEqual([], response.json()['data'])
+
 
 class UbidModelSignalCreationTests(TestCase):
     def setUp(self):
@@ -767,4 +766,3 @@ class UbidSqlTests(TestCase):
         self.assertEqual(0, float(jaccard))
         jaccard = get_jaccard_index(invalid, invalid)
         self.assertEqual(1.0, float(jaccard))
-

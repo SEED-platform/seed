@@ -60,7 +60,7 @@ angular.module('BE.seed.service.ubid', [])
           return response.data
         })
       }
-      
+
       ubid_factory.create_ubid = (type, state_id, ubid_details) => {
         ubid_details[type] = state_id
         return $http.post('/api/v3/ubid/',
@@ -88,7 +88,7 @@ angular.module('BE.seed.service.ubid', [])
           ubid: ubid.ubid,
           preferred: ubid.preferred,
         }
-        return $http.put(`/api/v3/ubid/${ubid.id}/`, 
+        return $http.put(`/api/v3/ubid/${ubid.id}/`,
           ubid_details, {
           params: {
             organization_id: user_service.get_organization().id
