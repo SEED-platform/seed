@@ -77,6 +77,12 @@ def get_jaccard_index(ubid1, ubid2):
     @param ubid2 [text] A Property State Ubid
     @return [numeric] The Jaccard index.
     """
+    if ubid1 == ubid2:
+        return 1.0 
+
+    if not validate_ubid(ubid1) or not validate_ubid(ubid2):
+        return 0.0
+
     sql = """ WITH decoded AS (
                 SELECT
                     public.UBID_Decode(%s) AS left_code_area,
@@ -91,3 +97,24 @@ def get_jaccard_index(ubid1, ubid2):
         cursor.execute(sql, [ubid1, ubid2])
         result = cursor.fetchone()[0]
     return result
+
+def validate_ubid(ubid):
+    """
+    Check if the code is valid
+    PARAMETERS
+    code text // a pluscode
+    EXAMPLE
+    select pluscode_isvalid('XX5JJC23+00')
+
+    @param ubid [text] A Property State Ubid
+    @return [bool] Ubid validity.
+    """
+    
+    parts = ubid.split('-')
+    sql = """ SELECT public.pluscode_isvalid(%s) """
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [parts[0]])
+        result = cursor.fetchone()[0]
+    return result
+

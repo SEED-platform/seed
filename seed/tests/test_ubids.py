@@ -22,7 +22,7 @@ from seed.test_helpers.fake import (
 )
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import centroid_wkt, get_jaccard_index
+from seed.utils.ubid import centroid_wkt, get_jaccard_index, validate_ubid
 
 
 class UbidViewTests(TestCase):
@@ -722,7 +722,7 @@ class UbidModelSignalCreationTests(TestCase):
         self.assertEqual(4, UbidModel.objects.count())
 
 
-class UbidJaccardTests(TestCase):
+class UbidSqlTests(TestCase):
 
     def test_jaccard(self):
         # nrel cafe
@@ -755,3 +755,16 @@ class UbidJaccardTests(TestCase):
         # different
         jaccard = get_jaccard_index(ubid_cafe, ubid_ftlb)
         self.assertEqual(0, float(jaccard))
+
+        # invalid ubid
+        invalid = 'invalid'
+        validity = validate_ubid(invalid)
+        self.assertFalse(validity)
+        validity = validate_ubid(ubid_cafe)
+        self.assertTrue(validity)
+
+        jaccard = get_jaccard_index(ubid_cafe, invalid)
+        self.assertEqual(0, float(jaccard))
+        jaccard = get_jaccard_index(invalid, invalid)
+        self.assertEqual(1.0, float(jaccard))
+
