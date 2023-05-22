@@ -10,11 +10,16 @@
     <div>UBID 2: {$ ubid2 $}</div>
 
     <div ng-show="ubid_jaccard_state === 'result'">
-        <h4>Ubid Match quality <strong>{$ jaccard_index $}</strong></h4>
+        <h4>Ubid Match quality <strong>{$ jaccard_index $} - {$ jaccard_quality(jaccard_index) $}</strong></h4>
     </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'">Compare UBID</button>
-    <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
-    <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
+    <div class="alert alert-danger" ng-show="missing_ubid" style="margin: auto auto 20px; text-align: center;">
+        Cannot compare UBIDs. Set a preferred UBID and try again.
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" ng-disabled="missing_ubid">Compare UBID</button>
+        <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
+    </div>
 </div>

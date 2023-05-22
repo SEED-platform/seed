@@ -27,9 +27,9 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
             $scope.ubid_jaccard_state = 'verify'
             $scope.ubid1 = ubids[0]
             $scope.ubid2 = ubids[1]
+            $scope.missing_ubid = !ubids[0] || !ubids[1]
 
             $scope.compare_ubids = () => {
-                console.log('compare ubids')
                 ubid_service.compare_ubids($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
                     if (result.status == 'success'){
                         $scope.jaccard_index = parseFloat(parseFloat(result.data).toFixed(3))
@@ -39,6 +39,13 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
                     }
 
                 })
+            }
+
+            $scope.jaccard_quality = (jaccard) => {
+                return jaccard <= 0 ? 'No Match' :
+                    jaccard < 0.5 ? 'Poor' :
+                    jaccard < 1 ? 'Good' :
+                    'Perfect'
             }
 
             /**
@@ -63,6 +70,5 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
                 });
             };
 
-            console.log('ubid modal jaccard index controller')
         }
     ]);
