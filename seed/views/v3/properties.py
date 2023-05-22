@@ -1050,6 +1050,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': 'Invalid state',
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # verify property belongs to org
+        if property_id:
+            try:
+                Property.objects.get(pk=property_id, organization_id=org_id)
+            except Property.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid property_id',
+                }, status=status.HTTP_400_BAD_REQUEST)
+
         property_state_serializer = PropertyStateSerializer(
             data=property_state_data
         )
