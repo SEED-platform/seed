@@ -991,41 +991,64 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema_org_query_param
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'cycle_id': 'integer',
+                'state': 'object',
+                'property_id': 'integer'
+            },
+            required=['cycle_id', 'state']
+        ),
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
     def create(self, request):
         """
-        Create a propertyState and propertyView via promote for
-        given cycle
-
-        request data expecting: state, cycle, optional property_id
+        Create a propertyState and propertyView via promote for given cycle
         """
         org_id = self.get_organization(self.request)
         data = request.data
         # get state data
-        property_state_data = data['state']
-        cycle_pk = data['cycle_id']
-        result = {}
+        property_state_data = data.get('state', None)
+        cycle_pk = data.get('cycle_id', None)
         property_id = data.get('property_id', None)
+
+        if cycle_pk is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if property_state_data is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter state',
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # get cycle
         try:
             cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
-        except Exception as e:
-            result.update({
+        except Cycle.DoesNotExist:
+            return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid data with errors: {}'.format(
-                    str(e))}
-            )
-            return JsonResponse(result, encoder=PintJSONEncoder,
-                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                'message': 'Invalid cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # set empty strings to None
-        for key, val in property_state_data.items():
-            if val == '':
-                property_state_data[key] = None
+        try:
+            for key, val in property_state_data.items():
+                if val == '':
+                    property_state_data[key] = None
+        except AttributeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state',
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         property_state_serializer = PropertyStateSerializer(
             data=property_state_data
@@ -1033,8 +1056,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         if property_state_serializer.is_valid():
             # create the new property state, and perform an initial save
             new_state = property_state_serializer.save()
-
-            #
 
             # Log this appropriately - "Import Creation" ?
             PropertyAuditLog.objects.create(organization_id=org_id,
@@ -1044,33 +1065,27 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                                             parent_state2=None,
                                             state=new_state,
                                             name='Import Creation',
-                                            description='Created by API',
+                                            description='Creation from API',
                                             import_filename=None,
                                             record_type=AUDIT_USER_CREATE)
 
-            # promote (pass is property_id to make new view on existing property)
+            # promote to view (pass in property_id to make new view on existing property)
             view = new_state.promote(cycle, property_id)
 
-            result.update({
+            return JsonResponse({
                 'status': 'success',
                 'property_view_id': view.id,
                 'property_state_id': new_state.id,
                 'property_id': view.property.id,
                 'view': PropertyViewSerializer(view).data
-            })
-
-            return JsonResponse(result, encoder=PintJSONEncoder,
-                                status=status.HTTP_200_OK)
+            }, encoder=PintJSONEncoder, status=status.HTTP_201_CREATED)
 
         else:
             # invalid request
-            result.update({
+            return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid data with errors: {}'.format(
-                    property_state_serializer.errors)}
-            )
-            return JsonResponse(result, encoder=PintJSONEncoder,
-                                status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                'message': 'Invalid state: {}'.format(property_state_serializer.errors)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
