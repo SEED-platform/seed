@@ -77,7 +77,7 @@ def get_jaccard_index(ubid1, ubid2):
     @param ubid2 [text] A Property State Ubid
     @return [numeric] The Jaccard index.
     """
-    if ubid1 == ubid2:
+    if (not ubid1 or not ubid2) or (ubid1 == ubid2):
         return 1.0
 
     if not validate_ubid(ubid1) or not validate_ubid(ubid2):
@@ -110,7 +110,9 @@ def validate_ubid(ubid):
     @param ubid [text] A Property State Ubid
     @return [bool] Ubid validity.
     """
-
+    if not ubid:
+        return False
+    
     parts = ubid.split('-')
     sql = """ SELECT public.pluscode_isvalid(%s) """
 
@@ -118,3 +120,38 @@ def validate_ubid(ubid):
         cursor.execute(sql, [parts[0]])
         result = cursor.fetchone()[0]
     return result
+
+
+def merge_ubid_models(old_state_ids, new_state_id):
+    """
+    Given a list of old (existing) property states, merge the exisitng ubid_models onto the new state
+
+    If the new_state has an equivalent ubid, skip it.
+    """
+    # import here to prevent circular reference
+    from seed.models.properties import PropertyState
+    from seed.models.tax_lots import TaxLotState
+
+    old_states = PropertyState.objects.filter(id__in=old_state_ids)
+    new_state = PropertyState.objects.get(id=new_state_id)
+    new_ubids = new_state.ubidmodel_set.all()
+    state_type = 'property' if new_state.__class__.__name__ == 'PropertyState' else 'taxlot'
+    for old_state in old_states:
+        for old_ubid in old_state.ubidmodel_set.all():
+            if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
+                continue 
+
+            # if there are no preferred values and an incoming is preferred, set it to True.
+            has_preferred = True in new_state.ubidmodel_set.values_list('preferred', flat=True)
+            preferred = not has_preferred and old_ubid.preferred
+            
+            ubid_details = {
+                'ubid': old_ubid.ubid,
+                'preferred': preferred,
+                state_type: new_state
+            }
+
+
+            new_state.ubidmodel_set.create(**ubid_details)
+    
+    new_state.save()

@@ -44,7 +44,7 @@ from seed.utils.match import (
     update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
-from seed.utils.ubid import get_jaccard_index
+from seed.utils.ubid import get_jaccard_index, merge_ubid_models
 
 _log = get_task_logger(__name__)
 
@@ -448,6 +448,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
+                merge_ubid_models([existing_state.id], merged_state.id)
                 existing_view.state = merged_state
                 existing_view.save()
 

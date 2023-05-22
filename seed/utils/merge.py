@@ -26,6 +26,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+from seed.utils.ubid import merge_ubid_models
 
 
 def merge_states_with_views(state_ids, org_id, log_name, StateClass):
@@ -52,6 +53,7 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
         merged_state = PropertyState.objects.create(organization_id=org_id)
+        merge_ubid_models(state_ids, merged_state.id)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
