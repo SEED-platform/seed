@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.insights_program', [])
   .controller('insights_program_controller', [
     '$scope',
     '$stateParams',
+    '$state',
     '$uibModal',
     'urls',
     'compliance_metrics',
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.insights_program', [])
     function (
       $scope,
       $stateParams,
+      $state,
       $uibModal,
       urls,
       compliance_metrics,
@@ -74,6 +76,12 @@ angular.module('BE.seed.controller.insights_program', [])
           // console.log( "DATA: ", $scope.data)
           _build_chart();
 
+          // build chart name
+          compliance_metric_cycles = $scope.cycles.filter(c => $scope.compliance_metric.cycles.includes(c.id))
+          first_cycle = compliance_metric_cycles.reduce((prev, curr) => prev.start < curr.start ? prev : curr);
+          last_cycle = compliance_metric_cycles.reduce((prev, curr) => prev.end > curr.end ? prev : curr);
+          cycle_range = first_cycle == last_cycle? first_cycle.name: first_cycle.name + " - " + last_cycle.name;
+          $scope.chart_name = $scope.compliance_metric.name + ": " + cycle_range;
         }).finally(() => {
           spinner_utility.hide()
         })
@@ -119,6 +127,27 @@ angular.module('BE.seed.controller.insights_program', [])
             data: {
             },
             options: {
+              onClick: (event) => {
+                var activePoints = event.chart.getActiveElements(event);
+
+                if (activePoints[0]) {
+                  var activePoint = activePoints[0]
+                  cycle_name = $scope.data.graph_data.labels[activePoint.index]
+                  cycle = $scope.cycles.find(c => c.name == cycle_name);
+                  shown_dataset_index = activePoint.datasetIndex;
+
+                  // update locally stored insights_property configs
+                  const property_configs = JSON.parse(localStorage.getItem('insights.property.configs.' + $scope.organization.id)) ?? {};
+                  property_configs.compliance_metric_id = $scope.selected_metric;
+                  property_configs.chart_cycle = cycle.id;
+                  property_configs.dataset_visibility = [false, false, false];
+                  property_configs.dataset_visibility[shown_dataset_index] = true;
+                  property_configs.annotation_visibility = shown_dataset_index == 1;
+                  localStorage.setItem('insights.property.configs.' + $scope.organization.id,  JSON.stringify(property_configs));
+
+                  $state.go('insights_property');
+                }
+              },
               plugins: {
                 title: {
                   display: true,

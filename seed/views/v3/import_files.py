@@ -543,8 +543,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['POST'])
     def start_data_quality_checks(self, request, pk=None):
         """
-        Starts a background task to attempt automatic matching between buildings
-        in an ImportFile with other existing buildings within the same org.
+        Runs the data quality rules against an import file to get a preliminary
+        assessment of issues before importing.
         """
         org_id = self.get_organization(request)
 

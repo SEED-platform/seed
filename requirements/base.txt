@@ -1,12 +1,12 @@
 # Django
-django==3.2.18
+django==3.2.19
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
 django-crispy-forms==1.8.1
 
 # Persistence stores
-psycopg2-binary==2.8.4
+psycopg2-binary==2.9.6
 
 # Shapely 2.X fails to build. Force to use
 # the previous version
