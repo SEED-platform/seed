@@ -47,9 +47,7 @@ class AccessLevelInstancesParser(object):
         level_names = keys
         # TODO: check that level_names match level names saved
         # raise ValueError if not
-        access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
-        print(f"@@@ ACCESS LEVEL NAMES: {access_level_names}")
-        print(f"@@@ LEVEL NAMES FROM CSV: {level_names}")
+        AccessLevelInstancesParser._access_level_names(org_id)
 
         num_levels = len(level_names)
 

@@ -302,8 +302,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  modal, show the `invalid_extension` alert, and update the progress bar.
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
-        console.log("hello, event message is: ", event_message)
-        console.log(file)
         switch (event_message) {
           case 'invalid_extension':
             $scope.uploader.invalid_extension_alert = true;
@@ -350,7 +348,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
 
           case 'ali_upload_complete':
-            console.log('ALI UPLOAD COMPLETE');
             // access level instances file upload complete
             save_access_level_instances_data(file.stored_filename, file.organization_id);
             break;
@@ -611,6 +608,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
+            $scope.access_level_issues = progress_data.message;
             $scope.step.number = 18;
           }, function (data) {
             $log.error(data.message);
@@ -831,6 +829,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }
         }
         saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'import_issues.csv');
+      };
+
+      $scope.export_access_level_issues = function (issues) {
+        let data = ['Instance Name,Message'];
+        angular.forEach(issues, function(value, key) {
+          data.push([
+            '"' + key + '"',
+            '"' + value['message'] + '"'
+          ].join(','));
+        });
+
+        saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'access_level_instance_issues.csv');
       };
 
       $scope.export_meter_data = function (results, new_file_name) {

@@ -15,6 +15,7 @@
     <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
     <h4 class="modal-title" ng-switch-when="17" translate>Upload Access Level Instances</h4>
+    <h4 class="modal-title" ng-switch-when="18" translate>Successful upload!</h4>
 
 </div>
 <div class="modal-body" ng-switch on="step.number">
@@ -427,16 +428,14 @@
     <div class="data_upload_steps" ng-switch-when="18">
         <div class="row">
             <div class="alert alert-success" translate="ACCESS_LEVEL_FILENAME_UPLOADED"></div>
-            <div class="alert alert-danger" ng-if="access_level_issues != null && access_level_issues.length > 0" style="display:flex;align-items:baseline;">
+            <div class="alert alert-danger" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)" style="display:flex;align-items:baseline;">
                 <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
-                <button type="button" class="btn btn-primary" ng-click="export_issues(access_level_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                <button type="button" class="btn btn-primary" ng-click="export_access_level_issues(access_level_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
             </div>
         </div>
-        <div class="row" ng-if="access_level_issues != null && access_level_issues.length > 0">
+        <div class="row" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)">
             <div class="col-sm-12">
-                <div ng-repeat="issues in access_level_issues">
-                    <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
-                </div>
+                <ng-include src="::urls.static_url + 'seed/partials/access_level_instances_import_messages.html'"></ng-include>
             </div>
         </div>
     </div>

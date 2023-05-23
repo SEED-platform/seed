@@ -28,6 +28,7 @@ from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
 from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.utils import ProgrammingError
@@ -779,10 +780,7 @@ def finish_raw_ali_save(results, progress_key):
     """
     progress_data = ProgressData.from_key(progress_key)
 
-    print(f"@@@@ finishRawALIsave results: {results}")
-
     new_summary = _append_access_level_instances_results_to_summary(results)
-    print(f"@@@ new_summary: {new_summary}")
     finished_progress_data = progress_data.finish_with_success(new_summary)
 
     return finished_progress_data
@@ -988,22 +986,71 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
 @shared_task
 def _save_access_level_instances_task(rows, org_id, progress_key):
     progress_data = ProgressData.from_key(progress_key)
-
     result = {}
 
-    # get access level names
-    access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
-    print(f" !!!! access level names: {access_level_names}")
+    # get org
+    try:
+        org = Organization.objects.get(pk=org_id)
+    except ObjectDoesNotExist:
+        raise 'Could not retrieve organization at pk = ' + str(org_id)
 
-    # saves the instances
+    # get access level names (array of ordered names)
+    access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
+    access_level_names = [x.lower() for x in access_level_names]
+
+    # determine whether root level was provided in file (if not, remove from list)
+    has_root = True
+    if rows:
+        headers = [x.lower() for x in rows[0].keys()]
+
+        if access_level_names[0] not in headers:
+            access_level_names.pop(0)
+            has_root = False
+
+    # saves the non-existant instances
     for row in rows:
-        print(f" !!! this would save row: {row}")
-        # just for now, capture the last entry in the row as the "name"
-        # and testing as the "status"
-        result[row[access_level_names[-1]]] = {'message': 'testing'}
+        message = None
+        # process in order of access_level_names
+        # create the needed instances along the way
+        current_level = None
+        children = [org.root]
+        if not has_root:
+            children = org.root.get_children()
+            current_level = org.root
+
+        # lowercase keys just in case
+        row = {k.lower(): v for k, v in row.items()}
+
+        for index, name in enumerate(access_level_names):
+            # does this level exist already?
+            looking_for = row[name]
+            found = False
+            for child in children:
+                if child.name == looking_for:
+                    found = True
+                    current_level = child
+                    children = current_level.get_children()
+                    break
+
+            if not found:
+                if not current_level:
+                    # this would mean they are trying to add ROOT and that can't be
+                    message = f"Error attempting to add '{row[name]}' as another root element. Root element already defined as: {org.root.name}"
+                    break
+                # add it
+                try:
+                    current_level = org.add_new_access_level_instance(current_level.id, looking_for)
+                    # get its children (should be empty)
+                    children = current_level.get_children()
+                except Exception as e:
+                    message = f"Error has occurred when adding element '{row[name]}' for entry: {row}: {e}"
+                    break
+
+        # add a row but only for errors
+        if message:
+            result[row[access_level_names[-1]]] = {'message': message}
 
     progress_data.step()
-    print(f"@@@@ _save_access_level_instances_task RESULT: {result}")
     return result
 
 
@@ -1018,13 +1065,11 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
         org_id
     )
     access_level_instances_data = parser.access_level_instances_details
-    print(f"@@@@ access_level_instances_data: {access_level_instances_data}")
 
     tasks = []
     chunk_size = 100
 
     for batch_rows in batch(access_level_instances_data, chunk_size):
-        print(f"@@@ BATCH ROWS: {batch_rows}")
         tasks.append(_save_access_level_instances_task.s(batch_rows, org_id, progress_data.key))
 
     progress_data.total = len(tasks)
@@ -1277,11 +1322,9 @@ def _append_sensor_readings_import_results_to_summary(import_results):
 def _append_access_level_instances_results_to_summary(import_results):
     summary = {}
     for import_result in import_results:
-        print(f"@@@ IMPORT RESULT SINGULAR: {import_result}")
         for key, row in import_result.items():
             summary[key] = row
 
-    print(f"@@@ SUMMARY TO APPEND: {summary}")
     return summary
 
 

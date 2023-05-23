@@ -97,7 +97,7 @@ class AccessLevelInstance(NS_Node):
     """Node in the Accountability Hierarchy tree"""
     name = models.CharField(max_length=100, null=False)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
-    # path automaticly mantained dict of ancestors names by access level names.
+    # path automatically maintained dict of ancestors names by access level names.
     # See get_path and set_path.
     path = models.JSONField(null=False)
 

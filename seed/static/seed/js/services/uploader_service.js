@@ -83,13 +83,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param filename: the name of the file (this is not an ImportFile!)
      */
     uploader_factory.save_access_level_instance_data = function (filename, org_id) {
-      console.log('Hello in uploader_service save_access_level_instance_data')
-      console.log("filename: ", filename, ' org:', org_id)
       // TODO: is this the correct way to get the organization ID? I feel like we should check it
       return $http.post('/api/v3/organizations/' + org_id + '/access_levels/start_save_data/', {
         filename: filename
       }).then(function (response) {
-        console.log("response: ", response.data)
         return response.data;
       });
     };
