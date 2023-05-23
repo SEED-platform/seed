@@ -2,5 +2,5 @@
 boto3==1.17.36
 django-redis==5.2.0
 django-sslify==0.2.7
-django-ses==1.0.3
+django-ses==3.5.0
 uWSGI==2.0.17.1
