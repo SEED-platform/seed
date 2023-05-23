@@ -25,6 +25,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser
 )
+from seed.lib.superperms.orgs.permissions import ALLOW_SUPER_USER_PERMS
 from seed.models.data_quality import Rule
 from seed.tasks import invite_to_seed
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -526,6 +527,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         if len(actions) == 1 and actions[0] == 'requires_superuser':
             return JsonResponse(
                 {'status': 'success', 'auth': {'requires_superuser': user.is_superuser}})
+
+        # If user is a superuser allow all
+        if user.is_superuser and ALLOW_SUPER_USER_PERMS:
+            auth = {action: True for action in actions}
+            return JsonResponse({'status': 'success', 'auth': auth})
 
         auth = self._try_parent_org_auth(user, org, actions)
         if auth:

@@ -8,7 +8,6 @@ import json
 from functools import wraps
 from inspect import signature
 
-from django.conf import settings
 from django.http import HttpResponseForbidden
 
 from seed.lib.superperms.orgs.models import (
@@ -18,10 +17,10 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser
 )
-from seed.lib.superperms.orgs.permissions import get_org_id
-
-# Allow Super Users to ignore permissions.
-ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
+from seed.lib.superperms.orgs.permissions import (
+    ALLOW_SUPER_USER_PERMS,
+    get_org_id
+)
 
 
 def requires_parent_org_owner(org_user):

@@ -8,6 +8,7 @@ import re
 from collections import namedtuple
 from functools import wraps
 from importlib import import_module
+from typing import Union
 
 from django.conf import settings
 from django.core.exceptions import (
@@ -20,7 +21,12 @@ from past.builtins import basestring
 from rest_framework import exceptions, status
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
+from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.permissions import (
+    ALLOW_SUPER_USER_PERMS,
+    get_org_id,
+    get_user_org
+)
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -300,36 +306,41 @@ class OrgMixin(object):
     Provides get_organization and get_parent_org method
     """
 
+    def __init__(self, *args, **kwargs):
+        self._organization: Union[Organization, None] = None
+
     def get_organization(self, request, return_obj=False):
         """Get org from query param or request.user.
 
         :param request: request object.
         :param return_obj: bool. Set to True if obj vs pk is desired.
-        :return: int representing a valid organization pk or organization object.
+        :return: int representing a valid organization pk or organization object if the user is a member.
         """
-        # print("my return obj is set to %s" % return_obj)
         if not request.user:
             return None
 
         if not getattr(self, '_organization', None):
             org_id = get_org_id(request)
             org = None
+            # We may eventually want to remove this to enforce passing organization_id
             if not org_id:
                 org = get_user_org(request.user)
                 org_id = int(getattr(org, 'pk'))
             if not org:
-                # ALWAYS check if user is member of org for the ID provided!
+                # ALWAYS check if user is member of org for the ID provided! (except superusers)
                 try:
-                    org = request.user.orgs.get(pk=org_id)
+                    if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+                        org = Organization.objects.get(pk=org_id)
+                    else:
+                        org = request.user.orgs.get(pk=org_id)
                 except ObjectDoesNotExist:
                     raise PermissionDenied('Incorrect org id.')
-            if return_obj:
-                # not sure why we are allowing _organization to be set as an id
-                # or model instance...
-                self._organization = org
-            else:
-                self._organization = org_id
-        return self._organization
+            self._organization = org
+
+        if return_obj:
+            return self._organization
+        else:
+            return self._organization.id
 
     def get_parent_org(self, request):
         """Gets parent organization of org from query param or request.
