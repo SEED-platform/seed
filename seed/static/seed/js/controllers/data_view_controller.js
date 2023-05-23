@@ -539,12 +539,12 @@ angular.module('BE.seed.controller.data_view', [])
           $scope.dataViewChart.options.scales.y1.display = false
         }
 
-        axis1_column = $scope.source_column_by_location.first_axis.column_name
-
+        axis1_column = $scope.source_column_by_location.first_axis.displayName;
         let i = 0
         for (let aggregation of axis1_aggregations) {
           for (let dataset of $scope.data.graph_data.datasets) {
-            if (aggregation == dataset.aggregation && axis1_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
+            const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
+            if (aggregation == dataset.aggregation && columnWithUnits.test(axis1_column) && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
               color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
               dataset.backgroundColor = color
