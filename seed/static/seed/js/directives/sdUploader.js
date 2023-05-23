@@ -160,6 +160,145 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
+var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensions) {
+  var uploader = new qq.FineUploaderBasic({
+    button: element[0],
+    request: {
+      method: 'PUT',
+      endpoint: '/api/v3/organizations/' + scope.organizationId + '/access_levels/importer/',
+      inputName: 'file',
+      paramsInBody: true,
+      forceMultipart: true,
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      }
+    },
+    validation: {
+      allowedExtensions: allowed_extensions
+    },
+    text: {
+      fileInputTitle: '',
+      uploadButton: scope.buttontext
+    },
+    retry: {
+      enableAuto: false
+    },
+    iframeSupport: {
+      localBlankPathPage: '/success.html'
+    },
+    /**
+     * multiple: only allow one file to be uploaded at a time
+     */
+    multiple: false,
+    maxConnections: 20,
+    callbacks: {
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        scope.eventfunc({
+          message: 'upload_submitted',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          }
+        });
+        var params = {
+          csrf_token: BE.csrftoken,
+          csrf_name: 'csrfmiddlewaretoken',
+          csrf_xname: 'X-CSRFToken',
+          organization_id: scope.organizationId
+        };
+
+        uploader.setParams(params);
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "ali_upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+        if (!responseJSON.success) {
+          alert('Upload failed.');
+        } else {
+          scope.eventfunc({
+            message: 'ali_upload_complete',
+            file: {
+              filename: fileName,
+              stored_filename: responseJSON.tempfile,
+              source_type: scope.sourcetype,
+              organization_id: scope.organizationId
+            }
+          });
+        }
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc({
+          message: 'upload_in_progress',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          },
+          progress: {
+            loaded: loaded,
+            total: total
+          }
+        });
+      },
+      /**
+       * onError: overloaded callback that calls the callback defined
+       * in the element attribute. Primarily for non-conforming files
+       * that return 400 from the backend and invalid file extensions.
+       */
+      onError: function (id, fileName, errorReason, xhr) {
+        if (_.includes(errorReason, ' has an invalid extension.')) {
+          scope.eventfunc({message: 'invalid_xml_extension'});
+          return;
+        }
+
+        // Ignore this error handler if the network request hasn't taken place yet (e.g., invalid file extension)
+        if (!xhr) {
+          alert(errorReason);
+          return;
+        }
+
+        var error = errorReason;
+        try {
+          var json = JSON.parse(xhr.responseText);
+          if (_.has(json, 'message')) {
+            error = json.message;
+          }
+        } catch (e) {
+          // no-op
+        }
+
+        scope.eventfunc({
+          message: 'upload_error',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype,
+            error: error
+          }
+        });
+      }
+    }
+  });
+  return uploader;
+};
+
 var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
@@ -449,7 +588,9 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
 
 var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   var uploader;
-  if (scope.sourcetype === 'BuildingSyncUpdate') {
+  if (scope.sourcetype === 'AccessLevelInstances') {
+    uploader = makeAccessLevelInstanceUploader(scope, element, ['csv', 'xls', 'xlsx']);
+  } else if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
   } else if (scope.sourcetype === 'GreenButton') {
     uploader = makeFileSystemUploader(scope, element, ['xml']);

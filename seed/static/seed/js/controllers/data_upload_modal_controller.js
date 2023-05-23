@@ -302,6 +302,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  modal, show the `invalid_extension` alert, and update the progress bar.
        */
       $scope.uploaderfunc = function (event_message, file, progress) {
+        console.log("hello, event message is: ", event_message)
+        console.log(file)
         switch (event_message) {
           case 'invalid_extension':
             $scope.uploader.invalid_extension_alert = true;
@@ -345,6 +347,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           case 'upload_in_progress':
             $scope.uploader.in_progress = true;
             $scope.uploader.progress = 25 * progress.loaded / progress.total;
+            break;
+
+          case 'ali_upload_complete':
+            console.log('ALI UPLOAD COMPLETE');
+            // access level instances file upload complete
+            save_access_level_instances_data(file.stored_filename, file.organization_id);
             break;
 
           case 'upload_complete':
@@ -574,7 +582,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.reuse_import_file_to_import_meters = function () {
-        $scope.preparing_pm_meters_preview = true
+        $scope.preparing_pm_meters_preview = true;
         dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
           $scope.dataset.import_file_id = data.import_file_id;
           $scope.uploader.progress = 50;
@@ -583,9 +591,33 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
             .then(present_parsed_meters_confirmation)
             .then(function () {
-              $scope.preparing_pm_meters_preview = false
+              $scope.preparing_pm_meters_preview = false;
             })
             .catch((err) => present_meter_import_error(err));
+        });
+      };
+
+      /**
+       * save_access_level_instances_data: saves Access Level Instances data
+       * @param {string} filename: the name of the import file
+       * @param organization_id
+       *
+       */
+      var save_access_level_instances_data = function (filename, organization_id) {
+        $scope.uploader.status_message = 'saving data';
+        $scope.uploader.progress = 0;
+        uploader_service.save_access_level_instance_data(filename, organization_id).then(function (data) {
+          var progress = _.clamp(data.progress, 0, 100);
+          uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
+            $scope.uploader.status_message = 'saving complete';
+            $scope.uploader.progress = 100;
+            $scope.step.number = 18;
+          }, function (data) {
+            $log.error(data.message);
+            if (_.has(data, 'stacktrace')) $log.error(data.stacktrace);
+            $scope.step_12_error_message = data.data ? data.data.message : data.message;
+            $scope.step.number = 12;
+          }, $scope.uploader);
         });
       };
 
@@ -810,7 +842,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           data.push(row.join(','));
         });
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name);
-      }
+      };
 
       /**
        * init: ran upon the controller load

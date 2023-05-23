@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 import traceback
 import zipfile
 from bisect import bisect_left
@@ -37,6 +38,9 @@ from unidecode import unidecode
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
+from seed.data_importer.access_level_instances_parser import (
+    AccessLevelInstancesParser
+)
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots
@@ -762,6 +766,28 @@ def finish_raw_save(results, file_pk, progress_key):
     return finished_progress_data
 
 
+@shared_task(ignore_result=True)
+def finish_raw_ali_save(results, progress_key):
+    """
+    Finish importing the raw Access Level Instances file.
+
+    :param results: List of results from the parent task
+    :param filename: filename that was being imported
+    :param progress_key: string, Progress Key to append progress
+    :param summary: Summary to be saved on ProgressData as a message
+    :return: results: results from the other tasks before the chord ran
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    print(f"@@@@ finishRawALIsave results: {results}")
+
+    new_summary = _append_access_level_instances_results_to_summary(results)
+    print(f"@@@ new_summary: {new_summary}")
+    finished_progress_data = progress_data.finish_with_success(new_summary)
+
+    return finished_progress_data
+
+
 def cache_first_rows(import_file, parser):
     """Cache headers, and rows 2-6 for validation/viewing.
 
@@ -957,6 +983,54 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
     progress_data.step()
 
     return result
+
+
+@shared_task
+def _save_access_level_instances_task(rows, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    result = {}
+
+    # get access level names
+    access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
+    print(f" !!!! access level names: {access_level_names}")
+
+    # saves the instances
+    for row in rows:
+        print(f" !!! this would save row: {row}")
+        # just for now, capture the last entry in the row as the "name"
+        # and testing as the "status"
+        result[row[access_level_names[-1]]] = {'message': 'testing'}
+
+    progress_data.step()
+    print(f"@@@@ _save_access_level_instances_task RESULT: {result}")
+    return result
+
+
+@shared_task
+def _save_access_level_instances_data_create_tasks(filename, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    # open and read in file?
+
+    parser = AccessLevelInstancesParser.factory(
+        open(filename, 'r'),
+        org_id
+    )
+    access_level_instances_data = parser.access_level_instances_details
+    print(f"@@@@ access_level_instances_data: {access_level_instances_data}")
+
+    tasks = []
+    chunk_size = 100
+
+    for batch_rows in batch(access_level_instances_data, chunk_size):
+        print(f"@@@ BATCH ROWS: {batch_rows}")
+        tasks.append(_save_access_level_instances_task.s(batch_rows, org_id, progress_data.key))
+
+    progress_data.total = len(tasks)
+    progress_data.save()
+
+    return chord(tasks, interval=15)(finish_raw_ali_save.s(progress_data.key))
 
 
 @shared_task
@@ -1200,6 +1274,17 @@ def _append_sensor_readings_import_results_to_summary(import_results):
     return list(summary.values())
 
 
+def _append_access_level_instances_results_to_summary(import_results):
+    summary = {}
+    for import_result in import_results:
+        print(f"@@@ IMPORT RESULT SINGULAR: {import_result}")
+        for key, row in import_result.items():
+            summary[key] = row
+
+    print(f"@@@ SUMMARY TO APPEND: {summary}")
+    return summary
+
+
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1251,6 +1336,28 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         tasks.append(_save_raw_data_chunk.s(chunk, file_pk, progress_data.key))
 
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+def save_raw_access_level_instances_data(filename, org_id):
+    """ save data and keep progress """
+    progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
+    try:
+
+        # queue up the tasks and immediately return. This is needed in the case of large files
+        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
+        # large files can take quite some time.
+        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
+    except StopIteration:
+        progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except Error as e:
+        progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except TypeError:
+        progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+    return progress_data.result()
 
 
 def save_raw_data(file_pk):

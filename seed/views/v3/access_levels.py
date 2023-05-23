@@ -4,20 +4,26 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
+import os
 
+import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Max
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
+from seed.data_importer.tasks import \
+    save_raw_access_level_instances_data as task_save_raw
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
+from seed.views.v3.uploads import get_upload_path
 
 _log = logging.getLogger(__name__)
 
@@ -170,3 +176,105 @@ class AccessLevelViewSet(viewsets.ViewSet):
         org.save()
 
         return org.access_level_names
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=False, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.upload_file_field(
+                name='file',
+                required=True,
+                description='File to Upload'
+            ),
+        ]
+    )
+    def importer(self, request, organization_pk=None):
+        """Import access_level instance names from file"""
+        # get org
+        try:
+            Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        # Fineuploader requires the field to be qqfile it appears.
+        if 'qqfile' in request.data:
+            the_file = request.data['qqfile']
+        else:
+            the_file = request.data['file']
+        filename = the_file.name
+        path = get_upload_path(filename)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        extension = the_file.name.split(".")[-1]
+        if extension == "xlsx" or extension == "xls":
+            workbook = xlrd.open_workbook(file_contents=the_file.read())
+            all_sheets_empty = True
+            for sheet_name in workbook.sheet_names():
+                try:
+                    sheet = workbook.sheet_by_name(sheet_name)
+                    if sheet.nrows > 0:
+                        all_sheets_empty = False
+                        break
+                except xlrd.biffh.XLRDError:
+                    pass
+
+            if all_sheets_empty:
+                return JsonResponse({
+                    'success': False,
+                    'message': "Import %s was empty" % the_file.name
+                })
+
+        # save the file
+        with open(path, 'wb+') as temp_file:
+            for chunk in the_file.chunks():
+                temp_file.write(chunk)
+
+        return JsonResponse({'success': True, "tempfile": temp_file.name})
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory({'filename': 'string'})
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=False, methods=['POST'])
+    def start_save_data(self, request, organization_pk=None):
+        """
+        Starts a background task to import raw data from an ImportFile
+        into PropertyState objects as extra_data. If the cycle_id is set to
+        year_ending then the cycle ID will be set to the year_ending column for each
+        record in the uploaded file. Note that the year_ending flag is not yet enabled.
+        """
+        # get org
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        filename = request.data.get('filename')
+        if not filename:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must pass filename to save the data'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse(task_save_raw(filename, org.id))

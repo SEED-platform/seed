@@ -62,6 +62,7 @@
     "Address Line 2 (Property)": "Address Line 2 (Property)",
     "Address Line 2 (Tax Lot)": "Address Line 2 (Tax Lot)",
     "Admin": "Admin",
+    "AH_FILE_TYPES_SUPPORTED": "File types supported: .csv, .xls, and .xlsx.",
     "An Audit Template organization token, user email and password are required": "An Audit Template organization token, user email and password are required",
     "An error occurred while processing the file. Please ensure that your file meets the required specifications.": "An error occurred while processing the file. Please ensure that your file meets the required specifications.",
     "Analyses": "Analyses (beta)",

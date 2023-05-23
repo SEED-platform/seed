@@ -34,11 +34,11 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
           resolve: {
             org_id: function() {return $scope.org.id},
             current_access_level_names: function() {return $scope.access_level_names},
-          },
+          }
         }).result.then(function () {
           spinner_utility.show();
           $window.location.reload();
-        })
+        });
       };
 
       $scope.open_add_level_instance_modal = function () {
@@ -53,7 +53,31 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
         }).result.then(function () {
           spinner_utility.show();
           $window.location.reload();
-        })
+        });
+      };
+
+      $scope.open_upload_al_instances_modal = function () {
+        var step = 17; // this is the step that corresponds to uploading access levels
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
+          controller: 'data_upload_modal_controller',
+          resolve: {
+            cycles:  function () {
+              return [];
+            },
+            step: function () {
+              return step;
+            },
+            dataset: function () {
+              return null;
+            },
+            organization: function () {
+              return $scope.menu.user.organization;
+            }
+          }
+        }).result.finally(function () {
+          $window.location.reload();
+        });
       };
     }
   ]);
