@@ -1299,7 +1299,6 @@ def save_raw_data(file_pk):
 
 
 def geocode_and_match_buildings_task(file_pk):
-    logging.error('>>> geocode_and_match_buildings_task - ps:%s', PropertyState.objects.count())
     import_file = ImportFile.objects.get(pk=file_pk)
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
@@ -1496,7 +1495,6 @@ def match_buildings(file_pk):
     :param file_pk: ImportFile Primary Key
     :return:
     """
-    logging.error('>>> match_buildings - ps:%s', PropertyState.objects.count())
     import_file = ImportFile.objects.get(pk=file_pk)
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
@@ -1658,12 +1656,9 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     :param merged_taxlot_views: list, merged tax lot views
     :return: None
     """
-    logging.error('>>> pair_new_states - ps:%s', PropertyState.objects.count())
     if not merged_property_views and not merged_taxlot_views:
-        logging.error('>>> no merged_property_views :(')
         return
 
-    logging.error('>>> merged_property_views %s', merged_property_views)
     sub_progress_data = ProgressData.from_key(sub_progress_key)
     sub_progress_data.delete()
     sub_progress_data.total = 12

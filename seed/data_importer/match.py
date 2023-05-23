@@ -76,7 +76,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     :param file_pk: ImportFile Primary Key
     :return results: dict
     """
-    logging.error('>>> match_and_link_incoming_properties_and_taxlots - ps:%s', PropertyState.objects.count())
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -271,7 +270,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
-    logging.error('>>> inclusive_match_and_merge - ps:%s', PropertyState.objects.count())
     column_names = matching_criteria_column_names(org.id, StateClass.__name__)
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
@@ -347,7 +345,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         instead of skipping them. This is used when importing BuildingSync files.
     :return: processed_views, duplicate_count, new + matched counts
     """
-    logging.error('>>> states_to_views - ps: %s', PropertyState.objects.count())
     table_name = StateClass.__name__
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
@@ -448,7 +445,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
-                merge_ubid_models([existing_state.id], merged_state.id)
+                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
                 existing_view.state = merged_state
                 existing_view.save()
 

@@ -122,36 +122,47 @@ def validate_ubid(ubid):
     return result
 
 
-def merge_ubid_models(old_state_ids, new_state_id):
+def merge_ubid_models(old_state_ids, new_state_id, StateClass):
     """
     Given a list of old (existing) property states, merge the exisitng ubid_models onto the new state
 
     If the new_state has an equivalent ubid, skip it.
     """
-    # import here to prevent circular reference
-    from seed.models.properties import PropertyState
-    from seed.models.tax_lots import TaxLotState
-
-    old_states = PropertyState.objects.filter(id__in=old_state_ids)
-    new_state = PropertyState.objects.get(id=new_state_id)
+    old_states = StateClass.objects.filter(id__in=old_state_ids)
+    new_state = StateClass.objects.get(id=new_state_id)
     new_ubids = new_state.ubidmodel_set.all()
     state_type = 'property' if new_state.__class__.__name__ == 'PropertyState' else 'taxlot'
+
+    preferred_ubid = find_preferred(old_states, new_state)
+
     for old_state in old_states:
         for old_ubid in old_state.ubidmodel_set.all():
             if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
                 continue 
-
-            # if there are no preferred values and an incoming is preferred, set it to True.
-            has_preferred = True in new_state.ubidmodel_set.values_list('preferred', flat=True)
-            preferred = not has_preferred and old_ubid.preferred
             
             ubid_details = {
                 'ubid': old_ubid.ubid,
-                'preferred': preferred,
-                state_type: new_state
+                state_type: new_state,
+                'preferred': old_ubid.ubid == preferred_ubid
             }
-
-
             new_state.ubidmodel_set.create(**ubid_details)
     
     new_state.save()
+    
+    return new_state
+
+def find_preferred(old_states, new_state):
+    # The preferred ubid will be the first prefered ubid founnd on a list of states.
+    # Where new_state is priority, and old_states[0] is least priority
+    ordered_states = list(old_states)
+    ordered_states.reverse()
+    ordered_states.insert(0, new_state)
+
+    preferred_ubid = None 
+    for state in ordered_states:
+        ubid = state.ubidmodel_set.filter(preferred=True).first()
+        if ubid:
+            preferred_ubid = ubid.ubid
+            break
+
+    return preferred_ubid
