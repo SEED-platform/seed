@@ -408,7 +408,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         existing_state_matches = [
             state 
             for state in existing_state_matches 
-            if get_jaccard_index(ubid, state.ubid) > 0
+            if get_jaccard_index(ubid, state.ubid) > org.ubid_threshold
         ]
 
         count = len(existing_state_matches)
