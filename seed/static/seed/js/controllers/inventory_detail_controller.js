@@ -578,6 +578,25 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_ubid_upsert_modal = function () {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_upsert_modal.html',
+          controller: 'ubid_upsert_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? $scope.inventory.view_id : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? $scope.inventory.view_id : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id);
+            }],
+          }
+        });
+      };
+
       $scope.open_analyses_modal = function () {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',

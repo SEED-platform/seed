@@ -1239,6 +1239,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/ubid_jaccard_index_modal.html',
           controller: 'ubid_jaccard_index_modal_controller',
+          backdrop: 'static',
           resolve: {
             property_view_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
@@ -1274,9 +1275,6 @@ angular.module('BE.seed.controller.inventory_list', [])
               return $scope.inventory_type === 'taxlots' ? selectedViewId[0] : null;
             },
             inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
-              return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
-            }],
-            ubid_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
               return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
             }],
           }

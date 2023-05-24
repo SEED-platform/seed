@@ -391,6 +391,13 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       });
     }
 
+    $scope.ubid_threshold_change = function () {
+      if ($scope.org.ubid_threshold == undefined) {
+        return
+      }
+      $scope.invalid_ubid_threshold = !($scope.org.ubid_threshold >= 0 && $scope.org.ubid_threshold <= 1)
+    }
+
     /**
      * reset the last update date (to null)
     */
