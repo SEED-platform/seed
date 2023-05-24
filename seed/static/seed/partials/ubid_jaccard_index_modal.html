@@ -7,11 +7,11 @@
 <div class="modal-body">
     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
         <div id="default-comparison" ng-show="!editing">
-            <div>UBID 1: {$ ubid1 $}</div>
+            <div style="margin-bottom: 10px;">UBID 1: {$ ubid1 $}</div>
             <div>UBID 2: {$ ubid2 $}</div>
         </div>
         <div id="custom-comparison" ng-show="editing">
-            <div>UBID 1: <input type="text" ng-model="ubid1" /></div>
+            <div style="margin-bottom: 10px;">UBID 1: <input type="text" ng-model="ubid1" /></div>
             <div>UBID 2: <input type="text" ng-model="ubid2" /></div>
         </div>
 
@@ -21,7 +21,7 @@
             </button>
         </div>
         <div ng-show="editing">
-            <button class="btn btn-primary" type="button" ng-click="editing = false; ubid_jaccard_state = 'verify'">
+            <button class="btn btn-primary" type="button" ng-click="accept_edits()">
                 OK
             </button>
         </div>
@@ -30,14 +30,20 @@
     <div ng-show="ubid_jaccard_state === 'result'">
         <h4>Ubid Match quality: <strong>{$ jaccard_index $} - {$ jaccard_quality(jaccard_index) $}</strong></h4>
     </div>
-
+</div>
+<div>
+    <div ng-switch on="validate_comparison()" style="padding: 0 15px 20px">
+        <span class="alert alert-info" ng-switch-when="editing">
+            Cannot compare UBIDs while editing. Click OK to continue.
+        </span>
+        <span class="alert alert-info" ng-switch-when="missing">
+            Two UBIDs are required for comparison. Click Custom UBIDs to continue.
+        </span>
+    </div>
+</div>
 <div class="modal-footer">
-    <div class="alert alert-danger" ng-show="missing_ubid" style="margin: auto auto 20px; text-align: center;">
-        Cannot compare UBIDs. Set a preferred UBID and try again.
-    </div>
-    <div>
-        <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" ng-disabled="missing_ubid || editing == true">Compare UBID</button>
-        <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
-        <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
-    </div>
+    <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" 
+        ng-disabled="editing == true || missing_ubid"  tooltip-placement="bottom" uib-tooltip="compare_ubid_tooltip()">Compare UBID</button>
+    <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
 </div>

@@ -21,6 +21,9 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
             $scope.property_view_ids = _.uniq(property_view_ids);
             $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
             $scope.ubids = ubids
+            if ($scope.ubids.length < 2) {
+                $scope.editing = true
+            }
 
             $scope.total_selected_count = $scope.property_view_ids.length + $scope.taxlot_view_ids.length;
 
@@ -48,6 +51,29 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
                     'Perfect'
             }
 
+            $scope.accept_edits = () => {
+                $scope.missing_ubid = !$scope.ubid1 || !$scope.ubid2
+                $scope.editing = false; 
+                $scope.ubid_jaccard_state = 'verify'
+            }
+
+            $scope.compare_ubid_tooltip = () => {
+                if ($scope.editing) {
+                    return 'Cannot compare UBIDs while editing. Click OK to continue.'
+                } else if ($scope.missing_ubid) {
+                    return '2 UBIDs are required for comparison'
+                } else {
+                    return 'Generate Jaccard Index'
+                }
+            }
+
+            $scope.validate_comparison = () => {
+                if ($scope.editing) {
+                    return 'editing'
+                } else if ($scope.missing_ubid) {
+                    return 'missing'
+                }
+            }
             /**
              * cancel: dismisses the modal
              */

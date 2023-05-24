@@ -1248,6 +1248,9 @@ angular.module('BE.seed.controller.inventory_list', [])
               return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             },
             ubids: function () {
+              if (!selectedViewIds.length) {
+                return []
+              }
               let ubid_column;
               return inventory_service.get_mappable_property_columns()
               .then((columns) => {
