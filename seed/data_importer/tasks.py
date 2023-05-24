@@ -997,7 +997,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
     # get access level names (array of ordered names)
     access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
     access_level_names = [x.lower() for x in access_level_names]
-
+    print(f" @@@@ access level names: {access_level_names}")
     # determine whether root level was provided in file (if not, remove from list)
     has_root = True
     if rows:
@@ -1006,8 +1006,9 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         if access_level_names[0] not in headers:
             access_level_names.pop(0)
             has_root = False
-
-    # saves the non-existant instances
+        print(f"@@@@@ this file has root column? {has_root}")
+        print(f"@@@ what is root? {org.root}")
+    # saves the non-existent instances
     for row in rows:
         message = None
         # process in order of access_level_names
@@ -1017,13 +1018,14 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         if not has_root:
             children = org.root.get_children()
             current_level = org.root
-
+        print(f"@@@@ starting at current level: {current_level}")
         # lowercase keys just in case
         row = {k.lower(): v for k, v in row.items()}
 
         for index, name in enumerate(access_level_names):
             # does this level exist already?
             looking_for = row[name]
+
             found = False
             for child in children:
                 if child.name == looking_for:
@@ -1039,11 +1041,13 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
                     break
                 # add it
                 try:
+                    print(f"!!! ATTEMPTING to add {looking_for} with parent: {current_level.id} - {current_level.name}")
                     current_level = org.add_new_access_level_instance(current_level.id, looking_for)
+                    current_level.refresh_from_db()
                     # get its children (should be empty)
                     children = current_level.get_children()
                 except Exception as e:
-                    message = f"Error has occurred when adding element '{row[name]}' for entry: {row}: {e}"
+                    message = f"Error has occurred when adding element '{name}' for entry: {row}: {e}"
                     break
 
         # add a row but only for errors

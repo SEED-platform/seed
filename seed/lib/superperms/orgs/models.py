@@ -421,7 +421,7 @@ def presave_organization(sender, instance, **kwargs):
 @receiver(post_save, sender=Organization)
 def post_save_organization(sender, instance, created, **kwargs):
     """
-    Give new Orgs a Accountibilty Hiarchy root.
+    Give new Orgs a Accountability Hierarchy root.
     """
     if created:
         if instance.access_level_names == []:

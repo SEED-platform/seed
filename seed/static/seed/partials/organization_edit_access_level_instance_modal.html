@@ -1,0 +1,21 @@
+<div class="modal-header">
+  <h4> {$:: 'Edit Access Level Instance' | translate $} </h4>
+</div>
+<div class="modal-body">
+  <div class="row pad-bot-10">
+      <div class="form-group col-sm-12">
+          <label for="name">Name</label>
+          <input id="name" style="margin: 10px 0px;" type="text" class="form-control" ng-model="level_instance_name">
+      </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <div class="row text-center">
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="edit_level_instance()">
+          Save
+      </button>
+  </div>
+  <div class="row text-center">
+      <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+  </div>
+</div>

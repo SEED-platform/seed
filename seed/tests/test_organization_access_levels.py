@@ -5,6 +5,8 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
+import os
+import time
 
 from django.urls import reverse_lazy
 
@@ -185,3 +187,39 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 }]
             }],
         }
+
+    def test_add_access_level_instances_from_file(self):
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Organization"]
+        self.org.save()
+
+        filename = "access-level-instances.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        uploaded_filepath = filepath
+        print(f" UPLOADED FILEPATH: {uploaded_filepath}")
+
+        url = reverse_lazy('api:v3:organization-access_levels-start-save-data', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"filename": uploaded_filepath}),
+            content_type='application/json'
+        )
+
+        assert raw_result.status_code == 200
+
+        # todo: deal with the progress loop
+        # instead of dealing with the progress loop, just wait a bit
+        time.sleep(20)
+
+        # spot check the tree now
+        url = reverse_lazy('api:v3:organization-access_levels-tree', args=[self.org.id],)
+
+        # get tree
+        raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+        assert result['access_level_tree'][0]['id'] == self.org.root.pk
+        assert len(result['access_level_tree'][0]['children']) == 8
+        assert len(result['access_level_tree'][0]['children'][0]['children'][0]['children']) == 8
+
+        # retrieve the last access level instance
+        _ = AccessLevelInstance.objects.get(organization=self.org, name="Company H")

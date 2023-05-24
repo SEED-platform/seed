@@ -104,6 +104,14 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.edit_organization_access_level_instance = function (org_id, instance_id, name) {
+      return $http.patch('/api/v3/organizations/' + org_id + '/' + 'access_levels/' + instance_id + '/edit_instance/',
+        { name: name }
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user

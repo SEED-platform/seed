@@ -25,6 +25,7 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.access_level_tree = access_level_tree.access_level_tree;
+      console.log($scope.access_level_tree);
       $scope.access_level_names = access_level_tree.access_level_names;
 
       $scope.open_add_level_modal = function () {
@@ -76,6 +77,21 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
             }
           }
         }).result.finally(function () {
+          $window.location.reload();
+        });
+      };
+
+      $scope.open_edit_al_instance_modal = function(instance_id, instance_name) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/organization_edit_access_level_instance_modal.html',
+          controller: 'organization_edit_access_level_instance_modal_controller',
+          resolve: {
+            org_id: function() {return $scope.org.id},
+            instance_id: function() {return instance_id},
+            instance_name: function() {return instance_name}
+          },
+        }).result.then(function () {
+          spinner_utility.show();
           $window.location.reload();
         });
       };

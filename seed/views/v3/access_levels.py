@@ -278,3 +278,47 @@ class AccessLevelViewSet(viewsets.ViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(task_save_raw(filename, org.id))
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['PATCH'])
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': ['string']
+            },
+            required=['name'],
+            description='Edited access level instance name')
+    )
+    def edit_instance(self, request, organization_pk=None, pk=None):
+
+        # get org
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        # get instance
+        try:
+            instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        name = request.data.get('name')
+        if not name:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must pass name to edit the access level instance name'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        instance.name = name
+        instance.save()
+        return JsonResponse({'status': 'success'})
