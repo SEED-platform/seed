@@ -43,7 +43,7 @@
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" 
-        ng-disabled="editing == true || missing_ubid"  tooltip-placement="bottom" uib-tooltip="compare_ubid_tooltip()">Compare UBID</button>
+        ng-disabled="editing == true || missing_ubid" >Compare UBID</button>
     <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
     <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
 </div>
