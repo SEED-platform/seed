@@ -822,7 +822,43 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="6" heading="{$:: 'Units' | translate $}">
+        <uib-tab index="6" heading="UBID Threshold">
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3>Set UBID Threshold</h3>
+                </div>
+            </div>
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <p>The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable.
+                    When the threshold is satisfied, the incoming property can be merged with the existing property.</p>
+                    <p>
+                        UBID thresholds are between 0.0 and 1.0
+                    </p>
+                    <form class="form-horizontal" role="form" lang="en-US">
+                        <div class="form-group">
+                            <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
+                            <div class="col-sm-3">
+                                <input 
+                                    id="ubid-threshold-form" 
+                                    class="form-control" 
+                                    type="text"
+                                    ng-model="org.ubid_threshold"
+                                    ng-change="ubid_threshold_change()"
+                                    ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                    <div style="margin-top: 30px;">
+                        <span class="alert alert-danger" ng-show="invalid_ubid_threshold">
+                            Ubid Threshold must be between 0.0 and 1.0
+                        </div>
+                    </span>
+                </div>            
+            </div>
+        </uib-tab>
+
+        <uib-tab index="7" heading="{$:: 'Units' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>

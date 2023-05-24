@@ -154,6 +154,7 @@ def _dict_org(request, organizations):
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'salesforce_enabled': o.salesforce_enabled,
+            'ubid_threshold': o.ubid_threshold,
         }
         orgs.append(org)
 
@@ -643,6 +644,11 @@ class OrganizationViewSet(viewsets.ViewSet):
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
 
+        # update the ubid threshold option 
+        ubid_threshold = posted_org.get('ubid_threshold')
+        if ubid_threshold != org.ubid_threshold:
+            org.ubid_threshold = ubid_threshold
+            
         org.save()
 
         # Update the selected exportable fields.
