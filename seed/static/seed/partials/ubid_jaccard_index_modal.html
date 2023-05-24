@@ -5,12 +5,30 @@
     <div>The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match).</div>
 </div>
 <div class="modal-body">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div id="default-comparison" ng-show="!editing">
+            <div>UBID 1: {$ ubid1 $}</div>
+            <div>UBID 2: {$ ubid2 $}</div>
+        </div>
+        <div id="custom-comparison" ng-show="editing">
+            <div>UBID 1: <input type="text" ng-model="ubid1" /></div>
+            <div>UBID 2: <input type="text" ng-model="ubid2" /></div>
+        </div>
 
-    <div>UBID 1: {$ ubid1 $}</div>
-    <div>UBID 2: {$ ubid2 $}</div>
+        <div ng-show="!editing">
+            <button type="button" class="btn btn-default" ng-click="editing = true">
+                Custom UBIDs
+            </button>
+        </div>
+        <div ng-show="editing">
+            <button class="btn btn-primary" type="button" ng-click="editing = false; ubid_jaccard_state = 'verify'">
+                OK
+            </button>
+        </div>
+    </div>
 
     <div ng-show="ubid_jaccard_state === 'result'">
-        <h4>Ubid Match quality <strong>{$ jaccard_index $} - {$ jaccard_quality(jaccard_index) $}</strong></h4>
+        <h4>Ubid Match quality: <strong>{$ jaccard_index $} - {$ jaccard_quality(jaccard_index) $}</strong></h4>
     </div>
 
 <div class="modal-footer">
@@ -18,7 +36,7 @@
         Cannot compare UBIDs. Set a preferred UBID and try again.
     </div>
     <div>
-        <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" ng-disabled="missing_ubid">Compare UBID</button>
+        <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-show="ubid_jaccard_state === 'verify'" ng-disabled="missing_ubid || editing == true">Compare UBID</button>
         <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'verify'" ng-click="cancel()">Cancel</button>
         <button type="button" class="btn btn-default" ng-show="ubid_jaccard_state === 'result'" ng-click="close()">Close</button>
     </div>

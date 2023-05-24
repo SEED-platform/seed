@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
             $scope.missing_ubid = !ubids[0] || !ubids[1]
 
             $scope.compare_ubids = () => {
-                ubid_service.compare_ubids($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
+                ubid_service.compare_ubids($scope.ubid1, $scope.ubid2).then((result) => {
                     if (result.status == 'success'){
                         $scope.jaccard_index = parseFloat(parseFloat(result.data).toFixed(3))
                         $scope.ubid_jaccard_state = 'result'

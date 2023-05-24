@@ -163,42 +163,21 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
     @action(detail=False, methods=['POST'])
     def get_jaccard_index(self, request):
         """
-        Submit a request to compare UBIDs using the Jaccard Index for 2 property and tax lot records.
+        Submit a request to compare UBIDs using the Jaccard Index for 2 ubids.
         """
         body = dict(request.data)
         org_id = self.get_organization(request)
-        property_view_ids = body.get('property_view_ids')
-        taxlot_view_ids = body.get('taxlot_view_ids')
 
-        ubids = []
+        ubid1 = body.get('ubid1')
+        ubid2 = body.get('ubid2')
 
-        if property_view_ids:
-            property_views = PropertyView.objects.filter(
-                id__in=property_view_ids,
-                cycle__organization_id=org_id
-            )
-            properties = PropertyState.objects.filter(
-                id__in=Subquery(property_views.values('state_id'))
-            )
-            ubids += [p.ubid for p in properties]
-
-        if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(
-                id__in=taxlot_view_ids,
-                cycle__organization_id=org_id
-            )
-            taxlots = TaxLotState.objects.filter(
-                id__in=Subquery(taxlot_views.values('state_id'))
-            )
-            ubids += [t.ubid for t in taxlots]
-
-        if len(ubids) == 2:
-            jaccard_index = get_jaccard_index(ubids[0], ubids[1])
+        if ubid1 and ubid2:
+            jaccard_index = get_jaccard_index(ubid1, ubid2)
 
             return JsonResponse({'status': 'success', 'data': jaccard_index})
 
         else:
-            return JsonResponse({'status': 'failed', 'message': 'exactly 2 property or taxlot records are required'})
+            return JsonResponse({'status': 'failed', 'message': 'exactly 2 ubids are required'})
 
     # override endpoint to set response to json, not OrderedDict
 
@@ -292,7 +271,8 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         )
 
         # if the udpated ubid sets preferred from True to False, set state.ubid to None
-        if ubid.preferred and not request.data['preferred']:
+        preferred_request = request.data.get('preferred', None)
+        if ubid.preferred and preferred_request == False:
             state = ubid.property or ubid.taxlot 
             state.ubid = None 
             state.save()

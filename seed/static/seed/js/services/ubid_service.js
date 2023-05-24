@@ -35,10 +35,10 @@ angular.module('BE.seed.service.ubid', [])
         });
       };
 
-      ubid_factory.compare_ubids = (property_view_ids, taxlot_view_ids) => {
+      ubid_factory.compare_ubids = (ubid1, ubid2) => {
         return $http.post('/api/v3/ubid/get_jaccard_index/', {
-          property_view_ids: property_view_ids,
-          taxlot_view_ids: taxlot_view_ids
+          ubid1: ubid1,
+          ubid2: ubid2,
         }, {
           params: {
             organization_id: user_service.get_organization().id
