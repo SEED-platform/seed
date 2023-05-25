@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.columns import Column
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models.data_views import DataView
 from seed.serializers.data_views import DataViewSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
@@ -218,7 +219,8 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'Columns with ids {data["columns"]} do not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        response = data_view.evaluate(columns)
+        user_ali= AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = data_view.evaluate(columns, user_ali)
         return JsonResponse({
             'status': 'success',
             'data': response

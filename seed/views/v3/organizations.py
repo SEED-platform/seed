@@ -39,6 +39,7 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -974,14 +975,16 @@ class OrganizationViewSet(viewsets.ViewSet):
             }
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var):
+    def get_raw_report_data(self, access_level_instance, cycles, x_var, y_var):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
-            property__organization_id=organization_id,
-            cycle_id__in=cycles
+            property__organization_id=access_level_instance.organization_id,
+            cycle_id__in=cycles,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).order_by('id')
-        organization = Organization.objects.get(pk=organization_id)
+        organization = access_level_instance.organization
         results = []
         for cycle in cycles:
             property_views = all_property_views.filter(cycle_id=cycle)
@@ -1058,8 +1061,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             result = {'status': 'error', 'message': error}
         else:
             cycles = self.get_cycles(params['start'], params['end'], pk)
+            acess_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
             data = self.get_raw_report_data(
-                pk, cycles, params['x_var'], params['y_var']
+                acess_level_instance, cycles, params['x_var'], params['y_var']
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
@@ -1134,7 +1138,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             cycles = self.get_cycles(params['start'], params['end'], pk)
             x_var = params['x_var']
             y_var = params['y_var']
-            data = self.get_raw_report_data(pk, cycles, x_var, y_var)
+            acess_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            data = self.get_raw_report_data(acess_level_instance, cycles, x_var, y_var)
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
                     empty = False
@@ -1336,8 +1341,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Gather base data
         cycles = self.get_cycles(params['start'], params['end'], pk)
+        acess_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         data = self.get_raw_report_data(
-            pk, cycles, params['x_var'], params['y_var']
+            acess_level_instance, cycles, params['x_var'], params['y_var']
         )
 
         base_row = data_row_start + 1

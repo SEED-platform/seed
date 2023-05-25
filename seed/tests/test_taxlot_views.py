@@ -57,6 +57,33 @@ class TaxLotViewTests(DataMappingBaseTestCase):
 
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
 
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_retrieve_taxlot_permissions(self):
+        state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})
+        taxlot = self.taxlot_factory.get_taxlot()
+        view = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=state
+        )
+        url = reverse('api:v3:taxlots-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
         state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})

@@ -18,7 +18,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Property, PropertyView
+from seed.models import Property, PropertyView, TaxLot
 from seed.models import StatusLabel as Label
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -34,6 +34,26 @@ from seed.views.labels import UpdateInventoryLabelsAPIView
 
 class TestLabelsViewSet(DeleteModelsTestCase):
     """Test the label DRF viewset"""
+    def setUp(self):
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com',
+            username='test_user@demo.com',
+            password='secret',
+        )
+        self.organization, _, _ = create_organization(self.user, "test-organization")
+        self.client = APIClient()
+        self.client.login(username=self.user.username, password='secret')
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.organization.access_level_names = ["root", "child"]
+        child = self.organization.add_new_access_level_instance(self.organization.root.id, "child")
+        self.organization.add_member(self.user_with_nothing, child.pk)
+        self.organization.save()
 
     def test_results_are_not_actually_paginated(self):
         """
@@ -139,6 +159,60 @@ class TestLabelsViewSet(DeleteModelsTestCase):
 
         for label in response_a.data:
             self.assertNotIn('is_applied', label)
+
+    def test_property_labels_is_applied_permissions(self):
+        # create property with label
+        property_view_factory = FakePropertyViewFactory(organization=self.organization, user=self.user)
+        p_view_1 = property_view_factory.get_property_view()
+        Property.objects.create(organization=self.organization, access_level_instance=self.organization.root)
+        new_label_1 = Label.objects.create(
+            color="red",
+            name="test_label",
+            super_organization=self.organization,
+        )
+        p_view_1.labels.add(new_label_1)
+
+        # get labels with user
+        url = reverse('api:v3:properties-labels')
+        resp = self.client.post(url + f'?organization_id={self.organization.pk}')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert label_data["is_applied"] == [p_view_1.pk]
+
+        # get label with user with nothing
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse('api:v3:properties-labels')
+        resp = self.client.post(url + f'?organization_id={self.organization.pk}')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert "is_applied" not in label_data
+
+    def test_taxlot_labels_is_applied_permissions(self):
+        # create taxlot with label
+        taxlot_view_factory = FakeTaxLotViewFactory(organization=self.organization, user=self.user)
+        tl_view_1 = taxlot_view_factory.get_taxlot_view()
+        TaxLot.objects.create(organization=self.organization, access_level_instance=self.organization.root)
+        new_label_1 = Label.objects.create(
+            color="red",
+            name="test_label",
+            super_organization=self.organization,
+        )
+        tl_view_1.labels.add(new_label_1)
+
+        # get labels with user
+        url = reverse('api:v3:taxlots-labels')
+        resp = self.client.post(url + f'?organization_id={self.organization.pk}')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert label_data["is_applied"] == [tl_view_1.pk]
+
+        # get label with user with nothing
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse('api:v3:taxlots-labels')
+        resp = self.client.post(url + f'?organization_id={self.organization.pk}')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert "is_applied" not in label_data
 
     def test_labels_inventory_specific_filter_endpoint_provides_IDs_for_records_where_label_is_applied(self):
         user = User.objects.create_superuser(

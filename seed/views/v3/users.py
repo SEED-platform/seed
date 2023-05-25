@@ -17,7 +17,7 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class
+from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class, has_hiarchary_access
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -176,6 +176,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
+    @has_hiarchary_access(body_ali_id="access_level_instance_id")
     def create(self, request):
         """
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.

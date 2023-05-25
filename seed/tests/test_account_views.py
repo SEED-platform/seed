@@ -53,6 +53,36 @@ class AccountsViewTests(TestCase):
         year = date.today().year - 1
         self.cal_year_name = "{} Calendar Year".format(year)
 
+        self.org.access_level_names = ["root", "children", "grandchildren"]
+        self.ali_a = self.org.add_new_access_level_instance(self.org.root.id, "a")
+        self.ali_b = self.org.add_new_access_level_instance(self.org.root.id, "b")
+        self.ali_c = self.org.add_new_access_level_instance(self.ali_a.id, "c")
+
+        self.child_a_details = {
+            'username': 'a@a.com',
+            'password': 'test_pass',
+        }
+        self.child_a = User.objects.create_user(**self.child_a_details)
+        self.org.add_member(self.child_a, self.ali_a.pk, role=ROLE_OWNER)
+
+        self.child_b_details = {
+            'username': 'b@b.com',
+            'password': 'test_pass',
+        }
+        self.child_b = User.objects.create_user(**self.child_b_details)
+        self.org.add_member(self.child_b, self.ali_b.pk, role=ROLE_OWNER)
+
+        self.org.save()
+
+        self.child_c_details = {
+            'username': 'c@c.com',
+            'password': 'test_pass',
+        }
+        self.child_c = User.objects.create_user(**self.child_c_details)
+        self.org.add_member(self.child_c, self.ali_c.pk, role=ROLE_OWNER)
+
+        self.org.save()
+
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
 
@@ -267,6 +297,95 @@ class AccountsViewTests(TestCase):
                 'status': 'error',
                 'message': 'Organization does not exist'
             })
+
+    def test_get_user_list_permissions(self):
+        johnny = {
+            'email': 'test_user@demo.com', 
+            'first_name': 'Johnny', 
+            'last_name': 'Energy', 
+            'number_of_orgs': 1, 
+            'user_id': self.user.pk, 
+            'role': 'owner', 
+            'access_level_instance_name': 'root', 
+            'access_level': 'root'
+        }
+        a = {
+            'email': 'a@a.com', 
+            'first_name': '', 
+            'last_name': '', 
+            'number_of_orgs': 1, 
+            'user_id': self.child_a.pk,
+            'role': 'member',
+            'access_level_instance_name': 'a', 
+            'access_level': 'children'
+        }
+        b = {
+            'email': 'b@b.com', 
+            'first_name': '', 
+            'last_name': '', 
+            'number_of_orgs': 1, 
+            'user_id': self.child_b.pk,
+            'role': 'member',
+            'access_level_instance_name': 'b', 
+            'access_level': 'children'
+        }
+        c = {
+            'email': 'c@c.com', 
+            'first_name': '', 
+            'last_name': '', 
+            'number_of_orgs': 1, 
+            'user_id': self.child_c.pk,
+            'role': 'member',
+            'access_level_instance_name': 'c', 
+            'access_level': 'grandchildren'
+        }
+
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success', 
+                'users': [johnny, a, b, c]
+            }
+        )
+
+        self.client.login(**self.child_a_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success', 
+                'users': [johnny, a, c]
+            }
+        )
+
+        self.client.login(**self.child_b_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success', 
+                'users': [johnny, b]
+            }
+        )
+
+        self.client.login(**self.child_c_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success', 
+                'users': [johnny, a, c]
+            }
+        )
 
     def test_remove_user_from_org_std(self):
         """test removing a user"""
@@ -621,6 +740,31 @@ class AccountsViewTests(TestCase):
     #         content_type='application/json',
     #     )
     #     self.assertEqual('success', json.loads(resp.content)['status'])
+
+    def test_add_user_permissions(self):
+        data_json = {
+            "first_name":"a",
+            "last_name":"a",
+            "email":"a@a.com",
+            "role": "member",
+            "access_level_instance_id": self.org.root.pk
+        }
+        resp = self.client.post(reverse_lazy('api:v3:user-list') + f'?organization_id={self.org.pk}',
+                               json.dumps(data_json),
+                               content_type='application/json')
+        assert resp.status_code == 200
+
+        self.client.login(**self.child_a_details)
+        resp = self.client.post(reverse_lazy('api:v3:user-list') + f'?organization_id={self.org.pk}',
+                               json.dumps(data_json),
+                               content_type='application/json')
+        assert resp.status_code == 404
+
+        data_json["access_level_instance_id"] = self.ali_c.pk
+        resp = self.client.post(reverse_lazy('api:v3:user-list') + f'?organization_id={self.org.pk}',
+                               json.dumps(data_json),
+                               content_type='application/json')
+        assert resp.status_code == 200
 
     def test_update_user(self):
         """test for update_user"""

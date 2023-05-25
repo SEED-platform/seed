@@ -13,7 +13,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -78,6 +78,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         )
     )
     @action(detail=False, methods=['POST'])
+    @has_perm_class('requires_viewer')
     def labels(self, request):
         """
         Returns a list of all labels where the is_applied field
@@ -639,6 +640,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hiarchary_access(taxlot_view_id_kwarg="pk")
     def retrieve(self, request, pk):
         """
         Get taxlot details

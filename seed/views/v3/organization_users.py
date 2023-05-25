@@ -14,12 +14,13 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
     Organization,
-    OrganizationUser
+    OrganizationUser,
+    AccessLevelInstance,
 )
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.views.v3.organizations import _get_js_role
-
+from django.db.models import Q
 
 class OrganizationUserViewSet(viewsets.ViewSet):
     # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
@@ -38,8 +39,14 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
+
+        # ALI permissions. User should only be able to see users in their subtreee and their direct ancestors.
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        in_subtree = Q(access_level_instance__lft__gte=ali.lft, access_level_instance__rgt__lte=ali.rgt)
+        ancestor = Q(access_level_instance__lft__lt=ali.lft, access_level_instance__rgt__gt=ali.rgt)
+
         users = []
-        for u in org.organizationuser_set.all():
+        for u in org.organizationuser_set.filter(in_subtree | ancestor).all():
             user = u.user
 
             user_orgs = OrganizationUser.objects.filter(user=user).count()
