@@ -9,6 +9,7 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from seed.models import PropertyState, TaxLotState
+import logging
 
 
 class UbidModel(models.Model):
@@ -28,14 +29,12 @@ def post_save_ubid_model(sender, **kwargs):
         return
 
     if getattr(instance, 'property'):
-        property = instance.property
-        property.ubid = instance.ubid
-        property.save()
-
+        state = instance.property
     elif getattr(instance, 'taxlot'):
-        taxlot = instance.taxlot
-        taxlot.ubid = instance.ubid
-        taxlot.save()
+        state = instance.taxlot
+
+    state.ubid = instance.ubid
+    state.save()
 
 
 @receiver(pre_delete, sender=UbidModel)

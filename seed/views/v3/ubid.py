@@ -269,12 +269,15 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         ubid = UbidModel.objects.get(
             Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
         )
-
-        # if the udpated ubid sets preferred from True to False, set state.ubid to None
-        preferred_request = request.data.get('preferred', None)
-        if ubid.preferred and preferred_request == False:
-            state = ubid.property or ubid.taxlot 
+        state = ubid.property or ubid.taxlot 
+        
+        # if the incoming ubid is not preferred and is the current ubid, clear state.ubid
+        if request.data.get('ubid') == state.ubid and not request.data.get('preferred'):
             state.ubid = None 
+            state.save()
+        # if the incoming ubid is preferred and different, set state.ubid
+        elif request.data.get('ubid') != state.ubid and request.data.get('preferred'):
+            state.ubid = ubid.ubid 
             state.save()
 
         valid_fields = [field.name for field in UbidModel._meta.fields]
