@@ -1019,6 +1019,14 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         row = {k.lower(): v for k, v in row.items()}
 
         for index, name in enumerate(access_level_names):
+            # check headers
+            if name not in row:
+                message = f"Error reading CSV data row: {row}...no column for access level {name} found"
+                break
+            # check for empty value (don't add blanks)
+            if not row[name]:
+                break
+
             # does this level exist already?
             looking_for = row[name]
 
