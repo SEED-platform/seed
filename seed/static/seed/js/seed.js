@@ -101,6 +101,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.inventory_summary',
   'BE.seed.controller.inventory_plots',
+  'BE.seed.controller.inventory_detail_ubid_admin',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -126,6 +127,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.ubid_jaccard_index_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.ubid_upsert_modal',
+  'BE.seed.controller.ubid_editor_modal',
+  'BE.seed.controller.ubid_admin_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal',
   'BE.seed.controller.create_column_modal'
@@ -695,6 +698,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           $uibModalInstance: _.constant(undefined)
         }
+      })
+      .state({
+        name: 'inventory_detail_ubid_admin',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/ubids',
+        templateUrl: static_url + 'seed/partials/inventory_detail_ubid_admin.html',
+        controller: 'inventory_detail_ubid_admin_controller',
+        resolve: {}
+
       })
       .state({
         name: 'mapping',

@@ -1,0 +1,15 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="exportModalLabel">
+        <i class="fa fa-building-o"></i>
+        <i class="fa fa-map-o"></i>
+        <span>UBIDs</span>
+    </h4>
+</div>
+<div>
+    <div ng-controller="inventory_detail_ubid_admin_controller">
+        <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_ubid_admin.html'"></div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+</div>
