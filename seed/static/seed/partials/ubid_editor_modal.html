@@ -5,11 +5,50 @@
         <span>CREATE UBID</span>
     </h4>
 </div>
-<div>
-<div>
-    text {$ ubid_id $}
-</div>
+<div class="section">
+    <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
+            <div class="table_list_container has_borders">
+                <table id="ubid-table" class="table has_no_btm_margin">
+                    <thead>
+                        <tr>
+                            <th class="text-left" ng-click="toggle_name_order_sort()">
+                                <span>UBID<i class="glyphicon glyphicon-sort"></i></span>
+                            </th>
+                            <th class="text-left">
+                                <span>Preferred</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="height: 52px"
+                            ng-style="ubid.preferred ? {'background-color': '#5cb85c33'} : {}">
+                            <td>
+                                <input type="text" ng-model="ubid.ubid" />
+                            </td>
+                            <td>
+                                <div class="checkbox">
+                                    <button class="btn" ng-class="{'btn-primary': ubid.preferred, 'btn-default': !ubid.preferred}"
+                                        type="button" ng-click="toggle_preferred()">
+                                        Preferred
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+    <button type="button" class="btn btn-primary" ng-click="upsert_ubid()" ng-disabled="!ubid.ubid">
+        <span ng-show="!update">
+            Create
+        </span>
+        <span ng-show="update">
+            Save
+        </span>
+    </button>
 </div>

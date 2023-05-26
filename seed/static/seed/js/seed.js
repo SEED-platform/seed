@@ -704,7 +704,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/ubids',
         templateUrl: static_url + 'seed/partials/inventory_detail_ubid_admin.html',
         controller: 'inventory_detail_ubid_admin_controller',
-        resolve: {}
+        resolve: {
+        }
 
       })
       .state({

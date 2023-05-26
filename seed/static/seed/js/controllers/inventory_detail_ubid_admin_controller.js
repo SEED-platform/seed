@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.inventory_detail_ubid_admin', [])
         'simple_modal_service',
         '$uibModal',
         'urls',
-
+        'inventory_service',
         function (
             $scope,
             $state,
@@ -18,9 +18,19 @@ angular.module('BE.seed.controller.inventory_detail_ubid_admin', [])
             simple_modal_service,
             $uibModal,
             urls,
+            inventory_service,
         ) {
+            let inventory_payload;
+            let state_id = 0;
             // $scope.property_view_id is passed from modal. Will probably have to set it on the inv detail page
             const view_id = $scope.property_view_id || $scope.taxlot_view_id
+            const inventory_type = $scope.property_view_id ? 'property' : 'taxlot'
+            if ($scope.property_view_id) promise = inventory_service.get_property(view_id);
+            else if ($scope.taxlot_view_id) promise = inventory_service.get_taxlot(view_id);
+            promise.then(result => {
+                inventory_payload = result
+                state_id = inventory_payload.state.id
+            })
             let refresh = false
 
             const refresh_ubids = () => {
@@ -36,16 +46,29 @@ angular.module('BE.seed.controller.inventory_detail_ubid_admin', [])
                 });
             }
 
-            $scope.upsert_ubid = (ubid = false) => {
-                console.log('upsert_ubid')
-                $uibModal.open({
+            $scope.edit_or_create = (ubid=false) => {
+                let ubid_editor_modal = $uibModal.open({
                     backdrop: 'static',
                     templateUrl: urls.static_url + 'seed/partials/ubid_editor_modal.html',
                     controller: 'ubid_editor_modal_controller',
                     resolve: {
-          
+                        ubid: function () {
+                            return ubid
+                        },
+                        state_id: function() {
+                            return state_id
+                        },
+                        view_id: function() {
+                            return view_id
+                        },
+                        inventory_type: function() {
+                            return inventory_type
+                        }   
                     }
                 });
+                ubid_editor_modal.result.then((result) => {
+                    result.refresh && refresh_ubids()
+                })
             }
 
             $scope.delete_ubid = (ubid, ubid_id) => {
