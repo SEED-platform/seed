@@ -196,8 +196,6 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         uploaded_filepath = filepath
-        print(f" UPLOADED FILEPATH: {uploaded_filepath}")
-
         url = reverse_lazy('api:v3:organization-access_levels-start-save-data', args=[self.org.id])
         raw_result = self.client.post(
             url,
