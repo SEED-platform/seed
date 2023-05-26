@@ -577,12 +577,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
           // Do nothing
         });
       };
-
-      $scope.open_ubid_upsert_modal = function () {
+      $scope.open_ubid_upsert_modal = function (selectedViewId) {
         $uibModal.open({
           backdrop: 'static',
-          templateUrl: urls.static_url + 'seed/partials/ubid_upsert_modal.html',
-          controller: 'ubid_upsert_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
           resolve: {
             property_view_id: function () {
               return $scope.inventory_type === 'properties' ? $scope.inventory.view_id : null;

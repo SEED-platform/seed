@@ -1283,24 +1283,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           }
         });
       };
-      // $scope.open_ubid_upsert_modal = function (selectedViewId) {
-      //   $uibModal.open({
-      //     backdrop: 'static',
-      //     templateUrl: urls.static_url + 'seed/partials/ubid_upsert_modal.html',
-      //     controller: 'ubid_upsert_modal_controller',
-      //     resolve: {
-      //       property_view_id: function () {
-      //         return $scope.inventory_type === 'properties' ? selectedViewId[0] : null;
-      //       },
-      //       taxlot_view_id: function () {
-      //         return $scope.inventory_type === 'taxlots' ? selectedViewId[0] : null;
-      //       },
-      //       inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
-      //         return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
-      //       }],
-      //     }
-      //   });
-      // };
 
       $scope.open_geocode_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
