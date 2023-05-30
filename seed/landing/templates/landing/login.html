@@ -15,6 +15,10 @@
                     <table class="signup_table">
                         {{form.as_table}}
                     </table>
+                    <div class="terms-link">
+                        <p>{% trans "By clicking the Log In button you accept the NREL Data Terms." %} <a onclick="toggle()">{% trans "View/Hide Terms" %}</a></p>
+                    </div>
+                    {% include "landing/_terms.html" %}
                     <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}"><br>
                     <div>
                         {% if context.self_registration %}
@@ -39,5 +43,15 @@ $(function () {
   $('#id_email').focus();
   BEHome.actions.check_unsupported_browser();
 });
+</script>
+<script>
+function toggle() {
+  var x = document.getElementById("terms-and-conditions");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
 </script>
 {% endblock %}
