@@ -397,18 +397,23 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
         # compare ubids via jaccard index instead of a direct match
-        ubid = matching_criteria.pop('ubid')
+        if matching_criteria.get('ubid'):
+            ubid = matching_criteria.pop('ubid')
+            check_jaccard = True 
+        else: 
+            check_jaccard = False
 
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria,
         )
 
-        existing_state_matches = [
-            state
-            for state in existing_state_matches
-            if get_jaccard_index(ubid, state.ubid) > org.ubid_threshold
-        ]
+        if check_jaccard:
+            existing_state_matches = [
+                state
+                for state in existing_state_matches
+                if get_jaccard_index(ubid, state.ubid) > org.ubid_threshold
+            ]
 
         count = len(existing_state_matches)
 
