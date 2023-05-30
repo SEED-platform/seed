@@ -537,35 +537,22 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'reports',
-        url: '/{inventory_type:properties|taxlots}/reports',
+        url: '/insights/reports',
         templateUrl: static_url + 'seed/partials/inventory_reports.html',
         controller: 'inventory_reports_controller',
         resolve: {
           columns: ['$stateParams', 'user_service', 'inventory_service', 'naturalSort', function ($stateParams, user_service, inventory_service, naturalSort) {
             var organization_id = user_service.get_organization().id;
-            if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
+            return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
+              columns = _.reject(columns, 'related');
+              columns = _.map(columns, function (col) {
+                return _.omit(col, ['pinnedLeft', 'related']);
               });
-            } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
+              columns.sort(function (a, b) {
+                return naturalSort(a.displayName, b.displayName);
               });
-            }
+              return columns;
+            });
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

@@ -424,8 +424,9 @@
                                 <div class="col-sm-2">
                                     <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}
                                     </button>
-                                    <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
-                                    </button>
+                                    <!-- leaving it here in case we want to move this functionality to the background in the future -->
+                                    <!-- <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
+                                    </button> -->
                                 </div>
                                 <div class="col-sm-11">
                                     <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">

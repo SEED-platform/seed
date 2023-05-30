@@ -1427,7 +1427,8 @@ class Column(models.Model):
         inventory_type: Optional[Literal['property', 'taxlot']] = None,
         only_used: bool = False,
         include_related: bool = True,
-        exclude_derived: bool = False
+        exclude_derived: bool = False,
+        column_ids: Optional[list[int]] = None
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
@@ -1438,14 +1439,20 @@ class Column(models.Model):
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
         :param include_related: Include related columns (e.g., if inventory type is Property, include Taxlot columns)
+        :param exclude_derived: Exclude derived columns.
+        :param column_ids: List of Column ids.
         """
         from seed.serializers.columns import ColumnSerializer
 
         # Grab all the columns out of the database for the organization that are assigned to a
         # table_name. Order extra_data last so that extra data duplicate-checking will happen after
         # processing standard columns
-        column_query = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None)
+        if column_ids:
+            column_query = Column.objects.filter(organization_id=org_id, id__in=column_ids).exclude(
+                table_name='').exclude(table_name=None)
+        else:
+            column_query = Column.objects.filter(organization_id=org_id).exclude(
+                table_name='').exclude(table_name=None)
         if exclude_derived:
             column_query = column_query.exclude(derived_column__isnull=False)
         columns_db = column_query.order_by('is_extra_data', 'column_name')
