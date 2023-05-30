@@ -94,6 +94,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_detail_timeline',
+  'BE.seed.controller.inventory_detail_ubid',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_list_legacy',
   'BE.seed.controller.inventory_map',
@@ -101,7 +102,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.inventory_summary',
   'BE.seed.controller.inventory_plots',
-  'BE.seed.controller.inventory_detail_ubid_admin',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -124,11 +124,12 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
+  'BE.seed.controller.ubid_admin',
+  'BE.seed.controller.ubid_admin_modal',
+  'BE.seed.controller.ubid_editor_modal',
   'BE.seed.controller.ubid_jaccard_index_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.ubid_upsert_modal',
-  'BE.seed.controller.ubid_editor_modal',
-  'BE.seed.controller.ubid_admin_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal',
   'BE.seed.controller.create_column_modal'
@@ -700,11 +701,28 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_detail_ubid_admin',
+        name: 'inventory_detail_ubid',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/ubids',
-        templateUrl: static_url + 'seed/partials/inventory_detail_ubid_admin.html',
-        controller: 'inventory_detail_ubid_admin_controller',
+        templateUrl: static_url + 'seed/partials/inventory_detail_ubid.html',
+        controller: 'inventory_detail_ubid_controller',
         resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise;
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', { inventory_type: $stateParams.inventory_type });
+              }
+            });
+            return promise;
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }],
         }
 
       })

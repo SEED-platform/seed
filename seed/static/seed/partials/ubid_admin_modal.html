@@ -5,9 +5,9 @@
         <span>UBIDs</span>
     </h4>
 </div>
-<div>
-    <div ng-controller="inventory_detail_ubid_admin_controller">
-        <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_ubid_admin.html'"></div>
+<div class="modal-body">
+    <div ng-controller="ubid_admin_controller"
+        ng-include="::urls.static_url + 'seed/partials/ubid_admin.html'">
     </div>
 </div>
 <div class="modal-footer">

@@ -11,7 +11,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
         'ubid',
         'state_id',
         'view_id',
-        'inventory_type',
+        'inventory_key',
         'ubid_service',
         function (
             $scope,
@@ -21,14 +21,14 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
             ubid,
             state_id,
             view_id,
-            inventory_type,
+            inventory_key,
             ubid_service,
         ) {
             $scope.ubid = ubid;
             $scope.state_id = state_id;
             let refresh = false;
 
-            ubid_service.get_ubid_models_by_state(view_id, inventory_type).then(results => {
+            ubid_service.get_ubid_models_by_state(view_id, inventory_key).then(results => {
                 $scope.ubids = results.data
             })
 
@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                     ubid: '',
                     preferred: false,
                 };
-                $scope.ubid[inventory_type] = state_id;
+                $scope.ubid[inventory_key] = state_id;
                 $scope.update = false;
             } else {
                 $scope.update = true;
@@ -49,11 +49,12 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
 
             $scope.upsert_ubid = () => {
                 refresh = true
+
                 $scope.ubid.id ? update_ubid() : create_ubid();
             }
             
             const create_ubid = () => {
-                ubid_service.create_ubid(inventory_type, state_id, $scope.ubid).then((result) => {
+                ubid_service.create_ubid(inventory_key, state_id, $scope.ubid).then(() => {
                     $scope.close()
                 });
             }

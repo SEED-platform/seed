@@ -25,9 +25,14 @@ angular.module('BE.seed.controller.ubid_admin_modal', [])
             $scope.property_view_id = property_view_id;
             $scope.taxlot_view_id = taxlot_view_id;
             $scope.inventory_type = property_view_id ? 'property' : 'taxlot';
+            let reload = false
+            $scope.$on('callReload', () => {
+                console.log('reload = ', true)
+                reload = true
+            })
 
             $scope.close = function () {
-                $state.reload()
+                reload && $state.reload()
                 $uibModalInstance.close({
 
                 });
