@@ -42,17 +42,12 @@ angular.module('BE.seed.controller.ubid_admin', [])
                             return a.preferred ? -1 : 1
                         });
                         console.log($scope.ubids)
-                        geocodeUbid()
                     } else {
                         $scope.message = results.message;
                     }
                 });
             }
 
-            const geocodeUbid = () => {
-                let geocoder = new google.maps.Geocoder()
-                console.log('geocode')
-            }
 
             const callReload = () => {
                 console.log('calling reload')
