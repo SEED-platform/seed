@@ -20,7 +20,6 @@ from collections import namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
-import logging
 
 from _csv import Error
 from celery import chain as celery_chain

@@ -7,7 +7,6 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from __future__ import absolute_import
 
 import collections
-import logging
 
 from celery.utils.log import get_task_logger
 

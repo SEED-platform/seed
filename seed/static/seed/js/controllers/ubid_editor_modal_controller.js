@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
 
                 $scope.ubid.id ? update_ubid() : create_ubid();
             }
-            
+
             const create_ubid = () => {
                 ubid_service.create_ubid(inventory_key, state_id, $scope.ubid).then(() => {
                     $scope.close()
@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                 $q.all(promises).then(() => {
                     $scope.close()
                 });
-                
+
             }
 
 

@@ -166,7 +166,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         Submit a request to compare UBIDs using the Jaccard Index for 2 ubids.
         """
         body = dict(request.data)
-        org_id = self.get_organization(request)
+        self.get_organization(request)
 
         ubid1 = body.get('ubid1')
         ubid2 = body.get('ubid2')
@@ -269,15 +269,15 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         ubid = UbidModel.objects.get(
             Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
         )
-        state = ubid.property or ubid.taxlot 
-        
+        state = ubid.property or ubid.taxlot
+
         # if the incoming ubid is not preferred and is the current ubid, clear state.ubid
         if request.data.get('ubid') == state.ubid and not request.data.get('preferred'):
-            state.ubid = None 
+            state.ubid = None
             state.save()
         # if the incoming ubid is preferred and different, set state.ubid
         elif request.data.get('ubid') != state.ubid and request.data.get('preferred'):
-            state.ubid = ubid.ubid 
+            state.ubid = ubid.ubid
             state.save()
 
         valid_fields = [field.name for field in UbidModel._meta.fields]

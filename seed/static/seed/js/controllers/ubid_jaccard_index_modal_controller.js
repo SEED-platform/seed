@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', [])
 
             $scope.accept_edits = () => {
                 $scope.missing_ubid = !$scope.ubid1 || !$scope.ubid2
-                $scope.editing = false; 
+                $scope.editing = false;
                 $scope.ubid_jaccard_state = 'verify'
             }
 

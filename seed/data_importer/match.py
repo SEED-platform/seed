@@ -7,13 +7,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import datetime as dt
 import math
 from functools import reduce
-import logging 
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
-from django.db.models import Subquery, F
+from django.db.models import Subquery
 
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
@@ -399,15 +398,15 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         matching_criteria = matching_filter_criteria(state, column_names)
         # compare ubids via jaccard index instead of a direct match
         ubid = matching_criteria.pop('ubid')
-            
+
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria,
         )
 
         existing_state_matches = [
-            state 
-            for state in existing_state_matches 
+            state
+            for state in existing_state_matches
             if get_jaccard_index(ubid, state.ubid) > org.ubid_threshold
         ]
 

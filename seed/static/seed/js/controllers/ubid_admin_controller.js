@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.ubid_admin', [])
             $scope.item_state = $scope.inventory_payload.state;
             const state_id = $scope.inventory_payload.state.id;
 
-            // Allows this controller be reused by the inventory detail and inventory list 
+            // Allows this controller be reused by the inventory detail and inventory list
             // Inventory Detail
             if ('view_id' in $stateParams) {
                 view_id = $stateParams.view_id

@@ -4,12 +4,12 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from seed.models import PropertyState, TaxLotState
-import logging
 
 
 class UbidModel(models.Model):

@@ -112,7 +112,7 @@ def validate_ubid(ubid):
     """
     if not ubid:
         return False
-    
+
     parts = ubid.split('-')
     sql = """ SELECT public.pluscode_isvalid(%s) """
 
@@ -138,18 +138,19 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
     for old_state in old_states:
         for old_ubid in old_state.ubidmodel_set.all():
             if old_ubid.ubid in new_ubids.values_list('ubid', flat=True):
-                continue 
-            
+                continue
+
             ubid_details = {
                 'ubid': old_ubid.ubid,
                 state_type: new_state,
                 'preferred': old_ubid.ubid == preferred_ubid
             }
             new_state.ubidmodel_set.create(**ubid_details)
-    
+
     new_state.save()
-    
+
     return new_state
+
 
 def find_preferred(old_states, new_state):
     # The preferred ubid will be the first prefered ubid founnd on a list of states.
@@ -158,7 +159,7 @@ def find_preferred(old_states, new_state):
     ordered_states.reverse()
     ordered_states.insert(0, new_state)
 
-    preferred_ubid = None 
+    preferred_ubid = None
     for state in ordered_states:
         ubid = state.ubidmodel_set.filter(preferred=True).first()
         if ubid:
