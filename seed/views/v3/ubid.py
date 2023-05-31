@@ -21,7 +21,7 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
-from seed.utils.ubid import decode_unique_ids, get_jaccard_index
+from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 
 
 class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
@@ -173,12 +173,37 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
 
         if ubid1 and ubid2:
             jaccard_index = get_jaccard_index(ubid1, ubid2)
-
             return JsonResponse({'status': 'success', 'data': jaccard_index})
-
         else:
             return JsonResponse({'status': 'failed', 'message': 'exactly 2 ubids are required'})
+    
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['POST'])
+    def validate_ubid(self, request):
+        """
+        Determines validity of a UBID
+        """
+        ubid = dict(request.data).get('ubid')
 
+        valid = validate_ubid(ubid)
+        if valid:
+            return JsonResponse({
+                'status': 'success',
+                'data': {
+                    'valid': True,
+                    'ubid': ubid
+                } 
+            })
+        else: 
+            return JsonResponse({
+                'status': 'failed', 
+                'data': {
+                    'valid': False, 
+                    'ubid': ubid
+                }
+            })
     # override endpoint to set response to json, not OrderedDict
 
     @swagger_auto_schema_org_query_param
