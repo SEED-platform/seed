@@ -1,0 +1,27 @@
+<div class="modal-header">
+    <h4> {$:: 'Add Level Instance to the Organizational Structure' | translate $} </h4>
+
+    <label>Select Level</label>
+    <select
+        class="form-control"
+        id="selected_level_index"
+        ng-model="selected_level_index"
+        ng-change="change_selected_level_index()"
+        ng-options="i as level_name for (i, level_name) in level_names">
+    </select>
+
+    <label>Select Parent</label>
+    <select
+        class="form-control"
+        id="potental_parents"
+        ng-model="parent"
+        ng-options="potental_parent as potental_parent.name for potental_parent in potental_parents">
+    </select>
+
+    <label>Name</label>
+    <input style="margin: 10px 0px;" type="text" class="form-control" ng-model="new_level_instance_name">
+
+    <button  style="width: 5rem;" type="button" class="btn btn-primary" ng-click="create_new_level_instance()">
+        Save
+    </button>
+</div>

@@ -11,6 +11,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     var urls = generated_urls;
 
     var organization;
+    var access_level_instance;
     var user_id;
 
     /**
@@ -28,6 +29,16 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       };
     };
 
+    user_factory.get_access_level_instance = function () {
+      // yes this is a global, but otherwise we'll have to use a promise in
+      // front of every request that needs this. window.config.initial_org_id is
+      // set in base.html via the seed.views.main home view
+      return access_level_instance || {
+        "id": window.BE.access_level_instance_id,
+        "name": window.BE.access_level_instance_name,
+      };
+    };
+
     /**
      * sets the current organization
      * @param {obj} org
@@ -39,6 +50,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         return $http.put('/api/v3/users/' + this_user_id + '/default_organization/', {}, {
           params: { organization_id: org.id }
         }).then(function (response) {
+          access_level_instance = response.data.user.access_level_instance;
           return response.data;
         });
       });
@@ -56,7 +68,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         last_name: user.last_name,
         email: user.email,
         org_name: user.org_name,
-        role: user.role
+        role: user.role,
+        access_level_instance_id: user.access_level_instance_id,
       };
 
       const params = {};

@@ -172,6 +172,7 @@ def _validate_permissions(perm_name, request, requires_org):
 
     # Skip perms checks if settings allow super_users to bypass.
     if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+        request.access_level_instance_id = org.root.id
         return
 
     try:
@@ -180,24 +181,24 @@ def _validate_permissions(perm_name, request, requires_org):
         )
     except OrganizationUser.DoesNotExist:
         return _make_resp('user_dne')
+    else:
+        request.access_level_instance_id = org_user.access_level_instance.id
 
     if not PERMS.get(perm_name, lambda x: False)(org_user):
         return _make_resp('perm_denied')
 
 
-def has_perm_class(perm_name: str, requires_org: bool = True):
+def has_perm_class(perm_name):
     """Proceed if user from request has ``perm_name``."""
-
     def decorator(fn):
-        params = list(signature(fn).parameters)
-        if params and params[0] == 'self':
+        if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
+                return _validate_permissions(perm_name, request) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
+                return _validate_permissions(perm_name, request) or fn(request, *args, **kwargs)
 
         return _wrapped
 

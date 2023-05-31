@@ -55,7 +55,9 @@ def _get_default_org(user):
         ou = user.organizationuser_set.filter(organization=org).first()
         # parent org owner has no role (None) yet has access to the sub-org
         org_user_role = _get_js_role(ou.role_level) if ou else ""
-        return org_id, org_name, org_user_role
+        access_level_instance_name = ou.access_level_instance.name
+        access_level_instance_id = ou.access_level_instance.id
+        return org_id, org_name, org_user_role, access_level_instance_id, access_level_instance_name
     else:
         return "", "", ""
 
@@ -69,7 +71,7 @@ def home(request):
         * **username**: the request user's username (first and last name)
     """
     username = request.user.first_name + " " + request.user.last_name
-    initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
+    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_id, access_level_instance_name = _get_default_org(
         request.user
     )
     debug = settings.DEBUG

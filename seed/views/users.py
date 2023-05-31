@@ -206,7 +206,7 @@ class UserViewSet(viewsets.ViewSet):
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
         if not org.is_member(user):
-            org.add_member(user)
+            org.add_member(user, access_level_instance=org.root)
 
         if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'

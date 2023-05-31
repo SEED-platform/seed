@@ -22,6 +22,7 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -196,20 +197,27 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         last_name = body['last_name']
         email = body['email']
         username = body['email']
+        access_level_instance_id = body.get("access_level_instance_id")
         user, created = User.objects.get_or_create(username=username.lower())
 
         if org_id:
             org = Organization.objects.get(pk=org_id)
             org_created = False
+            if access_level_instance_id is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'if using an existing org, you must provide a `access_level_instance_id`'
+                }, status=status._BAD_REQUEST)
         else:
             org, _, _ = create_organization(user, org_name)
+            access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
             org_created = True
 
         # Add the user to the org.  If this is the org's first user,
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
         if not org.is_member(user):
-            org.add_member(user)
+            org.add_member(user, access_level_instance_id)
 
         if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'
@@ -223,7 +231,8 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
-                user_id=user.pk
+                user_id=user.pk,
+                access_level_instance_id=access_level_instance_id,
             ).update(role_level=_get_role_from_js(role))
 
         if created:
@@ -630,7 +639,18 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return content
         user.default_organization_id = self.get_organization(request)
         user.save()
-        return {'status': 'success'}
+
+        ou = OrganizationUser.objects.get(user=user, organization_id=user.default_organization_id)
+        return {
+            'status': 'success',
+            "user": {
+                "id": ou.id,
+                "access_level_instance": {
+                    "id": ou.access_level_instance.id,
+                    "name": ou.access_level_instance.name,
+                }
+            }
+        }
 
     @has_perm_class('requires_superuser', False)
     @ajax_request_class

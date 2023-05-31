@@ -272,7 +272,7 @@ class AccountsViewTests(TestCase):
         """test removing a user"""
         # normal case
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, u.id]),
@@ -300,7 +300,7 @@ class AccountsViewTests(TestCase):
     def test_cannot_leave_org_with_no_owner(self):
         """test removing a user"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_MEMBER)
+        self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
         self.assertEqual(self.org.users.count(), 2)
 
         resp = self.client.delete(
@@ -316,7 +316,7 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_user_DNE(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, 9999]),
@@ -331,7 +331,7 @@ class AccountsViewTests(TestCase):
     def test_remove_user_from_org_org_DNE(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
+        self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[9999, u.id]),
@@ -355,7 +355,7 @@ class AccountsViewTests(TestCase):
 
     def test_update_role(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_VIEWER)
+        self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=u.id, organization_id=self.org.id)
@@ -383,7 +383,7 @@ class AccountsViewTests(TestCase):
 
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_OWNER)
+        self.org.add_member(u, role=ROLE_OWNER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)
@@ -411,7 +411,7 @@ class AccountsViewTests(TestCase):
 
     def test_cannot_update_role_if_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u, role=ROLE_MEMBER)
+        self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)

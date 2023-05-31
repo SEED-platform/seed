@@ -6,8 +6,12 @@
     </div>
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
-            <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-                <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
+            <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled" style="display: flex; align-items: center">
+                <div>
+                    <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $}</span>
+                    <span style="color:gray">Access Level:</span> {$ menu.user.acceess_level_instance_name $}</span>
+                </div>
+                <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs" ng-mousemove="track_mouse($event)">
                 <li ng-if="!menu.user.organizations.length" style="text-align: center;">
@@ -46,6 +50,7 @@
                 <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
                 <li><a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a></li>
                 <li><a ui-sref="organization_sub_orgs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a></li>
+                <li><a ui-sref="organization_access_level_tree({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Access Level Tree</a></li>
 
 
                 <!--<li>

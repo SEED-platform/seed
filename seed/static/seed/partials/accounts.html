@@ -43,6 +43,7 @@
                                 <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa fa-cogs"></i>Settings</a>
                                 <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-share-square-o"></i>{$:: 'Sharing' | translate $}</a>
                                 <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
+                                <a ui-sref="organization_access_level_tree(::{organization_id: org.id})"><i class="fa fa-users"></i>{$:: 'Access Level Tree' | translate $}</a>
                                 <i class="fa fa-cog"></i>
                             </td>
                         </tr>
