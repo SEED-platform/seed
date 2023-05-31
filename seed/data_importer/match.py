@@ -412,7 +412,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             existing_state_matches = [
                 state
                 for state in existing_state_matches
-                if get_jaccard_index(ubid, state.ubid) > org.ubid_threshold
+                if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
             ]
 
         count = len(existing_state_matches)
@@ -588,3 +588,11 @@ def save_state_match(state1, state2, priorities):
     merged_state.save()
 
     return merged_state
+
+def check_jaccard_match(ubid, state_ubid, ubid_threshold):
+    if ubid_threshold == 0:
+        return False 
+    # If ubid_threshold is None (NULL), set it to 1.0 for an exact match requirement
+    if not ubid_threshold: 
+        ubid_threshold = 1.0
+    return get_jaccard_index(ubid, state_ubid) >= ubid_threshold
