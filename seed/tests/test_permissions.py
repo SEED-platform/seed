@@ -145,13 +145,13 @@ class PermissionsFunctionsTests(TestCase):
         fake_org_2 = Organization.objects.create()
         fake_org_3 = Organization.objects.create()
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_1
+            user=fake_user, organization=fake_org_1, access_level_instance_id=fake_org_1.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_2
+            user=fake_user, organization=fake_org_2, access_level_instance_id=fake_org_2.id
         )
         OrganizationUser.objects.create(
-            user=fake_user, organization=fake_org_3
+            user=fake_user, organization=fake_org_3, access_level_instance_id=fake_org_3.id
         )
         # no default_organization and no parent org
         result = get_user_org(fake_user)

@@ -80,7 +80,7 @@ class TestScenarios(DeleteModelsTestCase):
 
         # create new property, state, and view
         new_property_state = self.property_state_factory.get_property_state()
-        new_property = Property.objects.create(organization_id=1)
+        new_property = Property.objects.create(organization_id=self.org.id)
         PropertyView.objects.create(cycle_id=1, state_id=new_property_state.id,
                                     property_id=new_property.id)
         new_scenario = Scenario.objects.create(property_state=new_property_state)

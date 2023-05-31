@@ -58,7 +58,8 @@ class TaxLot(models.Model):
 def set_default_access_level_instance(sender, instance, **kwargs):
     """If ALI not set, put this TaxLot   as the root."""
     if instance.access_level_instance_id is None:
-        instance.acces_level_instance_id = instance.org.root.pk
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
 
 
 class TaxLotState(models.Model):

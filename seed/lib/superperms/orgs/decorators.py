@@ -188,17 +188,18 @@ def _validate_permissions(perm_name, request, requires_org):
         return _make_resp('perm_denied')
 
 
-def has_perm_class(perm_name):
+def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
+
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return _validate_permissions(perm_name, request) or fn(self, request, *args, **kwargs)
+                return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return _validate_permissions(perm_name, request) or fn(request, *args, **kwargs)
+                return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
 
         return _wrapped
 

@@ -40,7 +40,7 @@ def assign_users_to_root_acces_level(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0024_salesforce_configurations'),
+        ('orgs', '0026_organizationuser_unique_user_for_organization'),
     ]
 
     operations = [

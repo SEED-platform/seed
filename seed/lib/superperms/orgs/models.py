@@ -269,6 +269,7 @@ class Organization(models.Model):
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
 
+    # TODO: add constraint tha that these must be unique
     access_level_names = models.JSONField(default=list)
 
     def save(self, *args, **kwargs):
@@ -289,7 +290,7 @@ class Organization(models.Model):
         """Return True if user object has a relation to this organization."""
         return user in self.users.all()
 
-    def add_member(self, user, role=ROLE_OWNER):
+    def add_member(self, user, access_level_instance_id, role=ROLE_OWNER):
         """Add a user to an organization. Returns a boolean if a new OrganizationUser record was created"""
         if OrganizationUser.objects.filter(user=user, organization=self).exists():
             return False
@@ -299,7 +300,7 @@ class Organization(models.Model):
             user.is_active = True
             user.save()
 
-        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role)
 
         return created
 

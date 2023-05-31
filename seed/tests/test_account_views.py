@@ -1044,6 +1044,10 @@ class AuthViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'success',
+                'user': {
+                    'id': self.user.pk,
+                    'access_level_instance': {'id': self.org.root.id, 'name': 'root'},
+                }
             })
         # refresh the user
         u = User.objects.get(pk=self.user.pk)
