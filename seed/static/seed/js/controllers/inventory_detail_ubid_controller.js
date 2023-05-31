@@ -8,16 +8,22 @@ angular.module('BE.seed.controller.inventory_detail_ubid', [])
         '$stateParams',
         'inventory_payload',
         'organization_payload',
+        'cycles',
+        'labels',
         function (
             $scope,
             $stateParams,
             inventory_payload,
             organization_payload,
+            cycles,
+            labels
         ) {
             $scope.item_state = inventory_payload.state;
             $scope.org = organization_payload.organization;
             $scope.inventory_payload = inventory_payload;
             $scope.inventory_type = $stateParams.inventory_type;
+            $scope.cycles = cycles;
+            $scope.labels = labels;
 
             // for nav
             $scope.inventory = { view_id: $stateParams.view_id };

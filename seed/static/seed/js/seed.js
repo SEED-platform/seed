@@ -91,6 +91,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes_modal',
+  'BE.seed.controller.inventory_detail_map',
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_detail_timeline',
@@ -709,6 +710,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
           }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
+              return _.filter(labels, function (label) {
+                return !_.isEmpty(label.is_applied);
+              });
+            });
+          }]
         }
 
       })
