@@ -26,7 +26,13 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       $scope.auth = auth_payload.auth;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.access_level_names = access_level_tree.access_level_names;
-      $scope.current_level = 1;
+
+      $scope.accordionsCollapsed = true;
+      $scope.collapseAccordions = (collapseAll) => {
+        $scope.accordionsCollapsed = collapseAll;
+        const action = collapseAll ? 'hide' : 'show';
+        $('.level-collapse').collapse(action);
+      };
 
       $scope.open_add_level_modal = function () {
         $uibModal.open({
