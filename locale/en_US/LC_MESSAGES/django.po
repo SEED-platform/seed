@@ -56,6 +56,9 @@ msgstr "A list of your imported headers."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "A preview of your concatenated data will appear in the box below."
 
+msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
+msgstr "Access Level Instances File has been uploaded"
+
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
 
@@ -64,6 +67,9 @@ msgstr "Add or remove labels from {num, plural, one{1 selected property} other{#
 
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}"
+
+msgid "AH_FILE_TYPES_SUPPORTED"
+msgstr "File types supported: .csv, .xls, and .xlsx."
 
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
@@ -330,6 +336,9 @@ msgstr "Building Filters"
 
 msgid "Buildings"
 msgstr "Buildings"
+
+msgid "By clicking the Log In button you accept the NREL Data Terms."
+msgstr "By clicking the Log In button you accept the NREL Data Terms."
 
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Error: New column name cannot match previous name."
@@ -1376,6 +1385,9 @@ msgstr "Ignored property duplicates within the import file"
 
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
+
+msgid "Import Access Level Instances"
+msgstr "Import Access Level Instances"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
@@ -3136,6 +3148,9 @@ msgstr "Update with BuildingSync"
 msgid "Updated"
 msgstr "Updated"
 
+msgid "Upload Access Level Instances"
+msgstr "Upload Access Level Instances"
+
 msgid "Upload Audit Template XML"
 msgstr "Upload Audit Template XML"
 
@@ -3232,6 +3247,9 @@ msgstr "View by Tax Lot"
 
 msgid "View my properties"
 msgstr "View my properties"
+
+msgid "View/Hide Terms"
+msgstr "View/Hide Terms"
 
 msgid "Viewer"
 msgstr "Viewer"

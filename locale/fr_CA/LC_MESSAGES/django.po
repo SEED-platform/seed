@@ -57,6 +57,9 @@ msgstr "Une liste de vos en-têtes importés."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
 
+msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
+msgstr "Le fichier d'instances de niveau d'accès a été téléchargé"
+
 msgid "ADD_FILES_TO"
 msgstr "Ajoutez des fichiers à {dataset_name}."
 
@@ -65,6 +68,9 @@ msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 propriété 
 
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt sélectionné} other{# lots d'impôt sélectionnés}}"
+
+msgid "AH_FILE_TYPES_SUPPORTED"
+msgstr "Types de fichiers pris en charge: .csv, .xls et .xlsx."
 
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} ."
@@ -332,6 +338,9 @@ msgstr "Filtres de bâtiments"
 
 msgid "Buildings"
 msgstr "Bâtiments"
+
+msgid "By clicking the Log In button you accept the NREL Data Terms."
+msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
 
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Erreur: Le nom de la nouvelle colonne ne peut pas correspondre au nom précédent."
@@ -1387,6 +1396,9 @@ msgstr "Copies de propriété ignorées dans le fichier d'importation"
 
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
+
+msgid "Import Access Level Instances"
+msgstr "Importer des instances de niveau d'accès"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Importer les données de Portfolio Manager"
@@ -3160,6 +3172,9 @@ msgstr "Mettre à jour avec BuildingSync"
 msgid "Updated"
 msgstr "Mise à jour"
 
+msgid "Upload Access Level Instances"
+msgstr "Importer des instances de niveau d'accès"
+
 msgid "Upload Audit Template XML"
 msgstr "Téléchargement Audit Template XML"
 
@@ -3257,6 +3272,9 @@ msgstr "Examiner par lot d'impôt"
 
 msgid "View my properties"
 msgstr "Voir mes propriétés"
+
+msgid "View/Hide Terms"
+msgstr "Afficher/Masquer les termes"
 
 msgid "Viewer"
 msgstr "Spectateur"
