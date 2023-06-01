@@ -62,8 +62,8 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                         if (!result.data.valid) {
                             $scope.ubid_error = `"${result.data.ubid}" is not a valid UBID. Please Retry.`;
                             throw new Error('Invalid UBID')
-                        }       
-                 
+                        }
+
                         $scope.invalid = false;
                         return ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
                     })
@@ -101,7 +101,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                     })
                     .then(() => {
                         $scope.close()
-                    }) 
+                    })
                     .catch((error) => {
                         $scope.invalid = true
                     })
