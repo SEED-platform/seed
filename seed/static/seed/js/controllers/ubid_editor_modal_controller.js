@@ -59,13 +59,13 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
 
                 ubid_service.validate_ubid($scope.ubid.ubid)
                     .then((result) => {
-                        if (result.data.valid) {
-                            $scope.invalid = false;
-                            return ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
-                        } else {
+                        if (!result.data.valid) {
                             $scope.ubid_error = `"${result.data.ubid}" is not a valid UBID. Please Retry.`;
                             throw new Error('Invalid UBID')
-                        }
+                        }       
+                 
+                        $scope.invalid = false;
+                        return ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
                     })
                     .then(() => {
                         $scope.close()
@@ -79,22 +79,32 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                 if (check_existing()) {
                     return
                 }
+                ubid_service.validate_ubid($scope.ubid.ubid)
+                    .then((result) => {
+                        if (!result.data.valid) {
+                            $scope.ubid_error = `"${result.data.ubid}" is not a valid UBID. Please Retry.`;
+                            throw new Error('Invalid UBID')
+                        }
 
-                let ubids = [$scope.ubid]
-                if ($scope.ubid.preferred) {
-                    let preferred_ubids = $scope.ubids.filter(ubid => ubid.preferred && ubid.id != $scope.ubid.id);
-                    preferred_ubids.forEach(ubid => ubid.preferred = false);
-                    ubids = [...ubids, ...preferred_ubids];
-                };
+                        $scope.invalid = false
+                        let ubids = [$scope.ubid]
 
-                let promises = [];
-                ubids.forEach(ubid => {
-                    const promise = ubid_service.update_ubid(ubid)
-                    promises.push(promise)
-                });
-                $q.all(promises).then(() => {
-                    $scope.close()
-                });
+                        if ($scope.ubid.preferred) {
+                            let preferred_ubids = $scope.ubids.filter(ubid => ubid.preferred && ubid.id != $scope.ubid.id);
+                            preferred_ubids.forEach(ubid => ubid.preferred = false);
+                            ubids = [...ubids, ...preferred_ubids];
+                        };
+
+
+                        let promises = ubids.map(ubid => ubid_service.update_ubid(ubid));
+                        return Promise.all(promises)
+                    })
+                    .then(() => {
+                        $scope.close()
+                    }) 
+                    .catch((error) => {
+                        $scope.invalid = true
+                    })
 
             }
 
