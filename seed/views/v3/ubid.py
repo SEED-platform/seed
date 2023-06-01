@@ -204,7 +204,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                     'ubid': ubid
                 }
             })
-    # override endpoint to set response to json, not OrderedDict
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -220,8 +219,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK
         )
-
-    # overrode endpoint to set response to json, not OrderedDict
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -287,7 +284,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
 
-    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class

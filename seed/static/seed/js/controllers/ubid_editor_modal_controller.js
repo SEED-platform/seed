@@ -5,9 +5,7 @@
 angular.module('BE.seed.controller.ubid_editor_modal', [])
     .controller('ubid_editor_modal_controller', [
         '$scope',
-        '$state',
         '$uibModalInstance',
-        '$q',
         'ubid',
         'state_id',
         'view_id',
@@ -15,9 +13,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
         'ubid_service',
         function (
             $scope,
-            $state,
             $uibModalInstance,
-            $q,
             ubid,
             state_id,
             view_id,
@@ -94,7 +90,6 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
                             preferred_ubids.forEach(ubid => ubid.preferred = false);
                             ubids = [...ubids, ...preferred_ubids];
                         };
-
 
                         let promises = ubids.map(ubid => ubid_service.update_ubid(ubid));
                         return Promise.all(promises)
