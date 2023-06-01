@@ -2,8 +2,8 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.ubid_modal', [])
-  .controller('ubid_modal_controller', [
+angular.module('BE.seed.controller.ubid_decode_modal', [])
+  .controller('ubid_decode_modal_controller', [
     '$scope',
     '$uibModalInstance',
     'property_view_ids',
