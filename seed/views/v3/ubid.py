@@ -176,7 +176,7 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             return JsonResponse({'status': 'success', 'data': jaccard_index})
         else:
             return JsonResponse({'status': 'failed', 'message': 'exactly 2 ubids are required'})
-    
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -194,13 +194,13 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                 'data': {
                     'valid': True,
                     'ubid': ubid
-                } 
+                }
             })
-        else: 
+        else:
             return JsonResponse({
-                'status': 'failed', 
+                'status': 'failed',
                 'data': {
-                    'valid': False, 
+                    'valid': False,
                     'ubid': ubid
                 }
             })
@@ -281,7 +281,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             for ubid in ubids:
                 ubid.preferred = False
                 ubid.save()
-
 
         return JsonResponse({
             'status': 'success',

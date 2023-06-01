@@ -101,7 +101,7 @@ angular.module('BE.seed.controller.ubid_editor_modal', [])
             const check_existing = () => {
                 // If creating, check for matching ubids. If updating, exclude the current ubid (id)
                 const existing_ubid = $scope.ubids.find(ubid => ubid.ubid === $scope.ubid.ubid && ubid.id !== $scope.ubid.id);
-         
+
                 if (existing_ubid) {
                     $scope.invalid = true;
                     $scope.ubid_error = `"${$scope.ubid.ubid}" is an existing UBID. Please Retry`;
