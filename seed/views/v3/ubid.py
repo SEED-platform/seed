@@ -264,21 +264,24 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         if ubid_model.preferred:
             # find preferred ubids that are not self
             if ubid_model.property:
+                qs = PropertyState.objects.filter(id=ubid_model.property.id)
                 ubids = UbidModel.objects.filter(
                     ~Q(id=ubid_model.id),
                     property=ubid_model.property,
                     preferred=True
                 )
             else:
+                qs = TaxLotState.objects.filter(id=ubid_model.taxlot.id)
                 ubids = UbidModel.objects.filter(
                     ~Q(id=ubid_model.id),
                     taxlot=ubid_model.taxlot,
                     preferred=True
                 )
-
+            decode_unique_ids(qs)
             for ubid in ubids:
                 ubid.preferred = False
                 ubid.save()
+
 
         return JsonResponse({
             'status': 'success',
@@ -295,6 +298,10 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
         )
         state = ubid.property or ubid.taxlot
+
+        if ubid.preferred:
+            qs = state._meta.model.objects.filter(id=state.id)
+            decode_unique_ids(qs)
 
         # if the incoming ubid is not preferred and is the current ubid, clear state.ubid
         if request.data.get('ubid') == state.ubid and not request.data.get('preferred'):
