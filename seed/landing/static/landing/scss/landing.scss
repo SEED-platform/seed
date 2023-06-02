@@ -340,19 +340,6 @@ body {
             display: none;
           }
 
-          .errorlist {
-            text-indent: 0;
-            color: $red;
-            position: relative;
-
-            li {
-              position: absolute;
-              left: 200px;
-              top: 15px;
-              list-style: none;
-            }
-          }
-
           select {
             width: 98%;
             margin-top: 10px;
@@ -381,7 +368,7 @@ body {
         }
 
         .btn {
-          margin: 30px 4px 0 4px;
+          margin: 10px 4px 0 4px;
           display: inline-block;
           font-size: 16px;
         }
@@ -430,24 +417,14 @@ body {
       margin-top: 30px;
     }
   }
-
-  .login_form table.signup_table {
-    width: 40%;
-  }
 }
 
-.login.page
-  .page_section
-  .section_forms
-  .signup_form
-  table.signup_table
-  .errorlist {
-  margin: 0 0 8px 0;
+.page .errorlist {
+  color: $red;
   padding: 0;
 
   li {
-    left: 0;
-    position: relative;
+    list-style: none;
   }
 }
 
@@ -462,5 +439,30 @@ body {
     background-color: $white;
     padding: 10px;
     border: 1px solid $gray_lighter;
+  }
+}
+
+.terms-link {
+  padding-top: 10px;
+
+  a {
+    margin-left: 5px;
+  }
+}
+
+#terms-and-conditions {
+  background-color: rgba(255, 255, 255, 0.75);
+  border-radius: 8px;
+  display: none;
+  max-height: 250px;
+  margin: 0 auto;
+  max-width: 84.48%;
+  overflow-y: auto;
+  padding: 0 20px;
+  text-align: left;
+
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
   }
 }
