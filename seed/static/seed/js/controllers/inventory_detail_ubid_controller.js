@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail_ubid', [])
             $scope.inventory_type = $stateParams.inventory_type;
             $scope.cycles = cycles;
             $scope.labels = labels;
+            $scope.reload = false;
 
             // for nav
             $scope.inventory = { view_id: $stateParams.view_id };
@@ -40,6 +41,11 @@ angular.module('BE.seed.controller.inventory_detail_ubid', [])
                 }
                 $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
             };
+
+            $scope.$on('callReload', () => {
+                // pass to the map controller
+                $scope.reload = true;
+            })
         }
     ]
     )

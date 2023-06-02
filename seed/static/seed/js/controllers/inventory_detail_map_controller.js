@@ -511,7 +511,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 // Labels
                 // Reduce labels to only records found in the current cycle
                 $scope.selected_labels = [];
-                updateApplicableLabels();
 
                 var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
 
@@ -537,76 +536,18 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     });
                 };
 
-                function updateApplicableLabels() {
-                    var inventoryIds;
-                    if ($scope.inventory_type === 'properties') {
-                        inventoryIds = _.map($scope.data, 'property_view_id').sort();
-                    } else {
-                        inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
-                    }
-                    $scope.labels = _.filter(labels, function (label) {
-                        return _.some(label.is_applied, function (id) {
-                            return _.includes(inventoryIds, id);
-                        });
-                    });
-                    // Ensure that no previously-applied labels remain
-                    var new_labels = _.filter($scope.selected_labels, function (label) {
-                        return _.includes($scope.labels, label.id);
-                    });
-                    if ($scope.selected_labels.length !== new_labels.length) {
-                        $scope.selected_labels = new_labels;
-                    }
-                }
+                var canvasElement = $scope.map.getViewport().querySelector('.ol-unselectable');
 
-                var filterUsingLabels = function () {
-                    if (_.isEmpty($scope.selected_labels)) {
-                        return rerenderPoints($scope.geocoded_data);
-                    }
+                canvasElement.style.width = '50%';
+                canvasElement.style.margin = 'auto';
+                canvasElement.style.border = '2px solid gray';
 
-                    // Only submit the `id` of the label to the API.
-                    var ids;
-                    if ($scope.labelLogic === 'and') {
-                        ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-                    } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-                        ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
-                    }
+                $scope.$watch('reload', () => {
+                    console.log('watch reload')
+                    $scope.reload &&$state.reload()
+                })
+            
 
-                    inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-
-                    if (_.isEmpty(ids)) {
-                        rerenderPoints(ids);
-                    } else {
-                        var filtered_records = _.filter($scope.geocoded_data, function (record) {
-                            return _.includes(ids, record.id);
-                        });
-                        rerenderPoints(filtered_records);
-                    }
-                };
-
-                $scope.labelLogic = localStorage.getItem('labelLogic');
-                $scope.labelLogic = _.includes(['and', 'or', 'exclude'], $scope.labelLogic) ? $scope.labelLogic : 'and';
-                $scope.labelLogicUpdated = function (labelLogic) {
-                    $scope.labelLogic = labelLogic;
-                    localStorage.setItem('labelLogic', $scope.labelLogic);
-                    filterUsingLabels();
-                };
-
-                $scope.$watchCollection('selected_labels', filterUsingLabels);
-
-                var refreshUsingCycle = function () {
-                    if ($scope.inventory_type === 'properties') {
-                        $scope.data = inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined).results;
-                        $state.reload();
-                    } else if ($scope.inventory_type === 'taxlots') {
-                        $scope.data = inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined).results;
-                        $state.reload();
-                    }
-                };
-
-                $scope.update_cycle = function (cycle) {
-                    inventory_service.save_last_cycle(cycle.id);
-                    $scope.cycle.selected_cycle = cycle;
-                    refreshUsingCycle();
-                };
+                
             });
         }]);
