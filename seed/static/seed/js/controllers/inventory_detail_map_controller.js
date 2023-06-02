@@ -536,11 +536,12 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     });
                 };
 
-                var canvasElement = $scope.map.getViewport().querySelector('.ol-unselectable');
+                let element = $scope.map.getViewport().querySelector('.ol-unselectable');
+                element.style.border = '1px solid gray';
+                element.style.borderRadius = '10px'
 
-                canvasElement.style.width = '50%';
-                canvasElement.style.margin = 'auto';
-                canvasElement.style.border = '2px solid gray';
+                element = $scope.map.getViewport().querySelector('.ol-overlaycontainer-stopevent')
+                element.style.display = 'none';
 
                 $scope.$watch('reload', () => {
                     console.log('watch reload')
