@@ -25,6 +25,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(user, "my org")
+        self.org.save()
 
         self.client.login(**user_details)
 
