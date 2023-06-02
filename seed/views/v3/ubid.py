@@ -294,10 +294,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         )
         state = ubid.property or ubid.taxlot
 
-        if ubid.preferred:
-            qs = state._meta.model.objects.filter(id=state.id)
-            decode_unique_ids(qs)
-
         # if the incoming ubid is not preferred and is the current ubid, clear state.ubid
         if request.data.get('ubid') == state.ubid and not request.data.get('preferred'):
             state.ubid = None
@@ -318,6 +314,10 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         ubid.save()
+        if ubid.preferred:
+            qs = state._meta.model.objects.filter(id=state.id)
+            decode_unique_ids(qs)
+
         return JsonResponse({
             'status': 'success',
             'data': UbidModelSerializer(ubid).data,
