@@ -1347,7 +1347,7 @@ def geocode_and_match_buildings_task(file_pk):
                 property_state_ids_by_cycle[cycle_object.id] = []
 
             # Add the property_state.id value to the array for the cycle_object key.
-            property_state_ids_by_cycle[cycle_object.id].append(property_state)
+            property_state_ids_by_cycle[cycle_object.id].append(property_state.id)
 
         # get the properties and chunk them into tasks
         celery_chain(
@@ -1667,7 +1667,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
             'import_file_records': len(ids)
         }
     else:
-        id_chunks = [[obj.id for obj in chunk] for chunk in batch(ids, 100)]
+        id_chunks = [chunk for chunk in batch(ids, 100)]
 
         progress_data.total = (
             1  # geocoding

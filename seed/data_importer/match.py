@@ -78,11 +78,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
     else:
         results_list = []
-        for cycle_id in property_state_ids_by_cycle.keys():
+        for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
             # Get lists and counts of all the properties and tax lots based on the import file.
-            property_state_ids = []
-            for property_state in property_state_ids_by_cycle[cycle_id]:
-                property_state_ids.append(property_state.id)
             incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids)
             incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
 
