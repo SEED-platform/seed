@@ -368,7 +368,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                         $scope.map.setView(empty_view);
                     } else {
                         var extent = bounding_box_source.getExtent();
-    
+
                         var view_options = Object.assign({
                             size: $scope.map.getSize(),
                             padding: [1, 1, 1, 1],
@@ -393,8 +393,8 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     console.log('watch reload')
                     $scope.reload &&$state.reload()
                 })
-            
 
-                
+
+
             });
         }]);
