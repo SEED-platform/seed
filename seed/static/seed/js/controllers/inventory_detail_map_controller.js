@@ -133,6 +133,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
 
                 // Define buildings source - the basis of layers
                 var buildingPoint = function (building) {
+                    console.log('buildingPoint')
                     var format = new ol.format.WKT();
 
                     var feature = format.readFeature(building.long_lat, {
@@ -144,9 +145,24 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     return feature;
                 };
 
+                var buildingBoundingBox = function (building) {
+                    console.log('buildingBoundingBox')
+                    var format = new ol.format.WKT();
+
+                    var feature = format.readFeature(building.bounding_box, {
+                        dataProjection: 'EPSG:4326',
+                        featureProjection: 'EPSG:3857'
+                    });
+
+                    feature.setProperties(building);
+                    return feature;
+                }
+
                 var buildingSources = function (records) {
+                    console.log('buildingSources')
                     if (_.isUndefined(records)) records = $scope.geocoded_data;
-                    var features = _.map(records, buildingPoint);
+                    var features = _.map(records, buildingBoundingBox);
+                    // var features = _.map(records, buildingPoint);
 
                     return new ol.source.Vector({ features: features });
                 };
@@ -258,6 +274,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 };
 
                 var clusterSource = function (records) {
+                    console.log('clusterSource')
                     if (_.isUndefined(records)) records = $scope.geocoded_data;
                     return new ol.source.Cluster({
                         source: buildingSources(records),
@@ -446,12 +463,14 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 });
 
                 var zoomOnCluster = function (points) {
+                    console.log('zoomOnCluster')
                     var source = new ol.source.Vector({ features: points });
                     zoomCenter(source, { duration: 750 });
                 };
 
                 // Zoom and center based on provided points (none, all, or a subset)
                 var zoomCenter = function (points_source, extra_view_options) {
+                    console.log('zoomCenter')
                     if (_.isUndefined(extra_view_options)) extra_view_options = {};
                     if (points_source.isEmpty()) {
                         // Default view with no points is the middle of US
@@ -461,29 +480,19 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                         });
                         $scope.map.setView(empty_view);
                     } else {
-                        // var extent = points_source.getExtent();
-                        // why is extent not in lat long coordinates?
-                        // this worked. 
-                        // extent[0] -= 50
-                        // extent[1] -= 50
-                        // extent[2] += 50
-                        // extent[3] += 50
-                        // let extent = []
-                        var format = new ol.format.WKT();
-                        var wktString = $scope.data[0].bounding_box
-                        // var geometry = format.readGeometry(wktString)
-                        var feature = format.readFeature(wktString, {
-                            dataProjection: 'EPSG:4326',
-                            featureProjection: 'EPSG:3857'
-                        });
+                        var extent = points_source.getExtent();
+                        // var feature = format.readFeature(wktString, {
+                        //     dataProjection: 'EPSG:4326',
+                        //     featureProjection: 'EPSG:3857'
+                        // });
 
-                        var extent = feature.getExtent()
+                        // var extent = feature.getExtent()
                         // this extent is in lat long coords
                         console.log('extent', extent)
 
                         var view_options = Object.assign({
                             size: $scope.map.getSize(),
-                            padding: [10, 10, 10, 10],
+                            padding: [1, 1, 1, 1],
                         }, extra_view_options);
                         $scope.map.getView().fit(extent, view_options);
                     }
@@ -491,6 +500,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 };
 
                 // Set initial zoom and center
+                console.log('initial zoom')
                 zoomCenter(clusterSource().getSource());
 
                 var rerenderPoints = function (records) {
