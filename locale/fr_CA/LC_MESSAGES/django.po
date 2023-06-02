@@ -184,6 +184,9 @@ msgstr "Ajouter/Supprimer Des Étiquettes"
 msgid "Add/Remove a user to an organization"
 msgstr "Ajouter/Supprimer un utilisateur d'une organisation"
 
+msgid "Add/Update Ubid"
+msgstr "Ajouter/Mettre à jour UBID"
+
 msgid "Adding buildings to project"
 msgstr "Ajout de bâtiments à projet"
 
@@ -435,6 +438,9 @@ msgstr "Campus"
 msgid "Cancel"
 msgstr "Annuler"
 
+msgid "Cannot compare UBIDs while editing. Click OK to continue."
+msgstr "Impossible de comparer les UBID lors de l'édition. Cliquez sur OK pour continuer."
+
 #: seed/exception_handler.py:45
 #, fuzzy
 msgid "Cannot delete protected objects while related objects still exist"
@@ -526,6 +532,15 @@ msgstr "Cartographie ComStock"
 
 msgid "Commercial"
 msgstr "Commercial"
+
+msgid "Compare UBIDs"
+msgstr "Comparez les UBID"
+
+msgid "Compare UBIDs now..."
+msgstr "Comparez les UBID maintenant..."
+
+msgid "Comparing UBIDs Complete"
+msgstr "Comparaison des UBID terminée"
 
 msgid "Complete"
 msgstr "Complète"
@@ -631,6 +646,9 @@ msgstr "Créer un profil"
 msgid "Create Project"
 msgstr "Créer un projet"
 
+msgid "Create UBID"
+msgstr "Créer un UBID"
+
 #: seed/landing/templates/landing/signup.html:29
 msgid "Create Your Account"
 msgstr "Créez votre compte"
@@ -714,6 +732,9 @@ msgstr "ID personnalisé 1 (lot d'impôt)"
 
 msgid "Custom Reports"
 msgstr "Rapports"
+
+msgid "Custom UBIDs"
+msgstr "UBID personnalisés"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Des e-mails personnalisés peuvent être envoyés aux propriétaires d'immeubles à l'aide des modèles définis ci-dessous. L'e-mail sera envoyé à l'adresse e-mail du propriétaire de l'enregistrement SEED et n'est actuellement pas configurable. L'adresse e-mail \"de\" est la même que l'adresse e-mail du serveur qui est également utilisée pour envoyer aux utilisateurs leurs informations de compte par e-mail."
@@ -841,8 +862,11 @@ msgstr "Date limite"
 msgid "Deadline:"
 msgstr "Date limite:"
 
+msgid "Decode UBID for Selected"
+msgstr "Décoder l'UBID pour la sélection"
+
 msgid "Decode UBID/ULID"
-msgstr "Décoder UBID/ULID"
+msgstr "Décoder UBID"
 
 msgid "Default Contact Account Name"
 msgstr "Nom du compte de contact par défaut"
@@ -1895,6 +1919,9 @@ msgstr "Aucun rapport personnalisé sélectionné"
 msgid "No Data"
 msgstr "Pas de données"
 
+msgid "No Ubids For Property"
+msgstr "Pas d'enchères pour la propriété"
+
 msgid "No action was taken"
 msgstr "Aucune action n'a été prise"
 
@@ -2162,6 +2189,9 @@ msgstr "Code postal (lot d'impôt)"
 msgid "Potential Matches from Source"
 msgstr "Correspondances possibles à partir de la source"
 
+msgid "Preferred"
+msgstr "Préféré"
+
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
 
@@ -2406,6 +2436,9 @@ msgstr "Restaurer les règles par défaut"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Rétrospection de mise en service"
+
+msgid "Retry"
+msgstr "Recommencez"
 
 msgid "Review Changes"
 msgstr "Revoir les Changements"
@@ -2770,6 +2803,9 @@ msgstr "Envoyer une invitation"
 msgid "Sends the reset password email to all users."
 msgstr "Envoie l'e-mail de réinitialisation du mot de passe à tous les utilisateurs"
 
+msgid "Set UBID Threshold"
+msgstr "Définir le seuil UBID"
+
 msgid "Set a Query Threshold"
 msgstr "Définir un seuil de requête"
 
@@ -3004,6 +3040,12 @@ msgstr "L'équipe SEED"
 msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une application logicielle qui aide les entreprises à gérer facilement les données sur la performance énergétique de grands groupes de bâtiments. Les utilisateurs peuvent combiner les données provenant de plusieurs sources, les nettoyer et les valider, et partager les informations avec les autres. L'application logicielle fournit une méthode simple, flexible et rentable pour améliorer la qualité et la disponibilité des données afin de démontrer les avantages économiques et environnementaux de l'efficacité énergétique, de mettre en œuvre des programmes et de cibler l'activité d'investissement."
 
+msgid "The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged with the existing property."
+msgstr "Le seuil UBID définit la valeur minimale de l'indice Jaccard requise pour qu'une comparaison UBID soit considérée comme acceptable. Lorsque le seuil est atteint, la propriété entrante peut être fusionnée avec la propriété existante."
+
+msgid "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
+msgstr "La comparaison s'appuie sur l'indice Jaccard, qui varie de 0,0 (pas de correspondance) à 1,0 (correspondance parfaite)."
+
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "L'e-mail prend en charge les modèles d'accolades pour extraire les données de l'enregistrement de propriété SEED. Par exemple, l'extrait ci-dessous remplacera la latitude et la longitude de l'enregistrement SEED. D'autres champs peuvent être ajoutés, mais assurez-vous d'utiliser le nom du champ SEED et non le nom d'affichage."
 
@@ -3073,11 +3115,32 @@ msgstr "Pour configurer votre compte, saisissez votre mot de passe deux fois dan
 msgid "Toggle Dropdown"
 msgstr "Basculer le menu déroulant"
 
+msgid "Toggle Hexbins"
+msgstr "Basculer les Hexbins"
+
+msgid "Toggle Points"
+msgstr "Basculer les points"
+
+msgid "Toggle Property UBID Bounding Boxes"
+msgstr "Toggle Boîtes englobantes UBID de propriété"
+
+msgid "Toggle Property UBID Centroids"
+msgstr "Basculer les centroïdes UBID de propriété"
+
+msgid "Toggle Taxlot UBID Bounding Boxes"
+msgstr "Toggle Boîtes englobantes UBID Taxlot"
+
+msgid "Toggle Taxlot UBID Centroids"
+msgstr "Basculer les centroïdes UBID Taxlot"
+
 msgid "Total Properties"
 msgstr "Total des propriétés"
 
 msgid "Total rows in the import file"
 msgstr "Nombre total de lignes dans le fichier d'importation"
+
+msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+msgstr "Deux UBID sont nécessaires pour la comparaison. Cliquez sur UBID personnalisés pour continuer."
 
 msgid "Type"
 msgstr "Type"
@@ -3097,6 +3160,12 @@ msgstr "Département Américain de l'Énergie"
 
 msgid "UBID"
 msgstr "UBID"
+
+msgid "UBID Threshold"
+msgstr "Seuil UBID"
+
+msgid "UBID thresholds are between 0.0 and 1.0"
+msgstr "Les seuils UBID sont compris entre 0,0 et 1,0"
 
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "Si les propriétés ont été géocodées manuellement, elles ne seront pas mises à jour. Pour mettre à jour le géocodage, supprimez le lat / long."
@@ -3147,6 +3216,12 @@ msgstr "Télécharger les relevés de capteur"
 #, fuzzy
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
+
+msgid "Ubid Match quality:"
+msgstr "Qualité de la correspondance Ubid :"
+
+msgid "Ubid Threshold must be between 0.0 and 1.0"
+msgstr "Le seuil Ubid doit être compris entre 0,0 et 1,0"
 
 msgid "Units"
 msgstr "Unités"

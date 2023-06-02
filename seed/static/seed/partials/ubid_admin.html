@@ -9,10 +9,10 @@
                                 <span>UBID<i class="glyphicon glyphicon-sort"></i></span>
                             </th>
                             <th class="text-left">
-                                <span>Preferred</span>
+                                <span translate>Preferred</span>
                             </th>
                             <th class="text-center" style="min-width: 120px; width: 120px;">
-                                <span>Actions</span>
+                                <span translate>Actions</span>
                             </th>
                         </tr>
                     </thead>
@@ -23,7 +23,7 @@
                                 <span>{$ ubid.ubid $}</span>
                             </td>
                             <td>
-                                <div ng-show="ubid.preferred" class="preferred-indicator">
+                                <div ng-show="ubid.preferred" class="preferred-indicator" translate>
                                     Preferred
                                 </div>
                             </td>
@@ -39,14 +39,14 @@
                         </tr>
                         <tr ng-if="ubids.length == 0" style="background-color: #eee">
                             <td class="text-center" colspan="3">
-                                <h5>No Ubids For Property</h5>
+                                <h5 translate>No Ubids For Property</h5>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div style="text-align: right; margin: 20px;">
-                <button type="button" class="btn btn-primary" ng-click="edit_or_create()">
+                <button type="button" class="btn btn-primary" ng-click="edit_or_create()" translate>
                     Create UBID
                 </button>
             </div>

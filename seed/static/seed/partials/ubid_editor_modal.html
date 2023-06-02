@@ -2,7 +2,7 @@
     <h4 class="modal-title" id="exportModalLabel">
         <i class="fa fa-building-o"></i>
         <i class="fa fa-map-o"></i>
-        <span>CREATE UBID</span>
+        <span translate>Create UBID</span>
     </h4>
 </div>
 <div class="section">
@@ -16,7 +16,7 @@
                                 <span>UBID<i class="glyphicon glyphicon-sort"></i></span>
                             </th>
                             <th class="text-left">
-                                <span>Preferred</span>
+                                <span translate>Preferred</span>
                             </th>
                         </tr>
                     </thead>
@@ -29,7 +29,7 @@
                             <td>
                                 <div class="checkbox">
                                     <button class="btn" ng-class="{'btn-primary': ubid.preferred, 'btn-default': !ubid.preferred}"
-                                        type="button" ng-click="toggle_preferred()">
+                                        type="button" ng-click="toggle_preferred()" translate>
                                         Preferred
                                     </button>
                                 </div>
@@ -50,10 +50,10 @@
     <button type="button" class="btn btn-default" ng-click="close()">Close</button>
     <button type="button" class="btn btn-primary" ng-click="upsert_ubid()" ng-disabled="!ubid.ubid">
         <div ng-show="!update">
-            <span ng-show="!invalid">Create</span>
-            <span ng-show="invalid">Retry</span>
+            <span ng-show="!invalid" translate>Create</span>
+            <span ng-show="invalid" translate>Retry</span>
         </div>
-        <span ng-show="update">
+        <span ng-show="update" translate>
             Save
         </span>
     </button>
