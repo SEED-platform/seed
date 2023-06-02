@@ -1,9 +1,31 @@
 <?xml version="1.0"?>
 <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" version="2.3.0">
   <auc:Facilities>
-    <auc:Facility ID="Facility-70339518129560">
+    <auc:Facility ID="Facility-70339460849520">
       <auc:Sites>
-        <auc:Site ID="SiteType-70339518144320">
+        <auc:Site ID="SiteType-70339515506140">
+          <auc:PremisesIdentifiers>
+            <auc:PremisesIdentifier>
+              <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+              <auc:IdentifierCustomName>Borough</auc:IdentifierCustomName>
+              <auc:IdentifierValue/>
+            </auc:PremisesIdentifier>
+            <auc:PremisesIdentifier>
+              <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+              <auc:IdentifierCustomName>Tax Block</auc:IdentifierCustomName>
+              <auc:IdentifierValue/>
+            </auc:PremisesIdentifier>
+            <auc:PremisesIdentifier>
+              <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+              <auc:IdentifierCustomName>Tax Lot</auc:IdentifierCustomName>
+              <auc:IdentifierValue/>
+            </auc:PremisesIdentifier>
+          </auc:PremisesIdentifiers>
+          <auc:PremisesName>Paul H.Nitze</auc:PremisesName>
+          <auc:Address>
+            <auc:City>Washington</auc:City>
+            <auc:State>DC</auc:State>
+          </auc:Address>
           <auc:Buildings>
             <auc:Building ID="BuildingType-70339516372420">
               <auc:PremisesName>Paul H.Nitze</auc:PremisesName>

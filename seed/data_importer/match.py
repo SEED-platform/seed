@@ -12,7 +12,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
-from django.db.models import Subquery
+from django.db.models import Subquery, QuerySet
 
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
@@ -53,7 +53,7 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key):
+def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key, property_state_ids_by_cycle=None):
     """
     Match incoming the properties and taxlots. Then, search for links for them.
 
@@ -72,19 +72,84 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     returned as a dict.
 
     :param file_pk: ImportFile Primary Key
+    :param property_state_ids_by_cycle: A dictionary that with cycle ids as the keys
+    and an array of associated property states as the values
     :return results: dict
     """
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
+
+    # Set the progress to started - 33%
+    progress_data.step('Matching data')
+
+    if property_state_ids_by_cycle is None:
+        # Get lists and counts of all the properties and tax lots based on the import file.
+        incoming_properties = import_file.find_unmatched_property_states()
+        incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+        results = match_and_link_incoming_properties_and_taxlots_by_cycle(
+            file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+            )
+
+    else:
+        results_list = []
+        for cycle_id in property_state_ids_by_cycle.keys():
+            # Get lists and counts of all the properties and tax lots based on the import file.
+            property_state_ids = []
+            for property_state in property_state_ids_by_cycle[cycle_id]:
+                property_state_ids.append(property_state.id)
+            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids)
+            incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+            results_list.append(
+                match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle_id)
+                )
+        
+        # combine array of dictionaries in results_list into results
+        results = {}
+        for dict in results_list:
+            for key in dict:
+                value = dict[key]
+                if key in results:
+                    if type(value) is int:
+                        results[key] += value
+                    else:
+                        if results[key] != value:
+                            results[key].append(value)
+                else:
+                    results[key] = value
+    
+    results['import_file_records'] = import_file.num_rows
+
+    try:
+        merged_linked_property_views = results['merged_linked_property_views']
+    except:
+        merged_linked_property_views = []
+    try:    
+        merged_linked_taxlot_views = results['merged_linked_taxlot_views']
+    except:
+        merged_linked_taxlot_views = []
+        
+    sub_progress_key = results['sub_progress_key']
+    log_debug('Start pair_new_states')
+    progress_data.step('Pairing data')
+    pair_new_states(
+        merged_linked_property_views,
+        merged_linked_taxlot_views,
+        sub_progress_key,
+    )
+        
+    return results
+
+
+def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle):
+    import_file = ImportFile.objects.get(pk=file_pk)
     update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
-
-    # Set the progress to started - 33%
-    progress_data.step('Matching data')
 
     # Set defaults
     property_duplicates_against_existing_count = 0
@@ -101,14 +166,14 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     tax_lot_merges_within_file_count = 0
     tax_lot_new_count = 0
 
-    merged_linked_property_views = []
-    merged_linked_taxlot_views = []
+    # merged_linked_property_views = []
+    # merged_linked_taxlot_views = []
 
     # Get lists and counts of all the properties and tax lots based on the import file.
-    incoming_properties = import_file.find_unmatched_property_states()
     property_initial_incoming_count = incoming_properties.count()
-    incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
     tax_lot_initial_incoming_count = incoming_tax_lots.count()
+
+    result = {}
 
     if incoming_properties.exists():
         # If importing BuildingSync, we will not just skip duplicates like we normally
@@ -142,12 +207,11 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count, property_merges_between_existing_count = states_to_views(
             promoted_property_ids,
             org,
-            import_file.cycle,
+            cycle,
             PropertyState,
             sub_progress_key,
             merge_duplicates,
         )
-
         # Look for links across Cycles
         log_debug('Start Properties link_views')
         merged_linked_property_views = link_views(
@@ -178,7 +242,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         merged_linked_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
             promoted_tax_lot_ids,
             org,
-            import_file.cycle,
+            cycle,
             TaxLotState,
             sub_progress_key,
         )
@@ -190,32 +254,34 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             TaxLotView,
             sub_progress_key,
         )
+        
+    try:
+        result['merged_linked_property_views'] = merged_linked_property_views
+    except:
+        log_debug('Merged linked property_views not found')
+    
+    try:
+        result['merged_linked_taxlot_views'] = merged_linked_taxlot_views
+    except:
+        log_debug('Merged linked taxlot_views not found')
 
-    log_debug('Start pair_new_states')
-    progress_data.step('Pairing data')
-    pair_new_states(
-        merged_linked_property_views,
-        merged_linked_taxlot_views,
-        sub_progress_key,
-    )
+    result['sub_progress_key'] = sub_progress_key
+    result['property_initial_incoming'] = property_initial_incoming_count
+    result['property_duplicates_against_existing'] = property_duplicates_against_existing_count
+    result['property_duplicates_within_file'] = property_duplicates_within_file_count
+    result['property_merges_against_existing'] = property_merges_against_existing_count
+    result['property_merges_between_existing'] = property_merges_between_existing_count
+    result['property_merges_within_file'] = property_merges_within_file_count
+    result['property_new'] = property_new_count
+    result['tax_lot_initial_incoming'] = tax_lot_initial_incoming_count
+    result['tax_lot_duplicates_against_existing'] = tax_lot_duplicates_against_existing_count
+    result['tax_lot_duplicates_within_file'] = tax_lot_duplicates_within_file_count
+    result['tax_lot_merges_against_existing'] = tax_lot_merges_against_existing_count
+    result['tax_lot_merges_between_existing'] = tax_lot_merges_between_existing_count
+    result['tax_lot_merges_within_file'] = tax_lot_merges_within_file_count
+    result['tax_lot_new'] = tax_lot_new_count
 
-    return {
-        'import_file_records': import_file.num_rows,
-        'property_initial_incoming': property_initial_incoming_count,
-        'property_duplicates_against_existing': property_duplicates_against_existing_count,
-        'property_duplicates_within_file': property_duplicates_within_file_count,
-        'property_merges_against_existing': property_merges_against_existing_count,
-        'property_merges_between_existing': property_merges_between_existing_count,
-        'property_merges_within_file': property_merges_within_file_count,
-        'property_new': property_new_count,
-        'tax_lot_initial_incoming': tax_lot_initial_incoming_count,
-        'tax_lot_duplicates_against_existing': tax_lot_duplicates_against_existing_count,
-        'tax_lot_duplicates_within_file': tax_lot_duplicates_within_file_count,
-        'tax_lot_merges_against_existing': tax_lot_merges_against_existing_count,
-        'tax_lot_merges_between_existing': tax_lot_merges_between_existing_count,
-        'tax_lot_merges_within_file': tax_lot_merges_within_file_count,
-        'tax_lot_new': tax_lot_new_count,
-    }
+    return result
 
 
 def filter_duplicate_states(unmatched_states, sub_progress_key):
