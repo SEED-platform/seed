@@ -65,6 +65,7 @@ should have the following dependencies already installed:
     .. code-block:: bash
 
         brew install pyenv
+        brew install pyenv-virtualenv
         pyenv install <python3 version you want>
         pyenv virtualenv <python3 version you want> seed
         pyenv local seed

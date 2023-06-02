@@ -51,7 +51,7 @@ class AuditTemplateViewTests(TestCase):
     def test_get_building_xml_from_audit_template(self, mock_request):
         # -- Act
         mock_request.side_effect = [self.good_authenticate_response, self.good_get_building_response]
-        response = self.client.get(self.get_building_url)
+        response = self.client.get(self.get_building_url, data={"organization_id": self.org.id})
 
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
@@ -65,7 +65,7 @@ class AuditTemplateViewTests(TestCase):
 
         # -- Act
         mock_request.side_effect = [self.good_authenticate_response, self.good_get_building_response]
-        response = self.client.get(self.get_building_url)
+        response = self.client.get(self.get_building_url, data={"organization_id": self.org.id})
 
         # -- Assert
         self.assertEqual(400, response.status_code, response.content)
@@ -75,7 +75,7 @@ class AuditTemplateViewTests(TestCase):
     def test_get_building_xml_from_audit_template_bad_at_authentication_response(self, mock_request):
         # -- Act
         mock_request.side_effect = [self.bad_authenticate_response, self.good_get_building_response]
-        response = self.client.get(self.get_building_url)
+        response = self.client.get(self.get_building_url, data={"organization_id": self.org.id})
 
         # -- Assert
         self.assertEqual(400, response.status_code, response.content)
@@ -88,7 +88,7 @@ class AuditTemplateViewTests(TestCase):
     def test_get_building_xml_from_audit_template_bad_at_get_building_response(self, mock_request):
         # -- Act
         mock_request.side_effect = [self.good_authenticate_response, self.bad_get_building_response]
-        response = self.client.get(self.get_building_url)
+        response = self.client.get(self.get_building_url, data={"organization_id": self.org.id})
 
         # -- Assert
         self.assertEqual(400, response.status_code, response.content)

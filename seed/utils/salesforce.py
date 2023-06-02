@@ -578,5 +578,8 @@ def auto_sync_salesforce_properties(org_id):
 
 
 def valid_name(name):
-    invalid_names = ['', 'none', 'n/a', 'not available']
+    if not name:
+        return False
+
+    invalid_names = ['none', 'n/a', 'not available']
     return name.lower() not in invalid_names
