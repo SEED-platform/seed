@@ -1220,10 +1220,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_modal = function (selectedViewIds) {
+      $scope.open_ubid_decode_modal = function (selectedViewIds) {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
-          controller: 'ubid_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_decode_modal.html',
+          controller: 'ubid_decode_modal_controller',
           resolve: {
             property_view_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
@@ -1265,7 +1265,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_upsert_modal = function (selectedViewId) {
+      $scope.open_ubid_admin_modal = function (selectedViewId) {
         $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
@@ -1471,8 +1471,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
-          case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
-          case 'open_ubid_upsert_modal': $scope.open_ubid_upsert_modal(selectedViewIds); break;
+          case 'open_ubid_decode_modal': $scope.open_ubid_decode_modal(selectedViewIds); break;
+          case 'open_ubid_admin_modal': $scope.open_ubid_admin_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;

@@ -48,6 +48,18 @@ angular.module('BE.seed.service.ubid', [])
         });
       };
 
+      ubid_factory.validate_ubid = (ubid) => {
+        return $http.post('/api/v3/ubid/validate_ubid/', {
+          ubid: ubid
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then((response) => {
+          return response.data
+        })
+      }
+
       ubid_factory.get_ubid_models_by_state = (view_id, state_type) => {
         return $http.post('/api/v3/ubid/ubids_by_state/', {
           view_id: view_id,

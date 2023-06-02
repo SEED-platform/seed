@@ -41,7 +41,6 @@ angular.module('BE.seed.controller.ubid_admin', [])
                         $scope.ubids = results.data.sort((a, b) => {
                             return a.preferred ? -1 : 1
                         });
-                        console.log($scope.ubids)
                     } else {
                         $scope.message = results.message;
                     }
@@ -49,10 +48,6 @@ angular.module('BE.seed.controller.ubid_admin', [])
             }
 
 
-            const callReload = () => {
-                console.log('calling reload')
-                $scope.$emit('callReload')
-            }
 
             $scope.edit_or_create = (ubid = false) => {
                 let ubid_editor_modal = $uibModal.open({
@@ -66,7 +61,6 @@ angular.module('BE.seed.controller.ubid_admin', [])
                         state_id: function () {
                             return state_id
                         },
-                        // UNNECESSARY?
                         view_id: function () {
                             return view_id
                         },
@@ -76,7 +70,7 @@ angular.module('BE.seed.controller.ubid_admin', [])
                     }
                 });
                 ubid_editor_modal.result.then((result) => {
-                    result.refresh && (refresh_ubids(), callReload())
+                    result.refresh && (refresh_ubids(), $scope.$emit('callReload'))
                 })
             }
 
@@ -92,7 +86,7 @@ angular.module('BE.seed.controller.ubid_admin', [])
                     // user confirmed, delete it
                     ubid_service.delete_ubid(ubid_id).then(() => {
                         refresh = true
-                        callReload()
+                        $scope.$emit('callReload')
                         refresh_ubids()
                     }).catch((err) => {
                         console.log(`Error attempting to delete ubid id: ${ubid_id}`)

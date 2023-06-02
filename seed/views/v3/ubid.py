@@ -21,7 +21,7 @@ from seed.utils.api_schema import (
     AutoSchemaHelper,
     swagger_auto_schema_org_query_param
 )
-from seed.utils.ubid import decode_unique_ids, get_jaccard_index
+from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 
 
 class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
@@ -173,13 +173,37 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
 
         if ubid1 and ubid2:
             jaccard_index = get_jaccard_index(ubid1, ubid2)
-
             return JsonResponse({'status': 'success', 'data': jaccard_index})
-
         else:
             return JsonResponse({'status': 'failed', 'message': 'exactly 2 ubids are required'})
 
-    # override endpoint to set response to json, not OrderedDict
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['POST'])
+    def validate_ubid(self, request):
+        """
+        Determines validity of a UBID
+        """
+        ubid = dict(request.data).get('ubid')
+
+        valid = validate_ubid(ubid)
+        if valid:
+            return JsonResponse({
+                'status': 'success',
+                'data': {
+                    'valid': True,
+                    'ubid': ubid
+                }
+            })
+        else:
+            return JsonResponse({
+                'status': 'failed',
+                'data': {
+                    'valid': False,
+                    'ubid': ubid
+                }
+            })
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -195,8 +219,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK
         )
-
-    # overrode endpoint to set response to json, not OrderedDict
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
@@ -239,18 +261,20 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
         if ubid_model.preferred:
             # find preferred ubids that are not self
             if ubid_model.property:
+                qs = PropertyState.objects.filter(id=ubid_model.property.id)
                 ubids = UbidModel.objects.filter(
                     ~Q(id=ubid_model.id),
                     property=ubid_model.property,
                     preferred=True
                 )
             else:
+                qs = TaxLotState.objects.filter(id=ubid_model.taxlot.id)
                 ubids = UbidModel.objects.filter(
                     ~Q(id=ubid_model.id),
                     taxlot=ubid_model.taxlot,
                     preferred=True
                 )
-
+            decode_unique_ids(qs)
             for ubid in ubids:
                 ubid.preferred = False
                 ubid.save()
@@ -260,7 +284,6 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
 
-    # overrode endpoint to set to allow partial updates. The default update endpoint requires all fields
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
@@ -270,6 +293,10 @@ class UbidViewSet(viewsets.ModelViewSet, OrgMixin):
             Q(pk=pk) & (Q(property__organization=org) | Q(taxlot__organization=org))
         )
         state = ubid.property or ubid.taxlot
+
+        if ubid.preferred:
+            qs = state._meta.model.objects.filter(id=state.id)
+            decode_unique_ids(qs)
 
         # if the incoming ubid is not preferred and is the current ubid, clear state.ubid
         if request.data.get('ubid') == state.ubid and not request.data.get('preferred'):
