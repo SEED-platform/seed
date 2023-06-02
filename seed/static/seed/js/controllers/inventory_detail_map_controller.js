@@ -7,7 +7,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
         '$scope',
         '$stateParams',
         '$state',
-        '$log',
         '$uibModal',
         'inventory_service',
         'user_service',
@@ -17,7 +16,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             $scope,
             $stateParams,
             $state,
-            $log,
             $uibModal,
             inventory_service,
             user_service,
@@ -132,19 +130,21 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 });
 
                 // Define buildings source - the basis of layers
-                var buildingPoint = function (building) {
-                    console.log('buildingPoint')
-                    var format = new ol.format.WKT();
+                // var buildingPoint = function (building) {
+                //     console.log('buildingPoint')
+                //     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(building.long_lat, {
-                        dataProjection: 'EPSG:4326',
-                        featureProjection: 'EPSG:3857'
-                    });
+                //     var feature = format.readFeature(building.long_lat, {
+                //         dataProjection: 'EPSG:4326',
+                //         featureProjection: 'EPSG:3857'
+                //     });
 
-                    feature.setProperties(building);
-                    return feature;
-                };
+                //     feature.setProperties(building);
+                //     return feature;
+                // };
 
+                // This uses the bounding box instead of the lat/long. while it renders the console throws error:
+                // Uncaught 'AssertionError'
                 var buildingBoundingBox = function (building) {
                     console.log('buildingBoundingBox')
                     var format = new ol.format.WKT();
@@ -354,125 +354,12 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     layers: layers
                 });
 
-                // Toggle layers
-
-                // If a layer's z-index is changed, it should be changed here as well.
-                var layer_at_z_index = {
-                    0: base_layer,
-                    // 1: $scope.hexbin_layer,
-                    2: $scope.points_layer,
-                    3: $scope.building_bb_layer,
-                    4: $scope.building_centroid_layer,
-                    5: $scope.taxlot_bb_layer,
-                    6: $scope.taxlot_centroid_layer
-                };
-
-                $scope.layerVisible = function (z_index) {
-                    var layers = $scope.map.getLayers().array_;
-                    var z_indexes = _.map(layers, function (layer) {
-                        return layer.values_.zIndex;
-                    });
-                    return z_indexes.includes(z_index);
-                };
-
-                $scope.toggle_layer = function (z_index) {
-                    if ($scope.layerVisible(z_index)) {
-                        $scope.map.removeLayer(layer_at_z_index[z_index]);
-                    } else {
-                        $scope.map.addLayer(layer_at_z_index[z_index]);
-                    }
-                };
-
-                // Popup
-                var popup_element = document.getElementById('popup-element');
-
-                // Define overlay attaching html element
-                var popup_overlay = new ol.Overlay({
-                    element: popup_element,
-                    positioning: 'bottom-center',
-                    stopEvent: false,
-                    autoPan: true,
-                    autoPanMargin: 75,
-                    offset: [0, -135]
-                });
-                $scope.map.addOverlay(popup_overlay);
-
-                var detailPageIcon = function (point_info) {
-                    var link_html = '';
-                    var icon_html = '<i class="ui-grid-icon-info-circled"></i>';
-
-                    if ($scope.inventory_type === 'properties') {
-                        link_html = '<a href="#/properties/' +
-                            point_info.property_view_id +
-                            '">' +
-                            icon_html +
-                            '</a>';
-                    } else {
-                        link_html = '<a href="#/taxlots/' +
-                            point_info.taxlot_view_id +
-                            '">' +
-                            icon_html +
-                            '</a>';
-                    }
-
-                    return link_html;
-                };
-
-                var showPointInfo = function (point) {
-                    var pop_info = point.getProperties();
-                    var default_display_key = _.find(_.keys(pop_info), function (key) {
-                        return _.startsWith(key, $scope.default_field);
-                    });
-
-                    var coordinates = point.getGeometry().getCoordinates();
-
-                    popup_overlay.setPosition(coordinates);
-                    $(popup_element).popover({
-                        placement: 'top',
-                        html: true,
-                        selector: true,
-                        content: pop_info[default_display_key] + detailPageIcon(pop_info)
-                    });
-
-                    $(popup_element).popover('show');
-                    popupShown = true;
-                };
-
-                // Define point/cluster click event - default is no popup shown
-                var popupShown = false;
-
-                $scope.map.on('click', function (event) {
-                    var points = [];
-
-                    $scope.map.forEachFeatureAtPixel(event.pixel, function (feature) {
-                        // If feature has a center (implies it is a hexbin), disregard click
-                        if (feature.getKeys().includes('center')) {
-                            return;
-                        }
-                        points = feature.get('features');
-                    });
-
-                    if (popupShown) {
-                        $(popup_element).popover('destroy');
-                        popupShown = false;
-                    } else if (points && points.length == 1) {
-                        showPointInfo(points[0]);
-                    } else if (points && points.length > 1) {
-                        zoomOnCluster(points);
-                    }
-                });
-
-                var zoomOnCluster = function (points) {
-                    console.log('zoomOnCluster')
-                    var source = new ol.source.Vector({ features: points });
-                    zoomCenter(source, { duration: 750 });
-                };
 
                 // Zoom and center based on provided points (none, all, or a subset)
-                var zoomCenter = function (points_source, extra_view_options) {
+                var zoomCenter = function (bounding_box_source, extra_view_options) {
                     console.log('zoomCenter')
                     if (_.isUndefined(extra_view_options)) extra_view_options = {};
-                    if (points_source.isEmpty()) {
+                    if (bounding_box_source.isEmpty()) {
                         // Default view with no points is the middle of US
                         var empty_view = new ol.View({
                             center: ol.proj.fromLonLat([-99.066067, 39.390897]),
@@ -480,62 +367,21 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                         });
                         $scope.map.setView(empty_view);
                     } else {
-                        var extent = points_source.getExtent();
-                        // var feature = format.readFeature(wktString, {
-                        //     dataProjection: 'EPSG:4326',
-                        //     featureProjection: 'EPSG:3857'
-                        // });
-
-                        // var extent = feature.getExtent()
-                        // this extent is in lat long coords
-                        console.log('extent', extent)
-
+                        var extent = bounding_box_source.getExtent();
+    
                         var view_options = Object.assign({
                             size: $scope.map.getSize(),
                             padding: [1, 1, 1, 1],
                         }, extra_view_options);
                         $scope.map.getView().fit(extent, view_options);
                     }
-                    console.log('current zoom', $scope.map.getView().getZoom())
                 };
 
                 // Set initial zoom and center
-                console.log('initial zoom')
                 zoomCenter(clusterSource().getSource());
 
-                var rerenderPoints = function (records) {
-                    $scope.points_layer.setSource(clusterSource(records));
-                    // $scope.hexbin_layer.setSource(hexbinSource(records));
-                };
 
-                // Labels
-                // Reduce labels to only records found in the current cycle
-                $scope.selected_labels = [];
-
-                var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
-
-                // Reapply valid previously-applied labels
-                var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
-                $scope.selected_labels = _.filter($scope.labels, function (label) {
-                    return _.includes(ids, label.id);
-                });
-
-                $scope.clear_labels = function () {
-                    $scope.selected_labels = [];
-                };
-
-                $scope.loadLabelsForFilter = function (query) {
-                    return _.filter($scope.labels, function (lbl) {
-                        if (_.isEmpty(query)) {
-                            // Empty query so return the whole list.
-                            return true;
-                        } else {
-                            // Only include element if its name contains the query string.
-                            return _.includes(_.toLower(lbl.name), _.toLower(query));
-                        }
-                    });
-                };
-
+                // map styling
                 let element = $scope.map.getViewport().querySelector('.ol-unselectable');
                 element.style.border = '1px solid gray';
                 element.style.borderRadius = '10px'
