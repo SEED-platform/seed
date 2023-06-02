@@ -1297,6 +1297,7 @@ def save_raw_data(file_pk):
         progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
     return progress_data.result()
 
+
 def geocode_and_match_buildings_task(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
 
@@ -1312,7 +1313,7 @@ def geocode_and_match_buildings_task(file_pk):
     if not import_file.mapping_done:
         _log.debug('Mapping is not done yet')
         return progress_data.finish_with_error(
-        'Import file is not complete. Retry after mapping is complete')
+            'Import file is not complete. Retry after mapping is complete')
 
     # get the properties chunk them into tasks
     property_states = (
@@ -1321,8 +1322,6 @@ def geocode_and_match_buildings_task(file_pk):
         .only('id')
         .iterator()
     )
-
-    progress_data.save()
 
     # If multiple cycle upload, split properties by cycle
     # and map each cycle individually
@@ -1338,12 +1337,7 @@ def geocode_and_match_buildings_task(file_pk):
             # Find the cycle that corresponds with property_state year_ending.
 
             # Create a queryset of cycle objects that have an end date that is equal to the property_state's year_ending value.
-            # _log.error(
-            #     '++++++++++++++++++++++++'
-            # )
-            # _log.error(type(property_state.year_ending.year))
-            # _log.error(type(Cycle.objects.all().values('end__year')[0]))
-            cycle_objects = Cycle.objects.filter(end__year=property_state.year_ending.year,organization_id=property_state.organization_id)
+            cycle_objects = Cycle.objects.filter(end__year=property_state.year_ending.year, organization_id=property_state.organization_id)
 
             # Get the first cycle object in the queryset.
             cycle_object = cycle_objects.first()
@@ -1356,7 +1350,6 @@ def geocode_and_match_buildings_task(file_pk):
             property_state_ids_by_cycle[cycle_object.id].append(property_state)
 
         # get the properties and chunk them into tasks
-
         celery_chain(
             _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
             group(_map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id) for cycle_id in property_state_ids_by_cycle.keys()),
@@ -1383,16 +1376,17 @@ def geocode_and_match_buildings_task(file_pk):
         progress_data.save()
 
         celery_chain(
-        _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
-        group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
-        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
-        finish_matching.s(file_pk, progress_data.key),
+            _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
+            group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
+            match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
+            finish_matching.s(file_pk, progress_data.key),
         )()
 
         sub_progress_data.total = 100
         sub_progress_data.save()
 
         return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
+
 
 def geocode_buildings_task(file_pk):
     """
@@ -1650,7 +1644,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
     org = import_file.import_record.super_organization
 
     if cycle is None:
-    # grab all property states linked to the import file and finish processing the data
+        # grab all property states linked to the import file and finish processing the data
         property_states = PropertyState.objects.filter(id__in=ids).prefetch_related('building_files')
         for property_state in property_states:
             if source_type == BUILDINGSYNC_RAW:
@@ -1681,6 +1675,8 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
             + 2  # match and link
             + 1  # finish
         )
+        progress_data.save()
+
         for id_chunk in id_chunks:
             property_states = PropertyState.objects.filter(id__in=id_chunk).prefetch_related('building_files')
             for property_state in property_states:
@@ -1698,13 +1694,11 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
                     if not success or messages.get('errors') or messages.get('warnings'):
                         progress_data.add_file_info(os.path.basename(building_file.filename), messages)
 
-
         progress_data.step()
 
         return {
             'import_file_records': len(ids)
         }
-
 
 
 def list_canonical_property_states(org_id):
@@ -1781,7 +1775,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     sub_progress_data.step('Pairing Data')
     view = next(chain(merged_property_views, merged_taxlot_views))
-    # Check if 'view' is an array, then 
+    # Check if 'view' is an array, then
     # use the first element, otherwise use 'view' as is
     if isinstance(view, list):
         view = view[0]
@@ -1852,10 +1846,11 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
         # if pv.state.lot_number and ";" in pv.state.lot_number:
         #     pdb.set_trace()
 
-        # Check if 'pv' is an array, then 
+        # Check if 'pv' is an array, then
         # use the first element, otherwise use 'pv' as is
         if isinstance(pv, list):
-            pv = pv[0]
+            if len(pv) > 0:
+                pv = pv[0]
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.
