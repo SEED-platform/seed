@@ -156,6 +156,11 @@ angular.module('BE.seed.controller.insights_program', [])
                 legend: {
                   display: false
                 },
+                tooltip: {
+                  callbacks: {
+                    footer: tooltip_footer,
+                  }
+                }
               },
               scales: {
                 x: {
@@ -181,6 +186,17 @@ angular.module('BE.seed.controller.insights_program', [])
         _load_datasets();
 
       }
+
+      const tooltip_footer = (tooltipItems) => {
+        const tooltipItem = tooltipItems[0];
+        if (tooltipItem === undefined) return "";
+
+        const dataIndex = tooltipItem.dataIndex;
+        const barValues = $scope.insightsChart.data.datasets.map(ds => ds.data[dataIndex]);
+        const barTotal = barValues.reduce((acc, curr) => acc + curr, 0);
+
+        return ((tooltipItem.raw / barTotal) * 100).toPrecision(4) + "%";
+      };
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.
     }
