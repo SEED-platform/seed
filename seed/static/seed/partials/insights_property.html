@@ -117,8 +117,8 @@
 									<table style="width: 100%">
 										<tr>
 										  <th>Name</th>
-										  <th>X</th>
-										  <th>Y</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
 										</tr>
 										<tr ng-repeat="item in chart_datasets[0]['data']">
 											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
@@ -139,8 +139,8 @@
 									<table style="width: 100%">
 										<tr>
 										  <th>Name</th>
-										  <th>X</th>
-										  <th>Y</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
 										</tr>
 										<tr ng-repeat="item in chart_datasets[1]['data']">
 											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
@@ -162,8 +162,8 @@
 									<table style="width: 100%">
 										<tr>
 										  <th>Name</th>
-										  <th>X</th>
-										  <th>Y</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
 										</tr>
 										<tr ng-repeat="item in chart_datasets[2]['data']">
 											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>

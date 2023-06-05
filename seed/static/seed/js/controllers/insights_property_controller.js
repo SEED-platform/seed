@@ -170,19 +170,6 @@ angular.module('BE.seed.controller.insights_property', [])
         })
       };
 
-      // display link with "org display field value" listed in table
-      $scope.get_display_field_value = function(cycle_id, prop_id) {
-        let name = null
-        let record = _.find($scope.data.properties_by_cycles[cycle_id], {'property_view_id': prop_id})
-        if (record) {
-          name = _.find(record, function(v,k) {
-            return _.startsWith(k, $scope.organization.property_display_field)
-          });
-        }
-
-        return name ? name : prop_id
-      }
-
       $scope.update = function() {
         spinner_utility.show();
 
