@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.insights_property', [])
             }
 
             // x axis
-            $scope.x_axis_options = $scope.data.metric.x_axis_columns;
+            $scope.x_axis_options = [...$scope.data.metric.x_axis_columns, {"display_name": "Ranked", "id": "Ranked"}];
 
             if (_.size($scope.x_axis_options) > 0) {
               // used saved chart_xaxis
@@ -290,33 +290,49 @@ angular.module('BE.seed.controller.insights_property', [])
           } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle]['n'], prop.property_view_id)) {
             // non-compliant dataset
             datasets[1]['data'].push(item);
-
-            // add whisker annotation
-            // only when we are displaying the non-compliant metric (energy or emission)
-            // don't add whisker if data is in range for that metric or it looks bad
-            let add = false
-            metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
-            if (item['x'] && item['y'] && item['target']) {
-              if ((metric_type === 1 && (item['target'] < item['y'])) || (metric_type === 2 && (item['target'] > item['y']))) {
-                add = true
-              }
-            }
-
-            if (add) {
-              // add it
-              let anno = Object.assign({},annotation)
-              anno.xMin = item['x']
-              anno.xMax = item['x']
-              anno.yMin = item['y']
-              anno.yMax = item['target']
-              $scope.annotations['prop' + prop.property_view_id] = anno
-            }
-
           } else {
             // unknown dataset
             datasets[2]['data'].push(item);
           }
         });
+        non_compliant = datasets.find(ds => ds.label === "non-compliant");
+
+        // Rank
+        if($scope.configs.chart_xaxis === "Ranked"){
+          non_compliant.data.sort((a, b) => {
+            a_diff = Math.abs(a["y"] - a["target"]);
+            b_diff = Math.abs(b["y"] - b["target"]);
+
+            return b_diff - a_diff;
+          });
+          non_compliant.data.forEach((d, i) => {
+            d['x'] = i;
+          });
+        }
+
+        // add whisker annotation
+        non_compliant.data.forEach(item => {
+          // only when we are displaying the non-compliant metric (energy or emission)
+          // don't add whisker if data is in range for that metric or it looks bad
+          let add = false
+          metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
+          if (item['x'] && item['y'] && item['target']) {
+            if ((metric_type === 1 && (item['target'] < item['y'])) || (metric_type === 2 && (item['target'] > item['y']))) {
+              add = true
+            }
+          }
+
+          if (add) {
+            // add it
+            let anno = Object.assign({},annotation)
+            anno.xMin = item['x']
+            anno.xMax = item['x']
+            anno.yMin = item['y']
+            anno.yMax = item['target']
+            $scope.annotations['prop' + item.id] = anno
+          }
+        });
+
         $scope.chart_datasets = datasets;
       }
 
