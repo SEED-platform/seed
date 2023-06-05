@@ -17,7 +17,6 @@ from seed.landing.views import (
     activate,
     create_account,
     landing_page,
-    login_view,
     password_reset,
     password_reset_complete,
     password_reset_done,
@@ -26,7 +25,7 @@ from seed.landing.views import (
 
 urlpatterns = [
     re_path(r'^$', landing_page, name='landing_page'),
-    re_path(r'^accounts/login/$', login_view, name='login'),
+    re_path(r'^accounts/login/$', landing_page, name='login'),
     re_path(
         r'^accounts/logout/$',
         logout_then_login,
