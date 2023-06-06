@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 $scope.reload && $state.reload()
             })
 
-
+            // Controller Init Function
             const init = () => {
                 $scope.bounding_box = $scope.item_state.bounding_box.replace(/^SRID=\d+;/, '');
                 $scope.centroid = $scope.item_state.centroid.replace(/^SRID=\d+;/, '');
@@ -256,9 +256,9 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 element.style.display = 'none';
             }
 
-            // Controller Init Function
-            // Do not map if there is no preferred ubid or it has not been decoded.
+            // Controller Init Function Trigger
             const enableMap = $scope.item_state.ubid && $scope.item_state.bounding_box && $scope.item_state.centroid
+            // Do not map if there is no preferred ubid or it has not been geocoded.
             if (enableMap) {
                 init()
             }
