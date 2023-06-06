@@ -26,9 +26,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             cycles = $scope.cycles;
             $scope.inventory_type = $stateParams.inventory_type;
 
-            $scope.bounding_box = $scope.item_state.bounding_box.replace(/^SRID=\d+;/, '');
-            $scope.centroid = $scope.item_state.centroid.replace(/^SRID=\d+;/, '');
-
             $scope.geocoded_data = _.filter([$scope.item_state], 'long_lat');
             $scope.ungeocoded_data = _.reject([$scope.item_state], 'long_lat');
 
@@ -73,6 +70,9 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
 
 
             const init = () => {
+                $scope.bounding_box = $scope.item_state.bounding_box.replace(/^SRID=\d+;/, '');
+                $scope.centroid = $scope.item_state.centroid.replace(/^SRID=\d+;/, '');
+
                 // store a mapping of layers z-index and visibility
                 $scope.layers = {};
                 $scope.layers.base_layer = { zIndex: 0, visible: 1 };
@@ -284,8 +284,9 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             }
 
             // Controller Init Function
-            // Do not map if there is no preferred ubid.
-            if ($scope.item_state.ubid) {
+            // Do not map if there is no preferred ubid or it has not been decoded.
+            const enableMap = $scope.item_state.ubid && $scope.item_state.bounding_box && $scope.item_state.centroid
+            if (enableMap) {
                 init()
             }
 
