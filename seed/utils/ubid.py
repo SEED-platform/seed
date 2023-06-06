@@ -145,9 +145,15 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
                 state_type: new_state,
                 'preferred': old_ubid.ubid == preferred_ubid
             }
+
             new_state.ubidmodel_set.create(**ubid_details)
 
     new_state.save()
+
+    if preferred_ubid:
+        state_qs = new_state.__class__.objects.filter(id=new_state.id)
+        decode_unique_ids(state_qs)
+        new_state.refresh_from_db()
 
     return new_state
 
@@ -156,7 +162,6 @@ def find_preferred(old_states, new_state):
     # The preferred ubid will be the first prefered ubid founnd on a list of states.
     # Where new_state is priority, and old_states[0] is least priority
     ordered_states = list(old_states)
-    ordered_states.reverse()
     ordered_states.insert(0, new_state)
 
     preferred_ubid = None
