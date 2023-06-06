@@ -7,20 +7,10 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
         '$scope',
         '$stateParams',
         '$state',
-        '$uibModal',
-        'inventory_service',
-        'user_service',
-        'organization_service',
-        'urls',
         function (
             $scope,
             $stateParams,
             $state,
-            $uibModal,
-            inventory_service,
-            user_service,
-            organization_service,
-            urls,
         ) {
             labels = $scope.labels;
             cycles = $scope.cycles;
@@ -46,23 +36,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 $scope.geocoded_properties = geocodedRelated([$scope.item_state], 'bounding_box');
                 $scope.geocoded_taxlots = _.filter([$scope.item_state], 'bounding_box');
             }
-
-            // find organization's property/taxlot default type to display in popup
-            const org_id = user_service.get_organization().id;
-            organization_service.get_organization(org_id).then(function (data) {
-                if ($scope.inventory_type == 'properties') {
-                    $scope.default_field = data.organization.property_display_field;
-                } else {
-                    $scope.default_field = data.organization.taxlot_display_field;
-                }
-            });
-
-            var lastCycleId = inventory_service.get_last_cycle();
-            $scope.cycle = {
-                selected_cycle: _.find(cycles.cycles, { id: lastCycleId }) || _.first(cycles.cycles),
-                cycles: cycles.cycles
-            };
-
 
             $scope.$watch('reload', () => {
                 $scope.reload && $state.reload()
