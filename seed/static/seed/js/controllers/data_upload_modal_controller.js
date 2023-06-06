@@ -161,7 +161,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       $scope.saveMultipleCycleUpload = function () {
         $scope.multipleCycleUpload = ! $scope.multipleCycleUpload;
-        if ($scope.multipleCycleUpload = true) {
+        if ($scope.multipleCycleUpload) {
           $scope.selectedCycle = $scope.multipleCycle;
           inventory_service.save_last_cycle($scope.multipleCycle.id);
         }
