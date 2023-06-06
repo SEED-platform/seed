@@ -128,10 +128,10 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
 
     If the new_state has an equivalent ubid, skip it.
     """
-    old_states = StateClass.objects.filter(id__in=old_state_ids)
+    old_states = StateClass.objects.filter(id__in=old_state_ids).order_by('-id')
     new_state = StateClass.objects.get(id=new_state_id)
     new_ubids = new_state.ubidmodel_set.all()
-    state_type = 'property' if new_state.__class__.__name__ == 'PropertyState' else 'taxlot'
+    state_field = 'property' if StateClass.__name__ == 'PropertyState' else 'taxlot'
 
     preferred_ubid = find_preferred(old_states, new_state)
 
@@ -142,7 +142,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
 
             ubid_details = {
                 'ubid': old_ubid.ubid,
-                state_type: new_state,
+                state_field: new_state,
                 'preferred': old_ubid.ubid == preferred_ubid
             }
 
@@ -151,7 +151,7 @@ def merge_ubid_models(old_state_ids, new_state_id, StateClass):
     new_state.save()
 
     if preferred_ubid:
-        state_qs = new_state.__class__.objects.filter(id=new_state.id)
+        state_qs = StateClass.objects.filter(id=new_state.id)
         decode_unique_ids(state_qs)
         new_state.refresh_from_db()
 
