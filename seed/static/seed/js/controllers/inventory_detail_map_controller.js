@@ -214,7 +214,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 if ($scope.inventory_type === 'properties') {
                     layers = [base_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
                 } else {
-                    layers = [base_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
+                    layers = [base_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
                 }
                 $scope.map = new ol.Map({
                     target: 'map',
