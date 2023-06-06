@@ -71,11 +71,8 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 $scope.reload && $state.reload()
             })
 
-            // Do not map if there is no preferred ubid.
-            if (!$scope.item_state.ubid) {
-                return
-            } else {
 
+            const init = () => {
                 // store a mapping of layers z-index and visibility
                 $scope.layers = {};
                 $scope.layers.base_layer = { zIndex: 0, visible: 1 };
@@ -285,6 +282,12 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 element = $scope.map.getViewport().querySelector('.ol-overlaycontainer-stopevent')
                 element.style.display = 'none';
             }
+
+            // Controller Init Function
+            // Do not map if there is no preferred ubid.
+            if ($scope.item_state.ubid) {
+                init()
+            } 
 
 
         }]);
