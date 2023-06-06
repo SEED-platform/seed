@@ -16,7 +16,7 @@ import traceback
 import zipfile
 from bisect import bisect_left
 from builtins import str
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
@@ -1315,7 +1315,7 @@ def geocode_and_match_buildings_task(file_pk):
         return progress_data.finish_with_error(
             'Import file is not complete. Retry after mapping is complete')
 
-    # get the properties chunk them into tasks
+    # get the properties and chunk them into tasks
     property_states = (
         PropertyState.objects.filter(import_file_id=file_pk)
         .exclude(data_state=DATA_STATE_IMPORT)
@@ -1329,63 +1329,47 @@ def geocode_and_match_buildings_task(file_pk):
     # maybe add new source_type Assessed Raw Multiple Cycle?
     if import_file.cycle is None:
         # Create a dictionary to store the property_state_ids_by_cycle.
-        property_state_ids_by_cycle = {}
+        property_state_ids_by_cycle = defaultdict(list)
 
         # Loop through the property_state objects.
         for property_state in property_states:
-
             # Find the cycle that corresponds with property_state year_ending.
+            cycle = Cycle.objects.filter(end__year=property_state.year_ending.year, organization_id=property_state.organization_id).first()
+            property_state_ids_by_cycle[cycle.id].append(property_state.id)
 
-            # Create a queryset of cycle objects that have an end date that is equal to the property_state's year_ending value.
-            cycle_objects = Cycle.objects.filter(end__year=property_state.year_ending.year, organization_id=property_state.organization_id)
-
-            # Get the first cycle object in the queryset.
-            cycle_object = cycle_objects.first()
-
-            # If the cycle_object value is not already in the dictionary, add it.
-            if cycle_object not in property_state_ids_by_cycle:
-                property_state_ids_by_cycle[cycle_object.id] = []
-
-            # Add the property_state.id value to the array for the cycle_object key.
-            property_state_ids_by_cycle[cycle_object.id].append(property_state.id)
-
-        # get the properties and chunk them into tasks
-        celery_chain(
-            _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
-            group(_map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id) for cycle_id in property_state_ids_by_cycle.keys()),
-            match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
-            finish_matching.s(file_pk, progress_data.key),
-        )()
-
-        sub_progress_data.total = 100
-        sub_progress_data.save()
-
-        return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
+        map_additional_models_group = group(
+            _map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id)
+            for cycle_id in property_state_ids_by_cycle.keys()
+        )
 
     else:
         # get the properties and chunk them into tasks
-
+        property_state_ids_by_cycle = None
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
-
-        progress_data.total = (
-            1  # geocoding
-            + len(id_chunks)  # map additional models tasks
-            + 2  # match and link
-            + 1  # finish
+        map_additional_models_group = group(
+            _map_additional_models.si(id_chunk, file_pk, progress_data.key)
+            for id_chunk in id_chunks
         )
-        progress_data.save()
 
-        celery_chain(
-            _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
-            group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
-            match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
-            finish_matching.s(file_pk, progress_data.key),
-        )()
+    progress_data.total = (
+        1  # geocoding
+        + len(map_additional_models_group)  # map additional models tasks
+        + 2  # match and link
+        + 1  # finish
+    )
+    progress_data.save()
 
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+    celery_chain(
+        _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
+        map_additional_models_group,
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
+        finish_matching.s(file_pk, progress_data.key),
+    )()
 
-        return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
+    sub_progress_data.total = 100
+    sub_progress_data.save()
+
+    return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
 def geocode_buildings_task(file_pk):
@@ -1620,7 +1604,7 @@ def hash_state_object(obj, include_extra_data=True):
 
 
 @shared_task
-def _map_additional_models(ids, file_pk, progress_key, cycle=None):
+def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
     """
     Create any additional models, other than properties, that could come from the
     imported file. E.g. Scenarios and Meters from a BuildingSync file.
@@ -1631,6 +1615,9 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
+    if cycle_id is None:
+        cycle_id = import_file.cycle.id
+
     progress_data = ProgressData.from_key(progress_key)
 
     source_type_dict = {
@@ -1643,62 +1630,28 @@ def _map_additional_models(ids, file_pk, progress_key, cycle=None):
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
 
-    if cycle is None:
-        # grab all property states linked to the import file and finish processing the data
-        property_states = PropertyState.objects.filter(id__in=ids).prefetch_related('building_files')
-        for property_state in property_states:
-            if source_type == BUILDINGSYNC_RAW:
-                # parse the rest of the models (scenarios, meters, etc) from the building file
-                # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
-                # b/c that will be handled in the match/merge/linking later on
-                building_file = property_state.building_files.get()
-                success, property_state, _, messages = building_file.process(
-                    org.id,
-                    import_file.cycle,
-                    promote_property_state=False
-                )
+    # grab all property states linked to the import file and finish processing the data
+    property_states = PropertyState.objects.filter(id__in=ids).prefetch_related('building_files')
+    for property_state in property_states:
+        if source_type == BUILDINGSYNC_RAW:
+            # parse the rest of the models (scenarios, meters, etc) from the building file
+            # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
+            # b/c that will be handled in the match/merge/linking later on
+            building_file = property_state.building_files.get()
+            success, property_state, _, messages = building_file.process(
+                org.id,
+                Cycle.objects.get(id=cycle_id),
+                promote_property_state=False
+            )
 
-                if not success or messages.get('errors') or messages.get('warnings'):
-                    progress_data.add_file_info(os.path.basename(building_file.filename), messages)
+            if not success or messages.get('errors') or messages.get('warnings'):
+                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
 
-        progress_data.step()
+    progress_data.step()
 
-        return {
-            'import_file_records': len(ids)
-        }
-    else:
-        id_chunks = [chunk for chunk in batch(ids, 100)]
-
-        progress_data.total = (
-            1  # geocoding
-            + len(id_chunks)  # map additional models tasks
-            + 2  # match and link
-            + 1  # finish
-        )
-        progress_data.save()
-
-        for id_chunk in id_chunks:
-            property_states = PropertyState.objects.filter(id__in=id_chunk).prefetch_related('building_files')
-            for property_state in property_states:
-                if source_type == BUILDINGSYNC_RAW:
-                    # parse the rest of the models (scenarios, meters, etc) from the building file
-                    # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
-                    # b/c that will be handled in the match/merge/linking later on
-                    building_file = property_state.building_files.get()
-                    success, property_state, _, messages = building_file.process(
-                        org.id,
-                        Cycle.objects.get(id=cycle),
-                        promote_property_state=False
-                    )
-
-                    if not success or messages.get('errors') or messages.get('warnings'):
-                        progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-
-        progress_data.step()
-
-        return {
-            'import_file_records': len(ids)
-        }
+    return {
+        'import_file_records': len(ids)
+    }
 
 
 def list_canonical_property_states(org_id):

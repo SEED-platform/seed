@@ -125,13 +125,11 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
     :param cycle: cycle object
     :return results: dict
     """
-
     from seed.data_importer.tasks import pair_new_states
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    update_sub_progress_total(100, sub_progress_key)
-
     progress_data = ProgressData.from_key(progress_key)
+    update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
@@ -198,6 +196,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
             sub_progress_key,
             merge_duplicates,
         )
+
         # Look for links across Cycles
         log_debug('Start Properties link_views')
         merged_linked_property_views = link_views(
