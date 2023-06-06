@@ -22,10 +22,12 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             organization_service,
             urls,
         ) {
-            $scope.test = 'abcd'
             labels = $scope.labels;
             cycles = $scope.cycles;
             $scope.inventory_type = $stateParams.inventory_type;
+
+            $scope.bounding_box = $scope.item_state.bounding_box.replace(/^SRID=\d+;/, '');
+            $scope.centroid = $scope.item_state.centroid.replace(/^SRID=\d+;/, '');
 
             $scope.data = [];
             $scope.geocoded_data = [];
@@ -48,11 +50,11 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             };
             var fetch = function (page, chunk, include_view_ids, func) {
                 return func(page, chunk, undefined, undefined, include_view_ids).then(function (data) {
-                    $scope.progress = {
-                        current: data.pagination.end,
-                        total: data.pagination.total,
-                        percent: Math.round(data.pagination.end / data.pagination.total * 100)
-                    };
+                    // $scope.progress = {
+                    //     current: data.pagination.end,
+                    //     total: data.pagination.total,
+                    //     percent: Math.round(data.pagination.end / data.pagination.total * 100)
+                    // };
                     if (data.pagination.has_next) {
                         return fetch(page + 1, chunk).then(function (data2) {
                             return data.results.concat(data2);
@@ -63,23 +65,31 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             };
 
             var page = 1;
-            var chunk = 5000;
+            var chunk = 1;
             var include_view_ids = [$stateParams.view_id]
-            $scope.progress = {};
-            var modalInstance = $uibModal.open({
-                templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
-                backdrop: 'static',
-                windowClass: 'inventory-progress-modal',
-                scope: $scope
-            });
+            // $scope.progress = {};
+            // var modalInstance = $uibModal.open({
+            //     templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
+            //     backdrop: 'static',
+            //     windowClass: 'inventory-progress-modal',
+            //     scope: $scope
+            // });
 
 
+            $scope.$watch('reload', () => {
+                $scope.reload && $state.reload()
+            })
 
             var getInventoryFunc;
             if ($scope.inventory_type == 'properties') getInventoryFunc = inventory_service.get_properties;
             else getInventoryFunc = inventory_service.get_taxlots;
             return fetch(page, chunk, include_view_ids, getInventoryFunc).then(function (data) {
-                modalInstance.close();
+                // modalInstance.close();
+
+                // Do not map if there is no preferred ubid.
+                if (!$scope.item_state.ubid) {
+                    return
+                }
 
                 $scope.data = data;
                 $scope.geocoded_data = _.filter($scope.data, 'long_lat');
@@ -133,7 +143,8 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 var buildingBoundingBox = function (building) {
                     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(building.bounding_box, {
+                    var feature = format.readFeature($scope.bounding_box, {
+                    // var feature = format.readFeature(building.bounding_box, {
                         dataProjection: 'EPSG:4326',
                         featureProjection: 'EPSG:3857'
                     });
@@ -154,7 +165,8 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 var buildingBB = function (building) {
                     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(building.bounding_box, {
+                    // var feature = format.readFeature(building.bounding_box, {
+                    var feature = format.readFeature($scope.bounding_box, {
                         dataProjection: 'EPSG:4326',
                         featureProjection: 'EPSG:3857'
                     });
@@ -166,7 +178,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 var buildingCentroid = function (building) {
                     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(building.centroid, {
+                    var feature = format.readFeature($scope.centroid, {
                         dataProjection: 'EPSG:4326',
                         featureProjection: 'EPSG:3857'
                     });
@@ -192,7 +204,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 var taxlotBB = function (taxlot) {
                     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(taxlot.bounding_box, {
+                    var feature = format.readFeature($scope.bounding_box, {
                         dataProjection: 'EPSG:4326',
                         featureProjection: 'EPSG:3857'
                     });
@@ -204,7 +216,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 var taxlotCentroid = function (taxlot) {
                     var format = new ol.format.WKT();
 
-                    var feature = format.readFeature(taxlot.centroid, {
+                    var feature = format.readFeature($scope.centroid, {
                         dataProjection: 'EPSG:4326',
                         featureProjection: 'EPSG:3857'
                     });
@@ -319,16 +331,10 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 // map styling
                 let element = $scope.map.getViewport().querySelector('.ol-unselectable');
                 element.style.border = '1px solid gray';
-                element.style.borderRadius = '10px'
+                element.style.borderRadius = '3px'
 
                 element = $scope.map.getViewport().querySelector('.ol-overlaycontainer-stopevent')
                 element.style.display = 'none';
-
-                $scope.$watch('reload', () => {
-                    $scope.reload &&$state.reload()
-                })
-
-
 
             });
         }]);

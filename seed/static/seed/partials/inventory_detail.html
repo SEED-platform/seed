@@ -131,6 +131,11 @@
                     </span>
                 </div>
             </div>
+            <div ng-controller="inventory_detail_map_controller" style="margin:20px;">
+                <div style=" margin: auto; width:402px; overflow:hidden;">
+                    <div id="map"></div>
+                </div>
+            </div>
             <!-- NOTE: This is bad, using a controller created for someone else but it will work
                      we should refactor this into a AnalysisCard component. -->
             <div ng-if="analysis" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card"></div>

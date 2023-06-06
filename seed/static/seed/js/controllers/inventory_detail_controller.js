@@ -97,6 +97,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
+      $scope.cycles = [$scope.cycle]
 
       views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
       $scope.views = views_payload.map(
