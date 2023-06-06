@@ -129,24 +129,8 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
                 });
 
-                // Define buildings source - the basis of layers
-                // var buildingPoint = function (building) {
-                //     console.log('buildingPoint')
-                //     var format = new ol.format.WKT();
-
-                //     var feature = format.readFeature(building.long_lat, {
-                //         dataProjection: 'EPSG:4326',
-                //         featureProjection: 'EPSG:3857'
-                //     });
-
-                //     feature.setProperties(building);
-                //     return feature;
-                // };
-
-                // This uses the bounding box instead of the lat/long. while it renders the console throws error:
-                // Uncaught 'AssertionError'
+                // This uses the bounding box instead of the lat/long. See var BuildingPoint function in inventory_map_controller for reference
                 var buildingBoundingBox = function (building) {
-                    console.log('buildingBoundingBox')
                     var format = new ol.format.WKT();
 
                     var feature = format.readFeature(building.bounding_box, {
@@ -159,7 +143,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 }
 
                 var buildingSources = function (records) {
-                    console.log('buildingSources')
                     if (_.isUndefined(records)) records = $scope.geocoded_data;
                     var features = _.map(records, buildingBoundingBox);
                     // var features = _.map(records, buildingPoint);
@@ -243,52 +226,12 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                     return new ol.source.Vector({ features: features });
                 };
 
-                // Points/clusters layer
-                var clusterPointStyle = function (size) {
-                    var relative_radius = 10 + Math.min(7, size / 50);
-                    return new ol.style.Style({
-                        image: new ol.style.Circle({
-                            radius: relative_radius,
-                            stroke: new ol.style.Stroke({
-                                color: '#fff'
-                            }),
-                            fill: new ol.style.Fill({
-                                color: '#3399CC'
-                            })
-                        }),
-                        text: new ol.style.Text({
-                            text: size.toString(),
-                            fill: new ol.style.Fill({ color: '#fff' })
-                        })
-                    });
-                };
-
-                var singlePointStyle = function () {
-                    return new ol.style.Style({
-                        image: new ol.style.Icon({
-                            src: urls.static_url + 'seed/images/map_pin.png',
-                            scale: 0.05,
-                            anchor: [0.5, 1]
-                        })
-                    });
-                };
-
                 var clusterSource = function (records) {
-                    console.log('clusterSource')
                     if (_.isUndefined(records)) records = $scope.geocoded_data;
                     return new ol.source.Cluster({
                         source: buildingSources(records),
                         distance: 45
                     });
-                };
-
-                var pointsLayerStyle = function (feature) {
-                    var size = feature.get('features').length;
-                    if (size > 1) {
-                        return clusterPointStyle(size);
-                    } else {
-                        return singlePointStyle();
-                    }
                 };
 
                 // style for building ubid bounding and centroid boxes
@@ -310,12 +253,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                         })
                     });
                 };
-
-                $scope.points_layer = new ol.layer.Vector({
-                    source: clusterSource(),
-                    zIndex: $scope.layers.points_layer.zIndex, // Note: This is used for layer toggling.
-                    style: pointsLayerStyle
-                });
 
                 $scope.building_bb_layer = new ol.layer.Vector({
                     source: buildingBBSources(),
@@ -344,8 +281,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 // Render map
                 var layers = [];
                 if ($scope.inventory_type === 'properties') {
-                    // layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
-                    layers = [base_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
+                    layers = [base_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
                 } else {
                     layers = [base_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
                 }
@@ -357,7 +293,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
 
                 // Zoom and center based on provided points (none, all, or a subset)
                 var zoomCenter = function (bounding_box_source, extra_view_options) {
-                    console.log('zoomCenter')
                     if (_.isUndefined(extra_view_options)) extra_view_options = {};
                     if (bounding_box_source.isEmpty()) {
                         // Default view with no points is the middle of US
@@ -390,7 +325,6 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 element.style.display = 'none';
 
                 $scope.$watch('reload', () => {
-                    console.log('watch reload')
                     $scope.reload &&$state.reload()
                 })
 
