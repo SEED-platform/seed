@@ -103,11 +103,10 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             });
 
             // This uses the bounding box instead of the lat/long. See var BuildingPoint function in inventory_map_controller for reference
-            var buildingBoundingBox = function (building) {
+            var buildingBoundingBox = function () {
                 var format = new ol.format.WKT();
 
                 var feature = format.readFeature($scope.bounding_box, {
-                // var feature = format.readFeature(building.bounding_box, {
                     dataProjection: 'EPSG:4326',
                     featureProjection: 'EPSG:3857'
                 });
@@ -116,19 +115,15 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 return feature;
             }
 
-            var buildingSources = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_data;
-                var features = _.map(records, buildingBoundingBox);
-                // var features = _.map(records, buildingPoint);
-
+            var buildingSources = function () {
+                var features = [buildingBoundingBox()];
                 return new ol.source.Vector({ features: features });
             };
 
             // Define building UBID bounding box
-            var buildingBB = function (building) {
+            var buildingBB = function () {
                 var format = new ol.format.WKT();
 
-                // var feature = format.readFeature(building.bounding_box, {
                 var feature = format.readFeature($scope.bounding_box, {
                     dataProjection: 'EPSG:4326',
                     featureProjection: 'EPSG:3857'
@@ -138,7 +133,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             };
 
             // Define building UBID centroid box
-            var buildingCentroid = function (building) {
+            var buildingCentroid = function () {
                 var format = new ol.format.WKT();
 
                 var feature = format.readFeature($scope.centroid, {
@@ -149,22 +144,18 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 return feature;
             };
 
-            var buildingBBSources = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_properties;
-                var features = _.map(records, buildingBB);
-
+            var buildingBBSources = function () {
+                var features = [buildingBB()];
                 return new ol.source.Vector({ features: features });
             };
 
-            var buildingCentroidSources = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_properties;
-                var features = _.map(records, buildingCentroid);
-
+            var buildingCentroidSources = function () {
+                var features = [buildingCentroid()];
                 return new ol.source.Vector({ features: features });
             };
 
             // Define taxlot UBID bounding box
-            var taxlotBB = function (taxlot) {
+            var taxlotBB = function () {
                 var format = new ol.format.WKT();
 
                 var feature = format.readFeature($scope.bounding_box, {
@@ -176,7 +167,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
             };
 
             // Define taxlot UBID centroid box
-            var taxlotCentroid = function (taxlot) {
+            var taxlotCentroid = function () {
                 var format = new ol.format.WKT();
 
                 var feature = format.readFeature($scope.centroid, {
@@ -187,24 +178,19 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
                 return feature;
             };
 
-            var taxlotBBSources = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_taxlots;
-                var features = _.map(records, taxlotBB);
-
+            var taxlotBBSources = function () {
+                var features = [taxlotBB()];
                 return new ol.source.Vector({ features: features });
             };
 
-            var taxlotCentroidSources = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_taxlots;
-                var features = _.map(records, taxlotCentroid);
-
+            var taxlotCentroidSources = function () {
+                var features = [taxlotCentroid()];
                 return new ol.source.Vector({ features: features });
             };
 
-            var clusterSource = function (records) {
-                if (_.isUndefined(records)) records = $scope.geocoded_data;
+            var clusterSource = function () {
                 return new ol.source.Cluster({
-                    source: buildingSources(records),
+                    source: buildingSources(),
                     distance: 45
                 });
             };
