@@ -104,6 +104,7 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
         state_2 = TaxLotState.objects.get(id=state_ids[index])
 
         merged_state = TaxLotState.objects.create(organization_id=org_id)
+        merged_state = merge_ubid_models(state_ids, merged_state.id, TaxLotState)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
