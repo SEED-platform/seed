@@ -102,12 +102,11 @@ def get_jaccard_index(ubid1, ubid2):
 def validate_ubid(ubid):
     """
     Check if the code is valid
-    PARAMETERS
-    code text // a pluscode
+
     EXAMPLE
     select pluscode_isvalid('XX5JJC23+00')
 
-    @param ubid [text] A Property State Ubid
+    @param ubid [text] A Property or TaxLot State Ubid
     @return [bool] Ubid validity.
     """
     if not ubid:
