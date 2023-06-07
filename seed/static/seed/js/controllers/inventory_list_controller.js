@@ -1252,12 +1252,21 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return []
               }
               let ubid_column;
-              return inventory_service.get_mappable_property_columns()
-              .then((columns) => {
-                ubid_column = columns.find(c => c.column_name == 'ubid')
-                return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds)
-              })
-              .then(function (inventory_data) {
+              let promise;
+              if ($scope.inventory_type === 'properties') {
+                promise = inventory_service.get_mappable_property_columns()
+                .then((columns) => {
+                  ubid_column = columns.find(c => c.column_name == 'ubid')
+                  return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds)
+                })
+              } else {
+                promise = inventory_service.get_mappable_taxlot_columns()
+                  .then((columns) => {
+                    ubid_column = columns.find(c => c.column_name == 'ubid')
+                    return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds)
+                })
+              }
+              return promise.then(function (inventory_data) {
                   return inventory_data.results.map(d => d[ubid_column.name])
               });
             },
