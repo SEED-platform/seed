@@ -1668,6 +1668,9 @@ msgstr "Map SEED fields to imported file fields"
 msgid "Map Your Data"
 msgstr "Map Your Data"
 
+msgid "Map features are provided by"
+msgstr "Map features are provided by"
+
 msgid "MapQuest API Key"
 msgstr "MapQuest API Key"
 

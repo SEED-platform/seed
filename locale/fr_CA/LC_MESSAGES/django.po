@@ -1681,6 +1681,9 @@ msgstr "Mapper les champs SEED aux champs de fichiers importés"
 msgid "Map Your Data"
 msgstr "Mappez vos données"
 
+msgid "Map features are provided by"
+msgstr "Les fonctionnalités cartographiques sont fournies par"
+
 msgid "MapQuest API Key"
 msgstr "Clé API MapQuest"
 
