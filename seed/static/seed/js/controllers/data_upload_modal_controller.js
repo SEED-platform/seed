@@ -67,6 +67,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.cycles = cycles.cycles;
       var cached_cycle = inventory_service.get_last_cycle();
       $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
+      $scope.multipleCycleUpload = false;
 
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';
@@ -99,6 +100,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         filename: '',
         import_file_id: 0
       };
+      $scope.multipleCycle = {
+        name: 'Multiple Cycle Upload',
+        id: 'year_ending'
+      }
       /**
        * uploader: hold the state of the upload.
        * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
@@ -152,6 +157,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.goto_step = function (step) {
         $scope.step.number = step;
+      };
+
+      $scope.saveMultipleCycleUpload = function () {
+        $scope.multipleCycleUpload = ! $scope.multipleCycleUpload;
+        if ($scope.multipleCycleUpload) {
+          $scope.selectedCycle = $scope.multipleCycle;
+          inventory_service.save_last_cycle($scope.multipleCycle.id);
+        }
       };
 
       $scope.cycleChanged = function (selected) {

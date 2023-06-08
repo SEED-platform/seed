@@ -43,6 +43,12 @@
                         <div class="col-sm-8">
                             <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-change="saveMultipleCycleUpload()" />
+                                    <span>Multiple Cycle Upload</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

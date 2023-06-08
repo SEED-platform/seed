@@ -633,11 +633,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'must pass cycle_id of the cycle to save the data'
             }, status=status.HTTP_400_BAD_REQUEST)
         elif cycle_id == 'year_ending':
-            _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'SEED is unable to parse year_ending at the moment'
-            }, status=status.HTTP_400_BAD_REQUEST)
+            import_file.save()
         else:
             # find the cycle
             cycle = Cycle.objects.get(id=cycle_id)

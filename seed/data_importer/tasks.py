@@ -16,7 +16,7 @@ import traceback
 import zipfile
 from bisect import bisect_left
 from builtins import str
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
@@ -69,6 +69,7 @@ from seed.models import (
     BuildingFile,
     Column,
     ColumnMapping,
+    Cycle,
     DataLogger,
     Meter,
     PropertyAuditLog,
@@ -1312,10 +1313,7 @@ def geocode_and_match_buildings_task(file_pk):
     if not import_file.mapping_done:
         _log.debug('Mapping is not done yet')
         return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
-
-    if import_file.cycle is None:
-        _log.warning("Import file cycle is None; This should never happen in production")
+            'Import file is not complete. Retry after mapping is complete')
 
     # get the properties and chunk them into tasks
     property_states = (
@@ -1325,11 +1323,51 @@ def geocode_and_match_buildings_task(file_pk):
         .iterator()
     )
 
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
+    # If multiple cycle upload, split properties by cycle
+    # and map each cycle individually
+    # Todo: add a status to import_file to indicate multiple cycle upload
+    # maybe add new source_type Assessed Raw Multiple Cycle?
+    if import_file.cycle is None:
+        # Create a dictionary to store the property_state_ids_by_cycle.
+        property_state_ids_by_cycle = defaultdict(list)
+
+        # Loop through the property_state objects.
+        for property_state in property_states:
+            # Find the cycle that corresponds with property_state year_ending.
+            # _log.error( '+++++++++++++++++++++')
+            # _log.error(property_state.year_ending.year)
+            # _log.error(property_state.year_ending.month)
+            # _log.error(property_state.year_ending.day)
+            cycle = Cycle.objects.filter(
+                end__year=property_state.year_ending.year,
+                end__month=property_state.year_ending.month,
+                end__day=property_state.year_ending.day,
+                organization_id=property_state.organization_id
+            ).first()
+            # Check if cycle is none
+            if cycle is None:
+                cycle = Cycle.objects.filter(
+                    organization_id=property_state.organization_id
+                ).first()
+            property_state_ids_by_cycle[cycle.id].append(property_state.id)
+
+        map_additional_models_group = group(
+            _map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id)
+            for cycle_id in property_state_ids_by_cycle.keys()
+        )
+
+    else:
+        # get the properties and chunk them into tasks
+        property_state_ids_by_cycle = None
+        id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
+        map_additional_models_group = group(
+            _map_additional_models.si(id_chunk, file_pk, progress_data.key)
+            for id_chunk in id_chunks
+        )
 
     progress_data.total = (
         1  # geocoding
-        + len(id_chunks)  # map additional models tasks
+        + len(map_additional_models_group)  # map additional models tasks
         + 2  # match and link
         + 1  # finish
     )
@@ -1337,8 +1375,8 @@ def geocode_and_match_buildings_task(file_pk):
 
     celery_chain(
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
-        group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
-        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
+        map_additional_models_group,
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
         finish_matching.s(file_pk, progress_data.key),
     )()
 
@@ -1580,7 +1618,7 @@ def hash_state_object(obj, include_extra_data=True):
 
 
 @shared_task
-def _map_additional_models(ids, file_pk, progress_key):
+def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
     """
     Create any additional models, other than properties, that could come from the
     imported file. E.g. Scenarios and Meters from a BuildingSync file.
@@ -1591,6 +1629,9 @@ def _map_additional_models(ids, file_pk, progress_key):
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
+    if cycle_id is None:
+        cycle_id = import_file.cycle.id
+
     progress_data = ProgressData.from_key(progress_key)
 
     source_type_dict = {
@@ -1613,7 +1654,7 @@ def _map_additional_models(ids, file_pk, progress_key):
             building_file = property_state.building_files.get()
             success, property_state, _, messages = building_file.process(
                 org.id,
-                import_file.cycle,
+                Cycle.objects.get(id=cycle_id),
                 promote_property_state=False
             )
 
@@ -1701,6 +1742,10 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     sub_progress_data.step('Pairing Data')
     view = next(chain(merged_property_views, merged_taxlot_views))
+    # Check if 'view' is an array, then
+    # use the first element, otherwise use 'view' as is
+    if isinstance(view, list):
+        view = view[0]
     cycle = view.cycle
     org = view.state.organization
 
@@ -1767,6 +1812,12 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     for pv in merged_property_views:
         # if pv.state.lot_number and ";" in pv.state.lot_number:
         #     pdb.set_trace()
+
+        # Check if 'pv' is an array, then
+        # use the first element, otherwise use 'pv' as is
+        if isinstance(pv, list):
+            if len(pv) > 0:
+                pv = pv[0]
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.
