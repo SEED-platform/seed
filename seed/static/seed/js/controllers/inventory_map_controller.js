@@ -125,9 +125,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         // Map
         var base_layer = new ol.layer.Tile({
-          source: new ol.source.Stamen({
-            layer: 'terrain'
-          }),
+          source: new ol.source.OSM(),
           zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
         });
 
@@ -634,5 +632,11 @@ angular.module('BE.seed.controller.inventory_map', [])
           $scope.cycle.selected_cycle = cycle;
           refreshUsingCycle();
         };
+
+        // Map attribution moved to /about page
+        ['.ol-attribution', '.ol-rotate'].forEach(className => {
+          const element = $scope.map.getViewport().querySelector(className);
+          element && (element.style.display = 'none');
+        })
       });
     }]);

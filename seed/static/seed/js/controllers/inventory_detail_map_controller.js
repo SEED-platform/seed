@@ -66,9 +66,7 @@ angular.module('BE.seed.controller.inventory_detail_map', [])
 
                 // Map
                 var base_layer = new ol.layer.Tile({
-                    source: new ol.source.Stamen({
-                        layer: 'terrain'
-                    }),
+                    source: new ol.source.OSM(),
                     zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
                 });
 
