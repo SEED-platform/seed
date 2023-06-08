@@ -1291,6 +1291,11 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         base_details['year_ending'] = datetime(2022, 12, 31, tzinfo=timezone.get_current_timezone())
         self.property_state_factory.get_property_state(**base_details)
 
+        # Property that doesnt have a year ending 
+        base_details['address_line_1'] = 'default ave'
+        base_details.pop('year_ending')
+        self.property_state_factory.get_property_state(**base_details)
+
         # Set cycle to None to trigger MultiCycle import
         self.import_file.cycle = None
         self.import_file.mapping_done = True
@@ -1299,12 +1304,7 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
 
 
     def test_multi_cycle_import(self):
-
         geocode_and_match_buildings_task(self.import_file.id)
-        
-        # pss = PropertyState.objects.all()
-        # pvs = PropertyView.objects.all()
-        # cys = [x.cycle for x in pvs]
 
         def get_cycle(ps):
             return ps.propertyview_set.first().cycle
@@ -1313,11 +1313,13 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         p2020b = PropertyState.objects.get(address_line_1='2020 ave')
         p2021 = PropertyState.objects.get(address_line_1='2021 st')
         p2022 = PropertyState.objects.get(address_line_1='2022 st')
-        p_default = PropertyState.objects.get(address_line_1='default st')
+        p_defaulta = PropertyState.objects.get(address_line_1='default st')
+        p_defaultb = PropertyState.objects.get(address_line_1='default ave')
 
         self.assertEqual(get_cycle(p2020a), self.cycle2020)
         self.assertEqual(get_cycle(p2020b), self.cycle2020)
         self.assertEqual(get_cycle(p2021), self.cycle2021)
         self.assertEqual(get_cycle(p2022), self.cycle2022)
-        self.assertEqual(get_cycle(p_default), self.cycle_default)
+        self.assertEqual(get_cycle(p_defaulta), self.cycle_default)
+        self.assertEqual(get_cycle(p_defaultb), self.cycle_default)
 
