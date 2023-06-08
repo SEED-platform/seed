@@ -16,8 +16,25 @@ from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
+from django.utils.decorators import method_decorator
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
 
-
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='update',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
 class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API View for Scenarios.

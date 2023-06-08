@@ -13,8 +13,9 @@ from django.urls import reverse
 from seed.data_importer.utils import \
     kbtu_thermal_conversion_factors as conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.models import Meter
 from seed.models.scenarios import Scenario
-from seed.test_helpers.fake import FakePropertyViewFactory
+from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
@@ -59,6 +60,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
         )
 
         self.org, _, _ = create_organization(self.user, 'meter crud test org')
+        self.org.add_member(self.user, self.org.root.pk)
         self.client.login(**self.user_details)
 
         # faker class for properties
@@ -67,6 +69,19 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.their_user = User.objects.create_user(email='not.me@demo.com', username='not.me@demo.com', password='not.me')
         self.their_org, _, _ = create_organization(self.their_user, 'not my org nor user')
         self.their_property_view_factory = FakePropertyViewFactory(organization=self.their_org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
 
     def test_create_meter(self):
         property_view = self.property_view_factory.get_property_view()
@@ -204,6 +219,49 @@ class TestMeterCRUD(DeleteModelsTestCase):
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['is_virtual'], True)
+
+    def test_get_meters_detail_permissions(self):
+        # create meter
+        property = self.property_factory.get_property()
+        property_view = self.property_view_factory.get_property_view(property)
+        meter = Meter.objects.create(property=property)
+
+        meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': property_view.id, 'pk': meter.id}) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(meter_url)
+        assert response.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(meter_url)
+        assert response.status_code == 404
+
+    def test_get_meters_list_permissions(self):
+        # create meter
+        property = self.property_factory.get_property()
+        property_view = self.property_view_factory.get_property_view(property)
+        meter = Meter.objects.create(property=property)
+
+        meter_url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id}) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(meter_url)
+        assert response.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(meter_url)
+        assert response.status_code == 404
+
+    def test_get_meters_delete_permissions(self):
+        # create meter
+        property = self.property_factory.get_property()
+        property_view = self.property_view_factory.get_property_view(property)
+        meter = Meter.objects.create(property=property)
+        meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': property_view.id, 'pk': meter.id}) + "?organization_id=" + str(self.org.id)
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.delete(meter_url)
+        assert response.status_code == 404
+
+        self.client.login(**self.user_details)
+        response = self.client.delete(meter_url)
+        assert response.status_code == 200
 
 
 class TestMeterReadingCRUD(DeleteModelsTestCase):

@@ -34,9 +34,10 @@ class AccessLevelViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         return Response({
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": AccessLevelInstance.dump_bulk(user_ali),
         },
             status=status.HTTP_200_OK,
         )
@@ -84,6 +85,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 'message': 'body param `parent_id` must be int'
             }, status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'AccessLevelInstance with `parent_id` {parent_id} does not exist.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if not (user_ali == parent or parent.is_descendant_of(user_ali)):
             return JsonResponse({
                 'status': 'error',
                 'message': f'AccessLevelInstance with `parent_id` {parent_id} does not exist.'

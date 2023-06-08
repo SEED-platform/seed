@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -13,6 +14,7 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -38,8 +40,14 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at organization_pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
+
+        # ALI permissions. User should only be able to see users in their subtreee and their direct ancestors.
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        in_subtree = Q(access_level_instance__lft__gte=ali.lft, access_level_instance__rgt__lte=ali.rgt)
+        ancestor = Q(access_level_instance__lft__lt=ali.lft, access_level_instance__rgt__gt=ali.rgt)
+
         users = []
-        for u in org.organizationuser_set.all():
+        for u in org.organizationuser_set.filter(in_subtree | ancestor).all():
             user = u.user
 
             user_orgs = OrganizationUser.objects.filter(user=user).count()

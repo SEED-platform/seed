@@ -10,8 +10,21 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from django.utils.decorators import method_decorator
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
 
-
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_viewer'), has_hiarchary_access(property_view_id_kwarg="property_pk")]
+)
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 

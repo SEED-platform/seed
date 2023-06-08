@@ -12,6 +12,7 @@ from django.urls import reverse_lazy
 from seed.landing.models import SEEDUser as User
 from seed.models import Measure, PropertyMeasure, Scenario
 from seed.test_helpers.fake import (
+    FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory
 )
@@ -38,8 +39,44 @@ class TestPropertyMeasures(DeleteModelsTestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
 
-    def test_get_propery_measure(self):
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_property_measure_permissions(self):
+        property = self.property_factory.get_property(organization=self.org)
+        property_view = self.property_view_factory.get_property_view(prprty=property)
+        property_state = property_view.state
+        scenario = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        measures = Measure.objects.all()
+        property_measure = PropertyMeasure.objects.create(
+            measure=measures[0],
+            property_state=property_state,
+            description="Property Measure 0"
+        )
+        property_measure.scenario_set.add(scenario.id)
+
+        url = reverse_lazy('api:v3:property-measures-list', args=[property_view.id, scenario.id]) + f"?organization_id={self.org.id}"
+
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse_lazy('api:v3:property-measures-list', args=[property_view.id, scenario.id]) + f"?organization_id={self.org.id}"
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 404)
+
+
+    def test_get_property_measure(self):
         """
         Test PropertyMeasure view can retrieve all or individual ProperyMeasure model instances
         """

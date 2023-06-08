@@ -4,9 +4,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 from string import Template, ascii_letters, digits
 
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
@@ -19,9 +21,12 @@ from seed.models.derived_columns import (
     ExpressionEvaluator,
     InvalidExpression
 )
+from seed.models.properties import PropertyView
 from seed.test_helpers.fake import (
     FakeColumnFactory,
+    FakeCycleFactory,
     FakeDerivedColumnFactory,
+    FakePropertyFactory,
     FakePropertyStateFactory
 )
 from seed.utils.organizations import create_organization
@@ -318,6 +323,38 @@ class TestDerivedColumns(TestCase):
         )
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+
+        # default info for api tests
+        expression = '$a'
+        column_parameters = {
+            'a': {
+                'source_column': self.col_factory('foo', is_extra_data=True),
+                'value': 1,
+            },
+        }
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        self.derived_column = models['derived_column']
+        self.property_state = models['property_state']
+
+        self.property = self.property_factory.get_property()
+        self.cycle = self.cycle_factory.get_cycle()
+        self.property_view = PropertyView.objects.create(
+            property=self.property, cycle=self.cycle, state=self.property_state
+        )
+        self.client.login(**user_details)
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
 
     def _derived_column_for_property_factory(self, expression, column_parameters, name=None, create_property_state=True):
         """Factory to create DerivedColumn, DerivedColumnParameters, and a PropertyState
@@ -378,6 +415,21 @@ class TestDerivedColumns(TestCase):
             'derived_column': derived_column,
             'derived_column_parameters': derived_column_parameters
         }
+
+    def test_derived_column_evaluate_permissions(self):
+        url = reverse('api:v3:derived_columns-evaluate', args=[self.derived_column.id])
+        response = self.client.get(url, {"cycle_id": self.cycle.id, "organization_id": self.org.pk, "inventory_ids": f"{self.property.pk}"}, content_type='application/json')
+        data = json.loads(response.content)
+
+        assert response.status_code == 200
+        assert data["results"] == [{'id': self.property.pk, 'value': 1.0}]
+
+        self.client.login(**self.user_with_nothing_details)
+
+        response = self.client.get(url, {"cycle_id": self.cycle.id, "organization_id": self.org.pk, "inventory_ids": f"{self.property.pk}"}, content_type='application/json')
+        data = json.loads(response.content)
+        assert response.status_code == 200
+        assert data["results"] == []
 
     def test_derived_column_created_successfully_on_save_when_expression_is_valid(self):
         # -- Setup

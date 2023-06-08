@@ -31,12 +31,12 @@ from seed.utils.organizations import create_organization
 
 class TestScenarios(DeleteModelsTestCase):
     def setUp(self):
-        user_details = {
+        self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_superuser(**self.user_details)
         self.user.generate_key()
         self.org, _, _ = create_organization(self.user)
 
@@ -49,6 +49,17 @@ class TestScenarios(DeleteModelsTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
 
     def test_scenario_meters(self):
         ps = FakePropertyMeasureFactory(self.org).get_property_state()
@@ -115,14 +126,14 @@ class TestScenarios(DeleteModelsTestCase):
 
         # The Scenario view uses PropertyView.id not PropertyState.id
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id + 1]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id + 1]) + f"?organization_id={self.org.id}",
             **self.headers
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(Scenario.objects.count(), 1)
 
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]) + f"?organization_id={self.org.id}",
             **self.headers
         )
         self.assertEqual(response.status_code, 204)
@@ -144,7 +155,7 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(Scenario.objects.count(), 1)
 
         response = self.client.delete(
-            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]),
+            reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario.id]) + f"?organization_id={self.org.id}",
             **self.headers
         )
         self.assertEqual(response.status_code, 204)
@@ -173,7 +184,7 @@ class TestScenarios(DeleteModelsTestCase):
             reverse_lazy(
                 'api:v3:property-scenarios-detail',
                 args=[property_view.id, scenario.id]
-            ),
+            ) + f"?organization_id={self.org.id}",
             data=json.dumps(scenario_fields),
             content_type='application/json',
             **self.headers
@@ -203,7 +214,7 @@ class TestScenarios(DeleteModelsTestCase):
             reverse_lazy(
                 'api:v3:property-scenarios-detail',
                 args=[property_view.id, scenario.id]
-            ),
+            ) + f"?organization_id={self.org.id}",
             data=json.dumps(scenario_fields),
             content_type='application/json',
             **self.headers
@@ -215,6 +226,79 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.json()['Success'], False)
         self.assertEqual(response.json()['Message'], '"invalid_field" is not a valid scenario field')
 
+    def test_list_scenarios_permissions(self):
+        property = self.property_factory.get_property(organization=self.org)
+        property_view = self.property_view_factory.get_property_view(prprty=property)
+        url = reverse_lazy('api:v3:property-scenarios-list', args=[property_view.id]) + f"?organization_id={self.org.pk}"
+
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_scenario_permissions(self):
+        property = self.property_factory.get_property(organization=self.org)
+        property_view = self.property_view_factory.get_property_view(prprty=property)
+        property_state = property_view.state
+        scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id]) + f"?organization_id={self.org.pk}"
+
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 200)
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(url, **self.headers)
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_scenario_permissions(self):
+        property = self.property_factory.get_property(organization=self.org)
+        property_view = self.property_view_factory.get_property_view(prprty=property)
+        property_state = property_view.state
+        scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id]) + f"?organization_id={self.org.pk}"
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.delete(url, **self.headers)
+        self.assertEqual(response.status_code, 404)
+
+        self.client.login(**self.user_details)
+        response = self.client.delete(url, **self.headers)
+        self.assertEqual(response.status_code, 204)
+
+    def test_put_scenario_permissions(self):
+        property = self.property_factory.get_property(organization=self.org)
+        property_view = self.property_view_factory.get_property_view(prprty=property)
+        property_state = property_view.state
+        scenario = Scenario.objects.create(property_state=property_state, name='scenario 0')
+        scenario_fields = {'temporal_status': 5}
+
+        # test with permissions
+        response = self.client.put(
+            reverse_lazy(
+                'api:v3:property-scenarios-detail',
+                args=[property_view.id, scenario.id]
+            ) + f"?organization_id={self.org.pk}",
+            data=json.dumps(scenario_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # test without permissions
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.put(
+            reverse_lazy(
+                'api:v3:property-scenarios-detail',
+                args=[property_view.id, scenario.id]
+            ) + f"?organization_id={self.org.pk}",
+            data=json.dumps(scenario_fields),
+            content_type='application/json',
+            **self.headers
+        )
+        self.assertEqual(response.status_code, 404)
+
     def test_get_scenarios(self):
         """
         Test retrieve and list endpoints for Scenario view
@@ -224,7 +308,7 @@ class TestScenarios(DeleteModelsTestCase):
         scenario0 = Scenario.objects.create(property_state=property_state, name='scenario 0')
         scenario1 = Scenario.objects.create(property_state=property_state, name='scenario 1')
 
-        url = reverse_lazy('api:v3:property-scenarios-list', args=[property_view.id])
+        url = reverse_lazy('api:v3:property-scenarios-list', args=[property_view.id]) + f"?organization_id={self.org.id}"
         response = self.client.get(
             url,
             **self.headers
@@ -234,7 +318,7 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.json()[0]['name'], 'scenario 0')
         self.assertEqual(response.json()[1]['name'], 'scenario 1')
 
-        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id])
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario0.id]) + f"?organization_id={self.org.id}"
         response = self.client.get(
             url,
             **self.headers
@@ -242,7 +326,7 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'scenario 0')
 
-        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario1.id])
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, scenario1.id]) + f"?organization_id={self.org.id}"
         response = self.client.get(
             url,
             **self.headers
@@ -250,7 +334,7 @@ class TestScenarios(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'scenario 1')
 
-        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, 100])
+        url = reverse_lazy('api:v3:property-scenarios-detail', args=[property_view.id, 100]) + f"?organization_id={self.org.id}"
         response = self.client.get(
             url,
             **self.headers

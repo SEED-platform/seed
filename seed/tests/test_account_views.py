@@ -53,6 +53,36 @@ class AccountsViewTests(TestCase):
         year = date.today().year - 1
         self.cal_year_name = "{} Calendar Year".format(year)
 
+        self.org.access_level_names = ["root", "children", "grandchildren"]
+        self.ali_a = self.org.add_new_access_level_instance(self.org.root.id, "a")
+        self.ali_b = self.org.add_new_access_level_instance(self.org.root.id, "b")
+        self.ali_c = self.org.add_new_access_level_instance(self.ali_a.id, "c")
+
+        self.child_a_details = {
+            'username': 'a@a.com',
+            'password': 'test_pass',
+        }
+        self.child_a = User.objects.create_user(**self.child_a_details)
+        self.org.add_member(self.child_a, self.ali_a.pk, role=ROLE_MEMBER)
+
+        self.child_b_details = {
+            'username': 'b@b.com',
+            'password': 'test_pass',
+        }
+        self.child_b = User.objects.create_user(**self.child_b_details)
+        self.org.add_member(self.child_b, self.ali_b.pk, role=ROLE_MEMBER)
+
+        self.org.save()
+
+        self.child_c_details = {
+            'username': 'c@c.com',
+            'password': 'test_pass',
+        }
+        self.child_c = User.objects.create_user(**self.child_c_details)
+        self.org.add_member(self.child_c, self.ali_c.pk, role=ROLE_MEMBER)
+
+        self.org.save()
+
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
 
@@ -63,7 +93,7 @@ class AccountsViewTests(TestCase):
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
                 'id': self.user.pk}],
-            'number_of_users': 1,
+            'number_of_users': 4,
             'name': 'my org',
             'display_decimal_places': 2,
             'display_units_area': 'ft**2',
@@ -157,7 +187,7 @@ class AccountsViewTests(TestCase):
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
                 'id': self.user.pk}],
-            'number_of_users': 1,
+            'number_of_users': 4,
             'name': 'my org',
             'user_role': 'owner',
             'is_parent': True,
@@ -195,7 +225,7 @@ class AccountsViewTests(TestCase):
         orgs = json.loads(resp.content)['organizations']
         org = orgs[0]
         self.assertEqual(org['name'], 'my org')
-        self.assertEqual(org['number_of_users'], 1)
+        self.assertEqual(org['number_of_users'], 4)
         self.assertDictEqual(
             org['owners'][0],
             {
@@ -224,7 +254,7 @@ class AccountsViewTests(TestCase):
 
         org = json.loads(resp.content)['organization']
         self.assertEqual(org['name'], 'my org')
-        self.assertEqual(org['number_of_users'], 1)
+        self.assertEqual(org['number_of_users'], 4)
         self.assertDictEqual(
             org['owners'][0],
             {
@@ -268,10 +298,99 @@ class AccountsViewTests(TestCase):
                 'message': 'Organization does not exist'
             })
 
+    def test_get_user_list_permissions(self):
+        johnny = {
+            'email': 'test_user@demo.com',
+            'first_name': 'Johnny',
+            'last_name': 'Energy',
+            'number_of_orgs': 1,
+            'user_id': self.user.pk,
+            'role': 'owner',
+            'access_level_instance_name': 'root',
+            'access_level': 'root'
+        }
+        a = {
+            'email': 'a@a.com',
+            'first_name': '',
+            'last_name': '',
+            'number_of_orgs': 1,
+            'user_id': self.child_a.pk,
+            'role': 'member',
+            'access_level_instance_name': 'a',
+            'access_level': 'children'
+        }
+        b = {
+            'email': 'b@b.com',
+            'first_name': '',
+            'last_name': '',
+            'number_of_orgs': 1,
+            'user_id': self.child_b.pk,
+            'role': 'member',
+            'access_level_instance_name': 'b',
+            'access_level': 'children'
+        }
+        c = {
+            'email': 'c@c.com',
+            'first_name': '',
+            'last_name': '',
+            'number_of_orgs': 1,
+            'user_id': self.child_c.pk,
+            'role': 'member',
+            'access_level_instance_name': 'c',
+            'access_level': 'grandchildren'
+        }
+
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success',
+                'users': [johnny, a, b, c]
+            }
+        )
+
+        self.client.login(**self.child_a_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success',
+                'users': [johnny, a, c]
+            }
+        )
+
+        self.client.login(**self.child_b_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success',
+                'users': [johnny, b]
+            }
+        )
+
+        self.client.login(**self.child_c_details)
+        resp = self.client.get(
+            reverse_lazy('api:v3:organization-users-list', args=[self.org.id]),
+        )
+        self.assertDictEqual(
+            json.loads(resp.content),
+            {
+                'status': 'success',
+                'users': [johnny, a, c]
+            }
+        )
+
     def test_remove_user_from_org_std(self):
         """test removing a user"""
         # normal case
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
@@ -285,6 +404,9 @@ class AccountsViewTests(TestCase):
 
     def test_cannot_leave_org_empty(self):
         """test removing a user"""
+        self.child_a.delete()
+        self.child_b.delete()
+        self.child_c.delete()
         self.assertEqual(self.org.users.count(), 1)
 
         resp = self.client.delete(
@@ -299,9 +421,9 @@ class AccountsViewTests(TestCase):
 
     def test_cannot_leave_org_with_no_owner(self):
         """test removing a user"""
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
-        self.assertEqual(self.org.users.count(), 2)
+        self.assertEqual(self.org.users.count(), 5)
 
         resp = self.client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, self.user.id]),
@@ -315,7 +437,7 @@ class AccountsViewTests(TestCase):
 
     def test_remove_user_from_org_user_DNE(self):
         """DNE = does not exist"""
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
@@ -330,7 +452,7 @@ class AccountsViewTests(TestCase):
 
     def test_remove_user_from_org_org_DNE(self):
         """DNE = does not exist"""
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, access_level_instance_id=self.org.root.id)
 
         resp = self.client.delete(
@@ -354,7 +476,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(_get_role_from_js('viewer'), ROLE_VIEWER)
 
     def test_update_role(self):
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_VIEWER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
@@ -382,7 +504,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(ou.role_level, ROLE_MEMBER)
 
     def test_allowed_to_update_role_if_not_last_owner(self):
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_OWNER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
@@ -410,7 +532,7 @@ class AccountsViewTests(TestCase):
         self.assertEqual(ou.role_level, ROLE_MEMBER)
 
     def test_cannot_update_role_if_last_owner(self):
-        u = User.objects.create(username='b@b.com', email='b@be.com')
+        u = User.objects.create(username='d@d.com', email='b@be.com')
         self.org.add_member(u, role=ROLE_MEMBER, access_level_instance_id=self.org.root.id)
 
         ou = OrganizationUser.objects.get(
@@ -621,6 +743,40 @@ class AccountsViewTests(TestCase):
     #         content_type='application/json',
     #     )
     #     self.assertEqual('success', json.loads(resp.content)['status'])
+
+    def test_add_user_permissions(self):
+        data_json = {
+            "first_name": "d",
+            "last_name": "d",
+            "email": "d@d.com",
+            "role": "member",
+            "access_level_instance_id": self.org.root.pk
+        }
+        resp = self.client.post(reverse_lazy(
+            'api:v3:user-list') + f'?organization_id={self.org.pk}',
+            json.dumps(data_json),
+            content_type='application/json'
+        )
+        assert resp.status_code == 200
+
+        a_org_user = OrganizationUser.objects.get(organization=self.org, user=self.child_a)
+        a_org_user.role_level = ROLE_OWNER
+        a_org_user.save()
+        self.client.login(**self.child_a_details)
+        resp = self.client.post(
+            reverse_lazy('api:v3:user-list') + f'?organization_id={self.org.pk}',
+            json.dumps(data_json),
+            content_type='application/json'
+        )
+        assert resp.status_code == 404
+
+        data_json["access_level_instance_id"] = self.ali_c.pk
+        resp = self.client.post(
+            reverse_lazy('api:v3:user-list') + f'?organization_id={self.org.pk}',
+            json.dumps(data_json),
+            content_type='application/json'
+        )
+        assert resp.status_code == 200
 
     def test_update_user(self):
         """test for update_user"""
@@ -1040,12 +1196,14 @@ class AuthViewTests(TestCase):
                          args=[self.user.id]) + f'?organization_id={self.org.pk}',
             content_type='application/json',
         )
+        org_user = OrganizationUser.objects.get(user=self.user, organization=self.org)
+
         self.assertDictEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
                 'user': {
-                    'id': self.user.pk,
+                    'id': org_user.pk,
                     'access_level_instance': {'id': self.org.root.id, 'name': 'root'},
                 }
             })

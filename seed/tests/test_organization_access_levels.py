@@ -21,11 +21,10 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        user = User.objects.create_superuser(
+        self.user = User.objects.create_superuser(
             email='test_user@demo.com', **user_details
         )
-        self.org, _, _ = create_organization(user, "my org")
-        self.org.save()
+        self.org, _, _ = create_organization(self.user, "my org")
 
         self.client.login(**user_details)
 
@@ -92,6 +91,36 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                         }]
                     }
                 ]
+            }],
+        }
+
+        # create user wih nothing
+        self.mom_user_details = {'username': 'mom@demo.com', 'password': 'test_pass'}
+        self.mom_user = User.objects.create_user(**self.mom_user_details)
+        self.org.add_member(self.mom_user, mom.pk)
+        self.org.save()
+        self.client.login(**self.mom_user_details)
+
+        # get tree
+        raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+        assert result == {
+            'access_level_names': ['my org', "2nd gen", "3rd gen"],
+            'access_level_tree': [{
+                'id': mom.pk,
+                'data': {
+                    'name': 'mom',
+                    'organization': self.org.id,
+                    'path': {'my org': 'root', '2nd gen': 'mom'},
+                },
+                'children': [{
+                    'id': me.pk,
+                    'data': {
+                        'name': 'me',
+                        'organization': self.org.id,
+                        'path': {'my org': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
+                    }
+                }]
             }],
         }
 
@@ -185,3 +214,42 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 }]
             }],
         }
+
+    def test_add_new_access_level_instance_bad_permissions(self):
+        self.org.access_level_names = ["1st gen", "2nd gen", "3rd gen"]
+        self.org.save()
+
+        # get try to clear access_level_names
+        url = reverse_lazy('api:v3:organization-access_levels-add-instance', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"parent_id": self.org.root.pk, "name": "boo"}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 201
+
+        # create user wih nothing
+        boo = AccessLevelInstance.objects.get(organization=self.org, name="boo")
+        self.user_with_nothing_details = {'username': 'nothing@demo.com', 'password': 'test_pass'}
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.add_member(self.user_with_nothing, boo.pk)
+        self.org.save()
+        self.client.login(**self.user_with_nothing_details)
+
+        # user cant creat where parent is root
+        url = reverse_lazy('api:v3:organization-access_levels-add-instance', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"parent_id": self.org.root.pk, "name": "ah"}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 400
+
+        # user can create where parent is boo
+        url = reverse_lazy('api:v3:organization-access_levels-add-instance', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"parent_id": boo.pk, "name": "ah"}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 201

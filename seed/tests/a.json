@@ -1,0 +1,352 @@
+{
+  "status": "success",
+  "data": {
+    "meta": {
+      "organization": 147,
+      "data_view": 265
+    },
+    "views_by_filter_group_id": {
+      "331": {
+        "1087": "730 Garcia Street"
+      },
+      "332": {}
+    },
+    "columns_by_id": {
+      "10843": {
+        "filter_groups_by_id": {
+          "331": {
+            "cycles_by_id": {
+              "501": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "500": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "498": {
+                "Average": 10.0,
+                "Maximum": 10.0,
+                "Minimum": 10.0,
+                "Sum": 10.0,
+                "Count": 1,
+                "views_by_default_field": {
+                  "730 Garcia Street": 10.0
+                }
+              }
+            }
+          },
+          "332": {
+            "cycles_by_id": {
+              "501": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "500": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "498": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              }
+            }
+          }
+        },
+        "unit": "kBtu/ft²/year"
+      },
+      "10856": {
+        "filter_groups_by_id": {
+          "331": {
+            "cycles_by_id": {
+              "501": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "500": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "498": {
+                "Average": 100.0,
+                "Maximum": 100.0,
+                "Minimum": 100.0,
+                "Sum": 100.0,
+                "Count": 1,
+                "views_by_default_field": {
+                  "730 Garcia Street": 100.0
+                }
+              }
+            }
+          },
+          "332": {
+            "cycles_by_id": {
+              "501": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "500": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              },
+              "498": {
+                "Average": null,
+                "Maximum": null,
+                "Minimum": null,
+                "Sum": null,
+                "Count": 0,
+                "views_by_default_field": {}
+              }
+            }
+          }
+        },
+        "unit": "t/year"
+      }
+    },
+    "graph_data": {
+      "labels": [
+        "Cycle A",
+        "Cycle C",
+        "Cycle D"
+      ],
+      "datasets": [
+        {
+          "data": [
+            10.0,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Average",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            10.0,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Maximum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            10.0,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Minimum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            10.0,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Sum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            1,
+            0,
+            0
+          ],
+          "column": "site_eui",
+          "aggregation": "Count",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            100.0,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Average",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            100.0,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Maximum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            100.0,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Minimum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            100.0,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Sum",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            1,
+            0,
+            0
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Count",
+          "filter_group": "office"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Average",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Maximum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Minimum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "site_eui",
+          "aggregation": "Sum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            0,
+            0,
+            0
+          ],
+          "column": "site_eui",
+          "aggregation": "Count",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Average",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Maximum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Minimum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Sum",
+          "filter_group": "retail"
+        },
+        {
+          "data": [
+            0,
+            0,
+            0
+          ],
+          "column": "total_ghg_emissions",
+          "aggregation": "Count",
+          "filter_group": "retail"
+        }
+      ]
+    }
+  }
+}

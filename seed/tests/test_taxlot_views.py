@@ -38,15 +38,15 @@ from seed.utils.organizations import create_organization
 
 class TaxLotViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
+        self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
 
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_superuser(**self.user_details)
         self.org, self.org_user, _ = create_organization(self.user)
-        self.client.login(**user_details)
+        self.client.login(**self.user_details)
 
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = self.cycle_factory.get_cycle(
@@ -56,6 +56,33 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_retrieve_taxlot_permissions(self):
+        state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})
+        taxlot = self.taxlot_factory.get_taxlot()
+        view = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=state
+        )
+        url = reverse('api:v3:taxlots-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
 
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
@@ -333,6 +360,35 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
         self.assertEqual(result_2[0][field_1_key], 'value_2')
         self.assertEqual(result_2[0]['id'], taxlot_2.id)
+
+    def test_batch_delete(self):
+        state_1 = self.taxlot_state_factory.get_taxlot_state()
+        taxlot_1 = self.taxlot_factory.get_taxlot()
+        view_1 = TaxLotView.objects.create(taxlot=taxlot_1, cycle=self.cycle, state=state_1)
+        view_1.save()
+
+        state_2 = self.taxlot_state_factory.get_taxlot_state()
+        taxlot_2 = self.taxlot_factory.get_taxlot()
+        view_2 = TaxLotView.objects.create(taxlot=taxlot_2, cycle=self.cycle, state=state_2)
+        view_2.save()
+
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse('api:v3:taxlots-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'taxlot_view_ids': [view_2.pk, view_1.pk]
+        })
+        result = self.client.delete(url, post_params, content_type='application/json')
+        assert json.loads(result.content)["status"] == "warning"
+        assert TaxLotView.objects.count() == 2
+
+        self.client.login(**self.user_details)
+        url = reverse('api:v3:taxlots-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'taxlot_view_ids': [view_2.pk, view_1.pk]
+        })
+        result = self.client.delete(url, post_params, content_type='application/json')
+        assert json.loads(result.content)["status"] == "success"
+        assert TaxLotView.objects.count() == 0
 
 
 class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):

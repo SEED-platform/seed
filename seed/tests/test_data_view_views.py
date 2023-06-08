@@ -18,6 +18,7 @@ from seed.models import (
     DataViewParameter,
     DerivedColumn,
     FilterGroup,
+    Property,
     PropertyView
 )
 from seed.models import StatusLabel
@@ -486,6 +487,135 @@ class DataViewEvaluationTests(TestCase):
             aggregations=['Avg'],
             location='axis1',
         )
+
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+        property = Property.objects.create(organization=self.org, access_level_instance=child)
+        self.view10.property = property
+        self.view10.save()
+
+
+    def test_evaluation_endpoint_canonical_col_permissions(self):
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.put(
+            reverse('api:v3:data_views-evaluate', args=[self.data_view1.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "columns": [self.site_eui.id, self.ghg.id],
+            }),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+
+        print(data)
+
+        data = data['data']
+        self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id', 'graph_data'], list(data.keys()))
+
+        graph_data = data['graph_data']
+
+        self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
+
+        self.assertEqual({str(self.office_filter_group.id), str(self.retail_filter_group.id)}, set(data['views_by_filter_group_id']))
+
+        office = data['views_by_filter_group_id'][str(self.office_filter_group.id)]
+        retail = data['views_by_filter_group_id'][str(self.retail_filter_group.id)]
+
+        self.assertEqual([self.view10.state.address_line_1], sorted(list(data['views_by_filter_group_id'][str(self.office_filter_group.id)].values())))
+        self.assertEqual([], sorted(list(data['views_by_filter_group_id'][str(self.retail_filter_group.id)].values())))
+
+        data = data['columns_by_id']
+        self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
+        self.assertEqual(['filter_groups_by_id', 'unit'], list(data[str(self.site_eui.id)].keys()))
+        self.assertEqual('kBtu/ft²/year', data[str(self.site_eui.id)]['unit'])
+        self.assertEqual('t/year', data[str(self.ghg.id)]['unit'])
+
+        office = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.office_filter_group.id)]
+        retail = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.retail_filter_group.id)]
+        self.assertEqual(['cycles_by_id'], list(office.keys()))
+        self.assertEqual(['cycles_by_id'], list(retail.keys()))
+
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
+        self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
+
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle4.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
+        self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
+
+        office_cycle1 = office['cycles_by_id'][str(self.cycle1.id)]
+        office_cycle4 = office['cycles_by_id'][str(self.cycle4.id)]
+
+        self.assertEqual(10, office_cycle1['Average'])
+        self.assertEqual(1, office_cycle1['Count'])
+        self.assertEqual(10, office_cycle1['Maximum'])
+        self.assertEqual(10, office_cycle1['Minimum'])
+        self.assertEqual(10, office_cycle1['Sum'])
+        exp = {self.view10.state.address_line_1: 10.0}
+        self.assertEqual(exp, office_cycle1['views_by_default_field'])
+
+        self.assertEqual(None, office_cycle4['Average'])
+        self.assertEqual(0, office_cycle4['Count'])
+        self.assertEqual(None, office_cycle4['Maximum'])
+        self.assertEqual(None, office_cycle4['Minimum'])
+        self.assertEqual(None, office_cycle4['Sum'])
+        self.assertEqual({}, office_cycle4['views_by_default_field'])
+
+        retail_cycle1 = retail['cycles_by_id'][str(self.cycle1.id)]
+        retail_cycle4 = retail['cycles_by_id'][str(self.cycle4.id)]
+
+        self.assertEqual(None, retail_cycle1['Average'])
+        self.assertEqual(0, retail_cycle1['Count'])
+        self.assertEqual(None, retail_cycle1['Maximum'])
+        self.assertEqual(None, retail_cycle1['Minimum'])
+        self.assertEqual(None, retail_cycle1['Sum'])
+        self.assertEqual({}, retail_cycle1['views_by_default_field'])
+
+        self.assertEqual(None, retail_cycle4['Average'])
+        self.assertEqual(0, retail_cycle4['Count'])
+        self.assertEqual(None, retail_cycle4['Maximum'])
+        self.assertEqual(None, retail_cycle4['Minimum'])
+        self.assertEqual(None, retail_cycle4['Sum'])
+        self.assertEqual({}, retail_cycle4['views_by_default_field'])
+
+        # check graph_data
+        self.assertEqual(['labels', 'datasets'], list(graph_data.keys()))
+        # 2 filter groups * 2 columns * 5 aggregation types
+        self.assertEqual(20, len(graph_data['datasets']))
+
+        avg_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Average'])
+        max_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Maximum'])
+        min_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Minimum'])
+        sum_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Sum'])
+        count_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Count'])
+        self.assertEqual(4, avg_count)
+        self.assertEqual(4, max_count)
+        self.assertEqual(4, min_count)
+        self.assertEqual(4, sum_count)
+        self.assertEqual(4, count_count)
+
+        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'site_eui'])
+        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'total_ghg_emissions'])
+        self.assertEqual(10, site_eui_count)
+        self.assertEqual(10, ghg_count)
+
+        office_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'office'])
+        retail_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'retail'])
+        self.assertEqual(10, office_count)
+        self.assertEqual(10, retail_count)
+
+        for dataset in graph_data['datasets']:
+            self.assertEqual(3, len(dataset['data']))
 
     def test_evaluation_endpoint_canonical_col(self):
 

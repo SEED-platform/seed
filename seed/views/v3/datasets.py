@@ -14,7 +14,11 @@ from rest_framework.decorators import action
 from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    AccessLevelInstance,
+    Organization,
+    OrganizationUser
+)
 from seed.models import obj_to_dict
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
@@ -42,7 +46,13 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
         datasets = []
-        for d in ImportRecord.objects.filter(super_organization=org):
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        import_records = ImportRecord.objects.filter(
+            super_organization=org,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+        )
+        for d in import_records:
             importfiles = [obj_to_dict(f) for f in d.files]
             dataset = obj_to_dict(d)
             dataset['importfiles'] = importfiles
@@ -93,6 +103,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'user does not have permission to update dataset',
             }, status=status.HTTP_400_BAD_REQUEST)
         d = d[0]
+
+        request_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if not (d.access_level_instance == request_ali or d.access_level_instance.is_descendant_of(request_ali)):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'dataset with id {} does not exist'.format(pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
         d.name = name
         d.save()
         return JsonResponse({
@@ -132,6 +150,13 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         try:
             d = ImportRecord.objects.get(pk=pk)
         except ImportRecord.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'dataset with id {} does not exist'.format(pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        request_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if not (d.access_level_instance == request_ali or d.access_level_instance.is_descendant_of(request_ali)):
             return JsonResponse({
                 'status': 'error',
                 'message': 'dataset with id {} does not exist'.format(pk)
@@ -183,6 +208,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'user does not have permission to deactivate dataset',
             }, status=status.HTTP_403_FORBIDDEN)
         d = d[0]
+
+        request_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if not (d.access_level_instance == request_ali or d.access_level_instance.is_descendant_of(request_ali)):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'dataset with id {} does not exist'.format(pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
         d.delete()
         return JsonResponse({'status': 'success'})
 
@@ -216,6 +249,12 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         except Organization.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'organization_id not provided'},
                                 status=status.HTTP_400_BAD_REQUEST)
+        try:
+            org_user = OrganizationUser.objects.get(organization=org, user=request.user)
+        except OrganizationUser.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'No such organization.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
         record = ImportRecord.objects.create(
             name=body['name'],
             app='seed',
@@ -223,7 +262,8 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             created_at=timezone.now(),
             last_modified_by=request.user,
             super_organization=org,
-            owner=request.user
+            owner=request.user,
+            access_level_instance=org_user.access_level_instance,
         )
 
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
@@ -247,5 +287,10 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = int(self.get_organization(request))
 
-        datasets_count = ImportRecord.objects.filter(super_organization_id=org_id).count()
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        datasets_count = ImportRecord.objects.filter(
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+            super_organization_id=org_id
+        ).count()
         return JsonResponse({'status': 'success', 'datasets_count': datasets_count})

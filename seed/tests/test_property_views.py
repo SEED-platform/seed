@@ -74,12 +74,12 @@ COLUMNS_TO_SEND = [
 
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
-        user_details = {
+        self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_superuser(**self.user_details)
         self.org, self.org_user, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -89,7 +89,34 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
-        self.client.login(**user_details)
+        self.client.login(**self.user_details)
+
+        # create user with nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_retrieve_property_permissions(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        url = reverse('api:v3:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
 
     def test_get_and_edit_properties(self):
         state = self.property_state_factory.get_property_state()
@@ -316,6 +343,24 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertTrue('merged_indicator' in related)
         self.assertFalse(related['merged_indicator'])
 
+    def test_list_properties_permissions(self):
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        url = reverse('api:v3:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+
+        response = self.client.post(url, content_type='application/json')
+        data = json.loads(response.content)
+        assert len(data["results"]) == 1
+
+        self.client.login(**self.user_with_nothing_details)
+
+        response = self.client.post(url, content_type='application/json')
+        data = json.loads(response.content)
+        assert len(data["results"]) == 0
+
     def test_list_properties_with_profile_id(self):
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
         prprty = self.property_factory.get_property()
@@ -498,6 +543,25 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 2)
 
+    def test_meters_exists_permissions(self):
+        # Create a property set with meters
+        state_1 = self.property_state_factory.get_property_state()
+        property_1 = self.property_factory.get_property()
+        property_view_1 = PropertyView.objects.create(
+            property=property_1, cycle=self.cycle, state=state_1
+        )
+
+        params = json.dumps({'property_view_ids': [property_view_1.pk]})
+        url = reverse('api:v3:properties-meters-exist')
+        url += f'?organization_id={self.org.pk}'
+
+        result = self.client.post(url, params, content_type='application/json')
+        assert json.loads(result.content) == False
+
+        self.client.login(**self.user_with_nothing_details)
+        result = self.client.post(url, params, content_type='application/json')
+        assert json.loads(result.content)["status"] == "error"
+
     def test_meters_exist(self):
         # Create a property set with meters
         state_1 = self.property_state_factory.get_property_state()
@@ -548,6 +612,35 @@ class PropertyViewTests(DataMappingBaseTestCase):
         })
         false_result = self.client.post(url, false_post_params, content_type='application/json')
         self.assertEqual(b'false', false_result.content)
+
+    def test_batch_delete(self):
+        state_1 = self.property_state_factory.get_property_state()
+        property_1 = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(property=property_1, cycle=self.cycle, state=state_1)
+        view_1.save()
+
+        state_2 = self.property_state_factory.get_property_state()
+        property_2 = self.property_factory.get_property()
+        view_2 = PropertyView.objects.create(property=property_2, cycle=self.cycle, state=state_2)
+        view_2.save()
+
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse('api:v3:properties-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [view_2.pk, view_1.pk]
+        })
+        result = self.client.delete(url, post_params, content_type='application/json')
+        assert json.loads(result.content)["status"] == "warning"
+        assert PropertyView.objects.count() == 2
+
+        self.client.login(**self.user_details)
+        url = reverse('api:v3:properties-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [view_2.pk, view_1.pk]
+        })
+        result = self.client.delete(url, post_params, content_type='application/json')
+        assert json.loads(result.content)["status"] == "success"
+        assert PropertyView.objects.count() == 0
 
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):
@@ -1267,6 +1360,7 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
+        self.org.add_member(self.user, self.org.root.id)
 
         # For some reason, defaults weren't established consistently for each test.
         self.org.display_meter_units = Organization._default_display_meter_units.copy()
@@ -1295,11 +1389,72 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
         self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_1 = self.property_factory.get_property()
+        self.property_1 = self.property_factory.get_property(self.org)
         self.property_2 = self.property_factory.get_property()
 
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_create_data_loggers_permissions(self):
+        url = reverse('api:v3:data_logger-list') + "?property_view_id=" + str(self.property_view_1.id)
+        result = self.client.post(url, json.dumps({"display_name": "boo", "location_description": "ah", "identifier": "me", "org_id": self.org.pk}), content_type="application/json")
+        assert result.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+        result = self.client.post(url, json.dumps({"display_name": "lol", "location_description": "ah", "identifier": "me", "org_id": self.org.pk}), content_type="application/json")
+        assert result.status_code == 404
+
+    def test_data_loggers_list_permissions(self):
+        url = reverse('api:v3:data_logger-list')
+
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 404
+
+
+    def test_sensors_list_permissions(self):
+        url = reverse('api:v3:properties-sensors', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 404
+
+    def test_sensors_usage_permissions(self):
+        url = reverse('api:v3:properties-sensor-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+        post_params = json.dumps({
+            'interval': 'Exact',
+            'excluded_sensor_ids': [],
+        })
+
+        result = self.client.post(url, post_params, content_type="application/json")
+        assert result.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+
+        result = self.client.post(url, post_params, content_type="application/json")
+        assert result.status_code == 404
+
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
@@ -1509,6 +1664,17 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             cycle=self.cycle
         )
 
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
     def test_property_meters_endpoint_returns_a_list_of_meters_of_a_view(self):
         # add meters and readings to property associated to property_view_1
         save_raw_data(self.import_file.id)
@@ -1561,6 +1727,21 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         ]
 
         self.assertCountEqual(result_dict, expectation)
+
+    def test_receive_properties_meters_usage(self):
+        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+        post_params = json.dumps({
+            'interval': 'Exact',
+            'excluded_meter_ids': [],
+        })
+
+        result = self.client.post(url, post_params, content_type="application/json")
+        assert result.status_code == 200
+
+        self.client.login(**self.user_with_nothing_details)
+        result = self.client.post(url, post_params, content_type="application/json")
+        assert result.status_code == 404
 
     def test_property_meter_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
         # Update settings for display meter units to change it from the default values.

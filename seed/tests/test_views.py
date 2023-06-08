@@ -74,25 +74,41 @@ class MainViewTests(TestCase):
 
 class GetDatasetsViewsTests(TestCase):
     def setUp(self):
-        user_details = {
+        self.user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_user(**user_details)
+        self.user = User.objects.create_user(**self.user_details)
         self.org, _, _ = create_organization(self.user)
-        self.client.login(**user_details)
+        self.client.login(**self.user_details)
 
-    def test_get_datasets(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        self.child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, self.child.pk)
+        self.org.save()
+
+    def test_get_datasets_permissions(self):
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-list'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(response.json()['datasets']))
 
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(reverse('api:v3:datasets-list'),
+                                   {'organization_id': self.org.pk})
+        self.assertEqual(0, len(response.json()['datasets']))
+
     def test_get_datasets_count(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
@@ -102,8 +118,27 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual(j['status'], 'success')
         self.assertEqual(j['datasets_count'], 1)
 
+    def test_get_datasets_count_permission(self):
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(reverse('api:v3:datasets-count'),
+                                   {'organization_id': self.org.pk})
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 1)
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(reverse('api:v3:datasets-count'),
+                                   {'organization_id': self.org.pk})
+        self.assertEqual(200, response.status_code)
+        j = response.json()
+        self.assertEqual(j['status'], 'success')
+        self.assertEqual(j['datasets_count'], 0)
+
     def test_get_datasets_count_invalid(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
@@ -114,7 +149,7 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual(j['message'], 'Organization does not exist')
 
     def test_get_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
@@ -123,8 +158,26 @@ class GetDatasetsViewsTests(TestCase):
         )
         self.assertEqual('success', response.json()['status'])
 
+
+    def test_get_dataset_permissions(self):
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
+        import_record.super_organization = self.org
+        import_record.save()
+        response = self.client.get(
+            reverse('api:v3:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
+                self.org.pk)
+        )
+        self.assertEqual('success', response.json()['status'])
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.get(
+            reverse('api:v3:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
+                self.org.pk)
+        )
+        assert response.status_code == 404
+
     def test_delete_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
 
@@ -137,8 +190,29 @@ class GetDatasetsViewsTests(TestCase):
         self.assertFalse(
             ImportRecord.objects.filter(pk=import_record.pk).exists())
 
+    def test_delete_dataset_permissions(self):
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.delete(
+            reverse_lazy('api:v3:datasets-detail',
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json'
+        )
+        assert response.status_code == 404
+
+        self.client.login(**self.user_details)
+        response = self.client.delete(
+            reverse_lazy('api:v3:datasets-detail',
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json'
+        )
+        self.assertEqual('success', response.json()['status'])
+
     def test_update_dataset(self):
-        import_record = ImportRecord.objects.create(owner=self.user)
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
         import_record.save()
 
@@ -156,6 +230,53 @@ class GetDatasetsViewsTests(TestCase):
         self.assertTrue(ImportRecord.objects.filter(pk=import_record.pk,
                                                     name='new').exists())
 
+    def test_update_dataset_permission(self):
+        import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
+        import_record.super_organization = self.org
+        import_record.save()
+
+        post_data = {
+            'dataset': 'new'
+        }
+
+        response = self.client.put(
+            reverse_lazy('api:v3:datasets-detail',
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        self.assertEqual('success', response.json()['status'])
+        self.assertTrue(ImportRecord.objects.filter(pk=import_record.pk,
+                                                    name='new').exists())
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.put(
+            reverse_lazy('api:v3:datasets-detail',
+                         args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
+            content_type='application/json',
+            data=json.dumps(post_data)
+        )
+        assert response.status_code == 404
+
+    def test_create_dataset_permission(self):
+        response = self.client.post(
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
+            content_type='application/json',
+            data=json.dumps({"name": "test"})
+        )
+        assert response.status_code == 200
+        import_record = ImportRecord.objects.get(pk=response.json()["id"])
+        assert import_record.access_level_instance.id == self.org.root.id
+
+        self.client.login(**self.user_with_nothing_details)
+        response = self.client.post(
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
+            content_type='application/json',
+            data=json.dumps({"name": "test"})
+        )
+        assert response.status_code == 200
+        import_record = ImportRecord.objects.get(pk=response.json()["id"])
+        assert import_record.access_level_instance.id == self.child.id
 
 class ImportFileViewsTests(TestCase):
     def setUp(self):

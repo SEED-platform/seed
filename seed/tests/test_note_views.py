@@ -31,6 +31,7 @@ class NoteViewTests(TestCase):
         }
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user)
+        self.org.add_member(self.user, self.org.root.id)
 
         # Fake Factories
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
@@ -54,8 +55,29 @@ class NoteViewTests(TestCase):
         self.tl.notes.add(self.note3)
         self.tl.notes.add(self.note4)
 
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        self.child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, self.child.pk)
+        self.org.save()
+
+    def test_get_notes_property_permissions(self):
+        url = reverse('api:v3:property-notes-list', args=[self.pv.pk]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.client.login(**self.user_with_nothing_details)
+        url = reverse('api:v3:property-notes-list', args=[self.pv.pk]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_get_notes_property(self):
-        url = reverse('api:v3:property-notes-list', args=[self.pv.pk])
+        url = reverse('api:v3:property-notes-list', args=[self.pv.pk]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = json.loads(response.content)

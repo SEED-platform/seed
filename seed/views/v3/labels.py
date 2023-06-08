@@ -13,6 +13,7 @@ from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import DecoratorMixin
 from seed.filters import LabelFilterBackend
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
 from seed.utils.api import drf_api_endpoint
