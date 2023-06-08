@@ -1334,7 +1334,21 @@ def geocode_and_match_buildings_task(file_pk):
         # Loop through the property_state objects.
         for property_state in property_states:
             # Find the cycle that corresponds with property_state year_ending.
-            cycle = Cycle.objects.filter(end__year=property_state.year_ending.year, organization_id=property_state.organization_id).first()
+            # _log.error( '+++++++++++++++++++++')
+            # _log.error(property_state.year_ending.year)
+            # _log.error(property_state.year_ending.month)
+            # _log.error(property_state.year_ending.day)
+            cycle = Cycle.objects.filter(
+                end__year=property_state.year_ending.year,
+                end__month=property_state.year_ending.month,
+                end__day=property_state.year_ending.day,
+                organization_id=property_state.organization_id
+            ).first()
+            # Check if cycle is none
+            if cycle is None:
+                cycle = Cycle.objects.filter(
+                    organization_id=property_state.organization_id
+                ).first()
             property_state_ids_by_cycle[cycle.id].append(property_state.id)
 
         map_additional_models_group = group(
