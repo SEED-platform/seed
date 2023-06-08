@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import os.path as osp
 from datetime import datetime
+from django.utils import timezone
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -31,6 +32,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
     Column,
+    Cycle,
     Measure,
     Meter,
     MeterReading,
@@ -1221,3 +1223,101 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         num_bsync_meters = 6
         meters = Meter.objects.filter(scenario__in=scenario)
         self.assertEqual(meters.count(), num_bsync_meters)
+
+
+class TestMultiCycleImport(DataMappingBaseTestCase):
+
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        # Create cycles
+
+        self.cycle2020, _ = Cycle.objects.get_or_create(
+            name='Test Cycle 2020',
+            organization=self.org,
+            start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+        self.cycle2021, _ = Cycle.objects.get_or_create(
+            name='Test Cycle 2021',
+            organization=self.org,
+            start=datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+        self.cycle2022, _ = Cycle.objects.get_or_create(
+            name='Test Cycle 2022',
+            organization=self.org,
+            start=datetime(2022, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2022, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+        # Default cycle will be the first returned for an org (aka the most recent)
+        self.cycle_default, _ = Cycle.objects.get_or_create(
+            name='Default Cycle',
+            organization=self.org,
+            start=datetime(2000, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2000, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
+
+        # Property for cycle 2020
+        base_details = {
+            'address_line_1': '2020 st',
+            'import_file_id': self.import_file.id,
+            'year_ending': datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone())
+        }
+        self.property_state_factory.get_property_state(**base_details)
+
+        # Property for cycle 2020 (day is not end of month)
+        base_details['address_line_1'] = '2020 ave'
+        base_details['year_ending'] = datetime(2020, 12, 1, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        # Property for cycle default cycle, month is not an exact match
+        # this should eventually be in the "2020" cycle
+        base_details['address_line_1'] = 'default st'
+        base_details['year_ending'] = datetime(2020, 10, 1, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        # Property for cycle 2021
+        base_details['address_line_1'] = '2021 st'
+        base_details['year_ending'] = datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        # Property for cycle 2022
+        base_details['address_line_1'] = '2022 st'
+        base_details['year_ending'] = datetime(2022, 12, 31, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        # Set cycle to None to trigger MultiCycle import
+        self.import_file.cycle = None
+        self.import_file.mapping_done = True
+        self.import_file.save()
+
+
+
+    def test_multi_cycle_import(self):
+
+        geocode_and_match_buildings_task(self.import_file.id)
+        
+        # pss = PropertyState.objects.all()
+        # pvs = PropertyView.objects.all()
+        # cys = [x.cycle for x in pvs]
+
+        def get_cycle(ps):
+            return ps.propertyview_set.first().cycle
+
+        p2020a = PropertyState.objects.get(address_line_1='2020 st')
+        p2020b = PropertyState.objects.get(address_line_1='2020 ave')
+        p2021 = PropertyState.objects.get(address_line_1='2021 st')
+        p2022 = PropertyState.objects.get(address_line_1='2022 st')
+        p_default = PropertyState.objects.get(address_line_1='default st')
+
+        self.assertEqual(get_cycle(p2020a), self.cycle2020)
+        self.assertEqual(get_cycle(p2020b), self.cycle2020)
+        self.assertEqual(get_cycle(p2021), self.cycle2021)
+        self.assertEqual(get_cycle(p2022), self.cycle2022)
+        self.assertEqual(get_cycle(p_default), self.cycle_default)
+

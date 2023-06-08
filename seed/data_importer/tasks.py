@@ -1338,10 +1338,13 @@ def geocode_and_match_buildings_task(file_pk):
             # _log.error(property_state.year_ending.year)
             # _log.error(property_state.year_ending.month)
             # _log.error(property_state.year_ending.day)
+
+            # add error catching if year ending DNE 
             cycle = Cycle.objects.filter(
                 end__year=property_state.year_ending.year,
                 end__month=property_state.year_ending.month,
-                end__day=property_state.year_ending.day,
+                # timezones causing an issue with year_ending.
+                # end__day=property_state.year_ending.day,
                 organization_id=property_state.organization_id
             ).first()
             # Check if cycle is none
