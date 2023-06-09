@@ -18,8 +18,8 @@ class Cycle(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='cycles', blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255)
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.DateField()
+    end = models.DateField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -38,8 +38,8 @@ class Cycle(models.Model):
             return Cycle.objects.create(
                 name=cycle_name,
                 organization=organization,
-                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
+                start=date(year, 1, 1),
+                end=date(year + 1, 1, 1)
             )
         else:
             return cycle
