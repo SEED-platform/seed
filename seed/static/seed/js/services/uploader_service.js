@@ -66,9 +66,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * data into BuildingSnapshot instances.
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
-    uploader_factory.save_raw_data = function (file_id, cycle_id) {
+    uploader_factory.save_raw_data = function (file_id, cycle_id, multiple_cycle_upload) {
       return $http.post('/api/v3/import_files/' + file_id + '/start_save_data/', {
-        cycle_id: cycle_id
+        cycle_id: cycle_id,
+        multiple_cycle_upload: multiple_cycle_upload
       }, {
         params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {

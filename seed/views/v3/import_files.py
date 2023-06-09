@@ -627,6 +627,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         cycle_id = body.get('cycle_id')
+        multiple_cycle_upload = body.get('multiple_cycle_upload', False)
         if not cycle_id:
             return JsonResponse({
                 'status': 'error',
@@ -640,6 +641,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             if cycle:
                 # assign the cycle id to the import file object
                 import_file.cycle = cycle
+                import_file.multiple_cycle_upload = multiple_cycle_upload
                 import_file.save()
             else:
                 return JsonResponse({

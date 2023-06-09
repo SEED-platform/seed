@@ -100,10 +100,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         filename: '',
         import_file_id: 0
       };
-      $scope.multipleCycle = {
-        name: 'Multiple Cycle Upload',
-        id: 'year_ending'
-      }
+
       /**
        * uploader: hold the state of the upload.
        * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
@@ -159,12 +156,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.step.number = step;
       };
 
-      $scope.saveMultipleCycleUpload = function () {
-        $scope.multipleCycleUpload = ! $scope.multipleCycleUpload;
-        if ($scope.multipleCycleUpload) {
-          $scope.selectedCycle = $scope.multipleCycle;
-          inventory_service.save_last_cycle($scope.multipleCycle.id);
-        }
+      $scope.toggleMultipleCycleUpload = function () {
+        $scope.multipleCycleUpload = !$scope.multipleCycleUpload;
       };
 
       $scope.cycleChanged = function (selected) {
@@ -391,7 +384,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               }
               // Portfolio Data
               if (current_step === 4) {
-                save_map_match_PM_data(file.file_id, file.cycle_id);
+                save_map_match_PM_data(file.file_id, file.cycle_id, $scope.multipleCycleUpload);
               }
             }
             break;
@@ -419,10 +412,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: the id of the import file
        * @param {string} cycle_id: the id of the cycle
        */
-      var save_map_match_PM_data = function (file_id, cycle_id) {
+      var save_map_match_PM_data = function (file_id, cycle_id, multiple_cycle_upload=false) {
         $scope.uploader.status_message = 'saving energy data';
         $scope.uploader.progress = 25;
-        uploader_service.save_raw_data(file_id, cycle_id)
+        uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload)
           .then(function (data) {
             // resolve save_raw_data promise
             monitor_save_raw_data(data.progress_key, file_id);

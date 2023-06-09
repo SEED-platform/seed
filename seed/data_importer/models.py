@@ -552,6 +552,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
     matching_results_data = models.JSONField(default=dict, blank=True)
+    multiple_cycle_upload = models.BooleanField(default=False, blank=True, null=True)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)

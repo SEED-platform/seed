@@ -1327,7 +1327,7 @@ def geocode_and_match_buildings_task(file_pk):
     # and map each cycle individually
     # Todo: add a status to import_file to indicate multiple cycle upload
     # maybe add new source_type Assessed Raw Multiple Cycle?
-    if import_file.cycle is None:
+    if import_file.multiple_cycle_upload:
         # Create a dictionary to store the property_state_ids_by_cycle.
         property_state_ids_by_cycle = defaultdict(list)
 
@@ -1337,7 +1337,8 @@ def geocode_and_match_buildings_task(file_pk):
 
             # add error catching if year ending DNE 
             cycle = Cycle.objects.filter(
-                end__year=property_state.year_ending.year,
+                end__date__gte=property_state.year_ending.date,
+                start__date__lte=property_state.year_ending.date,
                 organization_id=property_state.organization_id
             ).first()
             # Check if cycle is none
