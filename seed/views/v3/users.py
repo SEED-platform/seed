@@ -174,7 +174,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_owner_or_superuser_without_org', False)
     def create(self, request):
         """
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
