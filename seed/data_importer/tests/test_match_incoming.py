@@ -1235,6 +1235,12 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
         # Create cycles
+        self.cycle2010_2014, _ = Cycle.objects.get_or_create(
+            name='Test Cycle 2010 to 2014',
+            organization=self.org,
+            start=datetime(2010, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2014, 12, 31, tzinfo=timezone.get_current_timezone()),
+        )
         self.cycle2018, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2018',
             organization=self.org,
@@ -1267,12 +1273,24 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
             end=datetime(1999, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
+
+        base_details = {'import_file_id': self.import_file.id}
+        # Properties for cycle 2010_2014
+        base_details['property_name'] = 'p2010_2014a'
+        base_details['year_ending'] = datetime(2012, 12, 12, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        base_details['property_name'] = 'p2010_2014b'
+        base_details['year_ending'] = datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
+        base_details['property_name'] = 'p2010_2014c'
+        base_details['year_ending'] = datetime(2014, 10, 15, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+
         # Properties for cycle 2018
-        base_details = {
-            'import_file_id': self.import_file.id,
-            'property_name': 'p2018a',
-            'year_ending': datetime(2018, 12, 31, tzinfo=timezone.get_current_timezone())
-        }
+        base_details['property_name'] = 'p2018a'
+        base_details['year_ending'] = datetime(2018, 12, 31, tzinfo=timezone.get_current_timezone())
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name']= 'p2018b'
@@ -1306,9 +1324,14 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         base_details['year_ending'] = datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone())
         self.property_state_factory.get_property_state(**base_details)
 
-        # Property for default cycle 
-        base_details['property_name'] = 'p_default'
-        base_details['year_ending'] = datetime(2010, 5, 25, tzinfo=timezone.get_current_timezone())
+        # Properties with year_ending that do not match any cycles will be placed in default cycle 
+        base_details['property_name'] = 'p_default_a'
+        base_details['year_ending'] = datetime(1990, 5, 25, tzinfo=timezone.get_current_timezone())
+        self.property_state_factory.get_property_state(**base_details)
+        
+        # Properties with missing year_ending will be placed in default cycle
+        base_details['property_name'] = 'p_default_b'
+        base_details.pop('year_ending')
         self.property_state_factory.get_property_state(**base_details)
 
         # Set cycle to None to trigger MultiCycle import
@@ -1322,6 +1345,9 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         def get_cycle(ps):
             return ps.propertyview_set.first().cycle
 
+        p2010_2014a = PropertyState.objects.get(property_name='p2010_2014a')
+        p2010_2014b = PropertyState.objects.get(property_name='p2010_2014b')
+        p2010_2014c = PropertyState.objects.get(property_name='p2010_2014c')
         p2018a = PropertyState.objects.get(property_name='p2018a')
         p2018b = PropertyState.objects.get(property_name='p2018b')
         p2019a = PropertyState.objects.get(property_name='p2019a')
@@ -1330,7 +1356,8 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         p2020b = PropertyState.objects.get(property_name='p2020b')
         p2021a = PropertyState.objects.get(property_name='p2021a')
         p2021b = PropertyState.objects.get(property_name='p2021b')
-        p_default = PropertyState.objects.get(property_name='p_default')
+        p_default_a = PropertyState.objects.get(property_name='p_default_a')
+        p_default_b = PropertyState.objects.get(property_name='p_default_b')
 
         self.assertEqual(get_cycle(p2018a), self.cycle2018)
         self.assertEqual(get_cycle(p2018b), self.cycle2018)
@@ -1340,5 +1367,9 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.assertEqual(get_cycle(p2020b), self.cycle2020)
         self.assertEqual(get_cycle(p2021a), self.cycle2021)
         self.assertEqual(get_cycle(p2021b), self.cycle2021)
-        self.assertEqual(get_cycle(p_default), self.cycle_default)
+        self.assertEqual(get_cycle(p_default_a), self.cycle_default)
+        self.assertEqual(get_cycle(p_default_b), self.cycle_default)
+        self.assertEqual(get_cycle(p2010_2014a), self.cycle2010_2014)
+        self.assertEqual(get_cycle(p2010_2014b), self.cycle2010_2014)
+        self.assertEqual(get_cycle(p2010_2014c), self.cycle2010_2014)
 
