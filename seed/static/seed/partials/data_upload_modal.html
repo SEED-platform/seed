@@ -45,7 +45,7 @@
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-change="toggleMultipleCycleUpload()" value="true">
+                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()">
                                     <span>Multiple Cycle Upload</span>
                                 </label>
                             </div>
