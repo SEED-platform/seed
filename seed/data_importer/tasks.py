@@ -1336,9 +1336,10 @@ def geocode_and_match_buildings_task(file_pk):
             # Find the cycle that corresponds with property_state year_ending.
 
             # add error catching if year ending DNE 
+            # Find a cycle that start <= year_ending <= end
+            if property_state.year_ending:
             cycle = Cycle.objects.filter(
-                end__date__gte=property_state.year_ending.date,
-                start__date__lte=property_state.year_ending.date,
+                end__year=property_state.year_ending.year,
                 organization_id=property_state.organization_id
             ).first()
             # Check if cycle is none
