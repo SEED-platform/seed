@@ -379,7 +379,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 if (file.source_type === 'BuildingSync Raw') {
                   validate_use_cases_then_save(file.file_id, file.cycle_id);
                 } else {
-                  save_raw_assessed_data(file.file_id, file.cycle_id, false);
+                  save_raw_assessed_data(file.file_id, file.cycle_id, false, $scope.multipleCycleUpload);
                 }
               }
               // Portfolio Data
@@ -602,10 +602,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param cycle_id
        * @param is_meter_data
        */
-      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data) {
+      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
-        uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
+        uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then(function (data) {
           var progress = _.clamp(data.progress, 0, 100);
           uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
             $scope.uploader.status_message = 'saving complete';

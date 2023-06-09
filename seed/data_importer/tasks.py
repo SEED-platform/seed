@@ -1345,8 +1345,8 @@ def geocode_and_match_buildings_task(file_pk):
                 ).first()
             # Check if cycle is none
             if cycle is None:
-                cycle = Cycle.objects.filter(
-                    organization_id=property_state.organization_id
+                cycle = Cycle.objects.get(
+                    pk=import_file.cycle_id
                 ).first()
             property_state_ids_by_cycle[cycle.id].append(property_state.id)
 
