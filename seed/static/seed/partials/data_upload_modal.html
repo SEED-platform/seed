@@ -45,10 +45,11 @@
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()">
+                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()" />
                                     <span>Multiple Cycle Upload</span>
                                 </label>
                             </div>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-content-section" ng-hide="uploader.in_progress">
@@ -58,7 +59,7 @@
                           <p translate>MULTI_FILE_EXCEL_NOT_SUPPORTED</p>
                         </div>
                         <div class="col-sm-8" style="margin-bottom: 10px;" ng-disabled="!selectedCycle">
-                            <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="Assessed Raw Test" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle">
+                            <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle">
                                 <i class="fa fa-table fa-2x"></i>
                                 <span class="grow">{$:: 'Upload a Spreadsheet' | translate $}</span>
                             </div>
