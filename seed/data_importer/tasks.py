@@ -1335,7 +1335,6 @@ def geocode_and_match_buildings_task(file_pk):
         for property_state in property_states:
             # Find the cycle that corresponds with property_state year_ending.
 
-            # add error catching if year ending DNE 
             # Find a cycle that start <= year_ending <= end
             if property_state.year_ending:
                 cycle = Cycle.objects.filter(
@@ -1347,7 +1346,7 @@ def geocode_and_match_buildings_task(file_pk):
             if cycle is None:
                 cycle = Cycle.objects.get(
                     pk=import_file.cycle_id
-                ).first()
+                )
             property_state_ids_by_cycle[cycle.id].append(property_state.id)
 
         map_additional_models_group = group(

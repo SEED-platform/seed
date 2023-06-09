@@ -5,10 +5,9 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
-from datetime import date, datetime
+from datetime import date
 
 from django.db import models
-from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization

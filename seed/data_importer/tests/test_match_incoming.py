@@ -6,11 +6,11 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import os.path as osp
-from datetime import datetime
-from django.utils import timezone
+from datetime import datetime, date
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from mock import patch
 
 from config.settings.common import BASE_DIR
@@ -1273,69 +1273,69 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
             end=datetime(1999, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
-
         base_details = {'import_file_id': self.import_file.id}
         # Properties for cycle 2010_2014
         base_details['property_name'] = 'p2010_2014a'
-        base_details['year_ending'] = datetime(2012, 12, 12, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2012, 12, 12)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2010_2014b'
-        base_details['year_ending'] = datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2010, 10, 10)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2010_2014c'
-        base_details['year_ending'] = datetime(2014, 10, 15, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2014, 10, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2018
         base_details['property_name'] = 'p2018a'
-        base_details['year_ending'] = datetime(2018, 12, 31, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2018, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
-        base_details['property_name']= 'p2018b'
-        base_details['year_ending']= datetime(2018, 6, 15, tzinfo=timezone.get_current_timezone())
+        base_details['property_name'] = 'p2018b'
+        base_details['year_ending'] = date(2018, 6, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2019
-        base_details['property_name']= 'p2019a'
-        base_details['year_ending']= datetime(2019, 12, 31, tzinfo=timezone.get_current_timezone())
+        base_details['property_name'] = 'p2019a'
+        base_details['year_ending'] = date(2019, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
-        base_details['property_name']= 'p2019b'
-        base_details['year_ending']= datetime(2019, 6, 15, tzinfo=timezone.get_current_timezone())
+        base_details['property_name'] = 'p2019b'
+        base_details['year_ending'] = date(2019, 6, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2020
-        base_details['property_name']= 'p2020a'
-        base_details['year_ending']= datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone())
+        base_details['property_name'] = 'p2020a'
+        base_details['year_ending'] = date(2020, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2020b'
-        base_details['year_ending'] = datetime(2020, 12, 30, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2020, 12, 30)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2021
-        base_details['property_name']= 'p2021a'
-        base_details['year_ending']= datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone())
+        base_details['property_name'] = 'p2021a'
+        base_details['year_ending'] = date(2021, 1, 1)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2021b'
-        base_details['year_ending'] = datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(2021, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
-        # Properties with year_ending that do not match any cycles will be placed in default cycle 
+        # Properties with year_ending that do not match any cycles will be placed in default cycle
         base_details['property_name'] = 'p_default_a'
-        base_details['year_ending'] = datetime(1990, 5, 25, tzinfo=timezone.get_current_timezone())
+        base_details['year_ending'] = date(1990, 5, 25)
         self.property_state_factory.get_property_state(**base_details)
-        
+
         # Properties with missing year_ending will be placed in default cycle
         base_details['property_name'] = 'p_default_b'
         base_details.pop('year_ending')
         self.property_state_factory.get_property_state(**base_details)
 
         # Set cycle to None to trigger MultiCycle import
-        self.import_file.cycle = None
+        self.import_file.cycle = self.cycle_default
+        self.import_file.multiple_cycle_upload = True
         self.import_file.mapping_done = True
         self.import_file.save()
 
@@ -1372,4 +1372,3 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.assertEqual(get_cycle(p2010_2014a), self.cycle2010_2014)
         self.assertEqual(get_cycle(p2010_2014b), self.cycle2010_2014)
         self.assertEqual(get_cycle(p2010_2014c), self.cycle2010_2014)
-
