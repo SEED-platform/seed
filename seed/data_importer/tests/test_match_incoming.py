@@ -6,7 +6,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import os.path as osp
-from datetime import datetime, date
+from datetime import date, datetime
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
