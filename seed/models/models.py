@@ -13,7 +13,7 @@ from seed.utils.generic import obj_to_dict
 
 # The MAX_NAME_LENGTH was taken out of Projects when it was removed.
 # It really isn't used in many models and doesn't really add value, but
-# we are leaving it for posterity sake.
+# we are leaving it for posterity.
 MAX_NAME_LENGTH = 255
 
 ASSESSED_RAW = 0
@@ -22,13 +22,17 @@ ASSESSED_BS = 2
 PORTFOLIO_BS = 3
 COMPOSITE_BS = 4
 BUILDINGSYNC_RAW = 5
+GREEN_BUTTON = 6
+PORTFOLIO_METER_USAGE = 7
 SEED_DATA_SOURCES = (
     (ASSESSED_RAW, 'Assessed Raw'),
-    (ASSESSED_BS, 'Assessed'),
     (PORTFOLIO_RAW, 'Portfolio Raw'),
+    (ASSESSED_BS, 'Assessed'),
     (PORTFOLIO_BS, 'Portfolio'),
     (COMPOSITE_BS, 'BuildingSnapshot'),  # I don't think we need this, but I am leaving it for now.
     (BUILDINGSYNC_RAW, 'BuildingSync Raw'),
+    (GREEN_BUTTON, 'GreenButton'),
+    (PORTFOLIO_METER_USAGE, 'PM Meter Usage'),
 )
 
 # State of the data that was imported. This will be used to flag which

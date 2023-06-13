@@ -538,8 +538,8 @@ def _map_data_create_tasks(import_file_id, progress_key):
     #     return progress_data.finish_with_error('waiting for raw data save.')
 
     source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
+        'Portfolio Raw': PORTFOLIO_RAW,
         'BuildingSync Raw': BUILDINGSYNC_RAW
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
@@ -1429,8 +1429,8 @@ def map_additional_models(file_pk):
         _log.warning("This should never happen in production")
 
     source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
+        'Portfolio Raw': PORTFOLIO_RAW,
         'BuildingSync Raw': BUILDINGSYNC_RAW
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
@@ -1594,8 +1594,8 @@ def _map_additional_models(ids, file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
+        'Portfolio Raw': PORTFOLIO_RAW,
         'BuildingSync Raw': BUILDINGSYNC_RAW
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)

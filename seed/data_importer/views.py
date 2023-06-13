@@ -365,7 +365,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         f = ImportFile.objects.create(import_record=record,
                                       uploaded_filename=file_name,
                                       file=path,
-                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
                                       **{'source_program': 'PortfolioManager',
                                          'source_program_version': '1.0'})
 

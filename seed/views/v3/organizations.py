@@ -44,6 +44,9 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import (
     AUDIT_IMPORT,
+    GREEN_BUTTON,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Column,
     Cycle,
     Property,
@@ -1538,7 +1541,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         import_meterdata = ImportFile.objects.create(
             import_record=import_record,
-            source_type='PM Meter Usage',
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle
@@ -1552,7 +1555,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         import_greenbutton = ImportFile.objects.create(
             import_record=import_record,
-            source_type='GreenButton',
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle,

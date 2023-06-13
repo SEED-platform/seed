@@ -44,7 +44,7 @@ from seed.models import (
     Scenario,
     TaxLotState
 )
-from seed.models.models import DATA_STATE_MAPPING
+from seed.models.models import DATA_STATE_MAPPING, SEED_DATA_SOURCES
 from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class TestDataImport(DataMappingBaseTestCase):
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type=ASSESSED_RAW,
+            source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1],
         )
         import_file.raw_save_done = True
         import_file.save()
