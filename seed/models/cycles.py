@@ -18,7 +18,7 @@ class Cycle(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255)
     start = models.DateField()
-    end = models.DateField() 
+    end = models.DateField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

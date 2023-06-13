@@ -10,7 +10,6 @@ from datetime import date, datetime
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 from mock import patch
 
 from config.settings.common import BASE_DIR
