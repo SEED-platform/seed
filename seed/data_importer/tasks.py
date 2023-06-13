@@ -1336,6 +1336,7 @@ def geocode_and_match_buildings_task(file_pk):
             # Find the cycle that corresponds with property_state year_ending.
 
             # Find a cycle that start <= year_ending <= end
+            cycle = None
             if property_state.year_ending:
                 cycle = Cycle.objects.filter(
                     end__gte=property_state.year_ending,
@@ -1740,10 +1741,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     sub_progress_data.step('Pairing Data')
     view = next(chain(merged_property_views, merged_taxlot_views))
-    # Check if 'view' is an array, then
-    # use the first element, otherwise use 'view' as is
-    if isinstance(view, list):
-        view = view[0]
     cycle = view.cycle
     org = view.state.organization
 
@@ -1810,12 +1807,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     for pv in merged_property_views:
         # if pv.state.lot_number and ";" in pv.state.lot_number:
         #     pdb.set_trace()
-
-        # Check if 'pv' is an array, then
-        # use the first element, otherwise use 'pv' as is
-        if isinstance(pv, list):
-            if len(pv) > 0:
-                pv = pv[0]
 
         pv_key = property_m2m_keygen.calculate_comparison_key(pv.state)
         # TODO: Refactor pronto.  Iterating over the tax lot is bad implementation.

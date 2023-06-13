@@ -633,8 +633,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'error',
                 'message': 'must pass cycle_id of the cycle to save the data'
             }, status=status.HTTP_400_BAD_REQUEST)
-        elif cycle_id == 'year_ending':
-            import_file.save()
         else:
             # find the cycle
             cycle = Cycle.objects.get(id=cycle_id)
