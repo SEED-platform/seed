@@ -43,6 +43,11 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (form.$invalid) {
           return;
         }
+        // The datepicker component returns date objects with timezones
+        // ex: Mon Jan 01 2018 00:00:00 GMT-0700 (Mountain Standard Time)
+        // Cycle model requires YYYY-MM-DD without timezone
+        $scope.new_cycle.start = $scope.format_date($scope.new_cycle.start)
+        $scope.new_cycle.end = $scope.format_date($scope.new_cycle.end)
         cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function () {
           var msg = translateMessage('CREATED_NEW_CYCLE', {
             cycle_name: getTruncatedName($scope.new_cycle.name)
@@ -57,6 +62,9 @@ angular.module('BE.seed.controller.cycle_admin', [])
         );
       };
 
+      $scope.format_date = (date) => {
+        return date.toISOString().split('T')[0]
+      }
 
       /* Checks for existing cycle name for inline edit form.
        Form assumes function will return a string if there's an existing cycle */

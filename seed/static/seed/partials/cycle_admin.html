@@ -71,11 +71,11 @@
                         </td>
                         <td>
                             <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
+                            <span ng-show="!rowform.$visible">{$:: format_date(cycle.start) $}</span>
                         </td>
                         <td>
                             <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
+                            <span ng-show="!rowform.$visible">{$:: format_date(cycle.end) $}</span>
                         </td>
                         <td style="text-align: right; white-space: nowrap">
                             <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
