@@ -5,20 +5,20 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
-from datetime import date
+from datetime import date, datetime
 
 from django.db import models
+from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-
 
 class Cycle(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='cycles', blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255)
-    start = models.DateField()
-    end = models.DateField()
+    start = models.DateTimeField()
+    end = models.DateTimeField()
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -37,8 +37,8 @@ class Cycle(models.Model):
             return Cycle.objects.create(
                 name=cycle_name,
                 organization=organization,
-                start=date(year, 1, 1),
-                end=date(year + 1, 1, 1)
+                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
+                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone())
             )
         else:
             return cycle
