@@ -32,6 +32,14 @@ def requires_parent_org_owner(org_user):
     )
 
 
+def requires_owner_or_superuser_without_org(org_user):
+    """
+    Allows superusers to use the endpoint with or without an organization_id
+    Owners can only use the endpoint with an organization_id
+    """
+    return requires_owner(org_user) or requires_superuser(org_user)
+
+
 def requires_owner(org_user):
     """Owners, and only owners have owner perms."""
     is_parent_org_owner = False
@@ -118,6 +126,7 @@ PERMS = {
     # requires_superuser is the only role that can be on organization-agnostic endpoints
     'requires_superuser': requires_superuser,
     'requires_parent_org_owner': requires_parent_org_owner,
+    'requires_owner_or_superuser_without_org': requires_owner_or_superuser_without_org,
     'requires_owner': requires_owner,
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
@@ -157,11 +166,12 @@ def _make_resp(message_name):
 # Return nothing if valid, otherwise return Forbidden response
 def _validate_permissions(perm_name, request, requires_org):
     if not requires_org:
-        if perm_name != 'requires_superuser':
-            raise AssertionError('requires_org=False can only be combined with requires_superuser')
+        if perm_name not in ['requires_superuser', 'requires_owner_or_superuser_without_org']:
+            raise AssertionError('requires_org=False can only be combined with requires_superuser or '
+                                 'requires_owner_or_superuser_without_org')
         if request.user.is_superuser:
             return
-        else:
+        elif perm_name != 'requires_owner_or_superuser_without_org':
             return _make_resp('perm_denied')
 
     org_id = get_org_id(request)
