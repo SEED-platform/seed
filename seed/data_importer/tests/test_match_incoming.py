@@ -10,6 +10,7 @@ from datetime import date, datetime
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 from mock import patch
 
 from config.settings.common import BASE_DIR
@@ -1237,45 +1238,45 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.cycle2010_2014, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2010 to 2014',
             organization=self.org,
-            start=date(2010, 1, 1),
-            end=date(2014, 12, 31),
+            start=datetime(2010, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2014, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2018, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2018',
             organization=self.org,
-            start=date(2018, 1, 1),
-            end=date(2018, 12, 31),
+            start=datetime(2018, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2018, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2019, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2019',
             organization=self.org,
-            start=date(2019, 1, 1),
-            end=date(2019, 12, 31),
+            start=datetime(2019, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2019, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2020, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2020',
             organization=self.org,
-            start=date(2020, 1, 1),
-            end=date(2020, 12, 31),
+            start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2021, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2021',
             organization=self.org,
-            start=date(2021, 1, 1),
-            end=date(2021, 12, 31),
+            start=datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2022_april, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2021',
             organization=self.org,
-            start=date(2022, 4, 1),
-            end=date(2023, 4, 1),
+            start=datetime(2022, 4, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2023, 4, 1, tzinfo=timezone.get_current_timezone()),
         )
         # Default cycle will be the first returned for an org (aka the most recent)
         self.cycle_default, _ = Cycle.objects.get_or_create(
             name='Default Cycle',
             organization=self.org,
-            start=date(1999, 1, 1),
-            end=date(1999, 12, 31),
+            start=datetime(1999, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(1999, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         base_details = {'import_file_id': self.import_file.id}

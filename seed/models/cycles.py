@@ -13,6 +13,7 @@ from django.utils import timezone
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 
+
 class Cycle(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='cycles', blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)

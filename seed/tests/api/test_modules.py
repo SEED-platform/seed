@@ -301,8 +301,8 @@ def cycles(header, main_url, organization_id, log):
     print('\nAPI Function: update_cycle')
     partmsg = 'update_cycle'
     payload = {
-        'start': "2015-01-01",
-        'end': "2016-01-01",
+        'start': "2015-01-01T08:00",
+        'end': "2016-01-01T08:00",
         'name': "TestCycle",
         'id': cycle_id
     }

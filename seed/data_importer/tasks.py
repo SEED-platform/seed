@@ -30,6 +30,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.utils import ProgrammingError
+from django.utils import timezone
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
@@ -1338,9 +1339,10 @@ def geocode_and_match_buildings_task(file_pk):
             # Find a cycle that start <= year_ending <= end
             cycle = None
             if property_state.year_ending:
+                year_ending_aware = datetime.combine(property_state.year_ending, datetime.min.time(), tzinfo=timezone.get_current_timezone())
                 cycle = Cycle.objects.filter(
-                    end__gte=property_state.year_ending,
-                    start__lte=property_state.year_ending,
+                    end__gte=year_ending_aware,
+                    start__lte=year_ending_aware,
                     organization_id=property_state.organization_id
                 ).first()
             # Check if cycle is none
