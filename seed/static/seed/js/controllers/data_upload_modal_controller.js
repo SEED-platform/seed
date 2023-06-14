@@ -68,6 +68,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       var cached_cycle = inventory_service.get_last_cycle();
       $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
       $scope.multipleCycleUpload = false;
+      $scope.show_help = false;
 
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';

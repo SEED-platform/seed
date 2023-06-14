@@ -39,15 +39,22 @@
             <uib-tab index="0" heading="{$:: 'Property and Tax Lot Data' | translate $}">
                 <div class="tab-content-section" ng-hide="uploader.in_progress">
                     <div class="row">
-                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Cycle</label>
+                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;"><span ng-show="multipleCycleUpload" translate>Default</span> {$:: 'Cycle' | translate $}</label>
                         <div class="col-sm-8">
                             <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
-                            <div class="checkbox">
+                            <div class="checkbox"
+                                ng-mouseover="show_help = true"
+                                ng-mouseout="show_help = false">
                                 <label>
                                     <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()" />
                                     <span>Multiple Cycle Upload</span>
                                 </label>
+                                <div 
+                                    class="alert alert-info help-text" 
+                                    ng-show="show_help">
+                                    When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match.
+                                </div>
                             </div>
                         </div>
                     </div>
