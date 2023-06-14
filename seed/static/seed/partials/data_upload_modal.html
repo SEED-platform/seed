@@ -43,16 +43,13 @@
                         <div class="col-sm-8">
                             <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
-                            <div class="checkbox"
-                                ng-mouseover="show_help = true"
-                                ng-mouseout="show_help = false">
+                            <div class="checkbox">
                                 <label>
                                     <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()" />
                                     <span>Multiple Cycle Upload</span>
                                 </label>
-                                <div 
-                                    class="alert alert-info help-text" 
-                                    ng-show="show_help">
+                                <i class="ui-grid-icon-info-circled" ng-mouseover="show_help = true" ng-mouseout="show_help = false"></i>
+                                <div class="alert alert-info" ng-show="show_help" style="position: absolute; z-index: 1;" translate>
                                     When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match.
                                 </div>
                             </div>
@@ -238,7 +235,7 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li>{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -285,7 +282,7 @@
         <div class="row">
             <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
-                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li>{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
