@@ -158,7 +158,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # assert access_level_names is deep enough
-        depth = AccessLevelInstance.objects.filter(organization=org).aggregate(Max('depth')).get("depth__max", 0)
+        depth = AccessLevelInstance.objects.filter(organization=org).aggregate(max_depth=Max('depth')).get("max_depth", 0)
         if len(new_access_level_names) < depth:
             return JsonResponse({
                 'status': 'error',
