@@ -29,7 +29,7 @@ from quantityfield.units import ureg
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -70,6 +70,7 @@ class Property(models.Model):
     The property can also reference a parent property.
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="properties")
 
     # Handle properties that may have multiple properties (e.g., buildings)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
@@ -127,6 +128,14 @@ class Property(models.Model):
                     else:
                         # If self did have a similar meter, copy readings assuming overlaps are possible.
                         target_meter.copy_readings(source_meter, overlaps_possible=True)
+
+
+@receiver(pre_save, sender=Property)
+def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this Property as the root."""
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
 
 
 class PropertyState(models.Model):

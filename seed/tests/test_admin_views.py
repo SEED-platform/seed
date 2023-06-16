@@ -110,7 +110,8 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER'
+            'role_level': 'ROLE_MEMBER',
+            'access_level_instance_id': org.root.id,
         }
 
         res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)

@@ -9,4 +9,5 @@
      --><a ui-sref="programs(::{organization_id: org.id})" ng-class="::{active: ['program_setup', 'programs'].includes(state.name)}" translate>Program Setup</a><!--
      --><a ui-sref="organization_settings(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Settings</a><!--
      --><a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a><!--
-     --><a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a>
+     --><a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a><!--
+     --><a ui-sref="organization_access_level_tree(::{organization_id: org.id})" ui-sref-active="active" translate>Access Level Tree</a>

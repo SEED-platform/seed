@@ -8,8 +8,10 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
-from django.db.models.signals import pre_delete
+from django.db import models, transaction
+from django.db.models.signals import post_save, pre_delete, pre_save
+from django.dispatch import receiver
+from treebeard.ns_tree import NS_Node
 
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
@@ -64,6 +66,7 @@ class OrganizationUser(models.Model):
     role_level = models.IntegerField(
         default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES
     )
+    access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -88,6 +91,54 @@ class OrganizationUser(models.Model):
         return 'OrganizationUser: {0} <{1}> ({2})'.format(
             self.user.username, self.organization.name, self.pk
         )
+
+
+class AccessLevelInstance(NS_Node):
+    """Node in the Accountibilty Hiarchy tree"""
+    name = models.CharField(max_length=100, null=False)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
+    # path automaticly mantained dict of ancestors names by access level names.
+    # See get_path and set_path.
+    path = models.JSONField(null=False)
+
+    node_order_by = ['name']
+
+    # TODO: Add constraint that siblings cannot have same name.
+
+    def get_path(self):
+        """get a dictionary detailing the ancestors of this Access Level Instance
+        """
+        level_names = self.organization.access_level_names
+        ancestors = {
+            level_names[depth - 1]: name
+            for depth, name
+            in self.get_ancestors().values_list("depth", "name")
+        }
+        ancestors[level_names[self.depth - 1]] = self.name
+
+        return ancestors
+
+    def __str__(self):
+        access_level_name = self.organization.access_level_names[self.depth - 1]
+        return f"{self.name}: {self.organization.name} Access Level {access_level_name}"
+
+
+@receiver(pre_save, sender=AccessLevelInstance)
+def set_path(sender, instance, **kwargs):
+    # if instance is new, set path
+    if instance.id is None:
+        instance.path = instance.get_path()
+
+    # else, if we updated the name...
+    else:
+        previous = AccessLevelInstance.objects.get(pk=instance.id)
+        if instance.name != previous.name:
+            level_name = instance.organization.access_level_names[instance.depth - 1]
+            # update our path
+            instance.path[level_name] = instance.name
+            # update our children's path
+            for ali in instance.get_descendants():
+                ali.path[level_name] = instance.name
 
 
 class Organization(models.Model):
@@ -218,6 +269,9 @@ class Organization(models.Model):
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
 
+    # TODO: add constraint tha that these must be unique
+    access_level_names = models.JSONField(default=list)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
@@ -236,7 +290,7 @@ class Organization(models.Model):
         """Return True if user object has a relation to this organization."""
         return user in self.users.all()
 
-    def add_member(self, user, role=ROLE_OWNER):
+    def add_member(self, user, access_level_instance_id, role=ROLE_OWNER):
         """Add a user to an organization. Returns a boolean if a new OrganizationUser record was created"""
         if OrganizationUser.objects.filter(user=user, organization=self).exists():
             return False
@@ -246,7 +300,7 @@ class Organization(models.Model):
             user.is_active = True
             user.save()
 
-        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, access_level_instance_id=access_level_instance_id, role_level=role)
 
         return created
 
@@ -304,8 +358,26 @@ class Organization(models.Model):
             return self.id
         return self.parent_org.id
 
+    def add_new_access_level_instance(self, parent_id: int, name: str) -> AccessLevelInstance:
+        parent = AccessLevelInstance.objects.get(pk=parent_id)
+
+        if len(self.access_level_names) < parent.depth + 1:
+            raise UserWarning('Cannot create child at an unnamed level')
+
+        new_access_level_instance = parent.add_child(organization=self, name=name)
+        new_access_level_instance.save()
+
+        return new_access_level_instance
+
+    def get_access_tree(self) -> dict:
+        return AccessLevelInstance.dump_bulk(self.root)
+
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
+
+    @property
+    def root(self):
+        return AccessLevelInstance.objects.get(organization=self, depth=1)
 
 
 def organization_pre_delete(sender, instance, **kwargs):
@@ -317,3 +389,44 @@ def organization_pre_delete(sender, instance, **kwargs):
 
 
 pre_delete.connect(organization_pre_delete, sender=Organization)
+
+
+@receiver(pre_save, sender=Organization)
+def presave_organization(sender, instance, **kwargs):
+    """For each instance.access_level_names item changed, update the ali.paths
+    """
+    if instance.id is None:
+        return
+
+    previous = Organization.objects.get(pk=instance.id)
+    previous_access_level_names = previous.access_level_names
+    alis = AccessLevelInstance.objects.filter(organization=instance)
+    min_len = min(len(previous_access_level_names), len(instance.access_level_names))
+
+    with transaction.atomic():
+        # for each name in access_level_name...
+        for i in range(min_len):
+            previous_access_level_name = previous_access_level_names[i]
+            current_access_level_name = instance.access_level_names[i]
+
+            # If the name was changed, alter the paths of the ALIs.
+            if previous_access_level_name != current_access_level_name:
+                for ali in alis:
+                    if previous_access_level_name in ali.path:
+                        ali.path[current_access_level_name] = ali.path[previous_access_level_name]
+                        del ali.path[previous_access_level_name]
+                        ali.save()
+
+
+@receiver(post_save, sender=Organization)
+def post_save_organization(sender, instance, created, **kwargs):
+    """
+    Give new Orgs a Accountibilty Hiarchy root.
+    """
+    if created:
+        if instance.access_level_names == []:
+            instance.access_level_names = [instance.name]
+
+        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root.save()
+        instance.save()

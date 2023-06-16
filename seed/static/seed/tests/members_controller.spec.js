@@ -61,6 +61,17 @@ describe('controller: members_controller', function () {
           can_remove_member: true
         }
       },
+      access_level_tree: {
+          'access_level_names': ['my org'],
+          'access_level_tree': [{
+              'id': 1,
+              'data': {
+                  'name': 'root',
+                  'organization': 4,
+                  'path': {'my org': 'root'},
+              }
+          },],
+      },
       user_profile_payload: ['user_service', function (user_service) {
         return user_service.get_user_profile();
       }]

@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
         for org in organizations:
             print("Adding user to {}.".format(org))
-            org.add_member(user)
+            org.add_member(user, access_level_instance_id=org.root.id)
         else:
             # NL added this but is not going to make it the default because it may cause
             # security issues for others. Not sure yet. Comment here if you think we should

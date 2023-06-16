@@ -55,6 +55,8 @@ def _get_default_org(user):
         ou = user.organizationuser_set.filter(organization=org).first()
         # parent org owner has no role (None) yet has access to the sub-org
         org_user_role = _get_js_role(ou.role_level) if ou else ""
+        ou.access_level_instance.name
+        ou.access_level_instance.id
         return org_id, org_name, org_user_role
     else:
         return "", "", ""

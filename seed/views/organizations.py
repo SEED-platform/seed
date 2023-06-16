@@ -222,6 +222,7 @@ class OrganizationUserSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=100)
     user_id = serializers.IntegerField()
     role = serializers.CharField(max_length=100)
+    access_level_instance_id = serializers.CharField(max_length=100)
 
 
 class OrganizationUsersSerializer(serializers.Serializer):
@@ -596,7 +597,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         user = User.objects.get(pk=body['user_id'])
 
-        created = org.add_member(user)
+        _orguser, created = org.add_member(user, access_level_instance_id=org.root.id)
 
         # Send an email if a new user has been added to the organization
         if created:

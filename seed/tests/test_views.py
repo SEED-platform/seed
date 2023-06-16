@@ -390,7 +390,7 @@ class TestMCMViews(TestCase):
         }
         user_2 = User.objects.create_user(**user_2_details)
         OrganizationUser.objects.create(
-            user=user_2, organization=self.org
+            user=user_2, organization=self.org, access_level_instance=self.org.root
         )
         self.client.login(**user_2_details)
 

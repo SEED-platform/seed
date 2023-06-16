@@ -84,48 +84,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         str(request.query_params.get('include_related', 'true')).lower() == 'true'
     )
 
-    # This uses an old method of returning the show_columns. There is a new method that
-    # is preferred in v2.1 API with the ProfileIdMixin.
-    if inventory_type == 'property':
-        profile_inventory_type = VIEW_LIST_PROPERTY
-    elif inventory_type == 'taxlot':
-        profile_inventory_type = VIEW_LIST_TAXLOT
-
-    show_columns: Optional[list[int]] = None
-    if shown_column_ids and profile_id:
-        return JsonResponse(
-            {
-                'status': 'error',
-                'recommended_action': 'update_column_settings',
-                'message': 'Error filtering - "shown_column_ids" and "profile_id" are mutually exclusive.'
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    elif shown_column_ids is not None:
-        shown_column_ids = shown_column_ids.split(",")
-        show_columns = list(Column.objects.filter(
-            organization_id=org_id, id__in=shown_column_ids
-        ).values_list('id', flat=True))
-    elif profile_id is None:
-        show_columns = None
-    elif profile_id == -1:
-        show_columns = list(Column.objects.filter(
-            organization_id=org_id
-        ).values_list('id', flat=True))
-    else:
-        try:
-            profile = ColumnListProfile.objects.get(
-                organization_id=org_id,
-                id=profile_id,
-                profile_location=VIEW_LIST,
-                inventory_type=profile_inventory_type
-            )
-            show_columns = list(ColumnListProfileColumn.objects.filter(
-                column_list_profile_id=profile.id
-            ).values_list('column_id', flat=True))
-        except ColumnListProfile.DoesNotExist:
-            show_columns = None
-
     # Retrieve all the columns that are in the db for this organization
     columns_from_database = Column.retrieve_all(
         org_id=org_id,
@@ -133,7 +91,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         only_used=False,
         include_related=include_related,
         exclude_derived=True,
-        column_ids=show_columns
     )
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
@@ -158,7 +115,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             only_used=False,
             include_related=include_related,
             exclude_derived=True,
-            column_ids=show_columns
         )
         try:
             filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
@@ -217,6 +173,48 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             },
             status=status.HTTP_400_BAD_REQUEST
         )
+
+    # This uses an old method of returning the show_columns. There is a new method that
+    # is preferred in v2.1 API with the ProfileIdMixin.
+    if inventory_type == 'property':
+        profile_inventory_type = VIEW_LIST_PROPERTY
+    elif inventory_type == 'taxlot':
+        profile_inventory_type = VIEW_LIST_TAXLOT
+
+    show_columns: Optional[list[int]] = None
+    if shown_column_ids and profile_id:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'recommended_action': 'update_column_settings',
+                'message': 'Error filtering - "shown_column_ids" and "profile_id" are mutually exclusive.'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    elif shown_column_ids is not None:
+        shown_column_ids = shown_column_ids.split(",")
+        show_columns = list(Column.objects.filter(
+            organization_id=org_id, id__in=shown_column_ids
+        ).values_list('id', flat=True))
+    elif profile_id is None:
+        show_columns = None
+    elif profile_id == -1:
+        show_columns = list(Column.objects.filter(
+            organization_id=org_id
+        ).values_list('id', flat=True))
+    else:
+        try:
+            profile = ColumnListProfile.objects.get(
+                organization_id=org_id,
+                id=profile_id,
+                profile_location=VIEW_LIST,
+                inventory_type=profile_inventory_type
+            )
+            show_columns = list(ColumnListProfileColumn.objects.filter(
+                column_list_profile_id=profile.id
+            ).values_list('column_id', flat=True))
+        except ColumnListProfile.DoesNotExist:
+            show_columns = None
 
     try:
         related_results = TaxLotProperty.serialize(
