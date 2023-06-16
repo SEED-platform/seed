@@ -1301,6 +1301,43 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+    def test_create_data_loggers_permissions(self):
+        url = reverse('api:v3:data_logger-list') + "?property_view_id=" + str(self.property_view_1.id)
+        data = {"display_name": "boo", "location_description": "ah", "identifier": "me", "org_id": self.org.pk}
+
+        # root users can create data logger in root
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 200
+
+        # child user cannot
+        self.client.login(**self.user_with_nothing_details)
+        data["display_name"] = "lol"
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 404
+
+    def test_data_loggers_list_permissions(self):
+        url = reverse('api:v3:data_logger-list')
+
+        # root users can get data logger in root
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 200
+
+        # child user cannot
+        self.client.login(**self.user_with_nothing_details)
+        result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
+        assert result.status_code == 404
+
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
             "property_id": self.property_1.id,

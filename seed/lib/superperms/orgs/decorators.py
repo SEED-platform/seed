@@ -9,16 +9,19 @@ from functools import wraps
 from inspect import signature
 
 from django.conf import settings
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
+from rest_framework import status
 
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.models import PropertyView, TaxLotView
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -210,6 +213,48 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
                 return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
+
+        return _wrapped
+
+    return decorator
+
+
+def assert_hierarchy_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
+    """Helper function to has_hierarchy_access"""
+    if property_view_id_kwarg:
+        property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
+        requests_ali = property_view.property.access_level_instance
+
+    elif taxlot_view_id_kwarg:
+        taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
+        requests_ali = taxlot_view.taxlot.access_level_instance
+
+    elif body_ali_id:
+        requests_ali = AccessLevelInstance.objects.get(pk=request.data[body_ali_id])
+
+    else:
+        property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
+        requests_ali = property_view.property.access_level_instance
+
+    user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No such resource.'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+def has_hierarchy_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
+    """Must be called after has_perm_class"""
+    def decorator(fn):
+        if 'self' in signature(fn).parameters:
+            @wraps(fn)
+            def _wrapped(self, request, *args, **kwargs):
+                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
+        else:
+            @wraps(fn)
+            def _wrapped(request, *args, **kwargs):
+                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
