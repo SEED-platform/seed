@@ -8,9 +8,22 @@ import json
 
 from django.test import TestCase
 from django.urls import reverse
+from django.core import serializers
 
-from seed.models import Column, ComplianceMetric, FilterGroup, User
-from seed.test_helpers.fake import FakeCycleFactory
+from seed.models import (
+    Column,
+    ComplianceMetric,
+    FilterGroup,
+    Property,
+    PropertyView,
+    User
+)
+from seed.test_helpers.fake import(
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory
+)
 from seed.utils.organizations import create_organization
 
 
@@ -194,7 +207,7 @@ class ComplianceMetricViewTests(TestCase):
         self.assertEqual('error', data['status'])
         self.assertEqual('ComplianceMetric with id 99999999 does not exist', data['message'])
 
-    def test_data_view_update_endpoint(self):
+    def test_compliance_metric_update_endpoint(self):
         self.assertEqual('compliance metric 1', self.compliance_metric1.name)
         self.assertEqual(3, len(self.compliance_metric1.x_axis_columns.all()))
 
@@ -228,5 +241,212 @@ class ComplianceMetricViewTests(TestCase):
         self.assertEqual('error', data['status'])
         self.assertEqual('ComplianceMetric with id 99999 does not exist', data['message'])
 
+class ComplianceMetricEvaluationTests(TestCase):
+    """
+    Test ComplianceMetric model's ability to evaluate propertyview values
+    """
+    def setUp(self):
+        # root user
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Johnny',
+            'last_name': 'Energy',
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.client.login(**user_details)
 
-# TODO: add tests for calculating compliance metrics
+        # child user
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        # add ALI and user to org
+        self.org.access_level_names = ["root", "child"]
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, child.pk)
+        self.org.save()
+
+        self.client.login(**user_details)
+        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A")
+        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B")
+        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C")
+
+        self.site_eui = Column.objects.create(column_name='site_eui', organization=self.org,)
+        self.total_ghg_emissions = Column.objects.create(column_name='total_ghg_emissions', organization=self.org,)
+        self.source_eui = Column.objects.create(column_name='source_eui', organization=self.org,)
+        self.total_marginal_ghg_emissions = Column.objects.create(column_name='total_arginal_ghg_emissions', organization=self.org,)
+        self.column5 = Column.objects.create(column_name='column 5', organization=self.org,)
+
+        self.x_axes = [self.column5]
+
+        self.cycles = [self.cycle1, self.cycle2, self.cycle3]
+
+        self.filter_group = FilterGroup.objects.create(
+            name='filter group 1',
+            organization_id=self.org.id,
+            inventory_type=1,  # Tax Lot
+            query_dict={'year_built__lt': ['1980']},
+        )
+        self.filter_group.save()
+
+        # metric (just energy without filter group)
+        self.compliance_metric = ComplianceMetric.objects.create(
+            name='compliance metric 1',
+            organization=self.org,
+            actual_energy_column=self.site_eui,
+            target_energy_column=self.source_eui,
+            energy_metric_type=0
+        )
+        self.compliance_metric.x_axis_columns.set(self.x_axes)
+        self.compliance_metric.cycles.set(self.cycles)
+
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        # generate two different types of properties (2 for root and 2 for child)
+        self.office1 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.office2 = Property.objects.create(organization=self.org, access_level_instance=child)
+        self.retail3 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.retail4 = Property.objects.create(organization=self.org, access_level_instance=child)
+
+        self.view10 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle1, site_eui=60, source_eui=59, total_ghg_emissions=500)
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle1, site_eui=70, source_eui=59, total_ghg_emissions=400)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.retail3, cycle=self.cycle1, site_eui=65, source_eui=62, total_ghg_emissions=300)
+        self.view13 = self.property_view_factory.get_property_view(prprty=self.retail4, cycle=self.cycle1, site_eui=72, source_eui=62, total_ghg_emissions=350)
+
+        data = serializers.serialize('json', [self.view10])
+        print(f"view data: {data}")
+
+        self.view20 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle2, site_eui=58, source_eui=59, total_ghg_emissions=480)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle2, site_eui=68, source_eui=59, total_ghg_emissions=380)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.retail3, cycle=self.cycle2, site_eui=63, source_eui=59, total_ghg_emissions=280)
+        self.view23 = self.property_view_factory.get_property_view(prprty=self.retail4, cycle=self.cycle2, site_eui=70, source_eui=59, total_ghg_emissions=330)
+
+    # calculating compliance metrics
+    def test_compliance_metric_get_data_permissions(self):
+
+        # logged in as root and retrieve data
+        response = self.client.get(
+            reverse('api:v3:compliance_metrics-evaluate', args=[self.compliance_metric.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+
+        print(f" DATA root: {data}")
+
+        # # login as child and retrieve data
+        # self.client.login(**self.user_with_nothing_details)
+        # response = self.client.get(
+        #     reverse('api:v3:compliance_metrics-evaluate', args=[self.compliance_metric.id]) + '?organization_id=' + str(self.org.id),
+        #     content_type='application/json'
+        # )
+        # assert response.status_code == 200
+        # data = json.loads(response.content)
+        # self.assertEqual('success', data['status'])
+
+        # print(f" DATA child: {data}")
+
+        # data = data['data']
+        # self.assertEqual(['meta', 'views_by_filter_group_id', 'columns_by_id', 'graph_data'], list(data.keys()))
+
+        # graph_data = data['graph_data']
+
+        # self.assertEqual(['organization', 'data_view'], list(data['meta'].keys()))
+
+        # self.assertEqual({str(self.office_filter_group.id), str(self.retail_filter_group.id)}, set(data['views_by_filter_group_id']))
+
+        # office = data['views_by_filter_group_id'][str(self.office_filter_group.id)]
+        # retail = data['views_by_filter_group_id'][str(self.retail_filter_group.id)]
+
+        # self.assertEqual([self.view10.state.address_line_1], sorted(list(data['views_by_filter_group_id'][str(self.office_filter_group.id)].values())))
+        # self.assertEqual([], sorted(list(data['views_by_filter_group_id'][str(self.retail_filter_group.id)].values())))
+
+        # data = data['columns_by_id']
+        # self.assertEqual([str(self.site_eui.id), str(self.ghg.id)], list(data.keys()))
+        # self.assertEqual(['filter_groups_by_id', 'unit'], list(data[str(self.site_eui.id)].keys()))
+        # self.assertEqual('kBtu/ft²/year', data[str(self.site_eui.id)]['unit'])
+        # self.assertEqual('t/year', data[str(self.ghg.id)]['unit'])
+
+        # office = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.office_filter_group.id)]
+        # retail = data[str(self.site_eui.id)]['filter_groups_by_id'][str(self.retail_filter_group.id)]
+        # self.assertEqual(['cycles_by_id'], list(office.keys()))
+        # self.assertEqual(['cycles_by_id'], list(retail.keys()))
+
+        # self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(office['cycles_by_id'].keys()))
+        # self.assertEqual([str(self.cycle4.id), str(self.cycle3.id), str(self.cycle1.id)], list(retail['cycles_by_id'].keys()))
+
+        # self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle1.id)]))
+        # self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(office['cycles_by_id'][str(self.cycle4.id)]))
+        # self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle1.id)]))
+        # self.assertEqual(['Average', 'Maximum', 'Minimum', 'Sum', 'Count', 'views_by_default_field'], list(retail['cycles_by_id'][str(self.cycle4.id)]))
+
+        # office_cycle1 = office['cycles_by_id'][str(self.cycle1.id)]
+        # office_cycle4 = office['cycles_by_id'][str(self.cycle4.id)]
+
+        # self.assertEqual(10, office_cycle1['Average'])
+        # self.assertEqual(1, office_cycle1['Count'])
+        # self.assertEqual(10, office_cycle1['Maximum'])
+        # self.assertEqual(10, office_cycle1['Minimum'])
+        # self.assertEqual(10, office_cycle1['Sum'])
+        # exp = {self.view10.state.address_line_1: 10.0}
+        # self.assertEqual(exp, office_cycle1['views_by_default_field'])
+
+        # self.assertEqual(None, office_cycle4['Average'])
+        # self.assertEqual(0, office_cycle4['Count'])
+        # self.assertEqual(None, office_cycle4['Maximum'])
+        # self.assertEqual(None, office_cycle4['Minimum'])
+        # self.assertEqual(None, office_cycle4['Sum'])
+        # self.assertEqual({}, office_cycle4['views_by_default_field'])
+
+        # retail_cycle1 = retail['cycles_by_id'][str(self.cycle1.id)]
+        # retail_cycle4 = retail['cycles_by_id'][str(self.cycle4.id)]
+
+        # self.assertEqual(None, retail_cycle1['Average'])
+        # self.assertEqual(0, retail_cycle1['Count'])
+        # self.assertEqual(None, retail_cycle1['Maximum'])
+        # self.assertEqual(None, retail_cycle1['Minimum'])
+        # self.assertEqual(None, retail_cycle1['Sum'])
+        # self.assertEqual({}, retail_cycle1['views_by_default_field'])
+
+        # self.assertEqual(None, retail_cycle4['Average'])
+        # self.assertEqual(0, retail_cycle4['Count'])
+        # self.assertEqual(None, retail_cycle4['Maximum'])
+        # self.assertEqual(None, retail_cycle4['Minimum'])
+        # self.assertEqual(None, retail_cycle4['Sum'])
+        # self.assertEqual({}, retail_cycle4['views_by_default_field'])
+
+        # # check graph_data
+        # self.assertEqual(['labels', 'datasets'], list(graph_data.keys()))
+        # # 2 filter groups * 2 columns * 5 aggregation types
+        # self.assertEqual(20, len(graph_data['datasets']))
+
+        # avg_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Average'])
+        # max_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Maximum'])
+        # min_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Minimum'])
+        # sum_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Sum'])
+        # count_count = len([dataset for dataset in graph_data['datasets'] if dataset['aggregation'] == 'Count'])
+        # self.assertEqual(4, avg_count)
+        # self.assertEqual(4, max_count)
+        # self.assertEqual(4, min_count)
+        # self.assertEqual(4, sum_count)
+        # self.assertEqual(4, count_count)
+
+        # site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'site_eui'])
+        # ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'total_ghg_emissions'])
+        # self.assertEqual(10, site_eui_count)
+        # self.assertEqual(10, ghg_count)
+
+        # office_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'office'])
+        # retail_count = len([dataset for dataset in graph_data['datasets'] if dataset['filter_group'] == 'retail'])
+        # self.assertEqual(10, office_count)
+        # self.assertEqual(10, retail_count)
+
+        # for dataset in graph_data['datasets']:
+        #     self.assertEqual(3, len(dataset['data']))
