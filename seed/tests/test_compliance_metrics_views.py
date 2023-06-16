@@ -6,19 +6,17 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
+from django.core import serializers
 from django.test import TestCase
 from django.urls import reverse
-from django.core import serializers
 
 from seed.models import (
-    Column,
     ComplianceMetric,
     FilterGroup,
-    Property,
-    PropertyView,
     User
 )
-from seed.test_helpers.fake import(
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -43,18 +41,21 @@ class ComplianceMetricViewTests(TestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.client.login(**user_details)
-        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A")
-        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B")
-        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C")
-        self.cycle4 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle D")
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
-        self.column1 = Column.objects.create(column_name='column 1', organization=self.org,)
-        self.column2 = Column.objects.create(column_name='column 2', organization=self.org,)
-        self.column3 = Column.objects.create(column_name='column 3', organization=self.org,)
-        self.column4 = Column.objects.create(column_name='column 4', organization=self.org,)
-        self.column5 = Column.objects.create(column_name='column 5', organization=self.org,)
-        self.column6 = Column.objects.create(column_name='column 6', organization=self.org,)
-        self.column7 = Column.objects.create(column_name='column 7', organization=self.org,)
+        self.cycle1 = self.cycle_factory.get_cycle(name="Cycle A")
+        self.cycle2 = self.cycle_factory.get_cycle(name="Cycle B")
+        self.cycle3 = self.cycle_factory.get_cycle(name="Cycle C")
+        self.cycle4 = self.cycle_factory.get_cycle(name="Cycle D")
+
+        self.column1 = self.column_factory.get_column('column 1', is_extra_data=True)
+        self.column2 = self.column_factory.get_column('column 2', is_extra_data=True)
+        self.column3 = self.column_factory.get_column('column 3', is_extra_data=True)
+        self.column4 = self.column_factory.get_column('column 4', is_extra_data=True)
+        self.column5 = self.column_factory.get_column('column 5', is_extra_data=True)
+        self.column6 = self.column_factory.get_column('column 6', is_extra_data=True)
+        self.column7 = self.column_factory.get_column('column 7', is_extra_data=True)
 
         self.x_axes1 = [self.column5, self.column6, self.column7]
         self.x_axes2 = [self.column7]
@@ -258,6 +259,14 @@ class ComplianceMetricEvaluationTests(TestCase):
         self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.client.login(**user_details)
 
+        # setup factories
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+
         # child user
         self.user_with_nothing_details = {
             'username': 'nothing@demo.com',
@@ -271,15 +280,15 @@ class ComplianceMetricEvaluationTests(TestCase):
         self.org.save()
 
         self.client.login(**user_details)
-        self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle A")
-        self.cycle2 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle B")
-        self.cycle3 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="Cycle C")
+        self.cycle1 = self.cycle_factory.get_cycle(name="Cycle A")
+        self.cycle2 = self.cycle_factory.get_cycle(name="Cycle B")
+        self.cycle3 = self.cycle_factory.get_cycle(name="Cycle C")
 
-        self.site_eui = Column.objects.create(column_name='site_eui', organization=self.org,)
-        self.total_ghg_emissions = Column.objects.create(column_name='total_ghg_emissions', organization=self.org,)
-        self.source_eui = Column.objects.create(column_name='source_eui', organization=self.org,)
-        self.total_marginal_ghg_emissions = Column.objects.create(column_name='total_arginal_ghg_emissions', organization=self.org,)
-        self.column5 = Column.objects.create(column_name='column 5', organization=self.org,)
+        self.site_eui = self.column_factory.get_column('site_eui')
+        self.total_ghg_emissions = self.column_factory.get_column('total_ghg_emissions')
+        self.source_eui = self.column_factory.get_column('source_eui')
+        self.total_marginal_ghg_emissions = self.column_factory.get_column('total_marginal_ghg_emissions')
+        self.column5 = self.column_factory.get_column('column 5', is_extra_data=True)
 
         self.x_axes = [self.column5]
 
@@ -304,15 +313,11 @@ class ComplianceMetricEvaluationTests(TestCase):
         self.compliance_metric.x_axis_columns.set(self.x_axes)
         self.compliance_metric.cycles.set(self.cycles)
 
-        self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-
         # generate two different types of properties (2 for root and 2 for child)
-        self.office1 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.office2 = Property.objects.create(organization=self.org, access_level_instance=child)
-        self.retail3 = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.retail4 = Property.objects.create(organization=self.org, access_level_instance=child)
+        self.office1 = self.property_factory.get_property(access_level_instance=self.org.root)
+        self.office2 = self.property_factory.get_property(access_level_instance=child)
+        self.retail3 = self.property_factory.get_property(access_level_instance=self.org.root)
+        self.retail4 = self.property_factory.get_property(access_level_instance=child)
 
         self.view10 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle1, site_eui=60, source_eui=59, total_ghg_emissions=500)
         self.view11 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle1, site_eui=70, source_eui=59, total_ghg_emissions=400)

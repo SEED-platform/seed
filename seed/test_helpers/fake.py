@@ -134,15 +134,18 @@ class FakeColumnFactory(BaseFake):
                    table_name='PropertyState', **kw):
         """Get column details."""
         column_details = {
-            'organization': organization if organization else self.organization,
+            'organization_id': organization.pk if organization else self.organization.pk,
             'column_name': name,
             'table_name': table_name,
+            'is_extra_data': is_extra_data if is_extra_data else False,
         }
-        if is_extra_data:
-            column_details.update({
-                'is_extra_data': is_extra_data,
-            })
         column_details.update(kw)
+
+        # If the column isn't extra data, then it should be a native column
+        # which dynamically populates when a new org is created.
+        if Column.objects.filter(**column_details).exists():
+            return Column.objects.get(**column_details)
+
         return Column.objects.create(**column_details)
 
 
@@ -183,15 +186,19 @@ class FakePropertyFactory(BaseFake):
     Factory Class for producing Property instances.
     """
 
-    def __init__(self, organization=None):
+    def __init__(self, organization=None, access_level_instance=None):
         super().__init__()
         self.organization = organization
+        self.access_level_instance = access_level_instance
 
-    def get_property(self, organization=None, **kw):
+    def get_property(self, organization=None, access_level_instance=None, **kw):
         """Get property instance."""
         property_details = {
             'organization': self._get_attr('organization', organization),
+            'access_level_instance': self._get_attr('access_level_instance', access_level_instance),
         }
+        # add in the access level if passed, otherwise it will be null.
+
         property_details.update(kw)
         return Property.objects.create(**property_details)
 
