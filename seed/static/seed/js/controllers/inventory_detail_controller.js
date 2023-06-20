@@ -127,8 +127,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
         inventory_payload.property.access_level_instance : 
         inventory_payload.taxlot.access_level_instance
 
-      console.log($scope.access_level_instance)
-
       $scope.order_historical_items_with_scenarios = () => {
         $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
         $scope.historical_items_with_scenarios.sort((a,b) => {
