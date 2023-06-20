@@ -240,6 +240,9 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_view_id']] = obj.id
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
+            
+            for (k,v) in obj.property.access_level_instance.path.items():
+                obj_dict[k] = v
 
             # This is only applicable to Properties since Tax Lots don't have meters
             if this_cls == 'Property':

@@ -802,6 +802,27 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
 
+      // Add access level instances to grid
+      $scope.organization.access_level_names.reverse().forEach((level) => {
+        console.log('level', level)
+        $scope.columns.unshift({
+          name: level,
+          displayName: level,
+
+          enableColumnMenu: true,
+          enableColumnMoving: false,
+          enableColumnResizing: true,
+          enableFiltering: true,
+          enableHiding: true,
+          enableSorting: true,
+          exporterSuppressExport: true,
+          pinnedLeft: false,
+          visible: true,
+          width: 100,
+          cellClass: 'ali-cell',
+          headerCellClass: 'ali-header',
+        })
+      })
       // The meters_exist_indicator column is only applicable to properties
       if ($stateParams.inventory_type == 'properties') {
         $scope.columns.unshift({
@@ -1010,9 +1031,11 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
-        var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
-
+        var visibleColumns = [
+          ..._.map($scope.columns, 'name'), 
+          ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+          ...$scope.organization.access_level_names
+        ]
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
           return obj;
@@ -1762,6 +1785,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         columnDefs: $scope.columns,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
+          console.log('gridApi', gridApi)
 
           _.delay($scope.updateHeight, 150);
 
