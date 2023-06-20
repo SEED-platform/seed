@@ -190,13 +190,13 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
     return results
 
 
-def properties_across_cycles_with_filters(org_id, cycle_ids=[], query_dict={}, column_ids=[]):
+def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_dict={}, column_ids=[]):
     # Identify column preferences to be used to scope fields/values
     columns_from_database = Column.retrieve_all(org_id, 'property', False)
     org = Organization.objects.get(pk=org_id)
 
     results = {cycle_id: [] for cycle_id in cycle_ids}
-    property_views = _get_filter_group_views(org_id, cycle_ids, query_dict)
+    property_views = _get_filter_group_views(org_id, cycle_ids, query_dict, user_ali)
     views_cycle_ids = [v.cycle_id for v in property_views]
     related_results = TaxLotProperty.serialize(property_views, column_ids, columns_from_database, include_related=False)
     unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
@@ -208,7 +208,7 @@ def properties_across_cycles_with_filters(org_id, cycle_ids=[], query_dict={}, c
 
 
 # helper function for getting filtered properties
-def _get_filter_group_views(org_id, cycles, query_dict):
+def _get_filter_group_views(org_id, cycles, query_dict, user_ali):
 
     columns = Column.retrieve_all(
         org_id=org_id,
@@ -228,7 +228,12 @@ def _get_filter_group_views(org_id, cycles, query_dict):
 
     views_list = (
         PropertyView.objects.select_related('property', 'state', 'cycle')
-        .filter(property__organization_id=org_id, cycle__in=cycles)
+        .filter(
+            property__organization_id=org_id,
+            cycle__in=cycles,
+            property__access_level_instance__lft__gte=user_ali.lft,
+            property__access_level_instance__rgt__lte=user_ali.rgt,
+        )
     )
 
     views_list = views_list.annotate(**annotations).filter(filters).order_by('id')
