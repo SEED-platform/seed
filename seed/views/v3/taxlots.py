@@ -13,11 +13,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.superperms.orgs.decorators import (
     has_hiarchary_access,
     has_perm_class
 )
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,

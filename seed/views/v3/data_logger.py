@@ -5,9 +5,8 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from datetime import datetime, timedelta
 
 from django.db.utils import IntegrityError
-from django.http import JsonResponse
 from pytz import timezone as pytztimezone
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 
 from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
@@ -15,7 +14,6 @@ from seed.lib.superperms.orgs.decorators import (
     has_hiarchary_access,
     has_perm_class
 )
-from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import DataLogger, PropertyView
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param

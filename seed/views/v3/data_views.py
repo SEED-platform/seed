@@ -219,7 +219,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': f'Columns with ids {data["columns"]} do not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        user_ali= AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         response = data_view.evaluate(columns, user_ali)
         return JsonResponse({
             'status': 'success',

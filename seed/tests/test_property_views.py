@@ -556,7 +556,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         url += f'?organization_id={self.org.pk}'
 
         result = self.client.post(url, params, content_type='application/json')
-        assert json.loads(result.content) == False
+        assert json.loads(result.content) is False
 
         self.client.login(**self.user_with_nothing_details)
         result = self.client.post(url, params, content_type='application/json')
@@ -1426,7 +1426,6 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         result = self.client.get(url, {"property_view_id": self.property_view_1.id, "org_id": self.org.pk})
         assert result.status_code == 404
 
-
     def test_sensors_list_permissions(self):
         url = reverse('api:v3:properties-sensors', kwargs={'pk': self.property_view_1.id})
         url += f'?organization_id={self.org.pk}'
@@ -1454,7 +1453,6 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
 
         result = self.client.post(url, post_params, content_type="application/json")
         assert result.status_code == 404
-
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{

@@ -71,7 +71,6 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.their_property_view_factory = FakePropertyViewFactory(organization=self.their_org)
         self.property_factory = FakePropertyFactory(organization=self.org)
 
-
         # create user wih nothing
         self.user_with_nothing_details = {
             'username': 'nothing@demo.com',
@@ -238,7 +237,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
         # create meter
         property = self.property_factory.get_property()
         property_view = self.property_view_factory.get_property_view(property)
-        meter = Meter.objects.create(property=property)
+        Meter.objects.create(property=property)
 
         meter_url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id}) + "?organization_id=" + str(self.org.id)
         response = self.client.get(meter_url)

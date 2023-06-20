@@ -13,10 +13,10 @@ from django.utils import timezone
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
     ROLE_MEMBER,
-    ROLE_OWNER
+    ROLE_OWNER,
+    Organization,
+    OrganizationUser
 )
 from seed.models import (
     ASSESSED_RAW,
@@ -44,8 +44,6 @@ from seed.models import (
     TaxLotView
 )
 from seed.models.data_quality import DataQualityCheck
-from seed.utils.organizations import create_organization
-
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -53,6 +51,8 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory
 )
+from seed.utils.organizations import create_organization
+
 
 class DeleteModelsTestCase(TestCase):
     def _delete_models(self):

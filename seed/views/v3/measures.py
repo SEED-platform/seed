@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Measure
 from seed.serializers.measures import MeasureSerializer
 from seed.utils.api import OrgMixin

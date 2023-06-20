@@ -75,7 +75,6 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         response = self.client.get(url, **self.headers)
         self.assertEqual(response.status_code, 404)
 
-
     def test_get_property_measure(self):
         """
         Test PropertyMeasure view can retrieve all or individual ProperyMeasure model instances

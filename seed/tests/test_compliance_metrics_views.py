@@ -7,16 +7,10 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 
 from django.core import serializers
-from django.test import TestCase
 from django.urls import reverse
 
-from seed.models import (
-    ComplianceMetric,
-    FilterGroup,
-    User
-)
+from seed.models import ComplianceMetric, FilterGroup
 from seed.tests.util import AccessLevelTestCase
-from seed.utils.organizations import create_organization
 
 
 class ComplianceMetricViewTests(AccessLevelTestCase):
@@ -51,7 +45,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
         self.filter_group = FilterGroup.objects.create(
             name='filter group 1',
             organization_id=self.org.id,
-            inventory_type=1, # Property
+            inventory_type=1,  # Property
             query_dict={'year_built__lt': ['1980']},
         )
         self.filter_group.save()
@@ -132,7 +126,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
             content_type='application/json'
         )
         data = json.loads(response.content)
-        assert(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         self.assertEqual('compliance metric 3', data['compliance_metric']['name'])
         self.assertEqual(self.org.id, data['compliance_metric']['organization_id'])
@@ -175,7 +169,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
             data=json.dumps(test_metric_details),
             content_type='application/json'
         )
-        assert(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # CANNOT CREATE AS CHILD-LEVEL MEMBER:
         self.login_as_child_member()
@@ -185,8 +179,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
             data=json.dumps(test_metric_details),
             content_type='application/json'
         )
-        assert(response.status_code, 403)
-
+        self.assertEqual(response.status_code, 403)
 
     def test_compliance_metric_create_bad_data(self):
         response = self.client.post(
@@ -253,6 +246,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
         self.assertEqual('error', data['status'])
         self.assertEqual('ComplianceMetric with id 99999 does not exist', data['message'])
 
+
 class ComplianceMetricEvaluationTests(AccessLevelTestCase):
     """
     Test ComplianceMetric model's ability to evaluate propertyview values
@@ -306,7 +300,7 @@ class ComplianceMetricEvaluationTests(AccessLevelTestCase):
         self.view12 = self.property_view_factory.get_property_view(prprty=self.retail3, cycle=self.cycle1, site_eui=65, source_eui=62, total_ghg_emissions=300)
         self.view13 = self.property_view_factory.get_property_view(prprty=self.retail4, cycle=self.cycle1, site_eui=72, source_eui=62, total_ghg_emissions=350)
 
-        data = serializers.serialize('json', [self.view10])
+        serializers.serialize('json', [self.view10])
 
         self.view20 = self.property_view_factory.get_property_view(prprty=self.office1, cycle=self.cycle2, site_eui=58, source_eui=59, total_ghg_emissions=480)
         self.view21 = self.property_view_factory.get_property_view(prprty=self.office2, cycle=self.cycle2, site_eui=68, source_eui=59, total_ghg_emissions=380)

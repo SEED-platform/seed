@@ -158,7 +158,6 @@ class GetDatasetsViewsTests(TestCase):
         )
         self.assertEqual('success', response.json()['status'])
 
-
     def test_get_dataset_permissions(self):
         import_record = ImportRecord.objects.create(owner=self.user, access_level_instance=self.org.root)
         import_record.super_organization = self.org
@@ -277,6 +276,7 @@ class GetDatasetsViewsTests(TestCase):
         assert response.status_code == 200
         import_record = ImportRecord.objects.get(pk=response.json()["id"])
         assert import_record.access_level_instance.id == self.child.id
+
 
 class ImportFileViewsTests(TestCase):
     def setUp(self):

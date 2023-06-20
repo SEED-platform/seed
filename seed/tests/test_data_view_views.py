@@ -502,7 +502,6 @@ class DataViewEvaluationTests(TestCase):
         self.view10.property = property
         self.view10.save()
 
-
     def test_evaluation_endpoint_canonical_col_permissions(self):
         self.client.login(**self.user_with_nothing_details)
         response = self.client.put(
