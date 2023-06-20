@@ -61,6 +61,11 @@ def requires_superuser(org_user):
     return org_user.user.is_superuser
 
 
+def requires_root_member_access(org_user):
+    """ User must be an owner or member at the root access level"""
+    ali = org_user.access_level_instance
+    return org_user.access_level_instance.depth == 1 and org_user.role_level >= ROLE_MEMBER
+
 def can_create_sub_org(org_user):
     return requires_parent_org_owner(org_user)
 
@@ -124,6 +129,7 @@ PERMS = {
     'requires_owner': requires_owner,
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
+    'requires_root_member_access': requires_root_member_access,
     'can_create_sub_org': can_create_sub_org,
     'can_remove_org': can_remove_org,
     'can_invite_member': can_invite_member,
@@ -172,7 +178,6 @@ def _validate_permissions(perm_name, request, requires_org):
         org = Organization.objects.get(pk=org_id)
     except Organization.DoesNotExist:
         return _make_resp('org_dne')
-
     # Skip perms checks if settings allow super_users to bypass.
     if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
         request.access_level_instance_id = org.root.id
@@ -193,7 +198,6 @@ def _validate_permissions(perm_name, request, requires_org):
 
 def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
-
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
