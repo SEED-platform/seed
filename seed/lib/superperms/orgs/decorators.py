@@ -72,7 +72,6 @@ def requires_superuser(org_user):
 
 def requires_root_member_access(org_user):
     """ User must be an owner or member at the root access level"""
-    org_user.access_level_instance
     return org_user.access_level_instance.depth == 1 and org_user.role_level >= ROLE_MEMBER
 
 
@@ -226,7 +225,6 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
 
 
 def assert_hiarchary_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
-    print("++ assert_hiarchary_access ++")
     if property_view_id_kwarg:
         property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
         requests_ali = property_view.property.access_level_instance

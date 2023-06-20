@@ -98,7 +98,7 @@ class DeleteModelsTestCase(TestCase):
         self._delete_models()
 
 
-class AccessLevelTestCase(TestCase):
+class AccessLevelBaseTestCase(TestCase):
     """Base Test Case Class to handle Access Levels
        Creates a root owner user, a root member user,
        and a child member user

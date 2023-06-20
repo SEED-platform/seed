@@ -10,10 +10,10 @@ from django.core import serializers
 from django.urls import reverse
 
 from seed.models import ComplianceMetric, FilterGroup
-from seed.tests.util import AccessLevelTestCase
+from seed.tests.util import AccessLevelBaseTestCase
 
 
-class ComplianceMetricViewTests(AccessLevelTestCase):
+class ComplianceMetricViewTests(AccessLevelBaseTestCase):
     """
     Test ComplianceMetric model
     """
@@ -45,7 +45,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
         self.filter_group = FilterGroup.objects.create(
             name='filter group 1',
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={'year_built__lt': ['1980']},
         )
         self.filter_group.save()
@@ -247,7 +247,7 @@ class ComplianceMetricViewTests(AccessLevelTestCase):
         self.assertEqual('ComplianceMetric with id 99999 does not exist', data['message'])
 
 
-class ComplianceMetricEvaluationTests(AccessLevelTestCase):
+class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
     """
     Test ComplianceMetric model's ability to evaluate propertyview values
     """
@@ -273,7 +273,7 @@ class ComplianceMetricEvaluationTests(AccessLevelTestCase):
         self.filter_group = FilterGroup.objects.create(
             name='filter group 1',
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={'year_built__lt': ['1980']},
         )
         self.filter_group.save()
