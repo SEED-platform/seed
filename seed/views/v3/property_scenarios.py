@@ -5,12 +5,17 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hiarchary_access,
+    has_perm_class
+)
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api import api_endpoint_class

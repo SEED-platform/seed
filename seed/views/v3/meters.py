@@ -4,9 +4,14 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.utils.decorators import method_decorator
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
+from seed.lib.superperms.orgs.decorators import (
+    has_hiarchary_access,
+    has_perm_class
+)
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet

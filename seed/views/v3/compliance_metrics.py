@@ -13,8 +13,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
-from seed.lib.superperms.orgs.models import Organization, AccessLevelInstance
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.compliance_metrics import ComplianceMetric
 from seed.serializers.compliance_metrics import ComplianceMetricSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
