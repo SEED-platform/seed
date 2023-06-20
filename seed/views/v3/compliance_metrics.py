@@ -80,7 +80,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -177,7 +177,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
