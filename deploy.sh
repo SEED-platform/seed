@@ -10,7 +10,7 @@
 
 : << 'arguments'
 There is only one optional argument and that is the name of the docker compose file to load.
-For example: ./deploy.sh docker-compose.local.oep.yml
+For example: ./deploy.sh docker-compose.local.yml
 
 There are several required environment variables that need to be set in order to launch seed:
 POSTGRES_DB (required), name of the POSTGRES DB
