@@ -195,8 +195,14 @@ class FakePropertyFactory(BaseFake):
         """Get property instance."""
         property_details = {
             'organization': self._get_attr('organization', organization),
-            'access_level_instance': self._get_attr('access_level_instance', access_level_instance),
         }
+        if self.access_level_instance is not None:
+            property_details["access_level_instance"] = self.access_level_instance
+        elif access_level_instance is not None:
+            property_details["access_level_instance"] = access_level_instance
+        else:
+            property_details["access_level_instance"] = property_details["organization"].root
+
         # add in the access level if passed, otherwise it will be null.
 
         property_details.update(kw)
