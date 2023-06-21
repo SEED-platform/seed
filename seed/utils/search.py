@@ -310,7 +310,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
+def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict], access_level_names: list[str]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -325,7 +325,16 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
     if column is None or column['related']:
-        return Q(), {}
+        # Check for access_level_names
+        if filter.field_name in access_level_names:
+            updated_filter = QueryFilter(
+                f'property__access_level_instance__name',
+                filter.operator, 
+                filter.is_negated
+            )
+            return updated_filter.to_q(filter_value), {}
+        else:
+            return Q(), {}
 
     column_name = column["column_name"]
     annotations: AnnotationDict = {}
@@ -373,7 +382,7 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
         return None, {}
 
 
-def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access_level_names: list[str] = []) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
@@ -434,14 +443,15 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
             parsed_filters, parsed_annotations = _parse_view_filter(
                 is_null_filter_expression,
                 is_null_filter_value,
-                columns_by_name
+                columns_by_name, 
+                access_level_names
             )
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
             column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
             if column_data_type in ['string', 'None']:
-                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name, access_level_names)
 
                 if filter_expression.endswith('__ne'):
                     parsed_filters &= empty_string_parsed_filters
@@ -450,7 +460,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
                     parsed_filters |= empty_string_parsed_filters
 
         else:
-            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name, access_level_names)
 
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)
