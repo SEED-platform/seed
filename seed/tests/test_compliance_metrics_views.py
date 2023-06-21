@@ -196,6 +196,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual(expected, data['message'])
 
     def test_compliance_metric_retrieve_endpoint(self):
+        self.login_as_child_member()
         response = self.client.get(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric1.id]) + '?organization_id=' + str(self.org.id)
         )
@@ -216,6 +217,8 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual('compliance metric 1', self.compliance_metric1.name)
         self.assertEqual(3, len(self.compliance_metric1.x_axis_columns.all()))
 
+        # CAN UPDATE as ROOT-LEVEL MEMBER:
+        self.login_as_root_member()
         response = self.client.put(
             reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric1.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
@@ -230,11 +233,7 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         self.assertEqual('updated name', data['compliance_metric']['name'])
         self.assertEqual(2, len(data['compliance_metric']['x_axis_columns']))
 
-        cm1 = ComplianceMetric.objects.get(id=self.compliance_metric1.id)
-        self.assertEqual('updated name', cm1.name)
-        self.assertEqual(2, len(cm1.x_axis_columns.all()))
-        self.assertEqual(self.column3.id, cm1.x_axis_columns.first().id)
-
+        # test cannot update a non-existing compliance metric
         response = self.client.put(
             reverse('api:v3:compliance_metrics-detail', args=[99999]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
@@ -245,6 +244,52 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         data = json.loads(response.content)
         self.assertEqual('error', data['status'])
         self.assertEqual('ComplianceMetric with id 99999 does not exist', data['message'])
+
+        # CANNOT UPDATE AS CHILD-LEVEL MEMBER:
+        self.login_as_child_member()
+        response = self.client.put(
+            reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric1.id]) + '?organization_id=' + str(self.org.id),
+            data=json.dumps({
+                "name": "another name"
+            }),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        self.assertEqual('error', data['status'])
+        self.assertEqual(response.status_code, 403)
+
+        cm1 = ComplianceMetric.objects.get(id=self.compliance_metric1.id)
+        self.assertEqual('updated name', cm1.name)
+        self.assertEqual(2, len(cm1.x_axis_columns.all()))
+        self.assertEqual(self.column3.id, cm1.x_axis_columns.first().id)
+
+    def test_compliance_metric_delete_endpoint(self):
+
+        # CANNOT DELETE AS CHILD-LEVEL MEMBER:
+        self.login_as_child_member()
+        response = self.client.delete(
+            reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric2.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        self.assertEqual('error', data['status'])
+        self.assertEqual(response.status_code, 403)
+
+        compliance_metrics = ComplianceMetric.objects.all().order_by('created')
+        self.assertEqual(2, len(compliance_metrics))
+
+        # CAN DELETE AS ROOT-LEVEL MEMBER:
+        self.login_as_root_member()
+        response = self.client.delete(
+            reverse('api:v3:compliance_metrics-detail', args=[self.compliance_metric2.id]) + '?organization_id=' + str(self.org.id),
+            content_type='application/json'
+        )
+        data = json.loads(response.content)
+        self.assertEqual('success', data['status'])
+        self.assertEqual(response.status_code, 200)
+
+        compliance_metrics = ComplianceMetric.objects.all().order_by('created')
+        self.assertEqual(1, len(compliance_metrics))
 
 
 class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
