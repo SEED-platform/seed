@@ -6,6 +6,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 from functools import wraps
+from inspect import signature
 
 from django.conf import settings
 from django.http import HttpResponseForbidden
@@ -29,6 +30,14 @@ def requires_parent_org_owner(org_user):
         org_user.role_level >= ROLE_OWNER and
         not org_user.organization.parent_org
     )
+
+
+def requires_owner_or_superuser_without_org(org_user):
+    """
+    Allows superusers to use the endpoint with or without an organization_id
+    Owners can only use the endpoint with an organization_id
+    """
+    return requires_owner(org_user) or requires_superuser(org_user)
 
 
 def requires_owner(org_user):
@@ -114,11 +123,13 @@ def can_view_data(org_user):
 
 
 PERMS = {
+    # requires_superuser is the only role that can be on organization-agnostic endpoints
+    'requires_superuser': requires_superuser,
     'requires_parent_org_owner': requires_parent_org_owner,
+    'requires_owner_or_superuser_without_org': requires_owner_or_superuser_without_org,
     'requires_owner': requires_owner,
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
-    'requires_superuser': requires_superuser,
     'can_create_sub_org': can_create_sub_org,
     'can_remove_org': can_remove_org,
     'can_invite_member': can_invite_member,
@@ -152,70 +163,51 @@ def _make_resp(message_name):
     )
 
 
-def has_perm(perm_name):
+# Return nothing if valid, otherwise return Forbidden response
+def _validate_permissions(perm_name, request, requires_org):
+    if not requires_org:
+        if perm_name not in ['requires_superuser', 'requires_owner_or_superuser_without_org']:
+            raise AssertionError('requires_org=False can only be combined with requires_superuser or '
+                                 'requires_owner_or_superuser_without_org')
+        if request.user.is_superuser:
+            return
+        elif perm_name != 'requires_owner_or_superuser_without_org':
+            return _make_resp('perm_denied')
+
+    org_id = get_org_id(request)
+    try:
+        org = Organization.objects.get(pk=org_id)
+    except Organization.DoesNotExist:
+        return _make_resp('org_dne')
+
+    # Skip perms checks if settings allow super_users to bypass.
+    if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+        return
+
+    try:
+        org_user = OrganizationUser.objects.get(
+            user=request.user, organization=org
+        )
+    except OrganizationUser.DoesNotExist:
+        return _make_resp('user_dne')
+
+    if not PERMS.get(perm_name, lambda x: False)(org_user):
+        return _make_resp('perm_denied')
+
+
+def has_perm_class(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
 
     def decorator(fn):
-        @wraps(fn)
-        def _wrapped(request, *args, **kwargs):
-            # Skip perms checks if settings allow super_users to bypass.
-            if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
-                return fn(request, *args, **kwargs)
-
-            org_id = get_org_id(request)
-
-            try:
-                org = Organization.objects.get(pk=org_id)
-            except Organization.DoesNotExist:
-                return _make_resp('org_dne')
-
-            try:
-                org_user = OrganizationUser.objects.get(
-                    user=request.user, organization=org
-                )
-            except OrganizationUser.DoesNotExist:
-                return _make_resp('user_dne')
-
-            if not PERMS.get(perm_name, lambda x: False)(org_user):
-                return _make_resp('perm_denied')
-
-            # Logic to see if person has permission required.
-            return fn(request, *args, **kwargs)
-
-        return _wrapped
-
-    return decorator
-
-
-def has_perm_class(perm_name):
-    """Proceed if user from request has ``perm_name``."""
-
-    def decorator(fn):
-        @wraps(fn)
-        def _wrapped(self, request, *args, **kwargs):
-            # Skip perms checks if settings allow super_users to bypass.
-            if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
-                return fn(self, request, *args, **kwargs)
-
-            org_id = get_org_id(request)
-
-            try:
-                org = Organization.objects.get(pk=org_id)
-            except Organization.DoesNotExist:
-                return _make_resp('org_dne')
-
-            try:
-                org_user = OrganizationUser.objects.get(
-                    user=request.user, organization=org
-                )
-            except OrganizationUser.DoesNotExist:
-                return _make_resp('user_dne')
-
-            if not PERMS.get(perm_name, lambda x: False)(org_user):
-                return _make_resp('perm_denied')
-
-            # Logic to see if person has permission required.
-            return fn(self, request, *args, **kwargs)
+        params = list(signature(fn).parameters)
+        if params and params[0] == 'self':
+            @wraps(fn)
+            def _wrapped(self, request, *args, **kwargs):
+                return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
+        else:
+            @wraps(fn)
+            def _wrapped(request, *args, **kwargs):
+                return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
 
         return _wrapped
 

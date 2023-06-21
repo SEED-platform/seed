@@ -21,7 +21,7 @@ from seed import tasks
 from seed.celery import app
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request
-from seed.lib.superperms.orgs.decorators import has_perm, requires_superuser
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import api_endpoint
 from seed.views.users import _get_js_role
 
@@ -79,6 +79,7 @@ def home(request):
 @api_endpoint
 @ajax_request
 @api_view(['GET'])
+@has_perm_class('requires_superuser', False)
 def celery_queue(request):
     """
     Returns the number of running and queued celery tasks. This action can only be performed by superusers
@@ -92,12 +93,6 @@ def celery_queue(request):
             'maxConcurrency': The maximum number of active tasks
         }
     """
-    if not requires_superuser(request):
-        return JsonResponse({
-            'status': 'error',
-            'message': 'request is restricted to superusers'
-        }, status=status.HTTP_403_FORBIDDEN)
-
     celery_tasks = app.control.inspect()
     results = {}
 
@@ -106,7 +101,7 @@ def celery_queue(request):
         result = getattr(celery_tasks, method)()
         if result is None or 'error' in result:
             results[method] = 'Error'
-            return
+            continue
         for worker, response in result.items():
             if method == 'stats':
                 results['maxConcurrency'] = response['pool']['max-concurrency']
@@ -240,7 +235,7 @@ def set_default_building_detail_columns(request):
 @api_endpoint
 @ajax_request
 @login_required
-@has_perm('requires_member')
+@has_perm_class('requires_member')
 @api_view(['DELETE'])
 def delete_file(request):
     """

@@ -174,10 +174,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_owner_or_superuser_without_org', False)
     def create(self, request):
         """
-        Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
+        Creates a new SEED user.
+        Organization owners must specify the `organization_id` query param.
+        Superusers can add `org_name` to the body and create a new organization for the new user.
         Sends invitation email to the new user.
         """
         # WARNING: we aren't using the OrgMixin here to validate the organization
@@ -254,7 +256,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         }
     )
     @ajax_request_class
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
@@ -632,7 +634,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.save()
         return {'status': 'success'}
 
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):
