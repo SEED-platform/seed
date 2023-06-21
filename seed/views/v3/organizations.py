@@ -965,18 +965,23 @@ class OrganizationViewSet(viewsets.ViewSet):
             organization_id=organization_id
         ).order_by('start')
 
-    def get_data(self, property_view, x_var, y_var):
-        result = None
+    def get_data(self, property_view, x_var, y_var, matching_columns):
+        result = {}
         state = property_view.state
         if getattr(state, x_var, None) and getattr(state, y_var, None):
-            result = {
-                "id": property_view.property_id,
-                "x": getattr(state, x_var),
-                "y": getattr(state, y_var),
-            }
+            for matching_column in matching_columns:
+                name = matching_column.column_name
+                if matching_column.is_extra_data:
+                    result[name] = state.extra_data.get(name)
+                else:
+                    result[name] = getattr(state, name)
+
+            result["x"] = getattr(state, x_var)
+            result["y"] = getattr(state, y_var)
+
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var):
+    def get_raw_report_data(self, organization_id, cycles, x_var, y_var, addtional_columns=[]):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
@@ -993,7 +998,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             for property_view in property_views:
                 property_pk = property_view.property_id
                 count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var)
+                result = self.get_data(property_view, x_var, y_var, addtional_columns)
                 if result:
                     result['yr_e'] = cycle.end.strftime('%Y')
                     de_unitted_result = apply_display_unit_preferences(organization, result)
@@ -1327,20 +1332,24 @@ class OrganizationViewSet(viewsets.ViewSet):
         count_sheet.write(data_row_start, data_col_start + 1, 'Properties with Data', bold)
         count_sheet.write(data_row_start, data_col_start + 2, 'Total Properties', bold)
 
-        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
-        base_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('x_label'), bold)
-        base_sheet.write(data_row_start, data_col_start + 2, request.query_params.get('y_label'), bold)
-        base_sheet.write(data_row_start, data_col_start + 3, 'Year Ending', bold)
-
         agg_sheet.write(data_row_start, data_col_start, request.query_params.get('x_label'), bold)
         agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('y_label'), bold)
         agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
 
         # Gather base data
         cycles = self.get_cycles(params['start'], params['end'], pk)
+        matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         data = self.get_raw_report_data(
-            pk, cycles, params['x_var'], params['y_var']
+            pk, cycles, params['x_var'], params['y_var'], matching_columns
         )
+
+        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
+
+        for i, matching_column in enumerate(matching_columns):
+            base_sheet.write(data_row_start, data_col_start + i, matching_column.display_name, bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, request.query_params.get('x_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, request.query_params.get('y_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 2, 'Year Ending', bold)
 
         base_row = data_row_start + 1
         agg_row = data_row_start + 1
@@ -1361,10 +1370,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             # Write Base/Raw Data
             data_rows = cycle_results['chart_data']
             for datum in data_rows:
-                base_sheet.write(base_row, data_col_start, datum.get('id'))
-                base_sheet.write(base_row, data_col_start + 1, datum.get('x'))
-                base_sheet.write(base_row, data_col_start + 2, datum.get('y'))
-                base_sheet.write(base_row, data_col_start + 3, datum.get('yr_e'))
+                for i, k in enumerate(datum.keys()):
+                    base_sheet.write(base_row, data_col_start + i, datum.get(k))
 
                 base_row += 1
 
