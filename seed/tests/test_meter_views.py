@@ -198,7 +198,40 @@ class TestMeterCRUD(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 0)
 
+    def test_update_meter_permissions(self):
+        # create meter
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        payload = {
+            'type': 'Natural Gas',
+            'source': 'Portfolio Manager',
+            'source_id': 'A Custom Source ID',
+            'is_virtual': False,
+        }
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        meter_id = response.data['id']
+
+        self.client.login(**self.user_with_nothing_details)
+        new_payload = copy.deepcopy(payload)
+        new_payload['is_virtual'] = True
+        meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': property_view.id, 'pk': meter_id})
+        response = self.client.put(meter_url, data=json.dumps(new_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+        # create another meter
+        payload2 = {
+            'type': 'Natural Gas',
+            'source': 'Portfolio Manager',
+            'source_id': 'A Custom Source ID',
+            'is_virtual': False,
+        }
+        response = self.client.post(url, data=json.dumps(payload2), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+
     def test_update_meter(self):
+        self.client.login(**self.user_details)
         # create meter
         property_view = self.property_view_factory.get_property_view()
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
@@ -215,6 +248,7 @@ class TestMeterCRUD(DeleteModelsTestCase):
         new_payload = copy.deepcopy(payload)
         new_payload['is_virtual'] = True
         meter_id = response.data['id']
+        print("meter_id", meter_id)
         meter_url = reverse('api:v3:property-meters-detail', kwargs={'property_pk': property_view.id, 'pk': meter_id})
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -280,6 +314,55 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
         # faker class for properties
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        
+        # create user wih nothing
+        self.user_with_nothing_details = {
+            'username': 'nothing@demo.com',
+            'password': 'test_pass',
+        }
+        self.user_with_nothing = User.objects.create_user(**self.user_with_nothing_details)
+        self.org.access_level_names = ["root", "child"]
+        self.child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org.add_member(self.user_with_nothing, self.child.pk)
+        self.org.save()
+
+
+    def test_create_meter_readings_permissions(self):
+        self.client.login(**self.user_with_nothing_details)
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        # create meter readings
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+
+        # write a few values to the database
+        for values in [("2022-01-05 05:00:00", "2022-01-05 06:00:00", 6.0),
+                       ("2022-01-05 06:00:00", "2022-01-05 07:00:00", 12.0),
+                       ("2022-01-05 07:00:00", "2022-01-05 08:00:00", 18.0), ]:
+            payload = {
+                "start_time": values[0],
+                "end_time": values[1],
+                "reading": values[2],
+                "source_unit": "Wh (Watt-hours)",
+                # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                "conversion_factor": 0.00341,
+            }
+
+            response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+            self.assertEqual(response.status_code, 403)
+
+        # read all the values from the meter and check the results
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
 
     def test_create_meter_readings(self):
         property_view = self.property_view_factory.get_property_view()
@@ -404,6 +487,48 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 3)
+
+    def test_delete_meter_readings_permissions(self):
+        self.client.login(**self.user_with_nothing_details)
+        # would be nice nice to make a factory out of the meter / meter reading requests
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Natural Gas',
+            'source': 'Manual Entry',
+            'source_id': '9876543210',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        # create meter reading  property-meter-readings-list
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+
+        payload = {
+            "start_time": "2022-01-05 05:00:00",
+            "end_time": "2022-01-05 06:00:00",
+            "reading": 10,
+            "source_unit": "kBtu (Thousand BTU)",
+            # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+            "conversion_factor": 1,
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+        # now delete the item and verify that there are no more readings in the database
+        detail_url = reverse('api:v3:property-meter-readings-detail', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk, 'pk': '2022-01-05 05:00:00'})
+        response = self.client.get(detail_url, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.delete(detail_url, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+        # read all the values from the meter and check the results
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_meter_readings(self):
         # would be nice nice to make a factory out of the meter / meter reading requests

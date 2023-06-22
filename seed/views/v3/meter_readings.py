@@ -10,8 +10,41 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hierarchy_access
+from django.utils.decorators import method_decorator
 
 
+
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='create',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='update',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='partial_update',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('can_view_data'),
+    has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
 class MeterReadingViewSet(SEEDOrgModelViewSet):
     """API endpoint for managing meters."""
 

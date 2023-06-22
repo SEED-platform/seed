@@ -15,7 +15,7 @@ from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.superperms.orgs.decorators import (
-    has_hiarchary_access,
+    has_hierarchy_access,
     has_perm_class
 )
 from seed.models import (
@@ -647,7 +647,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
-    @has_hiarchary_access(taxlot_view_id_kwarg="pk")
+    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     def retrieve(self, request, pk):
         """
         Get taxlot details

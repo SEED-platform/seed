@@ -211,6 +211,12 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
 
 def assert_hiarchary_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
         print("++ assert_hiarchary_access ++")
+        print("request.access_level_instance_id: ", request.access_level_instance_id)
+        print("kwargs: ", kwargs)
+        print("args: ", args)
+        print("property_view_id_kwarg: ", property_view_id_kwarg)
+        print("taxlot_view_id_kwarg: ", taxlot_view_id_kwarg)
+        print("body_ali_id: ", body_ali_id)
         if property_view_id_kwarg:
             property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
             requests_ali = property_view.property.access_level_instance
@@ -233,7 +239,7 @@ def assert_hiarchary_access(request, property_view_id_kwarg=None, taxlot_view_id
                 'message': 'No such resource.'
             }, status=status.HTTP_404_NOT_FOUND)
 
-def has_hiarchary_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
+def has_hierarchy_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:

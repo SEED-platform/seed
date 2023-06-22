@@ -21,7 +21,7 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import (
-    has_hiarchary_access,
+    has_hierarchy_access,
     has_perm_class
 )
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -265,7 +265,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @ajax_request_class
     @has_perm_class('requires_member')
-    @has_hiarchary_access(property_view_id_kwarg="pk")
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
         """
@@ -289,7 +289,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @ajax_request_class
     @has_perm_class('requires_member')
-    @has_hiarchary_access(property_view_id_kwarg="pk")
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def sensor_usage(self, request, pk):
         """
@@ -325,7 +325,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @has_hiarchary_access(property_view_id_kwarg="pk")
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def sensors(self, request, pk):
         """
@@ -976,7 +976,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
-    @has_hiarchary_access(property_view_id_kwarg="pk")
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
         Get property details

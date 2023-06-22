@@ -16,7 +16,7 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 from seed.lib.superperms.orgs.decorators import (
-    has_hiarchary_access,
+    has_hierarchy_access,
     has_perm_class
 )
 

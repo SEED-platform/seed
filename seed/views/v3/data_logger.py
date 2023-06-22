@@ -12,7 +12,7 @@ from rest_framework import status, viewsets
 from config.settings.common import TIME_ZONE
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
-    has_hiarchary_access,
+    has_hierarchy_access,
     has_perm_class
 )
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -27,7 +27,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @has_hiarchary_access()
+    @has_hierarchy_access()
     def list(self, request):
         """
         Retrieves data_loggers for the property
@@ -58,7 +58,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @has_hiarchary_access()
+    @has_hierarchy_access()
     def create(self, request):
         """
         create data_logger

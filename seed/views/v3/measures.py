@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_perm_class, has_hiarchary_access
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hierarchy_access
 from seed.models import Measure
 from seed.serializers.measures import MeasureSerializer
 from seed.utils.api import OrgMixin
@@ -28,7 +28,7 @@ from seed.utils.api_schema import (
 ])
 @method_decorator(name='list', decorator=[
     has_perm_class('can_view_data'),
-    # has_hiarchary_access(property_view_id_kwarg="property_pk"),
+    # has_hierarchy_access(property_view_id_kwarg="property_pk"),
     swagger_auto_schema_org_query_param,
 ])
 class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):

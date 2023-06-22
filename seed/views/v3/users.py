@@ -19,7 +19,7 @@ from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import (
     PERMS,
-    has_hiarchary_access,
+    has_hierarchy_access,
     has_perm_class
 )
 from seed.lib.superperms.orgs.models import (
@@ -180,7 +180,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @has_hiarchary_access(body_ali_id="access_level_instance_id")
+    @has_hierarchy_access(body_ali_id="access_level_instance_id")
     def create(self, request):
         """
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
