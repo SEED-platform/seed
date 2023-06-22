@@ -18,7 +18,7 @@ def fix_source_type(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0196_alter_columnmapping_source_type'),
+        ('seed', '0196_alter_source_types'),
     ]
 
     operations = [
