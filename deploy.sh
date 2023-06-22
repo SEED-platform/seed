@@ -10,7 +10,7 @@
 
 : << 'arguments'
 There is only one optional argument and that is the name of the docker compose file to load.
-For example: ./deploy.sh docker-compose.local.oep.yml
+For example: ./deploy.sh docker-compose.local.yml
 
 There are several required environment variables that need to be set in order to launch seed:
 POSTGRES_DB (required), name of the POSTGRES DB
@@ -111,7 +111,7 @@ else
     docker service create --name registry --publish 5000:5000 --mount type=volume,source=regdata,destination=/var/lib/registry registry:2.6
 fi
 
-echo "Building latest version of SEED with OEP option"
+echo "Building latest version of SEED "
 # explicitly pull images from docker-compose's build yml file. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
 docker-compose -f docker-compose.build.yml pull
@@ -119,21 +119,18 @@ docker-compose -f docker-compose.build.yml build --pull
 
 # Get the versions out of the docker-compose.build file
 DOCKER_PG_VERSION=$( sed -n 's/.*image\: timescale\/timescaledb-postgis\:latest-pg\(.*\)/\1/p' docker-compose.build.yml )
-DOCKER_OEP_VERSION=$( sed -n 's/.*image\: seedplatform\/oep\:\(.*\)/\1/p' docker-compose.build.yml )
 DOCKER_REDIS_VERSION=$( sed -n 's/.*image\: redis\:\(.*\)/\1/p' docker-compose.build.yml )
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
 docker tag timescale/timescaledb-postgis:latest-pg$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
 docker tag redis:5.0.1 127.0.0.1:5000/redis
-docker tag seedplatform/oep:$DOCKER_OEP_VERSION 127.0.0.1:5000/oep
 
 sleep 3
 echo "Pushing tagged versions to local registry"
 docker push 127.0.0.1:5000/seed
 docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
-docker push 127.0.0.1:5000/oep
 
 echo "Deploying (or updating)"
 docker-compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
