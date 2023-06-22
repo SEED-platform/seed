@@ -64,8 +64,13 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_UNKNOWN,
+    GREEN_BUTTON,
     PORTFOLIO_BS,
-    PORTFOLIO_RAW,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
+    SEED_DATA_SOURCES_MAPPING,
+    SENSOR_METADATA,
+    SENSOR_READINGS,
     BuildingFile,
     Column,
     ColumnMapping,
@@ -537,12 +542,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     #     map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
     #     return progress_data.finish_with_error('waiting for raw data save.')
 
-    source_type_dict = {
-        'Assessed Raw': ASSESSED_RAW,
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
     qs = PropertyState.objects.filter(
         import_file=import_file,
@@ -729,31 +729,31 @@ def finish_raw_save(results, file_pk, progress_key):
     :param results: List of results from the parent task
     :param file_pk: ID of the file that was being imported
     :param progress_key: string, Progress Key to append progress
-    :param summary: Summary to be saved on ProgressData as a message
     :return: results: results from the other tasks before the chord ran
     """
     progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and progress_data.summary() is not None:
+    if import_file.source_type in [SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
+                                   SEED_DATA_SOURCES[GREEN_BUTTON][1]] and progress_data.summary() is not None:
         import_file.cycle_id = None
 
         new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
         finished_progress_data = progress_data.finish_with_success(new_summary)
-    elif import_file.source_type == "SensorMetaData":
+    elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_METADATA][1]:
         import_file.cycle_id = None
         new_summary = _append_sensor_import_results_to_summary(results)
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
-    elif import_file.source_type == "SensorReadings":
+    elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_READINGS][1]:
         new_summary = _append_sensor_readings_import_results_to_summary(results)
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
     else:
         finished_progress_data = progress_data.finish_with_success()
 
-    if import_file.source_type == 'BuildingSync Raw':
+    if import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         for result in results:
             import_file.raw_property_state_to_filename.update(result)
 
@@ -1216,7 +1216,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
-    elif import_file.source_type == 'BuildingSync Raw':
+    elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:
             parser = xml_reader.BuildingSyncParser(import_file.file)
         except Exception as e:
@@ -1274,13 +1274,13 @@ def save_raw_data(file_pk):
         # queue up the tasks and immediately return. This is needed in the case of large files
         # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
         # large files can take quite some time.
-        if import_file.source_type == 'PM Meter Usage':
+        if import_file.source_type == SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1]:
             _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'GreenButton':
+        elif import_file.source_type == SEED_DATA_SOURCES[GREEN_BUTTON][1]:
             _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'SensorMetaData':
+        elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_METADATA][1]:
             _save_sensor_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'SensorReadings':
+        elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_READINGS][1]:
             _save_sensor_readings_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
             _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
@@ -1428,12 +1428,7 @@ def map_additional_models(file_pk):
     if import_file.cycle is None:
         _log.warning("This should never happen in production")
 
-    source_type_dict = {
-        'Assessed Raw': ASSESSED_RAW,
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
     # get the properties and chunk them into tasks
     qs = PropertyState.objects.filter(
@@ -1593,12 +1588,7 @@ def _map_additional_models(ids, file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
 
-    source_type_dict = {
-        'Assessed Raw': ASSESSED_RAW,
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization

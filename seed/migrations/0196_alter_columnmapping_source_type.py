@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='columnmapping',
             name='source_type',
-            field=models.IntegerField(blank=True, choices=[(0, 'Assessed Raw'), (1, 'Portfolio Raw'), (2, 'Assessed'), (3, 'Portfolio'), (4, 'BuildingSnapshot'), (5, 'BuildingSync Raw'), (6, 'GreenButton'), (7, 'PM Meter Usage')], null=True),
+            field=models.IntegerField(blank=True, choices=[(0, 'Assessed Raw'), (1, 'Portfolio Raw'), (2, 'Assessed'), (3, 'Portfolio'), (4, 'BuildingSnapshot'), (5, 'BuildingSync Raw'), (6, 'GreenButton'), (7, 'PM Meter Usage'), (8, 'SensorMetadata'), (9, 'SensorReadings')], null=True),
         ),
     ]
