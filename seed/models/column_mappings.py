@@ -11,7 +11,6 @@ from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models.models import SEED_DATA_SOURCES
 
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.
@@ -113,7 +112,6 @@ class ColumnMapping(models.Model):
 
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True)
     super_organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, verbose_name=_('SeedOrg'),
                                            blank=True, null=True, related_name='column_mappings')
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
