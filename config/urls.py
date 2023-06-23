@@ -26,7 +26,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="SEED API",
         default_version='v3',
-        description="Test description",
+        description="SEED Platform API Documentation",
         # terms_of_service="https://www.google.com/policies/terms/",
         # contact=openapi.Contact(email="contact@snippets.local"),
         # license=openapi.License(name="BSD License"),
