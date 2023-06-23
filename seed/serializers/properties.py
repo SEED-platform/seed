@@ -215,6 +215,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     """
     Used by Property create which takes in a state and promotes it to a PropertyView
+    Organization_id is set in view (not passed in directly by user)
     """
     extra_data = serializers.JSONField(required=False)
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
@@ -223,7 +224,15 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
-    organization_id = serializers.IntegerField(read_only=True)
+    organization_id = serializers.IntegerField()
+
+    # read-only fields
+    data_state = serializers.IntegerField(read_only=True)
+    merge_state = serializers.IntegerField(allow_null=True, read_only=True)
+    geocoding_confidence = serializers.CharField(allow_null=True,read_only=True)
+    hash_object = serializers.CharField(allow_null=True,read_only=True)
+    created = serializers.DateTimeField(read_only=True)
+    updated = serializers.DateTimeField(read_only=True)
 
     # support naive datetime objects
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
@@ -248,6 +257,9 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = PropertyState
+        extra_kwargs = {
+            'organization': {'read_only': True}
+        }
 
 
 class PropertyStateWritableSerializer(serializers.ModelSerializer):

@@ -1031,6 +1031,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': 'Missing required parameter state',
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # ensure that state organization_id is set to org in the request
+        state_org_id = property_state_data.get('organization_id', org_id)
+        if state_org_id != org_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'State organization_id does not match request organization_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        property_state_data['organization_id'] = state_org_id
+
         # get cycle
         try:
             cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
@@ -1081,12 +1090,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         property_state_data['extra_data'] = new_data
         print(f"property_state_data: {property_state_data}")
-        property_state_data['organization_id'] = org_id
+
 
         # this serializer is meant to be used by a create action
         property_state_serializer = PropertyStatePromoteWritableSerializer(
             data=property_state_data
         )
+
         if property_state_serializer.is_valid():
             # create the new property state, and perform an initial save
             new_state = property_state_serializer.save()
