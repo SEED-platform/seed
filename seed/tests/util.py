@@ -16,6 +16,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_IMPORT,
+    SEED_DATA_SOURCES,
     Column,
     ColumnMapping,
     Cycle,
@@ -119,7 +120,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.source_type = source_type
+        import_file.source_type = SEED_DATA_SOURCES[source_type][1]
         import_file.data_state = data_state
         import_file.save()
 

@@ -44,7 +44,11 @@ from seed.models import (
     Scenario,
     TaxLotState
 )
-from seed.models.models import DATA_STATE_MAPPING
+from seed.models.models import (
+    BUILDINGSYNC_RAW,
+    DATA_STATE_MAPPING,
+    SEED_DATA_SOURCES
+)
 from seed.tests.util import DataMappingBaseTestCase
 
 _log = logging.getLogger(__name__)
@@ -105,7 +109,7 @@ class TestDataImport(DataMappingBaseTestCase):
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type=ASSESSED_RAW,
+            source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1],
         )
         import_file.raw_save_done = True
         import_file.save()
@@ -208,7 +212,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
 
             self.assertEqual(xml_files_found, 2)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -247,7 +251,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
 
             self.assertEqual(xml_files_found, 2)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -329,7 +333,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         filename = 'buildingsync_v2_0_bricr_workflow.xml'
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
@@ -410,7 +414,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         filename = 'buildingsync_ex01_measures_bad_names.xml'
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
 
