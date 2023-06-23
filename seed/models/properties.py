@@ -37,6 +37,7 @@ from seed.models.models import (
     DATA_STATE_UNKNOWN,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
+    SEED_DATA_SOURCES,
     StatusLabel
 )
 from seed.models.tax_lot_properties import TaxLotProperty
@@ -151,8 +152,7 @@ class PropertyState(models.Model):
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 
-    # FIXME: source_type needs to be a foreign key or make it import_file.source_type
-    source_type = models.IntegerField(null=True, blank=True, db_index=True)
+    source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True, db_index=True)
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)

@@ -31,12 +31,15 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
+    ASSESSED_RAW,
     AUDIT_USER_EDIT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Column,
     Cycle,
     ImportFile,
@@ -234,7 +237,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 id=import_file_id,
                 import_record__super_organization_id=org_id,
                 mapping_done=True,
-                source_type="Assessed Raw"
+                source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1]
             )
         except ImportFile.DoesNotExist:
             resp = {
@@ -247,7 +250,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             import_record=original_file.import_record,
             file=original_file.file,
             uploaded_filename=original_file.uploaded_filename,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
         )
 
         return JsonResponse({

@@ -113,10 +113,19 @@
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['y']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[configs.chart_cycle]['y']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(configs.chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[0]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                        <tr ng-click="show_properties_for_dataset['n'] = !show_properties_for_dataset['n']">
@@ -126,10 +135,19 @@
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['n']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[configs.chart_cycle]['n']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(configs.chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[1]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                        <tr ng-click="show_properties_for_dataset['u'] = !show_properties_for_dataset['u']">
@@ -140,10 +158,19 @@
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['u']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[configs.chart_cycle]['u']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(configs.chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[2]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                    </tbody>

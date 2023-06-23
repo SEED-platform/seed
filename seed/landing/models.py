@@ -9,7 +9,7 @@ import hmac
 import re
 import uuid
 
-from django.contrib.auth.models import (  # SiteProfileNotAvailable
+from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
     UserManager
