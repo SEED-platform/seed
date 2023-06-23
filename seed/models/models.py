@@ -13,7 +13,7 @@ from seed.utils.generic import obj_to_dict
 
 # The MAX_NAME_LENGTH was taken out of Projects when it was removed.
 # It really isn't used in many models and doesn't really add value, but
-# we are leaving it for posterity sake.
+# we are leaving it for posterity.
 MAX_NAME_LENGTH = 255
 
 ASSESSED_RAW = 0
@@ -22,14 +22,34 @@ ASSESSED_BS = 2
 PORTFOLIO_BS = 3
 COMPOSITE_BS = 4
 BUILDINGSYNC_RAW = 5
+GREEN_BUTTON = 6
+PORTFOLIO_METER_USAGE = 7
+SENSOR_METADATA = 8
+SENSOR_READINGS = 9
 SEED_DATA_SOURCES = (
     (ASSESSED_RAW, 'Assessed Raw'),
-    (ASSESSED_BS, 'Assessed'),
     (PORTFOLIO_RAW, 'Portfolio Raw'),
+    (ASSESSED_BS, 'Assessed'),
     (PORTFOLIO_BS, 'Portfolio'),
     (COMPOSITE_BS, 'BuildingSnapshot'),  # I don't think we need this, but I am leaving it for now.
     (BUILDINGSYNC_RAW, 'BuildingSync Raw'),
+    (GREEN_BUTTON, 'GreenButton'),
+    (PORTFOLIO_METER_USAGE, 'PM Meter Usage'),
+    (SENSOR_METADATA, 'SensorMetadata'),
+    (SENSOR_READINGS, 'SensorReadings'),
 )
+SEED_DATA_SOURCES_MAPPING = {
+    SEED_DATA_SOURCES[ASSESSED_RAW][1]: ASSESSED_RAW,
+    SEED_DATA_SOURCES[PORTFOLIO_RAW][1]: PORTFOLIO_RAW,
+    SEED_DATA_SOURCES[ASSESSED_BS][1]: ASSESSED_BS,
+    SEED_DATA_SOURCES[PORTFOLIO_BS][1]: PORTFOLIO_BS,
+    SEED_DATA_SOURCES[COMPOSITE_BS][1]: COMPOSITE_BS,
+    SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]: BUILDINGSYNC_RAW,
+    SEED_DATA_SOURCES[GREEN_BUTTON][1]: GREEN_BUTTON,
+    SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1]: PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES[SENSOR_METADATA][1]: SENSOR_METADATA,
+    SEED_DATA_SOURCES[SENSOR_READINGS][1]: SENSOR_READINGS,
+}
 
 # State of the data that was imported. This will be used to flag which
 # rows are orphaned and can be deleted. TODO: There are a bunch of these states already

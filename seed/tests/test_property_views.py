@@ -29,6 +29,9 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     DATA_STATE_MAPPING,
+    GREEN_BUTTON,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -510,7 +513,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -688,7 +691,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -723,7 +726,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -759,7 +762,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -779,7 +782,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -823,7 +826,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -844,7 +847,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_overlapping_filename,
             file=SimpleUploadedFile(
                 name=gb_overlapping_filename,
@@ -941,7 +944,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -1051,7 +1054,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -1499,7 +1502,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1650,7 +1653,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,

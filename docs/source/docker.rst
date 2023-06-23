@@ -109,7 +109,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
     ./deploy.sh
 
 
-Deploying with OEP
+Deploying with Docker
 ^^^^^^^^^^^^^^^^^^
 
 The preferred way to deploy with Docker is using docker swarm and docker stack.
@@ -121,7 +121,7 @@ The short version is to simply run the command below. Note that the passing of t
 ./deploy.sh docker-compose.local.yml
 ```
 
-If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
+If deploying using a custom docker-compose yml file, then simple replace the name in the command above.
 
 
 .. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh
