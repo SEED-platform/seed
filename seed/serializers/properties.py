@@ -229,8 +229,8 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     # read-only fields
     data_state = serializers.IntegerField(read_only=True)
     merge_state = serializers.IntegerField(allow_null=True, read_only=True)
-    geocoding_confidence = serializers.CharField(allow_null=True,read_only=True)
-    hash_object = serializers.CharField(allow_null=True,read_only=True)
+    geocoding_confidence = serializers.CharField(allow_null=True, read_only=True)
+    hash_object = serializers.CharField(allow_null=True, read_only=True)
     created = serializers.DateTimeField(read_only=True)
     updated = serializers.DateTimeField(read_only=True)
 
