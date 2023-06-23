@@ -212,6 +212,44 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         return result
 
 
+class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
+    """
+    Used by Property create which takes in a state and promotes it to a PropertyView
+    """
+    extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
+
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField(read_only=True)
+
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+
+    # support the pint objects
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+
+    class Meta:
+        fields = '__all__'
+        model = PropertyState
+
+
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
     Used by PropertyViewAsState as a nested serializer
@@ -229,7 +267,6 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField(read_only=True)
 
-    # support naive datetime objects
     # support naive datetime objects
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)

@@ -49,6 +49,7 @@ from seed.models import TaxLotProperty, TaxLotView
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
+    PropertyStatePromoteWritableSerializer,
     PropertyStateSerializer,
     PropertyViewAsStateSerializer,
     PropertyViewSerializer,
@@ -1060,7 +1061,30 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'message': 'Invalid property_id',
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        property_state_serializer = PropertyStateSerializer(
+        # extra data fields that do not match existing columns will not be imported
+        extra_data_columns = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type='Property',
+            only_used=False,
+            exclude_derived=True
+        )
+
+        extra_data = property_state_data.get('extra_data', {})
+        new_data = {}
+
+        for k, v in extra_data.items():
+            # keep only those that match a column
+            match = next((item for item in extra_data_columns if item["column_name"] == k), None)
+            if match:
+                # this column exists, keep the data
+                new_data[k] = v
+
+        property_state_data['extra_data'] = new_data
+        print(f"property_state_data: {property_state_data}")
+        property_state_data['organization_id'] = org_id
+
+        # this serializer is meant to be used by a create action
+        property_state_serializer = PropertyStatePromoteWritableSerializer(
             data=property_state_data
         )
         if property_state_serializer.is_valid():
