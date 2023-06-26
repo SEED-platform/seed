@@ -2,8 +2,8 @@
 
 from django.db import migrations, models
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
         ('orgs', '0026_organizationuser_unique_user_for_organization'),
     ]

@@ -3384,6 +3384,9 @@ msgstr "What is a Custom Report?"
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
 
+msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
+msgstr "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
+
 msgid "Where would you like to move these buildings?"
 msgstr "Where would you like to move these buildings?"
 
@@ -3605,6 +3608,9 @@ msgstr "date joined"
 #: seed/models/models.py:238
 msgid "deadline_date"
 msgstr "deadline_date"
+
+msgid "default"
+msgstr "default"
 
 #: seed/models/projects.py:47
 msgid "description"

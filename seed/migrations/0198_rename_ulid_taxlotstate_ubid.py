@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0195_sf_delete_label_checkbox'),
+        ('seed', '0197_pm_source_type'),
     ]
 
     operations = [

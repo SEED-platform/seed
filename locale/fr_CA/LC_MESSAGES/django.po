@@ -3409,6 +3409,9 @@ msgstr "Qu'est-ce qu'un rapport personnalisé ?"
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
 
+msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
+msgstr "Lorsque cette case est cochée, les propriétés/taxlots seront appariés aux cycles existants en fonction de la colonne 'year_ending' ou du cycle par défaut s'il n'y a pas de correspondance"
+
 msgid "Where would you like to move these buildings?"
 msgstr "Où aimeriez-vous déplacer ces bâtiments?"
 
@@ -3630,6 +3633,9 @@ msgstr "date jointe"
 #: seed/models/models.py:238
 msgid "deadline_date"
 msgstr "date limite"
+
+msgid "default"
+msgstr "défaut"
 
 #: seed/models/projects.py:47
 msgid "description"
