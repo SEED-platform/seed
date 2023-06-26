@@ -2,7 +2,6 @@
 
 from django.db import migrations, models
 
-
 class Migration(migrations.Migration):
     dependencies = [
         ('orgs', '0026_organizationuser_unique_user_for_organization'),
@@ -12,6 +11,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='ubid_threshold',
-            field=models.FloatField(null=True, default=1.0),
+            field=models.FloatField(default=1.0, null=True),
+        ),
+        migrations.AddConstraint(
+            model_name='organization',
+            constraint=models.CheckConstraint(check=models.Q(('ubid_threshold__range', (0, 1))),
+                                              name='ubid_threshold_range'),
         ),
     ]

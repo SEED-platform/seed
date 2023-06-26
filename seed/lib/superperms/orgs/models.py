@@ -153,6 +153,12 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.CheckConstraint(
+                name="ubid_threshold_range",
+                check=models.Q(ubid_threshold__range=(0, 1)),
+            ),
+        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
