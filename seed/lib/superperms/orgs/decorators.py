@@ -263,3 +263,30 @@ def has_hierarchy_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None,
         return _wrapped
 
     return decorator
+
+
+def _assert_user_in_root(request, *args, **kwargs):
+    user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+    if user_ali.depth > 1:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Forbidden action: user not in root.'
+        }, status=status.HTTP_403_FORBIDDEN)
+
+
+def in_root():
+    """User must be in root"""
+    def decorator(fn):
+        if 'self' in signature(fn).parameters:
+            @wraps(fn)
+            def _wrapped(self, request, *args, **kwargs):
+                return _assert_user_in_root(request, *args, **kwargs) or fn(self, request, *args, **kwargs)
+        else:
+            @wraps(fn)
+            def _wrapped(request, *args, **kwargs):
+                return _assert_user_in_root(request, *args, **kwargs) or fn(request, *args, **kwargs)
+
+        return _wrapped
+
+    return decorator
