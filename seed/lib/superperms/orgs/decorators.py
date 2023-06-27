@@ -223,7 +223,8 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hiarchary_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
+def assert_hierarchy_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
+    """Helper function to has_hierarchy_access"""
     if property_view_id_kwarg:
         property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
         requests_ali = property_view.property.access_level_instance
@@ -247,17 +248,17 @@ def assert_hiarchary_access(request, property_view_id_kwarg=None, taxlot_view_id
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hiarchary_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
+def has_hierarchy_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hiarchary_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hiarchary_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
