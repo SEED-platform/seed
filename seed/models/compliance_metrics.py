@@ -44,7 +44,7 @@ class ComplianceMetric(models.Model):
     def __str__(self):
         return 'Program Metric - %s' % self.name
 
-    def evaluate(self):
+    def evaluate(self, user_ali):
         response = {
             'meta': {
                 'organization': self.organization.id,
@@ -61,7 +61,6 @@ class ComplianceMetric(models.Model):
         query_dict = QueryDict(mutable=True)
         if self.filter_group and self.filter_group.query_dict:
             query_dict.update(self.filter_group.query_dict)
-        # print(f"query dict: {query_dict}")
 
         # grab cycles
         cycle_ids = self.cycles.values_list('pk', flat=True).order_by('start')
@@ -95,6 +94,7 @@ class ComplianceMetric(models.Model):
 
         property_response = properties_across_cycles_with_filters(
             self.organization_id,
+            user_ali,
             cycle_ids,
             query_dict,
             column_ids
