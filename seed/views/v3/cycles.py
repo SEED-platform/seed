@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from seed import tasks
-from seed.lib.superperms.orgs.decorators import has_perm_class, in_root
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -26,8 +26,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     name='create',
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_viewer'),
-        in_root(),
+        has_perm_class('requires_root_member_access'),
     ])
 @method_decorator(
     name='retrieve',
@@ -36,8 +35,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     name='update',
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class('requires_member'),
-        in_root(),
+        has_perm_class('requires_root_member_access'),
     ])
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
