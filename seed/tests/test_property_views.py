@@ -1537,7 +1537,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id})
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id}) + "?organization_id=" + str(self.org.id)
 
         result = self.client.get(url)
         result_dict = json.loads(result.content)
