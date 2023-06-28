@@ -17,7 +17,7 @@
 <div class="inventory-list-controls">
     <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="form-group">
-            <div uib-dropdown class="btn-group pointer">
+            <div uib-dropdown class="btn-group">
                 <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
@@ -66,7 +66,7 @@
         <span>
             <label>{$:: 'Cycle' | translate $}:</label>
             <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
+                <select class="form-control input-sm pointer" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
                 </select>
             </div>
         </span>
