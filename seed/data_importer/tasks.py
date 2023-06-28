@@ -1018,17 +1018,18 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         # lowercase keys just in case
         row = {k.lower(): v for k, v in row.items()}
 
-        for index, name in enumerate(access_level_names):
+        for key, val in row.items():
             # check headers
-            if name not in row:
-                message = f"Error reading CSV data row: {row}...no column for access level {name} found"
+            if key not in access_level_names:
+                message = f"Error reading CSV data row: {row}...no access level for column {key} found"
                 break
             # check for empty value (don't add blanks)
-            if not row[name]:
+            if not val:
+                message = f"Blank value for column {key} in CSV data row: {row}...skipping"
                 break
 
             # does this level exist already?
-            looking_for = row[name]
+            looking_for = val
 
             found = False
             for child in children:
@@ -1041,7 +1042,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
             if not found:
                 if not current_level:
                     # this would mean they are trying to add ROOT and that can't be
-                    message = f"Error attempting to add '{row[name]}' as another root element. Root element already defined as: {org.root.name}"
+                    message = f"Error attempting to add '{val}' as another root element. Root element already defined as: {org.root.name}"
                     break
                 # add it
                 try:
@@ -1050,7 +1051,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
                     # get its children (should be empty)
                     children = current_level.get_children()
                 except Exception as e:
-                    message = f"Error has occurred when adding element '{name}' for entry: {row}: {e}"
+                    message = f"Error has occurred when adding element '{val}' for entry: {row}: {e}"
                     break
 
         # add a row but only for errors
@@ -1065,8 +1066,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
 def _save_access_level_instances_data_create_tasks(filename, org_id, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
-    # open and read in file?
-
+    # open and read in file
     parser = AccessLevelInstancesParser.factory(
         open(filename, 'r'),
         org_id
@@ -1074,7 +1074,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     access_level_instances_data = parser.access_level_instances_details
 
     tasks = []
-    chunk_size = 100
+    # we are not going to deal with chunking this for now
+    # making the chunk size huge
+    chunk_size = 100000
 
     for batch_rows in batch(access_level_instances_data, chunk_size):
         tasks.append(_save_access_level_instances_task.s(batch_rows, org_id, progress_data.key))
@@ -1407,6 +1409,7 @@ def save_raw_access_level_instances_data(filename, org_id):
         progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
         progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
     return progress_data.result()
 
 

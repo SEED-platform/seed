@@ -45,7 +45,7 @@ class AccessLevelInstancesParser(object):
             raise ValueError("File has no rows")
 
         level_names = keys
-        # TODO: check that level_names match level names saved
+        # already checked that headers match level names before saving file
         # raise ValueError if not
         AccessLevelInstancesParser._access_level_names(org_id)
 

@@ -25,7 +25,6 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.access_level_tree = access_level_tree.access_level_tree;
-      console.log($scope.access_level_tree);
       $scope.access_level_names = access_level_tree.access_level_names;
 
       $scope.open_add_level_modal = function () {

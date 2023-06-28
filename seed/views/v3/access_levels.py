@@ -195,7 +195,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         """Import access_level instance names from file"""
         # get org
         try:
-            Organization.objects.get(pk=organization_pk)
+            org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
             return JsonResponse({'status': 'error',
                                  'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
@@ -223,11 +223,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if extension == "xlsx" or extension == "xls":
             workbook = xlrd.open_workbook(file_contents=the_file.read())
             all_sheets_empty = True
+            headers = []
             for sheet_name in workbook.sheet_names():
                 try:
                     sheet = workbook.sheet_by_name(sheet_name)
                     if sheet.nrows > 0:
                         all_sheets_empty = False
+                        headers = [str(cell.value).strip() for cell in sheet.row(0)]
                         break
                 except xlrd.biffh.XLRDError:
                     pass
@@ -235,7 +237,26 @@ class AccessLevelViewSet(viewsets.ViewSet):
             if all_sheets_empty:
                 return JsonResponse({
                     'success': False,
-                    'message': "Import %s was empty" % the_file.name
+                    'message': "Import File %s was empty" % the_file.name
+                })
+
+            # compare headers with access levels
+            # we can accept if headers are a subset of access levels
+            # but not the other way around
+            wrong_headers = False
+            # handle having the root level in file or not
+            level_names = org.access_level_names
+            if headers[0] != level_names[0]:
+                level_names.pop(0)
+
+            for idx, name in enumerate(headers):
+                if level_names[idx] != name:
+                    wrong_headers = True
+
+            if wrong_headers:
+                return JsonResponse({
+                    'success': False,
+                    'message': "Import File %s's headers did not match the access level names." % the_file.name
                 })
 
         # save the file

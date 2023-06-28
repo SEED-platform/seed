@@ -188,8 +188,73 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             }],
         }
 
+    def test_add_alis_from_file_bad1(self):
+        """ This test makes sure that import files will fail when incorrect
+        access level names (headers) are provided """
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
+        self.org.save()
+
+        filename = "access-levels-wrong1.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        uploaded_filepath = filepath
+        url = reverse_lazy('api:v3:organization-access_levels-start-save-data', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"filename": uploaded_filepath}),
+            content_type='application/json'
+        )
+        # 200 - process ok
+        assert raw_result.status_code == 200
+        result = json.loads(raw_result.content)
+        assert result['message'] == 'Invalid Column Name: "\'partner\'"'
+        assert result['status'] == 'error'
+
+    def test_add_alis_from_file_bad2(self):
+        """ This test makes sure that import files will fail when additional
+        access level columns that do not exist in the hierarchy are provided """
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
+        self.org.save()
+
+        filename = "access-levels-wrong2.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        uploaded_filepath = filepath
+        url = reverse_lazy('api:v3:organization-access_levels-start-save-data', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"filename": uploaded_filepath}),
+            content_type='application/json'
+        )
+        # 200 - process finishes without crashing
+        assert raw_result.status_code == 200
+        result = json.loads(raw_result.content)
+        assert result['message'] == {'Test Partner 1': {'message': "Error reading CSV data row: {'sector': 'Test', 'sub sector': 'Sub Test', 'partner': 'Test Partner 1', 'extra': 'wrong'}...no access level for column extra found"}}
+
+    def test_add_alis_from_file_bad3(self):
+        """ This test makes sure that import files will fail when the file
+        is incorrectly filled out (no data in col 1 but data in col 2, etc.) """
+
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
+        self.org.save()
+
+        filename = "access-levels-wrong3.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        uploaded_filepath = filepath
+        url = reverse_lazy('api:v3:organization-access_levels-start-save-data', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"filename": uploaded_filepath}),
+            content_type='application/json'
+        )
+        # 200 - process finishes without crashing
+        assert raw_result.status_code == 200
+        result = json.loads(raw_result.content)
+        assert result['message'] == {'Test3 Partner2': {'message': "Blank value for column sector in CSV data row: {'sector': '', 'sub sector': 'Test3Sub2', 'partner': 'Test3 Partner2'}...skipping"}, 'Test3 Partner3': {'message': "Blank value for column sector in CSV data row: {'sector': '', 'sub sector': '', 'partner': 'Test3 Partner3'}...skipping"}}
+
     def test_add_access_level_instances_from_file(self):
-        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Organization"]
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
         self.org.save()
 
         filename = "access-level-instances.xlsx"
