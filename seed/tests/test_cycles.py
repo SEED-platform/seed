@@ -27,7 +27,7 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         assert response.status_code == 403
 
-        # root users can see meters in root
+        # root users can create meters in root
         self.login_as_root_member()
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
         assert response.status_code == 201
@@ -40,12 +40,12 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 403
 
-        # root users cannot
+        # root users can
         self.login_as_root_member()
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 403
 
-        # root users cannot
+        # root users can
         self.login_as_root_owner()
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 200
