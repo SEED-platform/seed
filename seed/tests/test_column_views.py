@@ -67,7 +67,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         ps = self.property_state_factory.get_property_state(self.org)
         self.assertFalse("new_column" in ps.extra_data)
 
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
         post_data = {
             'column_name': 'new_column',
             'table_name': 'PropertyState',
@@ -92,7 +92,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_create_column_bad_no_data(self):
         # Set Up
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
 
         # Act - no data
         response = self.client.post(
@@ -132,7 +132,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_create_column_bad_table_name(self):
         # Set Up
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
         post_data = {
             'column_name': 'new_column',
             'table_name': 'bad',
