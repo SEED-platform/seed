@@ -68,9 +68,9 @@ def decode_unique_ids(qs):
 
 def get_jaccard_index(ubid1, ubid2):
     """
-    Calculates the Jaccard index given 2 property_state.ubid's
+    Calculates the Jaccard index given two UBIDs
 
-    The Jaccard index is a value between zero and one. The Jaccard index is the area of the intersection divided by the intersection of the union.
+    The Jaccard index is a value between zero and one, representing the area of the intersection divided by the area of the union.
     Not a Match (0.0) <-----> (1.0) Perfect Match
 
     @param ubid1 [text] A Property State Ubid
@@ -85,11 +85,11 @@ def get_jaccard_index(ubid1, ubid2):
 
     sql = """ WITH decoded AS (
                 SELECT
-                    public.UBID_Decode(%s) AS left_code_area,
-                    public.UBID_Decode(%s) AS right_code_area
+                    UBID_Decode(%s) AS left_code_area,
+                    UBID_Decode(%s) AS right_code_area
             )
             SELECT
-                public.UBID_CodeArea_Jaccard(left_code_area, right_code_area)
+                UBID_CodeArea_Jaccard(left_code_area, right_code_area)
             FROM
                 decoded """
 
@@ -104,7 +104,7 @@ def validate_ubid(ubid):
     Check if the code is valid
 
     EXAMPLE
-    select pluscode_isvalid('XX5JJC23+00')
+    SELECT pluscode_isvalid('XX5JJC23+00')
 
     @param ubid [text] A Property or TaxLot State Ubid
     @return [bool] Ubid validity.
@@ -113,7 +113,7 @@ def validate_ubid(ubid):
         return False
 
     parts = ubid.split('-')
-    sql = """ SELECT public.pluscode_isvalid(%s) """
+    sql = """ SELECT pluscode_isvalid(%s) """
 
     with connection.cursor() as cursor:
         cursor.execute(sql, [parts[0]])
@@ -123,7 +123,7 @@ def validate_ubid(ubid):
 
 def merge_ubid_models(old_state_ids, new_state_id, StateClass):
     """
-    Given a list of old (existing) property states, merge the exisitng ubid_models onto the new state
+    Given a list of old (existing) property states, merge the existing ubid_models onto the new state
 
     If the new_state has an equivalent ubid, skip it.
     """

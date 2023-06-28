@@ -1,17 +1,17 @@
 <div class="section">
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
-                        <div style="text-align: right; margin-bottom: 10px;">
-                            <button type="button" class="btn btn-primary" ng-click="edit_or_create()" translate>
-                                Create UBID
-                            </button>
-                        </div>
+            <div style="text-align: right; margin-bottom: 10px;">
+                <button type="button" class="btn btn-primary" ng-click="edit_or_create()" translate>
+                    Create UBID
+                </button>
+            </div>
             <div class="table_list_container has_borders">
                 <table id="ubid-table" class="table has_no_btm_margin">
                     <thead>
                         <tr>
-                            <th class="text-left" ng-click="toggle_name_order_sort()">
-                                <span>UBID<i class="glyphicon glyphicon-sort"></i></span>
+                            <th class="text-left">
+                                <span>UBID</span>
                             </th>
                             <th class="text-left">
                                 <span translate>Preferred</span>
@@ -28,9 +28,7 @@
                                 <span>{$ ubid.ubid $}</span>
                             </td>
                             <td>
-                                <div ng-show="ubid.preferred" class="preferred-indicator" translate>
-                                    Preferred
-                                </div>
+                                <div ng-if="ubid.preferred" class="preferred-indicator badge" translate>Preferred</div>
                             </td>
                             <td class="text-center">
                                 <button class="btn btn-info" type="button" ng-click="edit_or_create(ubid)">
@@ -42,15 +40,14 @@
                                 </button>
                             </td>
                         </tr>
-                        <tr ng-if="ubids.length == 0" style="background-color: #eee">
+                        <tr ng-if="ubids.length === 0" style="background-color: #eee">
                             <td class="text-center" colspan="3">
-                                <h5 translate>No Ubids For Property</h5>
+                                <h5>{$ 'No UBIDs For ' + (inventory_type === 'properties' ? 'Property' : 'Tax Lot') | translate $}</h5>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
 </div>

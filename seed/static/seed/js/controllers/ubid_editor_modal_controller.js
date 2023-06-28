@@ -3,123 +3,90 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.ubid_editor_modal', [])
-    .controller('ubid_editor_modal_controller', [
-        '$scope',
-        '$uibModalInstance',
-        'ubid',
-        'state_id',
-        'view_id',
-        'inventory_key',
-        'ubid_service',
-        function (
-            $scope,
-            $uibModalInstance,
-            ubid,
-            state_id,
-            view_id,
-            inventory_key,
-            ubid_service,
-        ) {
-            $scope.ubid = ubid;
-            $scope.state_id = state_id;
-            let refresh = false;
+  .controller('ubid_editor_modal_controller', [
+    '$scope',
+    '$uibModalInstance',
+    'ubid',
+    'ubids',
+    'state_id',
+    'view_id',
+    'inventory_key',
+    'ubid_service',
+    (
+      $scope,
+      $uibModalInstance,
+      ubid,
+      ubids,
+      state_id,
+      view_id,
+      inventory_key,
+      ubid_service
+    ) => {
+      $scope.ubid = angular.copy(ubid);
+      $scope.state_id = state_id;
+      $scope.inventory_key = inventory_key;
 
-            ubid_service.get_ubid_models_by_state(view_id, inventory_key).then(results => {
-                $scope.ubids = results.data;
-            })
+      if (!ubid) {
+        $scope.ubid = {
+          ubid: '',
+          preferred: false
+        };
+        $scope.ubid[inventory_key] = state_id;
+        $scope.update = false;
+      } else {
+        $scope.update = true;
+      }
 
-            if (!ubid) {
-                $scope.ubid = {
-                    ubid: '',
-                    preferred: false,
-                };
-                $scope.ubid[inventory_key] = state_id;
-                $scope.update = false;
-            } else {
-                $scope.update = true;
-            }
+      const already_exists = () => {
+        // If creating, check for matching ubids. If updating, exclude the current ubid (id)
+        return ubids.find(ubid => ubid.ubid === $scope.ubid.ubid && ubid.id !== $scope.ubid.id);
+      };
 
-            $scope.toggle_preferred = () => {
-                $scope.ubid.preferred = !$scope.ubid.preferred;
-            }
+      $scope.is_valid = () => {
+        const invalid = !ubid_service.validate_ubid_js($scope.ubid.ubid);
+        const exists = already_exists();
 
-            $scope.upsert_ubid = () => {
-                refresh = true
-                $scope.ubid.id ? update_ubid() : create_ubid();
-            }
+        $scope.invalid = invalid || exists;
+        if (invalid) $scope.ubid_error = 'Invalid UBID';
+        else if (exists) $scope.ubid_error = 'UBID already exists';
 
-            const create_ubid = () => {
-                if (check_existing()) {
-                    return
-                }
+        return !$scope.invalid;
+      };
 
-                ubid_service.validate_ubid($scope.ubid.ubid)
-                    .then((result) => {
-                        if (!result.data.valid) {
-                            $scope.ubid_error = `"${result.data.ubid}" is not a valid UBID. Please Retry.`;
-                            throw new Error('Invalid UBID')
-                        }
+      if ($scope.update) {
+        // Check if the pre-existing UBID is valid
+        $scope.is_valid();
+      }
 
-                        $scope.invalid = false;
-                        return ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
-                    })
-                    .then(() => {
-                        $scope.close()
-                    })
-                    .catch((error) => {
-                        $scope.invalid = true
-                    });
-            }
+      $scope.toggle_preferred = () => {
+        $scope.ubid.preferred = !$scope.ubid.preferred;
+      };
 
-            const update_ubid = () => {
-                if (check_existing()) {
-                    return
-                }
-                ubid_service.validate_ubid($scope.ubid.ubid)
-                    .then((result) => {
-                        if (!result.data.valid) {
-                            $scope.ubid_error = `"${result.data.ubid}" is not a valid UBID. Please Retry.`;
-                            throw new Error('Invalid UBID')
-                        }
+      $scope.upsert_ubid = () => {
+        if (!$scope.is_valid()) return;
 
-                        $scope.invalid = false
-                        let ubids = [$scope.ubid]
+        $scope.ubid.id ? update_ubid() : create_ubid();
+      };
 
-                        if ($scope.ubid.preferred) {
-                            let preferred_ubids = $scope.ubids.filter(ubid => ubid.preferred && ubid.id != $scope.ubid.id);
-                            preferred_ubids.forEach(ubid => ubid.preferred = false);
-                            ubids = [...ubids, ...preferred_ubids];
-                        };
+      const create_ubid = async () => {
+        await ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
+        $uibModalInstance.close();
+      };
 
-                        let promises = ubids.map(ubid => ubid_service.update_ubid(ubid));
-                        return Promise.all(promises)
-                    })
-                    .then(() => {
-                        $scope.close()
-                    })
-                    .catch((error) => {
-                        $scope.invalid = true
-                    })
+      const update_ubid = async () => {
+        let ubidsToUpdate = [$scope.ubid];
 
-            }
-
-            const check_existing = () => {
-                // If creating, check for matching ubids. If updating, exclude the current ubid (id)
-                const existing_ubid = $scope.ubids.find(ubid => ubid.ubid === $scope.ubid.ubid && ubid.id !== $scope.ubid.id);
-
-                if (existing_ubid) {
-                    $scope.invalid = true;
-                    $scope.ubid_error = `"${$scope.ubid.ubid}" is an existing UBID. Please Retry`;
-                    return true;
-                }
-            }
-
-            $scope.close = function () {
-                $uibModalInstance.close({
-                    refresh: refresh
-                });
-            };
-
+        if ($scope.ubid.preferred) {
+          const preferred_ubids = ubids.filter(ubid => ubid.preferred && ubid.id !== $scope.ubid.id);
+          preferred_ubids.forEach(ubid => ubid.preferred = false);
+          ubidsToUpdate = [...ubidsToUpdate, ...preferred_ubids];
         }
-    ]
-)
+
+        const promises = ubidsToUpdate.map(ubid => ubid_service.update_ubid(ubid));
+        await Promise.all(promises);
+        $uibModalInstance.close();
+      };
+
+      $scope.dismiss = () => $uibModalInstance.dismiss();
+    }
+  ]);

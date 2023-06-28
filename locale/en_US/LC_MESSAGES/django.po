@@ -183,7 +183,7 @@ msgstr "Add/Remove Labels"
 msgid "Add/Remove a user to an organization"
 msgstr "Add/Remove a user to an organization"
 
-msgid "Add/Update Ubid"
+msgid "Add/Update UBID"
 msgstr "Add/Update UBID"
 
 msgid "Adding buildings to project"
@@ -433,9 +433,6 @@ msgstr "Campus"
 msgid "Cancel"
 msgstr "Cancel"
 
-msgid "Cannot compare UBIDs while editing. Click OK to continue."
-msgstr "Cannot compare UBIDs while editing. Click OK to continue."
-
 #: seed/exception_handler.py:45
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Cannot delete protected objects while related objects still exist"
@@ -468,6 +465,9 @@ msgstr "Choose Existing Organization:"
 
 msgid "Choose the year ending month for report period."
 msgstr "Choose the year ending month for report period."
+
+msgid "City"
+msgstr "City"
 
 msgid "City (Property)"
 msgstr "City (Property)"
@@ -528,9 +528,6 @@ msgstr "Commercial"
 
 msgid "Compare UBIDs"
 msgstr "Compare UBIDs"
-
-msgid "Compare UBIDs now..."
-msgstr "Compare UBIDs now..."
 
 msgid "Comparing UBIDs Complete"
 msgstr "Comparing UBIDs Complete"
@@ -725,9 +722,6 @@ msgstr "Custom ID 1 (Tax Lot)"
 msgid "Custom Reports"
 msgstr "Custom Reports"
 
-msgid "Custom UBIDs"
-msgstr "Custom UBIDs"
-
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 
@@ -854,11 +848,11 @@ msgstr "Deadline"
 msgid "Deadline:"
 msgstr "Deadline:"
 
+msgid "Decode UBID"
+msgstr "Decode UBID"
+
 msgid "Decode UBID for Selected"
 msgstr "Decode UBID for Selected"
-
-msgid "Decode UBID/ULID"
-msgstr "Decode UBID"
 
 msgid "Default Contact Account Name"
 msgstr "Default Contact Account Name"
@@ -1008,6 +1002,9 @@ msgstr "Edit"
 
 msgid "Edit Name"
 msgstr "Edit Name"
+
+msgid "Edit UBIDs"
+msgstr "Edit UBIDs"
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -1161,6 +1158,9 @@ msgstr "File Source:"
 
 msgid "Files (Main State Only)"
 msgstr "Files (Main State Only)"
+
+msgid "Filter By Label"
+msgstr "Filter By Label"
 
 msgid "Filter Group"
 msgstr "Filter Group"
@@ -1447,6 +1447,9 @@ msgstr "Integer"
 msgid "Interval"
 msgstr "Interval"
 
+msgid "Invalid UBID"
+msgstr "Invalid UBID"
+
 msgid "Inventory"
 msgstr "Inventory"
 
@@ -1470,6 +1473,9 @@ msgstr "Invite an Owner"
 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
+
+msgid "JACCARD_EXPLANATION"
+msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no overlap) to 1.0 (perfect match)."
 
 msgid "Jurisdiction Property ID"
 msgstr "Jurisdiction Property ID"
@@ -1908,8 +1914,11 @@ msgstr "No Custom Reports Selected"
 msgid "No Data"
 msgstr "No Data"
 
-msgid "No Ubids For Property"
-msgstr "No Ubids For Property"
+msgid "No UBIDs For Property"
+msgstr "No UBIDs For Property"
+
+msgid "No UBIDs For Tax Lot"
+msgstr "No UBIDs For Tax Lot"
 
 msgid "No action was taken"
 msgstr "No action was taken"
@@ -2169,6 +2178,9 @@ msgstr "Please wait while your data is loaded..."
 msgid "Populate SEED Headers with best known matches"
 msgstr "Populate SEED Headers with best known matches"
 
+msgid "Postal Code"
+msgstr "Postal Code"
+
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
 
@@ -2254,6 +2266,9 @@ msgstr "Properties"
 msgid "Properties List"
 msgstr "Properties List"
 
+msgid "Properties List (legacy)"
+msgstr "Properties List (legacy)"
+
 msgid "Properties with Data"
 msgstr "Properties with Data"
 
@@ -2271,9 +2286,6 @@ msgstr "Property Count"
 
 msgid "Property Detail"
 msgstr "Property Detail"
-
-msgid "Property Detail Notes"
-msgstr "Property Detail Notes"
 
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
@@ -2334,6 +2346,9 @@ msgstr "Recognize Empty"
 
 msgid "Record from Source"
 msgstr "Record from Source"
+
+msgid "Refresh Metadata"
+msgstr "Refresh Metadata"
 
 msgid "Refresh Metadata of Selected Properties and Tax Lots"
 msgstr "Refresh Metadata of Selected Properties and Tax Lots"
@@ -2783,6 +2798,9 @@ msgstr "Send Invite"
 msgid "Sends the reset password email to all users."
 msgstr "Sends the reset password email to all users"
 
+msgid "Sensors"
+msgstr "Sensors"
+
 msgid "Set UBID Threshold"
 msgstr "Set UBID Threshold"
 
@@ -2875,6 +2893,9 @@ msgstr "Source Energy Use Intensity"
 msgid "Space Alerts"
 msgstr "Space Alerts"
 
+msgid "State"
+msgstr "State"
+
 msgid "State (Property)"
 msgstr "State (Property)"
 
@@ -2910,6 +2931,9 @@ msgstr "Successful upload!"
 
 msgid "Successfully Uploaded"
 msgstr "Successfully Uploaded"
+
+msgid "Summary (Beta)"
+msgstr "Summary (Beta)"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
@@ -3024,7 +3048,7 @@ msgid "The UBID Threshold defines the minimum Jaccard Index value required for a
 msgstr "The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged with the existing property."
 
 msgid "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
-msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
+msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no overlap) to 1.0 (perfect match)."
 
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
@@ -3077,6 +3101,9 @@ msgstr "This will reset your visible columns and column order to only non-derive
 
 msgid "Time Period"
 msgstr "Time Period"
+
+msgid "Timeline"
+msgstr "Timeline"
 
 msgid "To Date"
 msgstr "To Date"
@@ -3144,6 +3171,15 @@ msgstr "UBID"
 msgid "UBID Threshold"
 msgstr "UBID Threshold"
 
+msgid "UBID Threshold must be between 0.0 and 1.0"
+msgstr "UBID Threshold must be between 0.0 and 1.0"
+
+msgid "UBID already exists"
+msgstr "UBID already exists"
+
+msgid "UBID comparison result:"
+msgstr "UBID comparison result:"
+
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "UBID thresholds are between 0.0 and 1.0"
 
@@ -3196,12 +3232,6 @@ msgstr "Upload Sensor Readings"
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
 
-msgid "Ubid Match quality:"
-msgstr "Ubid Match quality:"
-
-msgid "Ubid Threshold must be between 0.0 and 1.0"
-msgstr "Ubid Threshold must be between 0.0 and 1.0"
-
 msgid "Units"
 msgstr "Units"
 
@@ -3219,6 +3249,9 @@ msgstr "Update Filters"
 
 msgid "Update Salesforce"
 msgstr "Update Salesforce"
+
+msgid "Update UBID"
+msgstr "Update UBID"
 
 msgid "Update with BuildingSync"
 msgstr "Update with BuildingSync"
@@ -3732,9 +3765,6 @@ msgstr "property"
 #: seed/models/models.py:177
 msgid "red"
 msgstr "red"
-
-msgid "refresh metadata"
-msgstr "Refresh Metadata"
 
 msgid "save"
 msgstr "save"

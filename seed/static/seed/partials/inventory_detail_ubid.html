@@ -7,7 +7,7 @@
             </a>
         </div>
         <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail Notes' : 'Property Detail Notes') | translate $}
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}
             </h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
@@ -31,13 +31,14 @@
                     </span>
                     <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ?
                         'property' : 'taxlot') | translate $}</span>
+                </h2>
             </span>
         </div>
     </div>
 </div>
 
 <div ng-controller="inventory_detail_map_controller" style="margin:20px;">
-    <div style=" margin: auto; width:402px; overflow:hidden;">
+    <div style="margin: auto; width: 402px; overflow: hidden;">
         <div id="map"></div>
     </div>
 </div>

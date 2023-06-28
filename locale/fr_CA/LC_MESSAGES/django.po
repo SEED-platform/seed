@@ -184,7 +184,7 @@ msgstr "Ajouter/Supprimer Des Étiquettes"
 msgid "Add/Remove a user to an organization"
 msgstr "Ajouter/Supprimer un utilisateur d'une organisation"
 
-msgid "Add/Update Ubid"
+msgid "Add/Update UBID"
 msgstr "Ajouter/Mettre à jour UBID"
 
 msgid "Adding buildings to project"
@@ -438,9 +438,6 @@ msgstr "Campus"
 msgid "Cancel"
 msgstr "Annuler"
 
-msgid "Cannot compare UBIDs while editing. Click OK to continue."
-msgstr "Impossible de comparer les UBID lors de l'édition. Cliquez sur OK pour continuer."
-
 #: seed/exception_handler.py:45
 #, fuzzy
 msgid "Cannot delete protected objects while related objects still exist"
@@ -474,6 +471,9 @@ msgstr "Choisissez Organisation Existante:"
 
 msgid "Choose the year ending month for report period."
 msgstr "Choisissez le mois de fin de l'année pour la période du rapport."
+
+msgid "City"
+msgstr "Ville"
 
 msgid "City (Property)"
 msgstr "Ville (Propriété)"
@@ -535,9 +535,6 @@ msgstr "Commercial"
 
 msgid "Compare UBIDs"
 msgstr "Comparez les UBID"
-
-msgid "Compare UBIDs now..."
-msgstr "Comparez les UBID maintenant..."
 
 msgid "Comparing UBIDs Complete"
 msgstr "Comparaison des UBID terminée"
@@ -733,9 +730,6 @@ msgstr "ID personnalisé 1 (lot d'impôt)"
 msgid "Custom Reports"
 msgstr "Rapports"
 
-msgid "Custom UBIDs"
-msgstr "UBID personnalisés"
-
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Des e-mails personnalisés peuvent être envoyés aux propriétaires d'immeubles à l'aide des modèles définis ci-dessous. L'e-mail sera envoyé à l'adresse e-mail du propriétaire de l'enregistrement SEED et n'est actuellement pas configurable. L'adresse e-mail \"de\" est la même que l'adresse e-mail du serveur qui est également utilisée pour envoyer aux utilisateurs leurs informations de compte par e-mail."
 
@@ -862,11 +856,11 @@ msgstr "Date limite"
 msgid "Deadline:"
 msgstr "Date limite:"
 
+msgid "Decode UBID"
+msgstr "Décoder UBID"
+
 msgid "Decode UBID for Selected"
 msgstr "Décoder l'UBID pour la sélection"
-
-msgid "Decode UBID/ULID"
-msgstr "Décoder UBID"
 
 msgid "Default Contact Account Name"
 msgstr "Nom du compte de contact par défaut"
@@ -1016,6 +1010,9 @@ msgstr "Modifier"
 
 msgid "Edit Name"
 msgstr "Modifier le nom"
+
+msgid "Edit UBIDs"
+msgstr "Modifier les UBIDs"
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -1171,6 +1168,9 @@ msgstr "Source du fichier:"
 #, fuzzy
 msgid "Files (Main State Only)"
 msgstr "Fichiers (état principal uniquement)"
+
+msgid "Filter By Label"
+msgstr "Filtrer par étiquette"
 
 msgid "Filter Group"
 msgstr "Groupe de filtres"
@@ -1458,6 +1458,9 @@ msgstr "Entier"
 msgid "Interval"
 msgstr "Intervalle"
 
+msgid "Invalid UBID"
+msgstr "UBID invalide"
+
 msgid "Inventory"
 msgstr "Inventaire"
 
@@ -1481,6 +1484,9 @@ msgstr "Inviter un propriétaire"
 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "Il est nécessaire de mapper vos noms de champs aux noms de champs SEED. Vous pouvez sélectionner dans la liste qui apparaît lorsque vous commencez à taper, qui est basée sur la spécification BEDES (Building Energy Data Exchange Specification) ou vous pouvez taper votre propre nom et saisir le nom du champ dans le fichier de données d'origine."
+
+msgid "JACCARD_EXPLANATION"
+msgstr "La comparaison repose sur l'indice de Jaccard, qui varie de 0.0 (aucune superposition) à 1.0 (correspondance parfaite)."
 
 msgid "Jurisdiction Property ID"
 msgstr "Juridiction"
@@ -1922,8 +1928,11 @@ msgstr "Aucun rapport personnalisé sélectionné"
 msgid "No Data"
 msgstr "Pas de données"
 
-msgid "No Ubids For Property"
-msgstr "Pas d'enchères pour la propriété"
+msgid "No UBIDs For Property"
+msgstr "Aucun UBID pour la propriété"
+
+msgid "No UBIDs For Tax Lot"
+msgstr "Aucun UBID pour le lot fiscal"
 
 msgid "No action was taken"
 msgstr "Aucune action n'a été prise"
@@ -2183,6 +2192,9 @@ msgstr "Veuillez patienter pendant que vos données sont chargées ..."
 msgid "Populate SEED Headers with best known matches"
 msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
 
+msgid "Postal Code"
+msgstr "Code postal"
+
 msgid "Postal Code (Property)"
 msgstr "Code postal (propriété)"
 
@@ -2269,6 +2281,9 @@ msgstr "Propriétés"
 msgid "Properties List"
 msgstr "Liste Des Propriétés"
 
+msgid "Properties List (legacy)"
+msgstr "Liste des propriétés (héritage)"
+
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
 
@@ -2287,9 +2302,6 @@ msgstr "Nombre de propriétés"
 
 msgid "Property Detail"
 msgstr "Détails de la propriété"
-
-msgid "Property Detail Notes"
-msgstr "Notes de détail de la propriété"
 
 msgid "Property Detail Settings"
 msgstr "Paramètres de détail de la propriété"
@@ -2352,6 +2364,9 @@ msgstr "Reconnaître vide"
 
 msgid "Record from Source"
 msgstr "Enregistrement de la source"
+
+msgid "Refresh Metadata"
+msgstr "Actualiser les métadonnées"
 
 msgid "Refresh Metadata of Selected Properties and Tax Lots"
 msgstr "Actualiser les métadonnées des propriétés et terrains d'impôt sélectionnés"
@@ -2806,6 +2821,9 @@ msgstr "Envoyer une invitation"
 msgid "Sends the reset password email to all users."
 msgstr "Envoie l'e-mail de réinitialisation du mot de passe à tous les utilisateurs"
 
+msgid "Sensors"
+msgstr "Capteurs"
+
 msgid "Set UBID Threshold"
 msgstr "Définir le seuil UBID"
 
@@ -2898,6 +2916,9 @@ msgstr "Intensité d'utilisation de l'énergie à la source"
 msgid "Space Alerts"
 msgstr "Alertes spatiales"
 
+msgid "State"
+msgstr "État"
+
 msgid "State (Property)"
 msgstr "Etat (Propriété)"
 
@@ -2933,6 +2954,9 @@ msgstr "Téléchargement réussi!"
 
 msgid "Successfully Uploaded"
 msgstr "Téléversé avec succès"
+
+msgid "Summary (Beta)"
+msgstr "Résumé (Bêta)"
 
 msgid "Switch Profiles"
 msgstr "Changer de profil"
@@ -3047,7 +3071,7 @@ msgid "The UBID Threshold defines the minimum Jaccard Index value required for a
 msgstr "Le seuil UBID définit la valeur minimale de l'indice Jaccard requise pour qu'une comparaison UBID soit considérée comme acceptable. Lorsque le seuil est atteint, la propriété entrante peut être fusionnée avec la propriété existante."
 
 msgid "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
-msgstr "La comparaison s'appuie sur l'indice Jaccard, qui varie de 0,0 (pas de correspondance) à 1,0 (correspondance parfaite)."
+msgstr "La comparaison repose sur l'indice de Jaccard, qui varie de 0.0 (aucune superposition) à 1.0 (correspondance parfaite)."
 
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "L'e-mail prend en charge les modèles d'accolades pour extraire les données de l'enregistrement de propriété SEED. Par exemple, l'extrait ci-dessous remplacera la latitude et la longitude de l'enregistrement SEED. D'autres champs peuvent être ajoutés, mais assurez-vous d'utiliser le nom du champ SEED et non le nom d'affichage."
@@ -3100,6 +3124,9 @@ msgstr "Cela réinitialisera vos colonnes visibles et l'ordre des colonnes aux s
 
 msgid "Time Period"
 msgstr "Période de temps"
+
+msgid "Timeline"
+msgstr "Chronologie"
 
 msgid "To Date"
 msgstr "À ce jour"
@@ -3167,6 +3194,15 @@ msgstr "UBID"
 msgid "UBID Threshold"
 msgstr "Seuil UBID"
 
+msgid "UBID Threshold must be between 0.0 and 1.0"
+msgstr "Le seuil UBID doit être compris entre 0,0 et 1,0"
+
+msgid "UBID already exists"
+msgstr "UBID existe déjà"
+
+msgid "UBID comparison result:"
+msgstr "Résultat de la comparaison UBID :"
+
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "Les seuils UBID sont compris entre 0,0 et 1,0"
 
@@ -3220,12 +3256,6 @@ msgstr "Télécharger les relevés de capteur"
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions."
 
-msgid "Ubid Match quality:"
-msgstr "Qualité de la correspondance Ubid :"
-
-msgid "Ubid Threshold must be between 0.0 and 1.0"
-msgstr "Le seuil Ubid doit être compris entre 0,0 et 1,0"
-
 msgid "Units"
 msgstr "Unités"
 
@@ -3243,6 +3273,9 @@ msgstr "Mise à jour les filtres"
 
 msgid "Update Salesforce"
 msgstr "Mettre à jour Salesforce"
+
+msgid "Update UBID"
+msgstr "Mettre à jour UBID"
 
 msgid "Update with BuildingSync"
 msgstr "Mettre à jour avec BuildingSync"
@@ -3757,9 +3790,6 @@ msgstr "propriété"
 #: seed/models/models.py:177
 msgid "red"
 msgstr "rouge"
-
-msgid "refresh metadata"
-msgstr "Actualiser les métadonnées"
 
 msgid "save"
 msgstr "enregistrer"
