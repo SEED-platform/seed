@@ -14,6 +14,8 @@
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
+    <h4 class="modal-title" ng-switch-when="17" translate>Upload Access Level Instances</h4>
+    <h4 class="modal-title" ng-switch-when="18" translate>Successful upload!</h4>
 
 </div>
 <div class="modal-body" ng-switch on="step.number">
@@ -28,6 +30,25 @@
                 <input type="text" class="form-control" id="inputDataUploadName" ng-model="dataset.name" placeholder="{$:: 'your data set name' | translate $}" sd-enter="create_dataset(dataset.name)" required>
             </div>
         </div>
+    </div>
+    <!-- Step 17 -->
+    <div class="data_upload_steps container-fluid" ng-switch-when="17">
+        <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+
+        <div class="row">
+            <div class="col-sm-12">
+              <p translate>AH_FILE_TYPES_SUPPORTED</p>
+              <p translate>MULTI_FILE_EXCEL_NOT_SUPPORTED</p>
+            </div>
+            <div class="col-sm-12" style="margin-bottom: 10px;">
+                <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="AccessLevelInstances" sourceprog="" sourcever="" importrecord="" eventfunc="uploaderfunc(message, file, progress)">
+                    <i class="fa fa-table fa-2x"></i>
+                    <span class="grow">{$:: 'Upload a Spreadsheet' | translate $}</span>
+                </div>
+                <div class="tab-content-section" ng-show="uploader.in_progress" ng-include="::urls.static_url + 'seed/partials/data_upload_modal_progress.html'"></div>
+            </div>
+        </div>
+
     </div>
     <!-- Step 2 & 13: Choose upload type (also Portfolio Manager Data Import) -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2|13" ng-switch-when-separator="|">
@@ -400,6 +421,21 @@
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
                 <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                 <div ui-grid="unlinkable_pm_ids_options"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 18: Access Level Instances Success -->
+    <div class="data_upload_steps" ng-switch-when="18">
+        <div class="row">
+            <div class="alert alert-success" translate="ACCESS_LEVEL_FILENAME_UPLOADED"></div>
+            <div class="alert alert-danger" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)" style="display:flex;align-items:baseline;">
+                <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
+                <button type="button" class="btn btn-primary" ng-click="export_access_level_issues(access_level_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+            </div>
+        </div>
+        <div class="row" ng-if="access_level_issues != null && (access_level_issues | json) != ({} | json)">
+            <div class="col-sm-12">
+                <ng-include src="::urls.static_url + 'seed/partials/access_level_instances_import_messages.html'"></ng-include>
             </div>
         </div>
     </div>

@@ -84,6 +84,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.meter_deletion_modal',
   'BE.seed.controller.organization_add_access_level_modal',
   'BE.seed.controller.organization_add_access_level_instance_modal',
+  'BE.seed.controller.organization_edit_access_level_instance_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',
