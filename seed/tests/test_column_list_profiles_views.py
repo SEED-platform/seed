@@ -214,7 +214,7 @@ class ColumnsListProfileViewPermisionsTests(AccessLevelBaseTestCase, DeleteModel
         response = self.client.put(url, data=json.dumps(self.payload_data), content_type='application/json')
         assert response.status_code == 403
 
-        # root users can see meters in root
+        # root users can
         self.login_as_root_member()
         response = self.client.put(url, data=json.dumps(self.payload_data), content_type='application/json')
         assert response.status_code == 200
