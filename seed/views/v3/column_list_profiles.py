@@ -13,6 +13,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from seed.filters import ColumnListProfileFilterBackend
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_INVENTORY_TYPE,
@@ -33,11 +34,24 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 @method_decorator(
     name='create',
-    decorator=swagger_auto_schema_org_query_param
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ]
 )
 @method_decorator(
     name='update',
-    decorator=swagger_auto_schema_org_query_param
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_root_member_access'),
+    ]
 )
 class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
