@@ -1353,7 +1353,7 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         base_details.pop('year_ending')
         self.property_state_factory.get_property_state(**base_details)
 
-        # Set cycle to None to trigger MultiCycle import
+        # Set multiple_cycle_upload to True to trigger MultiCycle import
         self.import_file.cycle = self.cycle_default
         self.import_file.multiple_cycle_upload = True
         self.import_file.mapping_done = True
