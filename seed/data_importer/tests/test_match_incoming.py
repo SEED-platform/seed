@@ -25,6 +25,7 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     ASSESSED_RAW,
+    BUILDINGSYNC_RAW,
     DATA_STATE_DELETE,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
@@ -1061,7 +1062,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         filename = 'buildingsync_v2_0_bricr_workflow.xml'
         filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
-        import_file_source_type = 'BuildingSync Raw'
+        import_file_source_type = BUILDINGSYNC_RAW
         selfvars = self.set_up(import_file_source_type)
         self.user, self.org, self.import_file_bsync, self.import_record, self.cycle = selfvars
 

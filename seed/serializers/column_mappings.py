@@ -17,7 +17,7 @@ class ColumnMappingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ColumnMapping
-        exclude = ('source_type', 'column_raw', 'column_mapped')
+        exclude = ('column_raw', 'column_mapped')
 
     def to_representation(self, obj):
         """Return only the first items in the column_raw and column_mapped"""
