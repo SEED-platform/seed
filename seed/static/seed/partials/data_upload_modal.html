@@ -156,10 +156,13 @@
     <!-- Step 3 -->
     <div class="data_upload_steps" ng-switch-when="3">
         <div class="row">
-            <div class="alert alert-success"
+            <div ng-if="!multipleCycleUpload" class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
-            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
+            <div ng-if="multipleCycleUpload" class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+          <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
                 <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
                 <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
             </div>
@@ -191,8 +194,11 @@
     <!-- Step 5 -->
     <div class="data_upload_steps" ng-switch-when="5">
         <div class="row">
-            <div class="alert alert-success"
+            <div ng-if="!multipleCycleUpload" class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+            <div ng-if="multipleCycleUpload" class="alert alert-success"
+            translate="DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
         </div>
     </div>
@@ -235,7 +241,8 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li ng-if="!multipleCycleUpload">{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li ng-if="multipleCycleUpload">{$:: 'default_cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -282,7 +289,8 @@
         <div class="row">
             <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
-                    <li>{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li ng-if="!multipleCycleUpload">{$:: 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li ng-if="multipleCycleUpload">{$:: 'default_cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>

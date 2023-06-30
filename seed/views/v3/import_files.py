@@ -815,6 +815,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return {
             'status': 'success',
             'import_file_records': import_file.matching_results_data.get('import_file_records', None),
+            'multiple_cycle_upload': import_file.multiple_cycle_upload,
             'properties': {
                 'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),
