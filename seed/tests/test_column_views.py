@@ -14,7 +14,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -67,7 +67,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         ps = self.property_state_factory.get_property_state(self.org)
         self.assertFalse("new_column" in ps.extra_data)
 
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
         post_data = {
             'column_name': 'new_column',
             'table_name': 'PropertyState',
@@ -92,7 +92,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_create_column_bad_no_data(self):
         # Set Up
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
 
         # Act - no data
         response = self.client.post(
@@ -132,7 +132,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_create_column_bad_table_name(self):
         # Set Up
-        url = reverse_lazy('api:v3:columns-list')
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
         post_data = {
             'column_name': 'new_column',
             'table_name': 'bad',
@@ -394,3 +394,65 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         result = response.json()
         self.assertFalse(result['success'])
         self.assertEqual(result['message'], 'Cannot find column in org=%s with pk=-999' % self.org.id)
+
+
+class ColumnsViewPermisionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+    def setUp(self):
+        super().setUp()
+        self.column = Column.objects.create(column_name='test', organization=self.org, table_name='PropertyState', is_extra_data=True)
+        self.column.save()
+
+    def test_column_create_permissions(self):
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'new_column', 'table_name': 'PropertyState'}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 201
+
+    def test_column_delete_permissions(self):
+        url = reverse_lazy('api:v3:columns-detail', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_owner()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_column_update_permissions(self):
+        url = reverse_lazy('api:v3:columns-detail', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'boo', 'table_name': 'PropertyState', "sharedFieldType": "None", "comstock_mapping": None}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can see meters in root
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+
+    def test_column_rename_permissions(self):
+        url = reverse_lazy('api:v3:columns-rename', args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'new_column_name': 'boo'}
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 403
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
