@@ -846,6 +846,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create 1 property with a duplicate in the first ImportFile

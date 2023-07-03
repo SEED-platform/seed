@@ -512,7 +512,9 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         pv2 = ps.promote(self.cycle)  # should just return the same object
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         self.assertEqual(pv1, pv2)
 
         # promote the same state for a new cycle, same data

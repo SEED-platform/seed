@@ -66,6 +66,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create pair of properties that are exact duplicates
         self.property_state_factory.get_property_state(**base_details)
@@ -97,6 +98,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create pair of properties that are exact duplicates
         self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -128,6 +130,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create first set of properties that match each other
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -204,6 +207,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create first set of taxlots that match each other
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -280,6 +284,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create set of properties that match each other
         self.property_state_factory.get_property_state(**base_details)
@@ -301,6 +306,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create set of properties that have the same address_line_1 in slightly different format
         base_details['address_line_1'] = '123 Match Street'
@@ -324,6 +330,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create set of taxlots that have the same address_line_1 in slightly different format
         base_details['address_line_1'] = '123 Match Street'
@@ -355,6 +362,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create set of properties that won't match
@@ -385,6 +393,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create first set of properties that match each other
         base_details['city'] = 'Philadelphia'
@@ -427,6 +436,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create property in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -458,6 +468,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create property in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -529,6 +540,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create 3 non-matching properties in first ImportFile
         ps_1 = self.property_state_factory.get_property_state(**base_details)
@@ -587,6 +599,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create property in first ImportFile
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -658,6 +671,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create 3 non-matching taxlots in first ImportFile
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
@@ -731,6 +745,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # No matching_criteria values
@@ -770,6 +785,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create 1 duplicate of the 'No matching_criteria values' properties
@@ -846,18 +862,26 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_records': None,  # This is calculated in a separate process
             'property_duplicates_against_existing': 1,
             'property_duplicates_within_file': 2,
+            'property_duplicates_within_file_errors': 0,
             'property_initial_incoming': 10,
             'property_merges_against_existing': 1,
+            'property_merges_against_existing_errors': 0,
             'property_merges_between_existing': 0,
             'property_merges_within_file': 2,
+            'property_merges_within_file_errors': 0,
             'property_new': 4,
+            'property_new_errors': 0,
             'tax_lot_duplicates_against_existing': 0,
             'tax_lot_duplicates_within_file': 0,
+            'tax_lot_duplicates_within_file_errors': 0,
             'tax_lot_initial_incoming': 0,
             'tax_lot_merges_against_existing': 0,
+            'tax_lot_merges_against_existing_errors': 0,
             'tax_lot_merges_between_existing': 0,
             'tax_lot_merges_within_file': 0,
+            'tax_lot_merges_within_file_errors': 0,
             'tax_lot_new': 0,
+            'tax_lot_new_errored': 0,
         }
         self.assertEqual(results, expected)
 
@@ -873,6 +897,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # No matching_criteria values
@@ -912,6 +937,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         # Create 2 duplicates of the 'No matching_criteria values' taxlots
@@ -983,18 +1009,26 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
             'import_file_records': None,  # This is calculated in a separate process
             'property_duplicates_against_existing': 0,
             'property_duplicates_within_file': 0,
+            'property_duplicates_within_file_errors': 0,
             'property_initial_incoming': 0,
             'property_merges_against_existing': 0,
+            'property_merges_against_existing_errors': 0,
             'property_merges_between_existing': 0,
             'property_merges_within_file': 0,
+            'property_merges_within_file_errors': 0,
             'property_new': 0,
+            'property_new_errors': 0,
             'tax_lot_duplicates_against_existing': 1,
             'tax_lot_duplicates_within_file': 3,
+            'tax_lot_duplicates_within_file_errors': 0,
             'tax_lot_initial_incoming': 10,
             'tax_lot_merges_against_existing': 1,
+            'tax_lot_merges_against_existing_errors': 0,
             'tax_lot_merges_between_existing': 0,
             'tax_lot_merges_within_file': 2,
+            'tax_lot_merges_within_file_errors': 0,
             'tax_lot_new': 3,
+            'tax_lot_new_errored': 0,
         }
         self.assertEqual(results, expected)
 
@@ -1045,7 +1079,7 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
         props = self.import_file.find_unmatched_property_states()
         sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
         sub_progress_data.save()
-        uniq_state_ids, dup_state_count = filter_duplicate_states(props, sub_progress_data.key)
+        uniq_state_ids, errored_states, dup_state_count = filter_duplicate_states(props, sub_progress_data.key)
 
         # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
         self.assertEqual(len(uniq_state_ids), 6)
@@ -1110,6 +1144,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create a property which will match with the BuildingSync file
         self.property_state_factory.get_property_state(**base_details)
@@ -1164,6 +1199,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         # Create a property which will match with the BuildingSync file
         ps_orig = self.property_state_factory.get_property_state(**base_details)
