@@ -1300,6 +1300,7 @@ def save_raw_data(file_pk):
 
 def geocode_and_match_buildings_task(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
+    org = import_file.import_record.super_organization
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
@@ -1334,23 +1335,24 @@ def geocode_and_match_buildings_task(file_pk):
         # Create a dictionary to store the property_state_ids_by_cycle.
         property_state_ids_by_cycle = defaultdict(list)
 
+        # Prefetch cycles
+        cycles = Cycle.objects.filter(organization=org)
+        default_cycle = cycles.get(pk=import_file.cycle_id)
+
         # Loop through the property_state objects.
         for property_state in property_states:
             # Find the cycle that corresponds with property_state year_ending.
 
-            # Find a cycle that start <= year_ending <= end
+            # Find the first cycle where start <= year_ending <= end
             cycle = None
             if property_state.year_ending:
-                cycle = Cycle.objects.filter(
-                    end__gte=property_state.year_ending,
+                cycle = cycles.filter(
                     start__lte=property_state.year_ending,
-                    organization_id=property_state.organization_id
+                    end__gte=property_state.year_ending,
                 ).first()
             # Check if cycle is none
             if cycle is None:
-                cycle = Cycle.objects.get(
-                    pk=import_file.cycle_id
-                )
+                cycle = default_cycle
             property_state_ids_by_cycle[cycle.id].append(property_state.id)
 
         map_additional_models_group = group(
@@ -1627,7 +1629,7 @@ def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
     """
     import_file = ImportFile.objects.get(pk=file_pk)
     if cycle_id is None:
-        cycle_id = import_file.cycle.id
+        cycle_id = import_file.cycle_id
 
     progress_data = ProgressData.from_key(progress_key)
 

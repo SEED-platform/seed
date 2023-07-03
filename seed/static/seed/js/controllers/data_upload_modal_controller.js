@@ -412,8 +412,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *
        * @param {string} file_id: the id of the import file
        * @param {string} cycle_id: the id of the cycle
+       * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
        */
-      var save_map_match_PM_data = function (file_id, cycle_id, multiple_cycle_upload=false) {
+      var save_map_match_PM_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
         $scope.uploader.status_message = 'saving energy data';
         $scope.uploader.progress = 25;
         uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload)
@@ -581,7 +582,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       $scope.reuse_import_file_to_import_meters = function () {
-        $scope.preparing_pm_meters_preview = true
+        $scope.preparing_pm_meters_preview = true;
         dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
           $scope.dataset.import_file_id = data.import_file_id;
           $scope.uploader.progress = 50;
@@ -602,6 +603,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: the id of the import file
        * @param cycle_id
        * @param is_meter_data
+       * @param multiple_cycle_upload
        */
       var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) {
         $scope.uploader.status_message = 'saving data';

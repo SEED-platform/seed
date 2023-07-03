@@ -4,9 +4,9 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import datetime
 import json
 import os.path as osp
+from datetime import date, datetime
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -1189,8 +1189,8 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             source_id='My Original Meter',
         )
         MeterReading.objects.create(
-            start_time=datetime.datetime.now(tz=pytz.UTC),
-            end_time=datetime.datetime.now(tz=pytz.UTC),
+            start_time=datetime.now(tz=pytz.UTC),
+            end_time=datetime.now(tz=pytz.UTC),
             reading=123,
             meter_id=meter.id,
             conversion_factor=1,
@@ -1239,113 +1239,113 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.cycle2010_2014, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2010 to 2014',
             organization=self.org,
-            start=datetime.datetime(2010, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2014, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=datetime(2010, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2014, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2018, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2018',
             organization=self.org,
-            start=datetime.date(2018, 1, 1),
-            end=datetime.date(2018, 12, 31),
+            start=date(2018, 1, 1),
+            end=date(2018, 12, 31),
         )
         self.cycle2019, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2019',
             organization=self.org,
-            start=datetime.datetime(2019, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2019, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=datetime(2019, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2019, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2020, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2020',
             organization=self.org,
-            start=datetime.datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2020, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2021, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2021',
             organization=self.org,
-            start=datetime.datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=datetime(2021, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2021, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         self.cycle2022_april, _ = Cycle.objects.get_or_create(
             name='Test Cycle 2022',
             organization=self.org,
-            start=datetime.datetime(2022, 4, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2023, 4, 1, tzinfo=timezone.get_current_timezone()),
+            start=datetime(2022, 4, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(2023, 4, 1, tzinfo=timezone.get_current_timezone()),
         )
         # Default cycle will be the first returned for an org (aka the most recent)
         self.cycle_default, _ = Cycle.objects.get_or_create(
             name='Default Cycle',
             organization=self.org,
-            start=datetime.datetime(1999, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(1999, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=datetime(1999, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(1999, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
 
         base_details = {'import_file_id': self.import_file.id}
         # Properties for cycle 2010_2014
         base_details['property_name'] = 'p2010_2014a'
-        base_details['year_ending'] = datetime.date(2012, 12, 12)
+        base_details['year_ending'] = date(2012, 12, 12)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2010_2014b'
-        base_details['year_ending'] = datetime.date(2010, 10, 10)
+        base_details['year_ending'] = date(2010, 10, 10)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2010_2014c'
-        base_details['year_ending'] = datetime.date(2014, 10, 15)
+        base_details['year_ending'] = date(2014, 10, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2018
         base_details['property_name'] = 'p2018a'
-        base_details['year_ending'] = datetime.date(2018, 12, 31)
+        base_details['year_ending'] = date(2018, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2018b'
-        base_details['year_ending'] = datetime.date(2018, 6, 15)
+        base_details['year_ending'] = date(2018, 6, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2019
         base_details['property_name'] = 'p2019a'
-        base_details['year_ending'] = datetime.date(2019, 12, 31)
+        base_details['year_ending'] = date(2019, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2019b'
-        base_details['year_ending'] = datetime.date(2019, 6, 15)
+        base_details['year_ending'] = date(2019, 6, 15)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2020
         base_details['property_name'] = 'p2020a'
-        base_details['year_ending'] = datetime.date(2020, 12, 31)
+        base_details['year_ending'] = date(2020, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2020b'
-        base_details['year_ending'] = datetime.date(2020, 12, 30)
+        base_details['year_ending'] = date(2020, 12, 30)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2021
         base_details['property_name'] = 'p2021a'
-        base_details['year_ending'] = datetime.date(2021, 1, 1)
+        base_details['year_ending'] = date(2021, 1, 1)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2021b'
-        base_details['year_ending'] = datetime.date(2021, 12, 31)
+        base_details['year_ending'] = date(2021, 12, 31)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties for cycle 2022 april
         base_details['property_name'] = 'p2022a'
-        base_details['year_ending'] = datetime.date(2022, 5, 1)
+        base_details['year_ending'] = date(2022, 5, 1)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p2022b'
-        base_details['year_ending'] = datetime.date(2023, 3, 1)
+        base_details['year_ending'] = date(2023, 3, 1)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with year_ending that do not match any cycles will be placed in default cycle
         base_details['property_name'] = 'p_default_a'
-        base_details['year_ending'] = datetime.date(1990, 5, 25)
+        base_details['year_ending'] = date(1990, 5, 25)
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p_default_b'
-        base_details['year_ending'] = datetime.date(2023, 4, 10)
+        base_details['year_ending'] = date(2023, 4, 10)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with missing year_ending will be placed in default cycle

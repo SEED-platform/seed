@@ -65,6 +65,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     """
 
     import_file = ImportFile.objects.get(pk=file_pk)
+    org = import_file.import_record.super_organization
 
     if property_state_ids_by_cycle is None:
         # Get lists and counts of all the properties and tax lots based on the import file.
@@ -80,7 +81,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         results_list = []
         for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
             # Get lists and counts of all the properties and tax lots based on the import file.
-            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids)
+            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
             incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
 
             cycle = Cycle.objects.get(id=cycle_id)
@@ -91,12 +92,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # combine array of dictionaries in results_list into results
         results = {}
         for dict in results_list:
-            for key in dict:
-                value = dict[key]
-                if key in results:
-                    results[key] += value
-                else:
-                    results[key] = value
+            for key, value in dict.items():
+                results[key] = results.get(key, 0) + value
 
     results['import_file_records'] = import_file.num_rows
 
