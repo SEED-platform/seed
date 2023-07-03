@@ -183,6 +183,9 @@ msgstr "Add/Remove Labels"
 msgid "Add/Remove a user to an organization"
 msgstr "Add/Remove a user to an organization"
 
+msgid "Add/Update Ubid"
+msgstr "Add/Update UBID"
+
 msgid "Adding buildings to project"
 msgstr "Adding buildings to project"
 
@@ -430,6 +433,9 @@ msgstr "Campus"
 msgid "Cancel"
 msgstr "Cancel"
 
+msgid "Cannot compare UBIDs while editing. Click OK to continue."
+msgstr "Cannot compare UBIDs while editing. Click OK to continue."
+
 #: seed/exception_handler.py:45
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Cannot delete protected objects while related objects still exist"
@@ -519,6 +525,15 @@ msgstr "ComStock Mapping"
 
 msgid "Commercial"
 msgstr "Commercial"
+
+msgid "Compare UBIDs"
+msgstr "Compare UBIDs"
+
+msgid "Compare UBIDs now..."
+msgstr "Compare UBIDs now..."
+
+msgid "Comparing UBIDs Complete"
+msgstr "Comparing UBIDs Complete"
 
 msgid "Complete"
 msgstr "Complete"
@@ -624,6 +639,9 @@ msgstr "Create Profile"
 msgid "Create Project"
 msgstr "Create Project"
 
+msgid "Create UBID"
+msgstr "Create UBID"
+
 #: seed/landing/templates/landing/signup.html:29
 msgid "Create Your Account"
 msgstr "Create Your Account"
@@ -706,6 +724,9 @@ msgstr "Custom ID 1 (Tax Lot)"
 
 msgid "Custom Reports"
 msgstr "Custom Reports"
+
+msgid "Custom UBIDs"
+msgstr "Custom UBIDs"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
@@ -833,8 +854,11 @@ msgstr "Deadline"
 msgid "Deadline:"
 msgstr "Deadline:"
 
+msgid "Decode UBID for Selected"
+msgstr "Decode UBID for Selected"
+
 msgid "Decode UBID/ULID"
-msgstr "Decode UBID/ULID"
+msgstr "Decode UBID"
 
 msgid "Default Contact Account Name"
 msgstr "Default Contact Account Name"
@@ -1644,6 +1668,9 @@ msgstr "Map SEED fields to imported file fields"
 msgid "Map Your Data"
 msgstr "Map Your Data"
 
+msgid "Map features are provided by"
+msgstr "Map features are provided by"
+
 msgid "MapQuest API Key"
 msgstr "MapQuest API Key"
 
@@ -1880,6 +1907,9 @@ msgstr "No Custom Reports Selected"
 
 msgid "No Data"
 msgstr "No Data"
+
+msgid "No Ubids For Property"
+msgstr "No Ubids For Property"
 
 msgid "No action was taken"
 msgstr "No action was taken"
@@ -2148,6 +2178,9 @@ msgstr "Postal Code (Tax Lot)"
 msgid "Potential Matches from Source"
 msgstr "Potential Matches from Source"
 
+msgid "Preferred"
+msgstr "Preferred"
+
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
 
@@ -2387,6 +2420,9 @@ msgstr "Restore Default Rules"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
+
+msgid "Retry"
+msgstr "Retry"
 
 msgid "Review Changes"
 msgstr "Review Changes"
@@ -2747,6 +2783,9 @@ msgstr "Send Invite"
 msgid "Sends the reset password email to all users."
 msgstr "Sends the reset password email to all users"
 
+msgid "Set UBID Threshold"
+msgstr "Set UBID Threshold"
+
 msgid "Set a Query Threshold"
 msgstr "Set a Query Threshold"
 
@@ -2981,6 +3020,12 @@ msgstr "The SEED team"
 msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 
+msgid "The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged with the existing property."
+msgstr "The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged with the existing property."
+
+msgid "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
+msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no match) to 1.0 (perfect match)."
+
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 
@@ -3050,11 +3095,32 @@ msgstr "To set up your account, enter your password twice in the form below."
 msgid "Toggle Dropdown"
 msgstr "Toggle Dropdown"
 
+msgid "Toggle Hexbins"
+msgstr "Toggle Hexbins"
+
+msgid "Toggle Points"
+msgstr "Toggle Points"
+
+msgid "Toggle Property UBID Bounding Boxes"
+msgstr "Toggle Property UBID Bounding Boxes"
+
+msgid "Toggle Property UBID Centroids"
+msgstr "Toggle Property UBID Centroids"
+
+msgid "Toggle Taxlot UBID Bounding Boxes"
+msgstr "Toggle Taxlot UBID Bounding Boxes"
+
+msgid "Toggle Taxlot UBID Centroids"
+msgstr "Toggle Taxlot UBID Centroids"
+
 msgid "Total Properties"
 msgstr "Total Properties"
 
 msgid "Total rows in the import file"
 msgstr "Total rows in the import file"
+
+msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+msgstr "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 
 msgid "Type"
 msgstr "Type"
@@ -3074,6 +3140,12 @@ msgstr "U.S. Department of Energy"
 
 msgid "UBID"
 msgstr "UBID"
+
+msgid "UBID Threshold"
+msgstr "UBID Threshold"
+
+msgid "UBID thresholds are between 0.0 and 1.0"
+msgstr "UBID thresholds are between 0.0 and 1.0"
 
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
@@ -3123,6 +3195,12 @@ msgstr "Upload Sensor Readings"
 
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
+
+msgid "Ubid Match quality:"
+msgstr "Ubid Match quality:"
+
+msgid "Ubid Threshold must be between 0.0 and 1.0"
+msgstr "Ubid Threshold must be between 0.0 and 1.0"
 
 msgid "Units"
 msgstr "Units"
@@ -3305,6 +3383,9 @@ msgstr "What is a Custom Report?"
 
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
+
+msgid "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
+msgstr "When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match"
 
 msgid "Where would you like to move these buildings?"
 msgstr "Where would you like to move these buildings?"
@@ -3527,6 +3608,9 @@ msgstr "date joined"
 #: seed/models/models.py:238
 msgid "deadline_date"
 msgstr "deadline_date"
+
+msgid "default"
+msgstr "default"
 
 #: seed/models/projects.py:47
 msgid "description"
