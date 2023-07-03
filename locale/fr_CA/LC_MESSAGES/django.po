@@ -754,6 +754,9 @@ msgstr "Cycles à inclure dans la periode de conformité"
 msgid "DATASET_FILENAME_UPLOADED_TO"
 msgstr "<strong> {dataset_filename} </strong> a été importé dans <strong> {dataset_name} </strong> , sous le cycle <strong> {cycle_name} </strong> ."
 
+msgid "DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE"
+msgstr "<strong> {dataset_filename} </strong> a été importé dans <strong> {dataset_name} </strong> , sous plusieurs cycles. Le cycle par défaut est <strong> {cycle_name} </strong> ."
+
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "Le <strong>nom du fichier \"{dataset_name}\" existe déjà</strong> . Veuillez en sélectionner un nouveau"
 
@@ -3218,6 +3221,9 @@ msgstr "Téléchargement de Fichier"
 msgid "UPLOADING_PROGRESS"
 msgstr "Importation de <strong> {dataset_filename} </strong> pour faire un cycle <strong> {cycle_name} </strong>"
 
+msgid "UPLOADING_PROGRESS_MULTIPLE_CYCLE"
+msgstr "Importation de <strong> {dataset_filename} </strong> sur plusieurs cycles. Le cycle par défaut est <strong> {cycle_name} </strong>"
+
 msgid "UPLOADING_PROGRESS_NO_CYCLE"
 msgstr "Importation de <strong>{dataset_filename}</strong>"
 
@@ -3669,6 +3675,9 @@ msgstr "date limite"
 
 msgid "default"
 msgstr "défaut"
+
+msgid "default_cycle"
+msgstr "Cycle par défaut"
 
 #: seed/models/projects.py:47
 msgid "description"

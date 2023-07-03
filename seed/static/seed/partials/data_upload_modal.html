@@ -39,10 +39,20 @@
             <uib-tab index="0" heading="{$:: 'Property and Tax Lot Data' | translate $}">
                 <div class="tab-content-section" ng-hide="uploader.in_progress">
                     <div class="row">
-                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Cycle</label>
+                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;">{$ multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}</label>
                         <div class="col-sm-8">
                             <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
                             <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" ng-model="multipleCycleUpload" ng-click="toggleMultipleCycleUpload()" />
+                                    <span>Multiple Cycle Upload</span>
+                                </label>
+                                <i class="ui-grid-icon-info-circled" ng-mouseover="show_help = true" ng-mouseout="show_help = false"></i>
+                                <div class="alert alert-info" ng-show="show_help" style="position: absolute; z-index: 1;" translate>
+                                    When checked, properties/taxlots will be matched to existing cycles based on the 'year_ending' column or the default cycle if there is no match.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -147,8 +157,8 @@
     <div class="data_upload_steps" ng-switch-when="3">
         <div class="row">
             <div class="alert alert-success"
-            translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+                 ng-attr-translate="{$ multipleCycleUpload ? 'DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE' : 'DATASET_FILENAME_UPLOADED_TO' $}"
+                 translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
             <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
                 <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
                 <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
@@ -182,8 +192,8 @@
     <div class="data_upload_steps" ng-switch-when="5">
         <div class="row">
             <div class="alert alert-success"
-            translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+                 ng-attr-translate="{$ multipleCycleUpload ? 'DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE' : 'DATASET_FILENAME_UPLOADED_TO' $}"
+                 translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
         </div>
     </div>
     <!-- Step 6 -->
@@ -225,7 +235,7 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
-                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -272,7 +282,7 @@
         <div class="row">
             <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
-                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
+                    <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>

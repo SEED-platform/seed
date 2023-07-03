@@ -746,6 +746,9 @@ msgstr "Cycles to Include in Compliance Period"
 msgid "DATASET_FILENAME_UPLOADED_TO"
 msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>, under cycle <strong>{cycle_name}</strong>."
 
+msgid "DATASET_FILENAME_UPLOADED_TO_MULTIPLE_CYCLE"
+msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>, under multiple cycles. The default cycle is <strong>{cycle_name}</strong>."
+
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "The data set <strong>name \"{dataset_name}\" already exists</strong>. Please select a new one."
 
@@ -3195,6 +3198,9 @@ msgstr "Uploading File"
 msgid "UPLOADING_PROGRESS"
 msgstr "Uploading <strong>{dataset_filename}</strong> to cycle <strong>{cycle_name}</strong>"
 
+msgid "UPLOADING_PROGRESS_MULTIPLE_CYCLE"
+msgstr "Uploading <strong>{dataset_filename}</strong> to multiple cycles. Default cycle is <strong>{cycle_name}</strong>"
+
 msgid "UPLOADING_PROGRESS_NO_CYCLE"
 msgstr "Uploading <strong>{dataset_filename}</strong>"
 
@@ -3644,6 +3650,9 @@ msgstr "deadline_date"
 
 msgid "default"
 msgstr "default"
+
+msgid "default_cycle"
+msgstr "Default Cycle"
 
 #: seed/models/projects.py:47
 msgid "description"
