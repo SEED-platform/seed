@@ -494,6 +494,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 existing_view = ViewClass.objects.get(state_id=existing_state.id)
                 existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
 
+                # id new state has different ali, don't merge it in.
                 new_ali = newer_state.raw_access_level_instance
                 if new_ali is not None and existing_obj.access_level_instance != new_ali:
                     errored_merged_states.append(newer_state)
@@ -514,6 +515,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             batch_size = math.ceil(len(promote_states) / 100)
             for idx, state in enumerate(promote_states):
                 created_view = state.promote(cycle)
+                # will return None if no ali.
                 if created_view is None:
                     errored_new_states.append(state)
                 else:
