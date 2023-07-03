@@ -324,17 +324,18 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     """
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
-    if column is None or column['related']:
-        # Check for access_level_names
-        if filter.field_name in access_level_names:
-            updated_filter = QueryFilter(
-                f'property__access_level_instance__name',
-                filter.operator, 
-                filter.is_negated
-            )
-            return updated_filter.to_q(filter_value), {}
-        else:
+    is_access_level_instance = filter.field_name in access_level_names
+
+    if (column is None or column['related']) and not is_access_level_instance:
             return Q(), {}
+    
+    if is_access_level_instance:
+        updated_filter = QueryFilter(
+            f'property__access_level_instance__name',
+            filter.operator, 
+            filter.is_negated
+        )
+        return updated_filter.to_q(filter_value), {}
 
     column_name = column["column_name"]
     annotations: AnnotationDict = {}
@@ -446,6 +447,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
                 columns_by_name, 
                 access_level_names
             )
+            # import remote_pdb; remote_pdb.set_trace()
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
