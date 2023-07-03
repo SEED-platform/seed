@@ -70,11 +70,11 @@
                             <span ng-show="!rowform.$visible">{$:: cycle.name $}</span>
                         </td>
                         <td>
-                            <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleDateBeforeSave(rowform)" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.start | date : 'yyyy-MM-dd' $}</span>
+                            <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.start | date : 'yyyy-MM-dd' $}</span>
                             <span ng-show="!rowform.$visible">{$:: format_date(cycle.start) $}</span>
                         </td>
                         <td>
-                            <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.end | date : 'yyyy-MM-dd' $}</span>
+                            <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.end | date : 'yyyy-MM-dd' $}</span>
                             <span ng-show="!rowform.$visible">{$:: format_date(cycle.end) $}</span>
                         </td>
                         <td style="text-align: right; white-space: nowrap">

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='importfile',
             name='multiple_cycle_upload',
-            field=models.BooleanField(blank=True, default=False, null=True),
+            field=models.BooleanField(default=False),
         ),
     ]

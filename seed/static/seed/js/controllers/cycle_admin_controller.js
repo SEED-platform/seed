@@ -71,7 +71,11 @@ angular.module('BE.seed.controller.cycle_admin', [])
         if (isCycleNameUsed(newCycleName)) return 'That Cycle name already exists';
       };
 
-      $scope.checkEditCycleDateBeforeSave = (form) => {
+      $scope.checkEditCycleDateBeforeSave = (form, updatedDate) => {
+        if (updatedDate === undefined) {
+          return 'Invalid date';
+        }
+
         const {start, end} = form.$data;
         if (end < start) {
           return '\'From Date\' must be before \'To Date\'';
@@ -144,7 +148,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
       });
 
       $scope.checkInvalidDate = () => {
-        $scope.invalidDates = ($scope.new_cycle.end < $scope.new_cycle.start);
+        const {start, end} = $scope.new_cycle;
+        $scope.invalidDates = (start === undefined) || (end === undefined) || ($scope.new_cycle.end < $scope.new_cycle.start);
       };
 
       function getTruncatedName (name) {
