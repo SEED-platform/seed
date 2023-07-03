@@ -110,6 +110,8 @@ class Column(models.Model):
         'import_file',
         'long_lat',
         'merge_state',
+        'raw_access_level_instance_error',
+        'raw_access_level_instance_id',
         'source_type',
         'updated',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS

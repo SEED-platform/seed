@@ -204,6 +204,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         ps_1 = self.property_state_factory.get_property_state(**base_property_details)
@@ -274,6 +275,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
 
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
