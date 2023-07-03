@@ -331,7 +331,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     
     if is_access_level_instance:
         updated_filter = QueryFilter(
-            f'property__access_level_instance__name',
+            f'property__access_level_instance__path',
             filter.operator, 
             filter.is_negated
         )
@@ -357,7 +357,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     return updated_filter.to_q(new_filter_value), annotations
 
 
-def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> tuple[Union[None, str], AnnotationDict]:
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], access_level_names: list[str]) -> tuple[Union[None, str], AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -379,6 +379,8 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
             return f'{direction}{new_field_name}', annotations
         else:
             return f'{direction}state__{column_name}', {}
+    elif column_name in access_level_names:
+        return f'{direction}property__access_level_instance__path__{column_name}', {}
     else:
         return None, {}
 
@@ -468,10 +470,13 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
         annotations.update(parsed_annotations)
 
     order_by = []
+
     for sort_expression in filters.getlist('order_by', ['id']):
-        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name)
+        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name, access_level_names)
         if parsed_sort is not None:
             order_by.append(parsed_sort)
             annotations.update(parsed_annotations)
+    import logging
+    logging.error('>>> order_by %s', order_by)
 
     return new_filters, annotations, order_by
