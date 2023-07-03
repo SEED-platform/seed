@@ -4,9 +4,9 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import datetime
 import json
 import os.path as osp
-import datetime
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile

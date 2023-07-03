@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.cycle_admin', [])
   .controller('cycle_admin_controller', [
     '$scope',
+    '$filter',
     '$log',
     'urls',
     'Notification',
@@ -15,14 +16,14 @@ angular.module('BE.seed.controller.cycle_admin', [])
     '$translate',
     '$sce',
     '$uibModal',
-    function ($scope, $log, urls, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
-
+    function ($scope, $filter, $log, urls, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
-      var processCycles = function (cycles) {
-        $scope.cycles = _.map(cycles.cycles, function (cycle) {
-          cycle.start = new Date(cycle.start);
-          cycle.end = new Date(cycle.end);
+      const processCycles = (cycles) => {
+        $scope.cycles = _.map(cycles.cycles, (cycle) => {
+          // Force 'YYYY-MM-DD' date parsing to use the local timezone by parsing as 'YYYY/MM/DD'
+          cycle.start = new Date(cycle.start.replace(/-/g, '/'));
+          cycle.end = new Date(cycle.end.replace(/-/g, '/'));
           return cycle;
         });
       };
@@ -37,71 +38,77 @@ angular.module('BE.seed.controller.cycle_admin', [])
         return $sce.getTrustedHtml($translate.instant(msg, params));
       }
 
-      /*  Take user input from New Cycle form and submit
-       to service to create a new cycle. */
-      $scope.submitNewCycleForm = function (form) {
+      // Take user input from New Cycle form and submit to service to create a new cycle.
+      $scope.submitNewCycleForm = (form) => {
         if (form.$invalid) {
           return;
         }
         // The datepicker component returns date objects with timezones
         // ex: Mon Jan 01 2018 00:00:00 GMT-0700 (Mountain Standard Time)
-        // Cycle model requires YYYY-MM-DD without timezone
-        $scope.new_cycle.start = $scope.format_date($scope.new_cycle.start)
-        $scope.new_cycle.end = $scope.format_date($scope.new_cycle.end)
-        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(function () {
-          var msg = translateMessage('CREATED_NEW_CYCLE', {
+        // Cycle model requires YYYY-MM-DD without time or timezone
+        $scope.new_cycle.start = $scope.format_date($scope.new_cycle.start);
+        $scope.new_cycle.end = $scope.format_date($scope.new_cycle.end);
+        cycle_service.create_cycle_for_org($scope.new_cycle, $scope.org.id).then(() => {
+          const msg = translateMessage('CREATED_NEW_CYCLE', {
             cycle_name: getTruncatedName($scope.new_cycle.name)
           });
           Notification.primary(msg);
           initialize_new_cycle();
           form.$setPristine();
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-        }, function (message) {
+        }, (message) => {
           $log.error('Error creating new cycle.', message);
-        }
-        );
+        });
       };
 
-      $scope.format_date = (date) => {
-        return date.toISOString().split('T')[0]
-      }
+      $scope.format_date = (date) => $filter('date')(date, 'yyyy-MM-dd');
 
       /* Checks for existing cycle name for inline edit form.
        Form assumes function will return a string if there's an existing cycle */
-      $scope.checkEditCycleBeforeSave = function (newCycleName, currentCycleName) {
+      $scope.checkEditCycleBeforeSave = (newCycleName, currentCycleName) => {
         if (newCycleName === currentCycleName) return;
         if (_.isEmpty(newCycleName)) return 'Enter at least one character';
         if (isCycleNameUsed(newCycleName)) return 'That Cycle name already exists';
       };
 
+      $scope.checkEditCycleDateBeforeSave = (form) => {
+        const {start, end} = form.$data;
+        if (end < start) {
+          return '\'From Date\' must be before \'To Date\'';
+        }
+      };
+
       function isCycleNameUsed (newCycleName) {
-        return _.some($scope.cycles, function (obj) {
-          return obj.name === newCycleName;
-        });
+        return $scope.cycles.some(({name}) => name === newCycleName);
       }
 
       /* Submit edit when 'enter' is pressed */
-      $scope.onEditCycleNameKeypress = function (e, form) {
+      $scope.onEditCycleNameKeypress = (e, form) => {
         if (e.which === 13) {
           form.$submit();
         }
       };
 
 
-      $scope.saveCycle = function (cycle, id) {
+      $scope.saveCycle = (cycle, id) => {
         //Don't update $scope.cycle until a 'success' from server
-        angular.extend(cycle, {id: id});
-        cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(function () {
-          var msg = translateMessage('Cycle updated.');
+        cycle = {
+          id,
+          name: cycle.name,
+          start: $scope.format_date(cycle.start),
+          end: $scope.format_date(cycle.end)
+        };
+        cycle_service.update_cycle_for_org(cycle, $scope.org.id).then(() => {
+          const msg = translateMessage('Cycle updated.');
           Notification.primary(msg);
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-        }, function (message) {
+        }, (message) => {
           $log.error('Error saving cycle.', message);
         });
       };
 
       $scope.opened = {};
-      $scope.open = function ($event, elementOpened) {
+      $scope.open = ($event, elementOpened) => {
         $event.preventDefault();
         $event.stopPropagation();
 
@@ -117,39 +124,39 @@ angular.module('BE.seed.controller.cycle_admin', [])
 
 
       // Handle datepicker open/close events
-      $scope.openStartDatePicker = function ($event) {
+      $scope.openStartDatePicker = ($event) => {
         $event.preventDefault();
         $event.stopPropagation();
         $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
       };
-      $scope.openEndDatePicker = function ($event) {
+      $scope.openEndDatePicker = ($event) => {
         $event.preventDefault();
         $event.stopPropagation();
         $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
       };
 
-      $scope.$watch('startDate', function () {
+      $scope.$watch('new_cycle.start', () => {
         $scope.checkInvalidDate();
       });
 
-      $scope.$watch('endDate', function ( ) {
+      $scope.$watch('new_cycle.end', () => {
         $scope.checkInvalidDate();
       });
 
-      $scope.checkInvalidDate = function () {
-        $scope.invalidDates = ($scope.endDate < $scope.startDate);
+      $scope.checkInvalidDate = () => {
+        $scope.invalidDates = ($scope.new_cycle.end < $scope.new_cycle.start);
       };
 
       function getTruncatedName (name) {
         if (name && name.length > 20) {
-          name = name.substr(0, 20) + '...';
+          name = `${name.slice(0, 20)}…`;
         }
         return name;
       }
 
       initialize_new_cycle();
 
-      $scope.showDeleteCycleModal = function (cycle_id) {
+      $scope.showDeleteCycleModal = (cycle_id) => {
         const delete_cycle_modal = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
           controller: 'delete_cycle_modal_controller',
@@ -160,15 +167,15 @@ angular.module('BE.seed.controller.cycle_admin', [])
             cycle: (organization_service) => {
               return organization_service.get_organization($scope.org.id)
                 .then(res => {
-                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id);
+                  return res.organization.cycles.find(cycle => cycle.cycle_id === cycle_id);
                 });
             },
             organization_id: () => $scope.org.id
           }
         });
-        delete_cycle_modal.result.then(function () {
+        delete_cycle_modal.result.then(() => {
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-        }).catch(function () {
+        }).catch(() => {
           cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
         });
       };
