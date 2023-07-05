@@ -12,6 +12,7 @@ from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
 from seed.models import FilterGroup, StatusLabel
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -406,3 +407,64 @@ class FilterGroupsTests(TransactionTestCase):
 
         # Assertion
         self.assertEqual(404, response.status_code)
+
+
+class FilterGroupsPermissionsTests(AccessLevelBaseTestCase, TransactionTestCase):
+    def setUp(self):
+        super().setUp()
+        self.filter_group = FilterGroup.objects.create(
+            name="test_filter_group",
+            organization_id=self.org.id,
+            inventory_type=1,  # Tax Lot
+            query_dict={'year_built__lt': ['1950']},
+        )
+        self.status_label = StatusLabel.objects.create(
+            name='test', super_organization=self.org
+        )
+
+    def test_filter_group_delete(self):
+        url = reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]) + f"?organization_id={self.org.id}"
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 204
+
+    def test_filter_group_create(self):
+        url = reverse('api:v3:filter_groups-list') + f"?organization_id={self.org.id}"
+        post_params = json.dumps({
+            "name": "new_filter_group",
+            "inventory_type": "Tax Lot",
+            "query_dict": {'year_built__lt': ['1950']},
+            "label_logic": "exclude",
+            "labels": [self.status_label.id]
+        })
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 201
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, post_params, content_type='application/json')
+        assert response.status_code == 403
+
+    def test_filter_group_update(self):
+        url = reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]) + f"?organization_id={self.org.id}"
+        params = json.dumps({"name": "new_name"})
+
+        # root user can
+        self.login_as_root_member()
+        response = self.client.put(url, params, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, params, content_type='application/json')
+        assert response.status_code == 403
