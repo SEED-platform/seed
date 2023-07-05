@@ -225,7 +225,7 @@ class Organization(models.Model):
     salesforce_enabled = models.BooleanField(default=False)
 
     # UBID Threshold
-    ubid_threshold = models.FloatField(null=True, default=1.0)
+    ubid_threshold = models.FloatField(default=1.0)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

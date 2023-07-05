@@ -7,7 +7,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0199_ubidmodel'),
+        ('seed', '0201_ubidmodel'),
     ]
 
     ubid_root = Path(__file__).parent.parent / 'ubid'

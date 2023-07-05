@@ -649,7 +649,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # update the ubid threshold option
         ubid_threshold = posted_org.get('ubid_threshold')
-        if ubid_threshold != org.ubid_threshold:
+        if ubid_threshold is not None and ubid_threshold != org.ubid_threshold:
             if not type(ubid_threshold) in (float, int) or ubid_threshold < 0 or ubid_threshold > 1:
                 return JsonResponse({
                     'status': 'error',

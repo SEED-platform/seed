@@ -31,7 +31,7 @@ def backfill_ubids(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0198_rename_ulid_taxlotstate_ubid'),
+        ('seed', '0200_rehash'),
     ]
 
     operations = [

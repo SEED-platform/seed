@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='ubid_threshold',
-            field=models.FloatField(default=1.0, null=True),
+            field=models.FloatField(default=1.0),
         ),
         migrations.AddConstraint(
             model_name='organization',

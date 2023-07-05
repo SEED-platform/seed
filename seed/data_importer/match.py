@@ -634,9 +634,10 @@ def save_state_match(state1, state2, priorities):
 
 
 def check_jaccard_match(ubid, state_ubid, ubid_threshold):
+    jaccard_index = get_jaccard_index(ubid, state_ubid)
+
+    # If threshold is 0 then it will match any UBID with overlap
     if ubid_threshold == 0:
-        return False
-    # If ubid_threshold is None (NULL), set it to 1.0 for an exact match requirement
-    if not ubid_threshold:
-        ubid_threshold = 1.0
-    return get_jaccard_index(ubid, state_ubid) >= ubid_threshold
+        return jaccard_index > ubid_threshold
+    else:
+        return jaccard_index >= ubid_threshold
