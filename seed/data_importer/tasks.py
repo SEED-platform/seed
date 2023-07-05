@@ -31,6 +31,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
+from django.db.models import Q
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
@@ -390,7 +391,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
-                        _process_ali_data(map_model_obj)
+                        _process_ali_data(map_model_obj, import_file.access_level_instance)
 
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
@@ -492,7 +493,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     return True
 
 
-def _process_ali_data(model):
+def _process_ali_data(model, import_file_ali):
     """Removes ALI info from model.extra_data and adds access_level_instance_id to model.extra_data"""
     org_alns = model.organization.access_level_names
     extra_data = model.extra_data
@@ -507,7 +508,7 @@ def _process_ali_data(model):
     model.extra_data = {k: v for k, v in extra_data.items() if k not in ali_info}
 
     # ensure we have a valid set of keys, else error out
-    needed_keys = set(org_alns[1:])
+    needed_keys = set(org_alns[1:len(ali_info) + 1])
     if needed_keys != ali_info.keys():
         model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
         return
@@ -516,18 +517,24 @@ def _process_ali_data(model):
     ali_info = {k: v for k, v in ali_info.items() if v is not None}
     ali_info[org_alns[0]] = model.organization.root.name
 
-    # ensure we _still_ have a valid set of keys, else error out
-    needed_keys = set(org_alns[:len(ali_info)])
-    if needed_keys != ali_info.keys():
-        model.raw_access_level_instance_error = "Missing/Incomplete Access Level Values."
-        return
+    # try to get ali matching ali info within subtree
+    paths_match = Q(path=ali_info)
+    in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
+    ali = AccessLevelInstance.objects.filter(Q(paths_match & in_subtree)).first()
 
-    # try to get ali matching ali info
-    ali = AccessLevelInstance.objects.filter(path=ali_info, ).first()
-
-    # if ali id None, error out
+    # if ali is None, we error
     if ali is None:
-        model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
+        is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
+        ancestor_ali = AccessLevelInstance.objects.filter(Q(is_ancestor & paths_match)).first()
+
+        # differing errors if
+        # 1. the user can see the ali but cannot access, or
+        # 2. the ali cannot be seen by the user and/or doesn't exist.
+        if ancestor_ali is not None:
+            model.raw_access_level_instance_error = "Access Level Instance cannot be accesssed with the permissions of this import file."
+        else:
+            model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
+
         return
 
     # TODO: ensure they have access to ali

@@ -272,6 +272,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
         self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
         mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
         self.me_ali = self.org.add_new_access_level_instance(mom.id, "me")
+        self.brother_ali = self.org.add_new_access_level_instance(mom.id, "brother")
         self.org.save()
 
         # create state
@@ -321,6 +322,50 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
         assert "3rd Gen" not in ps.extra_data
         assert ps.raw_access_level_instance == self.me_ali
         assert ps.raw_access_level_instance_error is None
+
+    def test_map_good_ah_data_no_permissions_ancestor(self):
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        # state has good AH info
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = None
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance_error == "Access Level Instance cannot be accesssed with the permissions of this import file."
+
+    def test_map_good_ah_data_no_permissions(self):
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        # state has good AH info
+        self.state.extra_data["2nd Gen"] = "mom"
+        self.state.extra_data["3rd Gen"] = "brother"
+        self.state.save()
+
+        # map state
+        tasks.map_data(self.import_file.id)
+        ps = PropertyState.objects.get(
+            data_state=DATA_STATE_MAPPING,
+            organization=self.org,
+            import_file=self.import_file,
+        )
+
+        # extra data gone and raw ali set
+        assert "2nd Gen" not in ps.extra_data
+        assert "3rd Gen" not in ps.extra_data
+        assert ps.raw_access_level_instance_error == "Access Level Information does not match any existing Access Level Instance."
 
     def test_map_ah_data_missing_columns(self):
         # state has missing AH info

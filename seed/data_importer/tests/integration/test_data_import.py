@@ -101,7 +101,7 @@ class TestDataImport(DataMappingBaseTestCase):
         """Save mappings based on user specifications."""
         # Create new import file to test
         import_record = ImportRecord.objects.create(
-            owner=self.user, last_modified_by=self.user, super_organization=self.org
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,

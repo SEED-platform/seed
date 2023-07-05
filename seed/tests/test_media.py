@@ -101,7 +101,8 @@ class TestMeasures(TestCase):
         import_record = ImportRecord.objects.create(
             owner=self.user_a,
             last_modified_by=self.user_a,
-            super_organization=self.org_a
+            super_organization=self.org_a,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,
@@ -123,7 +124,8 @@ class TestMeasures(TestCase):
             owner=self.user_a,
             last_modified_by=self.user_a,
             # use suborg of org_a
-            super_organization=self.org_a_sub
+            super_organization=self.org_a_sub,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,
@@ -144,7 +146,8 @@ class TestMeasures(TestCase):
         import_record = ImportRecord.objects.create(
             owner=self.user_a,
             last_modified_by=self.user_a,
-            super_organization=self.org_a
+            super_organization=self.org_a,
+            access_level_instance=self.org_a.root
         )
         ImportFile.objects.create(
             import_record=import_record,

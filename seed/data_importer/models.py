@@ -20,6 +20,7 @@ from django_extensions.db.models import TimeStampedModel
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.utils.cache import (
     delete_cache,
@@ -92,6 +93,7 @@ class ImportRecord(NotDeletableModel):
                            help_text='The application (e.g., BPD or SEED) for this dataset',
                            default='seed')
     owner = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, blank=True, null=True)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="import_record")
     start_time = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
@@ -594,6 +596,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def from_portfolio_manager(self):
         return self._strcmp(self.source_program, 'PortfolioManager')
+
+    @property
+    def access_level_instance(self):
+        return self.import_record.access_level_instance
 
     @property
     def from_buildingsync(self):

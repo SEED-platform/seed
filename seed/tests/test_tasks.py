@@ -27,7 +27,7 @@ class TestTasks(TestCase):
         self.fake_user = User.objects.create(username='test')
         self.fake_org, _, _ = create_organization(self.fake_user)
         self.import_record = ImportRecord.objects.create(
-            owner=self.fake_user, last_modified_by=self.fake_user
+            owner=self.fake_user, last_modified_by=self.fake_user, access_level_instance=self.fake_org.root
         )
 
         filepath = path.join(path.dirname(__file__), 'data', 'portfolio-manager-sample.csv')

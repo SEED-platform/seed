@@ -200,7 +200,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         )
 
         import_record, import_file = self.create_import_file(
-            user, org, cycle, import_file_source_type, import_file_data_state
+            user, org, cycle, import_file_source_type, import_file_data_state,
         )
 
         return user, org, import_file, import_record, cycle
@@ -208,7 +208,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
     def create_import_file(self, user, org, cycle, source_type=ASSESSED_RAW,
                            data_state=DATA_STATE_IMPORT):
         import_record = ImportRecord.objects.create(
-            owner=user, last_modified_by=user, super_organization=org
+            owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
         import_file.source_type = source_type

@@ -1531,7 +1531,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
         )
 
-        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
+        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org, access_level_instance=self.org.root)
 
         # Interval Data
         filename = 'PM Meter Data.xlsx'  # contains meter data for bsyncr and BETTER
