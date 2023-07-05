@@ -13,6 +13,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ViewSet
 
 from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import Column, ColumnMappingProfile
 from seed.serializers.column_mapping_profiles import (
@@ -48,6 +49,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
+    @has_perm_class('requires_root_member_access')
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
     def filter(self, request):
         """
@@ -91,6 +93,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional 'name' or 'mappings'.\n" + mappings_description
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def update(self, request, pk=None):
         """
@@ -153,6 +156,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )]
     )
     @api_endpoint_class
+    @has_perm_class('requires_root_member_access')
     @action(detail=True, methods=['GET'])
     def csv(self, request, pk=None):
         """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
@@ -200,6 +204,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             required=['name', 'mappings']
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def create(self, request, pk=None):
         """
@@ -237,6 +242,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional org id which overrides the users (default) current org id"
         )]
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def destroy(self, request, pk=None):
         """
@@ -275,6 +281,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
+    @has_perm_class('requires_root_member_access')
     @action(detail=False, methods=['POST'])
     def suggestions(self, request):
         """
