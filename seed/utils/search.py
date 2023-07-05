@@ -431,17 +431,24 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     new_filters = Q()
     annotations = {}
     for filter_expression, filter_value in filters.items():
+        negate = False
         # when the filter value is "", we want to be sure to include None and "".
         if filter_value == '':
+            filter_column = filter_expression.split('__')[0]
+            is_access_level_name = filter_column in access_level_names
+            filter_lookup = '__icontains' if is_access_level_name else '__isnull'
             # if not "", exclude null
             if filter_expression.endswith('__ne'):
-                is_null_filter_expression = filter_expression.replace('__ne', '__isnull')
-                is_null_filter_value = False
+                is_null_filter_expression = filter_expression.replace('__ne', filter_lookup)
+                is_null_filter_value = filter_column if is_access_level_name else False
 
             # if exactly "", only return null
             elif filter_expression.endswith('__exact'):
-                is_null_filter_expression = filter_expression.replace('__exact', '__isnull')
+                is_null_filter_expression = filter_expression.replace('__exact', filter_lookup)
                 is_null_filter_value = True
+                if is_access_level_name: 
+                    is_null_filter_value = filter_column
+                    negate = True
 
             parsed_filters, parsed_annotations = _parse_view_filter(
                 is_null_filter_expression,
@@ -449,7 +456,8 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
                 columns_by_name, 
                 access_level_names
             )
-            # import remote_pdb; remote_pdb.set_trace()
+            if negate:
+                parsed_filters = ~parsed_filters
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
@@ -476,7 +484,8 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
         if parsed_sort is not None:
             order_by.append(parsed_sort)
             annotations.update(parsed_annotations)
-    import logging
-    logging.error('>>> order_by %s', order_by)
 
+    import logging 
+    logging.error('>>> new_filters %s', new_filters)
+    logging.error('>>> order_by %s', order_by)
     return new_filters, annotations, order_by
