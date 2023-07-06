@@ -531,7 +531,7 @@ def _process_ali_data(model, import_file_ali):
         # 1. the user can see the ali but cannot access, or
         # 2. the ali cannot be seen by the user and/or doesn't exist.
         if ancestor_ali is not None:
-            model.raw_access_level_instance_error = "Access Level Instance cannot be accesssed with the permissions of this import file."
+            model.raw_access_level_instance_error = "Access Level Instance cannot be accessed with the permissions of this import file."
         else:
             model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
 
