@@ -412,9 +412,9 @@ class BuildingSync(object):
         assets = bae.get_assets()
 
         # add to data and column headers
+        # Asset is now typed Asset with methods for name and value
         for item in assets:
-            seed_result[item['name']] = item['value']
-
+            seed_result[item.name] = item.value
         return seed_result, messages
 
     def process(self, table_mappings=None):
