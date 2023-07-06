@@ -151,19 +151,6 @@ class ColumnMappingProfileViewsPermissionsTest(AccessLevelBaseTestCase, DataMapp
         super().setUp()
         self.profile = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.NORMAL)
 
-    def test_get_csv_permissions(self):
-        url = reverse('api:v3:column_mapping_profiles-csv', args=[self.profile.id]) + '?organization_id=' + str(self.org.id)
-
-        # root user can
-        self.login_as_root_member()
-        response = self.client.get(url, content_type='application/csv')
-        assert response.status_code == 200
-
-        # child user cannot
-        self.login_as_child_member()
-        response = self.client.get(url, content_type='application/csv')
-        assert response.status_code == 403
-
     def test_delete_permissions(self):
         url = reverse('api:v3:column_mapping_profiles-detail', args=[self.profile.id]) + '?organization_id=' + str(self.org.id)
 
@@ -175,33 +162,6 @@ class ColumnMappingProfileViewsPermissionsTest(AccessLevelBaseTestCase, DataMapp
         # root user can
         self.login_as_root_member()
         response = self.client.delete(url, content_type='application/json')
-        assert response.status_code == 200
-
-    def test_filter_permissions(self):
-        url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
-
-        # child user cannot
-        self.login_as_child_member()
-        response = self.client.post(url)
-        assert response.status_code == 403
-
-        # root user can
-        self.login_as_root_member()
-        response = self.client.post(url)
-        assert response.status_code == 200
-
-    def test_suggestions_permissions(self):
-        url = reverse('api:v3:column_mapping_profiles-suggestions') + '?organization_id=' + str(self.org.id)
-        post_params = dumps({'headers': ['Jurisdiction Tax Lot ID', 'PM Property ID', 'Zip', 'Extra Data']})
-
-        # child user cannot
-        self.login_as_child_member()
-        response = self.client.post(url, post_params, content_type='application/json')
-        assert response.status_code == 403
-
-        # root user can
-        self.login_as_root_member()
-        response = self.client.post(url, post_params, content_type='application/json')
         assert response.status_code == 200
 
     def test_update_permissions(self):

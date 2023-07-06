@@ -49,7 +49,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('requires_root_member_access')
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
     def filter(self, request):
         """
@@ -156,7 +155,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )]
     )
     @api_endpoint_class
-    @has_perm_class('requires_root_member_access')
     @action(detail=True, methods=['GET'])
     def csv(self, request, pk=None):
         """Export a column list profile in a CSV format. This format is supported in the py-seed library when setting up
@@ -281,7 +279,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('requires_root_member_access')
     @action(detail=False, methods=['POST'])
     def suggestions(self, request):
         """
