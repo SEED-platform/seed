@@ -116,7 +116,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         assert Organization.objects.get(pk=self.org.id).access_level_names == ["new name", "boo"]
 
-    def test_edit_access_level_names_bad_names(self):
+    def test_edit_access_level_names_too_few(self):
         # get try to clear access_level_names
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
@@ -131,7 +131,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.org.save()
         self.org.add_new_access_level_instance(self.org.root.id, "aunt")
 
-        # get try to add to few levels
+        # get try to add too few levels
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
         raw_result = self.client.post(
             url,
@@ -149,6 +149,24 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         )
         assert raw_result.status_code == 200
         assert Organization.objects.get(pk=self.org.id).access_level_names == ["one", "two"]
+
+    def test_edit_access_level_names_duplicates(self):
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"access_level_names": ["hip", "hip"]}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 400
+
+    def test_edit_access_level_names_column_name_colision(self):
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"access_level_names": ["Address Line 1"]}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 400
 
     def test_add_new_access_level_instance(self):
         self.org.access_level_names = ["1st gen", "2nd gen"]

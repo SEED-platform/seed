@@ -393,21 +393,41 @@ pre_delete.connect(organization_pre_delete, sender=Organization)
 
 @receiver(pre_save, sender=Organization)
 def presave_organization(sender, instance, **kwargs):
-    """For each instance.access_level_names item changed, update the ali.paths
-    """
     if instance.id is None:
         return
 
     previous = Organization.objects.get(pk=instance.id)
     previous_access_level_names = previous.access_level_names
-    alis = AccessLevelInstance.objects.filter(organization=instance)
-    min_len = min(len(previous_access_level_names), len(instance.access_level_names))
+
+    if previous_access_level_names != instance.access_level_names:
+        _assert_alns_are_valid(instance)
+        _update_alis_path_keys(instance, previous_access_level_names)
+
+
+def _assert_alns_are_valid(org):
+    from seed.models import Column
+    alns = org.access_level_names
+
+    if len(set(alns)) != len(alns):  # if not unique
+        raise ValueError("Organiation's access_level_names must be unique.")
+
+    columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
+    if columns_with_same_names.count() > 0:
+        repeated_names = columns_with_same_names.values_list("display_name", flat=True)
+        raise ValueError(f"Organiation's access_level_names must not be column names: {repeated_names}")
+
+
+def _update_alis_path_keys(org, previous_access_level_names):
+    """For each instance.access_level_names item changed, update the ali.paths
+    """
+    alis = AccessLevelInstance.objects.filter(organization=org)
+    min_len = min(len(previous_access_level_names), len(org.access_level_names))
 
     with transaction.atomic():
         # for each name in access_level_name...
         for i in range(min_len):
             previous_access_level_name = previous_access_level_names[i]
-            current_access_level_name = instance.access_level_names[i]
+            current_access_level_name = org.access_level_names[i]
 
             # If the name was changed, alter the paths of the ALIs.
             if previous_access_level_name != current_access_level_name:
