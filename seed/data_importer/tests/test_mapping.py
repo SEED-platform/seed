@@ -343,7 +343,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
         # extra data gone and raw ali set
         assert "2nd Gen" not in ps.extra_data
         assert "3rd Gen" not in ps.extra_data
-        assert ps.raw_access_level_instance_error == "Access Level Instance cannot be accesssed with the permissions of this import file."
+        assert ps.raw_access_level_instance_error == "Access Level Instance cannot be accessed with the permissions of this import file."
 
     def test_map_good_ah_data_no_permissions(self):
         self.import_record.access_level_instance = self.me_ali
