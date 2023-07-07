@@ -1044,7 +1044,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = [
-          ..._.map($scope.columns, 'name'), 
+          ..._.map($scope.columns, 'name'),
           ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
           ...$scope.organization.access_level_names
         ]

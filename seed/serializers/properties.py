@@ -27,12 +27,14 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
+from seed.serializers.access_level_instances import (
+    AccessLevelInstanceSerializer
+)
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
 from seed.serializers.inventory_document import InventoryDocumentSerializer
-from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer

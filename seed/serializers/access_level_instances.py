@@ -9,7 +9,6 @@ from rest_framework import serializers
 from seed.models import AccessLevelInstance
 
 
-
 class AccessLevelInstanceSerializer(serializers.ModelSerializer):
 
     class Meta:

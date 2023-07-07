@@ -392,21 +392,21 @@ class TestInventoryViewSearchParsers(TestCase):
         fake_org.save()
         b1 = fake_org.add_new_access_level_instance(fake_org.root.id, "b1")
         b2 = fake_org.add_new_access_level_instance(fake_org.root.id, "b2")
-        c1 = fake_org.add_new_access_level_instance(b1.id, "c1")
-        c2 = fake_org.add_new_access_level_instance(b2.id, "c2")
-        c3 = fake_org.add_new_access_level_instance(b2.id, "c3")
+        fake_org.add_new_access_level_instance(b1.id, "c1")
+        fake_org.add_new_access_level_instance(b2.id, "c2")
+        fake_org.add_new_access_level_instance(b2.id, "c3")
 
         columns = Column.retrieve_all(org_id=fake_org.id)
 
         # Standard
         data = {
             '2nd_gen__icontains': 'b2',
-            'cycle': fake_org.cycles.first().id, 
-            'ids_only': 'false', 
-            'include_related': 'true', 
-            'order_by': '-2nd_gen', 
-            'organization_id': '1', 
-            'page': '1', 
+            'cycle': fake_org.cycles.first().id,
+            'ids_only': 'false',
+            'include_related': 'true',
+            'order_by': '-2nd_gen',
+            'organization_id': '1',
+            'page': '1',
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)
@@ -421,12 +421,12 @@ class TestInventoryViewSearchParsers(TestCase):
         # !=""
         data = {
             '2nd_gen__ne': '',
-            'cycle': fake_org.cycles.first().id, 
-            'ids_only': 'false', 
-            'include_related': 'true', 
-            'order_by': '2nd_gen', 
-            'organization_id': '1', 
-            'page': '1', 
+            'cycle': fake_org.cycles.first().id,
+            'ids_only': 'false',
+            'include_related': 'true',
+            'order_by': '2nd_gen',
+            'organization_id': '1',
+            'page': '1',
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)
@@ -441,12 +441,12 @@ class TestInventoryViewSearchParsers(TestCase):
         # =""
         data = {
             '2nd_gen__exact': '',
-            'cycle': fake_org.cycles.first().id, 
-            'ids_only': 'false', 
-            'include_related': 'true', 
-            'order_by': '3rd_gen', 
-            'organization_id': '1', 
-            'page': '1', 
+            'cycle': fake_org.cycles.first().id,
+            'ids_only': 'false',
+            'include_related': 'true',
+            'order_by': '3rd_gen',
+            'organization_id': '1',
+            'page': '1',
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)

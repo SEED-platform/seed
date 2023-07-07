@@ -327,10 +327,10 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     is_access_level_instance = filter.field_name in access_level_names
 
     if (column is None or column['related']) and not is_access_level_instance:
-            return Q(), {}
-    
+        return Q(), {}
+
     if is_access_level_instance:
-        filter.operator = QueryFilterOperator.CONTAINS 
+        filter.operator = QueryFilterOperator.CONTAINS
         updated_expression = 'property__access_level_instance__path'
         filter.is_negated = True if filter_expression.endswith('__exact') else False
 
@@ -340,7 +340,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
 
         updated_filter = QueryFilter(
             updated_expression,
-            filter.operator, 
+            filter.operator,
             filter.is_negated
         )
         return updated_filter.to_q(filter_value), {}
@@ -442,7 +442,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     for filter_expression, filter_value in filters.items():
         filter_column = filter_expression.split('__')[0]
         is_access_level_instance = filter_column in access_level_names
-        negate = False
         # when the filter value is "", we want to be sure to include None and "".
         if filter_value == '':
 
@@ -462,7 +461,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
             parsed_filters, parsed_annotations = _parse_view_filter(
                 is_null_filter_expression,
                 is_null_filter_value,
-                columns_by_name, 
+                columns_by_name,
                 access_level_names
             )
 

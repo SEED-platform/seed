@@ -123,8 +123,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      $scope.access_level_instance = $scope.inventory_type == 'properties' ? 
-        inventory_payload.property.access_level_instance : 
+      $scope.access_level_instance = $scope.inventory_type == 'properties' ?
+        inventory_payload.property.access_level_instance :
         inventory_payload.taxlot.access_level_instance
 
       $scope.order_historical_items_with_scenarios = () => {
