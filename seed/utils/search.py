@@ -21,7 +21,6 @@ from django.http.request import QueryDict
 from past.builtins import basestring
 
 from seed.models.columns import Column
-import logging
 
 SUFFIXES = ['__lt', '__gt', '__lte', '__gte', '__isnull']
 DATE_FIELDS = ['year_ending']
@@ -331,22 +330,19 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
             return Q(), {}
     
     if is_access_level_instance:
-        logging.error('>>> filter %s', filter)
-        logging.error('>>> filter_expression %s', filter_expression)
-        # ADD SOME COMMENTS
+        filter.operator = QueryFilterOperator.CONTAINS 
         updated_expression = 'property__access_level_instance__path'
+        filter.is_negated = True if filter_expression.endswith('__exact') else False
+
         if filter_expression.endswith('__icontains'):
-            updated_expression += f'__{filter.field_name}'
-        else:
-            filter.operator = QueryFilterOperator.CONTAINS    
-            filter.is_negated = False if filter_expression.endswith('__ne') else True
+            level = filter_expression.split('__')[0]
+            updated_expression += f'__{level}'
 
         updated_filter = QueryFilter(
             updated_expression,
             filter.operator, 
             filter.is_negated
         )
-        # breakpoint()
         return updated_filter.to_q(filter_value), {}
 
     column_name = column["column_name"]
@@ -434,9 +430,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     :param columns: list of all valid Columns in dict format
     :return: filters, annotations and sorts
     """
-    logging.error('>>> filters %s', filters)
-    logging.error('>>> len(columns) %s', len(columns))
-    logging.error('>>> access_level_names %s', access_level_names)
     access_level_names = [name.replace(' ', '_') for name in access_level_names]
     columns_by_name = {}
     for column in columns:
@@ -448,17 +441,14 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     annotations = {}
     for filter_expression, filter_value in filters.items():
         filter_column = filter_expression.split('__')[0]
-        is_access_level_name = filter_column in access_level_names
+        is_access_level_instance = filter_column in access_level_names
         negate = False
         # when the filter value is "", we want to be sure to include None and "".
         if filter_value == '':
-            filter_lookup = '__ne' if is_access_level_name else '__isnull'
-            # if not "", exclude null
-            if is_access_level_name:
+
+            if is_access_level_instance:
                 is_null_filter_expression = filter_expression
                 is_null_filter_value = filter_column
-                if filter_expression.endswith('__exact'): 
-                    negate = True
 
             elif filter_expression.endswith('__ne'):
                 is_null_filter_expression = filter_expression.replace('__ne', '__isnull')
@@ -468,7 +458,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
             elif filter_expression.endswith('__exact'):
                 is_null_filter_expression = filter_expression.replace('__exact', '__isnull')
                 is_null_filter_value = True
-    
 
             parsed_filters, parsed_annotations = _parse_view_filter(
                 is_null_filter_expression,
@@ -503,6 +492,4 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
             order_by.append(parsed_sort)
             annotations.update(parsed_annotations)
 
-    logging.error('>>> new_filters %s', new_filters)
-    # logging.error('>>> order_by %s', order_by)
     return new_filters, annotations, order_by
