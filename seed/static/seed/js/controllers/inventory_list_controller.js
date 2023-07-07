@@ -535,6 +535,17 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
+      $scope.show_access_level_instances = true
+      $scope.toggle_access_level_instances = function () {
+        $scope.show_access_level_instances = !$scope.show_access_level_instances
+        $scope.gridOptions.columnDefs.forEach((col) => {
+          if (col.group == 'access_level_instance') {
+            col.visible = $scope.show_access_level_instances
+          }
+        })
+        $scope.gridApi.core.refresh();
+      }
+
       $scope.loadLabelsForFilter = function (query) {
         // Find all labels associated with the current cycle.
         return _.filter($scope.labels, function (lbl) {
@@ -803,12 +814,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       });
 
       // Add access level instances to grid
-      $scope.organization.access_level_names.reverse().forEach((level) => {
+      $scope.organization.access_level_names.reverse().slice(0, -1).forEach((level) => {
         console.log('level', level)
         $scope.columns.unshift({
           name: level,
           displayName: level,
-
+          group: 'access_level_instance',
           enableColumnMenu: true,
           enableColumnMoving: false,
           enableColumnResizing: true,
@@ -1446,6 +1457,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
+          case 'toggle_access_level_instances': $scope.toggle_access_level_instances(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
           case 'update_salesforce': $scope.update_salesforce(selectedViewIds); break;
