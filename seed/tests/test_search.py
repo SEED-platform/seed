@@ -416,6 +416,7 @@ class TestInventoryViewSearchParsers(TestCase):
         exp_order_by = ['-property__access_level_instance__path__2nd_gen']
         self.assertEqual(act_filters, exp_filters)
         self.assertEqual(act_order_by, exp_order_by)
+        self.assertEqual(annotations, {})
 
         # !=""
         data = {
@@ -435,22 +436,24 @@ class TestInventoryViewSearchParsers(TestCase):
         exp_order_by = ['property__access_level_instance__path__2nd_gen']
         self.assertEqual(act_filters, exp_filters)
         self.assertEqual(act_order_by, exp_order_by)
-        
+        self.assertEqual(annotations, {})
+
         # =""
         data = {
             '2nd_gen__exact': '',
             'cycle': fake_org.cycles.first().id, 
             'ids_only': 'false', 
             'include_related': 'true', 
-            'order_by': '3nd_gen', 
+            'order_by': '3rd_gen', 
             'organization_id': '1', 
             'page': '1', 
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)
         filters.update(data)
-        act_filters, annotations, order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
+        act_filters, annotations, act_order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
         exp_filters = ~Q(property__access_level_instance__path__icontains='2nd_gen')
-        exp_order_by = ['property__access_level_instance__path__3nd_gen']
+        exp_order_by = ['property__access_level_instance__path__3rd_gen']
         self.assertEqual(act_filters, exp_filters)
         self.assertEqual(act_order_by, exp_order_by)
+        self.assertEqual(annotations, {})
