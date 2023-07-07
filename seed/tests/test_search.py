@@ -404,16 +404,18 @@ class TestInventoryViewSearchParsers(TestCase):
             'cycle': fake_org.cycles.first().id, 
             'ids_only': 'false', 
             'include_related': 'true', 
-            'order_by': '-Level2', 
+            'order_by': '-2nd_gen', 
             'organization_id': '1', 
             'page': '1', 
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)
         filters.update(data)
-        act_filters, annotations, order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
+        act_filters, annotations, act_order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
         exp_filters = Q(property__access_level_instance__path__2nd_gen__icontains='b2')
+        exp_order_by = ['-property__access_level_instance__path__2nd_gen']
         self.assertEqual(act_filters, exp_filters)
+        self.assertEqual(act_order_by, exp_order_by)
 
         # !=""
         data = {
@@ -421,23 +423,26 @@ class TestInventoryViewSearchParsers(TestCase):
             'cycle': fake_org.cycles.first().id, 
             'ids_only': 'false', 
             'include_related': 'true', 
-            'order_by': '-Level2', 
+            'order_by': '2nd_gen', 
             'organization_id': '1', 
             'page': '1', 
             'per_page': '100'
         }
         filters = QueryDict('', mutable=True)
         filters.update(data)
-        act_filters, annotations, order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
+        act_filters, annotations, act_order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
         exp_filters = Q(property__access_level_instance__path__icontains='2nd_gen')
+        exp_order_by = ['property__access_level_instance__path__2nd_gen']
         self.assertEqual(act_filters, exp_filters)
+        self.assertEqual(act_order_by, exp_order_by)
+        
         # =""
         data = {
             '2nd_gen__exact': '',
             'cycle': fake_org.cycles.first().id, 
             'ids_only': 'false', 
             'include_related': 'true', 
-            'order_by': '-Level2', 
+            'order_by': '3nd_gen', 
             'organization_id': '1', 
             'page': '1', 
             'per_page': '100'
@@ -446,4 +451,6 @@ class TestInventoryViewSearchParsers(TestCase):
         filters.update(data)
         act_filters, annotations, order_by = build_view_filters_and_sorts(filters, columns, fake_org.access_level_names)
         exp_filters = ~Q(property__access_level_instance__path__icontains='2nd_gen')
+        exp_order_by = ['property__access_level_instance__path__3nd_gen']
         self.assertEqual(act_filters, exp_filters)
+        self.assertEqual(act_order_by, exp_order_by)
