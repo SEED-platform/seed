@@ -12,7 +12,12 @@ from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
+    ROLE_OWNER,
+    Organization,
+    OrganizationUser
+)
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_IMPORT,
@@ -39,6 +44,13 @@ from seed.models import (
     TaxLotView
 )
 from seed.models.data_quality import DataQualityCheck
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory
+)
 from seed.utils.organizations import create_organization
 
 
@@ -84,6 +96,86 @@ class DeleteModelsTestCase(TestCase):
 
     def tearDown(self):
         self._delete_models()
+
+
+class AccessLevelBaseTestCase(TestCase):
+    """Base Test Case Class to handle Access Levels
+       Creates a root owner user, a root member user,
+       and a child member user
+       Useful for testing "setup" API endpoints
+       as well as "data" endpoints
+       Provides methods for logging in as different
+       users
+       Sets up the factories
+    """
+    def setUp(self):
+        """ SUPERUSER """
+        self.superuser_details = {
+            'username': 'test_superuser@demo.com',
+            'password': 'test_pass',
+            'email': 'test_superuser@demo.com',
+            'first_name': 'Johnny',
+            'last_name': 'Energy',
+        }
+        self.superuser = User.objects.create_superuser(**self.superuser_details)
+        self.org, _, _ = create_organization(self.superuser, "test-organization-a")
+        # add ALI to org (2 levels)
+        self.org.access_level_names = ["root", "child"]
+        self.root_level_instance = self.org.root
+        self.child_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "child")
+
+        # default login as superuser/org owner
+        self.client.login(**self.superuser_details)
+
+        """ ROOT-LEVEL OWNER USER """
+        self.root_owner_user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Jane',
+            'last_name': 'Energy',
+        }
+        self.root_owner_user = User.objects.create_user(**self.root_owner_user_details)
+        self.org.add_member(self.root_owner_user, self.org.root.id, ROLE_OWNER)
+        self.org.save()
+
+        """ ROOT-LEVEL MEMBER USER """
+        self.root_member_user_details = {
+            'username': 'root_member@demo.com',
+            'password': 'test_pass',
+        }
+        self.root_member_user = User.objects.create_user(**self.root_member_user_details)
+        self.org.add_member(self.root_member_user, self.org.root.id, ROLE_MEMBER)
+        self.org.save()
+
+        """ CHILD-LEVEL MEMBER USER """
+        self.child_member_user_details = {
+            'username': 'child_member@demo.com',
+            'password': 'test_pass',
+        }
+        self.child_member_user = User.objects.create_user(**self.child_member_user_details)
+        # add user to org
+        self.org.add_member(self.child_member_user, self.child_level_instance.pk, ROLE_MEMBER)
+        self.org.save()
+
+        # setup factories
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+    def login_as_root_owner(self):
+        """ Login to client as Root-Level owner user """
+        self.client.login(**self.root_owner_user_details)
+
+    def login_as_root_member(self):
+        """ Login to client as Root-Level member user """
+        self.client.login(**self.root_member_user_details)
+
+    def login_as_child_member(self):
+        """ Login to client as Child-Level member user """
+        self.client.login(**self.child_member_user_details)
 
 
 class DataMappingBaseTestCase(DeleteModelsTestCase):

@@ -94,10 +94,10 @@ class OrganizationUser(models.Model):
 
 
 class AccessLevelInstance(NS_Node):
-    """Node in the Accountibilty Hiarchy tree"""
+    """Node in the Accountability Hierarchy tree"""
     name = models.CharField(max_length=100, null=False)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
-    # path automaticly mantained dict of ancestors names by access level names.
+    # path automatically maintained dict of ancestors names by access level names.
     # See get_path and set_path.
     path = models.JSONField(null=False)
 
@@ -421,7 +421,7 @@ def presave_organization(sender, instance, **kwargs):
 @receiver(post_save, sender=Organization)
 def post_save_organization(sender, instance, created, **kwargs):
     """
-    Give new Orgs a Accountibilty Hiarchy root.
+    Give new Orgs a Accountability Hierarchy root.
     """
     if created:
         if instance.access_level_names == []:

@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import tempfile
+import time
 import traceback
 import zipfile
 from bisect import bisect_left
@@ -27,6 +28,7 @@ from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
 from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.utils import ProgrammingError
@@ -37,6 +39,9 @@ from unidecode import unidecode
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
+from seed.data_importer.access_level_instances_parser import (
+    AccessLevelInstancesParser
+)
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots
@@ -762,6 +767,25 @@ def finish_raw_save(results, file_pk, progress_key):
     return finished_progress_data
 
 
+@shared_task(ignore_result=True)
+def finish_raw_ali_save(results, progress_key):
+    """
+    Finish importing the raw Access Level Instances file.
+
+    :param results: List of results from the parent task
+    :param filename: filename that was being imported
+    :param progress_key: string, Progress Key to append progress
+    :param summary: Summary to be saved on ProgressData as a message
+    :return: results: results from the other tasks before the chord ran
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    new_summary = _append_access_level_instances_results_to_summary(results)
+    finished_progress_data = progress_data.finish_with_success(new_summary)
+
+    return finished_progress_data
+
+
 def cache_first_rows(import_file, parser):
     """Cache headers, and rows 2-6 for validation/viewing.
 
@@ -957,6 +981,110 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
     progress_data.step()
 
     return result
+
+
+@shared_task
+def _save_access_level_instances_task(rows, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+    result = {}
+
+    # get org
+    try:
+        org = Organization.objects.get(pk=org_id)
+    except ObjectDoesNotExist:
+        raise 'Could not retrieve organization at pk = ' + str(org_id)
+
+    # get access level names (array of ordered names)
+    access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
+    access_level_names = [x.lower() for x in access_level_names]
+    # determine whether root level was provided in file (if not, remove from list)
+    has_root = True
+    if rows:
+        headers = [x.lower() for x in rows[0].keys()]
+
+        if access_level_names[0] not in headers:
+            access_level_names.pop(0)
+            has_root = False
+    # saves the non-existent instances
+    for row in rows:
+        message = None
+        # process in order of access_level_names
+        # create the needed instances along the way
+        current_level = None
+        children = [org.root]
+        if not has_root:
+            children = org.root.get_children()
+            current_level = org.root
+        # lowercase keys just in case
+        row = {k.lower(): v for k, v in row.items()}
+
+        for key, val in row.items():
+            # check headers
+            if key not in access_level_names:
+                message = f"Error reading CSV data row: {row}...no access level for column {key} found"
+                break
+            # check for empty value (don't add blanks)
+            if not val:
+                message = f"Blank value for column {key} in CSV data row: {row}...skipping"
+                break
+
+            # does this level exist already?
+            looking_for = val
+
+            found = False
+            for child in children:
+                if child.name == looking_for:
+                    found = True
+                    current_level = child
+                    children = current_level.get_children()
+                    break
+
+            if not found:
+                if not current_level:
+                    # this would mean they are trying to add ROOT and that can't be
+                    message = f"Error attempting to add '{val}' as another root element. Root element already defined as: {org.root.name}"
+                    break
+                # add it
+                try:
+                    current_level = org.add_new_access_level_instance(current_level.id, looking_for)
+                    current_level.refresh_from_db()
+                    # get its children (should be empty)
+                    children = current_level.get_children()
+                except Exception as e:
+                    message = f"Error has occurred when adding element '{val}' for entry: {row}: {e}"
+                    break
+
+        # add a row but only for errors
+        if message:
+            result[row[access_level_names[-1]]] = {'message': message}
+
+    progress_data.step()
+    return result
+
+
+@shared_task
+def _save_access_level_instances_data_create_tasks(filename, org_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    # open and read in file
+    parser = AccessLevelInstancesParser.factory(
+        open(filename, 'r'),
+        org_id
+    )
+    access_level_instances_data = parser.access_level_instances_details
+
+    tasks = []
+    # we are not going to deal with chunking this for now
+    # making the chunk size huge
+    chunk_size = 100000
+
+    for batch_rows in batch(access_level_instances_data, chunk_size):
+        tasks.append(_save_access_level_instances_task.s(batch_rows, org_id, progress_data.key))
+
+    progress_data.total = len(tasks)
+    progress_data.save()
+
+    return chord(tasks, interval=15)(finish_raw_ali_save.s(progress_data.key))
 
 
 @shared_task
@@ -1200,6 +1328,15 @@ def _append_sensor_readings_import_results_to_summary(import_results):
     return list(summary.values())
 
 
+def _append_access_level_instances_results_to_summary(import_results):
+    summary = {}
+    for import_result in import_results:
+        for key, row in import_result.items():
+            summary[key] = row
+
+    return summary
+
+
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1251,6 +1388,29 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         tasks.append(_save_raw_data_chunk.s(chunk, file_pk, progress_data.key))
 
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+def save_raw_access_level_instances_data(filename, org_id):
+    """ save data and keep progress """
+    progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
+    try:
+
+        # queue up the tasks and immediately return. This is needed in the case of large files
+        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
+        # large files can take quite some time.
+        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
+    except StopIteration:
+        progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except Error as e:
+        progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except TypeError:
+        progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
+    return progress_data.result()
 
 
 def save_raw_data(file_pk):

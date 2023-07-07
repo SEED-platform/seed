@@ -114,6 +114,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_root_member_access')
     def create(self, request):
         self.get_organization(self.request)
 
@@ -169,7 +170,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def update(self, request, pk=None):
         organization_id = self.get_organization(request)
 
@@ -183,7 +184,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         return super(ColumnViewSet, self).update(request, pk)
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     def destroy(self, request, pk=None):
         org_id = self.get_organization(request)
         try:
@@ -216,7 +217,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         })
     )
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_root_member_access')
     @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         """

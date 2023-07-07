@@ -1762,6 +1762,11 @@ a:not([href]) {
     }
   }
 
+  .add-btn {
+    margin: 15px 0px;
+    text-align: center;
+  }
+
   .form-group {
     p {
       margin: 0 0 8px;
@@ -3903,6 +3908,18 @@ $pairedCellWidth: 60px;
   padding-left: 5px;
 }
 
+.pad-bot-10 {
+  padding-bottom: 10px;
+}
+
+.pad-top-10 {
+  padding-top: 10px;
+}
+
+.access-tree {
+  margin-top: 20px;
+}
+
 .matching-column-header .ui-grid-header-cell-label {
   font-weight: bolder;
 }
@@ -4877,4 +4894,80 @@ ul.r-list {
 }
 .ali-cell {
   color: #2955b4;
+}
+.al-tree {
+  padding: 10px;
+}
+
+#access-level-tree {
+  margin: 20px;
+  ul {
+    list-style-type: none;
+    padding-left: 20px;
+
+    li:before {
+      content: "-";
+      display: inline-block;
+      width: 10px;
+    }
+  }
+  .collapsed ul {
+    display: none;
+  }
+  li.collapsed:before {
+    content: "+";
+    display: inline-block;
+    width: 10px;
+  }
+  li a:hover {
+    cursor: pointer;
+  }
+
+  a {
+    font-size: 16px;
+  }
+}
+
+.level1 {
+  margin: 0px 9px;
+  background-color: #cdcdcd;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-shadow: 0 1px 0 white;
+  border-bottom: 1px solid #b3b3b3;
+  padding: 6px 10px 5px;
+  white-space: nowrap;
+  font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  border: 1px solid #ddd;
+}
+
+.badge-primary {
+  color: #fff;
+  background-color: #337ab7;
+  border-color: #2e6da4;
+}
+
+.levels-header {
+  font-weight: bold;
+  padding: 0px;
+  background: #efefef;
+}
+
+.levels-table-item-detail {
+  margin: 0px;
+  border: 1px solid #f1f1f1;
+}
+
+.accordion-header .levels-button {
+  background-color: black;
+  color: white;
+  padding: 7px 20px;
+  margin: 3px 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.level-child {
+  vertical-align: middle;
+  font-weight: normal;
 }

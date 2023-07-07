@@ -70,6 +70,7 @@ COLUMNS_TO_SEND = [
     'extra_data_field',
     'jurisdiction_tax_lot_id'
 ]
+from seed.tests.util import AccessLevelBaseTestCase
 
 
 class PropertyViewTests(DataMappingBaseTestCase):
@@ -1257,23 +1258,10 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         self.assertCountEqual(expected_diffs, diffs)
 
 
-class PropertySensorViewTests(DataMappingBaseTestCase):
+class PropertySensorViewTests(AccessLevelBaseTestCase, DataMappingBaseTestCase):
     def setUp(self):
-        self.user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        self.user = User.objects.create_superuser(
-            email='test_user@demo.com', **self.user_details
-        )
-        self.org, _, _ = create_organization(self.user)
+        super().setUp()
 
-        # For some reason, defaults weren't established consistently for each test.
-        self.org.display_meter_units = Organization._default_display_meter_units.copy()
-        self.org.save()
-        self.client.login(**self.user_details)
-
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
 
@@ -1291,15 +1279,42 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         state_2.save()
         self.state_2 = PropertyState.objects.get(pk=state_2.id)
 
-        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
 
-        self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_1 = self.property_factory.get_property()
         self.property_2 = self.property_factory.get_property()
 
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+    def test_create_data_loggers_permissions(self):
+        url = reverse('api:v3:data_logger-list') + "?property_view_id=" + str(self.property_view_1.id)
+        data = {"display_name": "boo", "location_description": "ah", "identifier": "me", "org_id": self.org.pk}
+
+        # root users can create data logger in root
+        self.login_as_root_member()
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        data["display_name"] = "lol"
+        result = self.client.post(url, json.dumps(data), content_type="application/json")
+        assert result.status_code == 404
+
+    def test_data_loggers_list_permissions(self):
+        url = reverse('api:v3:data_logger-list')
+        data = {"property_view_id": self.property_view_1.id, "org_id": self.org.pk}
+
+        # root users can get data logger in root
+        self.login_as_root_member()
+        result = self.client.get(url, data)
+        assert result.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        result = self.client.get(url, data)
+        assert result.status_code == 404
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
         dl_a = DataLogger.objects.create(**{
@@ -1522,7 +1537,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id})
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id}) + "?organization_id=" + str(self.org.id)
 
         result = self.client.get(url)
         result_dict = json.loads(result.content)
