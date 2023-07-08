@@ -65,7 +65,7 @@ angular.module('BE.seed.service.ubid', [])
       };
 
       ubid_factory.get_ubid_models_by_state = (view_id, state_type) => {
-        return $http.post('/api/v3/ubid/ubids_by_state/', {
+        return $http.post('/api/v3/ubid/ubids_by_view/', {
           view_id: view_id,
           type: state_type
         }, {

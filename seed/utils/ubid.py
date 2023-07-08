@@ -21,10 +21,17 @@ def centroid_wkt(state):
         return GEOSGeometry(state.centroid, srid=4326).wkt
 
 
+# Decode UBIDs from queryset or individual PropertyState/TaxLotState
 def decode_unique_ids(qs):
     # import here to prevent circular reference
     from seed.models.properties import PropertyState
     from seed.models.tax_lots import TaxLotState
+
+    # Turn individual states back into queryset
+    if isinstance(qs, PropertyState):
+        qs = PropertyState.objects.filter(id=qs.id)
+    elif isinstance(qs, TaxLotState):
+        qs = TaxLotState.objects.filter(id=qs.id)
 
     if len(qs) == 0:
         return True
@@ -34,12 +41,12 @@ def decode_unique_ids(qs):
 
     filtered_qs = qs.exclude(ubid__isnull=True)
 
-    for item in filtered_qs.iterator():
+    for state in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(item, 'ubid'))
+            bounding_box_obj = decode(getattr(state, 'ubid'))
         except ValueError:
-            _log.error(f'Could not decode UBID of {getattr(item, "ubid")}')
-            continue  # property with an incorrectly formatted UBID is skipped
+            _log.error(f"Could not decode UBID '{getattr(state, 'ubid')}'")
+            continue  # state with an incorrectly formatted UBID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
@@ -49,7 +56,7 @@ def decode_unique_ids(qs):
             f"{bounding_box_obj.longitudeLo} {bounding_box_obj.latitudeLo}, "
             f"{bounding_box_obj.longitudeHi} {bounding_box_obj.latitudeLo}))"
         )
-        item.bounding_box = bounding_box_polygon
+        state.bounding_box = bounding_box_polygon
 
         # Starting with the SE point, list the points in counter-clockwise order
         centroid_polygon = (
@@ -59,11 +66,11 @@ def decode_unique_ids(qs):
             f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, "
             f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))"
         )
-        item.centroid = centroid_polygon
+        state.centroid = centroid_polygon
 
-        item.latitude, item.longitude = bounding_box_obj.latlng()
+        state.latitude, state.longitude = bounding_box_obj.latlng()
 
-        item.save()
+        state.save()
 
 
 def get_jaccard_index(ubid1, ubid2):

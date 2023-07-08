@@ -547,7 +547,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(404, response.status_code)
         self.assertEqual('Not found.', response.json()['detail'])
 
-    def test_get_ubids_by_state(self):
+    def test_get_ubids_by_view(self):
         property_view = self.property_view_factory.get_property_view(state=self.property)
         property_view2 = self.property_view_factory.get_property_view()
 

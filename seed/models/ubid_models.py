@@ -6,10 +6,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from seed.models import PropertyState, TaxLotState
+from seed.utils.ubid import decode_unique_ids
 
 
 class UbidModel(models.Model):
@@ -18,23 +20,36 @@ class UbidModel(models.Model):
     taxlot = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, null=True)
     preferred = models.BooleanField(default=False)
 
+    class Meta:
+        # Two partial indexes to handle uniqueness with null values
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ubid', 'property_id'],
+                name='unique_ubid_for_property',
+                condition=Q(taxlot_id__isnull=True)
+            ),
+            models.UniqueConstraint(
+                fields=['ubid', 'taxlot_id'],
+                name='unique_ubid_for_taxlot',
+                condition=Q(property_id__isnull=True)
+            ),
+        ]
+
 
 @receiver(post_save, sender=UbidModel)
 def post_save_ubid_model(sender, **kwargs):
     """
-    update State.ubid for the preferred ubid
+    Update state.ubid for the preferred UBID
     """
-    instance = kwargs.get('instance')
-    if not instance or not instance.preferred:
-        return
-
-    if getattr(instance, 'property'):
-        state = instance.property
-    elif getattr(instance, 'taxlot'):
-        state = instance.taxlot
-
-    state.ubid = instance.ubid
-    state.save()
+    ubid_model: UbidModel = kwargs.get('instance')
+    state = ubid_model.property or ubid_model.taxlot
+    if ubid_model.preferred and state.ubid != ubid_model.ubid:
+        state.ubid = ubid_model.ubid
+        state.save()
+        decode_unique_ids(state)
+    elif not ubid_model.preferred and state.ubid == ubid_model.ubid:
+        state.ubid = None
+        state.save()
 
 
 @receiver(pre_delete, sender=UbidModel)
@@ -42,16 +57,8 @@ def pre_delete_ubid_model(sender, **kwargs):
     """
     If a preferred ubid is deleted, remove the state.ubid
     """
-    instance = kwargs.get('instance')
-    if not instance or not instance.preferred:
-        return
-
-    if getattr(instance, 'property'):
-        property = instance.property
-        property.ubid = None
-        property.save()
-
-    elif getattr(instance, 'taxlot'):
-        taxlot = instance.taxlot
-        taxlot.ubid = None
-        taxlot.save()
+    ubid_model: UbidModel = kwargs.get('instance')
+    if ubid_model.preferred:
+        state = ubid_model.property or ubid_model.taxlot
+        state.ubid = None
+        state.save()

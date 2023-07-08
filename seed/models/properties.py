@@ -14,6 +14,7 @@ from os import path
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError, models, transaction
+from django.db.models import Case, Value, When
 from django.db.models.signals import (
     m2m_changed,
     post_save,
@@ -49,6 +50,7 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
 
+from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -785,24 +787,32 @@ def post_save_property_state(sender, **kwargs):
     """
     Generate UbidModels for a PropertyState if the ubid field is present
     """
-    instance = kwargs.get('instance')
-    if not instance:
-        return
+    state: PropertyState = kwargs.get('instance')
 
-    ubid = getattr(instance, 'ubid')
+    ubid = getattr(state, 'ubid')
     if not ubid:
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
         return
 
-    preferred = not instance.ubidmodel_set.filter(preferred=True).exists()
-    matching_ubid = instance.ubidmodel_set.filter(property=instance, ubid=ubid)
-    if not matching_ubid:
-        ubid_details = {
-            'preferred': preferred,
-            'property': instance,
-            'ubid': ubid
-        }
-        ubid_model = instance.ubidmodel_set.create(**ubid_details)
-        logging.info(f'Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}')
+    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
+    if not ubid_model.exists():
+        # First set all others to non-preferred without calling save
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        # Add UBID and set as preferred
+        ubid_model = state.ubidmodel_set.create(
+            preferred=True,
+            ubid=ubid,
+        )
+        # Update lat/long/centroid
+        decode_unique_ids(state)
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+    elif ubid_model.filter(preferred=False).exists():
+        state.ubidmodel_set.update(
+            preferred=Case(
+                When(ubid=ubid, then=Value(True)),
+                default=Value(False),
+            )
+        )
 
 
 class PropertyView(models.Model):

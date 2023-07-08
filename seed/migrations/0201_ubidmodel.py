@@ -45,5 +45,13 @@ class Migration(migrations.Migration):
                 ('taxlot', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.taxlotstate')),
             ],
         ),
+        migrations.AddConstraint(
+            model_name='ubidmodel',
+            constraint=models.UniqueConstraint(condition=models.Q(('taxlot_id__isnull', True)), fields=('ubid', 'property_id'), name='unique_ubid_for_property'),
+        ),
+        migrations.AddConstraint(
+            model_name='ubidmodel',
+            constraint=models.UniqueConstraint(condition=models.Q(('property_id__isnull', True)), fields=('ubid', 'taxlot_id'), name='unique_ubid_for_taxlot'),
+        ),
         migrations.RunPython(backfill_ubids),
     ]

@@ -16,6 +16,8 @@ class UbidModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        if not data.get('property') and not data.get('taxlot'):
-            raise serializers.ValidationError('A UBID is required to have a Property or Taxlot')
+        has_property = 'property' in data
+        has_taxlot = 'taxlot' in data
+        if has_property == has_taxlot:
+            raise serializers.ValidationError('A UBID must have either a Property or Taxlot id')
         return data

@@ -462,7 +462,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
-        new record through a match and merge round within it's current Cycle.
+        new record through a match and merge round within its current Cycle.
         ---
         parameters:
             - name: organization_id
@@ -1001,7 +1001,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
-        round within it's current Cycle.
+        round within its current Cycle.
 
         - looks up the property view
         - casts it as a PropertyState
@@ -1090,9 +1090,6 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-
-                        # save the property view so that the datetime gets updated on the property.
-                        property_view.save()
                     else:
                         result.update({
                             'status': 'error',
