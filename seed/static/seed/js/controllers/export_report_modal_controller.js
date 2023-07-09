@@ -22,6 +22,8 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
     $scope.export_selected = function () {
       var filename = $scope.export_name;
 
+      if (!filename) return;
+
       var ext = '.xlsx';
       if (!_.endsWith(filename, ext)) filename += ext;
 

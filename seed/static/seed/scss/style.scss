@@ -4865,3 +4865,10 @@ ul.r-list {
     padding-top: 7px;
   }
 }
+
+.ubid-form {
+  input.ng-invalid {
+    background-color: #fff0f0;
+    border-color: #dd2c00;
+  }
+}

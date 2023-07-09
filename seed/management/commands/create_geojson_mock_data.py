@@ -90,7 +90,7 @@ class Command(BaseCommand):
             'CITY': 'City',
             'STATE': 'State',
             'ZIP': 'Postal Code',
-            'UBID': 'ULID',
+            'UBID': 'UBID',
         }
 
         property_mapping = {
