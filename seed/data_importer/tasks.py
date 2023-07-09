@@ -1704,7 +1704,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
-        ('ulid',),
+        ('ubid',),
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),

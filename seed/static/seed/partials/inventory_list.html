@@ -39,7 +39,9 @@
                     <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
                     <option value="open_refresh_metadata_modal" ng-disabled="selectedCount === 0" translate>Refresh Metadata</option>
                     <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
-                    <option value="open_ubid_modal" ng-disabled="selectedCount === 0" translate>Decode UBID/ULID</option>
+                    <option value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
+                    <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
+                    <option value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
                     <option value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
                 </optgroup>
                 <optgroup label="{$:: 'Options' | translate $}">
