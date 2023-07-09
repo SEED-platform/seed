@@ -31,12 +31,15 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
+    ASSESSED_RAW,
     AUDIT_USER_EDIT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Column,
     Cycle,
     ImportFile,
@@ -234,7 +237,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 id=import_file_id,
                 import_record__super_organization_id=org_id,
                 mapping_done=True,
-                source_type="Assessed Raw"
+                source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1]
             )
         except ImportFile.DoesNotExist:
             resp = {
@@ -247,7 +250,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             import_record=original_file.import_record,
             file=original_file.file,
             uploaded_filename=original_file.uploaded_filename,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
         )
 
         return JsonResponse({
@@ -627,16 +630,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         cycle_id = body.get('cycle_id')
+        multiple_cycle_upload = body.get('multiple_cycle_upload', False)
         if not cycle_id:
             return JsonResponse({
                 'status': 'error',
                 'message': 'must pass cycle_id of the cycle to save the data'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif cycle_id == 'year_ending':
-            _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'SEED is unable to parse year_ending at the moment'
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
             # find the cycle
@@ -644,6 +642,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             if cycle:
                 # assign the cycle id to the import file object
                 import_file.cycle = cycle
+                import_file.multiple_cycle_upload = multiple_cycle_upload
                 import_file.save()
             else:
                 return JsonResponse({
@@ -819,6 +818,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return {
             'status': 'success',
             'import_file_records': import_file.matching_results_data.get('import_file_records', None),
+            'multiple_cycle_upload': import_file.multiple_cycle_upload,
             'properties': {
                 'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),

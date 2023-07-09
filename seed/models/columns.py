@@ -221,10 +221,10 @@ class Column(models.Model):
             'column_description': 'Jurisdiction Property ID',
             'data_type': 'string',
         }, {
-            'column_name': 'ulid',
+            'column_name': 'ubid',
             'table_name': 'TaxLotState',
-            'display_name': 'ULID',
-            'column_description': 'ULID',
+            'display_name': 'UBID',
+            'column_description': 'UBID',
             'data_type': 'string',
         }, {
             'column_name': 'ubid',

@@ -15,4 +15,4 @@ SEED will make this attempt in the following cases:
 
 - On either the properties page or the tax lots page, you can select records and use the "Geocode Selected" button under the Actions menu.
 
-Note: Valid UBID (properties) or ULID (tax lots) values can be parsed to provide a latitude and longitude value. On import, UBID/ULID is used instead of MapQuest if available. On the inventory pages, there's a separate Action menu button to "Decode UBID/ULID for Selected".
+Note: Valid UBID (properties or tax lots) values can be parsed to provide a latitude and longitude value. On import, UBID is used instead of MapQuest if available. On the inventory pages, there's a separate Action menu button to "Decode UBID for Selected".

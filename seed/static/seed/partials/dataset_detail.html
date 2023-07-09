@@ -33,7 +33,7 @@
                             <tr ng-repeat="f in dataset.importfiles | orderBy: '-created'" class="file_to_import">
                                 <td class="data_file_name">{$:: f.name $}</td>
                                 <td class="dataset-detail-actions">
-                                    <a style="margin-right: 8px;" href="{$:: '/api/v3/media/' + f.file.split('/').slice(-2).join('/') $}" download="{$:: f.name $}">
+                                    <a style="margin-right: 8px;" href="{$:: downloadUrl(f) $}" download="{$:: f.name $}">
                                         <i class="fa fa-download" aria-hidden="true"></i>
                                     </a>
                                     <a class="delete_link" ng-click="confirm_delete(f)"><i class="fa fa-trash-o"></i></a>

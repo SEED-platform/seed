@@ -26,7 +26,7 @@
                             <label for="from-date">{$:: 'From date' | translate $}:</label>
 
                             <div class="input-group date-input" style="padding-right:20px;">
-                                <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                <input id="from-date" type="text" class="form-control" uib-datepicker-popup="yyyy-MM-dd" is-open="startDatePickerOpen" ng-model="new_cycle.start" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                                 <span class="input-group-btn">
                             <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
                         </span>
@@ -35,13 +35,13 @@
                         <div class="form-group">
                             <label for="to-date">{$:: 'To date' | translate $}:</label>
                             <div class="input-group date-input" style="padding-right:20px;">
-                                <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
+                                <input id="to-date" type="text" class="form-control" uib-datepicker-popup="yyyy-MM-dd" is-open="endDatePickerOpen" ng-model="new_cycle.end" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
                                 <span class="input-group-btn">
                                     <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                                 </span>
                             </div>
                         </div>
-                        <button id="btnCreateCycle" class="btn btn-primary" ng-disabled="newCycleForm.$invalid" translate>Create Cycle</button>
+                        <button id="btnCreateCycle" class="btn btn-primary" ng-disabled="newCycleForm.$invalid || invalidDates" translate>Create Cycle</button>
                         <div class="help-block">
                             <span class="has-error" ng-show="newCycleForm.name.$error.sdCheckCycleExists" translate>This cycle name is already taken.</span>
                         </div>
@@ -70,17 +70,17 @@
                             <span ng-show="!rowform.$visible">{$:: cycle.name $}</span>
                         </td>
                         <td>
-                            <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.start | date : 'MM-dd-yyyy' $}</span>
+                            <span editable-bsdate="::cycle.start" e-name="start" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)" e-is-open="opened.start" e-ng-click="open($event,'start')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.start | date : 'yyyy-MM-dd' $}</span>
+                            <span ng-show="!rowform.$visible">{$:: format_date(cycle.start) $}</span>
                         </td>
                         <td>
-                            <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="MM-dd-yyyy" e-required>{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
-                            <span ng-show="!rowform.$visible">{$:: cycle.end | date : 'MM-dd-yyyy' $}</span>
+                            <span editable-bsdate="::cycle.end" e-name="end" e-form="rowform" ng-show="rowform.$visible" onbeforesave="checkEditCycleDateBeforeSave(rowform, $data)" e-is-open="opened.end" e-ng-click="open($event,'end')" e-datepicker-popup="yyyy-MM-dd" e-required>{$:: cycle.end | date : 'yyyy-MM-dd' $}</span>
+                            <span ng-show="!rowform.$visible">{$:: format_date(cycle.end) $}</span>
                         </td>
                         <td style="text-align: right; white-space: nowrap">
-                            <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id, $index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
-                                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform" translate>save</button>
-                                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>cancel</button>
+                            <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
+                                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform" translate>Save</button>
+                                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>Cancel</button>
                             </form>
                             <div class="buttons" ng-show="!rowform.$visible">
                                 <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>Edit</button>
