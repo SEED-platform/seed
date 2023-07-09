@@ -85,7 +85,7 @@ class UbidViewTests(TestCase):
             self.assertAlmostEqual(coord[0], known_property_centroid[index][0])
             self.assertAlmostEqual(coord[1], known_property_centroid[index][1])
 
-    def test_decode_ubid_results_returns_a_summary_dictionary(self):
+    def test_decode_property_ubid_results_returns_a_summary_dictionary(self):
         property_none_details = self.property_state_factory.get_details()
         property_none_details["organization_id"] = self.org.id
         property_none = PropertyState(**property_none_details)
@@ -127,6 +127,7 @@ class UbidViewTests(TestCase):
             "-87.56021875000002 41.74504999999999))"
         )
         property_not_decoded = PropertyState(**property_not_decoded_details)
+        # When the property is saved with a UBID that is not in the UBID table it will be automatically decoded
         property_not_decoded.save()
 
         property_not_decoded_view = self.property_view_factory.get_property_view(state=property_not_decoded)
@@ -145,8 +146,8 @@ class UbidViewTests(TestCase):
 
         expectation = {
             "ubid_unpopulated": 1,
-            "ubid_successfully_decoded": 1,
-            "ubid_not_decoded": 1,
+            "ubid_successfully_decoded": 2,
+            "ubid_not_decoded": 0,
         }
 
         self.assertEqual(result_dict, expectation)
@@ -193,6 +194,7 @@ class UbidViewTests(TestCase):
             "-87.56021875000002 41.74504999999999))"
         )
         taxlot_not_decoded = TaxLotState(**taxlot_not_decoded_details)
+        # When the taxlot is saved with a UBID that is not in the UBID table it will be automatically decoded
         taxlot_not_decoded.save()
 
         taxlot_not_decoded_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_not_decoded)
@@ -211,8 +213,8 @@ class UbidViewTests(TestCase):
 
         expectation = {
             "ubid_unpopulated": 1,
-            "ubid_successfully_decoded": 1,
-            "ubid_not_decoded": 1,
+            "ubid_successfully_decoded": 2,
+            "ubid_not_decoded": 0,
         }
 
         self.assertEqual(result_dict, expectation)
@@ -413,7 +415,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(404, response.status_code)
         data = response.json()
         self.assertEqual('error', data['status'])
-        self.assertEqual('Ubid with id -1 does not exist', data['message'])
+        self.assertEqual('UBID with id -1 does not exist', data['message'])
 
     def test_create_endpoint(self):
         self.assertEqual(4, UbidModel.objects.count())
@@ -522,10 +524,10 @@ class UbidViewCrudTests(TestCase):
             }),
             content_type='application/json'
         )
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(422, response.status_code)
         data = response.json()
-        self.assertEqual('failed', data['status'])
-        self.assertEqual("Invalid field 'invalid' given. Accepted fields are ['id', 'ubid', 'property', 'taxlot', 'preferred']", data['message'])
+        self.assertEqual('error', data['status'])
+        self.assertEqual("Invalid field 'invalid' given. Accepted fields are ['ubid', 'preferred']", data['message'])
 
     def test_destroy_endpoint(self):
         # Valid id
@@ -552,7 +554,7 @@ class UbidViewCrudTests(TestCase):
         property_view2 = self.property_view_factory.get_property_view()
 
         response = self.client.post(
-            reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-ubids-by-view') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 'view_id': property_view.id,
                 'type': 'property'
@@ -579,16 +581,16 @@ class UbidViewCrudTests(TestCase):
 
         # invalid - missing data
         response = self.client.post(
-            reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-ubids-by-view') + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
         self.assertEqual(400, response.status_code)
-        self.assertEqual('failed', response.json()['status'])
-        self.assertEqual('A View ID and type (property or taxlot) are required', response.json()['message'])
+        self.assertEqual('error', response.json()['status'])
+        self.assertEqual('view_id and type (property or taxlot) are required', response.json()['message'])
 
         # invalid view id
         response = self.client.post(
-            reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-ubids-by-view') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 'view_id': -1,
                 'type': 'property'
@@ -596,12 +598,12 @@ class UbidViewCrudTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(404, response.status_code)
-        self.assertEqual('failed', response.json()['status'])
-        self.assertEqual('No ubids found for given inputs', response.json()['message'])
+        self.assertEqual('error', response.json()['status'])
+        self.assertEqual('View with id -1 does not exist', response.json()['message'])
 
         # invalid type
         response = self.client.post(
-            reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-ubids-by-view') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 'view_id': property_view.id,
                 'type': 'INVALID'
@@ -609,12 +611,12 @@ class UbidViewCrudTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(400, response.status_code)
-        self.assertEqual('failed', response.json()['status'])
-        self.assertEqual('A View ID and type (property or taxlot) are required', response.json()['message'])
+        self.assertEqual('error', response.json()['status'])
+        self.assertEqual('view_id and type (property or taxlot) are required', response.json()['message'])
 
         # property state has no ubids
         response = self.client.post(
-            reverse('api:v3:ubid-ubids-by-state') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:ubid-ubids-by-view') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
                 'view_id': property_view2.id,
                 'type': 'property'
@@ -644,7 +646,7 @@ class UbidModelSignalCreationTests(TestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
 
-    def test_create_ubid_from_property_state_singal(self):
+    def test_create_ubid_from_property_state_signal(self):
         self.assertEqual(0, UbidModel.objects.count())
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
@@ -678,7 +680,7 @@ class UbidModelSignalCreationTests(TestCase):
         self.assertEqual(4, UbidModel.objects.count())
         self.assertEqual(2, property1.ubidmodel_set.count())
         ubidx = UbidModel.objects.get(ubid='X+X-1-1-1-1')
-        self.assertFalse(ubidx.preferred)
+        self.assertTrue(ubidx.preferred)
         self.assertEqual(property1, ubidx.property)
         self.assertEqual(None, ubidx.taxlot)
 
@@ -715,7 +717,7 @@ class UbidModelSignalCreationTests(TestCase):
         self.assertEqual(3, UbidModel.objects.count())
         self.assertEqual(2, taxlot1.ubidmodel_set.count())
         ubidy = UbidModel.objects.get(ubid='Y+Y-1-1-1-1')
-        self.assertFalse(ubidy.preferred)
+        self.assertTrue(ubidy.preferred)
         self.assertEqual(taxlot1, ubidy.taxlot)
         self.assertEqual(None, ubidy.property)
 
