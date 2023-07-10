@@ -241,9 +241,10 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
-            for (k, v) in obj.property.access_level_instance.path.items():
-                obj_dict[k] = v
-
+            if this_cls == 'Property':
+                obj_dict.update(obj.property.access_level_instance.get_path())
+            else:
+                obj_dict.update(obj.taxlot.access_level_instance.get_path())
             # This is only applicable to Properties since Tax Lots don't have meters
             if this_cls == 'Property':
                 obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
