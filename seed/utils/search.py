@@ -340,13 +340,13 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
             filter.is_negated
         )
         return updated_filter.to_q(filter_value), {}
-    else: 
+    else:
         column = columns_by_name.get(filter.field_name)
         is_related = column.get('related') if column is not None else None
 
     if column is None or is_related:
         return Q(), {}
-    
+
     column_name = column["column_name"]
     annotations: AnnotationDict = {}
     if column['is_extra_data']:
