@@ -323,11 +323,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     :return: query object
     """
     filter = QueryFilter.parse(filter_expression)
-    column = columns_by_name.get(filter.field_name)
     is_access_level_instance = filter.field_name in access_level_names
-
-    if (column is None or column['related']) and not is_access_level_instance:
-        return Q(), {}
 
     if is_access_level_instance:
         filter.operator = QueryFilterOperator.CONTAINS
@@ -344,7 +340,13 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
             filter.is_negated
         )
         return updated_filter.to_q(filter_value), {}
+    else: 
+        column = columns_by_name.get(filter.field_name)
+        is_related = column.get('related') if column is not None else None
 
+    if column is None or is_related:
+        return Q(), {}
+    
     column_name = column["column_name"]
     annotations: AnnotationDict = {}
     if column['is_extra_data']:
