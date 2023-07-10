@@ -383,6 +383,7 @@ class TestInventoryViewSearchParsers(TestCase):
         # evaluate the queryset -- no exception should be raised!
         list(cast_property_views)
 
+
 class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
 
     @classmethod
@@ -446,7 +447,7 @@ class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
         # !=""
         data = {
             '2nd gen__ne': '',
-            'cycle':self. fake_org.cycles.first().id,
+            'cycle': self. fake_org.cycles.first().id,
             'ids_only': 'false',
             'include_related': 'true',
             'order_by': '2nd gen',
