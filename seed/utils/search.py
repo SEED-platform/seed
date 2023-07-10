@@ -430,7 +430,6 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     :param columns: list of all valid Columns in dict format
     :return: filters, annotations and sorts
     """
-    access_level_names = [name.replace(' ', '_') for name in access_level_names]
     columns_by_name = {}
     for column in columns:
         if (column['related']):

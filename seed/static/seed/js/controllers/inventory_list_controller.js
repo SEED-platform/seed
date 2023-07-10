@@ -815,7 +815,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Add access level instances to grid
       $scope.organization.access_level_names.reverse().slice(0, -1).forEach((level) => {
-        console.log('level', level)
         $scope.columns.unshift({
           name: level,
           displayName: level,
@@ -1798,7 +1797,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         columnDefs: $scope.columns,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
-          console.log('gridApi', gridApi)
 
           _.delay($scope.updateHeight, 150);
 
