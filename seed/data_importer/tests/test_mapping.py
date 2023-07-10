@@ -305,6 +305,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
 
     def test_map_good_ah_data(self):
         # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
         self.state.extra_data["2nd Gen"] = "mom"
         self.state.extra_data["3rd Gen"] = "me"
         self.state.save()
@@ -328,6 +329,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
         self.import_record.save()
 
         # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
         self.state.extra_data["2nd Gen"] = "mom"
         self.state.extra_data["3rd Gen"] = None
         self.state.save()
@@ -350,6 +352,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
         self.import_record.save()
 
         # state has good AH info
+        self.state.extra_data["1st Gen"] = "root"
         self.state.extra_data["2nd Gen"] = "mom"
         self.state.extra_data["3rd Gen"] = "brother"
         self.state.save()
@@ -369,6 +372,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
 
     def test_map_ah_data_missing_columns(self):
         # state has missing AH info
+        self.state.extra_data["1st Gen"] = "root"
         # no 2nd Gen
         self.state.extra_data["3rd Gen"] = "me"
         self.state.save()
@@ -389,6 +393,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
 
     def test_map_ah_data_missing_value(self):
         # state has blank AH info
+        self.state.extra_data["1st Gen"] = "root"
         self.state.extra_data["2nd Gen"] = None
         self.state.extra_data["3rd Gen"] = "me"
         self.state.save()
@@ -409,6 +414,7 @@ class TestMappingAcccessLevelInstance(DataMappingBaseTestCase):
 
     def test_map_ah_data_bad_value(self):
         # state has bad AH info
+        self.state.extra_data["1st Gen"] = "root"
         self.state.extra_data["2nd Gen"] = "mom"
         self.state.extra_data["3rd Gen"] = "I dont exist"
         self.state.save()

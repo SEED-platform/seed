@@ -498,24 +498,26 @@ def _process_ali_data(model, import_file_ali):
     org_alns = model.organization.access_level_names
     extra_data = model.extra_data
 
+    # pull all the ali info out of model extra data
+    ali_info = {k: v for k, v in extra_data.items() if k in org_alns}
+    model.extra_data = {k: v for k, v in extra_data.items() if k not in ali_info}
+
     # if org only has root, just assign it to root, they won't have any ali info
     if AccessLevelInstance.objects.filter(organization=model.organization).count() <= 1:
         model.raw_access_level_instance = model.organization.root
         return
 
-    # pull all the ali info out of model extra data
-    ali_info = {k: v for k, v in extra_data.items() if k in org_alns}
-    model.extra_data = {k: v for k, v in extra_data.items() if k not in ali_info}
+    # clean ali_info
+    ali_info = {k: v for k, v in ali_info.items() if v is not None}
+    if not ali_info:
+        model.raw_access_level_instance_error = "Missing Access Level Column data."
+        return
 
     # ensure we have a valid set of keys, else error out
-    needed_keys = set(org_alns[1:len(ali_info) + 1])
+    needed_keys = set(org_alns[:len(ali_info)])
     if needed_keys != ali_info.keys():
         model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
         return
-
-    # clean ali_info
-    ali_info = {k: v for k, v in ali_info.items() if v is not None}
-    ali_info[org_alns[0]] = model.organization.root.name
 
     # try to get ali matching ali info within subtree
     paths_match = Q(path=ali_info)
@@ -536,8 +538,6 @@ def _process_ali_data(model, import_file_ali):
             model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
 
         return
-
-    # TODO: ensure they have access to ali
 
     # success!
     model.raw_access_level_instance = ali
