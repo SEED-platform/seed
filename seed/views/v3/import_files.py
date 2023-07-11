@@ -451,7 +451,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
-                tax_lot_dict["raw_access_level_instance"] = tax_lot.raw_access_level_instance
+                if tax_lot.raw_access_level_instance is not None:
+                    tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
                 tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
 
                 tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
