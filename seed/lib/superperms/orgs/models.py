@@ -413,8 +413,8 @@ def _assert_alns_are_valid(org):
 
     columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
     if columns_with_same_names.count() > 0:
-        repeated_names = columns_with_same_names.values_list("display_name", flat=True)
-        raise ValueError(f"Organiation's access_level_names must not be column names: {repeated_names}")
+        repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
+        raise ValueError(f"Organiation's access_level_names must not be column names: {list(repeated_names)}")
 
 
 def _update_alis_path_keys(org, previous_access_level_names):

@@ -33,7 +33,8 @@ class TestColumns(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org, _, _ = create_organization(self.fake_user)
+        self.fake_org, _, _ = create_organization(self.fake_user, org_name="test")
+        self.fake_org.save()
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
@@ -251,6 +252,17 @@ class TestColumns(TestCase):
             organization=org1
         )
         self.assertEqual(raw_column.column_name, raw_column.column_description)
+
+    def test_create_column_with_invalid_name(self):
+        with self.assertRaises(IntegrityError):
+            extra_data_column = Column.objects.create(
+                table_name='PropertyState',
+                column_name='test_column',
+                display_name=self.fake_org.access_level_names[0],
+                organization=self.fake_org,
+                is_extra_data=True,
+            )
+            extra_data_column.save()
 
 
 class TestRenameColumns(TestCase):
