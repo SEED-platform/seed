@@ -390,7 +390,6 @@ class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
     def setUpTestData(cls):
         cls.fake_user = User.objects.create(username='test')
         cls.fake_org, _, _ = create_organization(cls.fake_user)
-        cls.property_view_factory = FakePropertyViewFactory(organization=cls.fake_org)
 
         # populate tree
         cls.fake_org.access_level_names += ["2nd gen", "3rd_gen"]
@@ -403,7 +402,7 @@ class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
 
         cls.columns = Column.retrieve_all(org_id=cls.fake_org.id)
 
-    def test_filter_for_access_level_instances(self):
+    def test_filter_for_property_access_level_instances(self):
         # Standard
         data = {
             '2nd gen__icontains': 'b2',
@@ -443,7 +442,7 @@ class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
         self.assertEqual(act_filters, exp_filters)
         self.assertEqual(act_order_by, exp_order_by)
 
-    def test_filter_for_access_level_instance_empty(self):
+    def test_filter_for_property_access_level_instance_empty(self):
         # !=""
         data = {
             '2nd gen__ne': '',
@@ -480,6 +479,26 @@ class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
         act_filters, annotations, act_order_by = build_view_filters_and_sorts(filters, self.columns, 'property', self.fake_org.access_level_names)
         exp_filters = ~Q(property__access_level_instance__path__icontains='3rd_gen')
         exp_order_by = ['property__access_level_instance__path__3rd_gen']
+        self.assertEqual(act_filters, exp_filters)
+        self.assertEqual(act_order_by, exp_order_by)
+        self.assertEqual(annotations, {})
+
+    def test_filter_for_taxlot_access_level_instance(self):
+        data = {
+            '3rd_gen__exact': '',
+            'cycle': self.fake_org.cycles.first().id,
+            'ids_only': 'false',
+            'include_related': 'true',
+            'order_by': '3rd_gen',
+            'organization_id': '1',
+            'page': '1',
+            'per_page': '100'
+        }
+        filters = QueryDict('', mutable=True)
+        filters.update(data)
+        act_filters, annotations, act_order_by = build_view_filters_and_sorts(filters, self.columns, 'taxlot', self.fake_org.access_level_names)
+        exp_filters = ~Q(taxlot__access_level_instance__path__icontains='3rd_gen')
+        exp_order_by = ['taxlot__access_level_instance__path__3rd_gen']
         self.assertEqual(act_filters, exp_filters)
         self.assertEqual(act_order_by, exp_order_by)
         self.assertEqual(annotations, {})

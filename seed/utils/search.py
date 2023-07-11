@@ -463,6 +463,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], invent
                 is_null_filter_expression,
                 is_null_filter_value,
                 columns_by_name,
+                inventory_type,
                 access_level_names
             )
 
