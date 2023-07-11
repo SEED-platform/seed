@@ -310,7 +310,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict], access_level_names: list[str]) -> tuple[Q, AnnotationDict]:
+def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -327,7 +327,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
 
     if is_access_level_instance:
         filter.operator = QueryFilterOperator.CONTAINS
-        updated_expression = 'property__access_level_instance__path'
+        updated_expression = f'{inventory_type}__access_level_instance__path'
         filter.is_negated = True if filter_expression.endswith('__exact') else False
 
         if filter_expression.endswith('__icontains'):
@@ -367,7 +367,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     return updated_filter.to_q(new_filter_value), annotations
 
 
-def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], access_level_names: list[str]) -> tuple[Union[None, str], AnnotationDict]:
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]) -> tuple[Union[None, str], AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -390,12 +390,12 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict], acc
         else:
             return f'{direction}state__{column_name}', {}
     elif column_name in access_level_names:
-        return f'{direction}property__access_level_instance__path__{column_name}', {}
+        return f'{direction}{inventory_type}__access_level_instance__path__{column_name}', {}
     else:
         return None, {}
 
 
-def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access_level_names: list[str] = []) -> tuple[Q, AnnotationDict, list[str]]:
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
@@ -470,7 +470,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
             filter = QueryFilter.parse(filter_expression)
             column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
             if column_data_type in ['string', 'None']:
-                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name, access_level_names)
+                empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name, inventory_type, access_level_names)
 
                 if filter_expression.endswith('__ne'):
                     parsed_filters &= empty_string_parsed_filters
@@ -479,7 +479,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
                     parsed_filters |= empty_string_parsed_filters
 
         else:
-            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name, access_level_names)
+            parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name, inventory_type, access_level_names)
 
         new_filters &= parsed_filters
         annotations.update(parsed_annotations)
@@ -487,7 +487,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict], access
     order_by = []
 
     for sort_expression in filters.getlist('order_by', ['id']):
-        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name, access_level_names)
+        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name, inventory_type, access_level_names)
         if parsed_sort is not None:
             order_by.append(parsed_sort)
             annotations.update(parsed_annotations)
