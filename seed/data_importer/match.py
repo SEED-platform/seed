@@ -157,6 +157,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         ) = states_to_views(
             promoted_property_ids,
             org,
+            import_file.import_record.access_level_instance,
             import_file.cycle,
             PropertyState,
             sub_progress_key,
@@ -201,6 +202,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         ) = states_to_views(
             promoted_tax_lot_ids,
             org,
+            import_file.import_record.access_level_instance,
             import_file.cycle,
             TaxLotState,
             sub_progress_key,
@@ -383,7 +385,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     return promoted_ids, merges_within_file, errored_states
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key, merge_duplicates=False):
+def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, StateClass, sub_progress_key, merge_duplicates=False):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -494,10 +496,19 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 existing_view = ViewClass.objects.get(state_id=existing_state.id)
                 existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
 
+                # ensure that new ali and existing ali match and that we have access to existing ali.
                 new_ali = newer_state.raw_access_level_instance
-                if new_ali is not None and existing_obj.access_level_instance != new_ali:
-                    errored_merged_states.append(newer_state)
-                    continue
+                if new_ali is None:
+                    if not (
+                        existing_obj.access_level_instance == access_level_instance or
+                        existing_obj.access_level_instance.is_descendant_of(access_level_instance)
+                    ):
+                        errored_merged_states.append(newer_state)
+                        continue
+                else:
+                    if existing_obj.access_level_instance != new_ali:
+                        errored_merged_states.append(newer_state)
+                        continue
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)

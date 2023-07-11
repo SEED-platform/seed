@@ -36,6 +36,7 @@ class TestAHImportFile(DataMappingBaseTestCase):
         self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
         mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
         self.me_ali = self.org.add_new_access_level_instance(mom.id, "me")
+        self.sister = self.org.add_new_access_level_instance(mom.id, "sister")
         self.org.save()
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -415,8 +416,8 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.state = self.property_state_factory.get_property_state(**self.base_details)
         self.state.import_file = None
         self.state.save()
-        self.property = self.property_factory.get_property(access_level_instance=self.me_ali)
-        self.view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
+        self.existing_property = self.property_factory.get_property(access_level_instance=self.me_ali)
+        self.view = PropertyView.objects.create(property=self.existing_property, cycle=self.cycle, state=self.state)
 
     def test_duplicate_both_good(self):
         # Set Up
@@ -456,7 +457,37 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         self.assertEqual(Property.objects.count(), 1)
         self.assertEqual(PropertyState.objects.count(), 2)
 
-    def test_duplicate_one_bad(self):
+    def test_duplicate_both_good_but_no_access_to_existing(self):
+        # Set Up
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_duplicates_against_existing'] = 1
+        self.blank_result['property_new'] = 0
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # Only one Property
+        self.assertEqual(Property.objects.count(), 1)
+
+        # unmerged
+        self.assertEqual(PropertyState.objects.count(), 2)
+
+        # city unchanged
+        assert PropertyView.objects.count() == 1
+        pv = PropertyView.objects.first()
+        assert pv.state.city is None
+
+    def test_duplicate_incoming_error(self):
         # Set Up
         self.base_details["raw_access_level_instance_error"] = "uh oh"
         self.property_state_factory.get_property_state(**self.base_details)
@@ -476,6 +507,36 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         assert p.access_level_instance == self.me_ali
         assert PropertyState.objects.count() == 2
 
+    def test_duplicate_incoming_error_and_no_access_to_existing(self):
+        # Set Up
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        self.base_details["raw_access_level_instance_id"] = None
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_duplicates_against_existing'] = 1
+        self.blank_result['property_new'] = 0
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # Only one Property
+        self.assertEqual(Property.objects.count(), 1)
+
+        # unmerged
+        self.assertEqual(PropertyState.objects.count(), 2)
+
+        # city unchanged
+        assert PropertyView.objects.count() == 1
+        pv = PropertyView.objects.first()
+        assert pv.state.city is None
+
 
 class TestAHImportMatchExisting(TestAHImportFile):
     def setUp(self):
@@ -488,8 +549,8 @@ class TestAHImportMatchExisting(TestAHImportFile):
         self.state = self.property_state_factory.get_property_state(**self.base_details)
         self.state.data_state = DATA_STATE_MATCHING
         self.state.save()
-        self.property = self.property_factory.get_property(access_level_instance=self.me_ali)
-        self.view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
+        self.existing_property = self.property_factory.get_property(access_level_instance=self.me_ali)
+        self.view = PropertyView.objects.create(property=self.existing_property, cycle=self.cycle, state=self.state)
 
     def test_match_both_good(self):
         # Set Up
@@ -545,7 +606,38 @@ class TestAHImportMatchExisting(TestAHImportFile):
         pv = PropertyView.objects.first()
         assert pv.state.city is None
 
-    def test_match_one_bad(self):
+    def test_match_both_good_but_no_access_to_existing(self):
+        # Set Up
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_merges_against_existing_errors'] = 1
+        self.blank_result['property_new'] = 0
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # Only one Property
+        self.assertEqual(Property.objects.count(), 1)
+
+        # unmerged
+        self.assertEqual(PropertyState.objects.count(), 2)
+
+        # city unchanged
+        assert PropertyView.objects.count() == 1
+        pv = PropertyView.objects.first()
+        assert pv.state.city is None
+
+    def test_match_incoming_error(self):
         # Set Up
         self.base_details["raw_access_level_instance_error"] = "uh oh"
         self.base_details['city'] = 'Denver'    # so not duplicate
@@ -570,3 +662,34 @@ class TestAHImportMatchExisting(TestAHImportFile):
 
         # merged
         self.assertEqual(PropertyState.objects.count(), 3)
+
+    def test_match_incoming_error_and_no_access_to_existing(self):
+        # Set Up
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        self.base_details["raw_access_level_instance_id"] = None
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_merges_against_existing_errors'] = 1
+        self.blank_result['property_new'] = 0
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # Only one Property
+        self.assertEqual(Property.objects.count(), 1)
+
+        # unmerged
+        self.assertEqual(PropertyState.objects.count(), 2)
+
+        # city unchanged
+        assert PropertyView.objects.count() == 1
+        pv = PropertyView.objects.first()
+        assert pv.state.city is None
