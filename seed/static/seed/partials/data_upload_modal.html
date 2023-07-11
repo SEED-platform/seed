@@ -259,15 +259,23 @@
                     <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+                    <li ng-if="property_new_errors">{$:: 'New properties errors' | translate $}: {$ property_new_errors|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+                    <li ng-if="tax_lot_new_errors">{$:: 'New tax lots errors' | translate $}: {$ tax_lot_new_errors|number:0 $}</li>
                     <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+                    <li ng-if="property_merges_within_file_errors">{$:: 'Merged properties within import file errors' | translate $}: {$ property_merges_within_file_errors|number:0 $}</li>
                     <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_within_file_errors">{$:: 'Merged tax lots within import file errors' | translate $}: {$ tax_lot_merges_within_file_errors|number:0 $}</li>
                     <li ng-if="property_merges_against_existing">{$:: 'Merged properties against existing records' | translate $}: {$ property_merges_against_existing|number:0 $}</li>
+                    <li ng-if="property_merges_against_existing_errors">{$:: 'Merged properties against existing records errors' | translate $}: {$ property_merges_against_existing_errors|number:0 $}</li>
                     <li ng-if="tax_lot_merges_against_existing">{$:: 'Merged tax lots against existing records' | translate $}: {$ tax_lot_merges_against_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_against_existing_errors">{$:: 'Merged tax lots against existing records errors' | translate $}: {$ tax_lot_merges_against_existing_errors|number:0 $}</li>
                     <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
                     <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
                     <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="property_duplicates_within_file_errors">{$:: 'Ignored property duplicates within the import file errors' | translate $}: {$ property_duplicates_within_file_errors|number:0 $}</li>
                     <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_within_file_errors">{$:: 'Ignored tax lot duplicates within the import file errors' | translate $}: {$ tax_lot_duplicates_within_file_errors|number:0 $}</li>
                     <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
                     <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
 
@@ -306,15 +314,25 @@
                     <li>{$:: multipleCycleUpload ? 'default_cycle' : 'Cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+                    <li ng-if="property_new_errors">{$:: 'New properties errors' | translate $}: {$ property_new_errors|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+                    <li ng-if="tax_lot_new_errors">{$:: 'New tax lots errors' | translate $}: {$ tax_lot_new_errors|number:0 $}</li>
                     <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+                    <li ng-if="property_merges_within_file_errors">{$:: 'Merged properties within import file errors' | translate $}: {$ property_merges_within_file_errors|number:0 $}</li>
                     <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_within_file_errors">{$:: 'Merged tax lots within import file errors' | translate $}: {$ tax_lot_merges_within_file_errors|number:0 $}</li>
                     <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
+                    <li ng-if="property_merges_between_existing_errors">{$:: 'Merged properties between existing records errors' | translate $}: {$ property_merges_between_existing_errors|number:0 $}</li>
                     <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_between_existing_errors">{$:: 'Merged tax lots between existing records errors' | translate $}: {$ tax_lot_merges_between_existing_errors|number:0 $}</li>
                     <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="property_duplicates_within_file_errors">{$:: 'Ignored property duplicates within the import file errors' | translate $}: {$ property_duplicates_within_file_errors|number:0 $}</li>
                     <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_within_file_errors">{$:: 'Ignored tax lot duplicates within the import file errors' | translate $}: {$ tax_lot_duplicates_within_file_errors|number:0 $}</li>
                     <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
+                    <li ng-if="property_duplicates_against_existing_errors">{$:: 'Ignored duplicates of existing properties errors' | translate $}: {$ property_duplicates_against_existing_errors|number:0 $}</li>
                     <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_against_existing_errors">{$:: 'Ignored duplicates of existing tax lots errors' | translate $}: {$ tax_lot_duplicates_against_existing_errors|number:0 $}</li>
 
                     <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
                       <br>
