@@ -41,8 +41,8 @@ class TestColumns(TestCase):
 
         # Calling organization create like this will not generate the default
         # columns, which is okay for this test.
-        org1 = Organization.objects.create()
-        org2 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
+        org2 = Organization.objects.create(name="org2")
 
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
@@ -245,7 +245,7 @@ class TestColumns(TestCase):
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
     def test_column_has_description(self):
-        org1 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
             column_name='site_eui',

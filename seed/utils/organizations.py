@@ -104,7 +104,7 @@ def _create_default_columns(organization_id):
         Column.objects.create(**details)
 
 
-def create_organization(user=None, org_name='', *args, **kwargs):
+def create_organization(user=None, org_name='test_org', *args, **kwargs):
     """
     Helper script to create a user/org relationship from scratch. This is heavily used and
     creates the default labels, columns, and data quality rules when a new organization is created
