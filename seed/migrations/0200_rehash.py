@@ -10,34 +10,37 @@ from seed.data_importer.tasks import hash_state_object
 def rehash(apps, schema_editor):
     PropertyState = apps.get_model('seed', 'PropertyState')
     TaxLotState = apps.get_model('seed', 'TaxLotState')
+  
+    property_count = PropertyState.objects.count()
+    taxlot_count = TaxLotState.objects.count()
 
     with transaction.atomic():
         properties_updated = 0
         taxlots_updated = 0
 
-        property_states = PropertyState.objects.all()
-        print("Re-hashing %s Property States" % len(property_states))
-
-        for state in property_states:
+        print(f"Re-hashing {property_count} Property States ")
+        for idx, state in enumerate(PropertyState.objects.all().iterator()):
             old_hash = state.hash_object
             state.hash_object = hash_state_object(state)
             state.save(update_fields=['hash_object'])
             if state.hash_object != old_hash:
                 properties_updated += 1
+            if idx % 1000 == 0:
+                print(f"... {idx + 1} / {properties_updated} / {property_count} - cursor / updated / total  ...")
 
-        print("  %s Property State hashes updated" % properties_updated)
+        print(f"  {properties_updated} Property State hashes updated")
 
-        taxlot_states = TaxLotState.objects.all()
-        print("Re-hashing %s Tax Lot States" % len(taxlot_states))
-
-        for state in taxlot_states:
+        print(f"Re-hashing {taxlot_count} TaxLot States ")
+        for idx, state in enumerate(TaxLotState.objects.all().iterator()):
             old_hash = state.hash_object
             state.hash_object = hash_state_object(state)
             state.save(update_fields=['hash_object'])
             if state.hash_object != old_hash:
                 taxlots_updated += 1
+            if idx % 1000 == 0:
+                print(f"... {idx + 1} / {taxlots_updated} / {taxlot_count} - cursor / updated / total  ...")
 
-        print("  %s TaxLot State hashes updated" % taxlots_updated)
+        print(f"  {taxlots_updated} TaxLot State hashes updated")
 
 
 class Migration(migrations.Migration):
