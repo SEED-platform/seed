@@ -1074,7 +1074,7 @@ class AuthViewTests(TestCase):
             username='tester@be.com',
             email='tester@be.com',
         )
-        org_id, org_name, org_role = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')
@@ -1086,7 +1086,7 @@ class AuthViewTests(TestCase):
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
         # next available org as default or set to ''
-        org_id, org_name, org_role = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(other_user)
         self.assertEqual(org_id, '')
         self.assertEqual(org_name, '')
         self.assertEqual(org_role, '')
