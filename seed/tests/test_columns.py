@@ -33,15 +33,16 @@ class TestColumns(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
-        self.fake_org, _, _ = create_organization(self.fake_user)
+        self.fake_org, _, _ = create_organization(self.fake_user, org_name="test")
+        self.fake_org.save()
 
     def test_get_column_mapping(self):
         """Honor organizational bounds, get mapping data."""
 
         # Calling organization create like this will not generate the default
         # columns, which is okay for this test.
-        org1 = Organization.objects.create()
-        org2 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
+        org2 = Organization.objects.create(name="org2")
 
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
@@ -244,13 +245,24 @@ class TestColumns(TestCase):
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
     def test_column_has_description(self):
-        org1 = Organization.objects.create()
+        org1 = Organization.objects.create(name="org1")
         # Raw columns don't have a table name!
         raw_column = seed_models.Column.objects.create(
             column_name='site_eui',
             organization=org1
         )
         self.assertEqual(raw_column.column_name, raw_column.column_description)
+
+    def test_create_column_with_invalid_name(self):
+        with self.assertRaises(IntegrityError):
+            extra_data_column = Column.objects.create(
+                table_name='PropertyState',
+                column_name='test_column',
+                display_name=self.fake_org.access_level_names[0],
+                organization=self.fake_org,
+                is_extra_data=True,
+            )
+            extra_data_column.save()
 
 
 class TestRenameColumns(TestCase):

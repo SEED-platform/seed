@@ -1599,5 +1599,9 @@ def validate_model(sender, **kwargs):
     if 'raw' in kwargs and not kwargs['raw']:
         instance.full_clean()
 
+    if instance.display_name is not None and instance.organization is not None:
+        if instance.display_name in instance.organization.access_level_names:
+            raise IntegrityError("This display name is already an access level name and cannot be used.")
+
 
 pre_save.connect(validate_model, sender=Column)

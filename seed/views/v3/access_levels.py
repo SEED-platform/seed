@@ -173,7 +173,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         # save names
         org.access_level_names = new_access_level_names
-        org.save()
+        try:
+            org.save()
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e),
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         return org.access_level_names
 
