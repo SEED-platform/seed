@@ -12,6 +12,7 @@ from django.conf import settings
 from django.http import HttpResponseForbidden, JsonResponse
 from rest_framework import status
 
+from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -223,18 +224,30 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hierarchy_access(request, property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None, *args, **kwargs):
+def assert_hierarchy_access(request, property_view_id_kwarg=None, body_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, body_ali_id=None, body_import_file_id=None, *args, **kwargs):
     """Helper function to has_hierarchy_access"""
     if property_view_id_kwarg:
         property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
+        requests_ali = property_view.property.access_level_instance
+
+    elif body_property_view_id:
+        property_view = PropertyView.objects.get(pk=request.GET[body_property_view_id])
         requests_ali = property_view.property.access_level_instance
 
     elif taxlot_view_id_kwarg:
         taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
         requests_ali = taxlot_view.taxlot.access_level_instance
 
+    elif import_file_id_kwarg:
+        import_file = ImportFile.objects.get(pk=kwargs[import_file_id_kwarg])
+        requests_ali = import_file.access_level_instance
+
     elif body_ali_id:
         requests_ali = AccessLevelInstance.objects.get(pk=request.data[body_ali_id])
+
+    elif body_import_file_id:
+        import_file = ImportFile.objects.get(pk=request.data[body_import_file_id])
+        requests_ali = import_file.access_level_instance
 
     else:
         property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
@@ -248,17 +261,17 @@ def assert_hierarchy_access(request, property_view_id_kwarg=None, taxlot_view_id
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hierarchy_access(property_view_id_kwarg=None, taxlot_view_id_kwarg=None, body_ali_id=None):
+def has_hierarchy_access(property_view_id_kwarg=None, body_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, body_ali_id=None, body_import_file_id=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, body_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, taxlot_view_id_kwarg, body_ali_id, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, body_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 

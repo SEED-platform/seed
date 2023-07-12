@@ -166,6 +166,8 @@ class PropertyState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
     jurisdiction_property_id = models.TextField(null=True, blank=True)
 
@@ -367,7 +369,13 @@ class PropertyState(models.Model):
                     _log.error("Could not promote this property")
                     return None
             else:
-                prop = Property.objects.create(organization=self.organization)
+                if self.raw_access_level_instance is None:
+                    _log.error("Could not promote this property: no raw_access_level_instance")
+                    return None
+
+                prop = Property.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+                self.raw_access_level_instance = None
+                self.raw_access_level_instance_error = None
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 

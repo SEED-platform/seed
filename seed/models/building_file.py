@@ -16,6 +16,7 @@ from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
@@ -98,7 +99,9 @@ class BuildingFile(models.Model):
         """
         # sub-select the data that are needed to create the PropertyState object
         db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        create_data = {"organization_id": organization_id}
+        org = Organization.objects.get(pk=organization_id)
+        # TODO: allow user to choose ali
+        create_data = {"organization_id": organization_id, "raw_access_level_instance": org.root}
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later

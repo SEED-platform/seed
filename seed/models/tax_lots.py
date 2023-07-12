@@ -74,6 +74,8 @@ class TaxLotState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
 
@@ -144,7 +146,13 @@ class TaxLotState(models.Model):
             if self.organization is None:
                 _log.error("organization is None")
 
-            taxlot = TaxLot.objects.create(organization=self.organization)
+            if self.raw_access_level_instance is None:
+                _log.error("Could not promote this taxlot: no raw_access_level_instance")
+                return None
+
+            taxlot = TaxLot.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+            self.raw_access_level_instance = None
+            self.raw_access_level_instance_error = None
 
             tlv = TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=self)
 

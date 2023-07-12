@@ -57,13 +57,13 @@ class TestDemoV2(DataMappingBaseTestCase):
         )
 
         import_record_1 = ImportRecord.objects.create(
-            owner=user, last_modified_by=user, super_organization=org
+            owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
         import_file_1 = ImportFile.objects.create(import_record=import_record_1,
                                                   cycle=cycle)
 
         import_record_2 = ImportRecord.objects.create(
-            owner=user, last_modified_by=user, super_organization=org
+            owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
         import_file_2 = ImportFile.objects.create(import_record=import_record_2,
                                                   cycle=cycle)

@@ -260,6 +260,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'import_file_id': import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            "raw_access_level_instance_id": self.org.root.id,
         }
         self.property_state_factory.get_property_state(**base_details)
 
@@ -507,7 +508,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             property=property_1, cycle=self.cycle, state=state_1
         )
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "example-GreenButton-data.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
@@ -584,7 +585,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
     def test_properties_merge_without_losing_labels(self):
         # Create 3 Labels
@@ -1046,7 +1047,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # Give 2 meters to one of the properties
         gb_filename = "example-GreenButton-data.xml"
@@ -1507,7 +1508,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"

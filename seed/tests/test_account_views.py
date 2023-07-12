@@ -93,12 +93,12 @@ class AccountsViewTests(TestCase):
 
         # Now let's make sure that we pick up related buildings correctly.
         for x in range(10):
-            ps = PropertyState.objects.create(organization=self.org)
+            ps = PropertyState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ps.promote(self.cycle)
             ps.save()
 
         for x in range(5):
-            ts = TaxLotState.objects.create(organization=self.org)
+            ts = TaxLotState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ts.promote(self.cycle)
             ts.save()
 
@@ -1035,6 +1035,7 @@ class AuthViewTests(TestCase):
 
     def test_set_default_organization(self):
         """test seed.views.accounts.set_default_organization"""
+        org_user = OrganizationUser.objects.get(user=self.user)
         resp = self.client.put(
             reverse_lazy('api:v3:user-default-organization',
                          args=[self.user.id]) + f'?organization_id={self.org.pk}',
@@ -1045,7 +1046,7 @@ class AuthViewTests(TestCase):
             {
                 'status': 'success',
                 'user': {
-                    'id': self.user.pk,
+                    'id': org_user.id,
                     'access_level_instance': {'id': self.org.root.id, 'name': 'root'},
                 }
             })

@@ -223,7 +223,7 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             created_at=timezone.now(),
             last_modified_by=request.user,
             super_organization=org,
-            owner=request.user
+            owner=request.user, access_level_instance_id=request.access_level_instance_id
         )
 
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})

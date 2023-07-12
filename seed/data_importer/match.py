@@ -6,7 +6,6 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import datetime as dt
 import math
-from functools import reduce
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -89,17 +88,25 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     # Set defaults
     property_duplicates_against_existing_count = 0
     property_duplicates_within_file_count = 0
+    property_duplicates_within_file_errors = []
     property_merges_against_existing_count = 0
+    property_merges_against_existing_errors = []
     property_merges_between_existing_count = 0
     property_merges_within_file_count = 0
+    property_merges_within_file_errors = []
     property_new_count = 0
+    property_new_errors = []
 
     tax_lot_duplicates_against_existing_count = 0
     tax_lot_duplicates_within_file_count = 0
+    tax_lot_duplicates_within_file_errors = []
     tax_lot_merges_against_existing_count = 0
+    tax_lot_merges_against_existing_errors = []
     tax_lot_merges_between_existing_count = 0
     tax_lot_merges_within_file_count = 0
+    tax_lot_merges_within_file_errors = []
     tax_lot_new_count = 0
+    tax_lot_new_errors = []
 
     merged_linked_property_views = []
     merged_linked_taxlot_views = []
@@ -123,14 +130,14 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         if merge_duplicates:
             promoted_property_ids, property_duplicates_within_file_count = incoming_properties.values_list('id', flat=True), 0
         else:
-            promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
+            promoted_property_ids, property_duplicates_within_file_errors, property_duplicates_within_file_count = filter_duplicate_states(
                 incoming_properties,
                 sub_progress_key,
             )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
-        promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(
+        promoted_property_ids, property_merges_within_file_count, property_merges_within_file_errors = inclusive_match_and_merge(
             promoted_property_ids,
             org,
             PropertyState,
@@ -139,9 +146,18 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
-        merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count, property_merges_between_existing_count = states_to_views(
+        (
+            merged_property_views,
+            property_duplicates_against_existing_count,
+            property_new_count,
+            property_merges_against_existing_count,
+            property_merges_between_existing_count,
+            property_merges_against_existing_errors,
+            property_new_errors,
+        ) = states_to_views(
             promoted_property_ids,
             org,
+            import_file.import_record.access_level_instance,
             import_file.cycle,
             PropertyState,
             sub_progress_key,
@@ -159,14 +175,14 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
-        promoted_tax_lot_ids, tax_lot_duplicates_within_file_count = filter_duplicate_states(
+        promoted_tax_lot_ids, tax_lot_duplicates_within_file_errors, tax_lot_duplicates_within_file_count = filter_duplicate_states(
             incoming_tax_lots,
             sub_progress_key,
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start TaxLots inclusive_match_and_merge')
-        promoted_tax_lot_ids, tax_lot_merges_within_file_count = inclusive_match_and_merge(
+        promoted_tax_lot_ids, tax_lot_merges_within_file_count, tax_lot_merges_within_file_errors = inclusive_match_and_merge(
             promoted_tax_lot_ids,
             org,
             TaxLotState,
@@ -175,9 +191,18 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
-        merged_linked_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
+        (
+            merged_linked_taxlot_views,
+            tax_lot_duplicates_against_existing_count,
+            tax_lot_new_count,
+            tax_lot_merges_against_existing_count,
+            tax_lot_merges_between_existing_count,
+            tax_lot_merges_against_existing_errors,
+            tax_lot_new_errors,
+        ) = states_to_views(
             promoted_tax_lot_ids,
             org,
+            import_file.import_record.access_level_instance,
             import_file.cycle,
             TaxLotState,
             sub_progress_key,
@@ -204,17 +229,25 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         'property_initial_incoming': property_initial_incoming_count,
         'property_duplicates_against_existing': property_duplicates_against_existing_count,
         'property_duplicates_within_file': property_duplicates_within_file_count,
+        'property_duplicates_within_file_errors': len(property_duplicates_within_file_errors),
         'property_merges_against_existing': property_merges_against_existing_count,
+        'property_merges_against_existing_errors': len(property_merges_against_existing_errors),
         'property_merges_between_existing': property_merges_between_existing_count,
         'property_merges_within_file': property_merges_within_file_count,
+        'property_merges_within_file_errors': len(property_merges_within_file_errors),
         'property_new': property_new_count,
+        'property_new_errors': len(property_new_errors),
         'tax_lot_initial_incoming': tax_lot_initial_incoming_count,
         'tax_lot_duplicates_against_existing': tax_lot_duplicates_against_existing_count,
         'tax_lot_duplicates_within_file': tax_lot_duplicates_within_file_count,
+        'tax_lot_duplicates_within_file_errors': len(tax_lot_duplicates_within_file_errors),
         'tax_lot_merges_against_existing': tax_lot_merges_against_existing_count,
+        'tax_lot_merges_against_existing_errors': len(tax_lot_merges_against_existing_errors),
         'tax_lot_merges_between_existing': tax_lot_merges_between_existing_count,
         'tax_lot_merges_within_file': tax_lot_merges_within_file_count,
+        'tax_lot_merges_within_file_errors': len(tax_lot_merges_within_file_errors),
         'tax_lot_new': tax_lot_new_count,
+        'tax_lot_new_errored': len(tax_lot_new_errors),
     }
 
 
@@ -237,25 +270,48 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     sub_progress_data = update_sub_progress_total(4, sub_progress_key)
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
 
-    ids_grouped_by_hash = unmatched_states.\
+    states_grouped_by_hash = unmatched_states.\
         values('hash_object').\
-        annotate(duplicate_sets=ArrayAgg('id')).\
-        values_list('duplicate_sets', flat=True)
+        annotate(duplicate_sets=ArrayAgg('id'), duplicate_sets_ali=ArrayAgg('raw_access_level_instance_id'))
 
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+
+    # For group of states with the same ali, find and select the canonical_state
     # For consistency, take the first member of each of the duplicate sets
-    canonical_state_ids = [
-        ids.pop(ids.index(min(ids)))
-        for ids
-        in ids_grouped_by_hash
-    ]
+    canonical_state_ids = []
+    duplicate_state_ids = []
+    errors_state_ids = []
+    for states in states_grouped_by_hash:
+        states = [
+            {"id": id, "ali_id": ali_id} for id, ali_id
+            in zip(states["duplicate_sets"], states["duplicate_sets_ali"])
+        ]
+        states_with_ali = [s for s in states if s["ali_id"] is not None]
+        present_ali_ids = set(state["ali_id"] for state in states_with_ali)
+
+        # None have alis, just choose first
+        if len(present_ali_ids) == 0:
+            canonical_state = states[0]
+
+        # One ali! choose the first non-null
+        elif len(present_ali_ids) == 1:
+            canonical_state = states_with_ali[0]
+
+        # More than one ali was speficied! all are of these duplicates are invalid
+        else:
+            errors_state_ids += [s["id"] for s in states]
+            continue
+
+        canonical_state_ids.append(canonical_state["id"])
+        states.remove(canonical_state)
+        duplicate_state_ids += [s["id"] for s in states]
+
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
-    duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
     sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     sub_progress_data.finish_with_success()
-    return canonical_state_ids, duplicate_count
+    return canonical_state_ids, errors_state_ids, duplicate_count
 
 
 def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key):
@@ -295,6 +351,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
     # Collapse groups of matches found in the previous step into 1 -State per group
     merges_within_file = 0
+    errored_states = []
     priorities = Column.retrieve_priorities(org)
     batch_size = math.ceil(len(matched_id_groups) / 100)
     for idx, ids in enumerate(matched_id_groups):
@@ -303,6 +360,11 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
             promoted_ids += ids
         else:
             states = [s for s in StateClass.objects.filter(pk__in=ids).order_by('-id')]
+            raw_ali_ids = set(s.raw_access_level_instance for s in states if s.raw_access_level_instance is not None)
+            if len(raw_ali_ids) > 1:
+                errored_states += states
+                continue
+
             merge_state = states.pop()
 
             merges_within_file += len(states)
@@ -320,10 +382,10 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
 
-    return promoted_ids, merges_within_file
+    return promoted_ids, merges_within_file, errored_states
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key, merge_duplicates=False):
+def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, StateClass, sub_progress_key, merge_duplicates=False):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -424,12 +486,29 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     processed_views = []
     promoted_ids = []
     merged_state_ids = []
+    errored_merged_states = []
+    errored_new_states = []
     try:
         with transaction.atomic():
             batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
                 existing_view = ViewClass.objects.get(state_id=existing_state.id)
+                existing_obj = getattr(existing_view, "property" if table_name == 'PropertyState' else "taxlot")
+
+                # ensure that new ali and existing ali match and that we have access to existing ali.
+                new_ali = newer_state.raw_access_level_instance
+                if new_ali is None:
+                    if not (
+                        existing_obj.access_level_instance == access_level_instance or
+                        existing_obj.access_level_instance.is_descendant_of(access_level_instance)
+                    ):
+                        errored_merged_states.append(newer_state)
+                        continue
+                else:
+                    if existing_obj.access_level_instance != new_ali:
+                        errored_merged_states.append(newer_state)
+                        continue
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
@@ -445,9 +524,12 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
             batch_size = math.ceil(len(promote_states) / 100)
             for idx, state in enumerate(promote_states):
-                promoted_ids.append(state.id)
                 created_view = state.promote(cycle)
-                processed_views.append(created_view)
+                if created_view is None:
+                    errored_new_states.append(state)
+                else:
+                    promoted_ids.append(state.id)
+                    processed_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('Matching Data (5/6): Promoting States')
             sub_progress_data.finish_with_success()
@@ -465,7 +547,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         merge_state=MERGE_STATE_MERGED
     )
 
-    return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
+    return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count, errored_merged_states, errored_new_states
 
 
 def link_views(merged_views, ViewClass, sub_progress_key):

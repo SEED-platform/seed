@@ -101,7 +101,7 @@ class TestDataImport(DataMappingBaseTestCase):
         """Save mappings based on user specifications."""
         # Create new import file to test
         import_record = ImportRecord.objects.create(
-            owner=self.user, last_modified_by=self.user, super_organization=self.org
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
         )
         import_file = ImportFile.objects.create(
             import_record=import_record,
@@ -512,7 +512,9 @@ class TestMappingExampleData(DataMappingBaseTestCase):
 
         # Promote the PropertyState to a PropertyView
         pv1 = ps.promote(self.cycle)
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         pv2 = ps.promote(self.cycle)  # should just return the same object
+        ps.raw_access_level_instance = self.org.root  # un-clear it
         self.assertEqual(pv1, pv2)
 
         # promote the same state for a new cycle, same data

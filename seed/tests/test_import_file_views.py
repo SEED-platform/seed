@@ -10,11 +10,13 @@ import json
 import os
 import pathlib
 from datetime import datetime
+from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import get_current_timezone
 
+from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
@@ -45,8 +47,12 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+
+VALIDATION_API_URL = "https://buildingsync.net/api/validate"
+DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
+DEFAULT_USE_CASE = 'SEED'
 
 
 class TestSensorViewSet(DataMappingBaseTestCase):
@@ -93,7 +99,7 @@ class TestSensorViewSet(DataMappingBaseTestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # This file has multiple tabs
         filename = "example-sensor-metadata.xlsx"
@@ -172,7 +178,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
 
         # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"
@@ -464,7 +470,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_raw_column_names(self):
         """Make sure we get column names back in a format we expect."""
-        import_record = ImportRecord.objects.create(super_organization=self.org)
+        import_record = ImportRecord.objects.create(super_organization=self.org, access_level_instance=self.org.root)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_saved_format = ROW_DELIMITER.join(expected_raw_columns)
         import_file = ImportFile.objects.create(
@@ -486,7 +492,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_first_five_rows(self):
         """Make sure we get our first five rows back correctly."""
-        import_record = ImportRecord.objects.create(super_organization=self.org)
+        import_record = ImportRecord.objects.create(super_organization=self.org, access_level_instance=self.org.root)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_raw_rows = [
             ['02023', '12 Jefferson St.', 'etc.'],
@@ -606,7 +612,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_check_for_meters_tab_returns_true_when_meter_entries_tab_present(self):
         # create import file record with Meter Entries tab
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -629,7 +635,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present(self):
         # create import file record with Meter Entries tab
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "example-data-request-response.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -652,7 +658,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present_new_format(self):
         # create import file record with Meter Entries tab
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "example-data-request-response-new-format.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -675,7 +681,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_check_for_meters_tab_returns_false(self):
         # create import file record without either a Meter Entries or a Monthly Usage tab
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "portfolio-manager-sample.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -698,7 +704,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_check_for_meters_tab_returns_false_when_not_xlsx(self):
         # create import file record that's not an xlsx
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "san-jose-test-taxlots.csv"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -721,7 +727,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_post_reuse_inventory_file_for_meters_creates_new_import_file_based_on_the_same_file_and_returns_the_new_id(self):
         # create import file record with Meter Entries tab
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root)
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -814,10 +820,14 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         self.org, _, _ = create_organization(self.user, "test-organization-a")
         self.org_2, _, _ = create_organization()
 
-        self.import_record = ImportRecord.objects.create(owner=self.user,
-                                                         super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(
+            owner=self.user,
+            super_organization=self.org,
+            access_level_instance=self.org.root
+        )
         self.import_record_2 = ImportRecord.objects.create(owner=self.user,
-                                                           super_organization=self.org_2)
+                                                           super_organization=self.org_2,
+                                                           access_level_instance=self.org.root)
         self.import_file_1 = ImportFile.objects.create(import_record=self.import_record)
         self.import_file_2 = ImportFile.objects.create(import_record=self.import_record_2)
 
@@ -1056,3 +1066,330 @@ class TestViewsMatching(DataMappingBaseTestCase):
         #
         # # verify that the coparent id is now in the view
         # self.assertTrue(prop.exists())
+
+
+class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.import_record = ImportRecord.objects.create(
+            owner=self.root_owner_user,
+            super_organization=self.org,
+            access_level_instance=self.org.root,
+        )
+        self.import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="Assessed Raw",
+            mapping_done=True,
+            cached_first_row=ROW_DELIMITER.join(
+                ['name', 'address', 'year built', 'building id']
+            )
+        )
+        data_importer_data_dir = os.path.join(os.path.dirname(__file__), '..', 'data_importer', 'tests', 'data')
+        filename = getattr(self, 'filename', 'example-data-properties.xlsx')
+        filepath = os.path.join(data_importer_data_dir, filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=pathlib.Path(filepath).read_bytes()
+        )
+        self.import_file.save()
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        self.pm_property_id = '5766973'
+        property_details['pm_property_id'] = self.pm_property_id
+        self.state = PropertyState(**property_details)
+        self.state.save()
+
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property = self.property_factory.get_property()
+        self.property_view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
+
+    def test_import_file_retrieve(self):
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        # root users can get import file
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_check_meters_tab_exists(self):
+        url = reverse("api:v3:import_files-check-meters-tab-exists", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_reuse_inventory_file_for_meters(self):
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-reuse-inventory-file-for-meters') + '?organization_id=' + str(self.org.id)
+        data = json.dumps({"import_file_id": self.import_file.id})
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data=data, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data=data, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_first_five_rows(self):
+        tasks.save_raw_data(self.import_file.pk)
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_raw_column_names(self):
+        url = reverse_lazy("api:v3:import_files-raw-column-names", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_mapping_results(self):
+        url = reverse_lazy("api:v3:import_files-mapping-results", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_pm_meters_preview(self):
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=pathlib.Path(filepath).read_bytes()
+        )
+        self.import_file.save()
+        url = reverse_lazy("api:v3:import_files-pm-meters-preview", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_sensor_readings_preview(self):
+        filename = "example-sensor-readings.csv"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=pathlib.Path(filepath).read_bytes()
+        )
+        self.import_file.save()
+        url = reverse_lazy("api:v3:import_files-sensor-readings-preview", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_sensors_preview(self):
+        filename = "example-sensor-metadata.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=pathlib.Path(filepath).read_bytes()
+        )
+        self.import_file.save()
+        url = reverse('api:v3:import_files-sensors-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        url += f'&view_id={self.property_view.id}'
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_greenbutton_meters_preview(self):
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=pathlib.Path(filepath).read_bytes()
+        )
+        self.import_file.save()
+        url = reverse('api:v3:import_files-greenbutton-meters-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        url += f'&view_id={self.property_view.id}'
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_destroy(self):
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can get import file
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_import_file_mapping_done(self):
+        url = reverse("api:v3:import_files-mapping-done", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_matching_and_geocoding_results(self):
+        url = reverse_lazy("api:v3:import_files-matching-and-geocoding-results", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_mapping_suggestions(self):
+        url = reverse_lazy("api:v3:import_files-mapping-suggestions", args=[self.import_file.pk])
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, {'organization_id': self.org.id}, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_start_save_data(self):
+        url = reverse_lazy("api:v3:import_files-start-save-data", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_start_data_quality_checks(self):
+        url = reverse_lazy("api:v3:import_files-start-data-quality-checks", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_start_system_matching_and_geocoding(self):
+        url = reverse_lazy("api:v3:import_files-start-system-matching-and-geocoding", args=[self.import_file.pk])
+        data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, data, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_map(self):
+        url = reverse("api:v3:import_files-map", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_import_file_validate_use_cases(self):
+        url = reverse("api:v3:import_files-validate-use-cases", args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk)
+
+        with patch('seed.data_importer.tasks._validate_use_cases', return_value=None):
+            # root users can
+            self.login_as_root_member()
+            response = self.client.post(url, content_type='application/json')
+            assert response.status_code == 200
+
+            # child user cannot
+            self.login_as_child_member()
+            response = self.client.post(url, content_type='application/json')
+            assert response.status_code == 404
