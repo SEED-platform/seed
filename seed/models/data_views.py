@@ -25,11 +25,11 @@ class DataView(models.Model):
     cycles = models.ManyToManyField(Cycle)
     filter_groups = models.ManyToManyField(FilterGroup)
 
-    def get_inventory(self):
-        views_by_filter_group_id, _ = self.views_by_filter()
+    def get_inventory(self, user_ali):
+        views_by_filter_group_id, _ = self.views_by_filter(user_ali)
         return views_by_filter_group_id
 
-    def views_by_filter(self):
+    def views_by_filter(self, user_ali):
         filter_group_views = {}
         views_by_filter_group_id = {}
         for filter_group in self.filter_groups.all():
@@ -38,8 +38,8 @@ class DataView(models.Model):
             query_dict = QueryDict(mutable=True)
             query_dict.update(filter_group.query_dict)
             for cycle in self.cycles.all():
-                filter_views = self._get_filter_group_views(cycle, query_dict)
-                label_views = self._get_label_views(cycle, filter_group)
+                filter_views = self._get_filter_group_views(cycle, query_dict, user_ali)
+                label_views = self._get_label_views(cycle, filter_group, user_ali)
                 views = self._combine_views(filter_views, label_views)
                 filter_group_views[filter_group.id][cycle.id] = views
                 for view in views:
@@ -48,7 +48,7 @@ class DataView(models.Model):
 
         return views_by_filter_group_id, filter_group_views
 
-    def evaluate(self, columns):
+    def evaluate(self, columns, user_ali):
         # RETURN VALUE STRUCTURE
 
         # meta: {data_view: data_view.id, organization: organization.id},
@@ -103,7 +103,7 @@ class DataView(models.Model):
             }
         }
 
-        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter()
+        response['views_by_filter_group_id'], views_by_filter = self.views_by_filter(user_ali)
 
         # assign data based on source column id
         for column in columns:
@@ -242,25 +242,29 @@ class DataView(models.Model):
         else:
             return list(filter_views)
 
-    def _get_label_views(self, cycle, filter_group):
+    def _get_label_views(self, cycle, filter_group, user_ali):
         if len(filter_group.labels.all()) == 0:
             return None
 
         logic = filter_group.label_logic
         labels = Label.objects.filter(id__in=filter_group.labels.all())
+        permissions_filter = {
+            "property__access_level_instance__lft__gte": user_ali.lft,
+            "property__access_level_instance__rgt__lte": user_ali.rgt,
+        }
 
         if logic == 0:  # and
             views_all = []
             for label in labels:
-                views = cycle.propertyview_set.filter(labels__in=[label])
+                views = cycle.propertyview_set.filter(labels__in=[label]).filter(**permissions_filter)
                 views_all.append(views)
             return list(set.intersection(*map(set, views_all)))
         elif logic == 1:  # or
-            return list(cycle.propertyview_set.filter(labels__in=labels))
+            return list(cycle.propertyview_set.filter(labels__in=labels).filter(**permissions_filter))
         elif logic == 2:  # exclude
-            return list(cycle.propertyview_set.exclude(labels__in=labels))
+            return list(cycle.propertyview_set.exclude(labels__in=labels).filter(**permissions_filter))
 
-    def _get_filter_group_views(self, cycle, query_dict):
+    def _get_filter_group_views(self, cycle, query_dict, user_ali):
         org_id = self.organization.id
         columns = Column.retrieve_all(
             org_id=org_id,
@@ -276,7 +280,12 @@ class DataView(models.Model):
 
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle)
+            .filter(
+                property__organization_id=org_id,
+                cycle=cycle,
+                property__access_level_instance__lft__gte=user_ali.lft,
+                property__access_level_instance__rgt__lte=user_ali.rgt,
+            )
         )
 
         views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
