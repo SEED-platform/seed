@@ -25,23 +25,23 @@ angular.module('BE.seed.controller.new_member_modal', [])
       $scope.access_level_tree = access_level_tree;
       $scope.level_names = level_names;
       $scope.level_name_index = null;
-      $scope.potental_level_instances = [];
+      $scope.potential_level_instances = [];
 
       /* Build out access_level_instances_by_depth recurrsively */
       access_level_instances_by_depth = {};
-      calcuate_access_level_instances_by_depth = function(tree, depth=1){
+      calculate_access_level_instances_by_depth = function(tree, depth=1){
         if (tree == undefined) return;
         if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
         tree.forEach(ali => {
           access_level_instances_by_depth[depth].push({id: ali.id, name: ali.data.name})
-          calcuate_access_level_instances_by_depth(ali.children, depth+1);
+          calculate_access_level_instances_by_depth(ali.children, depth+1);
         })
       }
-      calcuate_access_level_instances_by_depth(access_level_tree, 1);
+      calculate_access_level_instances_by_depth(access_level_tree, 1);
 
       $scope.change_selected_level_index = function(){
         new_level_instance_depth = parseInt($scope.level_name_index) + 1
-        $scope.potental_level_instances = access_level_instances_by_depth[new_level_instance_depth]
+        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
       }
 
       $scope.roles = [{

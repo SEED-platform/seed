@@ -261,7 +261,7 @@ angular.module('BE.seed.controller.menu', [])
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
-            $scope.menu.user.acceess_level_instance_name = user_service.get_access_level_instance().name;
+            $scope.menu.user.access_level_instance_name = user_service.get_access_level_instance().name;
             set_auth($scope.menu.user.organization.id);
           }).catch(function (error) {
             // user does not have an org
