@@ -1056,12 +1056,14 @@ class AuthViewTests(TestCase):
 
     def test__get_default_org(self):
         """test seed.views.main._get_default_org"""
-        org_id, org_name, org_role = _get_default_org(self.user)
+        org_id, org_name, org_role, ali_name, ali_id = _get_default_org(self.user)
 
         # check standard case
         self.assertEqual(org_id, self.org.id)
         self.assertEqual(org_name, self.org.name)
         self.assertEqual(org_role, 'owner')
+        self.assertEqual(ali_name, 'root')
+        self.assertEqual(ali_id, self.org.root.id)
 
         # check that the default org was set
         u = User.objects.get(pk=self.user.pk)
