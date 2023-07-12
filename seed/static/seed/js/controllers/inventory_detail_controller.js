@@ -123,9 +123,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      $scope.access_level_instance = $scope.inventory_type == 'properties' ?
-        inventory_payload.property.access_level_instance :
-        inventory_payload.taxlot.access_level_instance
+      const singular_type = $scope.inventory_type == 'properties' ? 'property' : 'taxlot'
+      $scope.ali_path = inventory_payload[singular_type].access_level_instance.path
+      // the first key in the path (<org name>: 'root') is not necessary to display
+      delete $scope.ali_path[$scope.organization.name]
 
       $scope.order_historical_items_with_scenarios = () => {
         $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
