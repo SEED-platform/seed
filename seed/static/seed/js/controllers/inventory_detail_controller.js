@@ -124,7 +124,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
       const singular_type = $scope.inventory_type == 'properties' ? 'property' : 'taxlot'
-      $scope.ali_path = inventory_payload[singular_type].access_level_instance.path
+      let ali = inventory_payload[singular_type].access_level_instance
+      $scope.ali_path = 'path' in ali ? ali.path : {}
       // the first key in the path (<org name>: 'root') is not necessary to display
       delete $scope.ali_path[$scope.organization.name]
 
