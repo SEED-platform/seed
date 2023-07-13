@@ -726,7 +726,7 @@ class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
         response = self.client.post(url, post_params, content_type='application/json')
         assert response.status_code == 200
 
-        # root member user can
+        # root member user cannot
         self.login_as_root_member()
         response = self.client.post(url, post_params, content_type='application/json')
         assert response.status_code == 403
@@ -745,7 +745,7 @@ class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
         response = self.client.put(url, post_params, content_type='application/json')
         assert response.status_code == 200
 
-        # root member user can
+        # root member user cannot
         self.login_as_root_member()
         response = self.client.put(url, post_params, content_type='application/json')
         assert response.status_code == 403
