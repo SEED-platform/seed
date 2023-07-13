@@ -126,10 +126,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       const ali = $scope.inventory_type == 'properties' ?
         inventory_payload.property.access_level_instance :
         inventory_payload.taxlot.access_level_instance
-      
+
       $scope.ali_path = {}
       if (typeof(ali) == 'object') {
-        $scope.ali_path = ali.path 
+        $scope.ali_path = ali.path
         // the first key in the path (<org name>: 'root') is not necessary to display
         delete $scope.ali_path[$scope.organization.name]
       }
