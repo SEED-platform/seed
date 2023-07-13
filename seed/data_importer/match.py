@@ -44,6 +44,7 @@ from seed.utils.match import (
     update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
+from seed.utils.ubid import get_jaccard_index, merge_ubid_models
 
 _log = get_task_logger(__name__)
 
@@ -330,7 +331,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     unmatched_state_ids = list(
         set(unmatched_state_ids) - set(promoted_ids)
     )
-
     # Group IDs by -States that match each other
     matched_id_groups = StateClass.objects.\
         filter(id__in=unmatched_state_ids).\
@@ -364,7 +364,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
-
     return promoted_ids, merges_within_file
 
 
@@ -439,22 +438,37 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
+
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
+        # compare ubids via jaccard index instead of a direct match, drop from matching criteria
+        check_jaccard = False
+        if 'ubid' in matching_criteria.keys():
+            check_jaccard = True if matching_criteria.get('ubid') else False
+            ubid = matching_criteria.pop('ubid')
+
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
-            **matching_criteria
+            **matching_criteria,
         )
-        count = existing_state_matches.count()
+
+        if check_jaccard:
+            existing_state_matches = [
+                state
+                for state in existing_state_matches
+                if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
+            ]
+
+        count = len(existing_state_matches)
 
         if count > 1:
             merged_between_existing_count += count
-            existing_state_ids = list(existing_state_matches.order_by('updated').values_list('id', flat=True))
+            existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
-            merge_state_pairs.append((existing_state_matches.first(), state))
+            merge_state_pairs.append((existing_state_matches[0], state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
@@ -478,6 +492,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
+                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
                 existing_view.state = merged_state
                 existing_view.save()
 
@@ -616,3 +631,13 @@ def save_state_match(state1, state2, priorities):
     merged_state.save()
 
     return merged_state
+
+
+def check_jaccard_match(ubid, state_ubid, ubid_threshold):
+    jaccard_index = get_jaccard_index(ubid, state_ubid)
+
+    # If threshold is 0 then it will match any UBID with overlap
+    if ubid_threshold == 0:
+        return jaccard_index > ubid_threshold
+    else:
+        return jaccard_index >= ubid_threshold

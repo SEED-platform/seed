@@ -114,6 +114,7 @@ class Column(models.Model):
         'updated',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
+    # These are columns that you cannot rename fields to
     EXCLUDED_RENAME_TO_FIELDS = [
         'lot_number',
         'latitude',
@@ -124,6 +125,7 @@ class Column(models.Model):
         'updated',
     ] + COLUMN_EXCLUDE_FIELDS
 
+    # These are column names that you can't rename at all
     EXCLUDED_RENAME_FROM_FIELDS = [
         'lot_number',
         'year_built',
@@ -131,26 +133,37 @@ class Column(models.Model):
         'taxlot_footprint',
     ] + COLUMN_EXCLUDE_FIELDS
 
-    # These are fields that should not be mapped to, ever.
+    # These are fields that should not be mapped to, ever. AKA Protected column fields
+    # for either PropertyState or TaxLotState. They will not be shown in the mapping
+    # suggestions.
     EXCLUDED_MAPPING_FIELDS = [
         'created',
         'extra_data',
         'lot_number',
         'normalized_address',
+        'geocoded_address',
+        'geocoded_postal_code',
+        'geocoded_side_of_street',
+        'geocoded_country',
+        'geocoded_state',
+        'geocoded_county',
+        'geocoded_city',
+        'geocoded_neighborhood',
         'updated',
     ]
 
-    # These are columns that should not be offered as suggestions during mapping
+    # These are columns that should not be offered as suggestions during mapping for
+    # properties and tax lots
     UNMAPPABLE_PROPERTY_FIELDS = [
         'created',
         'geocoding_confidence',
         'lot_number',
-        'updated'
+        'updated',
     ]
     UNMAPPABLE_TAXLOT_FIELDS = [
         'created',
         'geocoding_confidence',
-        'updated'
+        'updated',
     ]
 
     INTERNAL_TYPE_TO_DATA_TYPE = {
@@ -208,10 +221,10 @@ class Column(models.Model):
             'column_description': 'Jurisdiction Property ID',
             'data_type': 'string',
         }, {
-            'column_name': 'ulid',
+            'column_name': 'ubid',
             'table_name': 'TaxLotState',
-            'display_name': 'ULID',
-            'column_description': 'ULID',
+            'display_name': 'UBID',
+            'column_description': 'UBID',
             'data_type': 'string',
         }, {
             'column_name': 'ubid',

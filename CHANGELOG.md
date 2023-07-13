@@ -1,3 +1,41 @@
+# SEED Version 2.19.0
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Add Terms of Service by @kflemin in https://github.com/SEED-platform/seed/pull/4065
+* Multiple cycle upload by @anchapin in https://github.com/SEED-platform/seed/pull/4073
+* Add UBID relation to state by @perryr16 in https://github.com/SEED-platform/seed/pull/4074
+* Store additional geocoding results by @nllong in https://github.com/SEED-platform/seed/pull/4020
+### Improvements 📈
+* Move reports to insights page by @haneslinger in https://github.com/SEED-platform/seed/pull/4031
+* Direct to property insight on click of program overview column by @haneslinger in https://github.com/SEED-platform/seed/pull/4011
+* Add ranked sorting to insight property page by @haneslinger in https://github.com/SEED-platform/seed/pull/4030
+* Include x and y in property insights tables by @haneslinger in https://github.com/SEED-platform/seed/pull/4075
+* Add percentages to program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/4077
+* Add matching criteria to report export by @haneslinger in https://github.com/SEED-platform/seed/pull/4072
+### Maintenance 🧹
+* Bump django from 3.2.18 to 3.2.19 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4034
+* Improve inventory load times by @ebeers-png in https://github.com/SEED-platform/seed/pull/3990
+* Updated installation steps by @anchapin in https://github.com/SEED-platform/seed/pull/3987
+* Bump django-ses from 1.0.3 to 3.5.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4055
+* Bump requests from 2.28.0 to 2.31.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4056
+* Pin urllib3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4059
+* Remove OEP by @kflemin in https://github.com/SEED-platform/seed/pull/4109
+* Bump django from 3.2.19 to 3.2.20 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4128
+### Bug Fixes 🐛
+* Fix duplicate users per organization by @axelstudios in https://github.com/SEED-platform/seed/pull/4033
+* Require org id from endpoints with has_perm_class by @haneslinger in https://github.com/SEED-platform/seed/pull/4027
+* Remove sync salesforce button due to timeout by @kflemin in https://github.com/SEED-platform/seed/pull/4038
+* Fix column list profile GET request syntax by @ebeers-png in https://github.com/SEED-platform/seed/pull/3988
+* Prevent Automatically Serving Static `index.html` Files by @axelstudios in https://github.com/SEED-platform/seed/pull/4057
+* Fix User Creation Bugs by @axelstudios in https://github.com/SEED-platform/seed/pull/4094
+* Fix categorical data on reports scatter plot by @haneslinger in https://github.com/SEED-platform/seed/pull/4085
+* Fix ESPM Source Types by @axelstudios in https://github.com/SEED-platform/seed/pull/4096
+* Fix Download URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/4066
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.1...v2.19.0
+
 # SEED Version 2.18.1
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
 

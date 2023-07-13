@@ -1,0 +1,13 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="exportModalLabel">
+    <i ng-if="inventory_type === 'property'" class="fa fa-building-o"></i>
+    <i ng-if="inventory_type === 'taxlot'" class="fa fa-map-o"></i>
+    <span>UBIDs</span>
+  </h4>
+</div>
+<div class="modal-body">
+  <div ng-controller="ubid_admin_controller" ng-include="::urls.static_url + 'seed/partials/ubid_admin.html'"></div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+</div>
