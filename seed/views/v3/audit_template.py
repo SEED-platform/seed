@@ -29,3 +29,17 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'message': message
             }, status=400)
         return HttpResponse(response.text)
+    
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def get_buildings(self, request):
+        at = AuditTemplate(self.get_organization(self.request))
+        response, message = at.get_buildings()
+        if response is None:
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+        return HttpResponse(response.text)

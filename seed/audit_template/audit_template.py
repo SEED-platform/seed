@@ -38,6 +38,24 @@ class AuditTemplate(object):
             return None, f'Unexpected error from Audit Template: {e}'
 
         return response, ""
+        
+    def get_buildings(self):
+        print('get buildings')
+        token, message = self.get_api_token()
+        if not token:
+            return None, message
+        url = f'{self.API_URL}/rp/buildings'
+        headers = {}
+        # headers = {'accept': 'application/xml'}
+
+        try:
+            response = requests.request("GET", url, headers=headers)
+            if response.status_code !=200:
+                return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
+        except Exception as e:
+            return None, f'Unexpected error from Audit Template: {e}'
+
+        return response, ""
 
     def get_api_token(self):
         org = Organization.objects.get(pk=self.org_id)
@@ -64,3 +82,4 @@ class AuditTemplate(object):
             raise validation_client.ValidationClientException(f"Expected JSON response from Audit Template: {response.text}")
 
         return response_body['token'], ""
+

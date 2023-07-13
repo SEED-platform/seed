@@ -20,6 +20,16 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     };
 
+    const get_buildings = function (org_id) {
+      return $http.get([
+        '/api/v3/audit_template/get_buildings/?organization_id=', org_id
+      ].join('')).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data
+      })
+    }
+
     const update_building_with_xml = function (org_id, cycle_id, property_view_id, xml_string) {
       let body = new FormData();
       let blob = new Blob([xml_string], {type: 'text/xml'});
@@ -40,6 +50,7 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
 
     const analyses_factory = {
       'get_building_xml': get_building_xml,
+      'get_buildings': get_buildings,
       'update_building_with_xml': update_building_with_xml
     };
 
