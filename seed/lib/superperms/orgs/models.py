@@ -134,11 +134,13 @@ def set_path(sender, instance, **kwargs):
         previous = AccessLevelInstance.objects.get(pk=instance.id)
         if instance.name != previous.name:
             level_name = instance.organization.access_level_names[instance.depth - 1]
-            # update our path
-            instance.path[level_name] = instance.name
-            # update our children's path
-            for ali in instance.get_descendants():
-                ali.path[level_name] = instance.name
+            with transaction.atomic():
+                # update our path
+                instance.path[level_name] = instance.name
+                # update our children's path
+                for ali in instance.get_descendants():
+                    ali.path[level_name] = instance.name
+                    ali.save()
 
 
 class Organization(models.Model):
