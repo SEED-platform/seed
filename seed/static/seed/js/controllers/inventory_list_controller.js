@@ -1550,7 +1550,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
-            && !col.colDef.is_derived_column;
+            && !col.colDef.is_derived_column
+            && !col.colDef.group === 'access_level_instance';
         });
 
         // Ensure pinned ordering first
