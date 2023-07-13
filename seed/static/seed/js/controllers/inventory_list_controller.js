@@ -1546,7 +1546,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       function currentColumns () {
-        // Save all columns except first 3
+        // Save all columns except first 3 and Access Level Instances
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
