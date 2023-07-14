@@ -535,17 +535,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
-      $scope.show_access_level_instances = true
-      $scope.toggle_access_level_instances = function () {
-        $scope.show_access_level_instances = !$scope.show_access_level_instances
-        $scope.gridOptions.columnDefs.forEach((col) => {
-          if (col.group == 'access_level_instance') {
-            col.visible = $scope.show_access_level_instances
-          }
-        })
-        $scope.gridApi.core.refresh();
-      }
-
       $scope.loadLabelsForFilter = function (query) {
         // Find all labels associated with the current cycle.
         return _.filter($scope.labels, function (lbl) {
@@ -813,27 +802,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
 
-      // Add access level instances to grid
-      $scope.organization.access_level_names.reverse().slice(0, -1).forEach((level) => {
-        $scope.columns.unshift({
-          name: level,
-          displayName: level,
-          group: 'access_level_instance',
-          enableColumnMenu: true,
-          enableColumnMoving: false,
-          enableColumnResizing: true,
-          enableFiltering: true,
-          enableHiding: true,
-          enableSorting: true,
-          enablePinning: false,
-          exporterSuppressExport: true,
-          pinnedLeft: true,
-          visible: true,
-          width: 100,
-          cellClass: 'ali-cell',
-          headerCellClass: 'ali-header',
-        })
-      })
       // The meters_exist_indicator column is only applicable to properties
       if ($stateParams.inventory_type == 'properties') {
         $scope.columns.unshift({
@@ -1042,11 +1010,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
-        var visibleColumns = [
-          ..._.map($scope.columns, 'name'),
-          ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
-          ...$scope.organization.access_level_names
-        ]
+        var visibleColumns = _.map($scope.columns, 'name')
+          .concat(['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
           return obj;
@@ -1457,7 +1423,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
-          case 'toggle_access_level_instances': $scope.toggle_access_level_instances(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
           case 'update_salesforce': $scope.update_salesforce(selectedViewIds); break;
@@ -1546,12 +1511,11 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       function currentColumns () {
-        // Save all columns except first 3 and Access Level Instances
+        // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
-            && !col.colDef.is_derived_column
-            && !col.colDef.group === 'access_level_instance';
+            && !col.colDef.is_derived_column;
         });
 
         // Ensure pinned ordering first

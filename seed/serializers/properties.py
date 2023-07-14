@@ -27,9 +27,6 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
-from seed.serializers.access_level_instances import (
-    AccessLevelInstanceSerializer
-)
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
@@ -112,7 +109,6 @@ class PropertySerializer(serializers.ModelSerializer):
     updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
-    access_level_instance = AccessLevelInstanceSerializer(many=False, read_only=True)
 
     class Meta:
         model = Property

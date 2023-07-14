@@ -93,7 +93,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         exclude_derived=True,
     )
     try:
-        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database, inventory_type, org.access_level_names)
+        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
     except FilterException as e:
         return JsonResponse(
             {
@@ -117,7 +117,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             exclude_derived=True,
         )
         try:
-            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
+            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
         except FilterException as e:
             return JsonResponse(
                 {

@@ -88,7 +88,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.show_at_scenario_actions = true
 
 
-
       // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
@@ -123,16 +122,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
-      const ali = $scope.inventory_type == 'properties' ?
-        inventory_payload.property.access_level_instance :
-        inventory_payload.taxlot.access_level_instance
-
-      $scope.ali_path = {}
-      if (typeof(ali) == 'object') {
-        $scope.ali_path = ali.path
-        // the first key in the path (<org name>: 'root') is not necessary to display
-        delete $scope.ali_path[$scope.organization.name]
-      }
 
       $scope.order_historical_items_with_scenarios = () => {
         $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
