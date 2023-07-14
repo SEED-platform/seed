@@ -32,6 +32,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'uiGridConstants',
     'uploader_service',
     '$state',
+    'audit_template_service',
     'dataset_service',
     'mapping_service',
     'matching_service',
@@ -52,6 +53,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       uiGridConstants,
       uploader_service,
       $state,
+      audit_template_service,
       dataset_service,
       mapping_service,
       matching_service,
@@ -820,6 +822,26 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           data.push(row.join(','));
         });
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name);
+      }
+
+      $scope.import_audit_template_buildings = function () {
+        spinner_utility.show()
+        audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
+          console.log(response)
+          spinner_utility.hide()
+          response.forEach(data => {
+
+            audit_template_service.update_building_with_xml($scope.organization.id, $scope.selectedCycle.id, data.property_view, data.xml).then(result => {
+              console.log('pv ', data.property_view, ' updated')
+            })
+            
+          })
+          
+          //   $scope.close();
+          //   $scope.upload_from_file('upload_complete', null, null)
+          //   $scope.busy = false;
+          // });
+        })
       }
 
       /**

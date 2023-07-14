@@ -33,13 +33,19 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
-    @action(detail=True, methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def get_buildings(self, request):
+        cycle_id = self.request.query_params.get('cycle_id')
+        if not cycle_id:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Missing Cycle ID'
+            })
         at = AuditTemplate(self.get_organization(self.request))
-        response, message = at.get_buildings()
+        response, message = at.get_buildings(cycle_id)
         if response is None:
             return JsonResponse({
                 'success': False,
                 'message': message
             }, status=400)
-        return HttpResponse(response.text)
+        return HttpResponse(response)

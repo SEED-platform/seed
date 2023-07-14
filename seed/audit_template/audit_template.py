@@ -5,12 +5,15 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
+import json
+
 
 import requests
 from django.conf import settings
 
 from seed.building_sync import validation_client
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import PropertyView
 
 _log = logging.getLogger(__name__)
 
@@ -27,6 +30,9 @@ class AuditTemplate(object):
         token, message = self.get_api_token()
         if not token:
             return None, message
+        return self.get_building_xml(audit_template_building_id, token)
+    
+    def get_building_xml(self, audit_template_building_id, token):
         url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={token}'
         headers = {'accept': 'application/xml'}
 
@@ -39,14 +45,12 @@ class AuditTemplate(object):
 
         return response, ""
         
-    def get_buildings(self):
-        print('get buildings')
+    def get_buildings(self, cycle_id):
         token, message = self.get_api_token()
         if not token:
             return None, message
-        url = f'{self.API_URL}/rp/buildings'
-        headers = {}
-        # headers = {'accept': 'application/xml'}
+        url = f'{self.API_URL}/rp/buildings?token={token}'
+        headers = {'accept': 'application/xml'}
 
         try:
             response = requests.request("GET", url, headers=headers)
@@ -54,8 +58,17 @@ class AuditTemplate(object):
                 return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
         except Exception as e:
             return None, f'Unexpected error from Audit Template: {e}'
+        
+        at_buildings = response.json()
+        result = []
 
-        return response, ""
+        for b in at_buildings:
+            view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=b['id']).first()
+            if view:
+                xml, _ = self.get_building_xml(b['id'], token)
+                result.append({'property_view': view.id, 'xml': xml.text })
+
+        return json.dumps(result), ""
 
     def get_api_token(self):
         org = Organization.objects.get(pk=self.org_id)

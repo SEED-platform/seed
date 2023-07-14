@@ -20,9 +20,9 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     };
 
-    const get_buildings = function (org_id) {
+    const get_buildings = function (org_id, cycle_id) {
       return $http.get([
-        '/api/v3/audit_template/get_buildings/?organization_id=', org_id
+        '/api/v3/audit_template/get_buildings/?organization_id=', org_id, '&cycle_id=', cycle_id
       ].join('')).then(function (response) {
         return response.data;
       }).catch(function (response) {
