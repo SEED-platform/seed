@@ -450,7 +450,8 @@ class PortfolioManagerImport(object):
         _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
 
-    def update_template_report(self, template, start_month, start_year, end_month, end_year, property_ids):
+    # todo: delete this one
+    # def update_template_report(self, template, start_month, start_year, end_month, end_year, property_ids):
         """
         This method calls out to ESPM to update a specific template
 
