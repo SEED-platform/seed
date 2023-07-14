@@ -219,7 +219,7 @@ def _get_filter_group_views(org_id, cycles, query_dict, user_ali):
 
     annotations = {}
     try:
-        filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+        filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, 'property')
     except Exception:
         return JsonResponse({
             'status': 'error',
