@@ -829,19 +829,40 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
           console.log(response)
           spinner_utility.hide()
-          response.forEach(data => {
+          $scope.step.number = 18
+          let data = response.map(obj => ({ 'Property View': obj.property_view }))
+          let minRows = Math.min(data.length, 25)
+          setAtPropertyGrid(data, minRows)
 
-            audit_template_service.update_building_with_xml($scope.organization.id, $scope.selectedCycle.id, data.property_view, data.xml).then(result => {
-              console.log('pv ', data.property_view, ' updated')
-            })
-            
-          })
-          
-          //   $scope.close();
-          //   $scope.upload_from_file('upload_complete', null, null)
-          //   $scope.busy = false;
-          // });
+          // response.forEach(data => {
+
+          //   audit_template_service.update_building_with_xml($scope.organization.id, $scope.selectedCycle.id, data.property_view, data.xml).then(result => {
+          //     console.log('pv ', data.property_view, ' updated')
+          //   })
         })
+      }
+
+      const setAtPropertyGrid = (data, minRows) => {
+        $scope.atPropertySelectGridOptions = {
+          data: data,
+          columnDefs: [],
+          enableColumnMenus: false,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+          enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+          minRowsToShow: minRows,
+          rowHeight: '30px',
+          onRegisterApi: (gridApi) => {
+            $scope.gridApiAtPropertySelection = gridApi;
+            $scope.gridApiAtPropertySelection.core.on.rowsRendered($scope, function () {
+              $scope.gridApiAtPropertySelection.selection.selectAllRows();
+            })
+          }
+        }
+      }
+
+      $scope.update_buildings_from_audit_template = () => {
+        console.log('update_buildings_from_audit_template')
+        const selected_properties = $scope.gridApiAtPropertySelection.selection.getSelectedRows()
       }
 
       /**

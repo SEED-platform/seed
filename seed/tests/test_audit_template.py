@@ -7,9 +7,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import mock
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+from datetime import datetime
 
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
+from seed.test_helpers.fake import FakeCycleFactory
 
 
 class AuditTemplateViewTests(TestCase):
@@ -26,10 +29,16 @@ class AuditTemplateViewTests(TestCase):
         self.org.audit_template_user = "fake at user"
         self.org.audit_template_password = "fake at password"
         self.org.save()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        )
 
         self.client.login(**self.user_details)
 
-        self.get_building_url = reverse('api:v3:audit_template-get-building-xml', args=["1"])
+        self.get_building_url = reverse('api:v3:audit_template-get-building-xml', args=['1'])
+        self.get_buildings_url = reverse('api:v3:audit_template-get-buildings')
 
         self.good_authenticate_response = mock.Mock()
         self.good_authenticate_response.status_code = 200
@@ -46,6 +55,14 @@ class AuditTemplateViewTests(TestCase):
         self.bad_get_building_response = mock.Mock()
         self.bad_get_building_response.status_code = 400
         self.bad_get_building_response.content = "bad building response"
+
+        self.good_get_buildings_response = mock.Mock()
+        self.good_get_buildings_response.status_code = 200 
+        self.good_get_buildings_response.text = 'buildings response'
+
+        self.bad_get_buildings_response = mock.Mock()
+        self.bad_get_buildings_response.status_code = 200 
+        self.bad_get_buildings_response.text = 'bad buildings response'
 
     @mock.patch('requests.request')
     def test_get_building_xml_from_audit_template(self, mock_request):
@@ -95,4 +112,59 @@ class AuditTemplateViewTests(TestCase):
         self.assertEqual(
             response.json(),
             {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_get_building_response.content}'}
+        )
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template(self, mock_request):
+        # -- Act
+        mock_request.side_effect = [self.good_authenticate_response, self.good_get_buildings_response]
+        mock_buildings = mock.Mock()
+        mock_xml = mock.Mock()
+        mock_xml.text = 'text'
+        mock_buildings.side_effect = [{'property_view': 1, 'xml': mock_xml}]
+        breakpoint()
+        response = self.client.get(self.get_buildings_url, data={"organization_id": self.org.id, 'cycle_id':self.cycle.id})
+
+        # -- Assert
+        self.assertEqual(200, response.status_code, response.content)
+        self.assertEqual(response.content, b"buildings response")
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template_org_has_no_at_token(self, mock_request):
+        # -- Setup
+        self.org.at_organization_token = ""
+        self.org.save()
+
+        # -- Act
+        mock_request.side_effect = [self.good_authenticate_response, self.good_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={"organization_id": self.org.id, 'cycle_id':self.cycle.id})
+
+        # -- Assert
+        self.assertEqual(400, response.status_code, response.content)
+        self.assertEqual(response.json(), {'message': "An Audit Template organization token, user email and password are required!", 'success': False})
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template_bad_at_authentication_response(self, mock_request):
+        # -- Act
+        mock_request.side_effect = [self.bad_authenticate_response, self.good_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={"organization_id": self.org.id, 'cycle_id':self.cycle.id})
+
+        # -- Assert
+        self.assertEqual(400, response.status_code, response.content)
+        self.assertEqual(
+            response.json(),
+            {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_authenticate_response.content}'}
+        )
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template_bad_at_get_buildings_response(self, mock_request):
+        # -- Act
+        mock_request.side_effect = [self.good_authenticate_response, self.bad_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={"organization_id": self.org.id, 'cycle_id':self.cycle.id})
+
+        # -- Assert
+        self.assertEqual(400, response.status_code, response.content)
+        self.assertEqual(
+            response.json(),
+            {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_get_buildings_response.content}'}
         )
