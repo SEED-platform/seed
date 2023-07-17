@@ -179,7 +179,6 @@ namespace
 natively
 netcat
 nginx
-NGINX
 nlong
 nodejs
 noncanonicalprojectbuildings
