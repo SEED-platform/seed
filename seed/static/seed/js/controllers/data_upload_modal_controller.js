@@ -828,11 +828,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         spinner_utility.show()
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
           console.log(response)
+          $scope.at_building_data = response
           spinner_utility.hide()
           $scope.step.number = 18
-          let data = response.map(obj => ({ 'Property View': obj.property_view }))
-          let minRows = Math.min(data.length, 25)
-          setAtPropertyGrid(data, minRows)
+          setAtPropertyGrid()
 
           // response.forEach(data => {
 
@@ -842,14 +841,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         })
       }
 
-      const setAtPropertyGrid = (data, minRows) => {
+      const setAtPropertyGrid = () => {
+        let gridData = $scope.at_building_data.map(obj => ({ 'Property View': obj.property_view }))
         $scope.atPropertySelectGridOptions = {
-          data: data,
+          data: gridData,
           columnDefs: [],
           enableColumnMenus: false,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
-          minRowsToShow: minRows,
+          minRowsToShow: Math.min($scope.at_building_data.length, 25),
           rowHeight: '30px',
           onRegisterApi: (gridApi) => {
             $scope.gridApiAtPropertySelection = gridApi;
@@ -862,7 +862,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       $scope.update_buildings_from_audit_template = () => {
         console.log('update_buildings_from_audit_template')
-        const selected_properties = $scope.gridApiAtPropertySelection.selection.getSelectedRows()
+        const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows().map(x => x['Property View']).sort()
+        const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
+        audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
+          console.log(response)
+          $scope.close();
+        })
       }
 
       /**

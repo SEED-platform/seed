@@ -48,10 +48,32 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     }
 
+    const batch_update_with_xml = function (org_id, cycle_id, property_xmls) {
+      bodies = new FormData();
+      property_xmls.forEach(data => {
+        let blob = new Blob([data.xml], { type: 'text/xml' });
+        bodies.append('files', blob, ['at_', new Date().getTime(), '.xml'].join(''));
+        bodies.append('file_types', 1);
+        bodies.append('property_views', data.property_view)
+      })
+      let headers = { 'Content-Type': undefined };
+
+      return $http.put([
+        '/api/v3/properties/batch_update_with_building_sync/?',
+        'cycle_id=', cycle_id, '&', 'organization_id=', org_id
+      ].join(''), bodies, { headers: headers },
+      ).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    }
+
     const analyses_factory = {
       'get_building_xml': get_building_xml,
       'get_buildings': get_buildings,
-      'update_building_with_xml': update_building_with_xml
+      'update_building_with_xml': update_building_with_xml,
+      'batch_update_with_xml': batch_update_with_xml
     };
 
     return analyses_factory;

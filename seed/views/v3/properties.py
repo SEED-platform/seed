@@ -1327,18 +1327,45 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         if len(request.FILES) == 0:
             return JsonResponse({
-                'success': False,
-                'message': "Must pass file in as a Multipart/Form post"
-            })
+            'success': False,
+            'message': "Must pass file in as a Multipart/Form post"
+        })
 
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = self.get_organization(request)
-        cycle_pk = request.query_params.get('cycle_id', None)
-        org_id = self.get_organization(self.request)
-
+        cycle_id = request.query_params.get('cycle_id', None)
+        
+        return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
+    
+    @swagger_auto_schema(
+    manual_parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.query_integer_field(
+            'cycle_id',
+            required=True,
+            description='ID of the cycle of the property view'
+        ),
+    ],
+    request_body=no_body,
+    )
+    @action(detail=False, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def batch_update_with_building_sync(self, request):
+        organization_id = self.get_organization(request)
+        cycle_id = request.query_params.get('cycle_id', None)
+        resy = []
+        for file, view_id in zip(request.data.getlist('files'), request.data.getlist('property_views')):
+            resy.append(self._update_with_building_sync(file, 1, organization_id, cycle_id, view_id))
+        logging.error('>>> resy %s', resy)
+        return JsonResponse({
+            'success': True,
+            'message': 'updated buildings'
+        })
+        
+    def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id):
         try:
-            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+            cycle = Cycle.objects.get(pk=cycle_id, organization_id=organization_id)
         except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -1350,7 +1377,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             # if the cycle was not within the user's organization
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
-            ).get(pk=pk, cycle_id=cycle_pk)
+            ).get(pk=view_id, cycle_id=cycle_id)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
@@ -1385,6 +1412,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
