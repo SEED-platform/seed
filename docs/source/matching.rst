@@ -76,8 +76,8 @@ So when searches for links do happen, ambiguous cases have already been resolved
 
 For an individual record, these are the following cases in which a
 match-merge-link is automatically run:
-1. Explicit triggering (from the Propery/TaxLot Detail page)
-2. After editing (in the Propery/TaxLot Detail page)
+1. Explicit triggering (from the Property/TaxLot Detail page)
+2. After editing (in the Property/TaxLot Detail page)
 3. After manual merging (in the Properties/Tax Lots list page). Explicitly
 specified merges happen as chosen by the user. Then, if the resulting record has
 matches, merges and/or linking happens.

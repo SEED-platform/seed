@@ -102,7 +102,7 @@ def _save_geocoding_results(id_geocoding_results, buildings_to_geocode, org):
     Args:
         id_geocoding_results (list): list of geocoded results
         buildings_to_geocode (list): list of buildings to geocode
-        org (Organiztion): The organization that the results are to be saved to
+        org (Organization): The organization that the results are to be saved to
     """
     new_columns = [
         {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},

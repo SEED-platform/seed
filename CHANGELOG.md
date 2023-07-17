@@ -112,7 +112,7 @@
 ### Improvements 📈
 * Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
 ### Maintenance 🧹
-* Improve NGINX security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+* Improve nginx security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
 
@@ -130,7 +130,7 @@
 ### Maintenance 🧹
 * Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
 * Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
-* Fix Nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+* Fix NGINX Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
 ### Bug Fixes 🐛
 * Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
 * Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
