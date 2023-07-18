@@ -226,7 +226,7 @@ def cache_match_merge_link_result(summary, identifier, progress_key):
 
 
 class OrganizationViewSet(viewsets.ViewSet):
-    # allow using `pk` in url path for authorization (ie for has_perm_class)
+    # allow using `pk` in url path for authorization (i.e., for has_perm_class)
     authz_org_id_kwarg = 'pk'
 
     @ajax_request_class

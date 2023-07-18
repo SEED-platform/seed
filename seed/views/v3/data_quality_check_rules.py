@@ -57,7 +57,7 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     pagination_class = None
     permission_classes = (SEEDOrgPermissions,)
 
-    # allow nested_organization_id to be used for authorization (ie in has_perm_class)
+    # allow nested_organization_id to be used for authorization (i.e., in has_perm_class)
     authz_org_id_kwarg = 'nested_organization_id'
 
     def get_queryset(self):

@@ -1329,7 +1329,7 @@ def geocode_and_match_buildings_task(file_pk):
 
     # If multiple cycle upload, split properties by cycle
     # and map each cycle individually
-    # Todo: add a status to import_file to indicate multiple cycle upload
+    # TODO: add a status to import_file to indicate multiple cycle upload
     # maybe add new source_type Assessed Raw Multiple Cycle?
     if import_file.multiple_cycle_upload:
         # Create a dictionary to store the property_state_ids_by_cycle.
@@ -1365,8 +1365,7 @@ def geocode_and_match_buildings_task(file_pk):
         property_state_ids_by_cycle = None
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(
-            _map_additional_models.si(id_chunk, file_pk, progress_data.key)
-            for id_chunk in id_chunks
+            _map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks
         )
 
     progress_data.total = (

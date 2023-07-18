@@ -39,9 +39,9 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
 
-    def test_get_propery_measure(self):
+    def test_get_property_measure(self):
         """
-        Test PropertyMeasure view can retrieve all or individual ProperyMeasure model instances
+        Test PropertyMeasure view can retrieve all or individual PropertyMeasure model instances
         """
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
@@ -128,7 +128,7 @@ class TestPropertyMeasures(DeleteModelsTestCase):
 
     def test_update_property_measure(self):
         """
-        Test PropertyMeasure view can update a ProperyMeasure model instances
+        Test PropertyMeasure view can update a PropertyMeasure model instances
         """
         property_view = self.property_view_factory.get_property_view()
         property_state = property_view.state
