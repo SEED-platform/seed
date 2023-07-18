@@ -30,6 +30,21 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             }, status=400)
         return HttpResponse(response.text)
     
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @has_perm_class('can_view_data')
+    @action(detail=False, methods=['PUT'])
+    def batch_get_building_xml(self, request):
+        properties = request.data
+        at = AuditTemplate(self.get_organization(self.request))
+        result = at.batch_get_building_xml(properties)
+        response, message = result.get()
+
+        if response is None:
+            return JsonResponse({
+            'success': False,
+            'message': message
+        }, status=400)
+        return HttpResponse(response)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
@@ -42,7 +57,8 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Missing Cycle ID'
             })
         at = AuditTemplate(self.get_organization(self.request))
-        response, message = at.get_buildings(cycle_id)
+        result = at.get_buildings(cycle_id)
+        response, message = result.get()
         if response is None:
             return JsonResponse({
                 'success': False,

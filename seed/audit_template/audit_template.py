@@ -10,6 +10,7 @@ import json
 
 import requests
 from django.conf import settings
+from celery import shared_task
 
 from seed.building_sync import validation_client
 from seed.lib.superperms.orgs.models import Organization
@@ -52,23 +53,17 @@ class AuditTemplate(object):
         url = f'{self.API_URL}/rp/buildings?token={token}'
         headers = {'accept': 'application/xml'}
 
-        try:
-            response = requests.request("GET", url, headers=headers)
-            if response.status_code !=200:
-                return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
-        except Exception as e:
-            return None, f'Unexpected error from Audit Template: {e}'
-        
-        at_buildings = response.json()
-        result = []
+        return _get_buildings.delay(cycle_id, url, headers)
+    
+    def batch_get_building_xml(self, properties):
+        token, message = self.get_api_token()
+        if not token:
+            return None, message
+        url = f'{self.API_URL}/rp/buildings?token={token}'
+        headers = {'accept': 'application/xml'}
 
-        for b in at_buildings:
-            view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=b['id']).first()
-            if view:
-                xml, _ = self.get_building_xml(b['id'], token)
-                result.append({'property_view': view.id, 'xml': xml.text })
+        return _batch_get_building_xml.delay(self.org_id, token, properties)
 
-        return json.dumps(result), ""
 
     def get_api_token(self):
         org = Organization.objects.get(pk=self.org_id)
@@ -96,3 +91,36 @@ class AuditTemplate(object):
 
         return response_body['token'], ""
 
+@shared_task
+def _get_buildings(cycle_id, url, headers):
+    logging.error(">>> _GET_BUILDINGS CELERY")
+    try:
+        response = requests.request("GET", url, headers=headers)
+        if response.status_code !=200:
+            return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
+    except Exception as e:
+        return None, f'Unexpected error from Audit Template: {e}'
+    logging.error('>>> GOT RESPONSE')
+    at_buildings = response.json()
+    result = []
+
+    for b in at_buildings:
+        view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=b['id']).first()
+        if view:
+            # xml, _ = AuditTemplate(org_id).get_building_xml(b['id'], token)
+            result.append({'property_view': view.id, 'audit_template_building_id': b['id'] })
+            # result.append({'property_view': view.id, 'audit_template_building_id': b['id'], 'xml': xml.text })
+
+    return json.dumps(result), ""
+
+@shared_task
+def _batch_get_building_xml(org_id, token, properties):
+    logging.error('>>> _batch_get_building_xml')
+    result = []
+    for property in properties:
+        audit_template_building_id = property["audit_template_building_id"]
+        # view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=property['id']).first()
+        xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
+        result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text })
+
+    return json.dumps(result), ""

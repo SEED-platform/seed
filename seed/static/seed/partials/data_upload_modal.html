@@ -423,20 +423,38 @@
     </div>
     <!-- Step 17: Confirm Audit Template Building Import Results-->
     <div ng-switch-when="17">
-        <div>
+        <div ng-if="!show_loading">
             This action updates properties within the selected cycle with data from the 
             Audit Template account associated with this organization.
             Only Properties with Audit Template Building IDs corresponding to those saved in 
             Audit Template will be updated.
         </div>
+        <div>
+            <div>
+                Fetching your buildings from Audit Template...
+            </div>
+            <uib-progress class="progress-striped active" style="margin: 10px 0" ng-if="show_loading">
+                <uib-bar value="100" type="info"></uib-bar>
+            </uib-progress>
+        </div>
     </div>
     <!-- Step 18: Select Matching Properties to Update -->
     <div class='data-upload-steps' ng-switch-when="18">
-        <div>
-            Select Properties to be Updated
+        <div ng-if="!show_loading">
+            <div>
+                Select Properties to be Updated
+            </div>
+            <div class="at-property-select">
+                <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ></div>
+            </div>
         </div>
-        <div class="at-property-select">
-            <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ></div>
+        <div ng-if="show_loading">
+            <div>
+                Updating selected properties...
+            </div>
+            <uib-progress class="progress-striped active" style="margin: 10px 0;" ng-if="show_loading">
+                <uib-bar value="100" type="info"></uib-bar>
+            </uib-progress>
         </div>
 
     </div>
@@ -513,12 +531,12 @@
     </div>
     <div ng-switch-when="17">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="import_audit_template_buildings()" translate>Confirm</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="import_audit_template_buildings()" ng-if="!show_loading" translate>Confirm</button>
         </div>
     </div>
     <div ng-switch-when="18">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" translate>Update</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading" translate>Update</button>
         </div>
     </div>
     <div class="row text-center">

@@ -825,13 +825,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       }
 
       $scope.import_audit_template_buildings = function () {
-        spinner_utility.show()
+        $scope.show_loading = true;
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
           console.log(response)
-          $scope.at_building_data = response
-          spinner_utility.hide()
-          $scope.step.number = 18
-          setAtPropertyGrid()
+          $scope.at_building_data = response;
+          $scope.show_loading = false;
+          $scope.step.number = 18;
+          setAtPropertyGrid();
+
 
           // response.forEach(data => {
 
@@ -842,10 +843,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       }
 
       const setAtPropertyGrid = () => {
-        let gridData = $scope.at_building_data.map(obj => ({ 'Property View': obj.property_view }))
         $scope.atPropertySelectGridOptions = {
-          data: gridData,
-          columnDefs: [],
+          data: $scope.at_building_data.map(building => { return {
+            'Audit Template Building ID': building.audit_template_building_id,
+            'Property View': building.property_view
+          }}),
+          columnDefs: [
+            {field: 'Audit Template Building ID', displayName: 'Audit Template Building ID'},
+            {field: 'Property View', visible: false}
+          ],
           enableColumnMenus: false,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
@@ -857,16 +863,21 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.gridApiAtPropertySelection.selection.selectAllRows();
             })
           }
-        }
+        };
       }
 
       $scope.update_buildings_from_audit_template = () => {
         console.log('update_buildings_from_audit_template')
+        $scope.show_loading = true;
         const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows().map(x => x['Property View']).sort()
         const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
-        audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
+        audit_template_service.batch_get_building_xml($scope.organization.id, selected_data).then(response => {
           console.log(response)
-          $scope.close();
+          audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, response).then(response => {
+            console.log(response)
+            $scope.show_loading = false;
+            $scope.close();
+          })
         })
       }
 
