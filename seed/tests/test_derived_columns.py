@@ -176,10 +176,10 @@ class TestExpressionEvaluator(TestCase):
     looks like, and it runs our tests many times over different types of data it generates.
     This allows us to test cases we would have never though of and find edge cases.
 
-    We create data specifications (ie what the data should look like) with "strategies".
+    We create data specifications (i.e., what the data should look like) with "strategies".
     We have written custom strategies for generating different types of expressions above.
     They all end with the `_st` suffix.
-    We then tell hypothesis which strategy to use for a test (ie what the data input is) by using the
+    We then tell hypothesis which strategy to use for a test (i.e., what the data input is) by using the
     `@given` decorator.
     """
 

@@ -112,7 +112,7 @@
 ### Improvements 📈
 * Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
 ### Maintenance 🧹
-* Improve NGINX security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+* Improve nginx security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
 
@@ -130,7 +130,7 @@
 ### Maintenance 🧹
 * Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
 * Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
-* Fix Nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+* Fix nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
 ### Bug Fixes 🐛
 * Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
 * Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
@@ -700,7 +700,7 @@ Closed Issues and Features (Total: 54):
 - Feature [#2539]( https://github.com/SEED-platform/seed/issues/2539 ), Each user should have their own organization
 - Improved [#2541]( https://github.com/SEED-platform/seed/issues/2541 ), Links on About page should open separate tab
 - Feature [#2542]( https://github.com/SEED-platform/seed/issues/2542 ), Organization owners can delete their own organization
-- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), Nginx should render a more user-friendly page if SEED is offline.
+- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), nginx should render a more user-friendly page if SEED is offline.
 - Fixed [#2546]( https://github.com/SEED-platform/seed/issues/2546 ), IntegrityError: duplicate key value violates unique constraint "seed_propertyview_property_id_f8bdf6c2_uniq"
 - Fixed [#2548]( https://github.com/SEED-platform/seed/issues/2548 ), 500 errors can be triggered on some endpoints
 - Fixed [#2549]( https://github.com/SEED-platform/seed/issues/2549 ), Mapping status at 0% even though file successfully imported

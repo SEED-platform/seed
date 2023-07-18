@@ -197,7 +197,7 @@ angular.module('BE.seed.service.analyses', [])
         // recursive func for checking the progress of the analysis.
         // Gets the key for the current progress data, polls it until it finishes
         // then starts over by getting the new key for the next progress data.
-        // Termination condition is when there's no progress data (ie no progress key
+        // Termination condition is when there's no progress data (i.e., no progress key
         // returned by the get_progress_key service)
         const get_key_and_check_progress = () => {
           get_progress_key(id)
