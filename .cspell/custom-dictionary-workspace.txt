@@ -107,6 +107,7 @@ gcc
 geocode
 geocoded
 geocoding
+geocodings
 getattr
 getenv
 getitem
@@ -266,8 +267,8 @@ TableRows
 tastypie
 taxlot
 TaxLot
-TaxLots
 taxlots
+TaxLots
 taxlotstate
 taxlotview
 td

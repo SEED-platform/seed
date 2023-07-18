@@ -685,6 +685,7 @@ class Column(models.Model):
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', on_delete=models.CASCADE, blank=True, null=True)
+    # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # 0 is deactivated. Order used to construct full address.
@@ -705,6 +706,11 @@ class Column(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+            # create a name constraint on the column. The name must be unique across the organization,
+            # table_name (property or tax lot), if it is extra_data, and the units_pint (because a user
+            # could map gross floor area to ft**2 and m**2). Currently, SEED's UI doesn't allow m**2 and ft**2
+            # to exist as two separate columns, but eventually we will probably want to allow.
+            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data', 'units_pint'], name='unique_column_name')
         ]
 
     def __str__(self):
