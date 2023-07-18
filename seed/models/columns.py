@@ -1523,9 +1523,6 @@ class Column(models.Model):
             if include_column:
                 columns.append(new_c)
 
-        # import json
-        # print(json.dumps(columns, indent=2))
-
         # validate that the field 'name' is unique.
         uniq = set()
         for c in columns:

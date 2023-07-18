@@ -292,6 +292,8 @@ tuples
 typechecking
 ubid
 UBID
+ubidmodel
+ubids
 Ubuntu
 UI
 Uncomment
