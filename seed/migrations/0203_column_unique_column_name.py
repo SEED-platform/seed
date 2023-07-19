@@ -18,7 +18,7 @@ def forwards(apps, schema_editor):
         for dup_col in duplicate_columns:
             print(f"Found a duplicate set of columns for org {dup_col['organization']}. "
                 f"With table_name '{dup_col['table_name']}', column_name '{dup_col['column_name']}', "
-                f"is_extra_data '{dup_col['is_extra_data']}]'.")
+                f"is_extra_data '{dup_col['is_extra_data']}'.")
             
             # try to fix the columns if they are 'import columns' (i.e., table_name = '') 
             # First, remove them from the column list profile and column mapping profile.

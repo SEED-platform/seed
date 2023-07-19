@@ -86,6 +86,7 @@ docstring
 docstrings
 Drozdyuk
 edgecase
+energystar
 enums
 env
 eui
@@ -252,6 +253,7 @@ setUp
 setUpClass
 sha
 signup
+sqft
 Starke
 statuslabel
 str
