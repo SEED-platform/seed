@@ -11,10 +11,14 @@ import json
 import requests
 from django.conf import settings
 from celery import shared_task
+from celery import chain as celery_chain
 
 from seed.building_sync import validation_client
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.views.v3.properties import PropertyViewSet
+
 
 _log = logging.getLogger(__name__)
 
@@ -55,14 +59,19 @@ class AuditTemplate(object):
 
         return _get_buildings.delay(cycle_id, url, headers)
     
-    def batch_get_building_xml(self, properties):
+    def batch_get_building_xml(self, cycle_id, properties):
         token, message = self.get_api_token()
         if not token:
             return None, message
         url = f'{self.API_URL}/rp/buildings?token={token}'
         headers = {'accept': 'application/xml'}
-
-        return _batch_get_building_xml.delay(self.org_id, token, properties)
+        progress_data = ProgressData(func_name='batch_get_building_xml', unique_id=self.org_id)
+        progress_data.total = len(properties) * 2
+        progress_data.save()
+        logging.error('>>> a')
+        _batch_get_building_xml.delay(self.org_id, cycle_id, token, properties, progress_data.key)
+        logging.error('>>> b')
+        return progress_data.result()
 
 
     def get_api_token(self):
@@ -114,13 +123,19 @@ def _get_buildings(cycle_id, url, headers):
     return json.dumps(result), ""
 
 @shared_task
-def _batch_get_building_xml(org_id, token, properties):
+def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     logging.error('>>> _batch_get_building_xml')
+    progress_data = ProgressData.from_key(progress_key)
     result = []
     for property in properties:
         audit_template_building_id = property["audit_template_building_id"]
+        logging.error('>>> c')
         # view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=property['id']).first()
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
         result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text })
+        progress_data.step('Getting XML for buildings...')
+        logging.error('>>> progress %s', progress_data.data['progress'])
 
+    property_view_set = PropertyViewSet()
+    property_view_set._batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
     return json.dumps(result), ""

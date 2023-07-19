@@ -452,9 +452,12 @@
             <div>
                 Updating selected properties...
             </div>
-            <uib-progress class="progress-striped active" style="margin: 10px 0;" ng-if="show_loading">
-                <uib-bar value="100" type="info"></uib-bar>
-            </uib-progress>
+            <div class="progress_bar_container">
+                <div class="progress_bar_copy_top">Progress: </div>
+                <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+                    uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+            </div>
         </div>
 
     </div>

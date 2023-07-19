@@ -871,13 +871,22 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.show_loading = true;
         const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows().map(x => x['Property View']).sort()
         const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
-        audit_template_service.batch_get_building_xml($scope.organization.id, selected_data).then(response => {
+        audit_template_service.batch_get_building_xml($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
           console.log(response)
-          audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, response).then(response => {
-            console.log(response)
+          progress_key = response.progress_key
+          uploader_service.check_progress_loop(progress_key, 0, 1, function (x) {
+            console.log(x)
+            // console.log(response)
             $scope.show_loading = false;
             $scope.close();
-          })
+            // audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, response).then(response => {
+            //   console.log(response)
+            //   $scope.show_loading = false;
+            //   $scope.close();
+            // })
+          }, function () {
+            // do nothing
+          }, $scope.uploader)
         })
       }
 
