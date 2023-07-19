@@ -8,33 +8,61 @@ def forwards(apps, schema_editor):
     which of these are being mapped, then delete the unmapped one."""
     Column = apps.get_model("seed", "Column")
 
-    # find the duplicate columns with a database query
-    duplicate_columns = Column.objects.values('organization', 'column_name', 'table_name', 'is_extra_data', 'units_pint') \
-        .annotate(column_count=models.Count('id')) \
-        .filter(column_count__gt=1)
-    
-    errors_found = False
-    for dup_col in duplicate_columns:
-        errors_found = True
-        print(f"Found a duplicate set of columns for org {dup_col['organization']}. "
-              f"With table_name '{dup_col['table_name']}', column_name '{dup_col['column_name']}', "
-              f"is_extra_data '{dup_col['is_extra_data']}, units_pint {dup_col['units_pint']}'.")
+    with transaction.atomic():
+        # find the duplicate columns with a database query
+        duplicate_columns = Column.objects.values('organization', 'column_name', 'table_name', 'is_extra_data') \
+            .annotate(column_count=models.Count('id')) \
+            .filter(column_count__gt=1)
         
-        # find the columns that are not mapped to any column mapping profiles
-        # unmapped_columns = Column.objects.filter(
-        #     organization=dup_col['organization'],
-        #     column_name=dup_col['column_name'],
-        #     table_name=dup_col['table_name'],
-        #     is_extra_data=dup_col['is_extra_data'],
-        #     units_pint=dup_col['units_pint'],
+        errors_found = False
+        for dup_col in duplicate_columns:
+            print(f"Found a duplicate set of columns for org {dup_col['organization']}. "
+                f"With table_name '{dup_col['table_name']}', column_name '{dup_col['column_name']}', "
+                f"is_extra_data '{dup_col['is_extra_data']}]'.")
+            
+            # try to fix the columns if they are 'import columns' (i.e., table_name = '') 
+            # First, remove them from the column list profile and column mapping profile.
+            unmapped_columns = Column.objects.filter(
+                organization=dup_col['organization'],
+                column_name=dup_col['column_name'],
+                table_name=dup_col['table_name'],
+                is_extra_data=dup_col['is_extra_data'],
+            )
+        
+            if unmapped_columns.count() > 2:
+                errors_found = True
+                continue
+
+            for unmapped_col in unmapped_columns:
+                if unmapped_col.table_name == '':
+                    print(f"  -- This column is not an import column, skipping and erroring.")
+                    errors_found = True
+                    continue
+
+                # check if this is the one with the units_pint column
+                if unmapped_col.units_pint is not None:
+                    print(f"  -- Keeping duplicate column with units_pint {unmapped_col}:{unmapped_col.units_pint}")
+                else:
+                    # this is the column that we will want to delete
+                    print(f"  -- Removing {unmapped_col}")
+                    unmapped_col.delete()
     
     if errors_found:
-        print("Please delete the duplicate columns manually, then run the migration again.")
+        print("Some of the duplicate columns could not be deleted automatically (more than 2 duplicates)")
+        print("Update the database manually, then run the migration again.")
         # you can see an example on how to retrieve the duplicate columns here above. 
         # verify that the columns you are deleting are not mapped to any column mapping profiles
         exit(1)
+    
+    # commit if no errors were found
+    transaction.commit()
+
+    
         
 class Migration(migrations.Migration):
+    # this migration is not atomic because the columns need to 
+    # be fixed/deleted before adding the constraint.
+    atomic = False
 
     dependencies = [
         ('seed', '0202_ubid_sql_functions'),
@@ -44,6 +72,6 @@ class Migration(migrations.Migration):
         migrations.RunPython(forwards),
         migrations.AddConstraint(
             model_name='column',
-            constraint=models.UniqueConstraint(fields=('organization', 'column_name', 'table_name', 'is_extra_data', 'units_pint'), name='unique_column_name'),
+            constraint=models.UniqueConstraint(fields=('organization', 'column_name', 'table_name', 'is_extra_data'), name='unique_column_name'),
         ),
     ]

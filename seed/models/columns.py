@@ -707,10 +707,10 @@ class Column(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
             # create a name constraint on the column. The name must be unique across the organization,
-            # table_name (property or tax lot), if it is extra_data, and the units_pint (because a user
-            # could map gross floor area to ft**2 and m**2). Currently, SEED's UI doesn't allow m**2 and ft**2
-            # to exist as two separate columns, but eventually we will probably want to allow.
-            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data', 'units_pint'], name='unique_column_name')
+            # table_name (property or tax lot), if it is extra_data. Note that this may require some
+            # database cleanup because older organizations might have imported data before the `units_pint`
+            # column existed and there will be duplicates.
+            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data'], name='unique_column_name')
         ]
 
     def __str__(self):
