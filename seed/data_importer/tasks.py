@@ -89,7 +89,11 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
+from seed.utils.geocode import (
+    MapQuestAPIKeyError,
+    create_geocoded_additional_columns,
+    geocode_buildings
+)
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -1375,6 +1379,11 @@ def geocode_and_match_buildings_task(file_pk):
         + 1  # finish
     )
     progress_data.save()
+
+    # create the geocode columns that may show up here. Otherwise,
+    # they might be created in parallel and cause a race condition.
+    _log.debug('Creating geocode columns before calling celery chain')
+    create_geocoded_additional_columns(org)
 
     celery_chain(
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),

@@ -337,7 +337,6 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             })
 
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
-        print(response)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()[0]['reading'], 22.2)
         self.assertEqual(response.json()[1]['reading'], 44.4)

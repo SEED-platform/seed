@@ -86,6 +86,7 @@ docstring
 docstrings
 Drozdyuk
 edgecase
+energystar
 enums
 env
 eui
@@ -107,6 +108,7 @@ gcc
 geocode
 geocoded
 geocoding
+geocodings
 getattr
 getenv
 getitem
@@ -251,6 +253,7 @@ setUp
 setUpClass
 sha
 signup
+sqft
 Starke
 statuslabel
 str
@@ -266,8 +269,8 @@ TableRows
 tastypie
 taxlot
 TaxLot
-TaxLots
 taxlots
+TaxLots
 taxlotstate
 taxlotview
 td
@@ -291,6 +294,8 @@ tuples
 typechecking
 ubid
 UBID
+ubidmodel
+ubids
 Ubuntu
 UI
 Uncomment

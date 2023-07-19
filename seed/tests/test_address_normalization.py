@@ -71,6 +71,4 @@ class TestAddressNormalization(TestCase):
         for case in cases:
             results.append(normalize_address_str(case[1]))
 
-        # print(results)
-        # print(expected_results)
         self.assertListEqual(results, expected_results)
