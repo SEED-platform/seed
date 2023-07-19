@@ -8,9 +8,6 @@ django-crispy-forms==1.8.1
 # Persistence stores
 psycopg2-binary==2.9.6
 
-# Shapely 2.X fails to build. Force to use
-# the previous version
-shapely==1.8.5.post1
 
 # background process management
 celery==5.2.2
@@ -48,7 +45,6 @@ polling==0.3.2
 pyyaml==6.0.1
 street-address==0.4.0
 unidecode==1.1.1
-usaddress==0.5.10
 xlrd==1.2.0
 xlsxwriter==1.2.7
 xmltodict==0.12.0
@@ -67,7 +63,9 @@ buildingsync-asset-extractor==0.1.12
 # Salesforce Integration
 seed-salesforce==0.1.0
 
-# pnnl/buildingid-py
+# geospatial and pnnl/buildingid-py
+shapely==2.0.1
+usaddress==0.5.10
 -e git+https://github.com/SEED-platform/buildingid.git@f68219df82191563cc2aca818e0b0fa1b32dd52d#egg=pnnl-buildingid
 
 oauthlib==2.0.3

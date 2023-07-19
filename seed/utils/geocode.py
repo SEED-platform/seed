@@ -13,6 +13,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
 from shapely import geometry, wkt
 
+from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 
 
@@ -41,6 +42,35 @@ def bounding_box_wkt(state):
     """
     if state.bounding_box:
         return GEOSGeometry(state.bounding_box, srid=4326).wkt
+
+
+def create_geocoded_additional_columns(organization: Organization):
+    """Create the additional columns that are needed for storing the extra
+    geocoded data that will be returned by the MapQuest service."""
+    new_columns = [
+        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},
+        {"name": "geocoded_postal_code", "display_name": "Geocoded Postal Code", "description": "Geocoded Postal Code"},
+        {"name": "geocoded_side_of_street", "display_name": "Geocoded Side of Street", "description": "Geocoded Side of Street"},
+        {"name": "geocoded_country", "display_name": "Geocoded Country", "description": "Geocoded Country"},
+        {"name": "geocoded_state", "display_name": "Geocoded State", "description": "Geocoded State"},
+        {"name": "geocoded_county", "display_name": "Geocoded County", "description": "Geocoded County"},
+        {"name": "geocoded_city", "display_name": "Geocoded City", "description": "Geocoded City"},
+        {"name": "geocoded_neighborhood", "display_name": "Geocoded Neighborhood", "description": "Geocoded Neighborhood"},
+    ]
+
+    # make sure the columns exist for the extra data
+    for new_column in new_columns:
+        column, created = Column.objects.get_or_create(
+            is_extra_data=True,
+            column_name=new_column['name'],
+            organization=organization,
+            table_name='PropertyState',
+            units_pint=None
+        )
+        if created:
+            column.display_name = new_column['display_name']
+            column.column_description = new_column['description']
+            column.save()
 
 
 def geocode_buildings(buildings):
@@ -104,29 +134,11 @@ def _save_geocoding_results(id_geocoding_results, buildings_to_geocode, org):
         buildings_to_geocode (list): list of buildings to geocode
         org (Organization): The organization that the results are to be saved to
     """
-    new_columns = [
-        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},
-        {"name": "geocoded_postal_code", "display_name": "Geocoded Postal Code", "description": "Geocoded Postal Code"},
-        {"name": "geocoded_side_of_street", "display_name": "Geocoded Side of Street", "description": "Geocoded Side of Street"},
-        {"name": "geocoded_country", "display_name": "Geocoded Country", "description": "Geocoded Country"},
-        {"name": "geocoded_state", "display_name": "Geocoded State", "description": "Geocoded State"},
-        {"name": "geocoded_county", "display_name": "Geocoded County", "description": "Geocoded County"},
-        {"name": "geocoded_city", "display_name": "Geocoded City", "description": "Geocoded City"},
-        {"name": "geocoded_neighborhood", "display_name": "Geocoded Neighborhood", "description": "Geocoded Neighborhood"},
-    ]
-
-    # make sure the columns exist for the extra data
-    for new_column in new_columns:
-        column, created = Column.objects.get_or_create(
-            is_extra_data=True,
-            column_name=new_column['name'],
-            organization=org,
-            table_name='PropertyState',
-        )
-        if created:
-            column.display_name = new_column['display_name']
-            column.column_description = new_column['description']
-            column.save()
+    # This is a redundant call, but intentional. If running this command from the `tasks`
+    # module, then the columns should already have been created to protect against from
+    # race conditions. However, there are other methods that geocode buildings (e.g., from
+    # the inventory list dropdown), so this is a safety check.
+    create_geocoded_additional_columns(org)
 
     for id, geocoding_result in id_geocoding_results.items():
         building = buildings_to_geocode.get(pk=id)

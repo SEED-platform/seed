@@ -685,6 +685,7 @@ class Column(models.Model):
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
     import_file = models.ForeignKey('data_importer.ImportFile', on_delete=models.CASCADE, blank=True, null=True)
+    # TODO: units_pint should be renamed to `from_units` as this is the unit of the incoming data in pint format
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # 0 is deactivated. Order used to construct full address.
@@ -705,6 +706,11 @@ class Column(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+            # create a name constraint on the column. The name must be unique across the organization,
+            # table_name (property or tax lot), if it is extra_data. Note that this may require some
+            # database cleanup because older organizations might have imported data before the `units_pint`
+            # column existed and there will be duplicates.
+            models.UniqueConstraint(fields=['organization', 'column_name', 'table_name', 'is_extra_data'], name='unique_column_name')
         ]
 
     def __str__(self):
@@ -1516,9 +1522,6 @@ class Column(models.Model):
 
             if include_column:
                 columns.append(new_c)
-
-        # import json
-        # print(json.dumps(columns, indent=2))
 
         # validate that the field 'name' is unique.
         uniq = set()
