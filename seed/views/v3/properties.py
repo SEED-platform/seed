@@ -27,7 +27,10 @@ from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
+<<<<<<< HEAD
 from seed.lib.progress_data.progress_data import ProgressData
+=======
+>>>>>>> 29fb2efd1 (Add AH Permissions to PropertyViewSet)
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
