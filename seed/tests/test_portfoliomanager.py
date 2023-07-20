@@ -15,6 +15,7 @@ import requests
 import xmltodict
 from django.test import TestCase
 from django.urls import reverse_lazy
+from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
@@ -458,18 +459,43 @@ class PortfolioManagerSingleReportXSLX(TestCase):
 
     @pm_skip_test_check
     def test_single_report_download(self):
+        # PM ID 22178850 is a more complete test case with meter data
+        pm_id = 22178850
+
         # remove the file if it exists
-        new_file = self.output_dir / 'single_property_22178850.xlsx'
+        new_file = self.output_dir / f"single_property_{pm_id}.xlsx"
         if new_file.exists():
             new_file.unlink()
         self.assertFalse(new_file.exists())
 
         pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
-        # PM ID 22178850 is a more complete test case with meter data
-        result = pm.download_single_property_report(22178850, self.output_dir / 'single_property_22178850.xlsx')
 
-        self.assertEqual(result, str(new_file))
+        content = pm.return_single_property_report(pm_id)
+        self.assertIsNotNone(content)
+        with open(new_file, 'wb') as file:
+            file.write(content)
+
         self.assertTrue(new_file.exists())
+
+        # TODO: load the xlsx file and ensure that it has the right tabs
+        workbook = open_workbook(new_file)
+        self.assertIn('Property', workbook.sheet_names())
+        self.assertIn('Meters', workbook.sheet_names())
+        self.assertIn('Meter Entries', workbook.sheet_names())
+
+        # verify that the Property worksheet has the PM id in it
+        sheet = workbook.sheet_by_name('Property')
+        self.assertTrue(str(pm_id) in str(sheet._cell_values))
+
+    @pm_skip_test_check
+    def test_single_report_view(self):
+        pm_id = 22178850
+        response = self.client.post(
+            reverse_lazy('api:v3:portfolio_manager-report-single', args=[pm_id]),
+            json.dumps({"username": self.pm_un, "password": self.pm_pw}),
+            content_type='application/json',
+        )
+        self.assertEqual(200, response.status_code)
 
 
 class PortfolioManagerReportParsingTest(TestCase):

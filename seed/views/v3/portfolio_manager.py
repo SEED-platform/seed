@@ -7,8 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 import time
-from pathlib import Path
-from typing import Union
+from datetime import datetime
 
 import requests
 import xmltodict
@@ -232,10 +231,67 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug("%s: %s" % (e, str(request.data)))
             return JsonResponse({'status': 'error', 'message': e}, status=status.HTTP_400_BAD_REQUEST)
 
-    # TODO: add swagger
-    @action(detail=False, methods=['POST'])
-    def report_single(self, request):
-        pass
+    @swagger_auto_schema(
+        manual_parameters=[],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'username': 'string',
+                'password': 'string',
+                'filename': 'string',
+            },
+            description='ESPM account credentials.',
+            required=['username', 'password']
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'status': 'string',
+                'templates': [{
+                    'template_information_1': 'string',
+                    'template_information_2': 'integer',
+                    '[other keys...]': 'string'
+                }],
+                'message': 'string'
+            }),
+        }
+    )
+    @action(detail=True, methods=['POST'])
+    def report_single(self, request, pk):
+        """Download a single property report from Portfolio Manager. The PK is the
+        PM property ID that is on ESPM"""
+        if 'username' not in request.data:
+            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if 'password' not in request.data:
+            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid call to PM worker: missing password for PM account'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        username = request.data['username']
+        password = request.data['password']
+        if 'filename' not in request.data:
+            filename = f'pm_{pk}_{datetime.strftime(datetime.now(), "%Y%m%d_%H%M%S")}.xlsx'
+        else:
+            filename = request.data['filename']
+
+        pm = PortfolioManagerImport(username, password)
+        try:
+            content = pm.return_single_property_report(pk)
+
+            # return the excel file as the HTTP response
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+            response.write(content)
+            return response
+
+        except PMExcept as pme:
+            _log.debug(f"{str(pme)}: PM Property ID {pk}")
+            return JsonResponse({'status': 'error', 'message': str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -308,14 +364,13 @@ class PortfolioManagerViewSet(GenericViewSet):
         pm.update_template_report(template, start_month, start_year, end_month, end_year, property_ids)
 
 
+# TODO: Move this object to /seed/utils/portfolio_manager.py
 class PortfolioManagerImport(object):
-    """
-    This class is essentially a wrapper around the ESPM login/template/report operations
+    """This class is essentially a wrapper around the ESPM login/template/report operations
     """
 
     def __init__(self, m_username, m_password):
-        """
-        To instantiate this class, provide ESPM username and password.  Currently, this constructor doesn't do anything
+        """To instantiate this class, provide ESPM username and password.  Currently, this constructor doesn't do anything
         except store the credentials.
 
         :param m_username: The ESPM username
@@ -336,8 +391,7 @@ class PortfolioManagerImport(object):
         self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL = "https://portfoliomanager.energystar.gov/pm/property"
 
     def login_and_set_cookie_header(self):
-        """
-        This method calls out to ESPM to perform a login operation and get a session authentication token.  This token
+        """This method calls out to ESPM to perform a login operation and get a session authentication token.  This token
         is then stored in the proper form to allow authenticated calls into ESPM.
 
         :return: None
@@ -370,8 +424,7 @@ class PortfolioManagerImport(object):
         }
 
     def get_list_of_report_templates(self):
-        """
-        New method to support update to ESPM
+        """New method to support update to ESPM
 
         :return: Returns a list of template objects. All rows will have a z_seed_child_row key that is False for main
         rows and True for child rows
@@ -601,20 +654,19 @@ class PortfolioManagerImport(object):
 
         return response.content
 
-    def download_single_property_report(self, pm_property_id: int, save_filename: Union[str, Path]) -> bool:
-        """Download a single property report from ESPM based on the passed
+    def return_single_property_report(self, pm_property_id: int):
+        """Return (in memory) a single property report from ESPM based on the passed
         ESPM Property ID (SEED calls this the pm_property_id). This method returns
-        the XLSX file with all the tabs for the single property.
+        the XLSX file in memory with all the tabs for the single property.
 
-        This method differs that the others in this file as it does not need to know
+        This method differs from the others in that this it does not need to know
         the template of the report, it is simply the entire ESPM record (meters and all).
 
         Args:
             pm_property_id (int): The ESPM Property ID to download.
-            save_filename (str): The filename to save the downloaded file to.
 
         Returns:
-            str: Path to the saved file
+            str: Content of an XLSX file which will need to be persisted
         """
         # login if needed
         if not self.authenticated_headers:
@@ -622,30 +674,19 @@ class PortfolioManagerImport(object):
 
         # Generate the url to download this file
         try:
-            # rename the extension of the path to always be an XLSX file
-            save_filename = Path(save_filename).with_suffix(".xlsx")
-
             response = requests.get(
-                self.download_url_single_report(pm_property_id, save_filename),
+                self.download_url_single_report(pm_property_id),
                 headers=self.authenticated_headers,
                 allow_redirects=True
             )
 
             if response.status_code == status.HTTP_200_OK:
-                # save the data to the specified file, remove the file if it already exists
-                if save_filename.exists():
-                    save_filename.unlink()
-
-                with open(save_filename, 'wb') as f:
-                    f.write(response.content)
+                return response.content
+            else:
+                raise PMExcept('Unsuccessful response from GET trying to download single report; aborting.')
 
         except requests.exceptions.SSLError:
             raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
-
-        if not response.status_code == status.HTTP_200_OK:
-            raise PMExcept('Unsuccessful response from GET trying to download single report; aborting.')
-
-        return str(save_filename)
 
     def _parse_properties_v1(self, xml):
         """Parse the XML (in dict format) response from the ESPM API and return a list of
@@ -720,16 +761,15 @@ class PortfolioManagerImport(object):
         """helper method to assemble the download url for a given template id. Default format is XML"""
         return f"{self.DOWNLOAD_REPORT_URL}/{template_id}/{report_format}?testEnv=false&filterResponses=false"
 
-    def download_url_single_report(self, pm_property_id: int, download_file_name: Path) -> str:
-        """helper method to assemble the download url for a single property report
+    def download_url_single_report(self, pm_property_id: int) -> str:
+        """helper method to assemble the download url for a single property report.
 
         Args:
             pm_property_id (int): PM Property ID to download
-            download_file_name (str): Path and filename to download to. Extension will be removed and replaced with xslx
 
         Returns:
             str: URL
         """
-        url = f"{self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL}/{pm_property_id}/download/{download_file_name.stem}.xlsx"
+        url = f"{self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL}/{pm_property_id}/download/{pm_property_id}.xlsx"
         _log.debug(f"ESPM single property download URL is {url}")
         return url
