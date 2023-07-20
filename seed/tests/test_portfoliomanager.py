@@ -87,7 +87,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing username"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -103,7 +103,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing password"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -120,7 +120,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -209,7 +209,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing username"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -225,7 +225,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing password"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -241,7 +241,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -266,7 +266,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         # status should be error
         # message should have "missing template"
         self.assertEqual(400, resp.status_code)
-        data = json.loads(resp.content)
+        data = resp.json()
         self.assertIn('status', data)
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
@@ -368,6 +368,8 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
 
 class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
+    """Test case for downloading a report with a single building and saving
+    it to SEED's Dataset upload api."""
 
     def setUp(self):
         user_details = {
@@ -398,7 +400,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
     @pm_skip_test_check
     def test_single_property_template_for_upload(self):
 
-        # create a single property report with template
+        # create a single ESPM property report with template
         template = {
             "children": [],
             "display_name": "SEED_Test - Single Property",
@@ -415,11 +417,11 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         )
         self.assertEqual(200, report_response.status_code)
 
-        property_info = json.loads(report_response.content)
+        property_info = report_response.json()
         self.assertEqual(1, len(property_info['properties']))
         self.assertIsInstance(property_info['properties'], list)
 
-        # add report to dataset
+        # add report to SEED's dataset
         response = self.client.post(
             reverse_lazy('api:v3:upload-create-from-pm-import'),
             json.dumps({
@@ -431,9 +433,49 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         self.assertEqual(200, response.status_code)
 
 
+class PortfolioManagerSingleReportXSLX(TestCase):
+    """Test downloading a single ESPM report in XSLX format."""
+
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.pm_un = os.environ.get(PM_UN, False)
+        self.pm_pw = os.environ.get(PM_PW, False)
+        if not self.pm_un or not self.pm_pw:
+            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+
+        self.output_dir = Path(__file__).parent.absolute() / 'output'
+        if not self.output_dir.exists():
+            os.mkdir(self.output_dir)
+
+    @pm_skip_test_check
+    def test_single_report_download(self):
+        # remove the file if it exists
+        new_file = self.output_dir / 'single_property_22178850.xlsx'
+        if new_file.exists():
+            new_file.unlink()
+        self.assertFalse(new_file.exists())
+
+        pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+        # PM ID 22178850 is a more complete test case with meter data
+        result = pm.download_single_property_report(22178850, self.output_dir / 'single_property_22178850.xlsx')
+
+        self.assertEqual(result, str(new_file))
+        self.assertTrue(new_file.exists())
+
+
 class PortfolioManagerReportParsingTest(TestCase):
     """Test the parsing of the resulting PM XML file. This is only for the
     version 2 parsing"""
+
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
         xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'

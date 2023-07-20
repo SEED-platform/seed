@@ -7,10 +7,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 import time
+from pathlib import Path
+from typing import Union
 
 import requests
 import xmltodict
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -31,7 +33,7 @@ class PortfolioManagerSerializer(serializers.Serializer):
 
 class PortfolioManagerViewSet(GenericViewSet):
     """
-    This viewset contains two API views: /template_list/ and /report/ that are used to interface SEED with ESPM
+    This ViewSet contains two API views: /template_list/ and /report/ that are used to interface SEED with ESPM
     """
     serializer_class = PortfolioManagerSerializer
 
@@ -230,6 +232,10 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug("%s: %s" % (e, str(request.data)))
             return JsonResponse({'status': 'error', 'message': e}, status=status.HTTP_400_BAD_REQUEST)
 
+    # TODO: add swagger
+    @action(detail=False, methods=['POST'])
+    def report_single(self, request):
+        pass
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -299,10 +305,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         end_year = request.data.get('end_year', None)
         property_ids = request.data.get('property_ids', [])
 
-        content = pm.update_template_report(template, start_month, start_year, end_month, end_year, property_ids)
-
-
-
+        pm.update_template_report(template, start_month, start_year, end_month, end_year, property_ids)
 
 
 class PortfolioManagerImport(object):
@@ -329,6 +332,8 @@ class PortfolioManagerImport(object):
         self.REPORT_URL = "https://portfoliomanager.energystar.gov/pm/reports/reportData/MY_REPORTS_AND_TEMPLATES"
         # The root URL for downloading the report, code will add the template ID and the XML
         self.DOWNLOAD_REPORT_URL = "https://portfoliomanager.energystar.gov/pm/reports/download"
+
+        self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL = "https://portfoliomanager.energystar.gov/pm/property"
 
     def login_and_set_cookie_header(self):
         """
@@ -414,7 +419,7 @@ class PortfolioManagerImport(object):
                     raise PMExcept('Unsuccessful response from child row template lookup; aborting.')
                 try:
                     # the data are now in the string of the data key of the returned dictionary with an excessive amount of
-                    # escaped doublequotes.
+                    # escaped double quotes.
                     # e.g., response = {"data": "{"customReportsData":"..."}"}
                     decoded = json.loads(children_response.text)  # .encode('utf-8').decode('unicode_escape')
 
@@ -450,10 +455,9 @@ class PortfolioManagerImport(object):
         _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
 
-    # todo: delete this one
-    # def update_template_report(self, template, start_month, start_year, end_month, end_year, property_ids):
-        """
-        This method calls out to ESPM to update a specific template
+    # TODO: Is there a need to call just this instead of generate_and_download...?
+    def update_template_report(self, template, start_month, start_year, end_month, end_year, property_ids):
+        """This method calls out to ESPM to (re)generate a specific template
 
         :param template: A specific template object
         :param start_month: reporting period start month
@@ -485,8 +489,7 @@ class PortfolioManagerImport(object):
 
         return response.content
 
-
-    def generate_and_download_template_report(self, matched_template, report_format = 'XML'):
+    def generate_and_download_template_report(self, matched_template, report_format='XML'):
         """
         This method calls out to ESPM to trigger generation of a report for the supplied template.  The process requires
         calling out to the generateData/ endpoint on ESPM, followed by a waiting period for the template status to be
@@ -569,7 +572,7 @@ class PortfolioManagerImport(object):
             raise PMExcept(error_message)
         return response.content
 
-    def generate_and_download_child_data_request_report(self, matched_data_request, report_format = 'XML'):
+    def generate_and_download_child_data_request_report(self, matched_data_request, report_format='XML'):
         """
         Updated for recent update of ESPM
 
@@ -597,6 +600,52 @@ class PortfolioManagerImport(object):
             raise PMExcept('Unsuccessful response from GET trying to download generated report; aborting.')
 
         return response.content
+
+    def download_single_property_report(self, pm_property_id: int, save_filename: Union[str, Path]) -> bool:
+        """Download a single property report from ESPM based on the passed
+        ESPM Property ID (SEED calls this the pm_property_id). This method returns
+        the XLSX file with all the tabs for the single property.
+
+        This method differs that the others in this file as it does not need to know
+        the template of the report, it is simply the entire ESPM record (meters and all).
+
+        Args:
+            pm_property_id (int): The ESPM Property ID to download.
+            save_filename (str): The filename to save the downloaded file to.
+
+        Returns:
+            str: Path to the saved file
+        """
+        # login if needed
+        if not self.authenticated_headers:
+            self.login_and_set_cookie_header()
+
+        # Generate the url to download this file
+        try:
+            # rename the extension of the path to always be an XLSX file
+            save_filename = Path(save_filename).with_suffix(".xlsx")
+
+            response = requests.get(
+                self.download_url_single_report(pm_property_id, save_filename),
+                headers=self.authenticated_headers,
+                allow_redirects=True
+            )
+
+            if response.status_code == status.HTTP_200_OK:
+                # save the data to the specified file, remove the file if it already exists
+                if save_filename.exists():
+                    save_filename.unlink()
+
+                with open(save_filename, 'wb') as f:
+                    f.write(response.content)
+
+        except requests.exceptions.SSLError:
+            raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
+
+        if not response.status_code == status.HTTP_200_OK:
+            raise PMExcept('Unsuccessful response from GET trying to download single report; aborting.')
+
+        return str(save_filename)
 
     def _parse_properties_v1(self, xml):
         """Parse the XML (in dict format) response from the ESPM API and return a list of
@@ -667,6 +716,20 @@ class PortfolioManagerImport(object):
 
         return True, return_data
 
-    def download_url(self, template_id, report_format = 'XML'):
+    def download_url(self, template_id, report_format='XML'):
         """helper method to assemble the download url for a given template id. Default format is XML"""
-        return f'{self.DOWNLOAD_REPORT_URL}/{template_id}/{report_format}?testEnv=false&filterResponses=false'
+        return f"{self.DOWNLOAD_REPORT_URL}/{template_id}/{report_format}?testEnv=false&filterResponses=false"
+
+    def download_url_single_report(self, pm_property_id: int, download_file_name: Path) -> str:
+        """helper method to assemble the download url for a single property report
+
+        Args:
+            pm_property_id (int): PM Property ID to download
+            download_file_name (str): Path and filename to download to. Extension will be removed and replaced with xslx
+
+        Returns:
+            str: URL
+        """
+        url = f"{self.DOWNLOAD_SINGLE_PROPERTY_REPORT_URL}/{pm_property_id}/download/{download_file_name.stem}.xlsx"
+        _log.debug(f"ESPM single property download URL is {url}")
+        return url

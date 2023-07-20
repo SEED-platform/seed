@@ -26,8 +26,10 @@ AWS
 backend
 backends
 badpass
+basestring
 bashrc
 bedes
+biffh
 Bool
 boolean
 BrowserDefinition
@@ -89,6 +91,7 @@ edgecase
 energystar
 enums
 env
+ESPM
 eui
 eula
 fieldname
@@ -138,6 +141,7 @@ iterable
 Iterable
 iteritems
 js
+JSESSIONID
 jshint
 json
 JsonField
@@ -187,9 +191,12 @@ noncanonicalprojectbuildings
 nones
 noqa
 npm
+nrows
 num
 Octant
+officedocument
 onload
+openxmlformats
 OperationalError
 OrderedDict
 OrderedDicts
@@ -249,10 +256,13 @@ sendmail
 serializable
 serializer
 serializers
+servlet
 setUp
 setUpClass
 sha
 signup
+spreadsheetml
+springframework
 sqft
 Starke
 statuslabel
@@ -264,6 +274,7 @@ Submodules
 Subpackages
 subtask
 sudo
+superperms
 superset
 TableRows
 tastypie
@@ -335,9 +346,12 @@ wildcards
 workflow
 wsgi
 xlarge
+xlrd
 xml
 xmltodict
 xpath
 XPath
 XPATH
+XSLX
+yasg
 yml
