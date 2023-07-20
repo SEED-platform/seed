@@ -827,34 +827,32 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.import_audit_template_buildings = function () {
         $scope.show_loading = true;
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
-          console.log(response)
+          console.log('get_buildings', response)
           $scope.at_building_data = response;
           $scope.show_loading = false;
           $scope.step.number = 18;
           setAtPropertyGrid();
-
-
-          // response.forEach(data => {
-
-          //   audit_template_service.update_building_with_xml($scope.organization.id, $scope.selectedCycle.id, data.property_view, data.xml).then(result => {
-          //     console.log('pv ', data.property_view, ' updated')
-          //   })
         })
       }
 
       const setAtPropertyGrid = () => {
         $scope.atPropertySelectGridOptions = {
           data: $scope.at_building_data.map(building => { return {
-            'Audit Template Building ID': building.audit_template_building_id,
-            'Property View': building.property_view
+            'audit_template_building_id': building.audit_template_building_id,
+            'email': building.email,
+            'updated_at': building.updated_at,
+            'property_view': building.property_view
           }}),
           columnDefs: [
-            {field: 'Audit Template Building ID', displayName: 'Audit Template Building ID'},
-            {field: 'Property View', visible: false}
+            {field: 'audit_template_building_id', displayName: 'Audit Template Building ID'},
+            {field: 'email', displayName: 'Owner Email'},
+            {field: 'updated_at', displayName: 'Upadted At'},
+            {field: 'property_view', visible: false}
           ],
           enableColumnMenus: false,
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
-          enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
+          enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min($scope.at_building_data.length, 25),
           rowHeight: '30px',
           onRegisterApi: (gridApi) => {
@@ -869,21 +867,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.update_buildings_from_audit_template = () => {
         console.log('update_buildings_from_audit_template')
         $scope.show_loading = true;
-        const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows().map(x => x['Property View']).sort()
+        const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows()
+          .map(row => row['property_view'])
+          .sort()
         const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
-        audit_template_service.batch_get_building_xml($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
-          console.log(response)
+        audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
+          console.log('progress_data', response)
           progress_key = response.progress_key
-          uploader_service.check_progress_loop(progress_key, 0, 1, function (x) {
-            console.log(x)
-            // console.log(response)
+          uploader_service.check_progress_loop(progress_key, 0, 1, function () {
             $scope.show_loading = false;
             $scope.close();
-            // audit_template_service.batch_update_with_xml($scope.organization.id, $scope.selectedCycle.id, response).then(response => {
-            //   console.log(response)
-            //   $scope.show_loading = false;
-            //   $scope.close();
-            // })
           }, function () {
             // do nothing
           }, $scope.uploader)

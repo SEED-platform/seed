@@ -37,16 +37,15 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         properties = request.data
         cycle_id = request.query_params.get('cycle_id')
         at = AuditTemplate(self.get_organization(self.request))
-        result = at.batch_get_building_xml(cycle_id, properties)
-        # response, message = result.get()
-        response = result
-        message = ''
-        if response is None:
+        progress_data = at.batch_get_building_xml(cycle_id, properties)
+
+        if progress_data is None:
             return JsonResponse({
             'success': False,
-            'message': message
+            'message': 'Unexpected Error'
         }, status=400)
-        return JsonResponse(response)
+
+        return JsonResponse(progress_data)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')

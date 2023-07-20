@@ -1340,31 +1340,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         cycle_id = request.query_params.get('cycle_id', None)
         
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
-    
-    @swagger_auto_schema(
-    manual_parameters=[
-        AutoSchemaHelper.query_org_id_field(),
-        AutoSchemaHelper.query_integer_field(
-            'cycle_id',
-            required=True,
-            description='ID of the cycle of the property view'
-        ),
-    ],
-    request_body=no_body,
-    )
-    @action(detail=False, methods=['PUT'], parser_classes=(MultiPartParser,))
-    @has_perm_class('can_modify_data')
-    def batch_update_with_building_sync(self, request):
-        organization_id = self.get_organization(request)
-        cycle_id = request.query_params.get('cycle_id', None)
-        resy = []
-        for file, view_id in zip(request.data.getlist('files'), request.data.getlist('property_views')):
-            resy.append(self._update_with_building_sync(file, 1, organization_id, cycle_id, view_id))
-        logging.error('>>> resy %s', resy)
-        return JsonResponse({
-            'success': True,
-            'message': 'updated buildings'
-        })
+
     
     def _batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
         progress_data = ProgressData.from_key(progress_key)

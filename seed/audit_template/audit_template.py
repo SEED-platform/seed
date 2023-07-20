@@ -63,14 +63,12 @@ class AuditTemplate(object):
         token, message = self.get_api_token()
         if not token:
             return None, message
-        url = f'{self.API_URL}/rp/buildings?token={token}'
-        headers = {'accept': 'application/xml'}
         progress_data = ProgressData(func_name='batch_get_building_xml', unique_id=self.org_id)
         progress_data.total = len(properties) * 2
         progress_data.save()
-        logging.error('>>> a')
+        
         _batch_get_building_xml.delay(self.org_id, cycle_id, token, properties, progress_data.key)
-        logging.error('>>> b')
+
         return progress_data.result()
 
 
@@ -102,23 +100,25 @@ class AuditTemplate(object):
 
 @shared_task
 def _get_buildings(cycle_id, url, headers):
-    logging.error(">>> _GET_BUILDINGS CELERY")
+    logging.error('>>> _get_buildings')
     try:
         response = requests.request("GET", url, headers=headers)
         if response.status_code !=200:
             return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
     except Exception as e:
         return None, f'Unexpected error from Audit Template: {e}'
-    logging.error('>>> GOT RESPONSE')
     at_buildings = response.json()
     result = []
-
     for b in at_buildings:
         view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=b['id']).first()
         if view:
-            # xml, _ = AuditTemplate(org_id).get_building_xml(b['id'], token)
-            result.append({'property_view': view.id, 'audit_template_building_id': b['id'] })
-            # result.append({'property_view': view.id, 'audit_template_building_id': b['id'], 'xml': xml.text })
+            email = b['owner'].get('email') if b.get('owner') else 'n/a'
+            result.append({
+                'audit_template_building_id': b['id'],
+                'property_view': view.id, 
+                'email': email,
+                'updated_at': b['updated_at'],
+            })
 
     return json.dumps(result), ""
 
@@ -127,15 +127,14 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     logging.error('>>> _batch_get_building_xml')
     progress_data = ProgressData.from_key(progress_key)
     result = []
+
     for property in properties:
         audit_template_building_id = property["audit_template_building_id"]
-        logging.error('>>> c')
-        # view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=property['id']).first()
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
         result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text })
         progress_data.step('Getting XML for buildings...')
         logging.error('>>> progress %s', progress_data.data['progress'])
 
+    # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()
     property_view_set._batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
-    return json.dumps(result), ""

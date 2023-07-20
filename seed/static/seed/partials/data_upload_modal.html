@@ -429,11 +429,11 @@
             Only Properties with Audit Template Building IDs corresponding to those saved in 
             Audit Template will be updated.
         </div>
-        <div>
+        <div ng-if="show_loading">
             <div>
                 Fetching your buildings from Audit Template...
             </div>
-            <uib-progress class="progress-striped active" style="margin: 10px 0" ng-if="show_loading">
+            <uib-progress class="progress-striped active" style="margin: 10px 0">
                 <uib-bar value="100" type="info"></uib-bar>
             </uib-progress>
         </div>
@@ -445,7 +445,7 @@
                 Select Properties to be Updated
             </div>
             <div class="at-property-select">
-                <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ></div>
+                <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns></div>
             </div>
         </div>
         <div ng-if="show_loading">
@@ -453,7 +453,6 @@
                 Updating selected properties...
             </div>
             <div class="progress_bar_container">
-                <div class="progress_bar_copy_top">Progress: </div>
                 <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                 <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
                     uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
