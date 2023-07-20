@@ -89,7 +89,11 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
+from seed.utils.geocode import (
+    MapQuestAPIKeyError,
+    create_geocoded_additional_columns,
+    geocode_buildings
+)
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -1329,7 +1333,7 @@ def geocode_and_match_buildings_task(file_pk):
 
     # If multiple cycle upload, split properties by cycle
     # and map each cycle individually
-    # Todo: add a status to import_file to indicate multiple cycle upload
+    # TODO: add a status to import_file to indicate multiple cycle upload
     # maybe add new source_type Assessed Raw Multiple Cycle?
     if import_file.multiple_cycle_upload:
         # Create a dictionary to store the property_state_ids_by_cycle.
@@ -1365,8 +1369,7 @@ def geocode_and_match_buildings_task(file_pk):
         property_state_ids_by_cycle = None
         id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
         map_additional_models_group = group(
-            _map_additional_models.si(id_chunk, file_pk, progress_data.key)
-            for id_chunk in id_chunks
+            _map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks
         )
 
     progress_data.total = (
@@ -1376,6 +1379,11 @@ def geocode_and_match_buildings_task(file_pk):
         + 1  # finish
     )
     progress_data.save()
+
+    # create the geocode columns that may show up here. Otherwise,
+    # they might be created in parallel and cause a race condition.
+    _log.debug('Creating geocode columns before calling celery chain')
+    create_geocoded_additional_columns(org)
 
     celery_chain(
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
@@ -1704,7 +1712,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
-        ('ulid',),
+        ('ubid',),
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),

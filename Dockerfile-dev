@@ -14,7 +14,7 @@ RUN apk add --no-cache python3-dev \
         npm \
         nginx \
         openssl-dev \
-        geos \
+        geos-dev \
         gdal \
         gcc \
         musl-dev \

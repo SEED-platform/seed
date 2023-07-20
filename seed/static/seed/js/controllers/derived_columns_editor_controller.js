@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       // turn each parameter's source_column (an ID to a Column) into an object
       // which includes the display name and add an empty array to for storing validation errors later
       $scope.parameters = $scope.parameters.map(param => {
-        // if this parameter is 'new' (ie from make_param) it won't have a source column
+        // if this parameter is 'new' (i.e., from make_param) it won't have a source column
         if (!param.source_column) {
           return {
             ...param,
