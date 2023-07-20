@@ -16,7 +16,7 @@ from rest_framework.viewsets import ViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyStateFilterSet, PropertyViewFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -389,7 +389,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response = properties_across_cycles(org_id, profile_id, cycle_ids)
+        root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
+        response = properties_across_cycles(org_id, root, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
