@@ -4,15 +4,16 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from datetime import datetime
+
 import mock
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import datetime
 
 from seed.landing.models import SEEDUser as User
-from seed.utils.organizations import create_organization
 from seed.test_helpers.fake import FakeCycleFactory
+from seed.utils.organizations import create_organization
 
 
 class AuditTemplateViewTests(TestCase):
@@ -57,11 +58,11 @@ class AuditTemplateViewTests(TestCase):
         self.bad_get_building_response.content = "bad building response"
 
         self.good_get_buildings_response = mock.Mock()
-        self.good_get_buildings_response.status_code = 200 
+        self.good_get_buildings_response.status_code = 200
         self.good_get_buildings_response.text = 'buildings response'
 
         self.bad_get_buildings_response = mock.Mock()
-        self.bad_get_buildings_response.status_code = 200 
+        self.bad_get_buildings_response.status_code = 200
         self.bad_get_buildings_response.text = 'bad buildings response'
 
     @mock.patch('requests.request')

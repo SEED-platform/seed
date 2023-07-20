@@ -4,21 +4,18 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import logging
 import json
-
+import logging
 
 import requests
-from django.conf import settings
 from celery import shared_task
-from celery import chain as celery_chain
+from django.conf import settings
 
 from seed.building_sync import validation_client
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.views.v3.properties import PropertyViewSet
-
 
 _log = logging.getLogger(__name__)
 
@@ -36,7 +33,7 @@ class AuditTemplate(object):
         if not token:
             return None, message
         return self.get_building_xml(audit_template_building_id, token)
-    
+
     def get_building_xml(self, audit_template_building_id, token):
         url = f'{self.API_URL}/building_sync/download/rp/buildings/{audit_template_building_id}.xml?token={token}'
         headers = {'accept': 'application/xml'}
@@ -49,7 +46,7 @@ class AuditTemplate(object):
             return None, f'Unexpected error from Audit Template: {e}'
 
         return response, ""
-        
+
     def get_buildings(self, cycle_id):
         token, message = self.get_api_token()
         if not token:
@@ -58,7 +55,7 @@ class AuditTemplate(object):
         headers = {'accept': 'application/xml'}
 
         return _get_buildings.delay(cycle_id, url, headers)
-    
+
     def batch_get_building_xml(self, cycle_id, properties):
         token, message = self.get_api_token()
         if not token:
@@ -66,11 +63,10 @@ class AuditTemplate(object):
         progress_data = ProgressData(func_name='batch_get_building_xml', unique_id=self.org_id)
         progress_data.total = len(properties) * 2
         progress_data.save()
-        
+
         _batch_get_building_xml.delay(self.org_id, cycle_id, token, properties, progress_data.key)
 
         return progress_data.result()
-
 
     def get_api_token(self):
         org = Organization.objects.get(pk=self.org_id)
@@ -98,12 +94,13 @@ class AuditTemplate(object):
 
         return response_body['token'], ""
 
+
 @shared_task
 def _get_buildings(cycle_id, url, headers):
     logging.error('>>> _get_buildings')
     try:
         response = requests.request("GET", url, headers=headers)
-        if response.status_code !=200:
+        if response.status_code != 200:
             return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
     except Exception as e:
         return None, f'Unexpected error from Audit Template: {e}'
@@ -115,12 +112,13 @@ def _get_buildings(cycle_id, url, headers):
             email = b['owner'].get('email') if b.get('owner') else 'n/a'
             result.append({
                 'audit_template_building_id': b['id'],
-                'property_view': view.id, 
+                'property_view': view.id,
                 'email': email,
                 'updated_at': b['updated_at'],
             })
 
     return json.dumps(result), ""
+
 
 @shared_task
 def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
@@ -131,7 +129,7 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     for property in properties:
         audit_template_building_id = property["audit_template_building_id"]
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
-        result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text })
+        result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text})
         progress_data.step('Getting XML for buildings...')
         logging.error('>>> progress %s', progress_data.data['progress'])
 

@@ -4,12 +4,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 import os
-from collections import namedtuple
 import time
+from collections import namedtuple
 
+from django.core.files.base import ContentFile
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
-from django.core.files.base import ContentFile
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -22,8 +22,8 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
-from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -1330,18 +1330,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         if len(request.FILES) == 0:
             return JsonResponse({
-            'success': False,
-            'message': "Must pass file in as a Multipart/Form post"
-        })
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
 
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id', None)
-        
+
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
-    
     def _batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
         progress_data = ProgressData.from_key(progress_key)
         resy = []
@@ -1355,7 +1354,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         progress_data.finish_with_success()
         return resy
 
-        
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id):
         try:
             cycle = Cycle.objects.get(pk=cycle_id, organization_id=organization_id)
@@ -1405,7 +1403,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
-
 
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
