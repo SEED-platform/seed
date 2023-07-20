@@ -630,16 +630,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         cycle_id = body.get('cycle_id')
+        multiple_cycle_upload = body.get('multiple_cycle_upload', False)
         if not cycle_id:
             return JsonResponse({
                 'status': 'error',
                 'message': 'must pass cycle_id of the cycle to save the data'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif cycle_id == 'year_ending':
-            _log.error("NOT CONFIGURED FOR YEAR ENDING OPTION AT THE MOMENT")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'SEED is unable to parse year_ending at the moment'
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
             # find the cycle
@@ -647,6 +642,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             if cycle:
                 # assign the cycle id to the import file object
                 import_file.cycle = cycle
+                import_file.multiple_cycle_upload = multiple_cycle_upload
                 import_file.save()
             else:
                 return JsonResponse({
@@ -822,6 +818,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return {
             'status': 'success',
             'import_file_records': import_file.matching_results_data.get('import_file_records', None),
+            'multiple_cycle_upload': import_file.multiple_cycle_upload,
             'properties': {
                 'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),

@@ -22,7 +22,7 @@ similar designation without specific prior written permission from the U.S. Depa
 
 (5) The name of the copyright holder(s), any contributors, the United States Government, the
 United States Department of Energy, or any of their employees may not be used to endorse or
-romote products derived from this software without specific prior written permission from the
+promote products derived from this software without specific prior written permission from the
 respective party.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER(S) AND ANY CONTRIBUTORS "AS IS" AND ANY

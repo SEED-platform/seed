@@ -63,6 +63,11 @@ angular.module('BE.seed.controller.dataset_detail', [])
         return cycle ? cycle.name : undefined;
       };
 
+      $scope.downloadUrl = (importFile) => {
+        const segments = importFile.file.split(/[\\/]/);
+        return `/api/v3/media/${segments.slice(segments.indexOf('media') + 1).join('/')}`;
+      };
+
       var init = function () {
         dataset_service.get_dataset($scope.dataset.id).then(function (data) {
           $scope.dataset = data.dataset;

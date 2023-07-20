@@ -12,6 +12,7 @@ from os import path
 
 from django.contrib.gis.db import models as geomodels
 from django.db import models
+from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
@@ -35,6 +36,7 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_to_js_timestamp
 
+from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -91,9 +93,7 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    # Note that ulid is not an actual project at the moment, but it is similar to UBID in that it
-    # is a unique string that represents the bounding box of the Land (or Lot)
-    ulid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
@@ -374,6 +374,39 @@ class TaxLotState(models.Model):
     def merge_relationships(cls, merged_state, state1, state2):
         """Stub to implement if merging TaxLotState relationships is needed"""
         return None
+
+
+@receiver(post_save, sender=TaxLotState)
+def post_save_taxlot_state(sender, **kwargs):
+    """
+    Generate UbidModels for a TaxLotState if the ubid field is present
+    """
+    state: TaxLotState = kwargs.get('instance')
+
+    ubid = getattr(state, 'ubid')
+    if not ubid:
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        return
+
+    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
+    if not ubid_model.exists():
+        # First set all others to non-preferred without calling save
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        # Add UBID and set as preferred
+        ubid_model = state.ubidmodel_set.create(
+            preferred=True,
+            ubid=ubid,
+        )
+        # Update lat/long/centroid
+        decode_unique_ids(state)
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+    elif ubid_model.filter(preferred=False).exists():
+        state.ubidmodel_set.update(
+            preferred=Case(
+                When(ubid=ubid, then=Value(True)),
+                default=Value(False),
+            )
+        )
 
 
 class TaxLotView(models.Model):

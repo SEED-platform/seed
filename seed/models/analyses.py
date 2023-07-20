@@ -61,7 +61,7 @@ class Analysis(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
-    # that are applicable to the entire analysis (ie all properties involved).
+    # that are applicable to the entire analysis (i.e., all properties involved).
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = models.JSONField(default=dict, blank=True)
 

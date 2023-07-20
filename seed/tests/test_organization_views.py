@@ -51,7 +51,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
                 'address_line_1',
                 'custom_id_1',
                 'jurisdiction_tax_lot_id',
-                'ulid',
+                'ubid',
             ],
         }
 

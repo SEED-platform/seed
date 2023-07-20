@@ -498,6 +498,7 @@ def remove_indication_label(property_id, label_id):
         pv.save()
     except Exception as ex:
         # could not remove label
+        # TODO: We need to save this to the logger too, not just print it.
         print(f"Error removing label: {str(ex)}")
 
 

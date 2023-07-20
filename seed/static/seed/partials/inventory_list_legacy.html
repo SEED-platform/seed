@@ -17,7 +17,7 @@
 <div class="inventory-list-controls">
     <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="form-group">
-            <div uib-dropdown class="btn-group pointer">
+            <div uib-dropdown class="btn-group">
                 <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
@@ -51,7 +51,7 @@
                         <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
                     </li>
                     <li role="menuitem">
-                        <a ng-click="open_ubid_modal()" ng-disabled="selectedCount === 0">Decode UBID/ULID for Selected</a>
+                        <a ng-click="open_ubid_decode_modal()" ng-disabled="selectedCount === 0">Decode UBID for Selected</a>
                     </li>
                     <li class="divider"></li>
                     <li role="menuitem">

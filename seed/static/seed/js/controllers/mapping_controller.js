@@ -254,7 +254,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.review_mappings = false;
       $scope.show_mapped_buildings = false;
 
-      var validCycle = _.find(cycles.cycles, {id: $scope.import_file.cycle});
+      const validCycle = _.find(cycles.cycles, {id: $scope.import_file.cycle});
       $scope.isValidCycle = Boolean(validCycle);
       $scope.cycleName = validCycle.name;
 

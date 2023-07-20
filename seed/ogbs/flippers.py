@@ -4,7 +4,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 
 Basic flipper library for hiding OGBS features for dark-launch
 
-Could get super-complicated with this (eg. see https://github.com/disqus/gutter)
+Could get super-complicated with this (e.g., see https://github.com/disqus/gutter)
 but our needs are pretty simple:
 
   - easily greppable to remove them later
