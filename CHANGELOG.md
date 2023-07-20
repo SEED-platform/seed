@@ -23,6 +23,7 @@
 * Pin urllib3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4059
 * Remove OEP by @kflemin in https://github.com/SEED-platform/seed/pull/4109
 * Bump django from 3.2.19 to 3.2.20 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4128
+* Merge sphinx spelling list with VSCode's Code Spelling version by @nllong in https://github.com/SEED-platform/seed/pull/4149
 ### Bug Fixes 🐛
 * Fix duplicate users per organization by @axelstudios in https://github.com/SEED-platform/seed/pull/4033
 * Require org id from endpoints with has_perm_class by @haneslinger in https://github.com/SEED-platform/seed/pull/4027
@@ -33,6 +34,8 @@
 * Fix categorical data on reports scatter plot by @haneslinger in https://github.com/SEED-platform/seed/pull/4085
 * Fix ESPM Source Types by @axelstudios in https://github.com/SEED-platform/seed/pull/4096
 * Fix Download URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/4066
+* Use iterator() when rehashing to save memory by @nllong in https://github.com/SEED-platform/seed/pull/4139
+* Constrain uniqueness of column name and move geocoding column creation by @nllong in https://github.com/SEED-platform/seed/pull/4151
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.1...v2.19.0
 
