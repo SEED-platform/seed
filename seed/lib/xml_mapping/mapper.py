@@ -58,18 +58,18 @@ def get_bae_mappings():
     bsync_assets = BAE.get_default_asset_defs()
     for item in bsync_assets:
 
-        if item['type'] == 'sqft':
+        if item.type == 'sqft':
             # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
             for i in ['Primary', 'Secondary']:
-                results.append(make_bae_hash(i + ' ' + item['export_name']))
-                if 'export_units' in item and item['export_units'] is True:
+                results.append(make_bae_hash(i + ' ' + item.export_name))
+                if item.export_units is True:
                     # also export units field
-                    results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
+                    results.append(make_bae_hash(i + ' ' + item.export_name + " Units"))
 
         else:
-            results.append(make_bae_hash(item['export_name']))
-            if 'export_units' in item and item['export_units'] is True:
-                results.append(make_bae_hash(item['export_name'] + " Units"))
+            results.append(make_bae_hash(item.export_name))
+            if item.export_units is True:
+                results.append(make_bae_hash(item.export_name + " Units"))
 
     return results
 

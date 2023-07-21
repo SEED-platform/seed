@@ -370,7 +370,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         property_types = get_counts('extra_data__Largest Property Use Type')
         year_built = get_counts('year_built')
         energy = get_counts('site_eui')
-        sqftage = get_counts('gross_floor_area')
+        square_footage = get_counts('gross_floor_area')
 
         from collections import defaultdict
 
@@ -444,16 +444,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             e[f['site_eui']] += f['count']
         energy_list2 = [{'site_eui': site_eui, 'percentage': count / views.count() * 100} for site_eui, count in e.items()]
 
-        sqftage_list = []
-        for i in sqftage:
+        square_footage_list = []
+        for i in square_footage:
             dict = i.copy()
             for k, v in i.items():
                 if isinstance(v, Quantity):
                     dict[k] = v.to(ureg.feet**2).magnitude
-            sqftage_list.append(dict)
+            square_footage_list.append(dict)
 
-        sqftage_agg = []
-        for record in sqftage_list:
+        square_footage_agg = []
+        for record in square_footage_list:
             dict = record.copy()
             if isinstance(record['gross_floor_area'], float):
                 if 0 < record['gross_floor_area'] <= 1000:
@@ -476,12 +476,12 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                     dict['gross_floor_area'] = "500,000-1,000,000"
                 else:
                     dict['gross_floor_area'] = "> 1,000,000"
-            sqftage_agg.append(dict)
+            square_footage_agg.append(dict)
 
         g = defaultdict(int)
-        for h in sqftage_agg:
+        for h in square_footage_agg:
             g[h['gross_floor_area']] += h['count']
-        sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
+        square_footage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
         extra_data_list = []
         for data in states.values_list('extra_data', flat=True):
@@ -510,7 +510,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'property_types': property_types,
             'year_built': year_built_list,
             'energy': energy_list2,
-            'square_footage': sqftage_list2
+            'square_footage': square_footage_list2
         })
 
     @swagger_auto_schema(manual_parameters=[
