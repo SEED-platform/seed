@@ -491,7 +491,7 @@ class PortfolioManagerSingleReportXSLX(TestCase):
     def test_single_report_view(self):
         pm_id = 22178850
         response = self.client.post(
-            reverse_lazy('api:v3:portfolio_manager-report-single', args=[pm_id]),
+            reverse_lazy('api:v3:portfolio_manager-download', args=[pm_id]),
             json.dumps({"username": self.pm_un, "password": self.pm_pw}),
             content_type='application/json',
         )

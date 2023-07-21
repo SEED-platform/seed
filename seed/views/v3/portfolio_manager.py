@@ -246,7 +246,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         ),
     )
     @action(detail=True, methods=['POST'])
-    def report_single(self, request, pk):
+    def download(self, request, pk):
         """Download a single property report from Portfolio Manager. The PK is the
         PM property ID that is on ESPM"""
         if 'username' not in request.data:
