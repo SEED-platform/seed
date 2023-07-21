@@ -232,7 +232,9 @@ class PortfolioManagerViewSet(GenericViewSet):
             return JsonResponse({'status': 'error', 'message': e}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
-        manual_parameters=[],
+        manual_parameters=[
+            AutoSchemaHelper.query_integer_field('id', True, 'ID of the ESPM Property to download')
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'username': 'string',
@@ -242,17 +244,6 @@ class PortfolioManagerViewSet(GenericViewSet):
             description='ESPM account credentials.',
             required=['username', 'password']
         ),
-        responses={
-            200: AutoSchemaHelper.schema_factory({
-                'status': 'string',
-                'templates': [{
-                    'template_information_1': 'string',
-                    'template_information_2': 'integer',
-                    '[other keys...]': 'string'
-                }],
-                'message': 'string'
-            }),
-        }
     )
     @action(detail=True, methods=['POST'])
     def report_single(self, request, pk):
