@@ -846,11 +846,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           columnDefs: [
             {field: 'audit_template_building_id', displayName: 'Audit Template Building ID'},
             {field: 'email', displayName: 'Owner Email'},
-            {field: 'updated_at', displayName: 'Upadted At'},
+            {field: 'updated_at', displayName: 'Updated At'},
             {field: 'property_view', visible: false}
           ],
           enableColumnMenus: false,
           enableColumnResizing: true,
+          enableFiltering: true,
+          enableSorting: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min($scope.at_building_data.length, 25),
@@ -874,9 +876,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
           console.log('progress_data', response)
           progress_key = response.progress_key
-          uploader_service.check_progress_loop(progress_key, 0, 1, function () {
+          uploader_service.check_progress_loop(progress_key, 0, 1, function (summary) {
             $scope.show_loading = false;
-            $scope.close();
+            $scope.at_upload_summary = summary.message
+            $scope.step.number = 19
+            // $scope.close();
           }, function () {
             // do nothing
           }, $scope.uploader)

@@ -16,6 +16,7 @@
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
     <h4 class="modal-title" ng-switch-when="17" translate>Confirm Audit Template Building Import?</h4>
     <h4 class="modal-title" ng-switch-when="18" translate>Select Properties to Update</h4>
+    <h4 class="modal-title" ng-switch-when="19" translate>Audit Template Upload Results</h4>
 
 </div>
 <div class="modal-body" ng-switch on="step.number">
@@ -460,6 +461,16 @@
         </div>
 
     </div>
+    <!-- Step 19: Summarize Results of AT Update -->
+    <div class="data-upload-steps" ng-switch-when="19">
+        <div class="alert alert-success">
+            New Property Views: {$ at_upload_summary.success $}
+
+        </div>
+        <div class="alert alert-danger" ng-if="at_upload_summary.failure">
+            Failed to update: {$ at_upload_summary.failure $}
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
@@ -539,6 +550,12 @@
     <div ng-switch-when="18">
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading" translate>Update</button>
+        </div>
+    </div>
+    <div ng-switch-when="19">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()"
+                ng-disabled="preparing_pm_meters_preview" translate>View my properties</button>
         </div>
     </div>
     <div class="row text-center">

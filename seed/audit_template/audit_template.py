@@ -129,10 +129,14 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     for property in properties:
         audit_template_building_id = property["audit_template_building_id"]
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
-        result.append({'property_view': property['property_view'], 'audit_template_building_id': audit_template_building_id, 'xml': xml.text})
+        result.append({
+            'property_view': property['property_view'], 
+            'audit_template_building_id': audit_template_building_id, 
+            'xml': xml.text
+        })
         progress_data.step('Getting XML for buildings...')
         logging.error('>>> progress %s', progress_data.data['progress'])
 
     # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()
-    property_view_set._batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
+    property_view_set.batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)

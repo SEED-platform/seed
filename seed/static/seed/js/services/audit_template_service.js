@@ -40,10 +40,11 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       })
     }
 
-    const update_building_with_xml = function (org_id, cycle_id, property_view_id, xml_string) {
+    const update_building_with_xml = function (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) {
       let body = new FormData();
       let blob = new Blob([xml_string], {type: 'text/xml'});
-      body.append('file', blob, ['at_', new Date().getTime() , '.xml'].join(''));
+      let title = `at_${audit_template_building_id}_${moment().format('YYYYMMDD_HHmmss')}.xml`
+      body.append('file', blob, title);
       body.append('file_type', 1);
       let headers = {'Content-Type': undefined};
 

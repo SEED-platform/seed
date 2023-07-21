@@ -6,6 +6,7 @@ import logging
 import os
 import time
 from collections import namedtuple
+import json
 
 from django.core.files.base import ContentFile
 from django.db.models import Q, Subquery
@@ -1345,18 +1346,20 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
-    def _batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
         progress_data = ProgressData.from_key(progress_key)
-        resy = []
+        results = {'success': 0, 'failure': 0}
         for property in properties:
-            blob = ContentFile(property['xml'], name=f'at_{int(time.time())}.xml')
-            resy.append(self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view']))
-            progress_data.step('Updating Properties...')
-            logging.error('>>> updating stuff, progress %s', progress_data.data['progress'])
+            formatted_time = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
+            blob = ContentFile(property['xml'], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
+            response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'])
+            response = json.loads(response.content)
+            results['success' if response['success'] else 'faulure'] += 1
 
-        logging.error('>>> resy %s', resy)
-        progress_data.finish_with_success()
-        return resy
+            progress_data.step('Updating Properties...')
+            logging.error('>>> updating properties, progress %s', progress_data.data['progress'])
+
+        progress_data.finish_with_success(results)
 
     def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id):
         try:
