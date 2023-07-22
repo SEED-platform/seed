@@ -1493,8 +1493,24 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         org_id = self.get_organization(request)
         ids = request.data.get('property_view_ids', [])
+
+        # filter ids based on request user's ali
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        checked_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
+        ).values_list('pk', flat=True)
+
+        if not checked_ids:
+            # no eligible IDs for this ali
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ID not found'
+            }, status=status.HTTP_404_NOT_FOUND)
         try:
-            the_status, messages = update_salesforce_properties(org_id, ids)
+            the_status, messages = update_salesforce_properties(org_id, list(checked_ids))
             if not the_status:
                 return JsonResponse({
                     'status': 'error',
@@ -1509,10 +1525,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if the_status:
+            message = 'successful sync with Salesforce'
+            if len(ids) != len(checked_ids):
+                message = message + ' One or more IDs were not found in SEED and could not be synced'
             return JsonResponse({
                 'success': True,
                 'status': 'success',
-                'message': 'successful sync with Salesforce'
+                'message': message
             })
         else:
             return JsonResponse({
