@@ -1,29 +1,33 @@
+# !/usr/bin/env python
+# encoding: utf-8
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from collections import namedtuple
+import json
 
-from django.db.models import Subquery
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.viewsets import ViewSet
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import (
-    has_hierarchy_access,
-    has_perm_class
-)
-from seed.lib.superperms.orgs.models import AccessLevelInstance
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    VIEW_LIST,
+    VIEW_LIST_TAXLOT,
+    Column,
+    ColumnListProfile,
+    ColumnListProfileColumn,
+    Cycle,
     Note,
     PropertyView,
     StatusLabel,
@@ -33,20 +37,17 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+from seed.serializers.pint import (
+    add_pint_unit_suffix,
+    apply_display_unit_preferences
+)
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (
     TaxLotSerializer,
     TaxLotStateSerializer,
-    TaxLotViewSerializer,
-    UpdateTaxLotPayloadSerializer
+    TaxLotViewSerializer
 )
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
-from seed.utils.inventory_filter import get_filtered_results
-from seed.utils.labels import get_labels
+from seed.utils.api import ProfileIdMixin, api_endpoint_class
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import (
@@ -56,170 +57,212 @@ from seed.utils.properties import (
 )
 from seed.utils.taxlots import taxlots_across_cycles
 
-ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+# Global toggle that controls whether or not to display the raw extra
+# data fields in the columns returned for the view.
+DISPLAY_RAW_EXTRADATA = True
+DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
+class TaxLotViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
-    parser_classes = (JSONParser,)
-    _organization = None
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(required=True),
-            AutoSchemaHelper.query_integer_field(
-                name='cycle_id',
-                required=False,
-                description="Optional cycle id to restrict is_applied ids to only those in the specified cycle"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'selected': 'integer',
+    def _get_filtered_results(self, request, profile_id):
+        page = request.query_params.get('page', 1)
+        per_page = request.query_params.get('per_page', 1)
+        org_id = request.query_params.get('organization_id', None)
+        cycle_id = request.query_params.get('cycle')
+        # check if there is a query parameter for the profile_id. If so, then use that one
+        profile_id = request.query_params.get('profile_id', profile_id)
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        if cycle_id:
+            cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
+        else:
+            cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
+            if cycle:
+                cycle = cycle.first()
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Could not locate cycle',
+                    'pagination': {
+                        'total': 0
+                    },
+                    'cycle_id': None,
+                    'results': []
+                })
+
+        # Return taxlot views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
+        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+                .filter(taxlot_id__in=request.data['inventory_ids'], taxlot__organization_id=org_id,
+                        cycle=cycle) \
+                .order_by('id')
+        else:
+            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+                .filter(taxlot__organization_id=org_id, cycle=cycle) \
+                .order_by('id')
+
+        paginator = Paginator(taxlot_views_list, per_page)
+
+        try:
+            taxlot_views = paginator.page(page)
+            page = int(page)
+        except PageNotAnInteger:
+            taxlot_views = paginator.page(1)
+            page = 1
+        except EmptyPage:
+            taxlot_views = paginator.page(paginator.num_pages)
+            page = paginator.num_pages
+
+        org = Organization.objects.get(pk=org_id)
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+
+        # This uses an old method of returning the show_columns. There is a new method that
+        # is preferred in v2.1 API with the ProfileIdMixin.
+        if profile_id is None:
+            show_columns = None
+        elif profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
+        else:
+            try:
+                profile = ColumnListProfile.objects.get(
+                    organization=org,
+                    id=profile_id,
+                    profile_location=VIEW_LIST,
+                    inventory_type=VIEW_LIST_TAXLOT
+                )
+                show_columns = list(ColumnListProfileColumn.objects.filter(
+                    column_list_profile_id=profile.id
+                ).values_list('column_id', flat=True))
+            except ColumnListProfile.DoesNotExist:
+                show_columns = None
+
+        related_results = TaxLotProperty.serialize(taxlot_views, show_columns,
+                                                   columns_from_database)
+
+        # collapse units here so we're only doing the last page; we're already a
+        # realized list by now and not a lazy queryset
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+        response = {
+            'pagination': {
+                'page': page,
+                'start': paginator.page(page).start_index(),
+                'end': paginator.page(page).end_index(),
+                'num_pages': paginator.num_pages,
+                'has_next': paginator.page(page).has_next(),
+                'has_previous': paginator.page(page).has_previous(),
+                'total': paginator.count
             },
-            description='IDs for taxlots to be checked for which labels are applied.'
-        )
-    )
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
-    def labels(self, request):
-        """
-        Returns a list of all labels where the is_applied field
-        in the response pertains to the labels applied to taxlot_view
-        """
-        labels = StatusLabel.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
-        super_organization = self.get_organization(request)
-        # TODO: refactor to avoid passing request here
-        return get_labels(request, labels, super_organization, 'taxlot_view')
+            'cycle_id': cycle.id,
+            'results': unit_collapsed_results
+        }
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle',
-                required=True,
-                description='The ID of the cycle to get taxlots'
-            ),
-            AutoSchemaHelper.query_integer_field(
-                'page',
-                required=False,
-                description='The current page of taxlots to return'
-            ),
-            AutoSchemaHelper.query_integer_field(
-                'per_page',
-                required=False,
-                description='The number of items per page to return'
-            ),
-            AutoSchemaHelper.query_integer_field(
-                'profile_id',
-                required=False,
-                description='The ID of the column profile to use'
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                'include_related',
-                required=False,
-                description='If False, related data (i.e., Property data) is not added to the response (default is True)'
-            ),
-        ]
-    )
+        return JsonResponse(response)
+
+    # @require_organization_id
+    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
         List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
         """
-        return get_filtered_results(request, 'taxlot', profile_id=-1)
+        return self._get_filtered_results(request, profile_id=-1)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'organization_id': 'integer',
-                'profile_id': 'integer',
-                'cycle_ids': ['integer'],
-            },
-            required=['organization_id', 'cycle_ids'],
-            description='Properties:\n'
-                        '- organization_id: ID of organization\n'
-                        '- profile_id: Either an id of a list settings profile, '
-                        'or undefined\n'
-                        '- cycle_ids: The IDs of the cycle to get taxlots'
-        )
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
-    def filter_by_cycle(self, request):
+    def cycles(self, request):
         """
         List all the taxlots with all columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
+            - name: cycle_ids
+              description: The IDs of the cycle to get taxlots
+              required: true
+              paramType: query
         """
-        # NOTE: we are using a POST http method b/c swagger and django handle
-        # arrays differently in query parameters. ie this is just simpler
         org_id = request.data.get('organization_id', None)
         profile_id = request.data.get('profile_id', -1)
         cycle_ids = request.data.get('cycle_ids', [])
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         if not org_id:
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         response = taxlots_across_cycles(org_id, ali, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'cycle',
-                required=True,
-                description='The ID of the cycle to get tax lots'
-            ),
-            AutoSchemaHelper.query_integer_field(
-                'page',
-                required=False,
-                description='The current page of taxlots to return'
-            ),
-            AutoSchemaHelper.query_integer_field(
-                'per_page',
-                required=False,
-                description='The number of items per page to return'
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                'include_related',
-                required=False,
-                description='If False, related data (i.e., Property data) is not added to the response (default is True)'
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                'ids_only',
-                required=False,
-                description='Function will return a list of tax lot ids instead of tax lot objects'
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'profile_id': 'integer',
-                'taxlot_view_ids': ['integer'],
-            },
-            required=['profile_id'],
-            description='Properties:\n'
-                        '- profile_id: Either an id of a list settings profile, or undefined\n'
-                        '- taxlot_view_ids: List of taxlot view ids'
-        )
-    )
+    # @require_organization_id
+    # @require_organization_membership
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
-        List all the tax lots
+        List all the properties
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: cycle
+              description: The ID of the cycle to get taxlots
+              required: true
+              paramType: query
+            - name: page
+              description: The current page of taxlots to return
+              required: false
+              paramType: query
+            - name: per_page
+              description: The number of items per page to return
+              required: false
+              paramType: query
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
         """
         if 'profile_id' not in request.data:
             profile_id = None
@@ -229,21 +272,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             else:
                 profile_id = request.data['profile_id']
 
-        return get_filtered_results(request, 'taxlot', profile_id=profile_id)
+        return self._get_filtered_results(request, profile_id=profile_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'taxlot_view_ids': ['integer']
-            },
-            required=['taxlot_view_ids'],
-            description='Properties:\n'
-                        '- taxlot_view_ids: Array containing tax lot state ids to merge'
-        )
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -251,40 +281,30 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def merge(self, request):
         """
         Merge multiple tax lot records into a single new record, and run this
-        new record through a match and merge round within its current Cycle.
+        new record through a match and merge round within it's current Cycle.
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: state_ids
+              description: Array containing tax lot state ids to merge
+              paramType: body
         """
         body = request.data
-        organization_id = int(self.get_organization(request))
-        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
-        taxlot_view_ids = body.get('taxlot_view_ids', [])
-        taxlot_states = TaxLotView.objects.filter(
-            id__in=taxlot_view_ids,
-            taxlot__access_level_instance__lft__gte=ali.lft,
-            taxlot__access_level_instance__rgt__lte=ali.rgt,
-            cycle__organization_id=organization_id
-        ).values('id', 'state_id')
-        # get the state ids in order according to the given view ids
-        taxlot_states_dict = {t['id']: t['state_id'] for t in taxlot_states}
-        taxlot_state_ids = [
-            taxlot_states_dict[view_id]
-            for view_id in taxlot_view_ids if view_id in taxlot_states_dict
-        ]
+        state_ids = body.get('state_ids', [])
+        organization_id = int(request.query_params.get('organization_id', None))
 
-        if len(taxlot_state_ids) != len(taxlot_view_ids):
-            return {
-                'status': 'error',
-                'message': 'All records not found.'
-            }
-
-        # Check the number of taxlot_state_ids to merge
-        if len(taxlot_state_ids) < 2:
+        # Check the number of state_ids to merge
+        if len(state_ids) < 2:
             return JsonResponse({
                 'status': 'error',
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
+        merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
@@ -299,9 +319,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return result
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -309,16 +326,19 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def unmerge(self, request, pk=None):
         """
         Unmerge a taxlot view into two taxlot views
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
         """
-        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         try:
             old_view = TaxLotView.objects.select_related(
                 'taxlot', 'cycle', 'state'
             ).get(
                 id=pk,
-                taxlot__access_level_instance__lft__gte=ali.lft,
-                taxlot__access_level_instance__rgt__lte=ali.rgt,
-                taxlot__organization_id=self.get_organization(request)
+                taxlot__organization_id=self.request.GET['organization_id']
             )
         except TaxLotView.DoesNotExist:
             return {
@@ -451,19 +471,25 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             'view_id': new_view1.id
         }
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['POST'])
     def links(self, request, pk=None):
         """
         Get taxlot details for each linked taxlot across org cycles
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the TaxLotView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
         """
-        organization_id = self.get_organization(request)
+        organization_id = request.data.get('organization_id', None)
         base_view = TaxLotView.objects.select_related('cycle').filter(
             pk=pk,
             cycle__organization_id=organization_id
@@ -491,13 +517,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }
             return JsonResponse(result)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
@@ -506,13 +528,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        org_id = self.get_organization(request)
-
-        taxlot_view = TaxLotView.objects.get(
-            pk=pk,
-            cycle__organization_id=org_id
-        )
-        merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
+        merge_count, link_count, view_id = match_merge_link(pk, 'TaxLotState')
 
         result = {
             'view_id': view_id,
@@ -522,64 +538,112 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(result)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'property_id',
-                required=True,
-                description='The property id to pair up with this taxlot'
-            )
-        ]
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a property to this taxlot
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_id
+              description: The property id to pair up with this taxlot
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (taxlot ID)
+              required: true
+              paramType: path
         """
-        organization_id = int(self.get_organization(request))
+        # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
+        organization_id = int(request.query_params.get('organization_id'))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'property_id',
-                required=True,
-                description='The property id to unpair from this taxlot'
-            )
-        ]
-    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a property from this taxlot
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_id
+              description: The property id to unpair from this taxlot
+              required: true
+              paramType: query
+            - name: pk
+              description: pk (taxlot ID)
+              required: true
+              paramType: path
         """
-        organization_id = int(self.get_organization(request))
+        # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
+        organization_id = int(request.query_params.get('organization_id'))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'taxlot_view_ids': ['integer']
-            },
-            required=['taxlot_view_ids'],
-            description='A list of taxlot view ids to delete'
-        )
-    )
+    # @require_organization_id
+    # @require_organization_membership
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['GET'])
+    def columns(self, request):
+        """
+        List all tax lot columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: used_only
+              description: Determine whether or not to show only the used fields. Ones that have been mapped
+              type: boolean
+              required: false
+              paramType: query
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        organization = Organization.objects.get(pk=organization_id)
+
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
+        columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
+        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
+
+        return JsonResponse({'status': 'success', 'columns': unitted_columns})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['GET'])
+    def mappable_columns(self, request):
+        """
+        List only taxlot columns that are mappable
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
+
+        return JsonResponse({'status': 'success', 'columns': columns})
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -587,18 +651,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def batch_delete(self, request):
         """
         Batch delete several tax lots
+        ---
+        parameters:
+            - name: selected
+              description: A list of taxlot ids to delete
+              many: true
+              required: true
         """
-        org_id = self.get_organization(request)
-        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-
-        taxlot_view_ids = request.data.get('taxlot_view_ids', [])
-        taxlot_state_ids = TaxLotView.objects.filter(
-            id__in=taxlot_view_ids,
-            taxlot__access_level_instance__lft__gte=ali.lft,
-            taxlot__access_level_instance__rgt__lte=ali.rgt,
-            cycle__organization_id=org_id
-        ).values_list('state_id', flat=True)
-        resp = TaxLotState.objects.filter(pk__in=Subquery(taxlot_state_ids)).delete()
+        taxlot_states = request.data.get('selected', [])
+        resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
@@ -611,7 +672,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'taxlot', 'cycle', 'state'
             ).get(
                 id=taxlot_pk,
-                taxlot__organization_id=self.get_organization(self.request)
+                taxlot__organization_id=self.request.GET['organization_id']
             )
             result = {
                 'status': 'success',
@@ -654,14 +715,30 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_view_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @action(detail=True, methods=['GET'])
+    def properties(self, pk):
+        """
+        Get related properties for this tax lot
+        """
+        return JsonResponse(self._get_properties(pk))
+
+    @api_endpoint_class
+    @ajax_request_class
     def retrieve(self, request, pk):
         """
         Get taxlot details
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the TaxLotView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
         """
         result = self._get_taxlot_view(pk)
         if result.get('status', None) != 'error':
@@ -678,18 +755,18 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=UpdateTaxLotPayloadSerializer,
-    )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
     def update(self, request, pk):
         """
         Update a taxlot and run the updated record through a match and merge
-        round within its current Cycle.
+        round within it's current Cycle.
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
         """
         data = request.data
 
@@ -730,17 +807,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                         data=taxlot_state_data
                     )
                     if new_taxlot_state_serializer.is_valid():
-                        # create the new taxlot state, and perform an initial save / moving relationships
+                        # create the new property state, and perform an initial save / moving relationships
                         new_state = new_taxlot_state_serializer.save()
 
-                        # preserve any non-preferred UBIDs from the Import Creation state
-                        ubid_models = taxlot_view.state.ubidmodel_set.filter(preferred=False)
-                        for ubid_model in ubid_models:
-                            new_state.ubidmodel_set.create(
-                                ubid=ubid_model.ubid,
-                            )
-
-                        # then assign this state to the taxlot view and save the whole view
+                        # then assign this state to the property view and save the whole view
                         taxlot_view.state = new_state
                         taxlot_view.save()
 
@@ -758,6 +828,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                         result.update(
                             {'state': new_taxlot_state_serializer.data}
                         )
+
+                        # save the property view so that the datetime gets updated on the property.
+                        taxlot_view.save()
                     else:
                         result.update({
                             'status': 'error',
@@ -801,7 +874,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                             {'state': updated_taxlot_state_serializer.data}
                         )
 
-                        # save the taxlot view so that the datetime gets updated on the taxlot.
+                        # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
                         Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
