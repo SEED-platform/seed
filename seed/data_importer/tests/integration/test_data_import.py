@@ -6,17 +6,16 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import copy
 import csv
-import datetime
 import json
 import logging
 import os.path as osp
 import pathlib
 import zipfile
+from datetime import date
 
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 from mock import patch
 
 from config.settings.common import BASE_DIR
@@ -506,8 +505,8 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         cycle2, _ = Cycle.objects.get_or_create(
             name='Hack Cycle 2016',
             organization=self.org,
-            start=datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2016, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2016, 1, 1),
+            end=date(2016, 12, 31),
         )
 
         # make sure that the new data was loaded correctly

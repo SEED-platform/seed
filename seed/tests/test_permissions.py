@@ -61,7 +61,7 @@ class PermissionsFunctionsTests(TestCase):
     def test_get_org_id(self):
         """Test getting org id from request."""
         # Priority of id sources should be, in order:
-        # - request parser context (ie view kwarg matches an organization id keyword)
+        # - request parser context (i.e., view kwarg matches an organization id keyword)
         # - path (under `organizations` resource)
         # - query_params
         # - data

@@ -1,0 +1,53 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="exportModalLabel">
+        <i ng-if="inventory_key === 'property'" class="fa fa-building-o"></i>
+        <i ng-if="inventory_key === 'taxlot'" class="fa fa-map-o"></i>
+        <span ng-if="!update" translate>Create UBID</span>
+        <span ng-if="update" translate>Update UBID</span>
+    </h4>
+</div>
+<div class="section">
+    <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px;">
+            <form class="ubid-form">
+                <div class="table_list_container has_borders">
+                    <table id="ubid-table" class="table has_no_btm_margin">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <span>UBID</span>
+                                </th>
+                                <th>
+                                    <span translate>Preferred</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-style="ubid.preferred ? {'background-color': '#5cb85c33'} : {}">
+                                <td>
+                                    <input type="text" name="ubid" ng-model="ubid.ubid" class="form-control" autofocus required ubid ng-change="is_valid()" sd-enter="upsert_ubid()" />
+                                </td>
+                                <td>
+                                    <div class="text-center">
+                                        <button class="btn" ng-class="ubid.preferred ? 'btn-primary' : 'btn-default'"
+                                            type="button" ng-click="toggle_preferred()" translate>
+                                            Preferred
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div ng-show="invalid" class="alert alert-warning" style="margin: 15px 0">{$ ubid_error | translate $}</div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" ng-click="upsert_ubid()" ng-disabled="!ubid.ubid || invalid">
+        <span ng-show="!update" translate>Create</span>
+        <span ng-show="update" translate>Save</span>
+    </button>
+</div>

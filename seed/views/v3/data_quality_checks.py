@@ -34,7 +34,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
 
     # Remove lookup_field once data_quality_check_id is used and "pk" can be used
     lookup_field = 'organization_id'
-    # allow organization_id path id to be used for authorization (ie has_perm_class)
+    # allow organization_id path id to be used for authorization (i.e., has_perm_class)
     authz_org_id_kwarg = 'organization_id'
 
     @swagger_auto_schema(

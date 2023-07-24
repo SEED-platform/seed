@@ -89,7 +89,7 @@ Charts
 SEED stores its charts in the `charts directory`_ of the Github Repo.  There are two main charts that are deployed when starting SEED on Kubernetes.
 
 * persistentvolumes - these are the volumes to store SEED media data and SEED Postgres data
-* seed - this stores all of the other deployemnt and service files for the application
+* seed - this stores all of the other deployment and service files for the application
 
 Unlike persistentvolumes, the seed charts must be modified with user environment variables that will be forwarded to the docker container for deployment.
 Before deployment, the user **MUST** set these variables to their desired values.
