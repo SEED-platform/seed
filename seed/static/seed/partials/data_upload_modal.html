@@ -442,11 +442,16 @@
     <!-- Step 18: Select Matching Properties to Update -->
     <div class='data-upload-steps' ng-switch-when="18">
         <div ng-if="!show_loading">
-            <div>
-                Select Properties to be Updated
+            <div class="alert alert-danger" ng-if="bad_credentials">
+                {$ error_message $}
             </div>
-            <div class="at-property-select">
-                <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns></div>
+            <div ng-if="!bad_credentials">
+                <div>
+                    Select Properties to be Updated
+                </div>
+                <div class="at-property-select" >
+                    <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns></div>
+                </div>
             </div>
         </div>
         <div ng-if="show_loading">
@@ -549,7 +554,7 @@
     </div>
     <div ng-switch-when="18">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading" translate>Update</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading && !bad_credentials" translate>Update</button>
         </div>
     </div>
     <div ng-switch-when="19">

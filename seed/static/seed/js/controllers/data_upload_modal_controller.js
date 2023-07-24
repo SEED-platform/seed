@@ -828,10 +828,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.show_loading = true;
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
           console.log('get_buildings', response)
-          $scope.at_building_data = response;
+          $scope.bad_credentials = response.success ? false : true
+
+          if ($scope.bad_credentials) {
+            $scope.error_message = response.message
+          } else {
+            $scope.at_building_data = JSON.parse(response.message);
+            setAtPropertyGrid();
+          }
           $scope.show_loading = false;
           $scope.step.number = 18;
-          setAtPropertyGrid();
         })
       }
 
@@ -859,9 +865,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           rowHeight: '30px',
           onRegisterApi: (gridApi) => {
             $scope.gridApiAtPropertySelection = gridApi;
-            $scope.gridApiAtPropertySelection.core.on.rowsRendered($scope, function () {
-              $scope.gridApiAtPropertySelection.selection.selectAllRows();
-            })
+            // $scope.gridApiAtPropertySelection.core.on.rowsRendered($scope, function () {
+            //   $scope.gridApiAtPropertySelection.selection.selectAllRows();
+            // })
           }
         };
       }

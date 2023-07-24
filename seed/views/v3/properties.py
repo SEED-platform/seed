@@ -2,11 +2,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 import logging
 import os
 import time
 from collections import namedtuple
-import json
 
 from django.core.files.base import ContentFile
 from django.db.models import Q, Subquery

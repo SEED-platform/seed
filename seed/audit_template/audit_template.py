@@ -130,8 +130,8 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
         audit_template_building_id = property["audit_template_building_id"]
         xml, _ = AuditTemplate(org_id).get_building_xml(property['audit_template_building_id'], token)
         result.append({
-            'property_view': property['property_view'], 
-            'audit_template_building_id': audit_template_building_id, 
+            'property_view': property['property_view'],
+            'audit_template_building_id': audit_template_building_id,
             'xml': xml.text
         })
         progress_data.step('Getting XML for buildings...')

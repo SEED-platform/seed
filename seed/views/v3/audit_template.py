@@ -59,10 +59,21 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             })
         at = AuditTemplate(self.get_organization(self.request))
         result = at.get_buildings(cycle_id)
+
+        if type(result) is tuple:
+            return JsonResponse({
+                'success': False,
+                'message': result[1]
+            }, status=200)
+
         response, message = result.get()
         if response is None:
             return JsonResponse({
                 'success': False,
                 'message': message
             }, status=400)
-        return HttpResponse(response)
+
+        return JsonResponse({
+            'success': True,
+            'message': response
+        }, status=200)
