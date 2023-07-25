@@ -9,6 +9,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 
 Unit tests for seed/views/labels.py
 """
+import json
 from collections import defaultdict
 from datetime import datetime
 
@@ -27,7 +28,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory,
     mock_queryset_factory
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 from seed.views.labels import UpdateInventoryLabelsAPIView
 
@@ -373,3 +374,51 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             self.status_label_2.id: [pvid_1, pvid_2, pvid_3],
         }
         self.assertEqual(label_assignments, expected_label_assignments)
+
+
+class LabelTestPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+
+    def test_label_create(self):
+        url = reverse('api:v3:labels-list') + f'?organization_id={self.org.pk}'
+        params = json.dumps({"name": "boo"})
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 403
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 201
+
+    def test_label_update(self):
+        url = reverse('api:v3:labels-detail', args=[self.label.id]) + f'?organization_id={self.org.pk}'
+        params = json.dumps({"name": "boo"})
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 403
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_label_destroy(self):
+        url = reverse('api:v3:labels-detail', args=[self.label.id]) + f'?organization_id={self.org.pk}'
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 403
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 204
