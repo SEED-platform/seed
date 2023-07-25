@@ -101,7 +101,7 @@ def _get_buildings(cycle_id, url, headers):
     try:
         response = requests.request("GET", url, headers=headers)
         if response.status_code != 200:
-            return None, f'Exected 200 response from Audit Template but got {response.status_code}: {response.content}'
+            return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
     except Exception as e:
         return None, f'Unexpected error from Audit Template: {e}'
     at_buildings = response.json()

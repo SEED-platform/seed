@@ -4,6 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 from datetime import datetime
 
 import mock
@@ -12,9 +13,13 @@ from django.urls import reverse
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import FakeCycleFactory
+from seed.test_helpers.fake import (
+    FakeCycleFactory, 
+    FakePropertyFactory,
+    FakePropertyViewFactory,
+    FakePropertyStateFactory,
+)
 from seed.utils.organizations import create_organization
-
 
 class AuditTemplateViewTests(TestCase):
     def setUp(self):
@@ -59,11 +64,12 @@ class AuditTemplateViewTests(TestCase):
 
         self.good_get_buildings_response = mock.Mock()
         self.good_get_buildings_response.status_code = 200
-        self.good_get_buildings_response.text = 'buildings response'
+        self.good_get_buildings_response.json.return_value = [
+            {"id": 1, 'updated_at': 11},
+            {"id": 2, 'updated_at': 22},
+            {"id": 3, 'updated_at': 33},
+        ]
 
-        self.bad_get_buildings_response = mock.Mock()
-        self.bad_get_buildings_response.status_code = 200
-        self.bad_get_buildings_response.text = 'bad buildings response'
 
     @mock.patch('requests.request')
     def test_get_building_xml_from_audit_template(self, mock_request):
@@ -114,3 +120,136 @@ class AuditTemplateViewTests(TestCase):
             response.json(),
             {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_get_building_response.content}'}
         )
+
+
+# class AuditTemplateBatchViewTests(TestCase):
+class batch(TestCase):
+    
+    def setUp(self):
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.org.at_organization_token = "fake at_api_token"
+        self.org.audit_template_user = "fake at user"
+        self.org.audit_template_password = "fake at password"
+        self.org.save()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        )
+
+        self.client.login(**self.user_details)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.view_factory = FakePropertyViewFactory(organization=self.org)
+        self.state_factory = FakePropertyStateFactory(organization=self.org)
+
+        self.state1 = self.state_factory.get_property_state(audit_template_building_id=1)
+        self.state2 = self.state_factory.get_property_state(audit_template_building_id=2)
+        self.state3 = self.state_factory.get_property_state(audit_template_building_id=3)
+        self.state4 = self.state_factory.get_property_state()
+
+        self.view1 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state1)
+        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state2)
+        self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
+        self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
+
+        self.good_authenticate_response = mock.Mock()
+        self.good_authenticate_response.status_code = 200
+        self.good_authenticate_response.json = mock.Mock(return_value={"token": "fake token"})
+
+        self.bad_authenticate_response = mock.Mock()
+        self.bad_authenticate_response.status_code = 400
+        self.bad_authenticate_response.content = {"error": "Invalid email, password or organization_token."}
+
+        self.get_buildings_url = reverse('api:v3:audit_template-get-buildings')
+        self.batch_get_xml_url = reverse('api:v3:audit_template-batch-get-building-xml')
+
+        self.good_get_buildings_response = mock.Mock()
+        self.good_get_buildings_response.status_code = 200
+        self.good_get_buildings_response.json.return_value = [
+            {"id": 1, 'updated_at': 11},
+            {"id": 2, 'updated_at': 22},
+            {"id": 10, 'updated_at': 33}, # Should not return id:10
+        ]
+
+        self.bad_get_buildings_response = mock.Mock()
+        self.bad_get_buildings_response.status_code = 400
+        self.bad_get_buildings_response.content = "bad buildings response"
+
+        self.good_batch_xml_response = mock.Mock() 
+        self.good_batch_xml_response.status_code = 200
+        self.good_batch_xml_response.json.return_value = [1,2,3]
+        file_path = 'seed/tests/data/building_sync_xml.txt'
+        with open(file_path, 'r') as file:
+            sample_xml = file.read()
+        self.good_batch_xml_response.text = sample_xml.encode().decode('unicode_escape')
+
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template(self, mock_request):
+        mock_request.side_effect = [self.good_authenticate_response, self.good_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={'organization_id': self.org.id, 'cycle_id': self.cycle.id})
+        self.assertEqual(200, response.status_code)
+        response = response.json()
+
+        message = json.loads(response['message'])
+        exp_message = [
+            {
+                'audit_template_building_id': 1, 
+                'property_view': self.view1.id, 
+                'email': 'n/a', 
+                'updated_at': 11
+            }, {
+                'audit_template_building_id': 2, 
+                'property_view': self.view2.id, 
+                'email': 'n/a', 
+                'updated_at': 22
+            },
+        ]
+        self.assertEqual(exp_message, message)
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template_bad_authentication(self, mock_request):
+        mock_request.side_effect = [self.bad_authenticate_response, self.good_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={'organization_id': self.org.id, 'cycle_id': self.cycle.id})
+        self.assertEqual(200, response.status_code)
+        exp_json = {'success': False, 'message': "Expected 200 response from Audit Template but got 400: {'error': 'Invalid email, password or organization_token.'}"}
+        self.assertEqual(response.json(), exp_json)
+
+
+    @mock.patch('requests.request')
+    def test_get_buildings_from_audit_template_bad_buildings_response(self, mock_request):
+        mock_request.side_effect = [self.good_authenticate_response, self.bad_get_buildings_response]
+        response = self.client.get(self.get_buildings_url, data={'organization_id': self.org.id, 'cycle_id': self.cycle.id})
+
+        self.assertEqual(400, response.status_code)
+        exp_message = "Expected 200 response from Audit Template but got 400: bad buildings response"
+        self.assertEqual(response.json()['message'], exp_message)
+
+
+    @mock.patch('requests.request')
+    def test_batch_get_building_xml(self, mock_request):
+        mock_request.side_effect = [self.good_authenticate_response, self.good_batch_xml_response, self.good_batch_xml_response]
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id) 
+        content_type = 'application/json'
+        data = json.dumps([
+            {'audit_template_building_id': 1, 'property_view': self.view1.id},
+            {'audit_template_building_id': 2, 'property_view': self.view2.id},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 200)
+        response = response.json()
+        self.assertEqual(response['status'], 'success')
+        self.assertEqual(response['message'], {'success': 2, 'failure': 0})
+        self.assertEqual(response['progress'], 100)
