@@ -410,7 +410,6 @@ class TestAHImportDuplicateExisting(TestAHImportFile):
         super().setUp()
 
         # this causes all the states to be duplicates
-        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
         self.base_details["no_default_data"] = False
 
         self.state = self.property_state_factory.get_property_state(**self.base_details)

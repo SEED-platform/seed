@@ -1254,10 +1254,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_modal = function (selectedViewIds) {
+      $scope.open_ubid_decode_modal = function (selectedViewIds) {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
-          controller: 'ubid_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_decode_modal.html',
+          controller: 'ubid_decode_modal_controller',
           resolve: {
             property_view_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
@@ -1265,6 +1265,57 @@ angular.module('BE.seed.controller.inventory_list', [])
             taxlot_view_ids: function () {
               return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
+          }
+        });
+      };
+
+      $scope.open_ubid_jaccard_index_modal = function (selectedViewIds) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_jaccard_index_modal.html',
+          controller: 'ubid_jaccard_index_modal_controller',
+          backdrop: 'static',
+          resolve: {
+            ubids: () => {
+              if (!selectedViewIds.length) {
+                return [];
+              }
+              let ubid_column;
+              let promise;
+              if ($scope.inventory_type === 'properties') {
+                promise = inventory_service.get_mappable_property_columns().then((columns) => {
+                  ubid_column = columns.find(c => c.column_name === 'ubid');
+                  return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds);
+                });
+              } else {
+                promise = inventory_service.get_mappable_taxlot_columns()
+                  .then((columns) => {
+                    ubid_column = columns.find(c => c.column_name === 'ubid');
+                    return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds);
+                  });
+              }
+              return promise.then(function (inventory_data) {
+                return inventory_data.results.map(d => d[ubid_column.name]);
+              });
+            }
+          }
+        })
+      };
+
+      $scope.open_ubid_admin_modal = function (selectedViewId) {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? selectedViewId[0] : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? selectedViewId[0] : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
+            }],
           }
         });
       };
@@ -1455,7 +1506,9 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
           case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
-          case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
+          case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
+          case 'open_ubid_decode_modal': $scope.open_ubid_decode_modal(selectedViewIds); break;
+          case 'open_ubid_admin_modal': $scope.open_ubid_admin_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'toggle_access_level_instances': $scope.toggle_access_level_instances(); break;
           case 'select_all': $scope.select_all(); break;

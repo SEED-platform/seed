@@ -67,6 +67,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.cycles = cycles.cycles;
       var cached_cycle = inventory_service.get_last_cycle();
       $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
+      $scope.multipleCycleUpload = false;
+      $scope.show_help = false;
 
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';
@@ -99,6 +101,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         filename: '',
         import_file_id: 0
       };
+
       /**
        * uploader: hold the state of the upload.
        * invalid_extension_alert: bool - hides or shows the bootstrap alert for csv/xls/xlsx files
@@ -152,6 +155,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.goto_step = function (step) {
         $scope.step.number = step;
+      };
+
+      $scope.toggleMultipleCycleUpload = function () {
+        $scope.multipleCycleUpload = !$scope.multipleCycleUpload;
       };
 
       $scope.cycleChanged = function (selected) {
@@ -378,12 +385,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 if (file.source_type === 'BuildingSync Raw') {
                   validate_use_cases_then_save(file.file_id, file.cycle_id);
                 } else {
-                  save_raw_assessed_data(file.file_id, file.cycle_id, false);
+                  save_raw_assessed_data(file.file_id, file.cycle_id, false, $scope.multipleCycleUpload);
                 }
               }
               // Portfolio Data
               if (current_step === 4) {
-                save_map_match_PM_data(file.file_id, file.cycle_id);
+                save_map_match_PM_data(file.file_id, file.cycle_id, $scope.multipleCycleUpload);
               }
             }
             break;
@@ -410,11 +417,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *
        * @param {string} file_id: the id of the import file
        * @param {string} cycle_id: the id of the cycle
+       * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
        */
-      var save_map_match_PM_data = function (file_id, cycle_id) {
+      var save_map_match_PM_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
         $scope.uploader.status_message = 'saving energy data';
         $scope.uploader.progress = 25;
-        uploader_service.save_raw_data(file_id, cycle_id)
+        uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload)
           .then(function (data) {
             // resolve save_raw_data promise
             monitor_save_raw_data(data.progress_key, file_id);
@@ -625,11 +633,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: the id of the import file
        * @param cycle_id
        * @param is_meter_data
+       * @param multiple_cycle_upload
        */
-      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data) {
+      var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
-        uploader_service.save_raw_data(file_id, cycle_id).then(function (data) {
+        uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then(function (data) {
           var progress = _.clamp(data.progress, 0, 100);
           uploader_service.check_progress_loop(data.progress_key, progress, 1 - (progress / 100), function (progress_data) {
             $scope.uploader.status_message = 'saving complete';
@@ -690,6 +699,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             uploader_service.check_progress_loop_main_sub(progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
+                $scope.multipleCycleUpload = result_data.multiple_cycle_upload;
 
                 $scope.property_initial_incoming = result_data.properties.initial_incoming;
                 $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;

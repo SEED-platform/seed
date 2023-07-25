@@ -7,8 +7,8 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0027_auto_20230413_1250'),
-        ('seed', '0196_auto_add_props_to_tree'),
+        ('orgs', '0028_auto_20230413_1250'),
+        ('seed', '0204_auto_add_props_to_tree'),
     ]
 
     operations = [

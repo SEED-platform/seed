@@ -13,6 +13,9 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
 from shapely import geometry, wkt
 
+from seed.lib.superperms.orgs.models import Organization
+from seed.models.columns import Column
+
 
 class MapQuestAPIKeyError(Exception):
     """Your MapQuest API Key is either invalid or at its limit."""
@@ -39,6 +42,35 @@ def bounding_box_wkt(state):
     """
     if state.bounding_box:
         return GEOSGeometry(state.bounding_box, srid=4326).wkt
+
+
+def create_geocoded_additional_columns(organization: Organization):
+    """Create the additional columns that are needed for storing the extra
+    geocoded data that will be returned by the MapQuest service."""
+    new_columns = [
+        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},
+        {"name": "geocoded_postal_code", "display_name": "Geocoded Postal Code", "description": "Geocoded Postal Code"},
+        {"name": "geocoded_side_of_street", "display_name": "Geocoded Side of Street", "description": "Geocoded Side of Street"},
+        {"name": "geocoded_country", "display_name": "Geocoded Country", "description": "Geocoded Country"},
+        {"name": "geocoded_state", "display_name": "Geocoded State", "description": "Geocoded State"},
+        {"name": "geocoded_county", "display_name": "Geocoded County", "description": "Geocoded County"},
+        {"name": "geocoded_city", "display_name": "Geocoded City", "description": "Geocoded City"},
+        {"name": "geocoded_neighborhood", "display_name": "Geocoded Neighborhood", "description": "Geocoded Neighborhood"},
+    ]
+
+    # make sure the columns exist for the extra data
+    for new_column in new_columns:
+        column, created = Column.objects.get_or_create(
+            is_extra_data=True,
+            column_name=new_column['name'],
+            organization=organization,
+            table_name='PropertyState',
+            units_pint=None
+        )
+        if created:
+            column.display_name = new_column['display_name']
+            column.column_description = new_column['description']
+            column.save()
 
 
 def geocode_buildings(buildings):
@@ -90,10 +122,24 @@ def geocode_buildings(buildings):
 
     id_geocoding_results = _id_geocodings(id_addresses, address_geocoding_results)
 
-    _save_geocoding_results(id_geocoding_results, buildings_to_geocode)
+    _save_geocoding_results(id_geocoding_results, buildings_to_geocode, org)
 
 
-def _save_geocoding_results(id_geocoding_results, buildings_to_geocode):
+def _save_geocoding_results(id_geocoding_results, buildings_to_geocode, org):
+    """Save the geocoding results to the data. Some of the Geocoded fields end up
+    as extra data, so we need to make sure the columns exist.
+
+    Args:
+        id_geocoding_results (list): list of geocoded results
+        buildings_to_geocode (list): list of buildings to geocode
+        org (Organization): The organization that the results are to be saved to
+    """
+    # This is a redundant call, but intentional. If running this command from the `tasks`
+    # module, then the columns should already have been created to protect against from
+    # race conditions. However, there are other methods that geocode buildings (e.g., from
+    # the inventory list dropdown), so this is a safety check.
+    create_geocoded_additional_columns(org)
+
     for id, geocoding_result in id_geocoding_results.items():
         building = buildings_to_geocode.get(pk=id)
 
@@ -103,6 +149,17 @@ def _save_geocoding_results(id_geocoding_results, buildings_to_geocode):
 
             building.longitude = geocoding_result.get("longitude")
             building.latitude = geocoding_result.get("latitude")
+
+            # save files to extra data, if they have been configured
+            building.extra_data['geocoded_address'] = geocoding_result.get("address")
+            building.extra_data['geocoded_postal_code'] = geocoding_result.get("postal_code")
+            building.extra_data['geocoded_side_of_street'] = geocoding_result.get("side_of_street")
+            building.extra_data['geocoded_country'] = geocoding_result.get("Country")
+            building.extra_data['geocoded_state'] = geocoding_result.get("State")
+            building.extra_data['geocoded_county'] = geocoding_result.get("County")
+            building.extra_data['geocoded_city'] = geocoding_result.get("City")
+            building.extra_data['geocoded_neighborhood'] = geocoding_result.get("Neighborhood")
+
         else:
             building.geocoding_confidence = f"Low - check address ({geocoding_result.get('quality')})"
 
@@ -198,7 +255,12 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
 
         response = requests.get(request_url)
         try:
+            # Catch the invalide API key error before parsing the response
+            if response.status_code == 401:
+                raise MapQuestAPIKeyError(f'Failed geocoding property states due to MapQuest error. API Key is invalid with message: {response.content}.')
+
             results += response.json().get('results')
+
         except Exception as e:
             if response.status_code == 403:
                 raise MapQuestAPIKeyError('Failed geocoding property states due to MapQuest error. Your MapQuest API Key is either invalid or at its limit.')
@@ -233,17 +295,43 @@ def _analyze_location(result):
     is_acceptable_granularity = granularity_level in ["P1", "L1"]
     is_acceptable_confidence = not ("C" in confidence_level or "X" in confidence_level)
 
+    # The Geocoded data will look something like this:
+    # [{'providedLocation': {'street': '18741 e 71st ave, Colorado'},
+    #   'locations': [
+    #     {'street': '18741 E 71st Ave',
+    #      'adminArea6': 'Denver International Airport', 'adminArea6Type': 'Neighborhood',
+    #      'adminArea5': 'Denver', 'adminArea5Type': 'City',
+    #      'adminArea4': 'Denver', 'adminArea4Type': 'County',
+    #      'adminArea3': 'CO', 'adminArea3Type': 'State',
+    #      'adminArea1': 'US', 'adminArea1Type': 'Country',
+    #      'postalCode': '80249-7375', 'geocodeQualityCode': 'P1AAA',
+    #      'geocodeQuality': 'ADDRESS', 'dragPoint': False, 'sideOfStreet': 'L',
+    #      'linkId': '0', 'unknownInput': '', 'type': 's',
+    #      'latLng': {'lat': 39.82612, 'lng': -104.76877},
+    #      'displayLatLng': {'lat': 39.82622, 'lng': -104.76898}, 'mapUrl': ''}
+    #   ]
+    # }]
     if is_acceptable_confidence and is_acceptable_granularity:
         long = result.get('locations')[0].get('displayLatLng').get('lng')
         lat = result.get('locations')[0].get('displayLatLng').get('lat')
+
+        # flatten out the "adminArea" fields that exist in the result
+        admin_areas = {}
+        for i in range(1, 7):
+            if result.get('locations')[0].get(f'adminArea{i}Type') is None:
+                continue
+            admin_areas[result.get('locations')[0].get(f'adminArea{i}Type')] = result.get('locations')[0].get(f'adminArea{i}')
 
         return {
             "is_valid": True,
             "long_lat": f"POINT ({long} {lat})",
             "quality": quality,
             "longitude": long,
-            "latitude": lat
-        }
+            "latitude": lat,
+            "address": result.get('locations')[0].get('street'),
+            "postal_code": result.get('locations')[0].get('postalCode'),
+            "side_of_street": result.get('locations')[0].get('sideOfStreet'),
+        } | admin_areas
     else:
         return {"quality": quality}
 

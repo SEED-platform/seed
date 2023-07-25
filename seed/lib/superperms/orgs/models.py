@@ -206,6 +206,12 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.CheckConstraint(
+                name="ubid_threshold_range",
+                check=models.Q(ubid_threshold__range=(0, 1)),
+            ),
+        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
@@ -271,8 +277,10 @@ class Organization(models.Model):
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
 
-    # TODO: add constraint tha that these must be unique
     access_level_names = models.JSONField(default=list)
+
+    # UBID Threshold
+    ubid_threshold = models.FloatField(default=1.0)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

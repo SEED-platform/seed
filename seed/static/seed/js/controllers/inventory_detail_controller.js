@@ -98,6 +98,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
+      $scope.cycles = [$scope.cycle]
 
       views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
       $scope.views = views_payload.map(
@@ -586,6 +587,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
           });
         }, function () {
           // Do nothing
+        });
+      };
+      $scope.open_ubid_admin_modal = function () {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? $scope.inventory.view_id : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? $scope.inventory.view_id : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id);
+            }],
+          }
         });
       };
 

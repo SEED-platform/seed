@@ -30,8 +30,8 @@ def assign_taxlots_to_root_acces_level(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0027_auto_20230413_1250'),
-        ('seed', '0195_sf_delete_label_checkbox'),
+        ('orgs', '0028_auto_20230413_1250'),
+        ('seed', '0203_column_unique_column_name'),
     ]
 
     operations = [

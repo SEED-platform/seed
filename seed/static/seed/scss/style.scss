@@ -4971,3 +4971,9 @@ ul.r-list {
   vertical-align: middle;
   font-weight: normal;
 }
+.ubid-form {
+  input.ng-invalid {
+    background-color: #fff0f0;
+    border-color: #dd2c00;
+  }
+}
