@@ -30,13 +30,38 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             }, status=400)
         return HttpResponse(response.text)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema(
+            manual_parameters=[
+                AutoSchemaHelper.query_org_id_field(),
+                AutoSchemaHelper.query_integer_field(
+                    'cycle_id',
+                    required=True,
+                    description='Cycle ID'
+                ),
+            ],
+            request_body=AutoSchemaHelper.schema_factory(
+                [
+                    {
+                        'audit_template_building_id': 'integer',
+                        'property_view': 'integer',
+                        'email': 'string',
+                        'updated_at': 'string',
+                    }
+                ],
+            )
+        )
     @has_perm_class('can_view_data')
     @action(detail=False, methods=['PUT'])
     def batch_get_building_xml(self, request):
+        """
+        Fetches Buidling XMLs for a list of Audit Template properties and updates corresponding PropertyViews. 
+        This function kicks off a background worker to perform the updates. 
+        The return value a ProgressData object used to monitor the status of the background task
+        """
+
         properties = request.data
         cycle_id = request.query_params.get('cycle_id')
-        at = AuditTemplate(self.get_organization(self.request))
+        at = AuditTemplate(self.get_organization(request))
         progress_data = at.batch_get_building_xml(cycle_id, properties)
 
         if progress_data is None:
@@ -47,17 +72,29 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(progress_data)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='Cycle ID'
+            ),
+        ]
+    )
     @has_perm_class('can_view_data')
     @action(detail=False, methods=['GET'])
     def get_buildings(self, request):
-        cycle_id = self.request.query_params.get('cycle_id')
+        """
+        Fetches all properties associated with the linked Audit Template account via the Audit Template API
+        """
+        cycle_id = request.query_params.get('cycle_id')
         if not cycle_id:
             return JsonResponse({
                 'success': False,
                 'message': 'Missing Cycle ID'
             })
-        at = AuditTemplate(self.get_organization(self.request))
+        at = AuditTemplate(self.get_organization(request))
         result = at.get_buildings(cycle_id)
 
         if type(result) is tuple:
