@@ -14,12 +14,13 @@ from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import (
-    FakeCycleFactory, 
+    FakeCycleFactory,
     FakePropertyFactory,
-    FakePropertyViewFactory,
     FakePropertyStateFactory,
+    FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
+
 
 class AuditTemplateViewTests(TestCase):
     def setUp(self):
@@ -69,7 +70,6 @@ class AuditTemplateViewTests(TestCase):
             {"id": 2, 'updated_at': 22},
             {"id": 3, 'updated_at': 33},
         ]
-
 
     @mock.patch('requests.request')
     def test_get_building_xml_from_audit_template(self, mock_request):
@@ -124,7 +124,7 @@ class AuditTemplateViewTests(TestCase):
 
 # class AuditTemplateBatchViewTests(TestCase):
 class batch(TestCase):
-    
+
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',
@@ -175,21 +175,19 @@ class batch(TestCase):
         self.good_get_buildings_response.json.return_value = [
             {"id": 1, 'updated_at': 11},
             {"id": 2, 'updated_at': 22},
-            {"id": 10, 'updated_at': 33}, # Should not return id:10
+            {"id": 10, 'updated_at': 33},  # Should not return id:10
         ]
 
         self.bad_get_buildings_response = mock.Mock()
         self.bad_get_buildings_response.status_code = 400
         self.bad_get_buildings_response.content = "bad buildings response"
 
-        self.good_batch_xml_response = mock.Mock() 
+        self.good_batch_xml_response = mock.Mock()
         self.good_batch_xml_response.status_code = 200
-        self.good_batch_xml_response.json.return_value = [1,2,3]
         file_path = 'seed/tests/data/building_sync_xml.txt'
         with open(file_path, 'r') as file:
             sample_xml = file.read()
         self.good_batch_xml_response.text = sample_xml.encode().decode('unicode_escape')
-
 
     @mock.patch('requests.request')
     def test_get_buildings_from_audit_template(self, mock_request):
@@ -201,14 +199,14 @@ class batch(TestCase):
         message = json.loads(response['message'])
         exp_message = [
             {
-                'audit_template_building_id': 1, 
-                'property_view': self.view1.id, 
-                'email': 'n/a', 
+                'audit_template_building_id': 1,
+                'property_view': self.view1.id,
+                'email': 'n/a',
                 'updated_at': 11
             }, {
-                'audit_template_building_id': 2, 
-                'property_view': self.view2.id, 
-                'email': 'n/a', 
+                'audit_template_building_id': 2,
+                'property_view': self.view2.id,
+                'email': 'n/a',
                 'updated_at': 22
             },
         ]
@@ -222,7 +220,6 @@ class batch(TestCase):
         exp_json = {'success': False, 'message': "Expected 200 response from Audit Template but got 400: {'error': 'Invalid email, password or organization_token.'}"}
         self.assertEqual(response.json(), exp_json)
 
-
     @mock.patch('requests.request')
     def test_get_buildings_from_audit_template_bad_buildings_response(self, mock_request):
         mock_request.side_effect = [self.good_authenticate_response, self.bad_get_buildings_response]
@@ -232,11 +229,10 @@ class batch(TestCase):
         exp_message = "Expected 200 response from Audit Template but got 400: bad buildings response"
         self.assertEqual(response.json()['message'], exp_message)
 
-
     @mock.patch('requests.request')
     def test_batch_get_building_xml(self, mock_request):
         mock_request.side_effect = [self.good_authenticate_response, self.good_batch_xml_response, self.good_batch_xml_response]
-        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id) 
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
         content_type = 'application/json'
         data = json.dumps([
             {'audit_template_building_id': 1, 'property_view': self.view1.id},
