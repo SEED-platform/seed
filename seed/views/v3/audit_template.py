@@ -15,7 +15,6 @@ from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
-
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
@@ -32,31 +31,31 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         return HttpResponse(response.text)
 
     @swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(),
-                AutoSchemaHelper.query_integer_field(
-                    'cycle_id',
-                    required=True,
-                    description='Cycle ID'
-                ),
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='Cycle ID'
+            ),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            [
+                {
+                    'audit_template_building_id': 'integer',
+                    'property_view': 'integer',
+                    'email': 'string',
+                    'updated_at': 'string',
+                }
             ],
-            request_body=AutoSchemaHelper.schema_factory(
-                [
-                    {
-                        'audit_template_building_id': 'integer',
-                        'property_view': 'integer',
-                        'email': 'string',
-                        'updated_at': 'string',
-                    }
-                ],
-            )
         )
+    )
     @has_perm_class('can_view_data')
     @action(detail=False, methods=['PUT'])
     def batch_get_building_xml(self, request):
         """
-        Fetches Buidling XMLs for a list of Audit Template properties and updates corresponding PropertyViews. 
-        This function kicks off a background worker to perform the updates. 
+        Fetches Buidling XMLs for a list of Audit Template properties and updates corresponding PropertyViews.
+        This function kicks off a background worker to perform the updates.
         The return value a ProgressData object used to monitor the status of the background task
         """
 
@@ -89,7 +88,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             valid.append(property.get('property_view'))
             valid.append(property.get('email'))
             valid.append(property.get('updated_at'))
-        
+
         if not all(valid):
             return False, "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
         else:
