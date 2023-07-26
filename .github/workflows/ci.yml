@@ -58,9 +58,11 @@ jobs:
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          # use unstable now which is 116, 115 was marked as unstable recently and needs to be patched.
-          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb
-          sudo apt install -y /tmp/chrome.deb
+          # Available chrome-driver versions: https://chromedriver.storage.googleapis.com/
+          # Available google-chrome versions: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable?id=202706
+          # Lock to 114.0.5735.90
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.90-1_amd64.deb
+          sudo apt install -y --allow-downgrades /tmp/chrome.deb
           google-chrome --version
       - name: Test Django
         if: ${{ matrix.test_env == 'django' }}
