@@ -426,9 +426,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     """
                     individual_geometry = {}
 
-                    print("VALUE:")
-                    print(value)
-
                     # long_lat
                     if key == 'long_lat':
                         coordinates = self._serialized_point(value)

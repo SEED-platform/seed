@@ -2,8 +2,8 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.ubid_modal', [])
-  .controller('ubid_modal_controller', [
+angular.module('BE.seed.controller.ubid_decode_modal', [])
+  .controller('ubid_decode_modal_controller', [
     '$scope',
     '$uibModalInstance',
     'property_view_ids',
@@ -20,9 +20,6 @@ angular.module('BE.seed.controller.ubid_modal', [])
         $scope.pre_decode_ubid_successfully_decoded = result.ubid_successfully_decoded;
         $scope.pre_decode_ubid_unpopulated = result.ubid_unpopulated;
 
-        $scope.pre_decode_ulid_not_decoded = result.ulid_not_decoded;
-        $scope.pre_decode_ulid_successfully_decoded = result.ulid_successfully_decoded;
-        $scope.pre_decode_ulid_unpopulated = result.ulid_unpopulated;
 
         $scope.decode_ubid_state = 'verify';
       });
@@ -37,9 +34,6 @@ angular.module('BE.seed.controller.ubid_modal', [])
               $scope.post_decode_ubid_successfully_decoded = result.ubid_successfully_decoded;
               $scope.post_decode_ubid_unpopulated = result.ubid_unpopulated;
 
-              $scope.post_decode_ulid_not_decoded = result.ulid_not_decoded;
-              $scope.post_decode_ulid_successfully_decoded = result.ulid_successfully_decoded;
-              $scope.post_decode_ulid_unpopulated = result.ulid_unpopulated;
 
               $scope.decode_ubid_state = 'result';
             });

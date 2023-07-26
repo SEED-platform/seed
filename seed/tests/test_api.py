@@ -5,16 +5,15 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import base64
-import datetime
 import json
 import os
 import pathlib
 import time
+from datetime import date
 from unittest import skip
 
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -65,8 +64,8 @@ class TestApi(TestCase):
         self.cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
             organization=self.org,
-            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2015, 1, 1),
+            end=date(2015, 12, 31),
         )
         auth_string = base64.urlsafe_b64encode(bytes(
             '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
@@ -146,7 +145,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                'name': str(datetime.date.today().year - 1) + ' Calendar Year',
+                'name': str(date.today().year - 1) + ' Calendar Year',
                 'num_properties': 0,
                 'num_taxlots': 0,
                 'cycle_id': self.default_cycle.pk,

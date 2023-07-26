@@ -551,7 +551,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
-        new record through a match and merge round within it's current Cycle.
+        new record through a match and merge round within its current Cycle.
         """
         body = request.data
         organization_id = int(self.get_organization(request))
@@ -1026,7 +1026,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
-        round within it's current Cycle.
+        round within its current Cycle.
         """
         data = request.data
 
@@ -1070,6 +1070,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         # create the new property state, and perform an initial save / moving relationships
                         new_state = new_property_state_serializer.save()
 
+                        # preserve any non-preferred UBIDs from the Import Creation state
+                        ubid_models = property_view.state.ubidmodel_set.filter(preferred=False)
+                        for ubid_model in ubid_models:
+                            new_state.ubidmodel_set.create(
+                                ubid=ubid_model.ubid,
+                            )
+
                         # Since we are creating a new relationship when we are manually editing the Properties, then
                         # we need to move the relationships over to the new manually edited record.
                         new_state = self._move_relationships(property_view.state, new_state)
@@ -1093,9 +1100,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-
-                        # save the property view so that the datetime gets updated on the property.
-                        property_view.save()
                     else:
                         result.update({
                             'status': 'error',

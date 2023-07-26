@@ -52,11 +52,11 @@ describe('controller: inventory_detail_controller', function () {
       },
       cycle: {
         created: '2016-08-02T16:38:22.925258Z',
-        end: '2011-01-01T07:59:59Z',
+        end: '2011-01-01',
         id: 1,
         name: '2010 Calendar Year',
         organization: 24,
-        start: '2010-01-01T08:00:00Z',
+        start: '2010-01-01',
         user: ''
       },
       properties: [

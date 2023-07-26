@@ -535,6 +535,17 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       }
 
+      $scope.show_access_level_instances = true
+      $scope.toggle_access_level_instances = function () {
+        $scope.show_access_level_instances = !$scope.show_access_level_instances
+        $scope.gridOptions.columnDefs.forEach((col) => {
+          if (col.group == 'access_level_instance') {
+            col.visible = $scope.show_access_level_instances
+          }
+        })
+        $scope.gridApi.core.refresh();
+      }
+
       $scope.loadLabelsForFilter = function (query) {
         // Find all labels associated with the current cycle.
         return _.filter($scope.labels, function (lbl) {
@@ -802,6 +813,27 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
 
+      // Add access level instances to grid
+      $scope.organization.access_level_names.reverse().slice(0, -1).forEach((level) => {
+        $scope.columns.unshift({
+          name: level,
+          displayName: level,
+          group: 'access_level_instance',
+          enableColumnMenu: true,
+          enableColumnMoving: false,
+          enableColumnResizing: true,
+          enableFiltering: true,
+          enableHiding: true,
+          enableSorting: true,
+          enablePinning: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 100,
+          cellClass: 'ali-cell',
+          headerCellClass: 'ali-header',
+        })
+      })
       // The meters_exist_indicator column is only applicable to properties
       if ($stateParams.inventory_type == 'properties') {
         $scope.columns.unshift({
@@ -1010,9 +1042,11 @@ angular.module('BE.seed.controller.inventory_list', [])
       // Data
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
-        var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
-
+        var visibleColumns = [
+          ..._.map($scope.columns, 'name'),
+          ...['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id'],
+          ...$scope.organization.access_level_names
+        ]
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
           return obj;
@@ -1220,10 +1254,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      $scope.open_ubid_modal = function (selectedViewIds) {
+      $scope.open_ubid_decode_modal = function (selectedViewIds) {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
-          controller: 'ubid_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_decode_modal.html',
+          controller: 'ubid_decode_modal_controller',
           resolve: {
             property_view_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
@@ -1231,6 +1265,57 @@ angular.module('BE.seed.controller.inventory_list', [])
             taxlot_view_ids: function () {
               return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
+          }
+        });
+      };
+
+      $scope.open_ubid_jaccard_index_modal = function (selectedViewIds) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_jaccard_index_modal.html',
+          controller: 'ubid_jaccard_index_modal_controller',
+          backdrop: 'static',
+          resolve: {
+            ubids: () => {
+              if (!selectedViewIds.length) {
+                return [];
+              }
+              let ubid_column;
+              let promise;
+              if ($scope.inventory_type === 'properties') {
+                promise = inventory_service.get_mappable_property_columns().then((columns) => {
+                  ubid_column = columns.find(c => c.column_name === 'ubid');
+                  return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds);
+                });
+              } else {
+                promise = inventory_service.get_mappable_taxlot_columns()
+                  .then((columns) => {
+                    ubid_column = columns.find(c => c.column_name === 'ubid');
+                    return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds);
+                  });
+              }
+              return promise.then(function (inventory_data) {
+                return inventory_data.results.map(d => d[ubid_column.name]);
+              });
+            }
+          }
+        })
+      };
+
+      $scope.open_ubid_admin_modal = function (selectedViewId) {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? selectedViewId[0] : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? selectedViewId[0] : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property(selectedViewId[0]) : inventory_service.get_taxlot(selectedViewId[0]);
+            }],
           }
         });
       };
@@ -1421,8 +1506,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
           case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
-          case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
+          case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
+          case 'open_ubid_decode_modal': $scope.open_ubid_decode_modal(selectedViewIds); break;
+          case 'open_ubid_admin_modal': $scope.open_ubid_admin_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
+          case 'toggle_access_level_instances': $scope.toggle_access_level_instances(); break;
           case 'select_all': $scope.select_all(); break;
           case 'select_none': $scope.select_none(); break;
           case 'update_salesforce': $scope.update_salesforce(selectedViewIds); break;
@@ -1511,11 +1599,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       function currentColumns () {
-        // Save all columns except first 3
+        // Save all columns except first 3 and Access Level Instances
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
-            && !col.colDef.is_derived_column;
+            && !col.colDef.is_derived_column
+            && !col.colDef.group === 'access_level_instance';
         });
 
         // Ensure pinned ordering first

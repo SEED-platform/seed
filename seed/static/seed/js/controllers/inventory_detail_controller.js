@@ -88,6 +88,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.show_at_scenario_actions = true
 
 
+
       // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
@@ -97,6 +98,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
+      $scope.cycles = [$scope.cycle]
 
       views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
       $scope.views = views_payload.map(
@@ -122,6 +124,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
       $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
+      const ali = $scope.inventory_type == 'properties' ?
+        inventory_payload.property.access_level_instance :
+        inventory_payload.taxlot.access_level_instance
+
+      $scope.ali_path = {}
+      if (typeof(ali) == 'object') {
+        $scope.ali_path = ali.path
+        // the first key in the path (<org name>: 'root') is not necessary to display
+        delete $scope.ali_path[$scope.organization.name]
+      }
 
       $scope.order_historical_items_with_scenarios = () => {
         $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter(item => !_.isEmpty(item.state.scenarios)) : []
@@ -575,6 +587,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
           });
         }, function () {
           // Do nothing
+        });
+      };
+      $scope.open_ubid_admin_modal = function () {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? $scope.inventory.view_id : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? $scope.inventory.view_id : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id);
+            }],
+          }
         });
       };
 

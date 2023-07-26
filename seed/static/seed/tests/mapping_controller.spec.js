@@ -172,13 +172,13 @@ describe('controller: mapping_controller', function () {
       sharedFieldType: 'None',
       table_name: 'TaxLotState'
     }, {
-      column_name: 'ulid',
+      column_name: 'ubid',
       data_type: 'string',
-      display_name: 'ULID',
-      column_description: 'ULID',
+      display_name: 'UBID',
+      column_description: 'UBID',
       id: 10,
       is_extra_data: false,
-      name: 'ulid_10',
+      name: 'ubid_10',
       sharedFieldType: 'None',
       table_name: 'TaxLotState'
     }];
@@ -198,7 +198,7 @@ describe('controller: mapping_controller', function () {
 
     var mock_matching_criteria_columns_payload = {
       PropertyState: ['address_line_1', 'custom_id_1', 'pm_property_id', 'ubid'],
-      TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ulid']
+      TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ubid']
     };
 
     var mock_raw_column_names = [
