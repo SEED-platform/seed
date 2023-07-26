@@ -10,7 +10,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 
 class ManagementTests(TestCase):
-    "tests config django management commands"
+    """tests config django management commands"""
 
     def test_create_default_user(self):
         """tests the create_default_user management command"""
