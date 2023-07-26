@@ -15,6 +15,7 @@ from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
+
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
@@ -60,6 +61,14 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         """
 
         properties = request.data
+
+        valid, message = self.validate_properties(properties)
+        if not valid:
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+
         cycle_id = request.query_params.get('cycle_id')
         at = AuditTemplate(self.get_organization(request))
         progress_data = at.batch_get_building_xml(cycle_id, properties)
@@ -71,6 +80,20 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             }, status=400)
 
         return JsonResponse(progress_data)
+
+    def validate_properties(self, properties):
+        valid = [bool(properties)]
+        for property in properties:
+            valid.append(len(property) == 4)
+            valid.append(property.get('audit_template_building_id'))
+            valid.append(property.get('property_view'))
+            valid.append(property.get('email'))
+            valid.append(property.get('updated_at'))
+        
+        if not all(valid):
+            return False, "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
+        else:
+            return True, ""
 
     @swagger_auto_schema(
         manual_parameters=[

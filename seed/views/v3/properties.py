@@ -1348,6 +1348,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
         progress_data = ProgressData.from_key(progress_key)
+        if not Cycle.objects.filter(pk=cycle_id):
+            logging.warning(f'Cycle {cycle_id} does not exist')
+            return progress_data.finish_with_error(f'Cycle {cycle_id} does not exist')
+
         results = {'success': 0, 'failure': 0}
         for property in properties:
             formatted_time = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
