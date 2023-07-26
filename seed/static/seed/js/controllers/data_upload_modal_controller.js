@@ -827,7 +827,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.import_audit_template_buildings = function () {
         $scope.show_loading = true;
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
-          console.log('get_buildings', response)
           $scope.bad_credentials = response.success ? false : true
 
           if ($scope.bad_credentials) {
@@ -863,24 +862,16 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min($scope.at_building_data.length, 25),
           rowHeight: '30px',
-          onRegisterApi: (gridApi) => {
-            $scope.gridApiAtPropertySelection = gridApi;
-            // $scope.gridApiAtPropertySelection.core.on.rowsRendered($scope, function () {
-            //   $scope.gridApiAtPropertySelection.selection.selectAllRows();
-            // })
-          }
         };
       }
 
       $scope.update_buildings_from_audit_template = () => {
-        console.log('update_buildings_from_audit_template')
         $scope.show_loading = true;
         const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows()
           .map(row => row['property_view'])
           .sort()
         const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
         audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
-          console.log('progress_data', response)
           progress_key = response.progress_key
           uploader_service.check_progress_loop(progress_key, 0, 1, function (summary) {
             $scope.show_loading = false;
