@@ -4,7 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.conf.urls import include, re_path
+from django.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
@@ -81,8 +81,8 @@ api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename="green_assessment_properties")
 api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename="green_assessment_urls")
 api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, basename="green_assessments")
-api_v3_router.register(r'labels', LabelViewSet, basename='labels')
 api_v3_router.register(r'import_files', ImportFileViewSet, basename='import_files')
+api_v3_router.register(r'labels', LabelViewSet, basename='labels')
 api_v3_router.register(r'measures', MeasureViewSet, basename='measures')
 api_v3_router.register(r'organizations', OrganizationViewSet, basename='organizations')
 api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, basename="portfolio_manager")
@@ -94,8 +94,8 @@ api_v3_router.register(r'property_states', PropertyStateViewSet, basename="prope
 api_v3_router.register(r'property_views', PropertyViewViewSet, basename="property_views")
 api_v3_router.register(r'salesforce_configs', SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r'salesforce_mappings', SalesforceMappingViewSet, basename="salesforce_mappings")
-api_v3_router.register(r'taxlot_views', TaxlotViewViewSet, basename='taxlot_views')
 api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, basename="tax_lot_properties")
+api_v3_router.register(r'taxlot_views', TaxlotViewViewSet, basename='taxlot_views')
 api_v3_router.register(r'taxlots', TaxlotViewSet, basename='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, basename='ubid')
 api_v3_router.register(r'upload', UploadViewSet, basename='upload')
