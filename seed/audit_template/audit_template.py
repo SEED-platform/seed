@@ -97,7 +97,6 @@ class AuditTemplate(object):
 
 @shared_task
 def _get_buildings(cycle_id, url, headers):
-    logging.error('>>> _get_buildings')
     try:
         response = requests.request("GET", url, headers=headers)
         if response.status_code != 200:
@@ -122,7 +121,6 @@ def _get_buildings(cycle_id, url, headers):
 
 @shared_task
 def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
-    logging.error('>>> _batch_get_building_xml')
     progress_data = ProgressData.from_key(progress_key)
     result = []
 
@@ -135,7 +133,6 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
             'xml': xml.text
         })
         progress_data.step('Getting XML for buildings...')
-        logging.error('>>> progress %s', progress_data.data['progress'])
 
     # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()

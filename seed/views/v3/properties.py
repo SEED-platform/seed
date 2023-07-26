@@ -1347,6 +1347,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
 
     def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+        """
+        Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        """
         progress_data = ProgressData.from_key(progress_key)
         if not Cycle.objects.filter(pk=cycle_id):
             logging.warning(f'Cycle {cycle_id} does not exist')
@@ -1361,7 +1364,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             results['success' if response['success'] else 'faulure'] += 1
 
             progress_data.step('Updating Properties...')
-            logging.error('>>> updating properties, progress %s', progress_data.data['progress'])
 
         progress_data.finish_with_success(results)
 

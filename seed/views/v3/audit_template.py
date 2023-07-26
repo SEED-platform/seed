@@ -21,6 +21,9 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def get_building_xml(self, request, pk):
+        """
+        Fetches a Buidling XML for a Audit Template property and updates the corresponding PropertyView
+        """
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
         if response is None:
