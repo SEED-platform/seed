@@ -76,7 +76,7 @@ jobs:
           DJANGO_LOG_LEVEL: ERROR
         run: |
           docker exec seed_web touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web coverage run manage.py test seed --settings=config.settings.docker_dev
+          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web coverage run manage.py test --settings=config.settings.docker_dev
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
             docker exec --env COVERALLS_REPO_TOKEN seed_web coveralls
           else
