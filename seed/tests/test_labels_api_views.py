@@ -3,11 +3,6 @@
 """
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
-
-:author Piper Merriam <pipermerriam@gmail.com>
-:author Paul Munday<paul@paulmunday.net>
-
-Unit tests for seed/views/labels.py
 """
 import json
 from collections import defaultdict
@@ -30,7 +25,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from seed.views.labels import UpdateInventoryLabelsAPIView
+from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
 class TestLabelsViewSet(DeleteModelsTestCase):
@@ -177,7 +172,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         taxlot_view_factory = FakeTaxLotViewFactory(organization=organization_a, user=user)
         tl_view_1 = taxlot_view_factory.get_taxlot_view()
         tl_view_1.labels.add(new_label_1)
-        # more random tax lotx
+        # more random tax lots
         taxlot_view_factory.get_taxlot_view()
 
         client = APIClient()
@@ -205,7 +200,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
 class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
 
     def setUp(self):
-        self.api_view = UpdateInventoryLabelsAPIView()
+        self.api_view = LabelInventoryViewSet()
 
         # Models can't  be imported directly hence self
         self.PropertyViewLabels = self.api_view.models['property']

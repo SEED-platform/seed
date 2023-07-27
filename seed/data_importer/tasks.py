@@ -103,8 +103,6 @@ from seed.utils.geocode import (
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
-# from seed.utils.cprofile import cprofile
-
 _log = get_task_logger(__name__)
 
 STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
@@ -130,7 +128,7 @@ def finish_checking(progress_key):
     """
     Chord that is called after the data quality check is complete
 
-    :param identifier: import file primary key
+    :param progress_key: import file primary key
     :return: dict, results from queue
     """
     progress_data = ProgressData.from_key(progress_key)
@@ -1611,21 +1609,6 @@ def geocode_and_match_buildings_task(file_pk):
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
-def geocode_buildings_task(file_pk):
-    """
-    NOTE: This is an older entrypoint into geocoding buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-    """
-    progress_data = ProgressData(func_name='geocode_buildings', unique_id=file_pk)
-    progress_data.delete()
-    progress_data.save()
-    async_result = _geocode_properties_or_tax_lots.s(file_pk, progress_data.key).apply_async()
-    result = [r for r in async_result.collect()]
-
-    return result
-
-
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None):
     progress_data = ProgressData.from_key(progress_key)
@@ -1659,128 +1642,6 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
     if sub_progress_key:
         sub_progress_data.step('Geocoding')
         sub_progress_data.finish_with_success()
-
-
-def map_additional_models(file_pk):
-    """
-    NOTE: This is an older entrypoint into mapping buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-
-    kicks off mapping models other than PropertyState, returns progress key within the JSON response
-    E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
-
-    :param file_pk: ImportFile Primary Key
-    :return:
-    """
-    import_file = ImportFile.objects.get(pk=file_pk)
-
-    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
-    progress_data.delete()
-    progress_data.save()
-
-    if import_file.matching_done:
-        _log.debug('Matching is already done')
-        return progress_data.finish_with_warning('matching already complete')
-
-    if not import_file.mapping_done:
-        _log.debug('Mapping is not done yet')
-        return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
-
-    if import_file.cycle is None:
-        _log.warning("This should never happen in production")
-
-    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
-
-    # get the properties and chunk them into tasks
-    qs = PropertyState.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-        data_state=DATA_STATE_MAPPING,
-    ).only('id').iterator()
-
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-
-    progress_data.total = len(id_chunks)
-    progress_data.save()
-
-    tasks = [_map_additional_models.si(ids, import_file.id, progress_data.key)
-             for ids in id_chunks]
-
-    chord(tasks)(
-        finish_mapping_additional_models.s(file_pk, progress_data.key))
-
-    return progress_data.result()
-
-
-@shared_task(ignore_result=True)
-def finish_mapping_additional_models(result, import_file_id, progress_key):
-    progress_data = ProgressData.from_key(progress_key)
-
-    import_file = ImportFile.objects.get(pk=import_file_id)
-    import_file.matching_done = True
-    import_file.mapping_completion = 100
-    if isinstance(result, list) and len(result) >= 0:
-        # merge the results from the tasks
-        # assumes that all values are numbers
-        merged_result = {}
-        for res in result:
-            for key, value in res.items():
-                if key in merged_result:
-                    merged_result[key] += value
-                else:
-                    merged_result[key] = value
-
-        import_file.matching_results_data = merged_result
-    else:
-        raise Exception('Expected result to be a list of one or more items')
-
-    import_file.save()
-    return progress_data.finish_with_success()
-
-
-# @cprofile()
-def match_buildings(file_pk):
-    """
-    NOTE: This is an older entrypoint into matching buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-
-    kicks off system matching, returns progress key within the JSON response
-
-    :param file_pk: ImportFile Primary Key
-    :return:
-    """
-    import_file = ImportFile.objects.get(pk=file_pk)
-
-    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
-    progress_data.delete()
-    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
-    sub_progress_data.delete()
-
-    if import_file.matching_done:
-        _log.debug('Matching is already done')
-        return progress_data.finish_with_warning('matching already complete')
-
-    if not import_file.mapping_done:
-        _log.debug('Mapping is not done yet')
-        return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
-
-    if import_file.cycle is None:
-        _log.warning('This should never happen in production')
-
-    # Start, match, pair
-    progress_data.total = 3
-    progress_data.save()
-    sub_progress_data.total = 100
-    sub_progress_data.save()
-
-    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key, sub_progress_data.key), interval=15)(
-        finish_matching.s(file_pk, progress_data.key))
-
-    return progress_data.result()
 
 
 @shared_task(ignore_result=True)

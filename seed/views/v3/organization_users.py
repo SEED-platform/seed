@@ -18,7 +18,7 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.views.v3.organizations import _get_js_role
+from seed.utils.users import get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
@@ -50,7 +50,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 'last_name': user.last_name,
                 'number_of_orgs': user_orgs,
                 'user_id': user.pk,
-                'role': _get_js_role(u.role_level),
+                'role': get_js_role(u.role_level),
                 'access_level_instance_name': u.access_level_instance.name,
                 'access_level': org.access_level_names[u.access_level_instance.depth - 1],
             })
