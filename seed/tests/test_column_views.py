@@ -148,55 +148,6 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # Assert
         self.assertEqual(400, response.status_code)
 
-    def test_set_default_columns(self):
-        url = reverse_lazy('api:v1:set_default_columns')
-        columns = ['s', 'c1', 'c2']
-        post_data = {
-            'columns': columns,
-            'show_shared_buildings': True
-        }
-        # set the columns
-        response = self.client.post(
-            url,
-            content_type='application/json',
-            data=json.dumps(post_data)
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(200, response.status_code)
-
-        # get the columns
-        # url = reverse_lazy('api:v1:columns-get-default-columns')
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['columns'], columns)
-
-        # get show_shared_buildings
-        url = reverse_lazy('api:v3:user-shared-buildings', args=[self.user.pk])
-        response = self.client.get(url)
-        data = response.json()
-        self.assertEqual(data['show_shared_buildings'], True)
-
-        # set show_shared_buildings to False
-        # post_data['show_shared_buildings'] = False
-        # url = reverse_lazy('api:v1:set_default_columns')
-        # response = self.client.post(
-        #     url,
-        #     content_type='application/json',
-        #     data=json.dumps(post_data)
-        # )
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(200, response.status_code)
-
-        # get show_shared_buildings
-        # url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['show_shared_buildings'], False)
-
     def test_get_all_columns(self):
         # test building list columns
         response = self.client.get(reverse('api:v3:columns-list'), {

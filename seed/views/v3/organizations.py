@@ -81,6 +81,7 @@ from seed.utils.organizations import (
 )
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
+from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
 
@@ -121,7 +122,7 @@ def _dict_org(request, organizations):
                     user_is_owner = True
 
             if ou.user == request.user:
-                role_level = _get_js_role(ou.role_level)
+                role_level = get_js_role(ou.role_level)
 
         org = {
             'name': o.name,
@@ -173,7 +174,7 @@ def _dict_org_brief(request, organizations):
 
     role_levels = {}
     for r in organization_roles:
-        role_levels[r['organization_id']] = _get_js_role(r['role_level'])
+        role_levels[r['organization_id']] = get_js_role(r['role_level'])
 
     orgs = []
     for o in organizations:
@@ -197,20 +198,6 @@ def _dict_org_brief(request, organizations):
         orgs.append(org)
 
     return orgs
-
-
-def _get_js_role(role):
-    """return the JS friendly role name for user
-
-    :param role: role as defined in superperms.models
-    :returns: (string) JS role name
-    """
-    roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
-    }
-    return roles.get(role, 'viewer')
 
 
 def _get_match_merge_link_key(identifier):

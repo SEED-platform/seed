@@ -24,10 +24,6 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW
 )
-from seed.data_importer.views import (
-    ImportFileViewSet,
-    convert_first_five_rows_to_list
-)
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization
@@ -52,6 +48,10 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.views.v3.import_files import (
+    ImportFileViewSet,
+    convert_first_five_rows_to_list
+)
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0

@@ -68,7 +68,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': data,
             })
         except Exception as e:
-            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
