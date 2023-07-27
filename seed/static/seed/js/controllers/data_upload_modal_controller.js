@@ -880,7 +880,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.show_loading = false;
             $scope.at_upload_summary = summary.message
             $scope.step.number = 19
-            // $scope.close();
           }, function () {
             // do nothing
           }, $scope.uploader)

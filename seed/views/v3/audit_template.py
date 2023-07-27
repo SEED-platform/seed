@@ -53,7 +53,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             ],
         )
     )
-    @has_perm_class('can_view_data')
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['PUT'])
     def batch_get_building_xml(self, request):
         """
@@ -106,7 +106,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             ),
         ]
     )
-    @has_perm_class('can_view_data')
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['GET'])
     def get_buildings(self, request):
         """
