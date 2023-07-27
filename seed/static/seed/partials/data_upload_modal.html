@@ -97,7 +97,7 @@
                             <div class="col-sm-offset-4 col-sm-8">
                                 <div class="btn btn-primary upload-btn flex-centered"  ng-click="goto_step(17)">
                                     <i class="fa fa-id-card-o fa-2x"></i>
-                                    <span class="grow">Import Audit Template Buildings</span>
+                                    <span class="grow" translate>Import Audit Template Buildings</span>
                                 </div>
                             </div>
                         </div>
@@ -424,14 +424,14 @@
     </div>
     <!-- Step 17: Confirm Audit Template Building Import Results-->
     <div ng-switch-when="17">
-        <div ng-if="!show_loading">
+        <div ng-if="!show_loading" translate>
             This action updates properties within the selected cycle with data from the
             Audit Template account associated with this organization.
             Only Properties with Audit Template Building IDs corresponding to those saved in
             Audit Template will be updated.
         </div>
         <div ng-if="show_loading">
-            <div>
+            <div translate>
                 Fetching your buildings from Audit Template...
             </div>
             <uib-progress class="progress-striped active" style="margin: 10px 0">
@@ -452,7 +452,7 @@
             </div>
         </div>
         <div ng-if="show_loading">
-            <div>
+            <div translate>
                 Updating selected properties...
             </div>
             <div class="progress_bar_container">
