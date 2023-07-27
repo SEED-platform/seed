@@ -73,8 +73,6 @@ spec:
               value: <reCAPTCHA-site-key>
             - name: GOOGLE_RECAPTCHA_SECRET_KEY
               value: <reCAPTCHA-secret-key>
-            - name: INCLUDE_SEED_V2_APIS
-              value: "TRUE"
             - name: INCLUDE_ACCT_REG
               value: "TRUE"
           image: seedplatform/seed:develop
