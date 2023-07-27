@@ -58,8 +58,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     def batch_get_building_xml(self, request):
         """
         Fetches Buidling XMLs for a list of Audit Template properties and updates corresponding PropertyViews.
-        This function kicks off a background worker to perform the updates.
-        The return value a ProgressData object used to monitor the status of the background task
+        The return value is a ProgressData object used to monitor the status of the background task.
         """
 
         properties = request.data
