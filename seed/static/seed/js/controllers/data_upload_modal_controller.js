@@ -842,12 +842,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       const setAtPropertyGrid = () => {
         $scope.atPropertySelectGridOptions = {
-          data: $scope.at_building_data.map(building => { return {
+          data: $scope.at_building_data.map(building => ({
             'audit_template_building_id': building.audit_template_building_id,
             'email': building.email,
             'updated_at': building.updated_at,
             'property_view': building.property_view
-          }}),
+          })),
           columnDefs: [
             {field: 'audit_template_building_id', displayName: 'Audit Template Building ID'},
             {field: 'email', displayName: 'Owner Email'},
@@ -862,6 +862,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min($scope.at_building_data.length, 25),
           rowHeight: '30px',
+          onRegisterApi: (gridApi) => {
+            $scope.gridApiAtPropertySelection = gridApi;
+          }
         };
       }
 
@@ -883,6 +886,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }, $scope.uploader)
         })
       }
+
+      $scope.rowsSelected = () => $scope.gridApiAtPropertySelection && $scope.gridApiAtPropertySelection.selection.getSelectedRows().length;
 
       /**
        * init: ran upon the controller load

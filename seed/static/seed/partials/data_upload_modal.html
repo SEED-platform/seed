@@ -446,9 +446,6 @@
                 {$ error_message $}
             </div>
             <div ng-if="!bad_credentials">
-                <div>
-                    Select Properties to be Updated
-                </div>
                 <div class="at-property-select" >
                     <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns></div>
                 </div>
@@ -554,7 +551,7 @@
     </div>
     <div ng-switch-when="18">
         <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading && !bad_credentials" translate>Update</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading && !bad_credentials" ng-disabled="!rowsSelected()" translate>Update</button>
         </div>
     </div>
     <div ng-switch-when="19">

@@ -122,8 +122,7 @@ class AuditTemplateViewTests(TestCase):
         )
 
 
-# class AuditTemplateBatchViewTests(TestCase):
-class batch(TestCase):
+class AuditTemplateBatchTests(TestCase):
 
     def setUp(self):
         self.user_details = {
@@ -235,8 +234,8 @@ class batch(TestCase):
         url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
         content_type = 'application/json'
         data = json.dumps([
-            {'audit_template_building_id': 1, 'property_view': self.view1.id},
-            {'audit_template_building_id': 2, 'property_view': self.view2.id},
+            {'audit_template_building_id': 1, 'property_view': self.view1.id, 'email': 'test@test.com', 'updated_at': '2020-01-01T01:00:00.000000'},
+            {'audit_template_building_id': 2, 'property_view': self.view2.id, 'email': 'test@test.com', 'updated_at': '2022-01-01T01:00:00.000000'},
         ])
 
         response = self.client.put(
@@ -249,3 +248,93 @@ class batch(TestCase):
         self.assertEqual(response['status'], 'success')
         self.assertEqual(response['message'], {'success': 2, 'failure': 0})
         self.assertEqual(response['progress'], 100)
+
+    @mock.patch('requests.request')
+    def test_batch_get_building_xml_bad_data(self, mock_request):
+        mock_request.side_effect = [self.good_authenticate_response, self.good_batch_xml_response, self.good_batch_xml_response]
+        exp_message = "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"
+
+        # missing property view
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
+        content_type = 'application/json'
+        data = json.dumps([
+            {'audit_template_building_id': 1, 'email': 'test@test.com', 'updated_at': '2020-01-01T01:00:00.000000'},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 400)
+        response = response.json()
+        self.assertEqual(response['success'], False)
+        self.assertEqual(response['message'], exp_message)
+
+        # missing audit tempalte building id
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
+        content_type = 'application/json'
+        data = json.dumps([
+            {'property_view': 1, 'email': 'test@test.com', 'updated_at': '2020-01-01T01:00:00.000000'},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 400)
+        response = response.json()
+        self.assertEqual(response['success'], False)
+        self.assertEqual(response['message'], exp_message)
+
+        # missing email
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
+        content_type = 'application/json'
+        data = json.dumps([
+            {'audit_template_building_id': 1, 'property_view': self.view1.id, 'updated_at': '2020-01-01T01:00:00.000000'},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 400)
+        response = response.json()
+        self.assertEqual(response['success'], False)
+        self.assertEqual(response['message'], exp_message)
+
+        # missing updated_at
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
+        content_type = 'application/json'
+        data = json.dumps([
+            {'audit_template_building_id': 1, 'property_view': self.view1.id, 'email': 'test@test.com'},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 400)
+        response = response.json()
+        self.assertEqual(response['success'], False)
+        self.assertEqual(response['message'], exp_message)
+
+        # extra key
+        url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
+        content_type = 'application/json'
+        data = json.dumps([
+            {'invalid': 1, 'audit_template_building_id': 1, 'property_view': self.view1.id, 'updated_at': '2020-01-01T01:00:00.000000'},
+        ])
+
+        response = self.client.put(
+            url,
+            data=data,
+            content_type=content_type
+        )
+        self.assertEqual(response.status_code, 400)
+        response = response.json()
+        self.assertEqual(response['success'], False)
+        self.assertEqual(response['message'], exp_message)
