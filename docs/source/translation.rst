@@ -3,7 +3,14 @@ Translating SEED
 
 1. Update translations on `lokalise`_.
 
-2. Copy lokalise.cfg.example to lokalise.cfg. Update API token.
+2. Copy lokalise.yml.example to lokalise.yml. Update API token.
+
+3. Install lokalise locally
+
+   .. code:: bash
+
+      brew tap lokalise/brew
+      brew install lokalise
 
 3. Run scripts if you have Lokalise CLI installed. If not, see scripts for manual steps.
 
@@ -76,6 +83,6 @@ Compare:
 
    <h2>{$:: inventory_type == 'taxlots' ?
          translations['INCLUDE_SHARED_TAXLOTS'] :
-         translations['INCLUDE_SHARED
+         translations['INCLUDE_SHARED']
 
 .. _lokalise: https://lokalise.com/project/3537487659ca9b1dce98a7.36378626/?view=multi

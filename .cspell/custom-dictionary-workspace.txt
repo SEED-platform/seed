@@ -362,6 +362,7 @@ xmltodict
 xpath
 XPath
 XPATH
+xpaths
 XSLX
 yasg
 yml

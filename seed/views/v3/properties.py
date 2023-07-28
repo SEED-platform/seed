@@ -1089,7 +1089,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 new_data[k] = v
 
         property_state_data['extra_data'] = new_data
-        print(f"property_state_data: {property_state_data}")
 
         # this serializer is meant to be used by a create action
         property_state_serializer = PropertyStatePromoteWritableSerializer(

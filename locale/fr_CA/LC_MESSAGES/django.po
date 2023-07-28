@@ -283,6 +283,9 @@ msgstr "Audit Template jeton d'organisation"
 msgid "Audit Template Password"
 msgstr "Audit Template le mot de passe"
 
+msgid "Audit Template Upload Results"
+msgstr "Résultats du téléchargement du modèle d'audit"
+
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Audit"
@@ -576,6 +579,9 @@ msgstr "Configuration"
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
 msgstr "Confirmer"
+
+msgid "Confirm Audit Template Building Import?"
+msgstr "Confirmer l'importation de la création du modèle d'audit ?"
 
 msgid "Confirm Save Mappings?"
 msgstr "Confirmer enregistrer les mappages?"
@@ -1153,6 +1159,9 @@ msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</s
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
 
+msgid "Fetching your buildings from Audit Template..."
+msgstr "Récupération de vos bâtiments à partir du modèle d'audit..."
+
 msgid "Field"
 msgstr "Champ"
 
@@ -1426,6 +1435,9 @@ msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
 
 msgid "Import Access Level Instances"
 msgstr "Importer des instances de niveau d'accès"
+
+msgid "Import Audit Template Buildings"
+msgstr "Importer des bâtiments de modèle d'audit"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Importer les données de Portfolio Manager"
@@ -2776,6 +2788,9 @@ msgstr "Sélectionnez toutes les colonnes"
 msgid "Select None"
 msgstr "Sélectionnez Aucun"
 
+msgid "Select Properties to Update"
+msgstr "Sélectionnez les propriétés à mettre à jour"
+
 msgid "Select a Custom Report to get started!"
 msgstr "Sélectionnez un rapport personnalisé pour commencer !"
 
@@ -3109,6 +3124,9 @@ msgstr "Une erreur s'est produite lors du chargement de la page"
 msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
 msgstr "Cette action remplace n'importe laquelle de vos colonnes actuelles par les colonnes délimitées par des virgules que vous avez fournies. Voulez-vous continuer?"
 
+msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
+msgstr "Cette action met à jour les propriétés du cycle sélectionné avec les données du compte de modèle d'audit associé à cette organisation. Seules les propriétés avec des ID de bâtiment de modèle d'audit correspondant à ceux enregistrés dans le modèle d'audit seront mises à jour."
+
 msgid "This cycle name is already taken."
 msgstr "Ce nom de cycle est déjà pris."
 
@@ -3288,6 +3306,9 @@ msgstr "Mettre à jour avec BuildingSync"
 
 msgid "Updated"
 msgstr "Mise à jour"
+
+msgid "Updating selected properties..."
+msgstr "Mise à jour des propriétés sélectionnées..."
 
 msgid "Upload Access Level Instances"
 msgstr "Importer des instances de niveau d'accès"
