@@ -833,12 +833,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.error_message = response.message
           } else {
             const parsed_message = JSON.parse(response.message)
-            
+
             if (parsed_message.length) {
               $scope.at_building_data = parsed_message
               setAtPropertyGrid();
             } else {
-              $scope.show_error = true 
+              $scope.show_error = true
               $scope.error_message = 'Unable to find matching buildings between Audit Template and SEED Inventory'
             }
           }
