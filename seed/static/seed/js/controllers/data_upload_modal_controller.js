@@ -827,13 +827,20 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.import_audit_template_buildings = function () {
         $scope.show_loading = true;
         audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
-          $scope.bad_credentials = response.success ? false : true
+          $scope.show_error = !response.success
 
-          if ($scope.bad_credentials) {
+          if ($scope.show_error) {
             $scope.error_message = response.message
           } else {
-            $scope.at_building_data = JSON.parse(response.message);
-            setAtPropertyGrid();
+            const parsed_message = JSON.parse(response.message)
+            
+            if (parsed_message.length) {
+              $scope.at_building_data = parsed_message
+              setAtPropertyGrid();
+            } else {
+              $scope.show_error = true 
+              $scope.error_message = 'Unable to find matching buildings between Audit Template and SEED Inventory'
+            }
           }
           $scope.show_loading = false;
           $scope.step.number = 18;
