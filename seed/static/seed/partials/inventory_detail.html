@@ -64,6 +64,10 @@
                             <a ng-click="open_data_upload_audit_template_modal()">{$:: 'Update with Audit Template' | translate $}</a>
                         </li>
 
+                        <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+                            <a ng-click="open_data_upload_espm_modal()">{$:: 'Update with ESPM' | translate $}</a>
+                        </li>
+
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
                             <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
                         </li>

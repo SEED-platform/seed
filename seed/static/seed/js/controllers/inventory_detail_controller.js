@@ -36,7 +36,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
-    'audit_template_service',
     'cycle_service',
     'simple_modal_service',
     'property_measure_service',
@@ -74,7 +73,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       current_profile,
       labels_payload,
       organization_payload,
-      audit_template_service,
       cycle_service,
       simple_modal_service,
       property_measure_service,
@@ -118,6 +116,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         return !_.isEmpty(label.is_applied);
       });
       $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+      $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -646,6 +645,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'data_upload_audit_template_modal_controller',
           resolve: {
             audit_template_building_id: () => $scope.audit_template_building_id,
+            organization: () => $scope.organization,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id
+          },
+          backdrop: 'static',
+        });
+      };
+
+      $scope.open_data_upload_espm_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_espm_modal.html',
+          controller: 'data_upload_espm_modal_controller',
+          resolve: {
+            pm_property_id: () => $scope.pm_property_id,
             organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
             upload_from_file: () => $scope.uploaderfunc,

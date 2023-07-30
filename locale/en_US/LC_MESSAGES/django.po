@@ -997,6 +997,15 @@ msgstr "----Choose energy type----"
 msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
 msgstr "----Change display unit----"
 
+msgid "ESPM Password"
+msgstr "ESPM Password"
+
+msgid "ESPM Property ID"
+msgstr "ESPM Property ID"
+
+msgid "ESPM Username"
+msgstr "ESPM Username"
+
 msgid "EUI"
 msgstr "EUI"
 
@@ -1430,6 +1439,9 @@ msgstr "Import Audit Template Buildings"
 
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
+
+msgid "Import directly from ESPM"
+msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
@@ -3277,8 +3289,14 @@ msgstr "Update Salesforce"
 msgid "Update UBID"
 msgstr "Update UBID"
 
+msgid "Update with Audit Template"
+msgstr "Update with Audit Template"
+
 msgid "Update with BuildingSync"
 msgstr "Update with BuildingSync"
+
+msgid "Update with ESPM"
+msgstr "Update with ESPM"
 
 msgid "Updated"
 msgstr "Updated"
@@ -3300,6 +3318,9 @@ msgstr "Upload Green Button Data"
 
 msgid "Upload Portfolio Manager Data"
 msgstr "Upload Portfolio Manager Data"
+
+msgid "Upload Single ESPM Property"
+msgstr "Upload Single ESPM Property"
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"

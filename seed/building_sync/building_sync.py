@@ -424,7 +424,7 @@ class BuildingSync(object):
         :return: list, [dict, dict], [results, dict of errors and warnings]
         """
         # API call to BuildingSync Selection Tool on other server for appropriate use case
-        # prcess_struct = new_use_case (from Building Selection Tool)
+        # process_struct = new_use_case (from Building Selection Tool)
         base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
         if base_mapping is None:
             raise ParsingError(f'Version of BuildingSync object is not supported: "{self.version}"')

@@ -1528,6 +1528,94 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(
+                description='ID of the property view to update'
+            ),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='ID of the cycle of the property view'
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='ESPM property report to use (in XLSX format)',
+            ),
+        ],
+        request_body=no_body,
+    )
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def update_with_espm(self, request, pk):
+        """Update an existing PropertyView with an exported singular ESPM file. 
+        TODO: Need to verify that there is only 1 property in the file, somehow.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        organization_id = self.get_organization(request)
+        cycle_pk = request.query_params.get('cycle_id', None)
+        org_id = self.get_organization(self.request)
+
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': "Cycle ID is missing or Cycle does not exist"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # note that this is a "safe" query b/c we should have already returned
+            # if the cycle was not within the user's organization
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(pk=pk, cycle_id=cycle_pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'property view does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        p_status = False
+        new_pv_state = None
+
+        # create a new "datafile" object to store the file
+        
+        # call the mapping process
+
+        # now merge the record, we know the property so we can just call this.
+        p_status = True
+        new_pv_state = 1
+        messages = []
+        new_pv_view = None
+
+        # p_status, new_pv_state, new_pv_view, messages = TBD.process(
+            # organization_id, cycle, property_view=property_view, file=the_file
+        # )
+        
+        if p_status and new_pv_state:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(new_pv_view).data,
+                },
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': "Could not process building file with messages {}".format(messages)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')

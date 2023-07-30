@@ -323,11 +323,13 @@ unittest
 unlinkable
 unmatch
 unmatching
+unmerge
 unmerges
 unresolvable
 untracked
 uom
 uploader
+uploaderfunc
 ureg
 uri
 url
