@@ -291,6 +291,7 @@ taxlots
 TaxLots
 taxlotstate
 taxlotview
+taxview
 td
 tearDown
 templatetags
@@ -325,6 +326,7 @@ unmatch
 unmatching
 unmerge
 unmerges
+unpair
 unresolvable
 untracked
 uom

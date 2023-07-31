@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
         'espm_username': '',
         'espm_password': ''
       };
-      
+
       $scope.upload_from_file_and_close = function (event_message, file, progress) {
         $scope.close();
         $scope.upload_from_file(event_message, file, progress);

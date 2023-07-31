@@ -9,9 +9,9 @@ Translating SEED
 
    .. code:: bash
 
-      brew tap lokalise/cli-2 
+      brew tap lokalise/cli-2
       brew install lokalise2
-      
+
 3. Run scripts if you have Lokalise CLI installed. If not, see scripts for manual steps.
 
    .. code:: bash

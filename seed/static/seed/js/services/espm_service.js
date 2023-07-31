@@ -13,7 +13,7 @@ angular.module('BE.seed.service.espm', []).factory('espm_service', [
       return $http.post(['/api/v3/portfolio_manager/', pm_property_id, '/download/?organization_id=', org_id].join(''), {
         username: espm_username,
         password: espm_password
-      }).then(function (response) {        
+      }).then(function (response) {
         return response.data;
       }).catch(function (response) {
         console.log('Could not get ESPM building from service with status:' + response.status);
@@ -21,12 +21,12 @@ angular.module('BE.seed.service.espm', []).factory('espm_service', [
       });
     };
 
-    const update_building_with_espm_xlsx = function (org_id, cycle_id, property_view_id, xml_string) {
+    const update_building_with_espm_xlsx = function (org_id, cycle_id, property_view_id, file_data) {
       let body = new FormData();
-      let blob = new Blob([xml_string], { type: 'text/xml' });
-      body.append('file', blob, ['at_', new Date().getTime(), '.xml'].join(''));
+      let blob = new Blob([file_data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      body.append('file', blob, ['espm_', new Date().getTime(), '.xlsx'].join(''));
       body.append('file_type', 1);
-      let headers = { 'Content-Type': undefined };
+      let headers = { 'Content-Type': 'multipart/form-data' };
 
       return $http.put([
         '/api/v3/properties/', property_view_id, '/update_with_espm/?',
