@@ -8,9 +8,14 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
+from django.utils.decorators import method_decorator
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.models import Note, PropertyView
 from seed.models.events import NoteEvent
 from seed.serializers.notes import NoteSerializer
@@ -19,6 +24,26 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 _log = logging.getLogger(__name__)
 
 
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='create',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='update',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="property_pk")]
+)
 class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating notes.
 
