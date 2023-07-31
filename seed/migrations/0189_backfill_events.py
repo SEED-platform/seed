@@ -3,6 +3,7 @@
 from django.db import migrations
 from django.db import transaction
 
+
 @transaction.atomic
 def backfill_at_events(apps, schema_editor):
     BuildingFile = apps.get_model("seed", "BuildingFile")
@@ -27,12 +28,13 @@ def backfill_at_events(apps, schema_editor):
             modified=building_file.created,
             audit_date=propertyview.state.extra_data.get('audit_date', '')
         )
-        scenarios = Scenario.objects.filter(property_state = propertyview.state_id)
+        scenarios = Scenario.objects.filter(property_state=propertyview.state_id)
         for scenario in scenarios:
             scenario.event = event
             scenario.save()
 
         event.save()
+
 
 @transaction.atomic
 def backfill_analysis_events(apps, schema_editor):
@@ -66,6 +68,7 @@ def backfill_note_events(apps, schema_editor):
             modified=note.created,
         ).save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -73,8 +76,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-         migrations.RunPython(backfill_at_events),
-         migrations.RunPython(backfill_analysis_events),
-         migrations.RunPython(backfill_note_events),
+        migrations.RunPython(backfill_at_events),
+        migrations.RunPython(backfill_analysis_events),
+        migrations.RunPython(backfill_note_events),
     ]
-

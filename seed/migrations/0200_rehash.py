@@ -10,7 +10,7 @@ from seed.data_importer.tasks import hash_state_object
 def rehash(apps, schema_editor):
     PropertyState = apps.get_model('seed', 'PropertyState')
     TaxLotState = apps.get_model('seed', 'TaxLotState')
-  
+
     property_count = PropertyState.objects.count()
     taxlot_count = TaxLotState.objects.count()
 
