@@ -36,7 +36,7 @@ def forwards(apps, schema_editor):
 
             for unmapped_col in unmapped_columns:
                 if unmapped_col.table_name == '':
-                    print(f"  -- This column is not an import column, skipping and erroring.")
+                    print('  -- This column is not an import column, skipping and erroring.')
                     errors_found = True
                     continue
 

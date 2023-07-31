@@ -8,7 +8,6 @@ def add_new_bsync_mappings(apps, schema_editor):
     Organization = apps.get_model("orgs", "Organization")
 
     for org in Organization.objects.all():
-        bsync_mapping_name = 'BuildingSync v2.0 Defaults'
         # first find current BuildingSync mapping, 'BuildingSync Default' profile is 1
         profiles = org.columnmappingprofile_set.filter(profile_type=1)
         # 'Audit Template Building Id' name matches the automatically generated field name from
