@@ -1563,13 +1563,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @has_perm_class('can_modify_data')
     def update_with_espm(self, request, pk):
         """Update an existing PropertyView with an exported singular ESPM file.
-        TODO: Need to verify that there is only 1 property in the file, somehow.
         """
         if len(request.FILES) == 0:
             return JsonResponse({
                 'success': False,
                 'message': "Must pass file in as a Multipart/Form post"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         the_file = request.data['file']
         cycle_pk = request.query_params.get('cycle_id', None)
@@ -1639,24 +1638,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse({
                 'success': False,
                 'message': f"File must contain exactly one property, found {import_file.num_rows} properties"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # create the column mappings
         Column.retrieve_mapping_columns(import_file.pk)
 
-        # get column mapping profile
+        # get column mapping profile, but need to get all the profiles for the org,
+        # then filter by profile name.
         # TODO: replace the ESPM with a user passed column mapping profile
-        column_mapping_profile = ColumnMappingProfile.objects.filter(name='ESPM')
+        column_mapping_profiles = org_inst.columnmappingprofile_set.all()
+        column_mapping_profile = column_mapping_profiles.filter(
+            name='ESPM', profile_type=ColumnMappingProfile.NORMAL
+        )
         if len(column_mapping_profile) == 0:
             return JsonResponse({
                 'success': False,
                 'message': "Could not find ESPM column mapping profile"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         elif len(column_mapping_profile) > 1:
             return JsonResponse({
                 'success': False,
                 'message': f"Found multiple ESPM column mapping profiles, found {len(column_mapping_profile)}"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         column_mapping_profile = column_mapping_profile[0]
 
         # assign the mappings to the import file id
@@ -1676,12 +1679,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse({
                 'success': False,
                 'message': "Could not find newly mapped property state"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         elif len(new_property_state) > 1:
             return JsonResponse({
                 'success': False,
                 'message': f"Found multiple newly mapped property states, found {len(new_property_state)}"
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         new_property_state = new_property_state[0]
 
         # retrieve the column merge priorities and then save the update new property state.
@@ -1705,7 +1708,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'data': {
                     'property_view': PropertyViewAsStateSerializer(property_view).data,
                 },
-            })
+            }, status=status.HTTP_200_OK)
         else:
             return JsonResponse({
                 'status': 'error',

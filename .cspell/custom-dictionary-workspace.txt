@@ -58,6 +58,7 @@ cli
 cmp
 codebase
 collectstatic
+columnmappingprofile
 comparators
 concat
 cond
@@ -69,6 +70,7 @@ coparents
 crlf
 css
 csv
+csvfile
 Ctrl
 customizable
 dataset
@@ -129,6 +131,7 @@ Gzip
 hardcoded
 Homebrew
 hotfix
+hpxml
 href
 html
 iand
@@ -232,6 +235,7 @@ PrimaryKeyRelatedField
 projectbuilding
 propertystate
 propertyview
+prprty
 py
 Pyright
 pytype
@@ -259,6 +263,7 @@ scalable
 seeddb
 seedorg
 seeduser
+selfvars
 sendmail
 serializable
 serializer
