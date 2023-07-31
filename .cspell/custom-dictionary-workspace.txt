@@ -86,6 +86,7 @@ dest
 dev
 dict
 dicts
+diffupdate
 django
 Django
 docker0
@@ -180,6 +181,7 @@ mappable
 mapquest
 mcm
 metadata
+meterreading
 middleware
 MIDDLEWARE
 mixin
@@ -197,6 +199,7 @@ nginx
 nlong
 nodejs
 noncanonicalprojectbuildings
+nondefault
 nones
 noqa
 npm
@@ -283,6 +286,7 @@ strftime
 subclasses
 subdirectory
 Submodules
+submonthly
 Subpackages
 subtask
 sudo

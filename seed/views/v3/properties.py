@@ -21,8 +21,11 @@ from rest_framework.renderers import JSONRenderer
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
 from seed.data_importer.match import save_state_match
+from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import _save_pm_meter_usage_data_create_tasks
+from seed.data_importer.tasks import (
+    _save_pm_meter_usage_data_task
+)
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
@@ -1688,6 +1691,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         new_property_state = new_property_state[0]
 
         # retrieve the column merge priorities and then save the update new property state.
+        # This is called merge protection on the front end.
         priorities = Column.retrieve_priorities(org_id)
         merged_state = save_state_match(property_view.state, new_property_state, priorities)
 
@@ -1697,7 +1701,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # now save the meters
         progress_data = ProgressData(func_name='meter_import', unique_id=import_file.pk)
-        _save_pm_meter_usage_data_create_tasks(import_file.pk, progress_data.key)
+        ## For now, we are duplicating the methods that are called in the tasks in order
+        ## to circumvent the celery background task management (i.e., run in foreground)
+        meters_parser = MetersParser.factory(import_file.local_file, org_id)
+        meters_and_readings = meters_parser.meter_and_reading_objs
+        for meter_readings in meters_and_readings:
+            _save_pm_meter_usage_data_task(meter_readings, import_file.id, progress_data.key)
+        ## End of duplicate (and simplified) meter import methods
         progress_data.delete()
 
         if merged_state:

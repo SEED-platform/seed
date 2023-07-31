@@ -2227,6 +2227,4 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         self.assertEqual(pv.state.address_line_1, '2425 N STREET NW')
 
         # verify that the property has meters too, which came from the XLSX file
-        # TODO: It appears that the meters are persisting in the test, but values
-        # are showing in the SQL Insert with wrong dates:  INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) VALUES (12, '1969-12-31 17:00:43-08:00', '1969-12-31 17:00:43-08:00', 1398437.1, 'kBtu (thousand Btu)', 1.0),
-        # self.assertEqual(pv.property.meters.count(), 2)
+        self.assertEqual(pv.property.meters.count(), 2)
