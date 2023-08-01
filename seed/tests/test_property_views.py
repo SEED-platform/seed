@@ -165,8 +165,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        test_filepath = os.path.relpath(os.path.join(location, 'data', 'test-document.pdf'))
+
+        test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'test-document.pdf')
+
         url = reverse('api:v3:properties-detail', args=[view.id]) + f'upload_inventory_document/?organization_id={self.org.pk}'
 
         document = open(test_filepath, 'rb')
@@ -2187,8 +2188,9 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         pv_address_line_1 = pv.state.address_line_1
         pv_site_eui = pv.state.site_eui
 
-        data_location = os.path.join(os.getcwd(), os.path.dirname(__file__))
-        mapping_filepath = os.path.join(data_location, 'data', 'mappings', 'espm-single-mapping.csv')
+        mapping_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv'
+        )
 
         # need to upload the mappings for the ESPM data to a new profile
         ColumnMappingProfile.create_from_file(
@@ -2196,7 +2198,7 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         )
 
         test_filepath = os.path.join(
-            data_location, 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
+            os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
         )
 
         url = reverse('api:v3:properties-update-with-espm', args=[pv.id])
