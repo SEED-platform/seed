@@ -38,7 +38,6 @@ def recover_extra_data(app, schema_editor, **kwargs):
     """
     Used in old version (< 1.5), not needed anymore
     """
-    pass
 
 
 def merge_extra_data_from_parents(bs):
