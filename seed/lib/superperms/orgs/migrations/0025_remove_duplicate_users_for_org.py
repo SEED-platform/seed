@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.models import Count, Max
+from django.db.models import Count
 
 
 def remove_duplicate_users_for_org(apps, _schema_editor):
