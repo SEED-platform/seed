@@ -434,6 +434,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
 class PortfolioManagerReportParsingTest(TestCase):
     """Test the parsing of the resulting PM XML file. This is only for the
     version 2 parsing"""
+
     def test_parse_pm_report(self):
         pm = PortfolioManagerImport('not_a_real_password', 'not_a_real_password')
         xml_path = Path(__file__).parent.absolute() / 'data' / 'portfolio-manager-report.xml'
