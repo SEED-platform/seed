@@ -18,29 +18,31 @@ def rehash(apps, schema_editor):
         properties_updated = 0
         taxlots_updated = 0
 
-        print(f"Re-hashing {property_count} Property States ")
-        for idx, state in enumerate(PropertyState.objects.all().iterator()):
-            old_hash = state.hash_object
-            state.hash_object = hash_state_object(state)
-            state.save(update_fields=['hash_object'])
-            if state.hash_object != old_hash:
-                properties_updated += 1
-            if idx % 1000 == 0:
-                print(f"... {idx + 1} / {properties_updated} / {property_count} - cursor / updated / total  ...")
+        if property_count > 0:
+            print(f"Re-hashing {property_count} Property States ")
+            for idx, state in enumerate(PropertyState.objects.all().iterator()):
+                old_hash = state.hash_object
+                state.hash_object = hash_state_object(state)
+                state.save(update_fields=['hash_object'])
+                if state.hash_object != old_hash:
+                    properties_updated += 1
+                if idx % 1000 == 0:
+                    print(f"... {idx + 1} / {properties_updated} / {property_count} - cursor / updated / total  ...")
 
-        print(f"  {properties_updated} Property State hashes updated")
+            print(f"  {properties_updated} Property State hashes updated")
 
-        print(f"Re-hashing {taxlot_count} TaxLot States ")
-        for idx, state in enumerate(TaxLotState.objects.all().iterator()):
-            old_hash = state.hash_object
-            state.hash_object = hash_state_object(state)
-            state.save(update_fields=['hash_object'])
-            if state.hash_object != old_hash:
-                taxlots_updated += 1
-            if idx % 1000 == 0:
-                print(f"... {idx + 1} / {taxlots_updated} / {taxlot_count} - cursor / updated / total  ...")
+        if taxlot_count > 0:
+            print(f"Re-hashing {taxlot_count} TaxLot States ")
+            for idx, state in enumerate(TaxLotState.objects.all().iterator()):
+                old_hash = state.hash_object
+                state.hash_object = hash_state_object(state)
+                state.save(update_fields=['hash_object'])
+                if state.hash_object != old_hash:
+                    taxlots_updated += 1
+                if idx % 1000 == 0:
+                    print(f"... {idx + 1} / {taxlots_updated} / {taxlot_count} - cursor / updated / total  ...")
 
-        print(f"  {taxlots_updated} TaxLot State hashes updated")
+            print(f"  {taxlots_updated} TaxLot State hashes updated")
 
 
 class Migration(migrations.Migration):
