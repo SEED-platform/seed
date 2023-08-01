@@ -23,9 +23,7 @@ from seed.data_importer import tasks
 from seed.data_importer.match import save_state_match
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import (
-    _save_pm_meter_usage_data_task
-)
+from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
@@ -1699,15 +1697,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_view.state = merged_state
         property_view.save()
 
-        # now save the meters
+        # now save the meters, need a progress_data object to pass to the tasks, although
+        # not used.
         progress_data = ProgressData(func_name='meter_import', unique_id=import_file.pk)
-        ## For now, we are duplicating the methods that are called in the tasks in order
-        ## to circumvent the celery background task management (i.e., run in foreground)
+        # -- Start --
+        # For now, we are duplicating the methods that are called in the tasks in order
+        # to circumvent the celery background task management (i.e., run in foreground)
         meters_parser = MetersParser.factory(import_file.local_file, org_id)
         meters_and_readings = meters_parser.meter_and_reading_objs
         for meter_readings in meters_and_readings:
             _save_pm_meter_usage_data_task(meter_readings, import_file.id, progress_data.key)
-        ## End of duplicate (and simplified) meter import methods
+        # -- End -- of duplicate (and simplified) meter import methods
         progress_data.delete()
 
         if merged_state:
