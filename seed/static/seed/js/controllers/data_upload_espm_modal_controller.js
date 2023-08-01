@@ -36,6 +36,12 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
         'espm_password': ''
       };
 
+      // password field
+      $scope.secret = 'password';
+      $scope.toggle_secret = function () {
+        $scope.secret = ($scope.secret == 'password') ? 'text' : 'password';
+      };
+
       $scope.upload_from_file_and_close = function (event_message, file, progress) {
         $scope.close();
         $scope.upload_from_file(event_message, file, progress);
@@ -53,16 +59,21 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
         $scope.error = '';
         $scope.busy = true;
         spinner_utility.show();
-        return espm_service.get_espm_building_xlsx($scope.organization.id, $scope.fields.pm_property_id, $scope.fields.espm_username, $scope.fields.espm_password).then(result => {
+        return espm_service.get_espm_building_xlsx($scope.organization.id, $scope.fields.pm_property_id, $scope.fields.espm_username, $scope.fields.espm_password).then(file_result => {
           spinner_utility.hide();
           if (typeof (result) == 'object' && !result.success) {
-            $scope.error = 'Error: ' + result.message
+            $scope.error = 'Error: ' + result.message;
             $scope.busy = false;
           } else {
-            return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, result).then(result => {
-              $scope.close();
-              $scope.upload_from_file('upload_complete', null, null)
-              $scope.busy = false;
+            return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, file_result).then(result => {
+              if (typeof (result) == 'object' && !result.success) {
+                $scope.error = 'Error: ' + result.message;
+                $scope.busy = false;
+              } else {
+                $scope.close();
+                $scope.upload_from_file('upload_complete', null, null)
+                $scope.busy = false;
+              }
             });
           }
         });

@@ -3,51 +3,66 @@
 </div>
 
 <div ng-switch on="stage">
-    <div class="modal-body modal-input">
+    <div class="modal-body">
 
         <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
             {$ error $}
         </div>
 
-        <div class="flex-centered grow">
-            <div class="col-sm-12 btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="ESPMUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
-                <i class="fa fa-file-code-o fa-2x"></i>
-                <span class="grow" translate>Upload Single ESPM Property</span>
+        <div class="grow">
+            <p style="padding-bottom: 10px;" translate>ESPM_IMPORT_TEXT</p>
+        </div>
+        <div class="modal-content-section">
+            <div class="row">
+                <div class="col-sm-4">
+                    <p translate>ESPM_FILE_UPLOAD</p>
+                </div>
+                <div class="col-sm-8" style="margin-bottom: 10px;">
+                    <div class="btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="ESPMUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
+                        <i class="fa fa-file-code-o fa-2x"></i>
+                        <span class="grow">{$:: 'Upload ESPM Property' | translate $}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <hr />
-        <!-- TODO: Make this a better separator -->
-        <div class="flex-centered grow">
-            <div class="col-sm-4"><hr class="divider"></div>
-            <div class="col-sm-8"><span class="or-text">or</span></div>
-            <div class="col-sm-4"><hr class="divider">
+        <div class="modal-content-section">
+            <div class="row or-text">
+                <div class="col-sm-12">{$:: 'OR' | translate $}</div>
             </div>
         </div>
-        <hr />
-        <div class="flex-centered grow" style="margin-top:10px;">
-            <label class="col-sm-2 no-padding" for="input-pm-property-id" translate>ESPM Property ID</label>
-            <div class="col-sm-4 no-padding">
-                <input id="input-pm-property-id" type="text" class="form-control" ng-model="fields.pm_property_id" ng-disabled="busy"/>
+        <div class="modal-content-section">
+            <div class="row" style="padding-bottom:10px">
+                <label class="control-label col-sm-4" for="input-pm-property-id" translate>ESPM Property ID</label>
+                <div class="col-sm-8">
+                    <input id="input-pm-property-id" type="text" class="form-control" ng-model="fields.pm_property_id" ng-disabled="busy"/>
+                </div>
             </div>
-        </div>
-        <div class="flex-centered grow" style="margin-top:10px;">
-            <label class="col-sm-2 no-padding" for="input-pm-property-id" translate>ESPM Username</label>
-            <div class="col-sm-4 no-padding">
-                <input id="input-espm-username" type="text" class="form-control" ng-model="fields.espm_username" ng-disabled="busy"/>
+            <div class="row" style="padding-bottom:10px">
+                <label class="control-label col-sm-4" for="input-espm-username" translate>ESPM Username</label>
+                <div class="col-sm-8">
+                    <input id="input-espm-username" type="text" class="form-control" ng-model="fields.espm_username" ng-disabled="busy"/>
+                </div>
             </div>
-        </div>
-        <div class="flex-centered grow" style="margin-top:10px;">
-            <label class="col-sm-2 no-padding" for="input-pm-property-id" translate>ESPM Password</label>
-            <div class="col-sm-4 no-padding">
-                <input id="input-espm-username" type="text" class="form-control" ng-model="fields.espm_password" ng-disabled="busy"/>
+            <div class="row" style="padding-bottom:10px">
+                <label class="control-label col-sm-4" for="input-espm-password">ESPM Password</label>
+                <div class="col-sm-8">
+                    <div class="input-group">
+                        <input type="{$ secret $}" class="form-control" id="input-espm-password" ng-model="fields.espm_password" autocomplete="new-password" ng-disabled="busy">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                        </span>
+                    </div>
+                </div>
             </div>
-        </div>
-        <!-- ADD in the column list profile selector -->
-        <div class="flex-centered grow" style="margin-top:10px;">
-            <div class="col-sm-12 btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
-                <i class="fa fa-id-card-o fa-2x"></i>
-                <span class="grow" translate>Import directly from ESPM</span>
+            <div class="row" style="padding-bottom:10px">
+                <div class="col-sm-8 col-sm-offset-4">
+                    <div class="btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
+                        <i class="fa fa-id-card-o fa-2x"></i>
+                        <span class="grow"> {$:: 'Import directly from ESPM' | translate $}</span>
+                    </div>
+                </div>
             </div>
+
         </div>
 
     </div>

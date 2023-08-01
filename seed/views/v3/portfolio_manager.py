@@ -284,77 +284,6 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{str(pme)}: PM Property ID {pk}")
             return JsonResponse({'status': 'error', 'message': str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'username': 'string',
-                'password': 'string',
-                'template': {
-                    '[copy information from template_list]': 'string'
-                },
-                'start_month': 'integer',
-                'start_year': 'integer',
-                'end_month': 'integer',
-                'end_year': 'integer',
-                'property_ids': [
-                    'integer'
-                ]
-
-            },
-            description='ESPM account credentials and template data.',
-            required=['username', 'password']
-        ),
-        responses={
-            200: AutoSchemaHelper.schema_factory({
-                'status': 'string',
-                'message': 'string'
-            }),
-        }
-    )
-    @action(detail=False, methods=['POST'])
-    def update_report(self, request):
-        """
-        This API view makes a request to ESPM to update a specific report template.
-        Start and end periods and what propertyIDs to include in the report can be configured.
-        ---
-        This API responds with a JSON object with two keys: status, which will be a string -
-        either error or success, and message containing additional details.
-        """
-        # want: application/x-www-form-urlencoded
-        # https://portfoliomanager.energystar.gov/pm/reports/template/4438244
-
-        if 'username' not in request.data:
-            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
-            return JsonResponse(
-                {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if 'password' not in request.data:
-            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
-            return JsonResponse(
-                {'status': 'error', 'message': 'Invalid call to PM worker: missing password for PM account'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if 'template' not in request.data:
-            _log.debug("Invalid call to PM worker: missing template for PM account: %s" % str(request.data))
-            return JsonResponse(
-                {'status': 'error', 'message': 'Invalid call to PM worker: missing template for PM account'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        username = request.data['username']
-        password = request.data['password']
-        template = request.data['template']
-        pm = PortfolioManagerImport(username, password)
-
-        start_month = request.data.get('start_month', None)
-        start_year = request.data.get('start_year', None)
-        end_month = request.data.get('end_month', None)
-        end_year = request.data.get('end_year', None)
-        property_ids = request.data.get('property_ids', [])
-
-        pm.update_template_report(template, start_month, start_year, end_month, end_year, property_ids)
-
-
 # TODO: Move this object to /seed/utils/portfolio_manager.py
 class PortfolioManagerImport(object):
     """This class is essentially a wrapper around the ESPM login/template/report operations
@@ -672,6 +601,7 @@ class PortfolioManagerImport(object):
             )
 
             if response.status_code == status.HTTP_200_OK:
+
                 return response.content
             else:
                 raise PMExcept('Unsuccessful response from GET trying to download single report; aborting.')

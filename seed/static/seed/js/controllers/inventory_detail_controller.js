@@ -806,6 +806,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.uploader = {
         invalid_xml_extension_alert: false,
+        invalid_xlsx_extension_alert: false,
         in_progress: false,
         progress: 0,
         complete: false,
@@ -818,9 +819,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
             $scope.uploader.invalid_xml_extension_alert = true;
             break;
 
+          case 'invalid_extension':
+            $scope.uploader.invalid_xlsx_extension_alert = true;
+            break;
+
           case 'upload_submitted':
             $scope.uploader.filename = file.filename;
             $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xlsx_extension_alert = false;
             $scope.uploader.in_progress = true;
             $scope.uploader.status_message = 'uploading file';
             break;
