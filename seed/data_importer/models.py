@@ -9,11 +9,9 @@ import hashlib
 import json
 import logging
 import math
-import os
 import tempfile
 from urllib.parse import unquote
 
-from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -626,7 +624,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         #     os.makedirs(local_dir)
 
         if not hasattr(self, '_local_file'):
-            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False) # dir=local_dir)
+            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)  # dir=local_dir)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
             temp_file.flush()
