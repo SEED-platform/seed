@@ -80,6 +80,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = {id: organization_payload.organization.id};
       $scope.static_url = urls.static_url;
@@ -655,7 +656,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.open_data_upload_espm_modal = function () {
-        $uibModal.open({
+        var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_upload_espm_modal.html',
           controller: 'data_upload_espm_modal_controller',
           resolve: {
@@ -663,9 +664,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
             organization: () => $scope.organization,
             cycle_id: () => $scope.cycle.id,
             upload_from_file: () => $scope.uploaderfunc,
-            view_id: () => $stateParams.view_id
-          },
-          backdrop: 'static',
+            view_id: () => $stateParams.view_id,
+            column_mapping_profiles: [
+              'column_mappings_service',
+              function (
+                column_mappings_service
+              ) {
+                return column_mappings_service.get_column_mapping_profiles_for_org(
+                  $scope.organization.id, []
+                ).then(function (response) {
+                  return response.data;
+                });
+              }]
+          }
+        });
+        modalInstance.result.then(function () {
         });
       };
 

@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
     'espm_service',
     'view_id',
     'pm_property_id',
+    'column_mapping_profiles',
     function (
       $scope,
       $uibModalInstance,
@@ -22,7 +23,8 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
       upload_from_file,
       espm_service,
       view_id,
-      pm_property_id
+      pm_property_id,
+      column_mapping_profiles
     ) {
       $scope.organization = organization;
       $scope.view_id = view_id;
@@ -30,10 +32,14 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
       $scope.upload_from_file = upload_from_file;
       $scope.error = '';
       $scope.busy = false;
+      $scope.mapping_profiles = column_mapping_profiles;
+      let profile = $scope.mapping_profiles.length ? $scope.mapping_profiles[0].id : null;
+
       $scope.fields = {
-        'pm_property_id': pm_property_id,
-        'espm_username': '',
-        'espm_password': ''
+        pm_property_id: pm_property_id,
+        espm_username: '',
+        espm_password: '',
+        mapping_profile: profile
       };
 
       // password field
@@ -65,7 +71,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', [])
             $scope.error = 'Error: ' + result.message;
             $scope.busy = false;
           } else {
-            return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, file_result).then(result => {
+            return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.mapping_profile, file_result).then(result => {
               if (typeof (result) == 'object' && !result.success) {
                 $scope.error = 'Error: ' + result.message;
                 $scope.busy = false;

@@ -4,13 +4,21 @@
 
 <div ng-switch on="stage">
     <div class="modal-body">
+        <div class="modal-content-section">
+            <div class="row" style="padding-bottom:10px">
+                <label class="control-label col-sm-4" for="selected-mapping-profile" translate>Column Mapping Profile</label>
+                <div class="col-sm-8">
+                    <select id="selected-column-profile" name="selected-mapping-profile" class="form-control input-sm" ng-model="fields.mapping_profile" ng-options="t.id as t.name for t in mapping_profiles" style="width:100%;"></select>
+                </div>
+            </div>
+        </div>
 
         <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
             {$ error $}
         </div>
 
         <div class="grow">
-            <p style="padding-bottom: 10px;" translate>ESPM_IMPORT_TEXT</p>
+            <p style="padding: 10px;" translate>ESPM_IMPORT_TEXT</p>
         </div>
         <div class="modal-content-section">
             <div class="row">
@@ -18,7 +26,7 @@
                     <p translate>ESPM_FILE_UPLOAD</p>
                 </div>
                 <div class="col-sm-8" style="margin-bottom: 10px;">
-                    <div class="btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="ESPMUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
+                    <div class="btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="ESPMUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" mapping-profile-id="fields.mapping_profile" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
                         <i class="fa fa-file-code-o fa-2x"></i>
                         <span class="grow">{$:: 'Upload ESPM Property' | translate $}</span>
                     </div>

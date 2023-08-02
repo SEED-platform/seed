@@ -2193,7 +2193,7 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         )
 
         # need to upload the mappings for the ESPM data to a new profile
-        ColumnMappingProfile.create_from_file(
+        mapping_profile = ColumnMappingProfile.create_from_file(
             mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True
         )
 
@@ -2202,7 +2202,7 @@ class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
         )
 
         url = reverse('api:v3:properties-update-with-espm', args=[pv.id])
-        url += f"?organization_id={self.org.id}&cycle_id={self.cycle_1.id}"
+        url += f"?organization_id={self.org.id}&cycle_id={self.cycle_1.id}&mapping_profile_id={mapping_profile.id}"
         doc = open(test_filepath, 'rb')
         # need to encode the data as multipart form data since this is a PUT. A
         # POST in the client defaults to multipart, so in a PUT we have to construct it.

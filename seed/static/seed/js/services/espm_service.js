@@ -23,7 +23,7 @@ angular.module('BE.seed.service.espm', []).factory('espm_service', [
       });
     };
 
-    const update_building_with_espm_xlsx = function (org_id, cycle_id, property_view_id, file_data) {
+    const update_building_with_espm_xlsx = function (org_id, cycle_id, property_view_id, mapping_profile, file_data) {
       let body = new FormData();
       let blob = new Blob([file_data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       body.append('file', blob, ['espm_', new Date().getTime(), '.xlsx'].join(''));
@@ -32,7 +32,8 @@ angular.module('BE.seed.service.espm', []).factory('espm_service', [
       return $http.put([
         '/api/v3/properties/', property_view_id, '/update_with_espm/?',
         'cycle_id=', cycle_id, '&',
-        'organization_id=', org_id
+        'organization_id=', org_id, '&',
+        'mapping_profile_id=', mapping_profile
       ].join(''), body, { headers: headers },
       ).then(function (response) {
         return response.data;

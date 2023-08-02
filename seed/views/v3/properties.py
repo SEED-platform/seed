@@ -1552,6 +1552,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 required=True,
                 description='ID of the cycle of the property view'
             ),
+            AutoSchemaHelper.query_integer_field(
+                'mapping_profile_id',
+                required=True,
+                description='ID of the column mapping profile to use'
+            ),
             AutoSchemaHelper.upload_file_field(
                 'file',
                 required=True,
@@ -1575,6 +1580,30 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         cycle_pk = request.query_params.get('cycle_id', None)
         org_id = self.get_organization(self.request)
         org_inst = Organization.objects.get(pk=org_id)
+
+        # get mapping profile (ensure it is part of the org)
+        mapping_profile_id = request.query_params.get('mapping_profile_id', None)
+        if not mapping_profile_id:
+            return JsonResponse({
+                'success': False,
+                'message': "Must profile a column mapping profile"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        column_mapping_profiles = org_inst.columnmappingprofile_set.all()
+        column_mapping_profile = column_mapping_profiles.filter(
+            pk=mapping_profile_id
+        )
+        if len(column_mapping_profile) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Could not find ESPM column mapping profile"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif len(column_mapping_profile) > 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"Found multiple ESPM column mapping profiles, found {len(column_mapping_profile)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        column_mapping_profile = column_mapping_profile[0]
 
         try:
             Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
@@ -1643,25 +1672,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # create the column mappings
         Column.retrieve_mapping_columns(import_file.pk)
-
-        # get column mapping profile, but need to get all the profiles for the org,
-        # then filter by profile name.
-        # TODO: replace the ESPM with a user passed column mapping profile
-        column_mapping_profiles = org_inst.columnmappingprofile_set.all()
-        column_mapping_profile = column_mapping_profiles.filter(
-            name='ESPM', profile_type=ColumnMappingProfile.NORMAL
-        )
-        if len(column_mapping_profile) == 0:
-            return JsonResponse({
-                'success': False,
-                'message': "Could not find ESPM column mapping profile"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif len(column_mapping_profile) > 1:
-            return JsonResponse({
-                'success': False,
-                'message': f"Found multiple ESPM column mapping profiles, found {len(column_mapping_profile)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
-        column_mapping_profile = column_mapping_profile[0]
 
         # assign the mappings to the import file id
         Column.create_mappings(column_mapping_profile.mappings, org_inst, request.user, import_file.pk)

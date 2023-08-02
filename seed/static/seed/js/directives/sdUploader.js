@@ -308,7 +308,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId,
+      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId + '&mapping_profile_id=' + scope.mappingProfileId,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
@@ -618,6 +618,7 @@ angular.module('sdUploader', []).directive('sdUploader', function () {
       eventfunc: '&',
       importrecord: '=',
       organizationId: '=',
+      mappingProfileId: '=?',
       sourceprog: '@',
       sourcetype: '@',
       sourcever: '='
