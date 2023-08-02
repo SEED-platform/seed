@@ -85,7 +85,6 @@ class AccountsViewTests(TestCase):
             'mapquest_api_key': '',
             'geocoding_enabled': True,
             'better_analysis_api_key': '',
-            'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
             'property_display_field': 'address_line_1',
             'taxlot_display_field': 'address_line_1',
             'display_meter_units': Organization._default_display_meter_units,
@@ -98,13 +97,18 @@ class AccountsViewTests(TestCase):
             'at_organization_token': '',
             'audit_template_user': '',
             'audit_template_password': '',
-            'at_host_url': 'https://api.labworks.org',
             'salesforce_enabled': False,
             'ubid_threshold': 1
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
+        
         self.assertEqual(len(org_payload), 1)
+        # pull out and test the URLs that can be configured differently based on the test environment.
+        better_url = org_payload[0].pop('better_host_url')
+        self.assertRegexpMatches(better_url, r'^https://.*better.*$')
+        at_url = org_payload[0].pop('at_host_url')
+        self.assertRegexpMatches(at_url, r'^https://.*labworks.*$|https://buildingenergyscore.energy.gov$')
         self.assertDictEqual(org_payload[0], expected_single_org_payload)
 
         # Now let's make sure that we pick up related buildings correctly.
@@ -124,10 +128,11 @@ class AccountsViewTests(TestCase):
             'name': self.cal_year_name,
             'cycle_id': self.cycle.pk
         }]
-        self.assertDictEqual(
-            _dict_org(self.fake_request, [self.org])[0],
-            expected_single_org_payload
-        )
+        org_payload_2 = _dict_org(self.fake_request, [self.org])[0]
+        # pop the urls again
+        org_payload_2.pop('better_host_url')
+        org_payload_2.pop('at_host_url')
+        self.assertDictEqual(org_payload_2, expected_single_org_payload)
 
     def test_dict_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
@@ -179,7 +184,6 @@ class AccountsViewTests(TestCase):
                 'mapquest_api_key': '',
                 'geocoding_enabled': True,
                 'better_analysis_api_key': '',
-                'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
                 'property_display_field': 'address_line_1',
                 'taxlot_display_field': 'address_line_1',
                 'display_meter_units': Organization._default_display_meter_units,
@@ -192,7 +196,6 @@ class AccountsViewTests(TestCase):
                 'at_organization_token': '',
                 'audit_template_user': '',
                 'audit_template_password': '',
-                'at_host_url': 'https://api.labworks.org',
                 'salesforce_enabled': False,
                 'ubid_threshold': 1
             }],
@@ -211,7 +214,6 @@ class AccountsViewTests(TestCase):
             'mapquest_api_key': '',
             'geocoding_enabled': True,
             'better_analysis_api_key': '',
-            'better_host_url': 'https://better-lbnl-staging.herokuapp.com',
             'property_display_field': 'address_line_1',
             'taxlot_display_field': 'address_line_1',
             'display_meter_units': Organization._default_display_meter_units,
@@ -224,12 +226,17 @@ class AccountsViewTests(TestCase):
             'at_organization_token': '',
             'audit_template_user': '',
             'audit_template_password': '',
-            'at_host_url': 'https://api.labworks.org',
             'salesforce_enabled': False,
             'ubid_threshold': 1
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
+
+        # pop the better and at urls
+        org_payload[0].pop('better_host_url')
+        org_payload[0].pop('at_host_url')
+        org_payload[0]['sub_orgs'][0].pop('better_host_url')
+        org_payload[0]['sub_orgs'][0].pop('at_host_url')
 
         self.assertEqual(len(org_payload), 2)
         self.assertDictEqual(org_payload[0], expected_multiple_org_payload)
