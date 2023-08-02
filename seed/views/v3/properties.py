@@ -1726,6 +1726,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'success',
                 'message': 'successfully updated property with ESPM file',
                 'data': {
+                    'status': 'success',
                     'property_view': PropertyViewAsStateSerializer(property_view).data,
                 },
             }, status=status.HTTP_200_OK)
