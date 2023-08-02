@@ -102,7 +102,7 @@ class AccountsViewTests(TestCase):
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
-        
+
         self.assertEqual(len(org_payload), 1)
         # pull out and test the URLs that can be configured differently based on the test environment.
         better_url = org_payload[0].pop('better_host_url')

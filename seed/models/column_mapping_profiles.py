@@ -102,4 +102,4 @@ class ColumnMappingProfile(models.Model):
         # make sure that it is added to the org
         org.columnmappingprofile_set.add(profile)
 
-        return True
+        return profile

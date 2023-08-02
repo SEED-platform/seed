@@ -72,6 +72,7 @@ crlf
 css
 csv
 csvfile
+csvreader
 Ctrl
 customizable
 datacoercions
