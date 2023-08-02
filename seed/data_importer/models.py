@@ -618,15 +618,15 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         is the case, then we should handle the removal of the temp files otherwise these can add up
         to a lot of storage space.
 
-        Create a local directory in the MEDIA_ROOT to store the temporary files. We should add
-        a cron job to remove these files after a certain amount of time.
+        <not used yet>Create a local directory in the MEDIA_ROOT to store the temporary files. We should add
+        a cron job to remove these files after a certain amount of time.</not used yet>
         """
-        local_dir = os.path.join(settings.MEDIA_ROOT, 'tmp_files')
-        if not os.path.exists(local_dir):
-            os.makedirs(local_dir)
+        # local_dir = os.path.join(settings.MEDIA_ROOT, 'tmp_files')
+        # if not os.path.exists(local_dir):
+        #     os.makedirs(local_dir)
 
         if not hasattr(self, '_local_file'):
-            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False, dir=local_dir)
+            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False) # dir=local_dir)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
             temp_file.flush()
