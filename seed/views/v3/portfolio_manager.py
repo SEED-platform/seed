@@ -284,6 +284,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{str(pme)}: PM Property ID {pk}")
             return JsonResponse({'status': 'error', 'message': str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 # TODO: Move this object to /seed/utils/portfolio_manager.py
 class PortfolioManagerImport(object):
     """This class is essentially a wrapper around the ESPM login/template/report operations
