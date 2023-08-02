@@ -58,6 +58,7 @@ cli
 cmp
 codebase
 collectstatic
+columnlistprofile
 columnmappingprofile
 comparators
 concat
@@ -73,6 +74,7 @@ csv
 csvfile
 Ctrl
 customizable
+datacoercions
 dataset
 datasets
 datasource
@@ -181,6 +183,7 @@ mappable
 mapquest
 mcm
 metadata
+meterdata
 meterreading
 middleware
 MIDDLEWARE
@@ -282,6 +285,7 @@ sqft
 Starke
 statuslabel
 str
+strcmp
 strftime
 subclasses
 subdirectory

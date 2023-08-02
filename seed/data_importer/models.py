@@ -9,9 +9,11 @@ import hashlib
 import json
 import logging
 import math
+import os
 import tempfile
 from urllib.parse import unquote
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -611,8 +613,20 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def local_file(self):
+        """This method is used to create a copy of a remote file locally. We shouldn't need to use
+        this unless we start storing files remotely and we need to save locally to parse. If that
+        is the case, then we should handle the removal of the temp files otherwise these can add up
+        to a lot of storage space.
+
+        Create a local directory in the MEDIA_ROOT to store the temporary files. We should add
+        a cron job to remove these files after a certain amount of time.
+        """
+        local_dir = os.path.join(settings.MEDIA_ROOT, 'tmp_files')
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
         if not hasattr(self, '_local_file'):
-            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
+            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False, dir=local_dir)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
             temp_file.flush()
