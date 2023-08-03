@@ -50,6 +50,7 @@ class TestMeasures(TestCase):
     @classmethod
     def setUpClass(cls):
         # Override MEDIA_ROOT as the temporary dir (kind of a bad way to do this but ya know)
+        cls.previous_media_root = settings.MEDIA_ROOT
         cls.temp_media_dir = tempfile.TemporaryDirectory()
         settings.MEDIA_ROOT = cls.temp_media_dir.name
 
@@ -87,6 +88,8 @@ class TestMeasures(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # set the media directory back
+        settings.MEDIA_ROOT = cls.previous_media_root
         cls.temp_media_dir.cleanup()
 
     def test_successfully_get_uploads_file_when_user_is_org_member(self):
