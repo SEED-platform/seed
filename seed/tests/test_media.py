@@ -62,7 +62,7 @@ class TestMeasures(TestCase):
         with open(cls.absolute_uploads_file, 'w') as f:
             f.write('Hello world')
 
-        # buildingsync file
+        # BuildingSync file
         upload_to = BuildingFile._meta.get_field('file').upload_to
         cls.absolute_bsync_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_bsync.xml')
         os.makedirs(os.path.dirname(cls.absolute_bsync_file), exist_ok=True)
@@ -313,7 +313,7 @@ class TestMeasures(TestCase):
         # Assert
         self.assertFalse(is_permitted)
 
-    def test_fails_when_path_doesnt_match(self):
+    def test_fails_when_path_does_not_match(self):
         # test import files
         with self.assertRaises(ModelForFileNotFound):
             check_file_permission(
