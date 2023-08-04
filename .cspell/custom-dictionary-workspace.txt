@@ -121,6 +121,7 @@ geocode
 geocoded
 geocoding
 geocodings
+geomodels
 getattr
 getenv
 getitem
