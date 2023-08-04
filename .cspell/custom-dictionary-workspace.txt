@@ -292,6 +292,7 @@ subclasses
 subdirectory
 Submodules
 submonthly
+suborg
 Subpackages
 subtask
 sudo
