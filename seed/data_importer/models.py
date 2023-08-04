@@ -617,7 +617,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         to a lot of storage space.
         """
         if not hasattr(self, '_local_file'):
-            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)  # dir=local_dir)
+            temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):
                 temp_file.write(chunk)
             temp_file.flush()
