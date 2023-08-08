@@ -37,6 +37,7 @@ def assign_users_to_root_acces_level(apps, schema_editor):
         user.access_level_instance = root
         user.save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [

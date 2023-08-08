@@ -16,6 +16,7 @@ def assign_properties_to_root_acces_level(apps, schema_editor):
         property.access_level_instance = root
         property.save()
 
+
 @transaction.atomic
 def assign_taxlots_to_root_acces_level(apps, schema_editor):
     TaxLot = apps.get_model('seed', 'TaxLot')
@@ -26,6 +27,7 @@ def assign_taxlots_to_root_acces_level(apps, schema_editor):
         root = AccessLevelInstance.objects.get(organization=taxlot.organization, depth=1)
         taxlot.access_level_instance = root
         taxlot.save()
+
 
 class Migration(migrations.Migration):
 

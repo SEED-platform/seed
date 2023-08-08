@@ -332,6 +332,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
             {"id": id, "ali_id": ali_id} for id, ali_id
             in zip(states["duplicate_sets"], states["duplicate_sets_ali"])
         ]
+        states.sort(key=lambda x: x["id"])
         states_with_ali = [s for s in states if s["ali_id"] is not None]
         present_ali_ids = set(state["ali_id"] for state in states_with_ali)
 
