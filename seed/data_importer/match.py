@@ -349,7 +349,6 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
             errors_state_ids += [s["id"] for s in states]
             continue
 
-        print(states, canonical_state)
         canonical_state_ids.append(canonical_state["id"])
         states.remove(canonical_state)
         duplicate_state_ids += [s["id"] for s in states]
