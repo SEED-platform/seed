@@ -26,6 +26,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
     Column,
+    Cycle,
     PropertyAuditLog,
     PropertyState,
     PropertyView,
@@ -42,6 +43,7 @@ from seed.utils.match import (
     update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
+from seed.utils.ubid import get_jaccard_index, merge_ubid_models
 
 _log = get_task_logger(__name__)
 
@@ -52,7 +54,53 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key):
+def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key, property_state_ids_by_cycle=None):
+    """
+    Utilizes the helper function match_and_link_incoming_properties_and_taxlots_by_cycle
+
+    :param file_pk: ImportFile Primary Key
+    :param property_state_ids_by_cycle: A dictionary that with cycle ids as the keys
+    and an array of associated property states as the values
+    :return results: dict
+    """
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    org = import_file.import_record.super_organization
+
+    if property_state_ids_by_cycle is None:
+        # Get lists and counts of all the properties and tax lots based on the import file.
+        incoming_properties = import_file.find_unmatched_property_states()
+        incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+        cycle = import_file.cycle
+
+        results = match_and_link_incoming_properties_and_taxlots_by_cycle(
+            file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle
+        )
+
+    else:
+        results_list = []
+        for cycle_id, property_state_ids in property_state_ids_by_cycle.items():
+            # Get lists and counts of all the properties and tax lots based on the import file.
+            incoming_properties = PropertyState.objects.filter(pk__in=property_state_ids, organization=org)
+            incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+            cycle = Cycle.objects.get(id=cycle_id)
+            results_list.append(
+                match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle)
+            )
+
+        # combine array of dictionaries in results_list into results
+        results = {}
+        for dict in results_list:
+            for key, value in dict.items():
+                results[key] = results.get(key, 0) + value
+
+    results['import_file_records'] = import_file.num_rows
+
+    return results
+
+
+def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_key, sub_progress_key, incoming_properties, incoming_tax_lots, cycle):
     """
     Match incoming the properties and taxlots. Then, search for links for them.
 
@@ -71,6 +119,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     returned as a dict.
 
     :param file_pk: ImportFile Primary Key
+    :param cycle: cycle object
     :return results: dict
     """
     from seed.data_importer.tasks import pair_new_states
@@ -112,9 +161,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     merged_linked_taxlot_views = []
 
     # Get lists and counts of all the properties and tax lots based on the import file.
-    incoming_properties = import_file.find_unmatched_property_states()
     property_initial_incoming_count = incoming_properties.count()
-    incoming_tax_lots = import_file.find_unmatched_tax_lot_states()
     tax_lot_initial_incoming_count = incoming_tax_lots.count()
 
     if incoming_properties.exists():
@@ -158,7 +205,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             promoted_property_ids,
             org,
             import_file.import_record.access_level_instance,
-            import_file.cycle,
+            cycle,
             PropertyState,
             sub_progress_key,
             merge_duplicates,
@@ -203,7 +250,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             promoted_tax_lot_ids,
             org,
             import_file.import_record.access_level_instance,
-            import_file.cycle,
+            cycle,
             TaxLotState,
             sub_progress_key,
         )
@@ -225,7 +272,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     )
 
     return {
-        'import_file_records': import_file.num_rows,
         'property_initial_incoming': property_initial_incoming_count,
         'property_duplicates_against_existing': property_duplicates_against_existing_count,
         'property_duplicates_within_file': property_duplicates_within_file_count,
@@ -286,6 +332,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
             {"id": id, "ali_id": ali_id} for id, ali_id
             in zip(states["duplicate_sets"], states["duplicate_sets_ali"])
         ]
+        states.sort(key=lambda x: x["id"])
         states_with_ali = [s for s in states if s["ali_id"] is not None]
         present_ali_ids = set(state["ali_id"] for state in states_with_ali)
 
@@ -341,7 +388,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     unmatched_state_ids = list(
         set(unmatched_state_ids) - set(promoted_ids)
     )
-
     # Group IDs by -States that match each other
     matched_id_groups = StateClass.objects.\
         filter(id__in=unmatched_state_ids).\
@@ -456,22 +502,37 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     merged_between_existing_count = 0
     merge_state_pairs = []
     batch_size = math.ceil(len(unmatched_states) / 100)
+
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
+        # compare ubids via jaccard index instead of a direct match, drop from matching criteria
+        check_jaccard = False
+        if 'ubid' in matching_criteria.keys():
+            check_jaccard = True if matching_criteria.get('ubid') else False
+            ubid = matching_criteria.pop('ubid')
+
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
-            **matching_criteria
+            **matching_criteria,
         )
-        count = existing_state_matches.count()
+
+        if check_jaccard:
+            existing_state_matches = [
+                state
+                for state in existing_state_matches
+                if check_jaccard_match(ubid, state.ubid, org.ubid_threshold)
+            ]
+
+        count = len(existing_state_matches)
 
         if count > 1:
             merged_between_existing_count += count
-            existing_state_ids = list(existing_state_matches.order_by('updated').values_list('id', flat=True))
+            existing_state_ids = [state.id for state in sorted(existing_state_matches, key=lambda state: state.updated)]
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
-            merge_state_pairs.append((existing_state_matches.first(), state))
+            merge_state_pairs.append((existing_state_matches[0], state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
@@ -512,6 +573,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
 
                 # Merge -States and assign new/merged -State to existing -View
                 merged_state = save_state_match(existing_state, newer_state, priorities)
+                merge_ubid_models([existing_state.id], merged_state.id, StateClass)
                 existing_view.state = merged_state
                 existing_view.save()
 
@@ -653,3 +715,13 @@ def save_state_match(state1, state2, priorities):
     merged_state.save()
 
     return merged_state
+
+
+def check_jaccard_match(ubid, state_ubid, ubid_threshold):
+    jaccard_index = get_jaccard_index(ubid, state_ubid)
+
+    # If threshold is 0 then it will match any UBID with overlap
+    if ubid_threshold == 0:
+        return jaccard_index > ubid_threshold
+    else:
+        return jaccard_index >= ubid_threshold

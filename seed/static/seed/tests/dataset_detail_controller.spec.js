@@ -98,12 +98,12 @@ describe('controller: dataset_detail_controller', function () {
     };
     var fake_cycles = {
       cycles: [{
-        end: '2015-01-01T07:59:59Z',
+        end: '2015-01-01',
         id: 2017,
         name: '2014 Calendar Year',
         num_properties: 1496,
         num_taxlots: 1519,
-        start: '2014-01-01T08:00:00Z'
+        start: '2014-01-01'
       }],
       status: 'success'
     };

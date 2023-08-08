@@ -77,7 +77,6 @@ def _create_default_columns(organization_id):
             'pm_property_id',
             'jurisdiction_tax_lot_id',
             'ubid',
-            'ulid'
         ]
 
         # Default fields and order are those used before customization was enabled

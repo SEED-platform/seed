@@ -4,11 +4,10 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import datetime
 import json
+from datetime import date
 
 from django.test import TestCase
-from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -21,6 +20,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_IMPORT,
+    SEED_DATA_SOURCES,
     Column,
     ColumnMapping,
     Cycle,
@@ -197,8 +197,8 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
         cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
             organization=org,
-            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2015, 1, 1),
+            end=date(2015, 12, 31),
         )
 
         import_record, import_file = self.create_import_file(
@@ -213,7 +213,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
             owner=user, last_modified_by=user, super_organization=org, access_level_instance=org.root
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.source_type = source_type
+        import_file.source_type = SEED_DATA_SOURCES[source_type][1]
         import_file.data_state = data_state
         import_file.save()
 

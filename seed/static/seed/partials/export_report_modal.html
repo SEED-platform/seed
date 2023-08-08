@@ -5,7 +5,7 @@
     <div class="form-group">
         <label class="control-label col-sm-3" for="fileName" translate>Export Name</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required>
+            <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" sd-enter="export_selected()" required>
         </div>
     </div>
 </div>

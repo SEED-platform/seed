@@ -172,7 +172,7 @@ fields. Follow the steps below to add new fields to the SEED database:
 #. Test import workflow with mapping to new fields
 
 
-NginX Notes
+NGINX Notes
 -----------
 
 Toggle *maintenance mode* to display a maintenance page and prevent access to all site resources including API endpoints:

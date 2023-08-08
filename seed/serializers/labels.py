@@ -60,7 +60,7 @@ class LabelSerializer(serializers.ModelSerializer):
     def get_is_applied(self, obj):
         filtered_result = []
         if self.inventory:
-            # TODO: This needs to be updated to support labels being moved to Views. This breaks OEP.
+            # TODO: This needs to be updated to support labels being moved to Views.
             filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
 
         return filtered_result

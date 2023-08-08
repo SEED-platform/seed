@@ -8,55 +8,6 @@ Utility methods pertaining to data import tasks (save, mapping, matching).
 """
 from collections import defaultdict
 
-from django.core.cache import cache
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-
-
-def get_core_pk_column(table_column_mappings, primary_field):
-    for tcm in table_column_mappings:
-        if tcm.destination_field == primary_field:
-            return tcm.order - 1
-    raise ValidationError("This file does not appear to contain a column mapping to %s" % primary_field)
-
-
-def acquire_lock(name, expiration=None):
-    """
-    Tries to acquire a lock from the cache.
-    Also sets the lock's value to the current time, allowing us to see how long
-    it has been held.
-
-    Returns False if lock already belongs by another process.
-    """
-    return cache.add(name, timezone.now(), expiration)
-
-
-def release_lock(name):
-    """
-    Frees a lock.
-    """
-    return cache.delete(name)
-
-
-def get_lock_time(name):
-    """
-    Examines a lock to see when it was acquired.
-    """
-    return cache.get(name)
-
-
-def chunk_iterable(iterlist, chunk_size):
-    """
-    Breaks an iterable (e.g., list) into smaller chunks,
-    returning a generator of the chunk.
-    """
-    assert hasattr(iterlist, "__iter__"), "iter is not an iterable"
-    for i in range(0, len(iterlist), chunk_size):
-        try:
-            yield iterlist[i:i + chunk_size]
-        except StopIteration:
-            return
-
 
 def kbtu_thermal_conversion_factors(country):
     """
@@ -447,18 +398,3 @@ def usage_point_id(raw_source_id):
         return id_split[usage_point_index]
     else:
         return raw_source_id
-
-
-class CoercionRobot(object):
-
-    def __init__(self):
-        self.values_hash = {}
-
-    def lookup_hash(self, uncoerced_value, destination_model, destination_field):
-        key = self.make_key(uncoerced_value, destination_model, destination_field)
-        if key in self.values_hash:
-            return self.values_hash[key]
-        return None
-
-    def make_key(self, value, model, field):
-        return "%s|%s|%s" % (value, model, field)

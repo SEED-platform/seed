@@ -976,10 +976,10 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
 
       processData();
 
-      $scope.open_ubid_modal = function () {
+      $scope.open_ubid_decode_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
-          controller: 'ubid_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_decode_modal.html',
+          controller: 'ubid_decode_modal_controller',
           resolve: {
             property_view_ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
