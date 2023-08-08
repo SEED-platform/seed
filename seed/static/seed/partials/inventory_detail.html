@@ -48,7 +48,7 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="display:flex;margin:10px 0;">
             <div style="flex-grow:1;display:flex;flex-direction:column;row-gap:10px;">
-                <div uib-dropdown class="btn-group pointer">
+                <div uib-dropdown class="btn-group">
                     <button id="btnInventoryActions"
                             type="button"
                             uib-dropdown-toggle
@@ -92,6 +92,10 @@
                             <a ng-click="update_salesforce()">{$:: 'Update Salesforce' | translate $}</a>
                         </li>
 
+                        <li role="menuitem">
+                            <a ng-click="open_ubid_admin_modal()">Add/Update UBID</a>
+                        </li>
+
                         <li class="divider"></li>
 
                         <li role="menuitem">
@@ -117,6 +121,29 @@
                         <span ng-repeat="label in labels" class="label label-{$:: label.label $}" style="padding: 4.6px 7px;">{$:: label.name $}</span>
                     </div>
                 </div>
+                <div>
+                    <strong style="padding-right:5px;">Access Level Instance</strong>
+                    <div >
+                        <table id="ali-detail-table" class="table table-striped"
+                            style="width: fit-content">
+                            <thead>
+                                <tr>
+                                    <th ng-repeat="(level, name) in ali_path">
+                                        {$ level $}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th ng-repeat="(level, name) in ali_path">
+                                        {$ name $}
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
 
                 <div>
                     <span ng-show="profiles.length > 0">
@@ -125,6 +152,11 @@
                             <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
                         </div>
                     </span>
+                </div>
+            </div>
+            <div ng-controller="inventory_detail_map_controller" style="margin:20px;">
+                <div style="margin: auto; width: 402px; overflow: hidden;">
+                    <div id="map"></div>
                 </div>
             </div>
             <!-- NOTE: This is bad, using a controller created for someone else but it will work

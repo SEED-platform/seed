@@ -1104,7 +1104,6 @@ class TestColumnsByInventory(TestCase):
                 "total_ghg_emissions": "float",
                 "total_ghg_emissions_intensity": "float",
                 "ubid": "string",
-                "ulid": "string",
                 "updated": "datetime",
                 "use_description": "string",
                 "year_ending": "date",
@@ -1133,7 +1132,7 @@ class TestColumnsByInventory(TestCase):
                 'source_eui_weather_normalized', 'space_alerts', 'state', 'taxlot_footprint',
                 'total_ghg_emissions', 'total_ghg_emissions_intensity',
                 'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
-                'ubid', 'ulid', 'updated',
+                'ubid', 'updated',
                 'use_description', 'year_built', 'year_ending']
 
         self.assertCountEqual(c, data)
@@ -1153,7 +1152,7 @@ class TestColumnsByInventory(TestCase):
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
                     'taxlot_footprint', 'total_ghg_emissions', 'total_ghg_emissions_intensity',
                     'total_marginal_ghg_emissions', 'total_marginal_ghg_emissions_intensity',
-                    'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
+                    'ubid', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)

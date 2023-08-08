@@ -21,7 +21,6 @@ from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
-    ROLE_VIEWER,
     AccessLevelInstance,
     Organization,
     OrganizationUser
@@ -34,35 +33,9 @@ from seed.utils.api_schema import (
     swagger_auto_schema_org_query_param
 )
 from seed.utils.organizations import create_organization
+from seed.utils.users import get_role_from_js
 
 _log = logging.getLogger(__name__)
-
-
-def _get_js_role(role):
-    """return the JS friendly role name for user
-    :param role: role as defined in superperms.models
-    :returns: (string) JS role name
-    """
-    roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
-    }
-    return roles.get(role, 'viewer')
-
-
-def _get_role_from_js(role):
-    """return the OrganizationUser role_level from the JS friendly role name
-
-    :param role: 'member', 'owner', or 'viewer'
-    :returns: int role as defined in superperms.models
-    """
-    roles = {
-        'owner': ROLE_OWNER,
-        'viewer': ROLE_VIEWER,
-        'member': ROLE_MEMBER,
-    }
-    return roles[role]
 
 
 def _get_js_rule_type(data_type):
@@ -225,7 +198,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             # check if this is a dict, if so, grab the value out of 'value'
             role = body['role']
             try:
-                _get_role_from_js(role)
+                get_role_from_js(role)
             except Exception:
                 return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, '
                                                                    'owner]'},
@@ -235,7 +208,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 organization_id=org.pk,
                 user_id=user.pk,
                 access_level_instance_id=access_level_instance_id,
-            ).update(role_level=_get_role_from_js(role))
+            ).update(role_level=get_role_from_js(role))
 
         if created:
             user.set_unusable_password()
@@ -310,7 +283,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         Updates a user's role within an organization.
         """
         body = request.data
-        role = _get_role_from_js(body['role'])
+        role = get_role_from_js(body['role'])
 
         user_id = int(pk)
         organization_id = self.get_organization(request)

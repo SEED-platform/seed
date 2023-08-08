@@ -10,7 +10,6 @@ import os
 import pathlib
 import unittest
 from datetime import datetime
-from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
@@ -30,6 +29,9 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     DATA_STATE_MAPPING,
+    GREEN_BUTTON,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -519,7 +521,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1110,7 +1112,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1145,7 +1147,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1181,7 +1183,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -1201,7 +1203,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -1245,7 +1247,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -1266,7 +1268,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_overlapping_filename,
             file=SimpleUploadedFile(
                 name=gb_overlapping_filename,
@@ -1363,7 +1365,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -1473,7 +1475,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -1935,7 +1937,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -2086,7 +2088,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -2376,126 +2378,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             ]
         }
 
-        self.assertCountEqual(result_dict['readings'], expectation['readings'])
-        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-
-    @skip('Overlapping data is not valid through ESPM. This test is no longer valid')
-    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
-        # add initial meters and readings
-        save_raw_data(self.import_file.id)
-
-        # add additional entries for the Electricity meter
-        tz_obj = timezone(TIME_ZONE)
-        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
-        # 2016 January reading that should override the existing reading
-        reading_details = {
-            'meter_id': meter.id,
-            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-            'end_time': make_aware(datetime(2016, 1, 20, 23, 59, 59), timezone=tz_obj),
-            'reading': 100000000000000,
-            'source_unit': 'kBtu (thousand Btu)',
-            'conversion_factor': 1
-        }
-        MeterReading.objects.create(**reading_details)
-
-        # 2016 January reading that should be ignored
-        reading_details['start_time'] = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 0.1
-        MeterReading.objects.create(**reading_details)
-
-        # Create March 2016 entries having disregarded readings when finding monthly total
-        # 1 week - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 6, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 1
-        MeterReading.objects.create(**reading_details)
-
-        # 1 week - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 7, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 13, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 10
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 2, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 11, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 100
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 12, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 21, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 1000
-        MeterReading.objects.create(**reading_details)
-
-        # Create April 2016 entries having disregarded readings when finding monthly total
-        # 5 days - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 4, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 2
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 6, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 15, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 20
-        MeterReading.objects.create(**reading_details)
-
-        # 20 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 2, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 21, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 200
-        MeterReading.objects.create(**reading_details)
-
-        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
-        url += f'?organization_id={self.org.pk}'
-
-        post_params = json.dumps({
-            'interval': 'Month',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
-
-        expectation = {
-            'readings': [
-                {
-                    'month': 'January 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 100000000000000 / 3.41,
-                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
-                },
-                {
-                    'month': 'February 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 548603.7 / 3.41,
-                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
-                },
-                {
-                    'month': 'March 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 1100 / 3.41,
-                },
-                {
-                    'month': 'April 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 200 / 3.41,
-                },
-            ],
-            'column_defs': [
-                {
-                    'field': 'month',
-                    '_filter_type': 'datetime',
-                },
-                {
-                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
-                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
-                    '_filter_type': 'reading',
-                },
-                {
-                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
-                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
-                    '_filter_type': 'reading',
-                },
-            ]
-        }
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 

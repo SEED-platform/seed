@@ -13,6 +13,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ViewSet
 
 from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import Column, ColumnMappingProfile
 from seed.serializers.column_mapping_profiles import (
@@ -67,7 +68,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': data,
             })
         except Exception as e:
-            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
@@ -91,6 +91,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional 'name' or 'mappings'.\n" + mappings_description
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def update(self, request, pk=None):
         """
@@ -200,6 +201,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             required=['name', 'mappings']
         )
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def create(self, request, pk=None):
         """
@@ -237,6 +239,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional org id which overrides the users (default) current org id"
         )]
     )
+    @has_perm_class('requires_root_member_access')
     @api_endpoint_class
     def destroy(self, request, pk=None):
         """

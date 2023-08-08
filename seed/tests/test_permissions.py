@@ -61,7 +61,7 @@ class PermissionsFunctionsTests(TestCase):
     def test_get_org_id(self):
         """Test getting org id from request."""
         # Priority of id sources should be, in order:
-        # - request parser context (ie view kwarg matches an organization id keyword)
+        # - request parser context (i.e., view kwarg matches an organization id keyword)
         # - path (under `organizations` resource)
         # - query_params
         # - data
@@ -94,7 +94,7 @@ class PermissionsFunctionsTests(TestCase):
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
             parser_kwargs={'not_org_id': 1},
-            path='/api/v2/organizations/2',
+            path='/api/v3/organizations/2',
             query_params={'organization_id': 3},
             data={'organization_id': 4}
         )

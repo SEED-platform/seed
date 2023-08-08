@@ -74,19 +74,19 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         )
 
         # setup some columns
-        self.benchmark_col = Column.objects.create(
+        self.benchmark_col, _ = Column.objects.get_or_create(
             table_name='PropertyState',
             column_name='Salesforce Benchmark ID',
             organization=self.org,
             is_extra_data=True,
         )
-        self.sqft_col = Column.objects.create(
+        self.sqft_col, _ = Column.objects.get_or_create(
             table_name='PropertyState',
             column_name='Property GFA - Calculated (Buildings and Parking) (ft2)',
             organization=self.org,
             is_extra_data=True
         )
-        self.site_eui_col = Column.objects.create(
+        self.site_eui_col, _ = Column.objects.get_or_create(
             table_name='PropertyState',
             column_name='site_eui',
             organization=self.org,
@@ -181,7 +181,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         # test saving salesforce mappings
 
-        self.energystar_col = Column.objects.create(
+        self.energystar_col, _ = Column.objects.get_or_create(
             table_name='PropertyState',
             column_name='ENERGY STAR Score',
             organization=self.org,
@@ -285,9 +285,9 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         state.extra_data['Property GFA - Calculated (Buildings and Parking) (ft2)'] = state.gross_floor_area
         state.save()
 
-        prprty = self.property_factory.get_property()
+        property = self.property_factory.get_property()
         view = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
+            property=property, cycle=self.cycle, state=state
         )
 
         self.api_view.add_labels(

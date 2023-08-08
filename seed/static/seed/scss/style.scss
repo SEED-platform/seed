@@ -4883,6 +4883,18 @@ ul.r-list {
   }
 }
 
+#ali-detail-table {
+  border: 1px solid #dddddd;
+  th {
+    border: 1px solid #dddddd;
+  }
+}
+.ali-header {
+  background: #dbe3f4;
+}
+.ali-cell {
+  color: #2955b4;
+}
 .al-tree {
   padding: 10px;
 }
@@ -4958,4 +4970,10 @@ ul.r-list {
 .level-child {
   vertical-align: middle;
   font-weight: normal;
+}
+.ubid-form {
+  input.ng-invalid {
+    background-color: #fff0f0;
+    border-color: #dd2c00;
+  }
 }
