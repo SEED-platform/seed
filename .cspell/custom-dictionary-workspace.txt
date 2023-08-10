@@ -31,10 +31,12 @@ bedes
 Bool
 boolean
 BrowserDefinition
+bsync
 bsyncr
 buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
+BUILDINGSYNC
 bytestring
 calendarize
 canonicalbuilding
@@ -261,6 +263,7 @@ strftime
 subclasses
 subdirectory
 Submodules
+suborg
 Subpackages
 subtask
 sudo
