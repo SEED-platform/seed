@@ -55,6 +55,7 @@ class TestMeasures(TestCase):
     @classmethod
     def setUpClass(cls):
         # Override MEDIA_ROOT as the temporary dir (kind of a bad way to do this but ya know)
+        cls.previous_media_root = settings.MEDIA_ROOT
         cls.temp_media_dir = tempfile.TemporaryDirectory()
         settings.MEDIA_ROOT = cls.temp_media_dir.name
 
@@ -66,7 +67,7 @@ class TestMeasures(TestCase):
         with open(cls.absolute_uploads_file, 'w') as f:
             f.write('Hello world')
 
-        # buildingsync file
+        # BuildingSync file
         upload_to = BuildingFile._meta.get_field('file').upload_to
         cls.absolute_bsync_file = os.path.join(settings.MEDIA_ROOT, upload_to, 'test_bsync.xml')
         os.makedirs(os.path.dirname(cls.absolute_bsync_file), exist_ok=True)
@@ -92,6 +93,8 @@ class TestMeasures(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        # set the media directory back
+        settings.MEDIA_ROOT = cls.previous_media_root
         cls.temp_media_dir.cleanup()
 
     def test_successfully_get_uploads_file_when_user_is_org_member(self):
@@ -318,7 +321,7 @@ class TestMeasures(TestCase):
         # Assert
         self.assertFalse(is_permitted)
 
-    def test_fails_when_path_doesnt_match(self):
+    def test_fails_when_path_does_not_match(self):
         # test import files
         with self.assertRaises(ModelForFileNotFound):
             check_file_permission(

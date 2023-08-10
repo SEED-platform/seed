@@ -98,7 +98,8 @@ def forwards(apps, schema_editor):
         else:
             raise Exception("  More than one column returned")
 
-    print("objects to delete:")
+    if len(objs_to_delete):
+        print("objects to delete:")
     for obj in objs_to_delete:
         print("  {}  --  {}.{}".format(obj.id, obj.table_name, obj.column_name))
         obj.delete()

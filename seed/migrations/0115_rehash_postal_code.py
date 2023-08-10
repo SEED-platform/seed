@@ -24,11 +24,12 @@ def update_postal_codes(apps, schema_editor):
     TaxLotState = apps.get_model('seed', 'TaxLotState')
 
     with transaction.atomic():
-        print('Checking for short postal codes in property states')
         objs = PropertyState.objects.filter(
             Q(postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(postal_code__iregex=r'^\d{4}$') |
             Q(owner_postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(owner_postal_code__iregex=r'^\d{4}$')
         )
+        if len(objs):
+            print('Checking for short postal codes in property states')
         for obj in objs:
             # print(
             #     f'fixing zip for {obj} -- postal_code | owner_postal_code = {obj.postal_code} | {obj.owner_postal_code}')
@@ -36,10 +37,11 @@ def update_postal_codes(apps, schema_editor):
             obj.owner_postal_code = zero_fill(obj.owner_postal_code)
             obj.save()
 
-        print('Checking for short postal codes in tax lot states')
         objs = TaxLotState.objects.filter(
             Q(postal_code__iregex=r'^\d{4}-\d{3,4}$') | Q(postal_code__iregex=r'^\d{4}$')
         )
+        if len(objs):
+            print('Checking for short postal codes in tax lot states')
         for obj in objs:
             # print(
             #     f'fixing zip for {obj} -- postal_code | owner_postal_code = {obj.postal_code} | {obj.owner_postal_code}')
