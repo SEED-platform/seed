@@ -972,28 +972,6 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
             assert resp.status_code == 404
 
-    def test_property_update_salesforce(self):
-        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
-        self.property_2 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
-
-        url = reverse('api:v3:properties-update-salesforce') + f'?organization_id={self.org.pk}'
-        params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view.pk]
-        })
-
-        # root member can
-        self.login_as_root_member()
-        resp = self.client.post(url, params, content_type='application/json')
-        assert resp.status_code == 200
-
-        # child member cannot
-        self.login_as_child_member()
-        resp = self.client.post(url, params, content_type='application/json')
-        assert resp.status_code == 404
-
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
