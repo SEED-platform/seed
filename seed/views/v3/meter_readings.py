@@ -62,6 +62,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         """On create, make sure to add in the property id which comes from the URL kwargs."""
 
         # check permissions?
+        self.meter_pk = self.kwargs.get('meter_pk', None)
         if self.meter_pk:
             serializer.save(meter_id=self.meter_pk)
         else:

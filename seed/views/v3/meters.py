@@ -40,6 +40,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     def perform_create(self, serializer):
         """On create, make sure to add in the property id which comes from the URL kwargs."""
 
+        self.property_pk = self.kwargs.get('property_pk', None)
         # check permissions?
         if self.property_pk:
             serializer.save(property_id=self.property_pk)

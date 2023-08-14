@@ -205,7 +205,7 @@ class SEEDOrgPermissions(BasePermission):
         value_error = False
         try:
             if hasattr(view, 'get_queryset'):
-                queryset = view.get_queryset()
+                queryset = view.get_queryset
             else:
                 queryset = getattr(view, 'queryset', None)
         except ValueError:
