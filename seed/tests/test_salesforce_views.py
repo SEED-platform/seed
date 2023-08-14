@@ -382,20 +382,12 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        self.sqft_col = Column.objects.create(
+
+        self.another_col = Column.objects.create(
             table_name='PropertyState',
-            column_name='Property GFA - Calculated (Buildings and Parking) (ft2)',
+            column_name='Another Field',
             organization=self.org,
-            is_extra_data=True
-        )
-        self.site_eui_col = Column.objects.create(
-            table_name='PropertyState',
-            column_name='site_eui',
-            organization=self.org,
-            display_name='Site EUI',
-            column_description='Site EUI',
-            is_extra_data=False,
-            data_type='eui',
+            is_extra_data=True,
         )
 
         self.sf_config = SalesforceConfig.objects.create(
@@ -406,19 +398,6 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
             seed_benchmark_id_column=self.benchmark_col,
             unique_benchmark_id_fieldname='Salesforce_Benchmark_ID__c',
             status_fieldname='Status__c',
-        )
-
-        # test saving salesforce mappings / CRUD
-        self.mapping_sqft = SalesforceMapping.objects.create(
-            salesforce_fieldname='Benchmark_Square_Footage__c',
-            column=self.sqft_col,
-            organization=self.org,
-        )
-
-        self.mapping_site_eui = SalesforceMapping.objects.create(
-            salesforce_fieldname='Site_EUI_kBtu_ft2__c',
-            column=self.site_eui_col,
-            organization=self.org,
         )
 
     def test_save_salesforce_config_perms(self):
@@ -511,7 +490,7 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         # create new mapping
         payload_data = {
             "salesforce_fieldname": "ENERGY_STAR_Score__c",
-            "column": self.site_eui_col.id
+            "column": self.another_col.id
         }
 
         # child member cannot (permission denied)
