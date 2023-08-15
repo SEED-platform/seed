@@ -20,7 +20,11 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -153,6 +157,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = PropertyView.objects.none()
 
+    @has_perm_class('requires_viewer')
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
         """
@@ -162,7 +167,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         # here be dragons
         org_id = self.get_organization(self.request)
-        qs = PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        qs = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
+        ).order_by('-state__id')
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
@@ -261,6 +271,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
         """
@@ -284,6 +295,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def sensor_usage(self, request, pk):
         """
@@ -319,6 +331,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def sensors(self, request, pk):
         """
@@ -416,7 +429,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response = properties_across_cycles(org_id, profile_id, cycle_ids)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        response = properties_across_cycles(org_id, ali, profile_id, cycle_ids)
 
         return JsonResponse(response)
 
@@ -502,10 +516,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Check to see if the given Properties (given by ID) have Meters.
         """
         org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         property_view_ids = request.data.get('property_view_ids', [])
         property_views = PropertyView.objects.filter(
             id__in=property_view_ids,
-            cycle__organization_id=org_id
+            cycle__organization_id=org_id,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
         )
 
         # Check that property_view_ids given are all contained within given org.
@@ -555,10 +572,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         body = request.data
         organization_id = int(self.get_organization(request))
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = body.get('property_view_ids', [])
         property_states = PropertyView.objects.filter(
             id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=organization_id
         ).values('id', 'state_id')
         # get the state ids in order according to the given view ids
@@ -609,11 +629,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Unmerge a property view into two property views
         """
         try:
+            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
             old_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
             ).get(
                 id=pk,
-                property__organization_id=self.get_organization(request)
+                property__organization_id=self.get_organization(request),
+                property__access_level_instance__lft__gte=ali.lft,
+                property__access_level_instance__rgt__lte=ali.rgt,
             )
         except PropertyView.DoesNotExist:
             return {
@@ -752,6 +775,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """
@@ -802,6 +826,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
@@ -840,6 +865,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
@@ -864,6 +890,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
@@ -892,10 +919,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Batch delete several properties
         """
         org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         property_view_ids = request.data.get('property_view_ids', [])
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=org_id
         ).values_list('state_id', flat=True)
         resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
@@ -962,6 +992,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def retrieve(self, request, pk=None):
         """
         Get property details
@@ -1008,8 +1039,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
               description: List of property view ids
               paramType: body
         """
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         view_ids = request.data.get('view_ids', [])
-        property_queryset = PropertyView.objects.filter(id__in=view_ids).distinct()
+        property_queryset = PropertyView.objects.filter(
+            id__in=view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+        ).distinct()
         property_ids = list(property_queryset.values_list('property_id', flat=True))
         return JsonResponse({
             'status': 'success',
@@ -1023,6 +1059,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
@@ -1218,6 +1255,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ]
     )
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def building_sync(self, request, pk):
         """
@@ -1269,6 +1307,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
     )
     @has_perm_class('can_view_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):
         """
@@ -1325,6 +1364,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update_with_building_sync(self, request, pk):
         """
         Update an existing PropertyView with a building file. Currently only supports BuildingSync.
@@ -1392,6 +1432,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def upload_inventory_document(self, request, pk):
         """
         Upload an inventory document on a property. Currently only supports PDFs.
@@ -1456,8 +1497,24 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         org_id = self.get_organization(request)
         ids = request.data.get('property_view_ids', [])
+
+        # filter ids based on request user's ali
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        checked_ids = PropertyView.objects.filter(
+            property__organization_id=org_id,
+            pk__in=ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt
+        ).values_list('pk', flat=True)
+
+        if not checked_ids:
+            # no eligible IDs for this ali
+            return JsonResponse({
+                'status': 'error',
+                'message': 'ID not found'
+            }, status=status.HTTP_404_NOT_FOUND)
         try:
-            the_status, messages = update_salesforce_properties(org_id, ids)
+            the_status, messages = update_salesforce_properties(org_id, list(checked_ids))
             if not the_status:
                 return JsonResponse({
                     'status': 'error',
@@ -1472,10 +1529,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if the_status:
+            message = 'successful sync with Salesforce'
+            if len(ids) != len(checked_ids):
+                message = message + ' One or more IDs were not found in SEED and could not be synced'
             return JsonResponse({
                 'success': True,
                 'status': 'success',
-                'message': 'successful sync with Salesforce'
+                'message': message
             })
         else:
             return JsonResponse({
@@ -1485,6 +1545,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @action(detail=True, methods=['DELETE'])
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def delete_inventory_document(self, request, pk):
         """
         Deletes an inventory document from a property

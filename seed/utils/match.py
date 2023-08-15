@@ -11,6 +11,7 @@ from django.db.models import Subquery
 from django.db.models.aggregates import Count
 
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     Column,
     Cycle,
@@ -422,7 +423,8 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         # If this was a preview run, capture results here and rollback.
         if preview_run:
             if state_class_name == 'PropertyState':
-                summary = properties_across_cycles(org_id, -1, cycle_ids)
+                root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
+                summary = properties_across_cycles(org_id, root, -1, cycle_ids)
             else:
                 summary = taxlots_across_cycles(org_id, -1, cycle_ids)
 
