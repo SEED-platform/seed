@@ -13,7 +13,7 @@ from django.urls import reverse
 from seed.data_importer.utils import \
     kbtu_thermal_conversion_factors as conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter
+from seed.models import Meter, Property
 from seed.models.scenarios import Scenario
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
@@ -465,3 +465,94 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
+
+
+class TestMeterReadingPermission(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.view = self.property_view_factory.get_property_view(prprty=self.property)
+        self.meter = Meter.objects.create(property=self.property)
+
+    def test_meter_readings_list(self):
+        url = (
+            reverse('api:v3:property-meters-list', args=[self.view.id]) +
+            f'?organization_id={self.org.pk}'
+        )
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_meter_readings_get(self):
+        url = reverse(
+            'api:v3:property-meters-detail',
+            kwargs={'property_pk': self.view.id, 'pk': self.meter.id}
+        ) + "?organization_id=" + str(self.org.id)
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_meter_readings_update(self):
+        url = reverse(
+            'api:v3:property-meters-detail',
+            kwargs={'property_pk': self.view.id, 'pk': self.meter.id}
+        ) + "?organization_id=" + str(self.org.id)
+        param = json.dumps({'type': 'Electric', 'source': 'Manual Entry', 'source_id': 'boo'})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_meter_readings_create(self):
+        url = reverse(
+            'api:v3:property-meters-list',
+            kwargs={'property_pk': self.view.id}
+        ) + "?organization_id=" + str(self.org.id)
+        param = json.dumps({'type': 'Electric', 'source': 'Manual Entry', 'source_id': 'boo'})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, param, content_type='application/json')
+        assert resp.status_code == 201
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, param, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_meter_readings_delete(self):
+        url = reverse(
+            'api:v3:property-meters-detail',
+            kwargs={'property_pk': self.view.id, 'pk': self.meter.id}
+        ) + "?organization_id=" + str(self.org.id)
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 204
