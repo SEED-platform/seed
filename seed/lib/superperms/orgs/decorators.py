@@ -274,11 +274,11 @@ def has_hierarchy_access(property_view_id_kwarg=None, param_property_view_id=Non
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, property_view_id_kwarg, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, property_view_id_kwarg, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
