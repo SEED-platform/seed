@@ -1012,7 +1012,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             {
                 'cycle_id': 'integer',
                 'state': 'object',
-                'property_id': 'integer'
             },
             required=['cycle_id', 'state']
         ),
@@ -1029,7 +1028,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # get state data
         property_state_data = data.get('state', None)
         cycle_pk = data.get('cycle_id', None)
-        property_id = data.get('property_id', None)
 
         if cycle_pk is None:
             return JsonResponse({
@@ -1072,44 +1070,42 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': 'Invalid state',
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # verify property belongs to org
-        if property_id:
-            try:
-                Property.objects.get(pk=property_id, organization_id=org_id)
-            except Property.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Invalid property_id',
-                }, status=status.HTTP_400_BAD_REQUEST)
-
         # extra data fields that do not match existing columns will not be imported
-        extra_data_columns = Column.retrieve_all(
-            org_id=org_id,
-            inventory_type='Property',
-            only_used=False,
-            exclude_derived=True
-        )
+        extra_data_columns = list(Column.objects.filter(
+            organization_id=org_id,
+            table_name='PropertyState',
+            is_extra_data=True,
+            derived_column_id=None
+        ).values_list('column_name', flat=True))
 
         extra_data = property_state_data.get('extra_data', {})
         new_data = {}
 
         for k, v in extra_data.items():
             # keep only those that match a column
-            match = next((item for item in extra_data_columns if item["column_name"] == k), None)
-            if match:
-                # this column exists, keep the data
+            if k in extra_data_columns:
                 new_data[k] = v
 
         property_state_data['extra_data'] = new_data
 
-        # this serializer is meant to be used by a create action
+        # this serializer is meant to be used by a `create` action
         property_state_serializer = PropertyStatePromoteWritableSerializer(
             data=property_state_data
         )
 
-        if property_state_serializer.is_valid():
+        try:
+            valid = property_state_serializer.is_valid()
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state: {}'.format(str(e))
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if valid:
             # create the new property state, and perform an initial save
             new_state = property_state_serializer.save()
+            # set `merge_state` to new, rather than unknown
+            new_state.merge_state = MERGE_STATE_NEW
 
             # Log this appropriately - "Import Creation" ?
             PropertyAuditLog.objects.create(organization_id=org_id,
@@ -1123,8 +1119,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                                             import_filename=None,
                                             record_type=AUDIT_USER_CREATE)
 
-            # promote to view (pass in property_id to make new view on existing property)
-            view = new_state.promote(cycle, property_id)
+            # promote to view
+            view = new_state.promote(cycle)
 
             return JsonResponse({
                 'status': 'success',
