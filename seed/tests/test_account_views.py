@@ -100,7 +100,8 @@ class AccountsViewTests(TestCase):
             'audit_template_password': '',
             'at_host_url': 'https://api.labworks.org',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1,
+            'access_level_names': ['my org'],
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -152,6 +153,7 @@ class AccountsViewTests(TestCase):
             }],
             'sub_orgs': [{
                 'name': 'sub',
+                'access_level_names': ['sub'],
                 'org_id': new_org.pk,
                 'id': new_org.pk,
                 'number_of_users': 1,
@@ -226,7 +228,8 @@ class AccountsViewTests(TestCase):
             'audit_template_password': '',
             'at_host_url': 'https://api.labworks.org',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1,
+            'access_level_names': ['my org'],
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
