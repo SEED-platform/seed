@@ -1569,7 +1569,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         if len(request.FILES) == 0:
             return JsonResponse({
                 'success': False,
-                'message': "Must pass file in as a Multipart/Form post"
+                'message': 'Must pass file in as a multipart/form-data request'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         the_file = request.data['file']
@@ -1582,17 +1582,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         if not mapping_profile_id:
             return JsonResponse({
                 'success': False,
-                'message': "Must profile a column mapping profile"
+                'message': 'Must provide a column mapping profile'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        column_mapping_profiles = org_inst.columnmappingprofile_set.all()
-        column_mapping_profile = column_mapping_profiles.filter(
+        column_mapping_profile = org_inst.columnmappingprofile_set.filter(
             pk=mapping_profile_id
         )
         if len(column_mapping_profile) == 0:
             return JsonResponse({
                 'success': False,
-                'message': "Could not find ESPM column mapping profile"
+                'message': 'Could not find ESPM column mapping profile'
             }, status=status.HTTP_400_BAD_REQUEST)
         elif len(column_mapping_profile) > 1:
             return JsonResponse({
@@ -1606,7 +1605,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': "Cycle ID is missing or Cycle does not exist"
+                'message': 'Cycle ID is missing or Cycle does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
         try:
@@ -1663,7 +1662,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         if import_file.num_rows != 1:
             return JsonResponse({
                 'success': False,
-                'message': f"File must contain exactly one property, found {import_file.num_rows} properties"
+                'message': f"File must contain exactly one property, found {import_file.num_rows or 0} properties"
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # create the column mappings
