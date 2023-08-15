@@ -151,7 +151,7 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
+def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     # Identify column preferences to be used to scope fields/values
     columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
@@ -177,8 +177,12 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
     for cycle_id in cycle_ids:
         # get -Views for this Cycle
         property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
-            .filter(property__organization_id=org_id, cycle_id=cycle_id) \
-            .order_by('id')
+            .filter(
+                property__organization_id=org_id,
+                cycle_id=cycle_id,
+                property__access_level_instance__lft__gte=ali.lft,
+                property__access_level_instance__rgt__lte=ali.rgt,
+        ).order_by('id')
 
         related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 

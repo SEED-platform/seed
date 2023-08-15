@@ -19,7 +19,7 @@ from django.utils.timezone import \
 from django.utils.timezone import get_current_timezone
 from pytz import timezone
 
-from config.settings.common import TIME_ZONE
+from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import (
     geocode_and_match_buildings_task,
@@ -35,6 +35,8 @@ from seed.models import (
     BuildingFile,
     Column,
     ColumnMappingProfile,
+    InventoryDocument,
+    Label,
     Meter,
     MeterReading,
     Note,
@@ -60,6 +62,8 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.utils.match import match_merge_link
+from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
 
 COLUMNS_TO_SEND = [
@@ -72,7 +76,9 @@ COLUMNS_TO_SEND = [
     'extra_data_field',
     'jurisdiction_tax_lot_id'
 ]
+
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.properties import pair_unpair_property_taxlot
 
 
 class PropertyViewTests(DataMappingBaseTestCase):
@@ -552,6 +558,419 @@ class PropertyViewTests(DataMappingBaseTestCase):
         })
         false_result = self.client.post(url, false_post_params, content_type='application/json')
         self.assertEqual(b'false', false_result.content)
+
+
+class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        # create property with label
+        self.profile = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        self.cycle = self.cycle_factory.get_cycle()
+        self.view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
+        self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.view.labels.add(self.label)
+        self.view.property = self.property
+        self.view.save()
+
+    def test_property_labels(self):
+        url = reverse('api:v3:properties-labels') + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, content_type='application/json')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert label_data["is_applied"] == [self.view.pk]
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, content_type='application/json')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert "is_applied" not in label_data
+
+    def test_property_meter_usage(self):
+        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.view.id}) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'interval': 'Exact', 'excluded_meter_ids': []})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_sensor_usage(self):
+        url = reverse('api:v3:properties-sensor-usage', kwargs={'pk': self.view.id}) + f'?organization_id={self.org.pk}'
+        post_params = json.dumps({'interval': 'Exact', 'excluded_sensor_ids': []})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_sensors(self):
+        url = reverse('api:v3:properties-sensors', kwargs={'pk': self.view.id}) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_meters_exist(self):
+        url = reverse('api:v3:properties-meters-exist') + f'?organization_id={self.org.pk}'
+        params = json.dumps({'property_view_ids': [self.view.pk]})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.content == b'false'
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 400
+        assert resp.json()["status"] == "error"
+
+    def test_properties_merge(self):
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        self.view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+        # Merge the properties
+        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'property_view_ids': [self.view_2.pk, self.view.pk]
+        })
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 400
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_property_links(self):
+        url = reverse('api:v3:properties-links', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_get(self):
+        url = reverse('api:v3:properties-detail', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_update(self):
+        url = reverse('api:v3:properties-detail', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"address_line_1": "742 Evergreen Terrace"}})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_search(self):
+        url = reverse('api:v3:properties-search') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()) == 0
+
+    def test_property_filter(self):
+        url = reverse('api:v3:properties-filter') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 0
+
+    def test_property_unmerge(self):
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        self.view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+        merged_state = merge_properties([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
+        _, _, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        view_id = PropertyView.objects.first().id
+        url = reverse('api:v3:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
+
+        # child member cannot
+        self.login_as_child_member()
+        response = self.client.put(url, content_type='application/json')
+        assert response.status_code == 400
+
+        # root member can
+        self.login_as_root_member()
+        response = self.client.put(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_property_match_merge_link(self):
+        url = reverse('api:v3:properties-match-merge-link', args=[self.view.id]) + '?organization_id={}'.format(self.org.pk)
+
+        # root member can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_properties_batch_delete(self):
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+        # Merge the properties
+        url = reverse('api:v3:properties-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        params = json.dumps({
+            'property_view_ids': [self.view_2.pk, self.view.pk]
+        })
+
+        # child member only deletes the one it has access to.
+        self.login_as_child_member()
+        resp = self.client.delete(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json() == {'status': 'success', 'properties': 1}
+
+    def test_property_building_sync(self):
+        url = (
+            reverse('api:v3:properties-building-sync', args=[self.view.id])
+            + f'?organization_id={self.org.pk}'
+            + f'&profile_id={self.profile.id}'
+        )
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/xml')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/xml')
+        assert resp.status_code == 404
+
+    def test_property_hpxml(self):
+        url = reverse('api:v3:properties-hpxml', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_list(self):
+        url = reverse('api:v3:properties-list') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 0
+
+    def test_property_filter_by_cycle(self):
+        url = reverse('api:v3:properties-filter-by-cycle') + f'?organization_id={self.org.pk}'
+        params = json.dumps({"cycle_ids": [self.cycle.id]})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 0
+
+    def test_properties_get_canonical_properties(self):
+        url = reverse('api:v3:properties-get-canonical-properties') + '?organization_id={}'.format(self.org.pk)
+        params = json.dumps({'view_ids': [self.view.pk]})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["properties"] == [self.property.pk]
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["properties"] == []
+
+    def test_property_pair(self):
+        url = reverse('api:v3:properties-pair', args=[self.view.id]) + f'?taxlot_id={self.taxlot_view.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_property_delete_inventory_document(self):
+        inventory_document = InventoryDocument.objects.create(property=self.property)
+        url = (
+            reverse('api:v3:properties-delete-inventory-document', args=[self.view.id])
+            + f'?organization_id={self.org.pk}'
+            + f'&file_id={inventory_document.pk}'
+        )
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_property_unpair(self):
+        pair_unpair_property_taxlot(self.view.id, self.taxlot_view.id, self.org.pk, True)
+        url = reverse('api:v3:properties-unpair', args=[self.view.id]) + f'?taxlot_id={self.taxlot_view.pk}&organization_id={self.org.pk}'
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_property_update_with_building_sync(self):
+        filename = os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        url = (
+            reverse('api:v3:properties-update-with-building-sync', args=[self.view.id])
+            + f'?organization_id={self.org.pk}'
+            + f'&cycle_id={self.cycle.pk}'
+        )
+        with open(filename, 'rb') as f:
+            data = encode_multipart(
+                data=dict(
+                    file=f,
+                    file_type='BuildingSync',
+                    name='unused-name'
+                ),
+                boundary=BOUNDARY,
+            )
+
+            # root member can
+            self.login_as_root_member()
+            resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
+            assert resp.status_code == 200
+
+            # child member cannot
+            self.login_as_child_member()
+            resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
+            assert resp.status_code == 404
+
+    def test_property_upload_inventory_document(self):
+        location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        filename = os.path.relpath(os.path.join(location, 'data', 'test-document.pdf'))
+        url = (
+            reverse('api:v3:properties-upload-inventory-document', args=[self.view.id])
+            + f'?organization_id={self.org.pk}'
+            + f'&cycle_id={self.cycle.pk}'
+        )
+        with open(filename, 'rb') as f:
+            data = encode_multipart(
+                data=dict(
+                    file=f,
+                    file_type='PDF',
+                    name='unused-name'
+                ),
+                boundary=BOUNDARY,
+            )
+
+            # root member can
+            self.login_as_root_member()
+            resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
+            assert resp.status_code == 200
+
+            # child member cannot
+            self.login_as_child_member()
+            resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
+            assert resp.status_code == 404
 
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):

@@ -36,7 +36,11 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory
 )
-from seed.tests.util import AssertDictSubsetMixin, DeleteModelsTestCase
+from seed.tests.util import (
+    AccessLevelBaseTestCase,
+    AssertDictSubsetMixin,
+    DeleteModelsTestCase
+)
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -155,6 +159,98 @@ class GetDatasetsViewsTests(TestCase):
         self.assertEqual('success', response.json()['status'])
         self.assertTrue(ImportRecord.objects.filter(pk=import_record.pk,
                                                     name='new').exists())
+
+
+class DatasetPermissionsTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_import_record = ImportRecord.objects.create(
+            super_organization=self.org,
+            owner=self.root_owner_user,
+            access_level_instance=self.root_level_instance
+        )
+        self.child_import_record = ImportRecord.objects.create(
+            super_organization=self.org,
+            owner=self.root_owner_user,
+            access_level_instance=self.child_level_instance
+        )
+
+    def test_dataset_list(self):
+        url = reverse_lazy('api:v3:datasets-list') + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert len(resp.json()["datasets"]) == 1
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert len(resp.json()["datasets"]) == 2
+
+    def test_dataset_update(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+        params = json.dumps({"dataset": None})
+
+        self.login_as_child_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, params, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_retrieve(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_destroy(self):
+        url = reverse_lazy('api:v3:datasets-detail', args=[self.root_import_record.pk]) + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_dataset_create(self):
+        url = reverse_lazy('api:v3:datasets-list') + f"?organization_id={self.org.id}"
+        params = json.dumps({"name": "hi"})
+
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert self.child_level_instance.id == ImportRecord.objects.get(pk=resp.json()["id"]).access_level_instance_id
+
+        # root member can
+        self.login_as_root_member()
+        params = json.dumps({"name": "hoi"})
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert self.root_level_instance.id == ImportRecord.objects.get(pk=resp.json()["id"]).access_level_instance_id
+
+    def test_dataset_count(self):
+        url = reverse_lazy('api:v3:datasets-count') + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.json()["datasets_count"] == 1
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.json()["datasets_count"] == 2
 
 
 class ImportFileViewsTests(TestCase):
