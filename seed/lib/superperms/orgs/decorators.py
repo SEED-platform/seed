@@ -9,6 +9,7 @@ from functools import wraps
 from inspect import signature
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden, JsonResponse
 from rest_framework import status
 
@@ -229,36 +230,43 @@ def assert_hierarchy_access(request, property_view_id_kwarg=None, param_property
     body = request.data
     params = request.GET
 
-    if property_view_id_kwarg and property_view_id_kwarg in kwargs:
-        property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
-        requests_ali = property_view.property.access_level_instance
+    try:
+        if property_view_id_kwarg and property_view_id_kwarg in kwargs:
+            property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
+            requests_ali = property_view.property.access_level_instance
 
-    elif param_property_view_id and param_property_view_id in params:
-        property_view = PropertyView.objects.get(pk=params[param_property_view_id])
-        requests_ali = property_view.property.access_level_instance
+        elif param_property_view_id and param_property_view_id in params:
+            property_view = PropertyView.objects.get(pk=params[param_property_view_id])
+            requests_ali = property_view.property.access_level_instance
 
-    elif taxlot_view_id_kwarg and taxlot_view_id_kwarg in kwargs:
-        taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
-        requests_ali = taxlot_view.taxlot.access_level_instance
+        elif taxlot_view_id_kwarg and taxlot_view_id_kwarg in kwargs:
+            taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
+            requests_ali = taxlot_view.taxlot.access_level_instance
 
-    elif import_file_id_kwarg and import_file_id_kwarg in kwargs:
-        import_file = ImportFile.objects.get(pk=kwargs[import_file_id_kwarg])
-        requests_ali = import_file.access_level_instance
+        elif import_file_id_kwarg and import_file_id_kwarg in kwargs:
+            import_file = ImportFile.objects.get(pk=kwargs[import_file_id_kwarg])
+            requests_ali = import_file.access_level_instance
 
-    elif body_ali_id and body_ali_id in body:
-        requests_ali = AccessLevelInstance.objects.get(body[body_ali_id])
+        elif body_ali_id and body_ali_id in body:
+            requests_ali = AccessLevelInstance.objects.get(body[body_ali_id])
 
-    elif import_record_id_kwarg and import_record_id_kwarg in kwargs:
-        import_record = ImportRecord.objects.get(pk=kwargs[import_record_id_kwarg])
-        requests_ali = import_record.access_level_instance
+        elif import_record_id_kwarg and import_record_id_kwarg in kwargs:
+            import_record = ImportRecord.objects.get(pk=kwargs[import_record_id_kwarg])
+            requests_ali = import_record.access_level_instance
 
-    elif body_import_file_id and body_import_file_id in body:
-        import_file = ImportFile.objects.get(pk=body[body_import_file_id])
-        requests_ali = import_file.access_level_instance
+        elif body_import_file_id and body_import_file_id in body:
+            import_file = ImportFile.objects.get(pk=body[body_import_file_id])
+            requests_ali = import_file.access_level_instance
 
-    else:
-        property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
-        requests_ali = property_view.property.access_level_instance
+        else:
+            property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
+            requests_ali = property_view.property.access_level_instance
+
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'No such resource.'
+        }, status=status.HTTP_404_NOT_FOUND)
 
     user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
     if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
