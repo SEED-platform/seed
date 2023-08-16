@@ -47,6 +47,7 @@ from seed.models.data_quality import DataQualityCheck
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
+    FakeNoteFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -166,6 +167,7 @@ class AccessLevelBaseTestCase(TestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+        self.note_factory = FakeNoteFactory(organization=self.org, user=self.root_owner_user)
 
     def login_as_root_owner(self):
         """ Login to client as Root-Level owner user """

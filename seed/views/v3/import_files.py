@@ -1005,7 +1005,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @ajax_request_class
     @has_perm_class('requires_member')
-    @has_hierarchy_access(body_property_view_id="view_id")
+    @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=['GET'])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -1049,7 +1049,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
     @ajax_request_class
     @has_perm_class('requires_member')
-    @has_hierarchy_access(body_property_view_id="view_id")
+    @has_hierarchy_access(param_property_view_id="view_id")
     @action(detail=True, methods=['GET'])
     def sensors_preview(self, request, pk):
         """
