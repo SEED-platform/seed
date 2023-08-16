@@ -100,7 +100,7 @@
                             <td>
                                 <ul>
                                     <li style="white-space: normal" ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
-                                        {$:: message['user_message'] $}
+                                        {$:: message['user_message'] $}<span ng-if="::message['debug_message']"> - {$:: message['debug_message'] $}</span>
                                     </li>
                                 </ul>
                             </td>
