@@ -851,12 +851,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.atPropertySelectGridOptions = {
           data: $scope.at_building_data.map(building => ({
             'audit_template_building_id': building.audit_template_building_id,
+            'name': building.name,
             'email': building.email,
             'updated_at': building.updated_at,
             'property_view': building.property_view
           })),
           columnDefs: [
             {field: 'audit_template_building_id', displayName: 'Audit Template Building ID'},
+            {field: 'name', displayName: 'Name'},
             {field: 'email', displayName: 'Owner Email'},
             {field: 'updated_at', displayName: 'Updated At'},
             {field: 'property_view', visible: false}

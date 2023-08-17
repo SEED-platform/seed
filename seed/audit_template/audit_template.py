@@ -111,8 +111,9 @@ def _get_buildings(cycle_id, url, headers):
             email = b['owner'].get('email') if b.get('owner') else 'n/a'
             result.append({
                 'audit_template_building_id': b['id'],
-                'property_view': view.id,
                 'email': email,
+                'name': b['name'],
+                'property_view': view.id,
                 'updated_at': b['updated_at'],
             })
 
