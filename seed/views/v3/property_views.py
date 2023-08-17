@@ -4,12 +4,38 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.utils.decorators import method_decorator
+
 from seed.filtersets import PropertyViewFilterSet
-from seed.models import PropertyView
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.models import AccessLevelInstance, PropertyView
 from seed.serializers.properties import BriefPropertyViewSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
+@method_decorator(
+    name='list',
+    decorator=[has_perm_class('requires_viewer')]
+)
+@method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="pk")]
+)
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="pk")]
+)
+@method_decorator(
+    name='update',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="pk")]
+)
+@method_decorator(
+    name='update',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(property_view_id_kwarg="pk")]
+)
 class PropertyViewViewSet(SEEDOrgModelViewSet):
     """PropertyViews API Endpoint
 
@@ -46,6 +72,18 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     partial_update:
         WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update one or more fields on an existing PropertyView.
     """
+    def get_queryset(self):
+        if hasattr(self.request, 'access_level_instance_id'):
+            access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
+            return PropertyView.objects.filter(
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+
+        else:
+            return PropertyView.objects.filter(pk=-1)
+
     serializer_class = BriefPropertyViewSerializer
     pagination_class = None
     model = PropertyView
