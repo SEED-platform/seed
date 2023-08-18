@@ -85,11 +85,12 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     def validate_properties(self, properties):
         valid = [bool(properties)]
         for property in properties:
-            valid.append(len(property) == 4)
+            valid.append(len(property) == 5)
             valid.append(property.get('audit_template_building_id'))
             valid.append(property.get('property_view'))
             valid.append(property.get('email'))
             valid.append(property.get('updated_at'))
+            valid.append(property.get('name'))
 
         if not all(valid):
             return False, "Request data must be structured as: {audit_template_building_id: integer, property_view: integer, email: string, updated_at: date time iso string 'YYYY-MM-DDTHH:MM:SSZ'}"

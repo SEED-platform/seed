@@ -1359,7 +1359,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         for property in properties:
             formatted_time = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
             blob = ContentFile(property['xml'], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
-            response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'])
+            response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'], property['updated_at'])
             response = json.loads(response.content)
             results['success' if response['success'] else 'faulure'] += 1
 
@@ -1367,7 +1367,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         progress_data.finish_with_success(results)
 
-    def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id):
+    def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:
             cycle = Cycle.objects.get(pk=cycle_id, organization_id=organization_id)
         except Cycle.DoesNotExist:
@@ -1403,6 +1403,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
 
         if p_status and new_pv_state:
+            if at_updated:
+                new_pv_state.extra_data.update({'at_updated_at': at_updated})
+                new_pv_state.save()
+
             return JsonResponse({
                 'success': True,
                 'status': 'success',

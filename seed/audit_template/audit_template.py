@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 
+from django.db.models import Q
 import requests
 from celery import shared_task
 from django.conf import settings
@@ -83,7 +84,7 @@ class AuditTemplate(object):
         try:
             response = requests.request("POST", url, headers=headers, json=json)
             if response.status_code != 200:
-                return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
+                return None, f'Expected 200 response from Audit Template get_api_token but got {response.status_code}: {response.content}'
         except Exception as e:
             return None, f'Unexpected error from Audit Template: {e}'
 
@@ -100,13 +101,20 @@ def _get_buildings(cycle_id, url, headers):
     try:
         response = requests.request("GET", url, headers=headers)
         if response.status_code != 200:
-            return None, f'Expected 200 response from Audit Template but got {response.status_code}: {response.content}'
+            return None, f'Expected 200 response from Audit Template get_buildings but got {response.status_code}: {response.content}'
     except Exception as e:
         return None, f'Unexpected error from Audit Template: {e}'
     at_buildings = response.json()
     result = []
     for b in at_buildings:
-        view = PropertyView.objects.filter(cycle=cycle_id, state__audit_template_building_id=b['id']).first()
+        # Only update properties that have been recently updated on Audit Template
+        at_updated = b['updated_at']
+        at_updated_condition = ~Q(state__extra_data__at_updated_at=at_updated) | Q(state__extra_data__at_updated_at__isnull=True)
+        at_building_id_condition = Q(state__audit_template_building_id=b['id'])
+        cycle_condition = Q(cycle=cycle_id)
+        query = at_updated_condition & at_building_id_condition & cycle_condition
+
+        view = PropertyView.objects.filter(query).first()
         if view:
             email = b['owner'].get('email') if b.get('owner') else 'n/a'
             result.append({
@@ -114,7 +122,7 @@ def _get_buildings(cycle_id, url, headers):
                 'email': email,
                 'name': b['name'],
                 'property_view': view.id,
-                'updated_at': b['updated_at'],
+                'updated_at': at_updated,
             })
 
     return json.dumps(result), ""
@@ -131,7 +139,8 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
         result.append({
             'property_view': property['property_view'],
             'audit_template_building_id': audit_template_building_id,
-            'xml': xml.text
+            'xml': xml.text,
+            'updated_at': property['updated_at']
         })
         progress_data.step('Getting XML for buildings...')
 
