@@ -159,9 +159,9 @@ class AuditTemplateBatchTests(TestCase):
         self.good_get_buildings_response = mock.Mock()
         self.good_get_buildings_response.status_code = 200
         self.good_get_buildings_response.json.return_value = [
-            {"id": 1, 'name':'name1', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
-            {"id": 2, 'name':'name2', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
-            {"id": 10,'name':'name3', 'updated_at': "2020-01-01T01:00:00.000-07:00"},  # Should not return id:10
+            {"id": 1, 'name': 'name1', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
+            {"id": 2, 'name': 'name2', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
+            {"id": 10,'name': 'name3', 'updated_at': "2020-01-01T01:00:00.000-07:00"},  # Should not return id:10
         ]
 
         self.bad_get_buildings_response = mock.Mock()

@@ -6,12 +6,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import logging
+from datetime import datetime
 
-from django.db.models import Q
 import requests
 from celery import shared_task
 from django.conf import settings
-from datetime import datetime
+from django.db.models import Q
 
 from seed.building_sync import validation_client
 from seed.lib.progress_data.progress_data import ProgressData
