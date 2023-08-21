@@ -58,14 +58,6 @@ class AuditTemplateViewTests(TestCase):
         self.bad_get_building_response.status_code = 400
         self.bad_get_building_response.content = "bad building response"
 
-        self.good_get_buildings_response = mock.Mock()
-        self.good_get_buildings_response.status_code = 200
-        self.good_get_buildings_response.json.return_value = [
-            {"id": 1, 'updated_at': 11},
-            {"id": 2, 'updated_at': 22},
-            {"id": 3, 'updated_at': 33},
-        ]
-
     @mock.patch('requests.request')
     def test_get_building_xml_from_audit_template(self, mock_request):
         # -- Act
@@ -100,7 +92,7 @@ class AuditTemplateViewTests(TestCase):
         self.assertEqual(400, response.status_code, response.content)
         self.assertEqual(
             response.json(),
-            {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_authenticate_response.content}'}
+            {'success': False, 'message': f'Expected 200 response from Audit Template get_api_token but got 400: {self.bad_authenticate_response.content}'}
         )
 
     @mock.patch('requests.request')
@@ -113,7 +105,7 @@ class AuditTemplateViewTests(TestCase):
         self.assertEqual(400, response.status_code, response.content)
         self.assertEqual(
             response.json(),
-            {'success': False, 'message': f'Expected 200 response from Audit Template but got 400: {self.bad_get_building_response.content}'}
+            {'success': False, 'message': f'Expected 200 response from Audit Template get_building_xml but got 400: {self.bad_get_building_response.content}'}
         )
 
 
@@ -167,9 +159,9 @@ class AuditTemplateBatchTests(TestCase):
         self.good_get_buildings_response = mock.Mock()
         self.good_get_buildings_response.status_code = 200
         self.good_get_buildings_response.json.return_value = [
-            {"id": 1, 'updated_at': 11},
-            {"id": 2, 'updated_at': 22},
-            {"id": 10, 'updated_at': 33},  # Should not return id:10
+            {"id": 1, 'name':'name1', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
+            {"id": 2, 'name':'name2', 'updated_at': "2020-01-01T01:00:00.000-07:00"},
+            {"id": 10,'name':'name3', 'updated_at': "2020-01-01T01:00:00.000-07:00"},  # Should not return id:10
         ]
 
         self.bad_get_buildings_response = mock.Mock()
@@ -196,12 +188,14 @@ class AuditTemplateBatchTests(TestCase):
                 'audit_template_building_id': 1,
                 'property_view': self.view1.id,
                 'email': 'n/a',
-                'updated_at': 11
+                'name': 'name1',
+                'updated_at': '2020-01-01 01:00 AM'
             }, {
                 'audit_template_building_id': 2,
                 'property_view': self.view2.id,
                 'email': 'n/a',
-                'updated_at': 22
+                'name': 'name2',
+                'updated_at': '2020-01-01 01:00 AM'
             },
         ]
         self.assertEqual(exp_message, message)
@@ -211,7 +205,7 @@ class AuditTemplateBatchTests(TestCase):
         mock_request.side_effect = [self.bad_authenticate_response, self.good_get_buildings_response]
         response = self.client.get(self.get_buildings_url, data={'organization_id': self.org.id, 'cycle_id': self.cycle.id})
         self.assertEqual(200, response.status_code)
-        exp_json = {'success': False, 'message': "Expected 200 response from Audit Template but got 400: {'error': 'Invalid email, password or organization_token.'}"}
+        exp_json = {'success': False, 'message': "Expected 200 response from Audit Template get_api_token but got 400: {'error': 'Invalid email, password or organization_token.'}"}
         self.assertEqual(response.json(), exp_json)
 
     @mock.patch('requests.request')
@@ -220,7 +214,7 @@ class AuditTemplateBatchTests(TestCase):
         response = self.client.get(self.get_buildings_url, data={'organization_id': self.org.id, 'cycle_id': self.cycle.id})
 
         self.assertEqual(400, response.status_code)
-        exp_message = "Expected 200 response from Audit Template but got 400: bad buildings response"
+        exp_message = "Expected 200 response from Audit Template get_buildings but got 400: bad buildings response"
         self.assertEqual(response.json()['message'], exp_message)
 
     @mock.patch('requests.request')
@@ -229,8 +223,8 @@ class AuditTemplateBatchTests(TestCase):
         url = reverse('api:v3:audit_template-batch-get-building-xml') + '?organization_id=' + str(self.org.id) + '&cycle_id=' + str(self.cycle.id)
         content_type = 'application/json'
         data = json.dumps([
-            {'audit_template_building_id': 1, 'property_view': self.view1.id, 'email': 'test@test.com', 'updated_at': '2020-01-01T01:00:00.000000'},
-            {'audit_template_building_id': 2, 'property_view': self.view2.id, 'email': 'test@test.com', 'updated_at': '2022-01-01T01:00:00.000000'},
+            {'audit_template_building_id': 1, 'property_view': self.view1.id, 'email': 'test@test.com', 'name': 'name1', 'updated_at': '2020-01-01T01:00:00.000000'},
+            {'audit_template_building_id': 2, 'property_view': self.view2.id, 'email': 'test@test.com', 'name': 'name2', 'updated_at': '2022-01-01T01:00:00.000000'},
         ])
 
         response = self.client.put(
