@@ -127,6 +127,27 @@ class PropertySerializer(serializers.ModelSerializer):
         return PropertyListSerializer(*args, **kwargs)
 
 
+class CreatePropertySerializer(serializers.ModelSerializer):
+    # The created and updated fields are in UTC time and need to be casted accordingly in this format
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+
+    inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
+    access_level_instance_id = serializers.IntegerField(required=True)
+    organization_id = serializers.IntegerField(required=True)
+
+    class Meta:
+        model = Property
+        fields = (
+            'id',
+            'organization_id',
+            'access_level_instance_id',
+            'created',
+            'updated',
+            'inventory_documents',
+        )
+
+
 class PropertyMinimalSerializer(serializers.ModelSerializer):
     """Define fields to avoid label lookup"""
 
