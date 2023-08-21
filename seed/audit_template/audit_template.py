@@ -11,6 +11,7 @@ from django.db.models import Q
 import requests
 from celery import shared_task
 from django.conf import settings
+from datetime import datetime
 
 from seed.building_sync import validation_client
 from seed.lib.progress_data.progress_data import ProgressData
@@ -108,7 +109,7 @@ def _get_buildings(cycle_id, url, headers):
     result = []
     for b in at_buildings:
         # Only update properties that have been recently updated on Audit Template
-        at_updated = b['updated_at']
+        at_updated = datetime.fromisoformat(b['updated_at']).strftime("%Y-%m-%d %I:%M %p")
         at_updated_condition = ~Q(state__extra_data__at_updated_at=at_updated) | Q(state__extra_data__at_updated_at__isnull=True)
         at_building_id_condition = Q(state__audit_template_building_id=b['id'])
         cycle_condition = Q(cycle=cycle_id)

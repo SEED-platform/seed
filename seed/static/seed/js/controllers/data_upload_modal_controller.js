@@ -839,7 +839,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               setAtPropertyGrid();
             } else {
               $scope.show_error = true
-              $scope.error_message = 'Unable to find matching buildings between Audit Template and SEED Inventory'
+              $scope.error_message = 'Your inventory is already synced with your Audit Template account'
             }
           }
           $scope.show_loading = false;

@@ -1406,6 +1406,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             if at_updated:
                 new_pv_state.extra_data.update({'at_updated_at': at_updated})
                 new_pv_state.save()
+                Column.objects.get_or_create(
+                    is_extra_data=True,
+                    column_name='at_updated_at',
+                    display_name='Audit Template Updated',
+                    organization=cycle.organization,
+                    table_name='PropertyState',
+                )
 
             return JsonResponse({
                 'success': True,
