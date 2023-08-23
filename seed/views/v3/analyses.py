@@ -164,7 +164,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 display_column_field = "extra_data__" + display_column_field
 
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
-            views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}'))
+            views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}')).prefetch_related("analysisoutputfile_set")
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
             results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
