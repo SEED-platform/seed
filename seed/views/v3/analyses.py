@@ -7,8 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 
-from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Count, F, Q
+from django.db.models import Count, F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
@@ -35,6 +34,9 @@ from seed.models import (
     PropertyView
 )
 from seed.serializers.analyses import AnalysisSerializer
+from seed.serializers.analysis_property_views import (
+    AnalysisPropertyViewSerializer
+)
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -165,28 +167,13 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}'))
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
-            results["views"] = self._format_views(views_queryset, organization_id)
+            results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
             results["original_views"] = {
                 apv_id: property_view.id if property_view is not None else None
                 for apv_id, property_view in property_views_by_apv_id.items()
             }
 
         return JsonResponse(results)
-
-    def _format_views(self, views_queryset, organization_id):
-        """"
-            add view display_name and output files to queryset
-        """
-        org = Organization.objects.get(pk=organization_id)
-        display_column = Column.objects.filter(organization=org, column_name=org.property_display_field).first()
-        display_column_field = display_column.column_name
-        if display_column.is_extra_data:
-            display_column_field = "extra_data__" + display_column_field
-
-        views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}'))
-        views_queryset = views_queryset.annotate(output_files=ArrayAgg("analysisoutputfile", filter=Q(analysisoutputfile__isnull=False)))
-
-        return list(views_queryset.values("id", "output_files", "parsed_results", "analysis", "property", "cycle", "property_state", "display_name"))
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
