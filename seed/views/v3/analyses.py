@@ -155,7 +155,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         results = {'status': 'success', 'analyses': analyses}
 
         if analyses and include_views:
+            org = Organization.objects.get(pk=organization_id)
+            display_column = Column.objects.filter(organization=org, column_name=org.property_display_field).first()
+            display_column_field = display_column.column_name
+            if display_column.is_extra_data:
+                display_column_field = "extra_data__" + display_column_field
+
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
+            views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}'))
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
             results["views"] = self._format_views(views_queryset, organization_id)
