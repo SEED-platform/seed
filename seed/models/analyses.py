@@ -23,12 +23,14 @@ class Analysis(models.Model):
     BETTER = 2
     EUI = 3
     CO2 = 4
+    EEEJ = 5
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
         (EUI, 'EUI'),
-        (CO2, 'CO2')
+        (CO2, 'CO2'),
+        (EEEJ, 'EEEJ')
     )
 
     PENDING_CREATION = 8
@@ -101,6 +103,19 @@ class Analysis(models.Model):
         # BSyncr
         if self.service == self.BSYNCR:
             return [{'name': 'Completed', 'value': ''}]
+        # EEEJ
+        elif self.service == self.EEEJ:
+            tract = results.get('Census Tract')
+            value = 'N/A'
+            if tract is not None:
+                value = tract
+            dac = results.get('DAC')
+            if dac is None:
+                dac = 'N/A'
+            return [
+                {'name': 'Census Tract', 'value': value},
+                {'name': 'DAC', 'value': dac}
+            ]
 
         # BETTER
         elif self.service == self.BETTER:

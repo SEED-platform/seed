@@ -36,6 +36,20 @@ from seed.analysis_pipelines.eui import (
     _calculate_eui,
     _get_valid_meters
 )
+from seed.analysis_pipelines.eeej import (
+    _get_data_for_census_tract_fetch,
+    _get_eeej_indicators,
+    _get_location,
+    _fetch_census_tract,
+    ERROR_INVALID_LOCATION,
+    ERROR_RETRIEVING_CENSUS_TRACT,
+    ERROR_NO_VALID_PROPERTIES,
+    WARNING_SOME_INVALID_PROPERTIES,
+    ERROR_NO_TRACT_OR_LOCATION,
+    EEEJ_ANALYSIS_MESSAGES,
+    CENSUS_GEOCODER_URL_STUB,
+    TRACT_FIELDNAME
+)
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
@@ -1120,3 +1134,64 @@ class TestEuiPipeline(TestCase):
         self.assertEqual(results['eui'], 0.63)
         self.assertEqual(results['reading'], reading_amount)
         self.assertEqual(results['coverage'], 100)
+
+
+class TestEeejPipeline(TestCase):
+    def setUp(self):
+        self.timezone_object = pytztimezone(TIME_ZONE)
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2020, 1, 1, tzinfo=self.timezone_object))
+        self.test_property = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
+        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
+
+    def test_get_location(self):
+
+        location, status = _get_location(self.property_view)
+        self.assertEqual(status, 'success')
+        self.assertTrue(location is not None)
+        self.assertEqual(location, '730 Garcia Street, Boring, Oregon, 97080')
+
+    def test_get_data_for_census_tract_fetch(self):
+        pvids = [self.property_view.id]
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org)
+        self.assertEqual(errors_by_property_view_id, {})
+        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'tract': None, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
+
+    def test_get_eeej_indicators(self):
+        # create one disadvantaged and one not
+        # make sure addresses are real so we can get a real census tract fetched from the service
+        self.test_property_dac = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='6715 W Colfax Ave', city='Lakewood', state='CO', postal_code='80214')
+        self.property_view_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_dac, cycle=self.cycle, state=self.property_state_dac)
+
+        self.test_property_not_dac = FakePropertyFactory(organization=self.org).get_property()
+        self.property_state_not_dac = FakePropertyStateFactory(organization=self.org).get_property_state(address_line_1='605 Whittier Drive', city='Beverly Hills', state='CA', postal_code='90210')
+        self.property_view_not_dac = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property_not_dac, cycle=self.cycle, state=self.property_state_not_dac)
+
+        apv_ids = [self.property_view_dac.id, self.property_view_not_dac.id]
+        apvs = [self.property_view_dac, self.property_view_not_dac]
+        loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(apv_ids, self.org)
+        results, errors_by_apv_id = _get_eeej_indicators(apvs, loc_data_by_property_view)
+        self.assertEqual(len(results), 2)
+        # DAC
+        self.assertEqual(results[self.property_view_dac.id]['census_tract'], '08059011402')
+        self.assertEqual(results[self.property_view_dac.id]['dac'], True)
+        self.assertEqual(results[self.property_view_dac.id]['energy_burden'], False)
+        self.assertEqual(results[self.property_view_dac.id]['energy_burden_percentile'], 12.0)
+        self.assertEqual(results[self.property_view_dac.id]['number_affordable_housing'], 1)
+
+        # non DAC
+        self.assertEqual(results[self.property_view_not_dac.id]['census_tract'], '06037700700')
+        self.assertEqual(results[self.property_view_not_dac.id]['dac'], False)
+        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden'], False)
+        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_percentile'], 8.0)
+        self.assertEqual(results[self.property_view_not_dac.id]['number_affordable_housing'], 0)
