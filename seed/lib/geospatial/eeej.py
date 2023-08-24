@@ -108,11 +108,12 @@ def import_cejst():
     CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/', 'CEJST-1.0-communities-with-indicators.xlsx')
 
     # import CEJST
-    headers = {'census_tract': {'name': 'Census tract 2010 ID', 'loc': None},
-               'dac': {'name': 'Identified as disadvantaged', 'loc': None},
-               'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
-               'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None}
-              }
+    headers = {
+        'census_tract': {'name': 'Census tract 2010 ID', 'loc': None},
+        'dac': {'name': 'Identified as disadvantaged', 'loc': None},
+        'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
+        'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None}
+    }
 
     book = open_workbook(CEJST_DATA_PATH)
     sheet = book.sheet_by_index(0)
