@@ -2,10 +2,13 @@
 
 import django.contrib.gis.db.models.fields
 from django.db import migrations, models
+
 from seed.lib.geospatial.eeej import add_eeej_data
+
 
 def handle_eeej_data(apps, schema_editor):
     add_eeej_data()
+
 
 class Migration(migrations.Migration):
 

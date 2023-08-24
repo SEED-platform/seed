@@ -28,6 +28,11 @@ from seed.analysis_pipelines.bsyncr import (
     _build_bsyncr_input,
     _parse_analysis_property_view_id
 )
+from seed.analysis_pipelines.eeej import (
+    _get_data_for_census_tract_fetch,
+    _get_eeej_indicators,
+    _get_location
+)
 from seed.analysis_pipelines.eui import (
     ERROR_INVALID_GROSS_FLOOR_AREA,
     ERROR_INVALID_METER_READINGS,
@@ -35,20 +40,6 @@ from seed.analysis_pipelines.eui import (
     TIME_PERIOD,
     _calculate_eui,
     _get_valid_meters
-)
-from seed.analysis_pipelines.eeej import (
-    _get_data_for_census_tract_fetch,
-    _get_eeej_indicators,
-    _get_location,
-    _fetch_census_tract,
-    ERROR_INVALID_LOCATION,
-    ERROR_RETRIEVING_CENSUS_TRACT,
-    ERROR_NO_VALID_PROPERTIES,
-    WARNING_SOME_INVALID_PROPERTIES,
-    ERROR_NO_TRACT_OR_LOCATION,
-    EEEJ_ANALYSIS_MESSAGES,
-    CENSUS_GEOCODER_URL_STUB,
-    TRACT_FIELDNAME
 )
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,

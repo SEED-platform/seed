@@ -4,15 +4,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import datetime
 import logging
-import os
-import requests
-import time
 import urllib.parse
 
+import requests
 from celery import chain, shared_task
-from django.conf import settings
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -20,13 +16,11 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task,
     task_create_analysis_property_views
 )
-
 from seed.models import (
     Analysis,
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
-    Cycle,
     PropertyView
 )
 from seed.models.eeej import EeejCejst, EeejHud
@@ -49,6 +43,7 @@ EEEJ_ANALYSIS_MESSAGES = {
 
 CENSUS_GEOCODER_URL_STUB = 'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress?benchmark=2020&vintage=2010&format=json&address='
 TRACT_FIELDNAME = 'analysis_census_tract'
+
 
 def _get_data_for_census_tract_fetch(property_view_ids, organization):
     """
@@ -215,7 +210,7 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
         # lookup row in EeejCejst model
         try:
             cejst = EeejCejst.objects.get(census_tract_geoid=tract)
-        except:
+        except Exception:
             cejst = None
 
         results[apv.id] = {}
@@ -267,6 +262,7 @@ class EEEJPipeline(AnalysisPipeline):
     def _start_analysis(self):
         return None
 
+
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
 def _finish_preparation(self, analysis_view_ids_by_property_view_id, loc_data_by_property_view, errors_by_property_view_id, analysis_id):
@@ -293,6 +289,7 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, loc_data_by
         loc_data_by_analysis_property_view[analysis_view_id] = loc_data_by_property_view[property_view]
 
     return loc_data_by_analysis_property_view
+
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)

@@ -6,10 +6,11 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
-from django.db import models
 from django.contrib.gis.db import models as geomodels
+from django.db import models
 
 logger = logging.getLogger(__name__)
+
 
 class HousingType(models.TextChoices):
     PUBLIC_HOUSING = 'public housing development'

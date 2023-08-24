@@ -1,10 +1,12 @@
 import os
-from xlrd import open_workbook
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.utils import IntegrityError
+from xlrd import open_workbook
+
 from seed.models.eeej import EeejCejst, EeejHud, HousingType
+
 
 def add_eeej_data():
     """ Import EEEJ data from various sources
@@ -12,6 +14,7 @@ def add_eeej_data():
     """
     import_cejst()
     import_hud()
+
 
 def import_hud():
     """ Import HUD data for Public Developments and Multi-Family - Assisted
@@ -60,7 +63,7 @@ def import_hud():
                     header['loc'] = col_index
                     break
 
-        for row_index in range(1,sheet.nrows):
+        for row_index in range(1, sheet.nrows):
             try:
                 # calculate census tract GEOID
                 state = int(sheet.cell(row_index, ds['headers']['state']['loc']).value)
@@ -81,7 +84,7 @@ def import_hud():
                 # add to DB
                 obj, created = EeejHud.objects.update_or_create(
                     census_tract_geoid=census_tract_geoid,
-                    hud_object_id = hud_object_id,
+                    hud_object_id=hud_object_id,
                     defaults={'long_lat': long_lat},
                     name=sheet.cell(row_index, ds['headers']['property_name']['loc']).value,
                     housing_type=ds['name'],
@@ -89,12 +92,10 @@ def import_hud():
             except IntegrityError as e:
                 errors.append("EEEJ HUD Row already exists: {}. error: {}".format(row_index, str(e)))
                 # print(str(e))
-                pass
 
             except Exception as e:
                 errors.append("EEEJ HUD - could not add row: {}. error: {}".format(row_index, str(e)))
                 # print(str(e))
-                pass
     print(f"{len(errors)} errors encountered when loading HUD data")
 
 
@@ -108,10 +109,10 @@ def import_cejst():
 
     # import CEJST
     headers = {'census_tract': {'name': 'Census tract 2010 ID', 'loc': None},
-                'dac': {'name': 'Identified as disadvantaged', 'loc': None},
-                'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
-                'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None}
-            }
+               'dac': {'name': 'Identified as disadvantaged', 'loc': None},
+               'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
+               'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None}
+              }
 
     book = open_workbook(CEJST_DATA_PATH)
     sheet = book.sheet_by_index(0)
@@ -121,7 +122,7 @@ def import_cejst():
                 header['loc'] = col_index
                 break
     errors = []
-    for row_index in range(1,sheet.nrows):
+    for row_index in range(1, sheet.nrows):
         try:
             burden_percent = None
             if sheet.cell(row_index, headers['energy_burden_percent']['loc']).value != '':
@@ -135,9 +136,7 @@ def import_cejst():
             )
         except IntegrityError as e:
             errors.append("EEEJ CEJST Row already exists: {}. error: {}".format(row_index, str(e)))
-            pass
 
         except Exception as e:
             errors.append("EEEJ CEJST - could not add row: {}. error: {}".format(row_index, str(e)))
-            pass
     print(f"{len(errors)} errors encountered when loading CEJST data")
