@@ -133,25 +133,17 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_member')
     def list(self, request):
         organization_id = self.get_organization(request)
-        property_id = request.query_params.get('property_id', None)
         include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
-        if property_id is not None:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
-                .distinct()
-                .order_by('-id')
-            )
-        else:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id)
-                .order_by('-id')
-            )
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id)
+            .order_by('-id')
+        )
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(analysis.get_property_view_info(property_id))
-            serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
+            serialized_analysis.update(analysis.get_property_view_info())
+            serialized_analysis.update({'highlights': analysis.get_highlights()})
             analyses.append(serialized_analysis)
 
         results = {'status': 'success', 'analyses': analyses}
