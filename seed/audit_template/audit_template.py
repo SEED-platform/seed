@@ -12,12 +12,16 @@ import requests
 from celery import shared_task
 from django.conf import settings
 from django.db.models import Q
+from lxml import etree
+from lxml.builder import ElementMaker
+from quantityfield.units import ureg
 
 from seed.building_sync import validation_client
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView
 from seed.views.v3.properties import PropertyViewSet
+from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 
 _log = logging.getLogger(__name__)
 
@@ -148,3 +152,93 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()
     property_view_set.batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
+
+
+def build_xml(state, report_type):
+    view = state.propertyview_set.first()
+
+    gfa = state.gross_floor_area
+    if type(gfa) == int:
+        gross_floor_area = str(gfa)
+    elif gfa.units != ureg.feet**2:
+        gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
+    else:
+        gross_floor_area = str(gfa.magnitude)
+
+    XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
+    nsmap = {
+        'xsi': XSI_URI,
+    }
+    nsmap.update(NAMESPACES)
+    E = ElementMaker(
+        namespace=BUILDINGSYNC_URI,
+        nsmap=nsmap
+    )
+    doc = (
+        E.BuildingSync(
+            {
+                etree.QName(XSI_URI,
+                            'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd',
+                'version': '2.3.0'
+            },
+            E.Facilities(
+                E.Facility(
+                    {'ID': 'Facility-69909846999990'},
+                    E.Sites(
+                        E.Site(
+                            {'ID': 'SiteType-69909846999991'},
+                            E.Buildings(
+                                E.Building(
+                                    {'ID': 'BuildingType-69909846999992'},
+                                    E.PremisesName(state.property_name),
+                                    E.PremisesNotes('Note-1'),
+                                    E.PremisesIdentifiers(
+                                        E.PremisesIdentifier(
+                                            E.IdentifierLabel('Custom'),
+                                            E.IdentifierCustomName('SEED Property View ID'),
+                                            E.IdentifierValue(str(view.id))
+                                        )
+                                    ),
+                                    E.Address(
+                                        E.StreetAddressDetail(
+                                            E.Simplified(
+                                                E.StreetAddress(state.address_line_1)
+                                            ),
+                                        ),
+                                        E.City(state.city),
+                                        E.State(state.state),
+                                        E.PostalCode(str(state.postal_code)),
+                                    ),
+                                    E.FloorAreas(
+                                        E.FloorArea(
+                                            E.FloorAreaType('Gross'),
+                                            E.FloorAreaValue(gross_floor_area),
+                                        ),
+                                    ),
+                                    E.YearOfConstruction(str(state.year_built)),
+                                )
+                            )
+                        )
+                    ),
+                    E.Reports(
+                        E.Report(
+                            {'ID': "ReportType-69909846999993"},
+                            E.LinkedPremisesOrSystem(
+                                E.Building(
+                                    E.LinkedBuildingID ({'IDref': "BuildingType-69909846999992"})
+                                ),
+                            ),
+                            E.UserDefinedFields(
+                                E.UserDefinedField(
+                                    E.FieldName('Audit Template Report Type'),
+                                    E.FieldValue(report_type),
+                                ),
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+
+    return etree.tostring(doc, pretty_print=True).decode('utf-8'), []
