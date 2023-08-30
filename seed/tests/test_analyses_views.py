@@ -148,10 +148,7 @@ class TestAnalysesView(TestCase):
 
     def test_list_with_property(self):
         response = self.client.get("".join([
-            '/api/v3/analyses/?organization_id=',
-            str(self.org.pk),
-            '&property_id=',
-            str(self.property_a.pk)
+            '/api/v3/properties/', str(self.property_a.pk), '/analyses/?organization_id=', str(self.org.pk),
         ]))
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
