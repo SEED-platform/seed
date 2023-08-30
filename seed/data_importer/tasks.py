@@ -616,7 +616,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
-    duplicate_tracker = collections.defaultdict(lambda: 0)
+    duplicate_tracker: dict = collections.defaultdict(lambda: 0)
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
