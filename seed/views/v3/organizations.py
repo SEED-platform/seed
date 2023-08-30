@@ -157,6 +157,7 @@ def _dict_org(request, organizations):
             'audit_template_user': o.audit_template_user,
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
+            'audit_template_report_type': o.audit_template_report_type,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
         }
@@ -644,6 +645,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             org.ubid_threshold = ubid_threshold
+
 
         org.save()
 
