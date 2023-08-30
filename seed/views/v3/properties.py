@@ -1654,8 +1654,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             source_program_version='1.0',
         )
 
-        # save the raw data
-        tasks.save_raw_data(import_file.pk)
+        # save the raw data, but do it synchronously in the foreground
+        tasks.save_raw_espm_data_synchronous(import_file.pk)
 
         # verify that there is only one property in the file
         import_file.refresh_from_db()
@@ -1671,8 +1671,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # assign the mappings to the import file id
         Column.create_mappings(column_mapping_profile.mappings, org_inst, request.user, import_file.pk)
 
-        # call the mapping process
-        tasks.map_data(import_file.pk)
+        # call the mapping process - but do this in the foreground, not asynchronously.
+        tasks.map_data_synchronous(import_file.pk)
 
         # The data should now be mapped, but since we called the task, we have the IDs of the
         # mapped files, so query for the files.
