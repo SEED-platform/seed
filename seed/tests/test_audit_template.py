@@ -10,7 +10,13 @@ from datetime import datetime
 import mock
 from django.test import TestCase
 from django.urls import reverse
+from django.conf import settings
 from django.utils import timezone
+import requests
+import xml.etree.ElementTree as ET
+import io
+import xmltodict
+from lxml import etree
 
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import (
@@ -20,6 +26,8 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
+# from seed.audit_template.audit_template import build_xml
+from seed.audit_template.audit_template import AuditTemplate
 
 
 class AuditTemplateViewTests(TestCase):
@@ -327,3 +335,229 @@ class AuditTemplateBatchTests(TestCase):
         response = response.json()
         self.assertEqual(response['success'], False)
         self.assertEqual(response['message'], exp_message)
+
+
+# class ExportToAuditTemplate
+class eat(TestCase):
+    def setUp(self):
+        HOST = settings.AUDIT_TEMPLATE_HOST
+        self.API_URL = f'{HOST}/api/v2'
+        self.token_url = f'{self.API_URL}/users/authenticate'
+        self.upload_url = f'{self.API_URL}/building_sync/upload'
+
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.org.at_organization_token = "eJiZ6qZSSk88sCnTZLhc"
+        self.org.audit_template_user = "ross.perry@deptagency.com"
+        self.org.audit_template_password = "ATpass1!"
+        self.org.save()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        )
+
+        self.client.login(**self.user_details)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.view_factory = FakePropertyViewFactory(organization=self.org)
+        self.state_factory = FakePropertyStateFactory(organization=self.org)
+
+        self.state1 = self.state_factory.get_property_state(
+            audit_template_building_id=1,
+            property_name='property1',
+            address_line_1='123 Street Ave',
+            gross_floor_area=1000,
+            city='Denver',
+            state='CO',
+            postal_code='80209',
+            year_built=2000,
+
+        )
+        self.state_ny = self.state_factory.get_property_state(
+            property_name='property1',
+            address_line_1='123 Street Ave',
+            gross_floor_area=1000,
+            city='New York',
+            state='NY',
+            postal_code='80209',
+            year_built=2000,
+        )
+        self.state3 = self.state_factory.get_property_state(audit_template_building_id=3)
+        self.state4 = self.state_factory.get_property_state()
+
+        self.view1 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state1)
+        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state_ny)
+        self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
+        self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
+
+    def get_token(self):
+        json = {
+            'organization_token': 'eJiZ6qZSSk88sCnTZLhc',
+            'email': 'ross.perry@deptagency.com',
+            'password': 'ATpass1!'
+        }
+        headers = {"Content-Type": "application/json; charset=utf-8", 'accept': 'application/xml'}
+        response = requests.request("POST", self.token_url, headers=headers, json=json)
+        self.assertEqual(200, response.status_code)
+        return response.json()['token']
+
+    def test_export_to_AT1(self):
+        """
+        Export to Audit Template with a known xml file.
+        convert xml to an xml_string then send as a file-like object
+        """
+        # get at token 
+        token = self.get_token()
+        # use response token in export request
+   
+
+        # Creating an xml string from an xml fixture
+        # in practice it will be created from a dictionary
+        xml_path = 'seed/tests/data/minimum_bsync_for_at_upload.xml'
+        xml_path = 'seed/tests/data/test_ny_from_at.xml'
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        xml_string = ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
+        # ---------------------
+
+
+        # --------------------
+        # Probably the cleanest option
+        files = {'audit_file': ('at_export.xml', xml_string)}
+        body = {'token': token}
+
+        response = requests.post(self.upload_url, data=body, files=files)
+        self.assertEqual(200, response.status_code)
+
+    def test_export_to_AT2(self):
+        """
+        Export to Audit Template with built xml file
+        """
+        report_types = [
+            'ASHRAE Level 2 Report',
+            'Atlanta Report',
+            'Berkeley Report',
+            'BRICR Phase 0/1',
+            'Brisbane Energy Audit Report',
+            'DC BEPS Energy Audit Report',
+            'DC BEPS RCx Report',
+            'Demo City Report',
+            'Denver Energy Audit Report',
+            'Energy Trust of Oregon Report',
+            'Minneapolis Energy Evaluation Report',
+            # 'New York City Energy Efficiency Report',  # always returns 422 'Rp nyc property can't be blank'
+            'Open Efficiency Report',
+            'San Francisco Report',
+            'WA Commerce Clean Buildings - Form D Report',
+            'WA Commerce Grants Report',
+        ]
+        token = self.get_token()
+        status_codes = {}
+        for report in report_types:
+            xml_string = ''
+            # xml_string, _ = build_xml(self.state1, report)
+
+            
+            files = {'audit_file': ('at_export.xml', xml_string)}
+            body = {'token': token}
+            response = requests.post(self.upload_url, data=body, files=files)
+            status_codes[report] = response.status_code
+
+        breakpoint()
+
+   
+
+    def test_export_to_AT4(self):
+        """
+        Export to audit template. This is using real data that needs to be mocked out.
+        """
+        at = AuditTemplate(self.org.id)
+        response, error_ = at.export_to_audit_template(self.state1)
+        self.assertEqual(200, response.status_code)
+
+        
+        breakpoint()
+        
+
+        # ---------------------------------------------------------------------
+        # --------------------------- attempts --------------------------------
+        # ---------------------------------------------------------------------
+
+        # token = self.get_token()
+        # xml_string, _ = build_xml(self.state1, 'ASHRAE Level 2 Report')
+        # files = {'audit_file': ('at_export.xml', xml_string)}
+        # body = {'token': token}
+
+        # Write xml to test data dir
+        # xml_path = 'seed/tests/data/test_rp2.xml'
+        # with open(xml_path, 'w') as f:
+        #     f.write(xml_string)
+
+        # response = requests.post(self.upload_url, data=body, files=files)
+        # self.assertEqual(200, response.status_code)
+
+
+        # root = ET.fromstring(xml_string)
+        # namespaces = {'ns0': 'http://buildingsync.net/schemas/bedes-auc/2019'}
+
+        # def process_element(element, parent_dict):
+        #     child_dict = {}
+        #     for child in element:
+        #         process_element(child, child_dict)
+        #     parent_dict[element.tag.split('}')[-1]] = element.text if not child_dict else child_dict
+
+
+        # xml_dict = {}
+        # process_element(root, xml_dict)
+
+        # xml_path = 'seed/tests/data/test_rp.xml'
+        # with open(xml_path, 'w') as f:
+        #     f.write(xml_string)
+
+        # --------------
+
+        # def dict_to_xml(tag, data, nsmap=None):
+        #     if ':' in tag:
+        #         ns, tag = tag.split(':', 1)
+        #         elm = etree.Element("{%s}%s" % (nsmap[ns], tag), nsmap=nsmap)
+        #     else:
+        #         elm = etree.Element(tag, nsmap=nsmap)
+
+        #     for key, val in data.items():
+        #         child = etree.Element(key)
+        #         if isinstance(val, dict):
+        #             child.append(dict_to_xml(key, val))
+        #         else:
+        #             child.text = str(val)
+        #         elm.append(child)
+        #     return elm
+
+
+        # nsmap = {'ns0': 'http://buildingsync.net/schemas/bedes-auc/2019'}
+        # root = dict_to_xml('ns0:BuildingSync', xml_dict, nsmap)
+        # root.set('version', '2.3.0')
+        # xs = etree.tostring(root, pretty_print=True).decode()
+        # breakpoint()
+
+
+        # # Convert dictionary to lxml Element
+        # root = dict_to_xml('ns0:BuildingSync', xml_dict)
+
+        # # Add the namespace
+        # root.set('xmlns:ns0', 'http://buildingsync.net/schemas/bedes-auc/2019')
+        # root.set('version', '2.3.0')
+
+        # xml_string2 = etree.tostring(root, pretty_print=True).decode()
+
+
+
+        # x = {child.tag: child.text for child in root}
+        # breakpoint()
+
+
