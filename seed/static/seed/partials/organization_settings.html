@@ -150,7 +150,12 @@
                         <div class="form-group">
                             <div class="col-sm-4">
                                 <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
-                                <input type="password" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
+                                <div class="input-group">
+                                    <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </form>
