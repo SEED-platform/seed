@@ -412,6 +412,8 @@ class eat(TestCase):
         at = AuditTemplate(self.org.id)
         states = [self.state1, self.state_ny]
         results = at.batch_export_to_audit_template(states)
-        breakpoint()
+        self.assertEqual(2, len(results['success']))
+        self.assertEqual(0, len(results['failure']))
+
 
 
