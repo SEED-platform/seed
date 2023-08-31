@@ -2,10 +2,13 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 import logging
 import os
+import time
 from collections import namedtuple
 
+from django.core.files.base import ContentFile
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -20,6 +23,7 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     AUDIT_USER_EDIT,
@@ -1338,11 +1342,34 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = self.get_organization(request)
-        cycle_pk = request.query_params.get('cycle_id', None)
-        org_id = self.get_organization(self.request)
+        cycle_id = request.query_params.get('cycle_id', None)
 
+        return self._update_with_building_sync(the_file, file_type, organization_id, cycle_id, pk)
+
+    def batch_update_with_building_sync(self, properties, org_id, cycle_id, progress_key):
+        """
+        Update a list of PropertyViews with a building file. Currently only supports BuildingSync.
+        """
+        progress_data = ProgressData.from_key(progress_key)
+        if not Cycle.objects.filter(pk=cycle_id):
+            logging.warning(f'Cycle {cycle_id} does not exist')
+            return progress_data.finish_with_error(f'Cycle {cycle_id} does not exist')
+
+        results = {'success': 0, 'failure': 0}
+        for property in properties:
+            formatted_time = time.strftime('%Y%m%d_%H%M%S', time.localtime(time.time()))
+            blob = ContentFile(property['xml'], name=f'at_{property["audit_template_building_id"]}_{formatted_time}.xml')
+            response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property['property_view'], property['updated_at'])
+            response = json.loads(response.content)
+            results['success' if response['success'] else 'faulure'] += 1
+
+            progress_data.step('Updating Properties...')
+
+        progress_data.finish_with_success(results)
+
+    def _update_with_building_sync(self, the_file, file_type, organization_id, cycle_id, view_id, at_updated=False):
         try:
-            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+            cycle = Cycle.objects.get(pk=cycle_id, organization_id=organization_id)
         except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -1354,7 +1381,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             # if the cycle was not within the user's organization
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
-            ).get(pk=pk, cycle_id=cycle_pk)
+            ).get(pk=view_id, cycle_id=cycle_id)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
@@ -1376,6 +1403,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
 
         if p_status and new_pv_state:
+            if at_updated:
+                new_pv_state.extra_data.update({'at_updated_at': at_updated})
+                new_pv_state.save()
+                Column.objects.get_or_create(
+                    is_extra_data=True,
+                    column_name='at_updated_at',
+                    display_name='Audit Template Updated',
+                    organization=cycle.organization,
+                    table_name='PropertyState',
+                )
+
             return JsonResponse({
                 'success': True,
                 'status': 'success',
