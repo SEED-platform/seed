@@ -867,6 +867,13 @@ a:not([href]) {
       padding-top: 0;
       padding-left: 20px;
       padding-right: 20px;
+
+      .settings-dropdown {
+        padding: 5px;
+        border-radius: 5px;
+        border-color: #CCCCCC;
+        width: 100%;
+      }
     }
 
     h3 {

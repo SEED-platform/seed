@@ -112,7 +112,9 @@
                     </form>
                 </div>
             </div>
+        </uib-tab>
 
+        <uib-tab index="2" heading="Audit Template">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Audit Template Organization Token</h3>
@@ -154,9 +156,25 @@
                     </form>
                 </div>
             </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>Audit Template Report Type</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <p>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
+                                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
+                                    <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </uib-tab>
 
-        <uib-tab index="2" heading="{$:: 'Default Display Fields' | translate $}">
+        <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Property Display Field</h3>
@@ -186,7 +204,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="3" heading="{$:: 'Email' | translate $}">
+        <uib-tab index="4" heading="{$:: 'Email' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>New User Email</h3>
@@ -221,7 +239,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="4" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
+        <uib-tab index="5" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
             <div class="section_content_container">
                 <div class="section_content with_padding maintenance">
                     <h3 translate>Maintenance Actions</h3>
@@ -233,7 +251,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="5" heading="{$:: 'Salesforce' | translate $}">
+        <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}">
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
@@ -823,7 +841,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="6" heading="UBID">
+        <uib-tab index="7" heading="UBID">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Set UBID Threshold</h3>
@@ -861,7 +879,7 @@
             </div>
         </uib-tab>
 
-        <uib-tab index="7" heading="{$:: 'Units' | translate $}">
+        <uib-tab index="8" heading="{$:: 'Units' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
                     <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>

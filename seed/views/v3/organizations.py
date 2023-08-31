@@ -629,6 +629,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_password != org.audit_template_password:
             org.audit_template_password = audit_template_password
 
+        audit_template_report_type = posted_org.get('audit_template_report_type', False)
+        if audit_template_report_type != org.audit_template_report_type:
+            org.audit_template_report_type = audit_template_report_type
+
         salesforce_enabled = posted_org.get('salesforce_enabled', False)
         if salesforce_enabled != org.salesforce_enabled:
             org.salesforce_enabled = salesforce_enabled
