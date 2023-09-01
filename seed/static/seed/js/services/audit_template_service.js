@@ -59,11 +59,22 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     }
 
+    const batch_export_to_audit_template = function (org_id, property_view_ids) {
+      return $http.post(
+        `/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, 
+        property_view_ids).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data
+      })
+    }
+
     const analyses_factory = {
       'get_building_xml': get_building_xml,
       'batch_get_building_xml_and_update': batch_get_building_xml_and_update,
       'get_buildings': get_buildings,
       'update_building_with_xml': update_building_with_xml,
+      'export_to_audit_template': batch_export_to_audit_template,
     };
 
     return analyses_factory;
