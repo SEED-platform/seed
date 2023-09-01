@@ -100,41 +100,60 @@ class AuditTemplate(object):
 
         return response_body['token'], ""
     
-    def batch_export_to_audit_template(self, states):
-        results = {'success': [], 'failure': []}
-        for state in states:
-            response, message = self.export_to_audit_template(state)
-            if response:
-                results['success'].append({state.id: response}) 
-            else:
-                results['failure'].append({state.id: message})
-        
-        return results
-
-    def export_to_audit_template(self, state):
-        org = Organization.objects.get(pk=self.org_id)
-        url = f'{self.API_URL}/building_sync/upload'
+    def batch_export_to_audit_template(self, view_ids):
         token, message = self.get_api_token()
         if not token:
             return None, message
+        progress_data = ProgressData(func_name='batch_export_to_audit_template', unique_id=view_ids[0])
+        progress_data.total = len(view_ids)
+        progress_data.save()
+
+        _batch_export_to_audit_template.delay(self.org_id, view_ids, token, progress_data.key)
+
+        return progress_data.result()
+
+    def export_to_audit_template(self, state, token):
+        valid, messages = self.validate_state(state)
+        if not valid:
+            return None, messages
         
+        if state.audit_template_building_id:
+            return None, ['info', 'Property already exists on Audit Template']
+
+        org = Organization.objects.get(pk=self.org_id)
+        url = f'{self.API_URL}/building_sync/upload'
+
         try:
             xml_string, _ = self.build_xml(state, org.audit_template_report_type)
             if not xml_string:
-                return None, 'Unable to create xml from property state'
+                return None, ['erorr', 'Unable to create xml from property state']
         except Exception as e:
-            return None, f'Unexpected error creating building xml {e}'
+            return None, ['error', f'Unexpected error creating building xml {e}']
 
         try:    
             files = {'audit_file': ('at_export.xml', xml_string)}
             body = {'token': token}
             response = requests.post(url, data=body, files=files)
             if response.status_code != 200:
-                return None, f'Expected 200 response from Audit Template upload but got {response.status_code}: {response.content}'
+                return None, ['error', f'Expected 200 response from Audit Template upload but got {response.status_code}: {response.content}']
         except Exception as e:
-            return None, f'Unexpected error from Audit Template: {e}'
+            return None, ['error', f'Unexpected error from Audit Template: {e}']
         
-        return response, ''
+        return response, []
+
+    def validate_state(self, state):
+        missing_fields = []
+        expected_fields = ['address_line_1', 'city', 'gross_floor_area', 'postal_code', 'property_name', 'state', 'year_built']
+        for field in expected_fields:
+            if getattr(state, field) is None:
+                missing_fields.append(field)
+
+        if len(missing_fields):
+            missing_fields = ', '.join(missing_fields)
+            messages = ['error', f'Validation Error. State must have a {missing_fields}']
+            return False, messages
+    
+        return True, []
     
     def build_xml(self, state, report_type):
         view = state.propertyview_set.first()
@@ -277,3 +296,43 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
     # Call the PropertyViewSet to update the property view with xml data
     property_view_set = PropertyViewSet()
     property_view_set.batch_update_with_building_sync(result, org_id, cycle_id, progress_data.key)
+
+@shared_task
+def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
+        progress_data = ProgressData.from_key(progress_key)
+        views = PropertyView.objects.filter(id__in=view_ids).select_related('state')
+        results = {'success': 0, 'info': 0, 'error': 0, 'details': []}
+
+        for view in views:
+
+            state = view.state
+            response, messages = AuditTemplate(org_id).export_to_audit_template(state, token)
+
+            if not response:
+                results[messages[0]] += 1
+                results['details'].append({'view_id': view.id, 'status': messages[0], 'message': messages[1]})
+                progress_data.step('Exporting properties to Audit Template...')
+
+                continue
+
+            at_building_id = None
+            for k, v in response.json()['rp_buildings'].items():
+                if 'BuildingType-' in k:
+                    at_building_id = v.split('/')[-1]
+                    break 
+
+            if at_building_id:
+                state.audit_template_building_id = at_building_id
+                state.save()
+                results['success'] += 1
+                results['details'].append({'view_id': view.id, 'status': 'success', 'at_building_id': at_building_id}) 
+            else:
+                results['error'] += 1
+                results['details'].append({'view_id': view.id, 'status': 'error', 'message': 'Unexepcted Response from Audit Template'})
+
+            progress_data.update_summary(results)
+            progress_data.step('Exporting properties to Audit Template...')
+
+        progress_data.finish_with_success(results)
+
+        return results

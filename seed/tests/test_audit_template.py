@@ -369,7 +369,7 @@ class eat(TestCase):
         self.state_factory = FakePropertyStateFactory(organization=self.org)
 
         self.state1 = self.state_factory.get_property_state(
-            audit_template_building_id=1,
+            audit_template_building_id=10001,
             property_name='property1',
             address_line_1='123 Street Ave',
             gross_floor_area=1000,
@@ -409,11 +409,25 @@ class eat(TestCase):
         """
         Batch Export to AT
         """
-        at = AuditTemplate(self.org.id)
-        states = [self.state1, self.state_ny]
-        results = at.batch_export_to_audit_template(states)
-        self.assertEqual(2, len(results['success']))
-        self.assertEqual(0, len(results['failure']))
+        views = [self.view1.id, self.view2.id, self.view3.id]
+        # views = [self.view3.id]
 
+        url = reverse('api:v3:audit_template-batch-export-to-audit-template') + '?organization_id=' + str(self.org.id)
+
+        response = self.client.post(
+            url,
+            data=json.dumps(views),
+            content_type='application/json'
+        )
+        breakpoint()
+
+        self.assertEqual(200, response.status_code)
+        response = response.json()
+
+        for message in response['message']:
+            self.assertTrue('view_id' in message)
+            self.assertTrue(int(message['view_id']))
+            self.assertTrue('at_building_id' in message)
+            self.assertTrue(int(message['at_building_id']))
 
 
