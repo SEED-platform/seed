@@ -8,6 +8,7 @@ import json
 import time
 from random import randint
 
+from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from xlrd import open_workbook
 
@@ -29,7 +30,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeStatusLabelFactory
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -245,3 +246,60 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
     def tearDown(self):
         for x in self.properties:
             PropertyView.objects.get(pk=x).delete()
+
+
+class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle()
+
+    def test_tax_lot_and_property_in_different_ali(self):
+        self.property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
+
+        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
+
+        with self.assertRaises(ValidationError):
+            TaxLotProperty(
+                primary=True,
+                cycle_id=self.cycle.id,
+                property_view_id=self.property_view.id,
+                taxlot_view_id=self.taxlot_view.id
+            ).save()
+
+    def test_change_properties_ali(self):
+        self.property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
+
+        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.property_view.id,
+            taxlot_view_id=self.taxlot_view.id
+        ).save()
+
+        with self.assertRaises(ValidationError):
+            self.property.access_level_instance = self.child_level_instance
+            self.property.save()
+
+    def test_change_tax_lot_ali(self):
+        self.property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
+
+        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.property_view.id,
+            taxlot_view_id=self.taxlot_view.id
+        ).save()
+
+        with self.assertRaises(ValidationError):
+            self.taxlot.access_level_instance = self.child_level_instance
+            self.taxlot.save()

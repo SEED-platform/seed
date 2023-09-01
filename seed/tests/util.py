@@ -51,6 +51,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
+    FakeTaxLotFactory,
     FakeTaxLotViewFactory
 )
 from seed.utils.organizations import create_organization
@@ -166,6 +167,7 @@ class AccessLevelBaseTestCase(TestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
         self.note_factory = FakeNoteFactory(organization=self.org, user=self.root_owner_user)
 
