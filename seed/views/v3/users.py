@@ -401,7 +401,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.first_name = json_user.get('first_name')
         user.last_name = json_user.get('last_name')
         user.email = json_user.get('email')
-        user.username = json_user.get('email')
+        user.username = json_user.get('email', '').lower()
         user.save()
         return JsonResponse({
             'status': 'success',
