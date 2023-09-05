@@ -7,7 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 
-from django.db.models import Count
+from django.db.models import Count, F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
@@ -133,31 +133,30 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_member')
     def list(self, request):
         organization_id = self.get_organization(request)
-        property_id = request.query_params.get('property_id', None)
         include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
-        if property_id is not None:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
-                .distinct()
-                .order_by('-id')
-            )
-        else:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id)
-                .order_by('-id')
-            )
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id)
+            .order_by('-id')
+        )
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(analysis.get_property_view_info(property_id))
-            serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
+            serialized_analysis.update(analysis.get_property_view_info())
+            serialized_analysis.update({'highlights': analysis.get_highlights()})
             analyses.append(serialized_analysis)
 
         results = {'status': 'success', 'analyses': analyses}
 
         if analyses and include_views:
+            org = Organization.objects.get(pk=organization_id)
+            display_column = Column.objects.filter(organization=org, column_name=org.property_display_field).first()
+            display_column_field = display_column.column_name
+            if display_column.is_extra_data:
+                display_column_field = "extra_data__" + display_column_field
+
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
+            views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}')).prefetch_related("analysisoutputfile_set")
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
             results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
