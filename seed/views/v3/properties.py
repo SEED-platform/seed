@@ -31,6 +31,7 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    Analysis,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -49,6 +50,7 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
+from seed.serializers.analyses import AnalysisSerializer
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
@@ -292,6 +294,26 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
 
         return exporter.readings_and_column_defs(interval)
+
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def analyses(self, request, pk):
+        organization_id = self.get_organization(request)
+
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+            .distinct().order_by('-id')
+        )
+
+        analyses = []
+        for analysis in analyses_queryset:
+            serialized_analysis = AnalysisSerializer(analysis).data
+            serialized_analysis.update(analysis.get_property_view_info(pk))
+            serialized_analysis.update({'highlights': analysis.get_highlights(pk)})
+            analyses.append(serialized_analysis)
+
+        return {'status': 'success', 'analyses': analyses}
 
     @ajax_request_class
     @has_perm_class('requires_member')
