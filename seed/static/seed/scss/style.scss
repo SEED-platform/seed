@@ -4879,3 +4879,26 @@ ul.r-list {
     border-color: #dd2c00;
   }
 }
+#export-at-table{
+  .export-summary-row{
+    background:#FFFFFF;
+  }
+  .export-detail-row{
+    background: #F9F9F9;
+    td{
+      padding: 0 8px;
+  
+      .export-details {
+        max-height: 55px;
+        overflow-y: scroll;
+        padding: 0 8px !important;
+        div{
+          padding: 10px;
+          margin-bottom: 5px;
+        }
+      }
+    }
+
+}
+
+}

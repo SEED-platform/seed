@@ -8,23 +8,15 @@
     <div ng-switch-when="0">
         <h5><b>{$ ids.length $} Propert{$ ids.length == 1 ? 'y' : 'ies' $} Selected</b></h5>
         <div>
-            The following Property fields are required. Other fields can be manually updated on <a href="https://buildingenergyscore.energy.gov/rp/buildings">Audit Template</a> following the export
+            The following Property fields are required.
         </div>
-        <ul>
-            <li>Address Line 1</li>
-            <li>City</li>
-            <li>Gross Floor Area</li>
-            <li>Postal Code</li>
-            <li>Property Name</li>
-            <li>State</li>
-            <li>Year Built</li>
-        </ul> 
+        <strong>
+            Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built
+        </strong> 
         
-        <div>
-            
-        </div>
         <div style="margin: 10px 0;">
-            <i>Properties with Audit Template Building IDs will be skipped</i>
+            Other fields can be manually updated on <a href="https://buildingenergyscore.energy.gov/rp/buildings">Audit Template</a>
+            following the export Properties with Audit Template Building IDs will be skipped.
         </div>
     </div>
 
@@ -45,19 +37,40 @@
     <!-- step 2 -->
     <div ng-switch-when="2">
         <div class="table_list_container has_borders" style="max-width: 400px">
-            <table id="ubid-table" class="table table-striped">
+            <table id="export-at-table" class="table table-striped">
                 <tbody style="border: 1px solid #CCCCCC">
                     <tr style="background: #DFF0D8">
                         <td>Successful Exports</td>
-                        <td>{$ upload_summary.success $}</td>
+                        <td>{$ upload_summary.success.count || 0 $}</td>
                     </tr>
-                    <tr>
+                    <tr class="export-summary-row">
                         <td>Existing Audit Template Properties (skipped)</td>
-                        <td>{$ upload_summary.info $}</td>
+                        <td>{$ upload_summary.info.count || 0 $}</td>
                     </tr>
-                    <tr>
+                    <tr class="export-detail-row" ng-if="upload_summary.info.details.length">
+                        <td>
+                            <div class="export-details">
+                                <div ng-repeat="detail in upload_summary.info.details" class="alert-warning">
+                                    {$ detail.message $}
+                                </div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr class="export-summary-row">
                         <td>Unsuccessful Exports</td>
-                        <td>{$ upload_summary.error $}</td>
+                        <td>{$ upload_summary.error.count || 0 $}</td>
+                    </tr>
+                    <tr class="export-detail-row" ng-if="upload_summary.error.details.length">
+                        <td>
+                            <div class="export-details">
+                                <div ng-repeat="detail in upload_summary.error.details" class="alert-danger">
+                                    {$ detail.message $}
+                                </div>
+                            </div>
+                        </td>
+                        <td></td>
+                    
                     </tr>
                 </tbody>
             </table>
