@@ -1,0 +1,25 @@
+Raw Columns,units,SEED Table,SEED Columns
+How Many Buildings?,,PropertyState,building_count
+City/Municipality,,PropertyState,city
+Construction Status,,PropertyState,Construction Status
+Country,,PropertyState,Country
+Federal Agency/Department,,PropertyState,Federal Agency/Department
+GFA Units,,PropertyState,GFA Units
+Gross Floor Area,ft**2,PropertyState,gross_floor_area
+Irrigated Area,,PropertyState,Irrigated Area
+Irrigated Area Units,,PropertyState,Irrigated Area Units
+Is this an Institutional Property? (Applicable only for Canadian properties),,PropertyState,Is this an Institutional Property? (Applicable only for Canadian properties)
+Is this Property Owned or Operated by the US or Canadian Federal Government?,,PropertyState,Is this Property Owned or Operated by the US or Canadian Federal Government?
+Number of Buildings,,PropertyState,Number of Buildings
+Occupancy (%),,PropertyState,Occupancy
+Other State/Province,,PropertyState,Other State
+Parent Property ID,,PropertyState,Parent Property ID
+Parent Property Name (if Applicable),,PropertyState,Parent Property Name (if Applicable)
+Portfolio Manager ID,,PropertyState,pm_property_id
+Postal Code,,PropertyState,postal_code
+Property Name,,PropertyState,property_name
+Property Type - Self-Selected,,PropertyState,property_type
+State/Province,,PropertyState,state
+Street Address,,PropertyState,address_line_1
+Street Address 2,,PropertyState,address_line_2
+Year Built,,PropertyState,year_built
