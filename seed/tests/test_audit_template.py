@@ -353,9 +353,9 @@ class eat(TestCase):
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
-        self.org.at_organization_token = "eJiZ6qZSSk88sCnTZLhc"
-        self.org.audit_template_user = "ross.perry@deptagency.com"
-        self.org.audit_template_password = "ATpass1!"
+        self.org.at_organization_token = "fake"
+        self.org.audit_template_user = "fake@.com"
+        self.org.audit_template_password = "fake"
         self.org.save()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
@@ -369,9 +369,8 @@ class eat(TestCase):
         self.state_factory = FakePropertyStateFactory(organization=self.org)
 
         self.state1 = self.state_factory.get_property_state(
-            audit_template_building_id=10001,
             property_name='property1',
-            address_line_1='123 Street Ave',
+            address_line_1='111 One St',
             gross_floor_area=1000,
             city='Denver',
             state='CO',
@@ -379,55 +378,143 @@ class eat(TestCase):
             year_built=2000,
 
         )
-        self.state_ny = self.state_factory.get_property_state(
+        self.state2 = self.state_factory.get_property_state(
             property_name='property ny',
-            address_line_1='123 Street Ave',
+            address_line_1='222 Two St',
             gross_floor_area=1000,
             city='New York',
             state='NY',
             postal_code='80209',
             year_built=2000,
         )
-        self.state3 = self.state_factory.get_property_state(audit_template_building_id=3)
-        self.state4 = self.state_factory.get_property_state()
+        # missing required fields
+        self.state3 = self.state_factory.get_property_state(address_line_1=None)
+        # existing audit_template_building_id (will be ignored)
+        self.state4 = self.state_factory.get_property_state(
+            audit_template_building_id=10001,
+            property_name='property 4',
+            address_line_1='444 Four St',
+            gross_floor_area=1000,
+            city='Denver',
+            state='CO',
+            postal_code='80209',
+            year_built=2000
+        )
 
         self.view1 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state1)
-        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state_ny)
+        self.view2 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state2)
         self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
         self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
 
 
-    def test_export_to_AT(self):
+    def test_build_xml_from_property(self):
         """
-        Export to audit template. This is using real data that needs to be mocked out.
+        Properties must be exported to Audit Template as an XML
         """
         at = AuditTemplate(self.org.id)
-        response, error_ = at.export_to_audit_template(self.state1)
-        self.assertEqual(200, response.status_code)
+        response1 = at.build_xml(self.state1, 'Demo City Report')
+        response2 = at.build_xml(self.state2, 'Demo City Report')
+        # property missing required fields
+        response3 = at.build_xml(self.state3, 'Demo City Report')
         
-    def test_export_to_ATB(self):
+        self.assertEqual(tuple, type(response1))
+        self.assertEqual(tuple, type(response2))
+        self.assertEqual(tuple, type(response3))
+
+        exp = '<auc:BuildingSync'
+        self.assertEqual(str, type(response1[0]))
+        self.assertEqual(exp, response1[0][:17])
+        self.assertTrue('111 One St' in response1[0])
+        self.assertFalse('222 Two St' in response1[0])
+
+        self.assertEqual(str, type(response2[0]))
+        self.assertEqual(exp, response2[0][:17])
+        self.assertFalse('111 One St' in response2[0])
+        self.assertTrue('222 Two St' in response2[0])
+
+        self.assertEqual([], response1[1])
+        self.assertEqual([], response2[1])
+
+        # property missing required fields
+        self.assertIsNone(response3[0])
+        messages = response3[1]
+        exp_error = 'Validation Error. State must have address_line_1, property_name'
+        self.assertEqual('error', messages[0])
+        self.assertEqual(exp_error, messages[1])
+
+
+    @mock.patch('requests.request')
+    def test_export_to_audit_template(self, mock_request):
         """
-        Batch Export to AT
+        Converts properties to xmls and exports to Audit Template
         """
-        views = [self.view1.id, self.view2.id, self.view3.id]
-        # views = [self.view3.id]
 
-        url = reverse('api:v3:audit_template-batch-export-to-audit-template') + '?organization_id=' + str(self.org.id)
+        at = AuditTemplate(self.org.id)
+        token = 'fake token'
 
-        response = self.client.post(
-            url,
-            data=json.dumps(views),
-            content_type='application/json'
-        )
-        breakpoint()
+        mock_response = mock.Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = json.return_value = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/1111'}, 'rp_nyc_properties': {}}
+        mock_request.return_value = mock_response
 
-        self.assertEqual(200, response.status_code)
-        response = response.json()
+        # existing property
+        response = at.export_to_audit_template(self.state4, token)
+        exp = (None, ['info', 'Property already exists on Audit Template'])
+        self.assertEqual(exp, response)
 
-        for message in response['message']:
-            self.assertTrue('view_id' in message)
-            self.assertTrue(int(message['view_id']))
-            self.assertTrue('at_building_id' in message)
-            self.assertTrue(int(message['at_building_id']))
+        # invalid property
+        response, messages = at.export_to_audit_template(self.state3, token)
+        self.assertIsNone(response)
+        exp = ['error', 'Validation Error. State must have address_line_1, property_name']
+        self.assertEqual(exp, messages)
+
+        # valid property
+        response, messages = at.export_to_audit_template(self.state1, token)
+        self.assertEqual([], messages)
+        exp = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/1111'}, 'rp_nyc_properties': {}}
+        self.assertEqual(exp, response.json())
 
 
+    @mock.patch('requests.request')
+    def test_batch_export_to_audit_template(self, mock_request):
+        """
+        Exports multiple properties to Audit Template
+        """
+        at = AuditTemplate(self.org.id)
+
+        mock_authenticate_response = mock.Mock()
+        mock_authenticate_response.status_code = 200
+        mock_authenticate_response.json.return_value = {'token': 'fake token'}
+        
+        mock_export1_response = mock.Mock()
+        mock_export1_response.status_code = 200
+        mock_export1_response.json.return_value = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/1111'}, 'rp_nyc_properties': {}}
+
+        mock_export2_response = mock.Mock()
+        mock_export2_response.status_code = 200
+        mock_export2_response.json.return_value = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/2222'}, 'rp_nyc_properties': {}}
+        mock_request.side_effect = [mock_authenticate_response, mock_export1_response, mock_export2_response]
+
+        results = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id])
+        message = results['message']
+
+        self.assertEqual(['success', 'info', 'error', 'details'], list(message.keys()))
+        self.assertEqual(2, message['success'])
+        self.assertEqual(1, message['info'])
+        self.assertEqual(1, message['error'])
+
+        details = message['details']
+        self.assertEqual(4, len(details))
+
+        self.assertEqual('success', details[0]['status'])
+        self.assertEqual('1111', details[0]['at_building_id'])
+        self.assertEqual('success', details[1]['status'])
+        self.assertEqual('2222', details[1]['at_building_id'])
+        
+        exp = 'Validation Error. State must have address_line_1, property_name'
+        self.assertEqual('error', details[2]['status'])
+        self.assertEqual(exp, details[2]['message'])
+        
+        exp = 'Property already exists on Audit Template'
+        self.assertEqual('info', details[3]['status'])
+        self.assertEqual(exp, details[3]['message'])
