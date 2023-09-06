@@ -459,7 +459,7 @@ class eat(TestCase):
 
         # existing property
         response = at.export_to_audit_template(self.state4, token)
-        exp = (None, ['info', 'Property already exists on Audit Template'])
+        exp = (None, ['Existing Audit Template Property'])
         self.assertEqual(exp, response)
 
         # invalid property
@@ -515,6 +515,6 @@ class eat(TestCase):
         self.assertEqual('error', details[2]['status'])
         self.assertEqual(exp, details[2]['message'])
         
-        exp = 'Property already exists on Audit Template'
+        exp = 'Existing Audit Template Property'
         self.assertEqual('info', details[3]['status'])
         self.assertEqual(exp, details[3]['message'])

@@ -114,7 +114,7 @@ class AuditTemplate(object):
 
     def export_to_audit_template(self, state, token):
         if state.audit_template_building_id:
-            return None, ['info', 'Property already exists on Audit Template']
+            return None, ['info', 'Existing Audit Template Property']
 
         org = Organization.objects.get(pk=self.org_id)
         url = f'{self.API_URL}/building_sync/upload'
