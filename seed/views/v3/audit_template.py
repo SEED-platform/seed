@@ -139,7 +139,6 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             'success': True,
             'message': response
         }, status=200)
-    
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -177,4 +176,3 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             }, status=400)
 
         return JsonResponse(progress_data)
-

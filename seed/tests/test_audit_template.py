@@ -8,16 +8,13 @@ import json
 from datetime import datetime
 
 import mock
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
-from django.conf import settings
 from django.utils import timezone
-import requests
-import xml.etree.ElementTree as ET
-import io
-import xmltodict
-from lxml import etree
 
+# from seed.audit_template.audit_template import build_xml
+from seed.audit_template.audit_template import AuditTemplate
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -26,8 +23,6 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
-# from seed.audit_template.audit_template import build_xml
-from seed.audit_template.audit_template import AuditTemplate
 
 
 class AuditTemplateViewTests(TestCase):
@@ -405,7 +400,6 @@ class ExportToAuditTemplate(TestCase):
         self.view3 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state3)
         self.view4 = self.view_factory.get_property_view(cycle=self.cycle, state=self.state4)
 
-
     def test_build_xml_from_property(self):
         """
         Properties must be exported to Audit Template as an XML
@@ -415,7 +409,7 @@ class ExportToAuditTemplate(TestCase):
         response2 = at.build_xml(self.state2, 'Demo City Report')
         # property missing required fields
         response3 = at.build_xml(self.state3, 'Demo City Report')
-        
+
         self.assertEqual(tuple, type(response1))
         self.assertEqual(tuple, type(response2))
         self.assertEqual(tuple, type(response3))
@@ -440,7 +434,6 @@ class ExportToAuditTemplate(TestCase):
         exp_error = 'Validation Error. State must have address_line_1, property_name'
         self.assertEqual('error', messages[0])
         self.assertEqual(exp_error, messages[1])
-
 
     @mock.patch('requests.request')
     def test_export_to_audit_template(self, mock_request):
@@ -474,7 +467,6 @@ class ExportToAuditTemplate(TestCase):
         exp = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/1111'}, 'rp_nyc_properties': {}}
         self.assertEqual(exp, response.json())
 
-
     @mock.patch('requests.request')
     def test_batch_export_to_audit_template(self, mock_request):
         """
@@ -485,7 +477,7 @@ class ExportToAuditTemplate(TestCase):
         mock_authenticate_response = mock.Mock()
         mock_authenticate_response.status_code = 200
         mock_authenticate_response.json.return_value = {'token': 'fake token'}
-        
+
         mock_export1_response = mock.Mock()
         mock_export1_response.status_code = 200
         mock_export1_response.json.return_value = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/1111'}, 'rp_nyc_properties': {}}
@@ -495,7 +487,7 @@ class ExportToAuditTemplate(TestCase):
         mock_export2_response.json.return_value = {'rp_buildings': {'BuildingType-1': 'https://fake.gov/rp/buildings/2222'}, 'rp_nyc_properties': {}}
         mock_request.side_effect = [mock_authenticate_response, mock_export1_response, mock_export2_response]
 
-        # check status of audit_template_building_ids 
+        # check status of audit_template_building_ids
         self.assertIsNone(self.state1.audit_template_building_id)
         self.assertIsNone(self.state2.audit_template_building_id)
         self.assertIsNone(self.state3.audit_template_building_id)
@@ -504,7 +496,7 @@ class ExportToAuditTemplate(TestCase):
         results = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id])
         message = results['message']
         self.assertEqual(['error', 'info', 'success'], sorted(list(message.keys())))
-        # refresh data 
+        # refresh data
         self.state1.refresh_from_db()
         self.state2.refresh_from_db()
         self.state3.refresh_from_db()
@@ -526,18 +518,15 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(self.view2.id, details[1]['view_id'])
         self.assertEqual('2222', success['details'][1]['at_building_id'])
         self.assertEqual('2222', self.state2.audit_template_building_id)
-        
+
         details = error['details']
         exp = 'Validation Error. State must have address_line_1, property_name'
         self.assertEqual(self.view3.id, details[0]['view_id'])
         self.assertEqual(exp, details[0]['message'])
         self.assertIsNone(self.state3.audit_template_building_id)
-        
+
         details = info['details']
         exp = 'Existing Audit Template Property'
         self.assertEqual(self.view4.id, details[0]['view_id'])
         self.assertEqual(exp, details[0]['message'])
         self.assertEqual('4444', self.state4.audit_template_building_id)
-
-
-

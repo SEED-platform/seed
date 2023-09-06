@@ -650,7 +650,6 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             org.ubid_threshold = ubid_threshold
 
-
         org.save()
 
         # Update the selected exportable fields.

@@ -871,7 +871,7 @@ a:not([href]) {
       .settings-dropdown {
         padding: 5px;
         border-radius: 5px;
-        border-color: #CCCCCC;
+        border-color: #cccccc;
         width: 100%;
       }
     }
@@ -4879,26 +4879,24 @@ ul.r-list {
     border-color: #dd2c00;
   }
 }
-#export-at-table{
-  .export-summary-row{
-    background:#FFFFFF;
+#export-at-table {
+  .export-summary-row {
+    background: #ffffff;
   }
-  .export-detail-row{
-    background: #F9F9F9;
-    td{
+  .export-detail-row {
+    background: #f9f9f9;
+    td {
       padding: 0 8px;
-  
+
       .export-details {
         max-height: 55px;
         overflow-y: scroll;
         padding: 0 8px !important;
-        div{
+        div {
           padding: 10px;
           margin-bottom: 5px;
         }
       }
     }
-
-}
-
+  }
 }

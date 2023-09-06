@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.export_to_audit_template_modal', [])
                     }, $scope.uploader)
                 })
             }
-            
+
             $scope.cancel = (reload=false) => {
                 $uibModalInstance.close({});
                 if (reload) $state.reload()
