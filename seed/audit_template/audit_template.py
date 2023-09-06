@@ -243,6 +243,11 @@ class AuditTemplate(object):
         )
 
         return etree.tostring(doc, pretty_print=True).decode('utf-8'), []
+    
+    def update_export_results(self, view_id, results, status, **extra_fields):
+        results.setdefault(status, {'count': 0, 'details': []})
+        results[status]['count'] += 1
+        results[status]['details'].append({'view_id': view_id, **extra_fields})
 
 
 @shared_task
@@ -299,18 +304,18 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
 
 @shared_task
 def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
+        audit_template = AuditTemplate(org_id)
         progress_data = ProgressData.from_key(progress_key)
         views = PropertyView.objects.filter(id__in=view_ids).select_related('state')
-        results = {'success': 0, 'info': 0, 'error': 0, 'details': []}
+        results = {}
 
         for view in views:
 
             state = view.state
-            response, messages = AuditTemplate(org_id).export_to_audit_template(state, token)
+            response, messages = audit_template.export_to_audit_template(state, token)
 
             if not response:
-                results[messages[0]] += 1
-                results['details'].append({'view_id': view.id, 'status': messages[0], 'message': messages[1]})
+                audit_template.update_export_results(view.id, results, messages[0], message=messages[1])
                 progress_data.step('Exporting properties to Audit Template...')
 
                 continue
@@ -324,11 +329,9 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
             if at_building_id:
                 state.audit_template_building_id = at_building_id
                 state.save()
-                results['success'] += 1
-                results['details'].append({'view_id': view.id, 'status': 'success', 'at_building_id': at_building_id}) 
+                audit_template.update_export_results(view.id, results, 'success', at_building_id=at_building_id)
             else:
-                results['error'] += 1
-                results['details'].append({'view_id': view.id, 'status': 'error', 'message': 'Unexepcted Response from Audit Template'})
+                audit_template.update_export_results(view.id, results, 'error', message='Unexepcted Response from Audit Template')
 
             progress_data.update_summary(results)
             progress_data.step('Exporting properties to Audit Template...')
