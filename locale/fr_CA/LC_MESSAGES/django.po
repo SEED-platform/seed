@@ -1014,6 +1014,13 @@ msgstr "ID de propriété ESPM"
 msgid "ESPM Username"
 msgstr "Nom d'utilisateur ESPM"
 
+#, fuzzy
+msgid "ESPM_FILE_UPLOAD"
+msgstr "Téléchargement de la feuille de calcul ESPM (xlsx). La feuille de calcul doit contenir une seule propriété."
+
+msgid "ESPM_IMPORT_TEXT"
+msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio Manager (ESPM) ci-dessous: vous pouvez soit télécharger une feuille de calcul de propriétés précédemment téléchargée depuis ESPM, soit vous connecter directement à ESPM pour accéder aux données.\n"
+
 msgid "EUI"
 msgstr "IUE"
 
@@ -1417,6 +1424,9 @@ msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format 
 
 msgid "INVALID_GEOJSON_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.geojson</strong>, et <strong>.json</strong> sont pris en charge."
+
+msgid "INVALID_XLSX_EXTENSION_ALERT"
+msgstr "<strong> Désolé ! < \\/strong > SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong> .xlsx < \\/strong > sont pris en charge.\n"
 
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml</strong> sont pris en charge."
@@ -3345,7 +3355,7 @@ msgid "Upload Portfolio Manager Data"
 msgstr "Télécharger les données du Portfolio Manager"
 
 msgid "Upload Single ESPM Property"
-msgstr "Télécharger une seule propriété ESPM"
+msgstr "Télécharger une propriété ESPM"
 
 msgid "Upload a Spreadsheet"
 msgstr "Télécharger une feuille de calcul"
@@ -3603,6 +3613,9 @@ msgstr "Votre Rôle"
 
 msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
 msgstr "Votre compte SEED n'est associé à aucune organisation. Veuillez contacter un administrateur SEED."
+
+msgid "Your inventory is already synced with your Audit Template account"
+msgstr "Votre inventaire est déjà synchronisé avec votre compte de modèle d'audit"
 
 msgid "Your page could not be located!"
 msgstr "Votre page n'a pas pu être trouvé!"

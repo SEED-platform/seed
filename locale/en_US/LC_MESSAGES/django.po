@@ -1006,6 +1006,12 @@ msgstr "ESPM Property ID"
 msgid "ESPM Username"
 msgstr "ESPM Username"
 
+msgid "ESPM_FILE_UPLOAD"
+msgstr "ESPM Spreadsheet Upload (xlsx). The spreadsheet should contain a single property."
+
+msgid "ESPM_IMPORT_TEXT"
+msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data.\n"
+
 msgid "EUI"
 msgstr "EUI"
 
@@ -1406,6 +1412,9 @@ msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format.
 
 msgid "INVALID_GEOJSON_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
+
+msgid "INVALID_XLSX_EXTENSION_ALERT"
+msgstr "<strong>Sorry!<\\/strong> SEED doesn't currently support that file format. Only <strong>.xlsx<\\/strong> files are supported.\n"
 
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
@@ -3320,7 +3329,7 @@ msgid "Upload Portfolio Manager Data"
 msgstr "Upload Portfolio Manager Data"
 
 msgid "Upload Single ESPM Property"
-msgstr "Upload Single ESPM Property"
+msgstr "Upload ESPM Property"
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
@@ -3578,6 +3587,9 @@ msgstr "Your Role"
 
 msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
 msgstr "Your SEED account is not associated with any organizations. Please contact a SEED administrator."
+
+msgid "Your inventory is already synced with your Audit Template account"
+msgstr "Your inventory is already synced with your Audit Template account"
 
 msgid "Your page could not be located!"
 msgstr "Your page could not be located!"
