@@ -150,11 +150,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
-            [
-                {
-                    'property_view_id': 'integer',
-                }
-            ],
+            {
+                'property_view_ids': ['integer']
+            },
+            description='PropertyView IDs to be exported'
         )
     )
     @has_perm_class('can_modify_data')
@@ -164,7 +163,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         Batch exports properties without Audit Template Building IDs to the linked Audit Template.
         SEED properties will be updated with the returned Audit Template Building ID
         """
-        property_view_ids = request.data
+        property_view_ids = request.data.get('property_view_ids', [])
         at = AuditTemplate(self.get_organization(request))
 
         progress_data = at.batch_export_to_audit_template(property_view_ids)

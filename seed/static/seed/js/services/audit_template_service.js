@@ -74,7 +74,7 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       'batch_get_building_xml_and_update': batch_get_building_xml_and_update,
       'get_buildings': get_buildings,
       'update_building_with_xml': update_building_with_xml,
-      'export_to_audit_template': batch_export_to_audit_template,
+      'batch_export_to_audit_template': batch_export_to_audit_template,
     };
 
     return analyses_factory;
