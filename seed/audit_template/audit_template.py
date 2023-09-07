@@ -113,31 +113,32 @@ class AuditTemplate(object):
         return progress_data.result()
 
     def export_to_audit_template(self, state, token):
-        if state.audit_template_building_id:
-            return None, ['info', 'Existing Audit Template Property']
-
         org = Organization.objects.get(pk=self.org_id)
         url = f'{self.API_URL}/building_sync/upload'
+        display_field = getattr(state, org.property_display_field)
+
+        if state.audit_template_building_id:
+            return None, ['info', f'{display_field}: Existing Audit Template Property']
 
         try:
-            xml_string, messages = self.build_xml(state, org.audit_template_report_type)
+            xml_string, messages = self.build_xml(state, org.audit_template_report_type, display_field)
             if not xml_string:
                 return None, messages
         except Exception as e:
-            return None, ['error', f'Unexpected error creating building xml {e}']
+            return None, ['error', f'{display_field}: Unexpected error creating building xml {e}']
 
         try:
             files = {'audit_file': ('at_export.xml', xml_string)}
             body = {'token': token}
             response = requests.request("POST", url, data=body, files=files)
             if response.status_code != 200:
-                return None, ['error', f'Expected 200 response from Audit Template upload but got {response.status_code}: {response.content}']
+                return None, ['error', f'{display_field}: Expected 200 response from Audit Template upload but got {response.status_code}: {response.content}']
         except Exception as e:
-            return None, ['error', f'Unexpected error from Audit Template: {e}']
+            return None, ['error', f'{display_field}: Unexpected error from Audit Template: {e}']
 
         return response, []
 
-    def validate_state_for_xml(self, state):
+    def validate_state_for_xml(self, state, display_field):
         missing_fields = []
         expected_fields = ['address_line_1', 'city', 'gross_floor_area', 'postal_code', 'property_name', 'state', 'year_built']
         for field in expected_fields:
@@ -146,13 +147,13 @@ class AuditTemplate(object):
 
         if len(missing_fields):
             missing_fields = ', '.join(missing_fields)
-            messages = ['error', f'Validation Error. State must have {missing_fields}']
+            messages = ['error', f'Validation Error. {display_field} must have {missing_fields}']
             return False, messages
 
         return True, []
 
-    def build_xml(self, state, report_type):
-        valid, messages = self.validate_state_for_xml(state)
+    def build_xml(self, state, report_type, display_field):
+        valid, messages = self.validate_state_for_xml(state, display_field)
         if not valid:
             return None, messages
 

@@ -350,6 +350,7 @@ class ExportToAuditTemplate(TestCase):
         self.org.at_organization_token = "fake"
         self.org.audit_template_user = "fake@.com"
         self.org.audit_template_password = "fake"
+        self.org.property_display_field = 'pm_property_id'
         self.org.save()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
@@ -405,10 +406,10 @@ class ExportToAuditTemplate(TestCase):
         Properties must be exported to Audit Template as an XML
         """
         at = AuditTemplate(self.org.id)
-        response1 = at.build_xml(self.state1, 'Demo City Report')
-        response2 = at.build_xml(self.state2, 'Demo City Report')
+        response1 = at.build_xml(self.state1, 'Demo City Report', self.state1.pm_property_id)
+        response2 = at.build_xml(self.state2, 'Demo City Report', self.state2.pm_property_id)
         # property missing required fields
-        response3 = at.build_xml(self.state3, 'Demo City Report')
+        response3 = at.build_xml(self.state3, 'Demo City Report', self.state3.pm_property_id)
 
         self.assertEqual(tuple, type(response1))
         self.assertEqual(tuple, type(response2))
@@ -431,7 +432,7 @@ class ExportToAuditTemplate(TestCase):
         # property missing required fields
         self.assertIsNone(response3[0])
         messages = response3[1]
-        exp_error = 'Validation Error. State must have address_line_1, property_name'
+        exp_error = f'Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name'
         self.assertEqual('error', messages[0])
         self.assertEqual(exp_error, messages[1])
 
@@ -452,13 +453,13 @@ class ExportToAuditTemplate(TestCase):
         # existing property
         response, messages = at.export_to_audit_template(self.state4, token)
         self.assertIsNone(response)
-        exp = ['info', 'Existing Audit Template Property']
+        exp = ['info', f'{self.state4.pm_property_id}: Existing Audit Template Property']
         self.assertEqual(exp, messages)
 
         # invalid property
         response, messages = at.export_to_audit_template(self.state3, token)
         self.assertIsNone(response)
-        exp = ['error', 'Validation Error. State must have address_line_1, property_name']
+        exp = ['error', f'Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name']
         self.assertEqual(exp, messages)
 
         # valid property
@@ -520,13 +521,13 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual('2222', self.state2.audit_template_building_id)
 
         details = error['details']
-        exp = 'Validation Error. State must have address_line_1, property_name'
+        exp = f'Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name'
         self.assertEqual(self.view3.id, details[0]['view_id'])
         self.assertEqual(exp, details[0]['message'])
         self.assertIsNone(self.state3.audit_template_building_id)
 
         details = info['details']
-        exp = 'Existing Audit Template Property'
+        exp = f'{self.state4.pm_property_id}: Existing Audit Template Property'
         self.assertEqual(self.view4.id, details[0]['view_id'])
         self.assertEqual(exp, details[0]['message'])
         self.assertEqual('4444', self.state4.audit_template_building_id)
