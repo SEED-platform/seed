@@ -34,11 +34,15 @@ from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
     ROLE_VIEWER,
+    AccessLevelInstance,
     Organization,
     OrganizationUser
 )
@@ -218,7 +222,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     authz_org_id_kwarg = 'pk'
 
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_owner')
     @action(detail=True, methods=['DELETE'])
     def columns(self, request, pk=None):
         """
@@ -277,6 +281,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(param_import_file_id="import_file_id")
     @action(detail=True, methods=['POST'])
     def column_mappings(self, request, pk=None):
         """
@@ -981,11 +986,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var, addtional_columns=[]):
+    def get_raw_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, addtional_columns=[]):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
             property__organization_id=organization_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
             cycle_id__in=cycles
         ).order_by('id')
         organization = Organization.objects.get(pk=organization_id)
@@ -1047,6 +1054,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {}
         missing_params = []
         error = ''
@@ -1066,7 +1074,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             cycles = self.get_cycles(params['start'], params['end'], pk)
             data = self.get_raw_report_data(
-                pk, cycles, params['x_var'], params['y_var']
+                pk, access_level_instance, cycles, params['x_var'], params['y_var']
             )
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
@@ -1115,6 +1123,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
         params = {}
         missing_params = []
@@ -1141,7 +1150,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             cycles = self.get_cycles(params['start'], params['end'], pk)
             x_var = params['x_var']
             y_var = params['y_var']
-            data = self.get_raw_report_data(pk, cycles, x_var, y_var)
+            data = self.get_raw_report_data(pk, access_level_instance, cycles, x_var, y_var)
             for datum in data:
                 if datum['property_counts']['num_properties_w-data'] != 0:
                     empty = False
@@ -1292,6 +1301,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Export a report as a spreadsheet
         """
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         params = {}
         missing_params = []
         error = ''
@@ -1340,7 +1350,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         cycles = self.get_cycles(params['start'], params['end'], pk)
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         data = self.get_raw_report_data(
-            pk, cycles, params['x_var'], params['y_var'], matching_columns
+            pk, access_level_instance, cycles, params['x_var'], params['y_var'], matching_columns
         )
 
         base_sheet.write(data_row_start, data_col_start, 'ID', bold)
@@ -1443,7 +1453,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             }
         )
 
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_superuser')
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def insert_sample_data(self, request, pk=None):
