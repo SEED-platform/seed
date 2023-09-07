@@ -151,15 +151,6 @@ angular.module('BE.seed.controller.analyses', [])
 
       $scope.is_object = _.isObject;
 
-      $scope.get_display_name = function (inventory_state) {
-        return organization_service.get_inventory_display_value(
-          $scope.org,
-          // NOTE: hardcoding 'property' b/c you can only run analyses on properties
-          'property',
-          inventory_state
-        );
-      };
-
     }
   ])
   .filter('get_run_duration', function () {

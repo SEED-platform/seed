@@ -9,6 +9,8 @@ import time
 from collections import namedtuple
 
 from django.core.files.base import ContentFile
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -20,17 +22,27 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.building_sync.building_sync import BuildingSync
+from seed.data_importer import tasks
+from seed.data_importer.match import save_state_match
+from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
+    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
+    PORTFOLIO_RAW,
+    SEED_DATA_SOURCES,
+    Analysis,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -39,6 +51,7 @@ from seed.models import (
     InventoryDocument,
     Meter,
     Note,
+    Organization,
     Property,
     PropertyAuditLog,
     PropertyMeasure,
@@ -49,9 +62,11 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
+from seed.serializers.analyses import AnalysisSerializer
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
+    PropertyStatePromoteWritableSerializer,
     PropertyStateSerializer,
     PropertyViewAsStateSerializer,
     PropertyViewSerializer,
@@ -285,6 +300,26 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
 
         return exporter.readings_and_column_defs(interval)
+
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def analyses(self, request, pk):
+        organization_id = self.get_organization(request)
+
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+            .distinct().order_by('-id')
+        )
+
+        analyses = []
+        for analysis in analyses_queryset:
+            serialized_analysis = AnalysisSerializer(analysis).data
+            serialized_analysis.update(analysis.get_property_view_info(pk))
+            serialized_analysis.update({'highlights': analysis.get_highlights(pk)})
+            analyses.append(serialized_analysis)
+
+        return {'status': 'success', 'analyses': analyses}
 
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -994,6 +1029,139 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'cycle_id': 'integer',
+                'state': 'object',
+            },
+            required=['cycle_id', 'state']
+        ),
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def create(self, request):
+        """
+        Create a propertyState and propertyView via promote for given cycle
+        """
+        org_id = self.get_organization(self.request)
+        data = request.data
+        # get state data
+        property_state_data = data.get('state', None)
+        cycle_pk = data.get('cycle_id', None)
+
+        if cycle_pk is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if property_state_data is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Missing required parameter state',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # ensure that state organization_id is set to org in the request
+        state_org_id = property_state_data.get('organization_id', org_id)
+        if state_org_id != org_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'State organization_id does not match request organization_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        property_state_data['organization_id'] = state_org_id
+
+        # get cycle
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid cycle_id',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # set empty strings to None
+        try:
+            for key, val in property_state_data.items():
+                if val == '':
+                    property_state_data[key] = None
+        except AttributeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # extra data fields that do not match existing columns will not be imported
+        extra_data_columns = list(Column.objects.filter(
+            organization_id=org_id,
+            table_name='PropertyState',
+            is_extra_data=True,
+            derived_column_id=None
+        ).values_list('column_name', flat=True))
+
+        extra_data = property_state_data.get('extra_data', {})
+        new_data = {}
+
+        for k, v in extra_data.items():
+            # keep only those that match a column
+            if k in extra_data_columns:
+                new_data[k] = v
+
+        property_state_data['extra_data'] = new_data
+
+        # this serializer is meant to be used by a `create` action
+        property_state_serializer = PropertyStatePromoteWritableSerializer(
+            data=property_state_data
+        )
+
+        try:
+            valid = property_state_serializer.is_valid()
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state: {}'.format(str(e))
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if valid:
+            # create the new property state, and perform an initial save
+            new_state = property_state_serializer.save()
+            # set `merge_state` to new, rather than unknown
+            new_state.merge_state = MERGE_STATE_NEW
+
+            # Log this appropriately - "Import Creation" ?
+            PropertyAuditLog.objects.create(organization_id=org_id,
+                                            parent1=None,
+                                            parent2=None,
+                                            parent_state1=None,
+                                            parent_state2=None,
+                                            state=new_state,
+                                            name='Import Creation',
+                                            description='Creation from API',
+                                            import_filename=None,
+                                            record_type=AUDIT_USER_CREATE)
+
+            # promote to view
+            view = new_state.promote(cycle)
+
+            return JsonResponse({
+                'status': 'success',
+                'property_view_id': view.id,
+                'property_state_id': new_state.id,
+                'property_id': view.property.id,
+                'view': PropertyViewSerializer(view).data
+            }, encoder=PintJSONEncoder, status=status.HTTP_201_CREATED)
+
+        else:
+            # invalid request
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid state: {}'.format(property_state_serializer.errors)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
@@ -1426,6 +1594,200 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse({
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(
+                description='ID of the property view to update'
+            ),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='ID of the cycle of the property view'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'mapping_profile_id',
+                required=True,
+                description='ID of the column mapping profile to use'
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='ESPM property report to use (in XLSX format)',
+            ),
+        ],
+        request_body=no_body,
+    )
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def update_with_espm(self, request, pk):
+        """Update an existing PropertyView with an exported singular ESPM file.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Must pass file in as a multipart/form-data request'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        the_file = request.data['file']
+        cycle_pk = request.query_params.get('cycle_id', None)
+        org_id = self.get_organization(self.request)
+        org_inst = Organization.objects.get(pk=org_id)
+
+        # get mapping profile (ensure it is part of the org)
+        mapping_profile_id = request.query_params.get('mapping_profile_id', None)
+        if not mapping_profile_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Must provide a column mapping profile'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        column_mapping_profile = org_inst.columnmappingprofile_set.filter(
+            pk=mapping_profile_id
+        )
+        if len(column_mapping_profile) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Could not find ESPM column mapping profile'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif len(column_mapping_profile) > 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"Found multiple ESPM column mapping profiles, found {len(column_mapping_profile)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        column_mapping_profile = column_mapping_profile[0]
+
+        try:
+            Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cycle ID is missing or Cycle does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # note that this is a "safe" query b/c we should have already returned
+            # if the cycle was not within the user's organization
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(pk=pk, cycle_id=cycle_pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'property view does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # create a new "datafile" object to store the file
+        import_record, _ = ImportRecord.objects.get_or_create(
+            name='Manual ESPM Records',
+            owner=request.user,
+            last_modified_by=request.user,
+            super_organization_id=org_id
+        )
+
+        filename = the_file.name
+        path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
+
+        # Get a unique filename using the get_available_name method in FileSystemStorage
+        s = FileSystemStorage()
+        path = s.get_available_name(path)
+
+        # verify the directory exists
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        # save the file
+        with open(path, 'wb+') as temp_file:
+            for chunk in the_file.chunks():
+                temp_file.write(chunk)
+
+        import_file = ImportFile.objects.create(
+            cycle_id=cycle_pk,
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=path,
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
+            source_program='PortfolioManager',
+            source_program_version='1.0',
+        )
+
+        # save the raw data, but do it synchronously in the foreground
+        tasks.save_raw_espm_data_synchronous(import_file.pk)
+
+        # verify that there is only one property in the file
+        import_file.refresh_from_db()
+        if import_file.num_rows != 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"File must contain exactly one property, found {import_file.num_rows or 0} properties"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # create the column mappings
+        Column.retrieve_mapping_columns(import_file.pk)
+
+        # assign the mappings to the import file id
+        Column.create_mappings(column_mapping_profile.mappings, org_inst, request.user, import_file.pk)
+
+        # call the mapping process - but do this in the foreground, not asynchronously.
+        tasks.map_data_synchronous(import_file.pk)
+
+        # The data should now be mapped, but since we called the task, we have the IDs of the
+        # mapped files, so query for the files.
+        new_property_state = PropertyState.objects.filter(
+            organization_id=org_id,
+            import_file_id=import_file.pk,
+            data_state=DATA_STATE_MAPPING,
+        )
+        if len(new_property_state) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Could not find newly mapped property state"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        elif len(new_property_state) > 1:
+            return JsonResponse({
+                'success': False,
+                'message': f"Found multiple newly mapped property states, found {len(new_property_state)}"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        new_property_state = new_property_state[0]
+
+        # retrieve the column merge priorities and then save the update new property state.
+        # This is called merge protection on the front end.
+        priorities = Column.retrieve_priorities(org_id)
+        merged_state = save_state_match(property_view.state, new_property_state, priorities)
+
+        # save the merged state to the latest property view
+        property_view.state = merged_state
+        property_view.save()
+
+        # now save the meters, need a progress_data object to pass to the tasks, although
+        # not used.
+        progress_data = ProgressData(func_name='meter_import', unique_id=import_file.pk)
+        # -- Start --
+        # For now, we are duplicating the methods that are called in the tasks in order
+        # to circumvent the celery background task management (i.e., run in foreground)
+        meters_parser = MetersParser.factory(import_file.local_file, org_id)
+        meters_and_readings = meters_parser.meter_and_reading_objs
+        for meter_readings in meters_and_readings:
+            _save_pm_meter_usage_data_task(meter_readings, import_file.id, progress_data.key)
+        # -- End -- of duplicate (and simplified) meter import methods
+        progress_data.delete()
+
+        if merged_state:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully updated property with ESPM file',
+                'data': {
+                    'status': 'success',
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                },
+            }, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': "Could not process ESPM file"
             }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
