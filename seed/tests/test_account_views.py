@@ -97,8 +97,9 @@ class AccountsViewTests(TestCase):
             'at_organization_token': '',
             'audit_template_user': '',
             'audit_template_password': '',
+            'audit_template_report_type': 'Demo City Report',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1.0
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -196,8 +197,9 @@ class AccountsViewTests(TestCase):
                 'at_organization_token': '',
                 'audit_template_user': '',
                 'audit_template_password': '',
+                'audit_template_report_type': 'Demo City Report',
                 'salesforce_enabled': False,
-                'ubid_threshold': 1
+                'ubid_threshold': 1.0
             }],
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -226,8 +228,9 @@ class AccountsViewTests(TestCase):
             'at_organization_token': '',
             'audit_template_user': '',
             'audit_template_password': '',
+            'audit_template_report_type': 'Demo City Report',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1.0
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
