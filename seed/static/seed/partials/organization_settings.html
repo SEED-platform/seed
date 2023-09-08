@@ -168,7 +168,7 @@
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
-                                <p>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
+                                <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
                                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
                                     <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
                                 </select>

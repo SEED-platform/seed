@@ -199,6 +199,9 @@ msgstr "Adresse Ligne 1 (Propriété)"
 msgid "Address Line 1 (Tax Lot)"
 msgstr "Ligne d'adresse 1 (lot d'impôt)"
 
+msgid "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+msgstr "Ligne d'adresse 1, ville, superficie brute, code postal, nom de la propriété, état, année de construction"
+
 msgid "Address Line 2 (Property)"
 msgstr "Adresse Ligne 2 (Propriété)"
 
@@ -282,6 +285,9 @@ msgstr "Audit Template jeton d'organisation"
 
 msgid "Audit Template Password"
 msgstr "Audit Template le mot de passe"
+
+msgid "Audit Template Report Type"
+msgstr "Type de rapport du modèle d'audit"
 
 msgid "Audit Template Upload Results"
 msgstr "Résultats du téléchargement du modèle d'audit"
@@ -1115,6 +1121,9 @@ msgstr "Erreur lors du traitement des données"
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
 
+msgid "Existing Audit Template Properties (skipped)"
+msgstr "Propriétés du modèle d'audit existant (ignoré)"
+
 msgid "Existing Cycles"
 msgstr "Cycles existants"
 
@@ -1148,14 +1157,29 @@ msgstr "Exporter GeoJSON"
 msgid "Export Name"
 msgstr "Nom d'exportation"
 
+msgid "Export Results"
+msgstr "Exporter les résultats"
+
 msgid "Export Selected"
 msgstr "Exporter la sélection"
 
 msgid "Export Spreadsheet"
 msgstr "Exporter la feuille de calcul"
 
+msgid "Export properties to your Audit Template account"
+msgstr "Exporter les propriétés vers votre compte de modèle d'audit"
+
+msgid "Export to Audit Template"
+msgstr "Exporter vers un modèle d'audit"
+
 msgid "Export your Properties and Tax Lots"
 msgstr "Exportez vos propriétés et vos lots d'impôt"
+
+msgid "Exporting properties to your Audit Template account"
+msgstr "Exporter des propriétés vers votre compte de modèle d'audit"
+
+msgid "Exporting selected properties..."
+msgstr "Exportation des propriétés sélectionnées..."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -2087,6 +2111,9 @@ msgstr "Organisations que je gère"
 msgid "Organizations:"
 msgstr "Organisations:"
 
+msgid "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+msgstr "D'autres champs peuvent être mis à jour manuellement sur le modèle d'audit après l'exportation. Les propriétés avec des ID de bâtiment de modèle d'audit seront ignorées"
+
 msgid "Owner"
 msgstr "Propriétaire"
 
@@ -2563,6 +2590,9 @@ msgstr "Plate-forme SEED"
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
 
+msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
+msgstr "Les propriétés SEED seront exportées vers le modèle d'audit avec le type de rapport d'organisation."
+
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "Unique nom de champ pour Benchmark ID SEED"
 
@@ -2989,6 +3019,9 @@ msgstr "Succès"
 msgid "Success!"
 msgstr "Succès!"
 
+msgid "Successful Exports"
+msgstr "Des exportations réussies"
+
 msgid "Successful upload!"
 msgstr "Téléchargement réussi!"
 
@@ -3115,6 +3148,9 @@ msgstr "La comparaison repose sur l'indice de Jaccard, qui varie de 0.0 (aucune 
 
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "L'e-mail prend en charge les modèles d'accolades pour extraire les données de l'enregistrement de propriété SEED. Par exemple, l'extrait ci-dessous remplacera la latitude et la longitude de l'enregistrement SEED. D'autres champs peuvent être ajoutés, mais assurez-vous d'utiliser le nom du champ SEED et non le nom d'affichage."
+
+msgid "The following Property fields are required."
+msgstr "Les champs de propriété suivants sont obligatoires."
 
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "Les actions suivantes ont des effets destructeurs, veuillez lire tous les avertissements après avoir cliqué sur une option."
@@ -3307,6 +3343,9 @@ msgstr "Unités"
 
 msgid "Unknown"
 msgstr "Inconnue"
+
+msgid "Unsuccessful Exports"
+msgstr "Exportations infructueuses"
 
 msgid "Until last date of"
 msgstr "Jusqu'à la dernière date de"

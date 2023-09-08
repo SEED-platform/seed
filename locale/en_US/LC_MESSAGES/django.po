@@ -198,6 +198,9 @@ msgstr "Address Line 1 (Property)"
 msgid "Address Line 1 (Tax Lot)"
 msgstr "Address Line 1 (Tax Lot)"
 
+msgid "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+msgstr "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+
 msgid "Address Line 2 (Property)"
 msgstr "Address Line 2 (Property)"
 
@@ -281,6 +284,9 @@ msgstr "Audit Template Organization Token"
 
 msgid "Audit Template Password"
 msgstr "Audit Template Password"
+
+msgid "Audit Template Report Type"
+msgstr "Audit Template Report Type"
 
 msgid "Audit Template Upload Results"
 msgstr "Audit Template Upload Results"
@@ -1105,6 +1111,9 @@ msgstr "Error Processing Data"
 msgid "Example Usage"
 msgstr "Example Usage"
 
+msgid "Existing Audit Template Properties (skipped)"
+msgstr "Existing Audit Template Properties (skipped)"
+
 msgid "Existing Cycles"
 msgstr "Existing Cycles"
 
@@ -1138,14 +1147,29 @@ msgstr "Export GeoJSON"
 msgid "Export Name"
 msgstr "Export Name"
 
+msgid "Export Results"
+msgstr "Export Results"
+
 msgid "Export Selected"
 msgstr "Export Selected"
 
 msgid "Export Spreadsheet"
 msgstr "Export Spreadsheet"
 
+msgid "Export properties to your Audit Template account"
+msgstr "Export properties to your Audit Template account"
+
+msgid "Export to Audit Template"
+msgstr "Export to Audit Template"
+
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
+
+msgid "Exporting properties to your Audit Template account"
+msgstr "Exporting properties to your Audit Template account"
+
+msgid "Exporting selected properties..."
+msgstr "Exporting selected properties..."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -2072,6 +2096,9 @@ msgstr "Organizations I Manage"
 msgid "Organizations:"
 msgstr "Organizations:"
 
+msgid "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+msgstr "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+
 msgid "Owner"
 msgstr "Owner"
 
@@ -2543,6 +2570,9 @@ msgstr "SEED Platform"
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
 
+msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
+msgstr "SEED Properties will be exported to Audit Template with the Organization Report Type"
+
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "SEED Unique Benchmark ID Fieldname"
 
@@ -2965,6 +2995,9 @@ msgstr "Success"
 msgid "Success!"
 msgstr "Success!"
 
+msgid "Successful Exports"
+msgstr "Successful Exports"
+
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
@@ -3091,6 +3124,9 @@ msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no ov
 
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
+
+msgid "The following Property fields are required."
+msgstr "The following Property fields are required."
 
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
@@ -3282,6 +3318,9 @@ msgstr "Units"
 
 msgid "Unknown"
 msgstr "Unknown"
+
+msgid "Unsuccessful Exports"
+msgstr "Unsuccessful Exports"
 
 msgid "Until last date of"
 msgstr "Until last date of"
