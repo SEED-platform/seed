@@ -6,27 +6,22 @@ angular.module('BE.seed.controller.refresh_metadata_modal', []).controller('refr
     '$scope',
     '$state',
     '$uibModalInstance',
-    'ids',
-    'property_states',
-    'taxlot_states',
-    'inventory_type',
+    'property_views',
+    'taxlot_views',
     'inventory_service',
     'uploader_service',
     function(
         $scope,
         $state,
         $uibModalInstance,
-        ids,
-        property_states,
-        taxlot_states,
-        inventory_type,
+        property_views,
+        taxlot_views,
         inventory_service,
         uploader_service,
 
     ) {
-        const states = property_states || taxlot_states
-        $scope.id_count = ids.length
-        $scope.inventory_type = inventory_type
+        $scope.property_views = property_views;
+        $scope.taxlot_views = taxlot_views;
         $scope.refresh_progress = {
             progress: 0,
             status_message: '',
@@ -41,7 +36,7 @@ angular.module('BE.seed.controller.refresh_metadata_modal', []).controller('refr
                     function () { $scope.refresh_page()},
                     function () { },
                     $scope.refresh_progress);
-                return inventory_service.refresh_metadata(ids, states, inventory_type, data.data.progress_key);
+                return inventory_service.refresh_metadata(property_views, taxlot_views, data.data.progress_key);
             })
         }
 

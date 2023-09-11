@@ -610,10 +610,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Kick off celery task to refresh metadata of selected inventory
         """
-        ids = request.data.get('ids')
-        states = request.data.get('states')
-        inventory_type = request.data.get('inventory_type')
+        property_view_ids = request.data.get('property_views')
+        taxlot_view_ids = request.data.get('taxlot_views')
         progress_key = request.data.get('progress_key')
 
-        update_inventory_metadata.subtask([ids, states, inventory_type, progress_key]).apply_async()
+        update_inventory_metadata.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
         return
