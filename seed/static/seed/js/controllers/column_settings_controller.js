@@ -120,6 +120,18 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+
+      $scope.matching_status = function(column) {
+        if (column.is_extra_data) {
+          return 'ineligible'
+          // still need initial matching criteria
+        } else if ($scope.org.inventory_count && column.is_matching_criteria) {
+          return 'locked'
+        } else {
+          return 'eligible'
+        }
+      }
+
       $scope.change_recognize_empty = function (column) {
         column.recognize_empty = !column.recognize_empty;
         $scope.setModified();

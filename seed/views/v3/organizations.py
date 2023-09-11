@@ -159,6 +159,7 @@ def _dict_org(request, organizations):
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
+            'inventory_count': o.property_set.count() + o.taxlot_set.count()
         }
         orgs.append(org)
 
