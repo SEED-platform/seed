@@ -58,7 +58,7 @@ geojson==2.5.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
-buildingsync-asset-extractor==0.1.12
+buildingsync-asset-extractor==v0.1.14
 
 # Salesforce Integration
 seed-salesforce==0.1.0

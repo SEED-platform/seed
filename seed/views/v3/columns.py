@@ -115,7 +115,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
     @api_endpoint_class
     @ajax_request_class
     def create(self, request):
-        self.get_organization(self.request)
+        org_id = self.get_organization(self.request)
 
         table_name = self.request.data.get("table_name")
         if table_name != "PropertyState" and table_name != "TaxLotState":
@@ -125,6 +125,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # set request data organization_id to org_id just in case it is not set or incorrectly set
+            self.request.data['organization_id'] = org_id
+
             new_column = Column.objects.create(
                 is_extra_data=True,
                 **self.request.data

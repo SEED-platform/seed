@@ -611,6 +611,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def local_file(self):
+        """This method is used to create a copy of a remote file locally. We shouldn't need to use
+        this unless we start storing files remotely and we need to save locally to parse. If that
+        is the case, then we should handle the removal of the temp files otherwise these can add up
+        to a lot of storage space.
+        """
         if not hasattr(self, '_local_file'):
             temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):
