@@ -112,7 +112,9 @@ def import_cejst():
         'census_tract': {'name': 'Census tract 2010 ID', 'loc': None},
         'dac': {'name': 'Identified as disadvantaged', 'loc': None},
         'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
-        'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None}
+        'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None},
+        'low_income': {'name': 'Is low income?', 'loc': None},
+        'share_neighbors_disadvantaged': {'name': 'Share of neighbors that are identified as disadvantaged', 'loc': None}
     }
 
     book = open_workbook(CEJST_DATA_PATH)
@@ -123,17 +125,28 @@ def import_cejst():
                 header['loc'] = col_index
                 break
     errors = []
+
+    print(f" HEADERS: {headers}")
     for row_index in range(1, sheet.nrows):
         try:
             burden_percent = None
             if sheet.cell(row_index, headers['energy_burden_percent']['loc']).value != '':
                 burden_percent = sheet.cell(row_index, headers['energy_burden_percent']['loc']).value
 
+            share_neighbors_dac = None
+            if sheet.cell(row_index, headers['share_neighbors_disadvantaged']['loc']).value != '':
+                share_neighbors_dac = sheet.cell(row_index, headers['share_neighbors_disadvantaged']['loc']).value
+            low_income = False
+            if sheet.cell(row_index, headers['low_income']['loc']).value != '':
+                low_income = sheet.cell(row_index, headers['low_income']['loc']).value
+
             obj, created = EeejCejst.objects.update_or_create(
                 census_tract_geoid=sheet.cell(row_index, headers['census_tract']['loc']).value,
                 dac=sheet.cell(row_index, headers['dac']['loc']).value,
                 energy_burden_low_income=sheet.cell(row_index, headers['energy_burden_low_income']['loc']).value,
-                energy_burden_percent=burden_percent
+                energy_burden_percent=burden_percent,
+                low_income=low_income,
+                share_neighbors_disadvantaged=share_neighbors_dac
             )
         except IntegrityError as e:
             errors.append("EEEJ CEJST Row already exists: {}. error: {}".format(row_index, str(e)))

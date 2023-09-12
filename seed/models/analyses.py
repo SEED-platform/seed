@@ -106,15 +106,17 @@ class Analysis(models.Model):
         # EEEJ
         elif self.service == self.EEEJ:
             tract = results.get('Census Tract')
-            value = 'N/A'
-            if tract is not None:
-                value = tract
+            tract = 'N/A' if tract is None else tract
+
             dac = results.get('DAC')
-            if dac is None:
-                dac = 'N/A'
+            dac = 'N/A' if dac is None else dac
+
+            low_income = results.get('Low Income')
+            low_income = 'N/A' if low_income is None else low_income
             return [
-                {'name': 'Census Tract', 'value': value},
-                {'name': 'DAC', 'value': dac}
+                {'name': 'Census Tract', 'value': tract},
+                {'name': 'DAC', 'value': dac},
+                {'name': 'Low Income?', 'value': low_income}
             ]
 
         # BETTER
