@@ -4872,3 +4872,16 @@ ul.r-list {
     border-color: #dd2c00;
   }
 }
+
+.or-text {
+  font-size: 1.3em;
+  text-align: center;
+}
+
+.modal-content-section {
+  padding: 1em;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+  }
+}

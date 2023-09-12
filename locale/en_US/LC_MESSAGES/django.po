@@ -282,6 +282,9 @@ msgstr "Audit Template Organization Token"
 msgid "Audit Template Password"
 msgstr "Audit Template Password"
 
+msgid "Audit Template Upload Results"
+msgstr "Audit Template Upload Results"
+
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Auditing"
@@ -569,6 +572,9 @@ msgstr "Configuration"
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
 msgstr "Confirm"
+
+msgid "Confirm Audit Template Building Import?"
+msgstr "Confirm Audit Template Building Import?"
 
 msgid "Confirm Save Mappings?"
 msgstr "Confirm Save Mappings?"
@@ -991,6 +997,15 @@ msgstr "----Choose energy type----"
 msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
 msgstr "----Change display unit----"
 
+msgid "ESPM Password"
+msgstr "ESPM Password"
+
+msgid "ESPM Property ID"
+msgstr "ESPM Property ID"
+
+msgid "ESPM Username"
+msgstr "ESPM Username"
+
 msgid "EUI"
 msgstr "EUI"
 
@@ -1143,6 +1158,9 @@ msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <str
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
+
+msgid "Fetching your buildings from Audit Template..."
+msgstr "Fetching your buildings from Audit Template..."
 
 msgid "Field"
 msgstr "Field"
@@ -1416,8 +1434,14 @@ msgstr "Ignored tax lot duplicates within the import file"
 msgid "Import Access Level Instances"
 msgstr "Import Access Level Instances"
 
+msgid "Import Audit Template Buildings"
+msgstr "Import Audit Template Buildings"
+
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
+
+msgid "Import directly from ESPM"
+msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
@@ -2753,6 +2777,9 @@ msgstr "Select All Columns"
 msgid "Select None"
 msgstr "Select None"
 
+msgid "Select Properties to Update"
+msgstr "Select Properties to Update"
+
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
 
@@ -3086,6 +3113,9 @@ msgstr "There was an error loading the page"
 msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
 msgstr "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
 
+msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
+msgstr "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
+
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
 
@@ -3259,11 +3289,20 @@ msgstr "Update Salesforce"
 msgid "Update UBID"
 msgstr "Update UBID"
 
+msgid "Update with Audit Template"
+msgstr "Update with Audit Template"
+
 msgid "Update with BuildingSync"
 msgstr "Update with BuildingSync"
 
+msgid "Update with ESPM"
+msgstr "Update with ESPM"
+
 msgid "Updated"
 msgstr "Updated"
+
+msgid "Updating selected properties..."
+msgstr "Updating selected properties..."
 
 msgid "Upload Access Level Instances"
 msgstr "Upload Access Level Instances"
@@ -3279,6 +3318,9 @@ msgstr "Upload Green Button Data"
 
 msgid "Upload Portfolio Manager Data"
 msgstr "Upload Portfolio Manager Data"
+
+msgid "Upload Single ESPM Property"
+msgstr "Upload Single ESPM Property"
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
