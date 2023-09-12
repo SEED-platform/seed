@@ -657,7 +657,7 @@
     "Number of decimal places to display": "Nombre de décimales à afficher",
     "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS": "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1<\/strong> propriété} other{<strong>#<\/strong> propriétés}} et {num_taxlots,plural,one{<strong>1<\/strong>lot d'impôt} other{<strong>#<\/strong> lots d'impôt}}?",
     "OR": "OU",
-    "ORG_MATCH_MERGE_LINK_WARNING": "AVERTISSEMENT: vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Les enregistrements de chaque cycle seront réévalués pour déterminer s'il existe des correspondances et, le cas échéant, elles seront automatiquement fusionnées. Ensuite, les enregistrements de plusieurs cycles seront réévalués afin de mettre à jour les liens ou associations de propriété et de lot de taxe. Si vous continuez, vous pouvez d'abord visualiser les modifications en attente avant de les valider.",
+    "ORG_MATCH_MERGE_LINK_WARNING": "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire.",
     "OVERWRITE_COLUMN_DATA_QUESTION": "Écraser les données?",
     "Occupied Floor Area": "Surface occupée",
     "Only Show Populated Columns": "Afficher uniquement les colonnes remplies",

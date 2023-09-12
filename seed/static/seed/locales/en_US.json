@@ -657,7 +657,7 @@
     "Number of decimal places to display": "Number of decimal places to display",
     "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS": "Are you sure you want to delete {num_properties,plural, one{<strong>1<\/strong> property} other{<strong>#<\/strong> properties}} and {num_taxlots,plural,one{<strong>1<\/strong> tax lot} other{<strong>#<\/strong> tax lots}}?",
     "OR": "OR",
-    "ORG_MATCH_MERGE_LINK_WARNING": "WARNING: You have modified the criteria that your organization's data will be matched and merged against.  Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.  Then the records across multiple cycles will be reevaluated to update property and taxlot links or associations.  If you continue you may first preview the pending changes before committing.",
+    "ORG_MATCH_MERGE_LINK_WARNING": "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory.",
     "OVERWRITE_COLUMN_DATA_QUESTION": "Overwrite data?",
     "Occupied Floor Area": "Occupied Floor Area",
     "Only Show Populated Columns": "Only Show Populated Columns",
