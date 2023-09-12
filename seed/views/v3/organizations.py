@@ -8,10 +8,8 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from random import randint
 
 import dateutil
-from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
