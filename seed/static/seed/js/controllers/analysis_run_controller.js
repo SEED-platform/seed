@@ -53,6 +53,7 @@ angular.module('BE.seed.controller.analysis_run', [])
       };
 
       $scope.get_display_name = function (inventory_state) {
+        console.log('prop state: ', inventory_state);
         return organization_service.get_inventory_display_value(
           $scope.org,
           // NOTE: hardcoding 'property' b/c you can only run analyses on properties
