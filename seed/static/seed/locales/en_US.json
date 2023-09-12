@@ -21,6 +21,7 @@
     "AH_FILE_TYPES_SUPPORTED": "File types supported: .csv, .xls, and .xlsx.",
     "ALSO_DELETE_ANALYSES": "Also delete {num,plural, one{1 analysis} other{# analyses}}.",
     "ALSO_DELETE_BATCH_ANALYSES": "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}.",
+    "ANALYSIS_DESCRIPTION_EEEJ": "The EEEJ Analysis uses locations to identify each property's 2010 census tract. Based on census tract, disadvantaged community classification and energy burden information can be retrieved from the CEJST dataset. The number of affordable housing locations is retrieved from HUD datasets. Location is used to generate a link to view an EJScreen Report providing more demographic indicators.",
     "AND": "AND",
     "API Documentation": "API Documentation",
     "API Key": "API Key",

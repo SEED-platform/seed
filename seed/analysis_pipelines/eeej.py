@@ -446,7 +446,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
             continue
 
         analysis_property_view.parsed_results = {
-            'Census Tract': results[analysis_property_view.id]['census_tract'],
+            '2010 Census Tract': results[analysis_property_view.id]['census_tract'],
             'Latitude': results[analysis_property_view.id]['latitude'],
             'Longitude': results[analysis_property_view.id]['longitude'],
             'DAC': results[analysis_property_view.id]['dac'],

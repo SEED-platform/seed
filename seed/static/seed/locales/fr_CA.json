@@ -21,6 +21,7 @@
     "AH_FILE_TYPES_SUPPORTED": "Types de fichiers pris en charge: .csv, .xls et .xlsx.",
     "ALSO_DELETE_ANALYSES": "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} .",
     "ALSO_DELETE_BATCH_ANALYSES": "Supprimez également {num,plural, one{ 1 analyse de lot associée } other{# analyses de lot associées }} .",
+    "ANALYSIS_DESCRIPTION_EEEJ": "L'analyse EEEJ utilise l'adresse de chaque propriété pour identifier le secteur de recensement de 2010. Sur la base des secteurs de recensement, la classification des communautés défavorisées et les informations sur la charge énergétique peuvent être extraites de l'ensemble de données CEJST. Le nombre de logements abordables est extrait des ensembles de données HUD. L'emplacement est utilisé pour générer un lien permettant d'afficher un rapport EJScreen fournissant davantage d'indicateurs démographiques.",
     "AND": "ET",
     "API Documentation": "Documentation de l'API",
     "API Key": "Clé API",
