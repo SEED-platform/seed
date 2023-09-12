@@ -50,6 +50,10 @@ angular.module('BE.seed.controller.column_settings', [])
 
       var originalColumns = angular.copy(columns);
       $scope.columns = columns;
+      const initial_matching_ids = columns.reduce((acc, cur) => {
+        cur.is_matching_criteria && acc.push(cur.id)
+        return acc;
+      }, [])
       var diff = {};
 
       $scope.filter_params = {};
@@ -122,14 +126,9 @@ angular.module('BE.seed.controller.column_settings', [])
 
 
       $scope.matching_status = function(column) {
-        if (column.is_extra_data) {
-          return 'ineligible'
-          // still need initial matching criteria
-        } else if ($scope.org.inventory_count && column.is_matching_criteria) {
-          return 'locked'
-        } else {
-          return 'eligible'
-        }
+        if (column.is_extra_data) return 'ineligible';
+        if ($scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
+        return 'eligible';
       }
 
       $scope.change_recognize_empty = function (column) {
