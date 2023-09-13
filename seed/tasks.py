@@ -6,6 +6,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import absolute_import
 
+import itertools
 import math
 import sys
 from datetime import datetime
@@ -445,35 +446,30 @@ def sync_salesforce(org_id):
 
 
 @shared_task
-def update_inventory_metadata(ids, states, inventory_type, progress_key):
+def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
     now = datetime.now(pytz.UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
-    id_count = len(ids)
+    id_count = len(property_view_ids) + len(taxlot_view_ids)
     batch_size = math.ceil(id_count / 100)
 
-    # Find related Properties and PropertyStates
-    if inventory_type == 'properties':
-        properties = Property.objects.filter(id__in=ids)
-        states = PropertyState.objects.filter(id__in=states)
-        inventory = list(properties) + list(states)
+    property_views = PropertyView.objects.filter(id__in=property_view_ids).prefetch_related("state", "property")
+    taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids).prefetch_related("state", "taxlot")
 
-    elif inventory_type == 'taxlots':
-        taxlots = TaxLot.objects.filter(id__in=ids)
-        states = TaxLotState.objects.filter(id__in=states)
-        inventory = list(taxlots) + list(states)
+    with transaction.atomic():
+        for idx, view in enumerate(itertools.chain(property_views, taxlot_views)):
+            view.state.updated = now
+            view.state.save()
 
-    else:
-        return
+            if isinstance(view, PropertyView):
+                view.property.update = now
+                view.property.save()
+            else:
+                view.taxlot.update = now
+                view.taxlot.save()
 
-    # Iterates across Properties (or Taxlots) and -States and refreshes each 'updated' attribute
-    # Updating Properties (or Taxlots)
-    # Updating -States for UI feedback on inventory list
-    for idx, state in enumerate(inventory):
-        state.updated = now
-        state.save()
-        if batch_size > 0 and idx % batch_size == 0:
-            progress_data.step(f'Refreshing ({idx}/{id_count})')
+            if batch_size > 0 and idx % batch_size == 0:
+                progress_data.step(f'Refreshing ({idx}/{id_count})')
 
     progress_data.finish_with_success()
     return progress_data.result()['progress']
