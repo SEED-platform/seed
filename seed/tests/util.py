@@ -185,14 +185,14 @@ class AccessLevelBaseTestCase(TestCase):
 class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
-    def set_up(self, import_file_source_type):
+    def set_up(self, import_file_source_type, user_name='test_user@demo.com', user_password='test_pass'):
         # default_values
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        if not User.objects.filter(username='test_user@demo.com').exists():
-            user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        if not User.objects.filter(username=user_name).exists():
+            user = User.objects.create_user(user_name, password=user_password)
         else:
-            user = User.objects.get(username='test_user@demo.com')
+            user = User.objects.get(username=user_name)
 
         org, _, _ = create_organization(user, "test-organization-a")
 
