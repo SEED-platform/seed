@@ -73,13 +73,17 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
-        loc_data_by_property_view[property_view.id] = {'tract': None, 'location': None}
+        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'location': None}
         # census tract already computed? (also check that we have lat/lon too)
         if TRACT_FIELDNAME in property_view.state.extra_data.keys():
             loc_data_by_property_view[property_view.id]['tract'] = property_view.state.extra_data[TRACT_FIELDNAME]
             if not loc_data_by_property_view[property_view.id]['tract'] or not property_view.state.latitude or not property_view.state.longitude:
                 # reset to None if blank
                 loc_data_by_property_view[property_view.id]['tract'] = None
+            else:
+                # also store latitude and longitude
+                loc_data_by_property_view[property_view.id]['latitude'] = property_view.state.latitude
+                loc_data_by_property_view[property_view.id]['longitude'] = property_view.state.longitude
 
         if loc_data_by_property_view[property_view.id]['tract'] is None:
             # try to calculate it
@@ -204,6 +208,8 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
         longitude = None
         if loc_data_by_analysis_property_view[apv.id]['tract'] is not None:
             tract = loc_data_by_analysis_property_view[apv.id]['tract']
+            longitude = loc_data_by_analysis_property_view[apv.id]['longitude']
+            latitude = loc_data_by_analysis_property_view[apv.id]['latitude']
         else:
             # fetch census tract from https://geocoding.geo.census.gov/
             tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[apv.id]['location'])
@@ -246,6 +252,8 @@ def _get_ejscreen_reports(results_by_apv, analysis_property_views):
         try:
             if apv.id not in results_by_apv or not results_by_apv[apv.id]['latitude'] or not results_by_apv[apv.id]['longitude']:
                 # we cannot get report b/c we don't have lat/lng
+                if apv.id not in errors_by_apv_id:
+                    errors_by_apv_id[apv.id] = []
                 errors_by_apv_id[apv.id].append('Cannot retrieve EJ Screen report URL without latitude and longitude values')
                 continue
 
@@ -256,6 +264,8 @@ def _get_ejscreen_reports(results_by_apv, analysis_property_views):
             results_by_apv[apv.id]['ejscreen_report'] = url
 
         except Exception as e:
+            if apv.id not in errors_by_apv_id:
+                errors_by_apv_id[apv.id] = []
             errors_by_apv_id[apv.id].append(f'Unexpected error creating EJ SCREEN report URL: {e}')
             continue
 
@@ -455,7 +465,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
             'Low Income': results[analysis_property_view.id]['low_income'],
             'Share of Neighboring Disadvantaged Tracts': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
             'Number of Affordable Housing Locations in Tract': results[analysis_property_view.id]['number_affordable_housing'],
-            'EJ Screen Report URL': results[analysis_property_view.id]['ejscreen_report']
+            'EJ Screen Report URL': results[analysis_property_view.id]['ejscreen_report'] if 'ejscreen_report' in results[analysis_property_view.id] else None
         }
 
         analysis_property_view.save()

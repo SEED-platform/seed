@@ -105,7 +105,7 @@ class Analysis(models.Model):
             return [{'name': 'Completed', 'value': ''}]
         # EEEJ
         elif self.service == self.EEEJ:
-            tract = results.get('Census Tract')
+            tract = results.get('2010 Census Tract')
             tract = 'N/A' if tract is None else tract
 
             dac = results.get('DAC')
