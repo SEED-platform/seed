@@ -430,3 +430,81 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 200
+
+
+class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.cycle = self.cycle_factory.get_cycle(name="Cycle A")
+        self.root_analysis = Analysis.objects.create(
+            name='test',
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.org.root,
+            configuration={'model_type': 'Simple Linear Regression'},
+        )
+
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+
+        self.root_view = self.property_view_factory.get_property_view(prprty=self.root_property, cycle=self.cycle)
+        self.child_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+
+        self.root_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.root_property,
+            cycle=self.cycle,
+            property_state=self.root_view.state
+        )
+        self.child_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis,
+            property=self.child_property,
+            cycle=self.cycle,
+            property_state=self.child_view.state
+        )
+
+        self.meter = Meter.objects.create(
+            property=self.root_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID,
+        )
+        self.meter.save()
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=tz.now(),
+            end_time=tz.now(),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+    def test_analysis_view_lit(self):
+        url = reverse_lazy('api:v3:analysis-views-list', args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_analysis_view_get(self):
+        url = reverse_lazy('api:v3:analysis-views-detail', args=[self.root_analysis.pk, self.root_analysis_property_view.pk])
+        url += "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
