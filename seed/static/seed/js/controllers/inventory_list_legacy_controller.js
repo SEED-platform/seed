@@ -1159,7 +1159,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
         });
       };
 
-      $scope.open_refresh_metadata_modal = function () {
+      $scope.open_set_update_to_now_modal = function () {
         rows = $scope.gridApi.selection.getSelectedRows()
         primary_rows = rows.filter(r => r.$$treeLevel == 0)
         secondary_rows = rows.filter(r => r.$$treeLevel == undefined)
@@ -1173,8 +1173,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
         }
 
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
-          controller: 'refresh_metadata_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/set_update_to_now_modal.html',
+          controller: 'set_update_to_now_modal_controller',
           backdrop: 'static',
           resolve: {
             property_views: () => [...new Set(property_rows.map(r => r.property_view_id))],

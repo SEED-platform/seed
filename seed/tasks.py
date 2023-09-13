@@ -446,7 +446,7 @@ def sync_salesforce(org_id):
 
 
 @shared_task
-def update_inventory_metadata(property_view_ids, taxlot_view_ids, progress_key):
+def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
     now = datetime.now(pytz.UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100

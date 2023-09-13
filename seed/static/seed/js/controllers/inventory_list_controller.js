@@ -1470,7 +1470,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
           case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
-          case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
+          case 'open_set_update_to_now_modal': $scope.open_set_update_to_now_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
           case 'open_ubid_decode_modal': $scope.open_ubid_decode_modal(selectedViewIds); break;
@@ -1484,7 +1484,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.model_actions = 'none';
       };
 
-      $scope.open_refresh_metadata_modal = function () {
+      $scope.open_set_update_to_now_modal = function () {
         primary_rows = $scope.gridApi.selection.getSelectedRows().filter(r => r.$$treeLevel == 0)
         secondary_rows = $scope.gridApi.selection.getSelectedRows().filter(r => r.$$treeLevel == undefined)
 
@@ -1497,8 +1497,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
-          controller: 'refresh_metadata_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/set_update_to_now_modal.html',
+          controller: 'set_update_to_now_modal_controller',
           backdrop: 'static',
           resolve: {
             property_views: () => [...new Set(property_rows.map(r => r.property_view_id))] ,

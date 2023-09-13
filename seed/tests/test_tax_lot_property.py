@@ -23,7 +23,7 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView
 )
-from seed.tasks import update_inventory_metadata
+from seed.tasks import set_update_to_now
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -225,7 +225,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
 
-    def test_refresh_metadata(self):
+    def test_set_update_to_now(self):
         property_view_ids = [
             self.property_view_factory.get_property_view().id
             for _ in range(50)
@@ -238,8 +238,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         time.sleep(1)
 
-        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
-        update_inventory_metadata(property_view_ids, taxlot_view_ids, progress_data.key)
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        set_update_to_now(property_view_ids, taxlot_view_ids, progress_data.key)
 
         for pv in PropertyView.objects.filter(id__in=property_view_ids):
             self.assertGreater(pv.state.updated, before_refresh)

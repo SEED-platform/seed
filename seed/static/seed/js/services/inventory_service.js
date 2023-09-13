@@ -1230,8 +1230,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.refresh_metadata = function (property_views, taxlot_views, progress_key) {
-      return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
+    inventory_service.set_update_to_now = function (property_views, taxlot_views, progress_key) {
+      return $http.post(`/api/v3/tax_lot_properties/set_update_to_now/`, {
         property_views: property_views,
         taxlot_views: taxlot_views,
         progress_key: progress_key,
@@ -1239,8 +1239,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.start_refresh_metadata = function() {
-      return $http.get('/api/v3/tax_lot_properties/start_refresh_metadata/', {
+    inventory_service.start_set_update_to_now = function() {
+      return $http.get('/api/v3/tax_lot_properties/start_set_update_to_now/', {
         params: {
           organization_id: user_service.get_organization().id
         }
