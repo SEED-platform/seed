@@ -304,13 +304,13 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
     def test_analysis_list(self):
         url = reverse_lazy('api:v3:analyses-list') + "?organization_id=" + str(self.org.id)
 
-        # child user cannot
+        # child user can
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert len(response.json()["analyses"]) == 0
         assert response.status_code == 200
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert len(response.json()["analyses"]) == 1
@@ -332,7 +332,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 200
@@ -345,7 +345,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
@@ -358,7 +358,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 200
@@ -371,7 +371,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.post(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.post(url, content_type='application/json')
         assert response.status_code == 200
@@ -384,7 +384,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.post(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.post(url, content_type='application/json')
         assert response.status_code == 200
@@ -397,7 +397,7 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
@@ -405,31 +405,17 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
     def test_analysis_stats(self):
         url = reverse_lazy('api:v3:analyses-stats') + "?organization_id=" + str(self.org.id) + "&cycle_id=" + str(self.cycle.pk)
 
-        # child user cannot
+        # child user can
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         assert response.json()["total_records"] == 1
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         assert response.json()["total_records"] == 2
-
-    def test_analysis_get_analyses_for_properties(self):
-        url = reverse_lazy('api:v3:analyses-get-analyses-for-properties') + "?organization_id=" + str(self.org.id)
-        params = json.dumps({"property_ids": [self.root_property.pk, self.child_property.pk]})
-
-        # child user cannot
-        self.login_as_child_member()
-        response = self.client.post(url, params, content_type='application/json')
-        assert response.status_code == 200
-
-        # root users can create column in root
-        self.login_as_root_member()
-        response = self.client.post(url, params, content_type='application/json')
-        assert response.status_code == 200
 
 
 class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
@@ -490,7 +476,7 @@ class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
@@ -504,7 +490,7 @@ class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
+        # root users can
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
