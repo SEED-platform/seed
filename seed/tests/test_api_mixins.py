@@ -374,18 +374,18 @@ class TestProfileIdMixin(TestCase):
         self.assertListEqual(columns['extra_data'], ['field_1'])
 
         # no extra data
-        columnlistprofile = self.column_list_factory.get_columnlistprofile(
+        column_list_profile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], [])
 
         # with extra data
-        columnlistprofile = self.column_list_factory.get_columnlistprofile(
+        column_list_profile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui', 'field_1']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], ['field_1'])
 
