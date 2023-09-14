@@ -14,7 +14,7 @@ class GBRPropertiesViewPermisionsTests(AccessLevelBaseTestCase, DeleteModelsTest
     def test_gbr_properties_list(self):
         url = reverse_lazy('api:v3:gbr_properties-list') + "?organization_id=" + str(self.org.id)
 
-        # child user cannot
+        # child user can
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
