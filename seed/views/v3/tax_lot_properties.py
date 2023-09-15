@@ -35,7 +35,7 @@ from seed.models.scenarios import Scenario
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
-from seed.tasks import update_inventory_metadata
+from seed.tasks import set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
@@ -595,25 +595,25 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['GET'])
-    def start_refresh_metadata(self, request):
+    def start_set_update_to_now(self, request):
         """
-        Generate a ProgressData object that will be used to monitor property and tax lot metadata refresh
+        Generate a ProgressData object that will be used to monitor the set "update" of selected
+        properties and tax lots to now
         """
-        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
         return progress_data.result()
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
-    def refresh_metadata(self, request):
+    def set_update_to_now(self, request):
         """
-        Kick off celery task to refresh metadata of selected inventory
+        Kick off celery task to set "update" of selected inventory to now
         """
-        ids = request.data.get('ids')
-        states = request.data.get('states')
-        inventory_type = request.data.get('inventory_type')
+        property_view_ids = request.data.get('property_views')
+        taxlot_view_ids = request.data.get('taxlot_views')
         progress_key = request.data.get('progress_key')
 
-        update_inventory_metadata.subtask([ids, states, inventory_type, progress_key]).apply_async()
+        set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
         return
