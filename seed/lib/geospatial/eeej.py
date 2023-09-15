@@ -126,7 +126,6 @@ def import_cejst():
                 break
     errors = []
 
-    print(f" HEADERS: {headers}")
     for row_index in range(1, sheet.nrows):
         try:
             burden_percent = None
