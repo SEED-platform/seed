@@ -1430,7 +1430,6 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.open_export_to_audit_template_modal = function (selectedViewIds) {
-        console.log('exporting ', selectedViewIds.length, ' properties')
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_to_audit_template_modal.html',
           controller: 'export_to_audit_template_modal_controller',

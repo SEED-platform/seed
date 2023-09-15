@@ -1564,6 +1564,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             file_type=file_type,
         )
 
+        # need to add at_updated prior to the audit log being created, otherweise at_updated wont appear in history
+        if at_updated:
+            property_view.state.extra_data.update({'at_updated_at': at_updated})
+            property_view.state.save()
+            Column.objects.get_or_create(
+                is_extra_data=True,
+                column_name='at_updated_at',
+                display_name='Audit Template Updated',
+                organization=cycle.organization,
+                table_name='PropertyState',
+            )
+
         # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
         # existing propertyview.
         p_status, new_pv_state, new_pv_view, messages = building_file.process(
@@ -1571,17 +1583,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
 
         if p_status and new_pv_state:
-            if at_updated:
-                new_pv_state.extra_data.update({'at_updated_at': at_updated})
-                new_pv_state.save()
-                Column.objects.get_or_create(
-                    is_extra_data=True,
-                    column_name='at_updated_at',
-                    display_name='Audit Template Updated',
-                    organization=cycle.organization,
-                    table_name='PropertyState',
-                )
-
             return JsonResponse({
                 'success': True,
                 'status': 'success',

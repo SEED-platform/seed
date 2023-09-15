@@ -4889,12 +4889,13 @@ ul.r-list {
       padding: 0 8px;
 
       .export-details {
-        max-height: 55px;
+        max-height: 200px;
         overflow-y: scroll;
         padding: 0 8px !important;
         div {
           padding: 10px;
           margin-bottom: 5px;
+          border-radius: 5px;
         }
       }
     }
