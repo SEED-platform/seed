@@ -70,7 +70,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         user = User.objects.get(pk=pk)
 
         try:
-            _orguser, created = org.add_mpember(user, access_level_instance_id=org.root)
+            _orguser, created = org.add_member(user, access_level_instance_id=org.root)
             _orguser.save()
         except IntegrityError as e:
             return JsonResponse({
