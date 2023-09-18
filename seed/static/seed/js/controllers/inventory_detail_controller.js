@@ -681,6 +681,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
         modalInstance.result.then(function () {
         });
       };
+      
+      $scope.open_export_to_audit_template_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_to_audit_template_modal.html',
+          controller: 'export_to_audit_template_modal_controller',
+          resolve: {
+            ids: function () {
+              return [$stateParams.view_id];
+            },
+            org_id: function () {
+              return $scope.organization.id
+            }
+          }
+        })
+      }
 
       $scope.export_building_sync = function () {
         var modalInstance = $uibModal.open({

@@ -1573,9 +1573,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         if p_status and new_pv_state:
             if at_updated:
                 # Update the propertyView state and parent state with the at_updated
-                for property in [building_file, property_view]:
-                    property.property_state.extra_data.update({'at_updated_at': at_updated})
-                    property.property_state.save()
+                for state in [building_file.property_state, property_view.state ]:
+                    state.extra_data.update({'at_updated_at': at_updated})
+                    state.save()
              
                 Column.objects.get_or_create(
                     is_extra_data=True,
