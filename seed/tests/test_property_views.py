@@ -214,6 +214,8 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # go through each of the Column's class columns and ensure that the serializer is read only
         # map the related object ids to the column names
         protected_columns.pop(protected_columns.index('import_file'))
+        protected_columns.pop(protected_columns.index('raw_access_level_instance_id'))  # needs to be set
+        protected_columns.pop(protected_columns.index('raw_access_level_instance_error'))  # needs to be set
         protected_columns.pop(protected_columns.index('extra_data'))  # extra_data is allowed
         protected_columns.append('import_file_id')
         protected_columns.append('measures')
