@@ -2,46 +2,41 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.refresh_metadata_modal', []).controller('refresh_metadata_modal_controller', [
+angular.module('BE.seed.controller.set_update_to_now_modal', []).controller('set_update_to_now_modal_controller', [
     '$scope',
     '$state',
     '$uibModalInstance',
-    'ids',
-    'property_states',
-    'taxlot_states',
-    'inventory_type',
+    'property_views',
+    'taxlot_views',
     'inventory_service',
     'uploader_service',
     function(
         $scope,
         $state,
         $uibModalInstance,
-        ids,
-        property_states,
-        taxlot_states,
-        inventory_type,
+        property_views,
+        taxlot_views,
         inventory_service,
         uploader_service,
 
     ) {
-        const states = property_states || taxlot_states
-        $scope.id_count = ids.length
-        $scope.inventory_type = inventory_type
+        $scope.property_views = property_views;
+        $scope.taxlot_views = taxlot_views;
         $scope.refresh_progress = {
             progress: 0,
             status_message: '',
         };
         $scope.refreshing = false
 
-        $scope.refresh_metadata = function () {
+        $scope.set_update_to_now = function () {
             $scope.refreshing = true
-            inventory_service.start_refresh_metadata()
+            inventory_service.start_set_update_to_now()
             .then(data => {
                 uploader_service.check_progress_loop(data.data.progress_key, 0, 1,
                     function () { $scope.refresh_page()},
                     function () { },
                     $scope.refresh_progress);
-                return inventory_service.refresh_metadata(ids, states, inventory_type, data.data.progress_key);
+                return inventory_service.set_update_to_now(property_views, taxlot_views, data.data.progress_key);
             })
         }
 
