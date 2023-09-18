@@ -1155,7 +1155,7 @@ class TestEeejPipeline(TestCase):
         pvids = [self.property_view.id]
         loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org)
         self.assertEqual(errors_by_property_view_id, {})
-        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'tract': None, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
+        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'tract': None, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
 
     def test_get_eeej_indicators(self):
         # create one disadvantaged and one not
@@ -1176,13 +1176,13 @@ class TestEeejPipeline(TestCase):
         # DAC
         self.assertEqual(results[self.property_view_dac.id]['census_tract'], '08059011402')
         self.assertEqual(results[self.property_view_dac.id]['dac'], True)
-        self.assertEqual(results[self.property_view_dac.id]['energy_burden'], False)
+        self.assertEqual(results[self.property_view_dac.id]['energy_burden_low_income'], False)
         self.assertEqual(results[self.property_view_dac.id]['energy_burden_percentile'], 12.0)
         self.assertEqual(results[self.property_view_dac.id]['number_affordable_housing'], 1)
 
         # non DAC
         self.assertEqual(results[self.property_view_not_dac.id]['census_tract'], '06037700700')
         self.assertEqual(results[self.property_view_not_dac.id]['dac'], False)
-        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden'], False)
+        self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_low_income'], False)
         self.assertEqual(results[self.property_view_not_dac.id]['energy_burden_percentile'], 8.0)
         self.assertEqual(results[self.property_view_not_dac.id]['number_affordable_housing'], 0)
