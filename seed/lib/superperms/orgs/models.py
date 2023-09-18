@@ -403,6 +403,8 @@ pre_delete.connect(organization_pre_delete, sender=Organization)
 
 @receiver(pre_save, sender=Organization)
 def presave_organization(sender, instance, **kwargs):
+    from seed.models import Column
+
     if instance.id is None:
         return
 
@@ -412,6 +414,10 @@ def presave_organization(sender, instance, **kwargs):
     if previous_access_level_names != instance.access_level_names:
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
+
+    taken_names = Column.objects.filter(display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    if len(taken_names) > 0:
+        raise ValueError(f"{taken_names} are column names.")
 
 
 def _assert_alns_are_valid(org):
