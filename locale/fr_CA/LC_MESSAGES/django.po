@@ -78,6 +78,10 @@ msgstr "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} .
 msgid "ALSO_DELETE_BATCH_ANALYSES"
 msgstr "Supprimez également {num,plural, one{ 1 analyse de lot associée } other{# analyses de lot associées }} ."
 
+#, fuzzy
+msgid "ANALYSIS_DESCRIPTION_EEEJ"
+msgstr "L'analyse EEEJ utilise l'adresse de chaque propriété pour identifier le secteur de recensement de 2010. Sur la base des secteurs de recensement, la classification des communautés défavorisées et les informations sur la charge énergétique peuvent être extraites de l'ensemble de données CEJST. Le nombre de logements abordables est extrait des ensembles de données HUD. L'emplacement est utilisé pour générer un lien permettant d'afficher un rapport EJScreen fournissant davantage d'indicateurs démographiques."
+
 msgid "AND"
 msgstr "ET"
 
@@ -218,10 +222,10 @@ msgid "An error occurred while processing the file. Please ensure that your file
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
 msgid "Analyses"
-msgstr "Analyses (bêta)"
+msgstr "Analyses"
 
 msgid "Analysis"
-msgstr "Analyse (bêta)"
+msgstr "Analyse"
 
 msgid "Analysis Name"
 msgstr "Nom de l'analyse"
@@ -1958,7 +1962,7 @@ msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
 
 msgid "New Analysis"
-msgstr "Nouvelle analyse (bêta)"
+msgstr "Nouvelle analyse"
 
 msgid "New Note"
 msgstr "Nouvelle note"
@@ -2063,7 +2067,7 @@ msgid "OR"
 msgstr "OU"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "AVERTISSEMENT: vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Les enregistrements de chaque cycle seront réévalués pour déterminer s'il existe des correspondances et, le cas échéant, elles seront automatiquement fusionnées. Ensuite, les enregistrements de plusieurs cycles seront réévalués afin de mettre à jour les liens ou associations de propriété et de lot de taxe. Si vous continuez, vous pouvez d'abord visualiser les modifications en attente avant de les valider."
+msgstr "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire."
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Écraser les données?"
@@ -2559,7 +2563,7 @@ msgid "Rules for a single field must have the same Data Type. Note that some Dat
 msgstr "Les règles pour un seul champ doivent avoir le même type de données. Notez que certains types de données ne sont pas disponibles pour certaines vérifications de condition."
 
 msgid "Run Analysis"
-msgstr "Exécuter l'analyse (bêta)"
+msgstr "Exécuter l'analyse"
 
 msgid "Run Author"
 msgstr "Exécuter l'auteur"

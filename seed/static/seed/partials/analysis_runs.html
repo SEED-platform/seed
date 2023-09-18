@@ -13,10 +13,10 @@
                 <td><a ui-sref="analysis_run(::{run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
                 <td>
                     <a ng-if="original_views[view.id]" ui-sref="inventory_detail({inventory_type: 'properties', view_id: original_views[view.id]})">
-                        {$:: get_display_name(view.property_state) || 'Property ' + original_views[view.id] $} <i class="glyphicon glyphicon-log-out"></i>
+                        {$:: view.display_name || 'Property ' + original_views[view.id] $} <i class="glyphicon glyphicon-log-out"></i>
                     </a>
                     <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists">
-                        {$:: get_display_name(view.property_state) || 'Unknown' $}
+                        {$:: view.display_name || 'Unknown' $}
                     </span>
                 </td>
                 <td>

@@ -119,7 +119,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.profile',
   'BE.seed.controller.program_setup',
   'BE.seed.controller.record_match_merge_link_modal',
-  'BE.seed.controller.refresh_metadata_modal',
+  'BE.seed.controller.set_update_to_now_modal',
   'BE.seed.controller.rename_column_modal',
   'BE.seed.controller.reset_modal',
   'BE.seed.controller.sample_data_modal',
