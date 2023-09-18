@@ -681,7 +681,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         modalInstance.result.then(function () {
         });
       };
-      
+
       $scope.open_export_to_audit_template_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_to_audit_template_modal.html',
