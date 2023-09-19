@@ -172,43 +172,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @action(detail=False, methods=['post'])
-    def get_analyses_for_properties(self, request):
-        """
-        List all the analyses associated with provided canonical property ids
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: property_ids
-              description: List of canonical property ids
-              paramType: body
-        """
-        property_ids = request.data.get('property_ids', [])
-        organization_id = int(self.get_organization(request))
-        analyses = []
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id, analysispropertyview__property__in=property_ids)
-            .distinct()
-            .order_by('-id')
-        )
-        for analysis in analyses_queryset:
-            serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(analysis.get_property_view_info(None))
-            serialized_analysis.update({'highlights': analysis.get_highlights(None)})
-            analyses.append(serialized_analysis)
-        return JsonResponse({
-            'status': 'success',
-            'analyses': analyses
-        })
-
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
     def retrieve(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
