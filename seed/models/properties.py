@@ -943,11 +943,18 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         longitude_change = original_obj.longitude != instance.longitude
         long_lat_change = original_obj.long_lat != instance.long_lat
         lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
-        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API,
+        # so the first block below is when a user manually changes the lat/long and the geocoding confidence
+        # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
-            # keep Census Geocoder confidence if present
-            instance.geocoding_confidence = instance.geocoding_confidence if 'Census Geocoder' in instance.geocoding_confidence else "Manually geocoded (N/A)"
+            # keep Census Geocoder confidence if present in the string
+            if instance is not None and instance.geocoding_confidence is not None:
+                if 'Census Geocoder' in instance.geocoding_confidence:
+                    instance.geocoding_confidence = instance.geocoding_confidence
+                else:
+                    instance.geocoding_confidence = "Manually geocoded (N/A)"
+
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None
