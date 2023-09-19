@@ -1,0 +1,60 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'verify'">Decode UBIDs</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'decoding'">Decoding UBID now...</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="decode_ubid_state === 'result'">Decoding UBIDs Complete</h4>
+</div>
+<div class="modal-body">
+
+  <strong>Total Selected: {$ total_selected_count|number:0 $}</strong>
+
+  <!-- Comments to the user hinting the state the user is in. -->
+  <div ng-show="decode_ubid_state === 'verify'">
+    <div>Here's a summary of the properties selected to have their UBID decoded. Please verify before continuing.</div>
+  </div>
+
+  <div ng-show="decode_ubid_state === 'decoding'">
+    <div>Currently decoding the following:</div>
+  </div>
+
+  <div ng-show="geocode_state === 'result'">
+    <div>Before:</div>
+  </div>
+
+  <br>
+
+  <!-- The summary of selected records is shown in any state. -->
+  <div class="alert alert-info" ng-if="pre_decode_ubid_not_decoded">
+      <li>{$ pre_decode_ubid_not_decoded|number:0 $} with UBID populated but not decoded </li>
+  </div>
+
+
+  <div class="alert alert-warning" ng-if="pre_decode_ubid_unpopulated || pre_decode_ubid_successfully_decoded">
+    <li ng-if="pre_decode_ubid_successfully_decoded">{$ pre_decode_ubid_successfully_decoded|number:0 $} with UBID already decoded (Decoding will happen again, likely, with the same result.) </li>
+    <li ng-if="pre_decode_ubid_unpopulated">{$ pre_decode_ubid_unpopulated|number:0 $} with UBID not populated (Nothing will happen to these.)</li>
+  </div>
+
+  <br>
+
+  <div ng-show="decode_ubid_state === 'result'">
+    <strong>Results</strong>
+
+    <div class="alert alert-success" ng-if="post_decode_ubid_successfully_decoded ">
+      <li>{$ post_decode_ubid_successfully_decoded|number:0 $} with decoded UBIDs - These have bounding boxes and centroids geocoded.</li>
+    </div>
+
+    <div class="alert alert-warning" ng-if="post_decode_ubid_unpopulated">
+      <li>{$ post_decode_ubid_unpopulated|number:0 $} with UBID not populated (Nothing happened to these.)</li>
+    </div>
+
+    <div class="alert alert-danger" ng-if="post_decode_ubid_not_decoded">
+        <li>{$ post_decode_ubid_not_decoded|number:0 $} with UBID not decoded. (There might be an issue with the UBID format.)</li>
+    </div>
+
+  </div>
+
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" ng-click="decode_ubids()" ng-show="decode_ubid_state === 'verify'">Decode UBID</button>
+  <button type="button" class="btn btn-default" ng-show="decode_ubid_state === 'verify'" ng-click="cancel()">Cancel</button>
+  <button type="button" class="btn btn-default" ng-show="decode_ubid_state === 'result'" ng-click="close()">Close</button>
+</div>

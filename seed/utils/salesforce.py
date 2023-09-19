@@ -498,6 +498,7 @@ def remove_indication_label(property_id, label_id):
         pv.save()
     except Exception as ex:
         # could not remove label
+        # TODO: We need to save this to the logger too, not just print it.
         print(f"Error removing label: {str(ex)}")
 
 
@@ -578,8 +579,11 @@ def auto_sync_salesforce_properties(org_id):
 
 
 def valid_name(name):
-    if not name:
+    if name is None:
         return False
 
-    invalid_names = ['none', 'n/a', 'not available']
-    return name.lower() not in invalid_names
+    invalid_names = ['none', 'n/a', 'not available', '']
+    try:
+        return name.lower() not in invalid_names
+    except Exception:
+        return False

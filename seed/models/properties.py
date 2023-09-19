@@ -14,6 +14,7 @@ from os import path
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.db import IntegrityError, models, transaction
+from django.db.models import Case, Value, When
 from django.db.models.signals import (
     m2m_changed,
     post_save,
@@ -37,6 +38,7 @@ from seed.models.models import (
     DATA_STATE_UNKNOWN,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
+    SEED_DATA_SOURCES,
     StatusLabel
 )
 from seed.models.tax_lot_properties import TaxLotProperty
@@ -48,6 +50,7 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_datestr, convert_to_js_timestamp
 
+from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -151,8 +154,7 @@ class PropertyState(models.Model):
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 
-    # FIXME: source_type needs to be a foreign key or make it import_file.source_type
-    source_type = models.IntegerField(null=True, blank=True, db_index=True)
+    source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True, db_index=True)
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
@@ -778,6 +780,39 @@ def pre_delete_state(sender, **kwargs):
     # remove all the property measures. Not sure why the cascading delete
     # isn't working here.
     kwargs['instance'].propertymeasure_set.all().delete()
+
+
+@receiver(post_save, sender=PropertyState)
+def post_save_property_state(sender, **kwargs):
+    """
+    Generate UbidModels for a PropertyState if the ubid field is present
+    """
+    state: PropertyState = kwargs.get('instance')
+
+    ubid = getattr(state, 'ubid')
+    if not ubid:
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        return
+
+    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
+    if not ubid_model.exists():
+        # First set all others to non-preferred without calling save
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        # Add UBID and set as preferred
+        ubid_model = state.ubidmodel_set.create(
+            preferred=True,
+            ubid=ubid,
+        )
+        # Update lat/long/centroid
+        decode_unique_ids(state)
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+    elif ubid_model.filter(preferred=False).exists():
+        state.ubidmodel_set.update(
+            preferred=Case(
+                When(ubid=ubid, then=Value(True)),
+                default=Value(False),
+            )
+        )
 
 
 class PropertyView(models.Model):

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, ProgrammingError
+from django.db import ProgrammingError, migrations
+
 from seed.utils.match import whole_org_match_merge_link
 
 

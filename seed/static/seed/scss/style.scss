@@ -4865,3 +4865,23 @@ ul.r-list {
     padding-top: 7px;
   }
 }
+
+.ubid-form {
+  input.ng-invalid {
+    background-color: #fff0f0;
+    border-color: #dd2c00;
+  }
+}
+
+.or-text {
+  font-size: 1.3em;
+  text-align: center;
+}
+
+.modal-content-section {
+  padding: 1em;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #ddd;
+  }
+}

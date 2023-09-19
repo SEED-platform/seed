@@ -64,10 +64,10 @@ class BuildingSyncParser(object):
 
         # add to data and column headers
         for item in assets:
-            property_[item['name']] = item['value']
+            property_[item.name] = item.value
             # only append if not already there (when processing a zip of xmls)
-            if item['name'] not in self.headers:
-                self.headers.append(item['name'])
+            if item.name not in self.headers:
+                self.headers.append(item.name)
 
         # When importing zip files, we need to be able to determine which .xml file
         # a certain PropertyState came from (because of the linked BuildingFile model).

@@ -20,7 +20,7 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
-        List all the properties
+        List all the taxlots
         """
         org_id = request.query_params.get('organization_id')
 

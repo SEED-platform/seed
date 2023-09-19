@@ -18,10 +18,16 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
     UpdateModelMixin
 )
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import (
+    GenericViewSet,
+    ModelViewSet,
+    ReadOnlyModelViewSet
+)
 
 # Local Imports
 from seed.authentication import SEEDAuthentication
@@ -53,6 +59,17 @@ class UpdateWithoutPatchModelMixin(object):
 
     def perform_update(self, serializer):
         return UpdateModelMixin.perform_update(self, serializer)
+
+
+class ModelViewSetWithoutPatch(CreateModelMixin,
+                               RetrieveModelMixin,
+                               UpdateWithoutPatchModelMixin,
+                               DestroyModelMixin,
+                               ListModelMixin,
+                               GenericViewSet):
+    """
+    Replacement for ModelViewSet that excludes patch.
+    """
 
 
 class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]

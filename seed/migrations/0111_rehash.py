@@ -4,12 +4,12 @@
 # awhile and should be avoided if possible.
 from __future__ import unicode_literals
 
-# import time
-# from datetime import timedelta
-
 from django.db import connection, migrations, transaction
 
 from seed.data_importer.tasks import hash_state_object
+
+# import time
+# from datetime import timedelta
 
 
 def forwards(apps, schema_editor):
