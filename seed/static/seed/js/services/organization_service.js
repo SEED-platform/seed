@@ -242,8 +242,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       // if nothing is returned, check in extra data
       let return_field = inventory_state[field];
       if (return_field == null) {
-        console.log("field: ", field);
-        console.log('inventory state extra data: ', inventory_state);
         if (field in inventory_state.extra_data) {
           return_field = inventory_state.extra_data[field];
         }
