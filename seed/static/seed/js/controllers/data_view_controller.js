@@ -560,7 +560,7 @@ angular.module('BE.seed.controller.data_view', [])
 
         if ($scope.source_column_by_location.second_axis) {
           i = 0
-          axis2_column = $scope.source_column_by_location.second_axis.column_name
+          axis2_column = $scope.source_column_by_location.second_axis.displayName
           let second_axis_name = $scope.source_column_by_location.second_axis.displayName
 
           $scope.dataViewChart.options.scales.y2.display = true
@@ -569,7 +569,8 @@ angular.module('BE.seed.controller.data_view', [])
 
           for (let aggregation of axis2_aggregations) {
             for (let dataset of $scope.data.graph_data.datasets) {
-              if (aggregation == dataset.aggregation && axis2_column == dataset.column && dataset.filter_group in $scope.selected_filter_groups) {
+              const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
+              if (aggregation == dataset.aggregation && columnWithUnits.test(axis2_column) && dataset.filter_group in $scope.selected_filter_groups) {
                 dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`
                 color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`]
                 dataset.backgroundColor = color

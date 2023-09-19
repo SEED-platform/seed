@@ -10,7 +10,7 @@ services:
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
-      - seed_pgdata:/var/lib/postgresql/data
+      - seed_pgdata_L:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     logging:
@@ -92,7 +92,7 @@ services:
         max-size: 50m
         max-file: "5"
 volumes:
-  seed_pgdata:
+  seed_pgdata_L:
     external: true
   seed_media:
     external: true
