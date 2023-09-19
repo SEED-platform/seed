@@ -17,7 +17,7 @@ class Event(TimeStampedModel):
 
 
 class ATEvent(Event):
-    building_file = models.ForeignKey("BuildingFile", on_delete=models.CASCADE)
+    building_file = models.ForeignKey("BuildingFile", on_delete=models.PROTECT)
     audit_date = models.CharField(max_length=100, null=True)
     # has a one to many with Scenario
 
