@@ -870,7 +870,7 @@ def finish_raw_save(results, file_pk, progress_key):
 
 
 @shared_task(ignore_result=True)
-def finish_raw_ali_save(progress_key):
+def finish_raw_ali_save(results, progress_key):
     """
     Finish importing the raw Access Level Instances file.
 
@@ -882,8 +882,7 @@ def finish_raw_ali_save(progress_key):
     """
     progress_data = ProgressData.from_key(progress_key)
 
-    # new_summary = _append_access_level_instances_results_to_summary()
-    return progress_data.finish_with_success()
+    return progress_data.finish_with_success(results)
 
 
 def cache_first_rows(import_file, parser):
@@ -1173,11 +1172,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     )
     access_level_instances_data = parser.access_level_instances_details
 
-    _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
-
+    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
     progress_data.save()
-
-    return finish_raw_ali_save(progress_data.key)
+    return finish_raw_ali_save(results, progress_data.key)
 
 
 @shared_task
@@ -1421,15 +1418,6 @@ def _append_sensor_readings_import_results_to_summary(import_results):
     return list(summary.values())
 
 
-def _append_access_level_instances_results_to_summary(import_results):
-    summary = {}
-    for import_result in import_results:
-        for key, row in import_result.items():
-            summary[key] = row
-
-    return summary
-
-
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1490,9 +1478,15 @@ def save_raw_access_level_instances_data(filename, org_id):
         # queue up the tasks and immediately return. This is needed in the case of large files
         # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
         # large files can take quite some time.
-        return _save_access_level_instances_data_create_tasks(filename, org_id, progress_data.key)
+        _save_access_level_instances_data_create_tasks(filename, org_id, progress_data.key)
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
+    return progress_data.result()
 
 
 def save_raw_espm_data_synchronous(file_pk: int) -> dict:
