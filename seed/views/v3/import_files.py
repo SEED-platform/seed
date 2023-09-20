@@ -779,6 +779,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 data_state=DATA_STATE_MATCHING,
                 geocoding_confidence__startswith='Low'
             )),
+            'census_geocoder': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Census'
+            )),
             'manual': len(PropertyState.objects.filter(
                 import_file__pk=import_file.pk,
                 data_state=DATA_STATE_MATCHING,
@@ -801,6 +806,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 import_file__pk=import_file.pk,
                 data_state=DATA_STATE_MATCHING,
                 geocoding_confidence__startswith='Low'
+            )),
+            'census_geocoder': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Census'
             )),
             'manual': len(TaxLotState.objects.filter(
                 import_file__pk=import_file.pk,

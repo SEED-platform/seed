@@ -948,10 +948,12 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
-            # keep Census Geocoder confidence if present in the string
+            # keep Census Geocoder confidence if newly present in the string
             if instance is not None and instance.geocoding_confidence is not None:
-                if 'Census Geocoder' in instance.geocoding_confidence:
+                if 'Census Geocoder' in instance.geocoding_confidence and 'Census Geocoder' not in original_obj.geocoding_confidence:
                     instance.geocoding_confidence = instance.geocoding_confidence
+                else:
+                    instance.geocoding_confidence = "Manually geocoded (N/A)"
             else:
                 # If we are here, then we are manually geocoding the property
                 instance.geocoding_confidence = "Manually geocoded (N/A)"
