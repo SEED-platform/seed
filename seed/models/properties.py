@@ -952,8 +952,9 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
             if instance is not None and instance.geocoding_confidence is not None:
                 if 'Census Geocoder' in instance.geocoding_confidence:
                     instance.geocoding_confidence = instance.geocoding_confidence
-                else:
-                    instance.geocoding_confidence = "Manually geocoded (N/A)"
+            else:
+                # If we are here, then we are manually geocoding the property
+                instance.geocoding_confidence = "Manually geocoded (N/A)"
 
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
