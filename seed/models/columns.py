@@ -1619,5 +1619,10 @@ def validate_model(sender, **kwargs):
         if instance.display_name in instance.organization.access_level_names:
             raise IntegrityError("This display name is already an access level name and cannot be used.")
 
+    if instance.organization_id:
+        org = SuperOrganization.objects.get(pk=instance.organization_id)
+        if instance.display_name in org.access_level_names:
+            raise ValidationError("This display name is an organization access level name.")
+
 
 pre_save.connect(validate_model, sender=Column)
