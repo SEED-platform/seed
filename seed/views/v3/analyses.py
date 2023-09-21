@@ -22,7 +22,11 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipelineException
 )
 from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     Analysis,
     AnalysisEvent,
@@ -45,10 +49,14 @@ logger = logging.getLogger(__name__)
 
 class CreateAnalysisSerializer(AnalysisSerializer):
     property_view_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+    access_level_instance_id = serializers.IntegerField(
+        allow_null=False,
+        required=True
+    )
 
     class Meta:
         model = Analysis
-        fields = ['name', 'service', 'configuration', 'property_view_ids']
+        fields = ['name', 'service', 'configuration', 'property_view_ids', "access_level_instance_id"]
 
     def create(self, validated_data):
         return Analysis.objects.create(
@@ -56,7 +64,8 @@ class CreateAnalysisSerializer(AnalysisSerializer):
             service=validated_data['service'],
             configuration=validated_data.get('configuration', {}),
             user_id=validated_data['user_id'],
-            organization_id=validated_data['organization_id']
+            organization_id=validated_data['organization_id'],
+            access_level_instance_id=validated_data['access_level_instance_id'],
         )
 
 
@@ -79,6 +88,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(body_ali_id="access_level_instance_id")
     def create(self, request):
         serializer = CreateAnalysisSerializer(data=request.data)
         if not serializer.is_valid():
@@ -133,13 +143,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_member')
     def list(self, request):
         organization_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id)
-            .order_by('-id')
-        )
+        analyses_queryset = Analysis.objects.filter(
+            organization=organization_id,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).order_by('-id')
+
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info())
@@ -188,9 +201,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         """
         property_ids = request.data.get('property_ids', [])
         organization_id = int(self.get_organization(request))
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
         analyses = []
         analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id, analysispropertyview__property__in=property_ids)
+            Analysis.objects.filter(
+                organization=organization_id,
+                analysispropertyview__property__in=property_ids,
+                analysispropertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
+                analysispropertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
             .distinct()
             .order_by('-id')
         )
@@ -209,6 +229,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="pk")
     def retrieve(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -232,6 +253,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="pk")
     @action(detail=True, methods=['post'])
     def start(self, request, pk):
         organization_id = int(self.get_organization(request))
@@ -260,6 +282,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="pk")
     @action(detail=True, methods=['post'])
     def stop(self, request, pk):
         organization_id = int(self.get_organization(request))
@@ -281,6 +304,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="pk")
     def destroy(self, request, pk):
         organization_id = int(self.get_organization(request))
         try:
@@ -301,6 +325,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
+    @has_hierarchy_access(analysis_id_kwarg="pk")
     @action(detail=True, methods=['get'])
     def progress_key(self, request, pk):
         organization_id = int(self.get_organization(request))
@@ -344,7 +369,13 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Cycle does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        views = PropertyView.objects.filter(
+            state__organization_id=org_id,
+            cycle_id=cycle_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        )
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
         columns = Column.objects.filter(organization_id=org_id, derived_column=None)
         column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
