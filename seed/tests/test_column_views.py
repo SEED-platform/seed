@@ -90,6 +90,20 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         Column.objects.get(**post_data)  # error if doesn't exist.
 
+    def test_create_column_name_of_access_level_instance(self):
+        url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
+        post_data = {
+            'display_name': self.org.access_level_names[0],
+            'organization_id': self.org.id,
+            'table_name': 'PropertyState'
+        }
+
+        # Act
+        response = self.client.post(url, content_type='application/json', data=json.dumps(post_data))
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+
     def test_create_column_bad_no_data(self):
         # Set Up
         url = reverse_lazy('api:v3:columns-list') + "?organization_id=" + str(self.org.id)
@@ -236,6 +250,14 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
                          "na": ps.normalized_address}]
 
         self.assertListEqual(expected_data, new_data)
+
+    def test_rename_column_access_level_name(self):
+        column = Column.objects.filter(organization=self.org, table_name='PropertyState', column_name='address_line_1').first()
+        url = reverse_lazy('api:v3:columns-detail', args=[column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {'column_name': 'address_line_1', 'table_name': 'PropertyState', "sharedFieldType": "None", "comstock_mapping": None, "display_name": self.org.access_level_names[0]}
+
+        response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 400
 
     def test_rename_column_property_existing(self):
         column = Column.objects.filter(

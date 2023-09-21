@@ -654,6 +654,52 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     return tasks
 
 
+def map_data_synchronous(import_file_id: int) -> dict:
+    """This method is used to map data synchronously and intended for only mapping a
+    small set of data. It is used in the Update with ESPM workflow, which runs on a
+    single property. Further, this method is a copy of the `map_data` method but simplified
+    to run only in the foreground.
+
+    Args:
+        import_file_id (int): Database ID of the import file record
+
+    Returns:
+        dict: Result of the progress data.
+    """
+    import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # create a key, but this is just used to communicate the result
+    progress_data = ProgressData(func_name='map_data_only', unique_id=import_file_id)
+    progress_data.delete()
+
+    # Check for duplicate column headers
+    column_headers = import_file.first_row_columns or []
+    duplicate_tracker: dict = collections.defaultdict(lambda: 0)
+    for header in column_headers:
+        duplicate_tracker[header] += 1
+        if duplicate_tracker[header] > 1:
+            raise Exception("Duplicate column found in file: %s" % (header))
+
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
+
+    qs = PropertyState.objects.filter(
+        import_file=import_file,
+        source_type=source_type,
+        data_state=DATA_STATE_IMPORT,
+    ).only('id').iterator()
+
+    # This version of the `map_data` should only be run when the data
+    # set is reasonably small because it will block operations and prevent
+    # reporting status updates.
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    for ids in id_chunks:
+        map_row_chunk(ids, import_file_id, source_type, progress_data.key)
+
+    finish_mapping(import_file_id, True, progress_data.key)
+
+    return progress_data.result()
+
+
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
@@ -661,7 +707,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     :param remap: bool, if remapping, then delete previous objects from the database
     :param mark_as_done: bool, if skip review then the mapping_done flag will be set to true at the
     end.
-    :return: JSON
+    :return: dict
     """
     import_file = ImportFile.objects.get(pk=import_file_id)
 
@@ -836,10 +882,7 @@ def finish_raw_ali_save(results, progress_key):
     """
     progress_data = ProgressData.from_key(progress_key)
 
-    new_summary = _append_access_level_instances_results_to_summary(results)
-    finished_progress_data = progress_data.finish_with_success(new_summary)
-
-    return finished_progress_data
+    return progress_data.finish_with_success(results)
 
 
 def cache_first_rows(import_file, parser):
@@ -1129,18 +1172,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     )
     access_level_instances_data = parser.access_level_instances_details
 
-    tasks = []
-    # we are not going to deal with chunking this for now
-    # making the chunk size huge
-    chunk_size = 100000
-
-    for batch_rows in batch(access_level_instances_data, chunk_size):
-        tasks.append(_save_access_level_instances_task.s(batch_rows, org_id, progress_data.key))
-
-    progress_data.total = len(tasks)
+    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
     progress_data.save()
-
-    return chord(tasks, interval=15)(finish_raw_ali_save.s(progress_data.key))
+    return finish_raw_ali_save(results, progress_data.key)
 
 
 @shared_task
@@ -1384,15 +1418,6 @@ def _append_sensor_readings_import_results_to_summary(import_results):
     return list(summary.values())
 
 
-def _append_access_level_instances_results_to_summary(import_results):
-    summary = {}
-    for import_result in import_results:
-        for key, row in import_result.items():
-            summary[key] = row
-
-    return summary
-
-
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1450,13 +1475,69 @@ def save_raw_access_level_instances_data(filename, org_id):
     """ save data and keep progress """
     progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
     try:
-
         # queue up the tasks and immediately return. This is needed in the case of large files
         # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
         # large files can take quite some time.
-        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
+        _save_access_level_instances_data_create_tasks(filename, org_id, progress_data.key)
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
+    return progress_data.result()
+
+
+def save_raw_espm_data_synchronous(file_pk: int) -> dict:
+    """This method is a one-off method for saving ESPM the raw data synchronously. This
+    is needed for the ESPM update method that runs on a single property. The `save_raw_data`
+    method is not used because it is asynchronous and the pieces of that method were
+    copied here. Technically, this method will work with a CSV or XLSX spreadsheet too,
+    but was only intended for ESPM.
+
+    Args:
+        file_pk (int): Import file ID to import
+
+    Returns:
+        dict: returns the result of the progress data
+    """
+    progress_data = ProgressData(func_name='save_raw_data_synchronous', unique_id=file_pk)
+    try:
+        # Go get the tasks that need to be created, then call them in the chord here.
+        import_file = ImportFile.objects.get(pk=file_pk)
+        if import_file.raw_save_done:
+            return progress_data.finish_with_warning('Raw data already saved')
+
+        try:
+            parser = reader.MCMParser(import_file.local_file)
+        except Exception as e:
+            _log.debug(f'Error reading XLSX file: {str(e)}')
+            return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
+
+        import_file.has_generated_headers = False
+        if hasattr(parser, 'has_generated_headers'):
+            import_file.has_generated_headers = parser.has_generated_headers
+
+        cache_first_rows(import_file, parser)
+        import_file.num_rows = 0
+        import_file.num_columns = parser.num_columns()
+
+        chunks = []
+        for batch_chunk in batch(parser.data, 100):
+            import_file.num_rows += len(batch_chunk)
+            chunks.append(batch_chunk)
+        import_file.save()
+
+        progress_data.total = len(chunks)
+        progress_data.save()
+
+        # Save the raw data chunks. This should only happen
+        # on a small amount of data since it is running in the foreground
+        for chunk in chunks:
+            _save_raw_data_chunk(chunk, file_pk, progress_data.key)
+
+        finish_raw_save(file_pk, progress_data.key)
     except Error as e:
         progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
     except KeyError as e:

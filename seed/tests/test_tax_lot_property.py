@@ -6,8 +6,10 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import time
+from datetime import datetime
 from random import randint
 
+import pytz
 from django.urls import reverse_lazy
 from xlrd import open_workbook
 
@@ -17,17 +19,17 @@ from seed.models import (
     Column,
     Cycle,
     Note,
-    Property,
-    PropertyState,
     PropertyView,
-    TaxLotProperty
+    TaxLotProperty,
+    TaxLotView
 )
-from seed.tasks import update_inventory_metadata
+from seed.tasks import set_update_to_now
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
-    FakeStatusLabelFactory
+    FakeStatusLabelFactory,
+    FakeTaxLotViewFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
@@ -54,6 +56,9 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             organization=self.org
         )
         self.property_view_factory = FakePropertyViewFactory(
+            organization=self.org, user=self.user
+        )
+        self.taxlot_view_factory = FakeTaxLotViewFactory(
             organization=self.org, user=self.user
         )
         self.label_factory = FakeStatusLabelFactory(
@@ -220,27 +225,29 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
 
-    def test_refresh_metadata(self):
-        for i in range(50):
-            p = self.property_view_factory.get_property_view()
-            self.properties.append(p.id)
-
-        ids = [prop.id for prop in Property.objects.all()]
-        ps_ids = [ps.id for ps in PropertyState.objects.all()]
-
-        p_updated_initial = [prop.updated for prop in Property.objects.all()]
-        ps_updated_initial = [state.updated for state in PropertyState.objects.all()]
+    def test_set_update_to_now(self):
+        property_view_ids = [
+            self.property_view_factory.get_property_view().id
+            for _ in range(50)
+        ]
+        taxlot_view_ids = [
+            self.taxlot_view_factory.get_taxlot_view().id
+            for _ in range(50)
+        ]
+        before_refresh = datetime.now(pytz.UTC)
 
         time.sleep(1)
 
-        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
-        update_inventory_metadata(ids, ps_ids, 'properties', progress_data.key)
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        set_update_to_now(property_view_ids, taxlot_view_ids, progress_data.key)
 
-        for i, p in enumerate(Property.objects.filter(id__in=ids)):
-            self.assertGreater(p.updated, p_updated_initial[i])
+        for pv in PropertyView.objects.filter(id__in=property_view_ids):
+            self.assertGreater(pv.state.updated, before_refresh)
+            self.assertGreater(pv.property.updated, before_refresh)
 
-        for i, ps in enumerate(PropertyState.objects.filter(id__in=ps_ids)):
-            self.assertGreater(ps.updated, ps_updated_initial[i])
+        for tv in TaxLotView.objects.filter(id__in=taxlot_view_ids):
+            self.assertGreater(tv.state.updated, before_refresh)
+            self.assertGreater(tv.taxlot.updated, before_refresh)
 
     def tearDown(self):
         for x in self.properties:

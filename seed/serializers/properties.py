@@ -216,6 +216,84 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         return result
 
 
+class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
+    """
+    Used by Property create which takes in a state and promotes it to a PropertyView
+    Organization_id is set in view (not passed in directly by user)
+    """
+    extra_data = serializers.JSONField(required=False)
+    measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
+    scenarios = ScenarioSerializer(many=True, read_only=True)
+    files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
+
+    # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
+    import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
+    organization_id = serializers.IntegerField()
+    raw_access_level_instance_id = serializers.IntegerField()
+
+    # read-only core fields
+    id = serializers.IntegerField(read_only=True)
+    data_state = serializers.IntegerField(read_only=True)
+    merge_state = serializers.IntegerField(allow_null=True, read_only=True)
+    source_type = serializers.IntegerField(allow_null=True, read_only=True)
+    hash_object = serializers.CharField(allow_null=True, read_only=True)
+    lot_number = serializers.CharField(allow_null=True, read_only=True)
+    normalized_address = serializers.CharField(allow_null=True, read_only=True)
+    created = serializers.DateTimeField(read_only=True)
+    updated = serializers.DateTimeField(read_only=True)
+    # read-only geo fields
+    bounding_box = serializers.CharField(allow_null=True, read_only=True)
+    centroid = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_address = serializers.CharField(allow_null=True, read_only=True)
+    geocoding_confidence = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_city = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_county = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_country = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_neighborhood = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_state = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_postal_code = serializers.CharField(allow_null=True, read_only=True)
+    geocoded_side_of_street = serializers.CharField(allow_null=True, read_only=True)
+    long_lat = serializers.CharField(allow_null=True, read_only=True)
+
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+
+    # support the pint objects
+    conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    occupied_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui = PintQuantitySerializerField(allow_null=True, required=False)
+    source_eui_modeled = PintQuantitySerializerField(allow_null=True, required=False)
+    site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions = PintQuantitySerializerField(allow_null=True, required=False)
+    total_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+    total_marginal_ghg_emissions_intensity = PintQuantitySerializerField(allow_null=True, required=False)
+
+    # old fields that are no longer used and should not be updated
+    conditioned_floor_area_orig = serializers.FloatField(allow_null=True, read_only=True)
+    gross_floor_area_orig = serializers.FloatField(allow_null=True, read_only=True)
+    occupied_floor_area_orig = serializers.FloatField(allow_null=True, read_only=True)
+    site_eui_orig = serializers.FloatField(allow_null=True, read_only=True)
+    site_eui_modeled_orig = serializers.FloatField(allow_null=True, read_only=True)
+    site_eui_weather_normalized_orig = serializers.FloatField(allow_null=True, read_only=True)
+    source_eui_orig = serializers.FloatField(allow_null=True, read_only=True)
+    source_eui_weather_normalized_orig = serializers.FloatField(allow_null=True, read_only=True)
+    source_eui_modeled_orig = serializers.FloatField(allow_null=True, read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = PropertyState
+        extra_kwargs = {
+            'organization': {'read_only': True}
+        }
+
+
 class PropertyStateWritableSerializer(serializers.ModelSerializer):
     """
     Used by PropertyViewAsState as a nested serializer
@@ -233,7 +311,6 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField(read_only=True)
 
-    # support naive datetime objects
     # support naive datetime objects
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)

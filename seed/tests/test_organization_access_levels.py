@@ -116,6 +116,16 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         assert Organization.objects.get(pk=self.org.id).access_level_names == ["new name", "boo"]
 
+    def test_edit_access_level_names_column_names(self):
+        # get update access level names
+        url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"access_level_names": ["Address Line 1", "boo"]}),
+            content_type='application/json',
+        )
+        assert raw_result.status_code == 400
+
     def test_edit_access_level_names_too_few(self):
         # get try to clear access_level_names
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
