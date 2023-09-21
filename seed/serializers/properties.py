@@ -229,6 +229,7 @@ class PropertyStatePromoteWritableSerializer(serializers.ModelSerializer):
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
+    raw_access_level_instance_id = serializers.IntegerField()
 
     # read-only core fields
     id = serializers.IntegerField(read_only=True)
