@@ -120,6 +120,54 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['status'], 'success')
 
+        property = Property.objects.first()  # first and only
+        self.assertEqual(property.access_level_instance, self.org_user.access_level_instance)
+
+    def test_create_property_with_ali(self):
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        child_ali.save()
+
+        state = self.property_state_factory.get_property_state()
+        cycle_id = self.cycle.id
+
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data,
+            "access_level_instance_id": child_ali.id,
+        })
+
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        response = self.client.post(url, params, content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['status'], 'success')
+
+        property = Property.objects.first()  # first and only
+        self.assertEqual(property.access_level_instance, child_ali)
+
+    def test_create_property_with_bad_ali(self):
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        self.org_user.access_level_instance = child_ali
+
+        state = self.property_state_factory.get_property_state()
+        cycle_id = self.cycle.id
+
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data,
+            "access_level_instance_id": self.org.root.id,
+        })
+
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        response = self.client.post(url, params, content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['status'], 'success')
+
     def test_create_property_in_diff_org(self):
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
@@ -166,6 +214,8 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # go through each of the Column's class columns and ensure that the serializer is read only
         # map the related object ids to the column names
         protected_columns.pop(protected_columns.index('import_file'))
+        protected_columns.pop(protected_columns.index('raw_access_level_instance_id'))  # needs to be set
+        protected_columns.pop(protected_columns.index('raw_access_level_instance_error'))  # needs to be set
         protected_columns.pop(protected_columns.index('extra_data'))  # extra_data is allowed
         protected_columns.append('import_file_id')
         protected_columns.append('measures')
