@@ -13,6 +13,7 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
 from django.db.models import Case, Value, When
 from django.db.models.signals import (
@@ -139,6 +140,12 @@ def set_default_access_level_instance(sender, instance, **kwargs):
     if instance.access_level_instance_id is None:
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = TaxLotProperty.objects \
+        .filter(property_view__property=instance) \
+        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
+    if bad_taxlotproperty.count() > 0:
+        raise ValidationError("cannot change property's ALI to Ali different that related taxlots.")
 
 
 class PropertyState(models.Model):

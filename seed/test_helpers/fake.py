@@ -647,10 +647,11 @@ class FakeTaxLotFactory(BaseFake):
         taxlot_details = {
             'organization': organization
         }
-        if self.access_level_instance is not None:
-            taxlot_details["access_level_instance"] = self.access_level_instance
-        elif access_level_instance is not None:
+
+        if access_level_instance is not None:
             taxlot_details["access_level_instance"] = access_level_instance
+        elif self.access_level_instance is not None:
+            taxlot_details["access_level_instance"] = self.access_level_instance
         else:
             taxlot_details["access_level_instance"] = taxlot_details["organization"].root
 
@@ -836,11 +837,12 @@ class FakeAnalysisFactory(BaseFake):
         self.user = user
 
     def get_analysis(self, name=None, service=None, start_time=None,
-                     organization=None, user=None, configuration=None):
+                     organization=None, user=None, configuration=None, access_level_instance=None):
 
         config = {
             'name': name if name is not None else self.fake.text(),
             'organization': organization if organization is not None else self.organization,
+            "access_level_instance": access_level_instance if access_level_instance is not None else self.organization.root,
             'user': user if user is not None else user,
             'service': service if service is not None else Analysis.BSYNCR,
             'start_time': datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),

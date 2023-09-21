@@ -23,7 +23,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import PropertyView, TaxLotView
+from seed.models import Analysis, Property, PropertyView, TaxLotView
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -225,13 +225,17 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hierarchy_access(request, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, *args, **kwargs):
+def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, *args, **kwargs):
     """Helper function to has_hierarchy_access"""
     body = request.data
     params = request.GET
 
     try:
-        if property_view_id_kwarg and property_view_id_kwarg in kwargs:
+        if property_id_kwarg and property_id_kwarg in kwargs:
+            property = Property.objects.get(pk=kwargs[property_id_kwarg])
+            requests_ali = property.access_level_instance
+
+        elif property_view_id_kwarg and property_view_id_kwarg in kwargs:
             property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
             requests_ali = property_view.property.access_level_instance
 
@@ -248,7 +252,7 @@ def assert_hierarchy_access(request, property_view_id_kwarg=None, param_property
             requests_ali = import_file.access_level_instance
 
         elif body_ali_id and body_ali_id in body:
-            requests_ali = AccessLevelInstance.objects.get(body[body_ali_id])
+            requests_ali = AccessLevelInstance.objects.get(pk=body[body_ali_id])
 
         elif import_record_id_kwarg and import_record_id_kwarg in kwargs:
             import_record = ImportRecord.objects.get(pk=kwargs[import_record_id_kwarg])
@@ -257,6 +261,10 @@ def assert_hierarchy_access(request, property_view_id_kwarg=None, param_property
         elif body_import_file_id and body_import_file_id in body:
             import_file = ImportFile.objects.get(pk=body[body_import_file_id])
             requests_ali = import_file.access_level_instance
+
+        elif analysis_id_kwarg and analysis_id_kwarg in kwargs:
+            analysis = Analysis.objects.get(pk=kwargs[analysis_id_kwarg])
+            requests_ali = analysis.access_level_instance
 
         else:
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
@@ -276,17 +284,17 @@ def assert_hierarchy_access(request, property_view_id_kwarg=None, param_property
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hierarchy_access(property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None):
+def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
