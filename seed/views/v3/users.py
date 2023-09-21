@@ -183,7 +183,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 return JsonResponse({
                     'status': 'error',
                     'message': 'if using an existing org, you must provide a `access_level_instance_id`'
-                }, status=status._BAD_REQUEST)
+                }, status=status.HTTP_400_BAD_REQUEST)
         else:
             org, _, _ = create_organization(user, org_name)
             access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
