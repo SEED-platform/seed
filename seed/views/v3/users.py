@@ -9,6 +9,7 @@ import logging
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
@@ -192,7 +193,13 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
         if not org.is_member(user):
-            org.add_member(user, access_level_instance_id)
+            try:
+                org.add_member(user, access_level_instance_id)
+            except IntegrityError as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'

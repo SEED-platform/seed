@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -68,7 +69,14 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        _orguser, created = org.add_member(user, access_level_instance_id=org.root)
+        try:
+            _orguser, created = org.add_member(user, access_level_instance_id=org.root)
+            _orguser.save()
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Send an email if a new user has been added to the organization
         if created:

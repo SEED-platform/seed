@@ -8,7 +8,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from treebeard.ns_tree import NS_Node
@@ -91,6 +91,12 @@ class OrganizationUser(models.Model):
         return 'OrganizationUser: {0} <{1}> ({2})'.format(
             self.user.username, self.organization.name, self.pk
         )
+
+
+@receiver(pre_save, sender=OrganizationUser)
+def presave_organization_user(sender, instance, **kwargs):
+    if instance.role_level == ROLE_OWNER and instance.access_level_instance != instance.organization.root:
+        raise IntegrityError("Owners must be member of the organization's root.")
 
 
 class AccessLevelInstance(NS_Node):
@@ -403,6 +409,8 @@ pre_delete.connect(organization_pre_delete, sender=Organization)
 
 @receiver(pre_save, sender=Organization)
 def presave_organization(sender, instance, **kwargs):
+    from seed.models import Column
+
     if instance.id is None:
         return
 
@@ -412,6 +420,10 @@ def presave_organization(sender, instance, **kwargs):
     if previous_access_level_names != instance.access_level_names:
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
+
+    taken_names = Column.objects.filter(display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    if len(taken_names) > 0:
+        raise ValueError(f"{taken_names} are column names.")
 
 
 def _assert_alns_are_valid(org):
