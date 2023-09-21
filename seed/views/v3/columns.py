@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -116,7 +117,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
     @ajax_request_class
     @has_perm_class('requires_root_member_access')
     def create(self, request):
-        self.get_organization(self.request)
+        org_id = self.get_organization(self.request)
 
         table_name = self.request.data.get("table_name")
         if table_name != "PropertyState" and table_name != "TaxLotState":
@@ -126,6 +127,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # set request data organization_id to org_id just in case it is not set or incorrectly set
+            self.request.data['organization_id'] = org_id
+
             new_column = Column.objects.create(
                 is_extra_data=True,
                 **self.request.data
@@ -181,7 +185,16 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         if request.data['comstock_mapping'] is not None:
             Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
                 .update(comstock_mapping=None)
-        return super(ColumnViewSet, self).update(request, pk)
+
+        try:
+            result = super(ColumnViewSet, self).update(request, pk)
+        except IntegrityError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return result
 
     @ajax_request_class
     @has_perm_class('requires_root_member_access')
