@@ -23,7 +23,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import Analysis, PropertyView, TaxLotView
+from seed.models import Analysis, Property, PropertyView, TaxLotView
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -231,7 +231,11 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
     params = request.GET
 
     try:
-        if property_view_id_kwarg and property_view_id_kwarg in kwargs:
+        if property_id_kwarg and property_id_kwarg in kwargs:
+            property = Property.objects.get(pk=kwargs[property_id_kwarg])
+            requests_ali = property.access_level_instance
+
+        elif property_view_id_kwarg and property_view_id_kwarg in kwargs:
             property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
             requests_ali = property_view.property.access_level_instance
 
