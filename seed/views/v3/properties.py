@@ -1078,9 +1078,27 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         org_id = self.get_organization(self.request)
         data = request.data
+
         # get state data
         property_state_data = data.get('state', None)
         cycle_pk = data.get('cycle_id', None)
+        access_level_instance_id = data.get('access_level_instance_id', None)
+
+        # set raw ali
+        if access_level_instance_id is None:
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            property_state_data["raw_access_level_instance_id"] = user_ali.id
+        else:
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            state_ali = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+
+            if not (user_ali == state_ali or state_ali.is_descendant_of(user_ali)):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No such resource.'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            property_state_data["raw_access_level_instance_id"] = state_ali.id
 
         if cycle_pk is None:
             return JsonResponse({
@@ -1687,7 +1705,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             name='Manual ESPM Records',
             owner=request.user,
             last_modified_by=request.user,
-            super_organization_id=org_id
+            super_organization_id=org_id,
+            access_level_instance_id=self.request.access_level_instance_id
         )
 
         filename = the_file.name
