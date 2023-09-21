@@ -184,6 +184,7 @@ class GeocodeViewTests(TestCase):
                 "not_geocoded": 1,
                 "high_confidence": 1,
                 "low_confidence": 1,
+                "census_geocoder": 0,
                 "manual": 1,
                 "missing_address_components": 1
             }
