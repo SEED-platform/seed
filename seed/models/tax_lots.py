@@ -11,6 +11,7 @@ import re
 from os import path
 
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
@@ -62,6 +63,12 @@ def set_default_access_level_instance(sender, instance, **kwargs):
     if instance.access_level_instance_id is None:
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = TaxLotProperty.objects \
+        .filter(taxlot_view__taxlot=instance) \
+        .exclude(property_view__property__access_level_instance=instance.access_level_instance)
+    if bad_taxlotproperty.count() > 0:
+        raise ValidationError("cannot change property's ALI to Ali different that related properties.")
 
 
 class TaxLotState(models.Model):

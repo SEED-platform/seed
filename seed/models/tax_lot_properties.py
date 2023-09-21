@@ -14,8 +14,11 @@ from typing import TYPE_CHECKING, Optional, Sequence, Union
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Count
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.utils.timezone import make_naive
 
 from seed.models.columns import Column
@@ -410,3 +413,12 @@ class TaxLotProperty(models.Model):
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
         return join_map
+
+
+@receiver(pre_save, sender=TaxLotProperty)
+def presave_organization(sender, instance, **kwargs):
+    p_ali = instance.property_view.property.access_level_instance.pk
+    t_ali = instance.taxlot_view.taxlot.access_level_instance.pk
+
+    if p_ali != t_ali:
+        raise ValidationError("taxlot and property must have same access level instance.")

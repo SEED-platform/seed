@@ -635,17 +635,26 @@ class FakeTaxLotFactory(BaseFake):
     Factory Class for producing Taxlot instances.
     """
 
-    def __init__(self, organization=None):
+    def __init__(self, organization=None, access_level_instance=None):
         super().__init__()
         self.organization = organization
         self.label_factory = FakeStatusLabelFactory(organization=organization)
+        self.access_level_instance = access_level_instance
 
-    def get_taxlot(self, organization=None):
+    def get_taxlot(self, organization=None, access_level_instance=None):
         """Get taxlot instance."""
         organization = self._get_attr('organization', organization)
         taxlot_details = {
             'organization': organization
         }
+
+        if access_level_instance is not None:
+            taxlot_details["access_level_instance"] = access_level_instance
+        elif self.access_level_instance is not None:
+            taxlot_details["access_level_instance"] = self.access_level_instance
+        else:
+            taxlot_details["access_level_instance"] = taxlot_details["organization"].root
+
         taxlot = TaxLot.objects.create(**taxlot_details)
         return taxlot
 
