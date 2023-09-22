@@ -33,7 +33,6 @@ angular.module('BE.seed.controller.admin', [])
       Notification,
       $window,
       $translate,
-      access_level_tree
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
