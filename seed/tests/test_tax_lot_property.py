@@ -260,53 +260,98 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         super().setUp()
         self.cycle = self.cycle_factory.get_cycle()
 
-    def test_tax_lot_and_property_in_different_ali(self):
-        self.property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
-        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.root_property_view = self.property_view_factory.get_property_view(prprty=self.root_property)
 
-        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
-        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
+        self.root_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.root_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.root_taxlot)
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.root_property_view.id,
+            taxlot_view_id=self.root_taxlot_view.id
+        ).save()
+
+        self.columns = [
+            Column.objects.get(organization=self.org, table_name='PropertyState', column_name='address_line_1').column_name
+        ]
+
+    def test_tax_lot_and_property_in_different_ali(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        child_property_view = self.property_view_factory.get_property_view(prprty=child_property)
 
         with self.assertRaises(ValidationError):
             TaxLotProperty(
                 primary=True,
                 cycle_id=self.cycle.id,
-                property_view_id=self.property_view.id,
-                taxlot_view_id=self.taxlot_view.id
+                property_view_id=child_property_view.id,
+                taxlot_view_id=self.root_taxlot_view.id
             ).save()
 
     def test_change_properties_ali(self):
-        self.property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
-        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
-
-        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
-        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
-
-        TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=self.property_view.id,
-            taxlot_view_id=self.taxlot_view.id
-        ).save()
-
         with self.assertRaises(ValidationError):
-            self.property.access_level_instance = self.child_level_instance
-            self.property.save()
+            self.root_property.access_level_instance = self.child_level_instance
+            self.root_property.save()
 
     def test_change_tax_lot_ali(self):
-        self.property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
-        self.property_view = self.property_view_factory.get_property_view(prprty=self.property)
-
-        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
-        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot)
-
-        TaxLotProperty(
-            primary=True,
-            cycle_id=self.cycle.id,
-            property_view_id=self.property_view.id,
-            taxlot_view_id=self.taxlot_view.id
-        ).save()
-
         with self.assertRaises(ValidationError):
-            self.taxlot.access_level_instance = self.child_level_instance
-            self.taxlot.save()
+            self.root_taxlot.access_level_instance = self.child_level_instance
+            self.root_taxlot.save()
+
+    def test_property_export(self):
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
+        url += f"?organization_id={self.org.pk}&inventory_type=properties"
+        params = json.dumps({'columns': self.columns, 'export_type': 'csv'})
+
+        self.login_as_root_member()
+        response = self.client.post(url, data=params, content_type='application/json')
+        data = response.content.decode('utf-8').split('\n')
+        assert len(data) == 3
+
+        self.login_as_child_member()
+        response = self.client.post(url, data=params, content_type='application/json')
+        data = response.content.decode('utf-8').split('\n')
+        assert len(data) == 2
+
+    def test_taxlot_export(self):
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
+        url += f"?organization_id={self.org.pk}&inventory_type=taxlots"
+        params = json.dumps({'columns': self.columns, 'export_type': 'csv'})
+
+        self.login_as_root_member()
+        response = self.client.post(url, data=params, content_type='application/json')
+        data = response.content.decode('utf-8').split('\n')
+        assert len(data) == 3
+
+        self.login_as_child_member()
+        response = self.client.post(url, data=params, content_type='application/json')
+        data = response.content.decode('utf-8').split('\n')
+        assert len(data) == 2
+
+    def test_set_update_to_now(self):
+        start_of_test = datetime.now(pytz.UTC)
+        time.sleep(1)
+
+        progress_data = ProgressData(func_name='set_update_to_now', unique_id=f'metadata{randint(10000,99999)}')
+        url = reverse_lazy('api:v3:tax_lot_properties-set-update-to-now')
+        url += f"?organization_id={self.org.pk}"
+        params = json.dumps({
+            'property_views': [self.root_property_view.pk],
+            'taxlot_views': [self.root_taxlot_view.pk],
+            'progress_key': progress_data.key
+        })
+
+        self.login_as_child_member()
+        self.client.post(url, data=params, content_type='application/json')
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated < start_of_test
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).property.updated < start_of_test
+        assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).taxlot.updated < start_of_test
+        assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated < start_of_test
+
+        self.login_as_root_member()
+        self.client.post(url, data=params, content_type='application/json')
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated > start_of_test
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).property.updated > start_of_test
+        assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).taxlot.updated > start_of_test
+        assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated > start_of_test
