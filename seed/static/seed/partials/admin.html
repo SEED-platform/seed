@@ -74,13 +74,13 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="new_user_org_select" translate>Choose Existing Organization:</label>
                             <div class="col-sm-4">
-                                <select name="new_user_orgs" class="form-control" id="new_user_org_select" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization" ng-change="user.org_name = undefined"></select>
+                                <select name="new_user_orgs" class="form-control" id="new_user_org_select" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization" ng-change="org_form.existing_org()"></select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="org_name_from_user" translate>Or Create New (With User as Head):</label>
                             <div class="col-sm-4">
-                                <input type="text" class="form-control" id="org_name_from_user" ng-model="user.org_name" ng-change="user.organization = undefined" placeholder="{$:: 'Organization Name' | translate $}">
+                                <input type="text" class="form-control" id="org_name_from_user" ng-model="user.org_name" ng-change="org_form.new_org()" placeholder="{$:: 'Organization Name' | translate $}">
                             </div>
                         </div>
                         <div class="form-group">
@@ -93,7 +93,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="access_level_name" translate>Access Level:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" id="access_level_name" ng-model="level_name_index" ng-change="change_selected_level_index()"
+                                <select class="form-control" id="access_level_name" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-disabled="user.org_name"
                                     ng-options="i as name for (i, name) in level_names">
                                 </select>
                             </div>
@@ -102,7 +102,7 @@
                             <label class="col-sm-2 control-label" for="access_level_instance" translate>Access Level Instance:</label>
                             <div class="col-sm-4">
                                 <select class="form-control" id="access_level_instance" ng-model="user.access_level_instance_id"
-                                    ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances">
+                                    ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances" ng-disabled="user.org_name">
                                 </select>
                             </div>
                         </div>
