@@ -197,8 +197,9 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         try:
             role = get_role_from_js(role)
         except Exception:
-                return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'},
-                                    status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({
+                'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'
+            }, status=status.HTTP_400_BAD_REQUEST)
         if not org.is_member(user):
             try:
                 org.add_member(user, access_level_instance_id, role)

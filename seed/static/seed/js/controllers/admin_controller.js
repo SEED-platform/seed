@@ -98,7 +98,7 @@ angular.module('BE.seed.controller.admin', [])
       $scope.org_form.existing_org = () => {
         $scope.user.org_name = undefined
         $scope.user.access_level_instance_id = undefined
-        $scope.level_name_index = undefined 
+        $scope.level_name_index = undefined
 
         organization_service.get_organization_access_level_tree($scope.user.organization.id).then(access_level_instance => {
           $scope.level_names = access_level_instance.access_level_names
