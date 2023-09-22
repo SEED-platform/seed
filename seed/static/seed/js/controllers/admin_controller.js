@@ -99,10 +99,10 @@ angular.module('BE.seed.controller.admin', [])
         $scope.user.access_level_instance_id = undefined
         $scope.level_name_index = undefined
 
-        organization_service.get_organization_access_level_tree($scope.user.organization.id).then(access_level_instance => {
-          $scope.level_names = access_level_instance.access_level_names
+        organization_service.get_organization_access_level_tree($scope.user.organization.id).then(access_level_tree => {
+          $scope.level_names = access_level_tree.access_level_names
           access_level_instances_by_depth = {}
-          calculate_access_level_instances_by_depth(access_level_instance.access_level_tree, 1)
+          calculate_access_level_instances_by_depth(access_level_tree.access_level_tree, 1)
         })
       };
       $scope.org_form.reset = function () {
