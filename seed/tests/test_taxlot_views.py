@@ -16,6 +16,7 @@ from seed.models import (
     DATA_STATE_MAPPING,
     VIEW_LIST_TAXLOT,
     Column,
+    Label,
     Note,
     PropertyView,
     TaxLot,
@@ -32,8 +33,11 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.match import match_merge_link
+from seed.utils.merge import merge_taxlots
 from seed.utils.organizations import create_organization
+from seed.utils.properties import pair_unpair_property_taxlot
 
 
 class TaxLotViewTests(DataMappingBaseTestCase):
@@ -334,6 +338,225 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
         self.assertEqual(result_2[0][field_1_key], 'value_2')
         self.assertEqual(result_2[0]['id'], taxlot_2.id)
+
+
+class TaxlotViewTestPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.cycle = self.cycle_factory.get_cycle()
+        self.view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
+        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=self.org.root)
+        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.view.labels.add(self.label)
+        self.view.taxlot = self.taxlot
+        self.view.save()
+
+    def test_taxlot_labels(self):
+        url = reverse('api:v3:taxlots-labels') + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, content_type='application/json')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert label_data["is_applied"] == [self.view.pk]
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, content_type='application/json')
+        data = resp.json()
+        label_data = next(d for d in data if d["name"] == "test_label")
+        assert "is_applied" not in label_data
+
+    def test_taxlot_list(self):
+        url = reverse('api:v3:taxlots-list') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 0
+
+    def test_taxlot_filter_by_cycle(self):
+        url = reverse('api:v3:taxlots-filter-by-cycle') + f'?organization_id={self.org.pk}'
+        params = json.dumps({"cycle_ids": [self.cycle.id], "organization_id": self.org.pk})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 0
+
+    def test_taxlot_filter(self):
+        url = reverse('api:v3:taxlots-filter') + f'?cycle_id={self.cycle.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 1
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json()["pagination"]["total"] == 0
+
+    def test_taxlot_merge(self):
+        self.state_2 = self.taxlot_state_factory.get_taxlot_state(address_line_1='2 taxlot state')
+        self.taxlot_2 = self.taxlot_factory.get_taxlot()
+        self.view_2 = TaxLotView.objects.create(
+            taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
+        )
+
+        # Merge the taxlots
+        url = reverse('api:v3:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'taxlot_view_ids': [self.view_2.pk, self.view.pk]
+        })
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 400
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, post_params, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_taxlot_unmerge(self):
+        self.state_2 = self.taxlot_state_factory.get_taxlot_state(address_line_1='2 taxlot state')
+        self.taxlot_2 = self.taxlot_factory.get_taxlot()
+        self.view_2 = TaxLotView.objects.create(
+            taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
+        )
+        merged_state = merge_taxlots([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
+        _, _, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        view_id = TaxLotView.objects.first().id
+        url = reverse('api:v3:taxlots-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
+
+        # child member cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 400
+
+        # root member can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+    def test_taxlot_links(self):
+        url = reverse('api:v3:taxlots-links', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_taxlot_match_merge_link(self):
+        url = reverse('api:v3:taxlots-match-merge-link', args=[self.view.id]) + '?organization_id={}'.format(self.org.pk)
+
+        # root member can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type='application/json')
+        assert response.status_code == 404
+
+    def test_taxlot_pair(self):
+        self.property_view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        url = reverse('api:v3:taxlots-pair', args=[self.view.id]) + f'?property_id={self.property_view.pk}&organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_taxlot_unpair(self):
+        self.property_view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        pair_unpair_property_taxlot(self.view.id, self.property_view.id, self.org.pk, True)
+        url = reverse('api:v3:taxlots-unpair', args=[self.view.id]) + f'?property_id={self.property_view.pk}&organization_id={self.org.pk}'
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 404
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, content_type='application/json')
+        assert resp.status_code == 200
+
+    def test_taxlot_batch_delete(self):
+        self.state_2 = self.taxlot_state_factory.get_taxlot_state(address_line_1='2 taxlot state')
+        self.taxlot_2 = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        self.view_2 = TaxLotView.objects.create(
+            taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
+        )
+        url = reverse('api:v3:taxlots-batch-delete') + '?organization_id={}'.format(self.org.pk)
+        params = json.dumps({
+            'taxlot_view_ids': [self.view_2.pk, self.view.pk]
+        })
+
+        # child member only deletes the one it has access to.
+        self.login_as_child_member()
+        resp = self.client.delete(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json() == {'status': 'success', 'taxlots': 1}
+
+    def test_taxlot_retrieve(self):
+        url = reverse('api:v3:taxlots-detail', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_taxlot_update(self):
+        url = reverse('api:v3:taxlots-detail', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"address_line_1": "742 Evergreen Terrace"}})
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.put(url, param, content_type='application/json')
+        assert resp.status_code == 404
 
 
 class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):

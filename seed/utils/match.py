@@ -422,11 +422,11 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
 
         # If this was a preview run, capture results here and rollback.
         if preview_run:
+            root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
             if state_class_name == 'PropertyState':
-                root = AccessLevelInstance.objects.get(organization_id=org_id, depth=1)
                 summary = properties_across_cycles(org_id, root, -1, cycle_ids)
             else:
-                summary = taxlots_across_cycles(org_id, -1, cycle_ids)
+                summary = taxlots_across_cycles(org_id, root, -1, cycle_ids)
 
             transaction.set_rollback(True)
 

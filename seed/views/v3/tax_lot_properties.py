@@ -24,6 +24,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    AccessLevelInstance,
     ColumnListProfile,
     PropertyView,
     TaxLotProperty,
@@ -90,6 +91,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Download a collection of the TaxLot and Properties in multiple formats.
         """
         org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         if request.data.get('progress_key'):
             progress_key = request.data['progress_key']
@@ -126,6 +128,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         if hasattr(view_klass, 'property'):
             select_related.append('property')
             filter_str['property__organization_id'] = org_id
+            filter_str['property__access_level_instance__lft__gte'] = access_level_instance.lft
+            filter_str['property__access_level_instance__rgt__lte'] = access_level_instance.rgt
             # always export the labels and notes
             column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
@@ -133,6 +137,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
             filter_str['taxlot__organization_id'] = org_id
+            filter_str['taxlot__access_level_instance__lft__gte'] = access_level_instance.lft
+            filter_str['taxlot__access_level_instance__rgt__lte'] = access_level_instance.rgt
             # always export the labels and notes
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
@@ -614,6 +620,18 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         property_view_ids = request.data.get('property_views')
         taxlot_view_ids = request.data.get('taxlot_views')
         progress_key = request.data.get('progress_key')
+
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        property_view_ids = list(PropertyView.objects.filter(
+            id__in=property_view_ids,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).values_list("id", flat=True))
+        taxlot_view_ids = list(TaxLotView.objects.filter(
+            taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
+            id__in=taxlot_view_ids
+        ).values_list("id", flat=True))
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
         return
