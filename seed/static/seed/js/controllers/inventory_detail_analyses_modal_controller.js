@@ -118,7 +118,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               $scope.new_analysis.configuration.meter.end_date = new Date(current_cycle.end);
             }
             break;
-
+          case 'EEEJ':
+            $scope.new_analysis.configuration = {};
+            break;
           default:
             $log.error('Unknown analysis type.', $scope.new_analysis.service);
             Notification.error('Unknown analysis type: ' + $scope.new_analysis.service);
