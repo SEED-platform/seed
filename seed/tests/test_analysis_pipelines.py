@@ -1155,7 +1155,7 @@ class TestEeejPipeline(TestCase):
         pvids = [self.property_view.id]
         loc_data_by_property_view, errors_by_property_view_id = _get_data_for_census_tract_fetch(pvids, self.org)
         self.assertEqual(errors_by_property_view_id, {})
-        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'tract': None, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
+        self.assertEqual(loc_data_by_property_view, {self.property_view.id: {'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'tract': None, 'location': '730 Garcia Street, Boring, Oregon, 97080'}})
 
     def test_get_eeej_indicators(self):
         # create one disadvantaged and one not
