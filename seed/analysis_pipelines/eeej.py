@@ -50,11 +50,11 @@ EJSCREEN_URL_STUB = 'https://ejscreen.epa.gov/mapper/EJscreen_SOE_report.aspx?na
 
 
 def _get_data_for_census_tract_fetch(property_view_ids, organization):
-    """
-        Performs basic validation of the properties for running EEEJ and returns any errors
-        Fetches census tract information based on address if it doesn't exist already
-        :param analysis: property_view_ids, organization
-        :returns: dictionary[id:str], dictionary of property_view_ids to error message
+    """Performs basic validation of the properties for running EEEJ and returns any errors
+    Fetches census tract information based on address if it doesn't exist already
+
+    :param analysis: property_view_ids, organization
+    :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     # invalid_location = []
     loc_data_by_property_view = {}
@@ -116,7 +116,7 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
 
 
 def _fetch_census_tract(pv_data):
-    """ Contacts the census geocoder service to get census tract from address or lat, lng coordinates
+    """Contacts the census geocoder service to get census tract from address or lat, lng coordinates
 
     :param str: pv_data, dictionary of data for a particular property view, including location and lat, lng
     :returns: list[str], list containing a census tract and status message (success or error)
@@ -184,7 +184,7 @@ def _fetch_census_tract(pv_data):
 
 
 def _get_location(property_view):
-    """ Retrieves the location string of a property, formatted for geocoding request
+    """Retrieves the location string of a property, formatted for geocoding request
 
     :param analysis: property_view
     :returns: list[str], list containing a location string and status (success or error)
@@ -220,7 +220,7 @@ def _get_location(property_view):
 
 
 def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_view):
-    """ Looks up the pre-determined EEEJ indicators for a particular census tract or
+    """Looks up the pre-determined EEEJ indicators for a particular census tract or
     Location. If Census Tract is not already computed, use census.gov API to retrieve it.
     We are doing this during 'run_analysis' because it can take some time for retrieve
     many tracts
@@ -273,7 +273,7 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
 
 
 def _get_ejscreen_reports(results_by_apv, analysis_property_views):
-    """ Create EJScreen Report URL from https://ejscreen.epa.gov/mapper/ejscreenapi1.html
+    """Create EJScreen Report URL from https://ejscreen.epa.gov/mapper/ejscreenapi1.html
     """
     errors_by_apv_id = {}
     for apv in analysis_property_views:
@@ -301,7 +301,7 @@ def _get_ejscreen_reports(results_by_apv, analysis_property_views):
 
 
 def _log_errors(errors_by_apv_id, analysis_id):
-    """ Log individual analysis property view errors to the analysis """
+    """Log individual analysis property view errors to the analysis"""
     if errors_by_apv_id:
         for av_id in errors_by_apv_id:
             AnalysisMessage.log_and_create(
