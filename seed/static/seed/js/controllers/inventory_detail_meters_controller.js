@@ -48,9 +48,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         view_id: $stateParams.view_id
       };
 
-      var getMeterLabel = function (meter) {
-        return meter.type + ' - ' + meter.source + ' - ' + meter.source_id;
-      };
+      const getMeterLabel = ({source, source_id, type}) => `${type} - ${source} - ${source_id ?? 'None'}`;
 
       var resetSelections = function () {
         $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);

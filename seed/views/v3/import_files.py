@@ -779,6 +779,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 data_state=DATA_STATE_MATCHING,
                 geocoding_confidence__startswith='Low'
             )),
+            'census_geocoder': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Census'
+            )),
             'manual': len(PropertyState.objects.filter(
                 import_file__pk=import_file.pk,
                 data_state=DATA_STATE_MATCHING,
@@ -801,6 +806,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 import_file__pk=import_file.pk,
                 data_state=DATA_STATE_MATCHING,
                 geocoding_confidence__startswith='Low'
+            )),
+            'census_geocoder': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Census'
             )),
             'manual': len(TaxLotState.objects.filter(
                 import_file__pk=import_file.pk,
@@ -829,6 +839,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'new': import_file.matching_results_data.get('property_new', None),
                 'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
+                'geocoded_census_geocoder': property_geocode_results.get('census_geocoder'),
                 'geocoded_manually': property_geocode_results.get('manual'),
                 'geocode_not_possible': property_geocode_results.get('missing_address_components'),
             },
@@ -842,6 +853,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'new': import_file.matching_results_data.get('tax_lot_new', None),
                 'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
+                'geocoded_census_geocoder': tax_lot_geocode_results.get('census_geocoder'),
                 'geocoded_manually': tax_lot_geocode_results.get('manual'),
                 'geocode_not_possible': tax_lot_geocode_results.get('missing_address_components'),
             }
