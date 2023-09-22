@@ -36,7 +36,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
-    'audit_template_service',
     'cycle_service',
     'simple_modal_service',
     'property_measure_service',
@@ -74,7 +73,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       current_profile,
       labels_payload,
       organization_payload,
-      audit_template_service,
       cycle_service,
       simple_modal_service,
       property_measure_service,
@@ -82,6 +80,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = {id: organization_payload.organization.id};
       $scope.static_url = urls.static_url;
@@ -118,6 +117,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         return !_.isEmpty(label.is_applied);
       });
       $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+      $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -655,6 +655,33 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_data_upload_espm_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_espm_modal.html',
+          controller: 'data_upload_espm_modal_controller',
+          resolve: {
+            pm_property_id: () => $scope.pm_property_id,
+            organization: () => $scope.organization,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id,
+            column_mapping_profiles: [
+              'column_mappings_service',
+              function (
+                column_mappings_service
+              ) {
+                return column_mappings_service.get_column_mapping_profiles_for_org(
+                  $scope.organization.id, []
+                ).then(function (response) {
+                  return response.data;
+                });
+              }]
+          }
+        });
+        modalInstance.result.then(function () {
+        });
+      };
+
       $scope.export_building_sync = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_buildingsync_modal.html',
@@ -792,6 +819,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.uploader = {
         invalid_xml_extension_alert: false,
+        invalid_xlsx_extension_alert: false,
         in_progress: false,
         progress: 0,
         complete: false,
@@ -804,9 +832,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
             $scope.uploader.invalid_xml_extension_alert = true;
             break;
 
+          case 'invalid_extension':
+            $scope.uploader.invalid_xlsx_extension_alert = true;
+            break;
+
           case 'upload_submitted':
             $scope.uploader.filename = file.filename;
             $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xlsx_extension_alert = false;
             $scope.uploader.in_progress = true;
             $scope.uploader.status_message = 'uploading file';
             break;

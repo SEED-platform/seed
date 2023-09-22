@@ -98,7 +98,7 @@ class AnalysisPropertyView(models.Model):
                 models.Q(property_id=analysis_property_view.property_id)
                 & models.Q(cycle_id=analysis_property_view.cycle_id)
             )
-        property_views = PropertyView.objects.filter(property_view_query).prefetch_related('state')
+        property_views = PropertyView.objects.filter(property_view_query)
 
         # get original property views keyed by canonical property id and cycle
         property_views_by_property_cycle_id = {

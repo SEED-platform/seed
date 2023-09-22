@@ -1,12 +1,12 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel" translate>Refresh Metadata of Selected Properties and Tax Lots</h4>
+    <h4 class="modal-title" id="exportModalLabel" translate>Set "Updated" of Selected Properties and Tax Lots to Now</h4>
 </div>
 <div class="modal-body form-horizontal" style="padding-bottom: 0;">
     <div class="section">
 
         <div ng-if="!refreshing" class="section_content_container">
             <div class="section_content with_padding">
-                <p>Refresh Metadata for {$ id_count $} selected {$ inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties'$}?</p>
+                <p>Set "Updated" to now for {$ property_views.length $} selected Properties and {$ taxlot_views.length $} selected Taxlots?</p>
             </div>
         </div>
 
@@ -23,6 +23,6 @@
 
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-primary" ng-if="!refreshing" ng-click="refresh_metadata()" translate>Refresh Metadata</button>
+    <button type="button" class="btn btn-primary" ng-if="!refreshing" ng-click="set_update_to_now()" translate>Refresh Metadata</button>
     <button type="button" class="btn btn-default" ng-if="!refreshing" ng-click="cancel()" translate>Close</button>
 </div>
