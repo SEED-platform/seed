@@ -17,19 +17,6 @@ class HousingType(models.TextChoices):
     MULTIFAMILY = 'multi-family assisted property'
 
 
-# make sure to add these line to the migration to import data:
-""" at the top:
-    from seed.lib.geospatial.eeej import add_eeej_data
-
-    def handle_eeej_data(apps, schema_editor):
-        add_eeej_data()
-
-    and in the 'operations' list:
-
-    migrations.RunPython(handle_eeej_data)
-"""
-
-
 class EeejCejst(models.Model):
     # Stores subset of CEJST data
     census_tract_geoid = models.CharField(max_length=11, unique=True)

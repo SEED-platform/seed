@@ -46,7 +46,7 @@ CENSUS_GEOCODER_URL_STUB = 'https://geocoding.geo.census.gov/geocoder/geographie
 CENSUS_GEOCODER_URL_COORDS_STUB = 'https://geocoding.geo.census.gov/geocoder/geographies/coordinates?benchmark=2020&vintage=2010&format=json&'
 TRACT_FIELDNAME = 'analysis_census_tract'
 
-EJSCREEN_URL_STUB = 'https://ejscreen.epa.gov/mapper/EJscreen_SOE_report.aspx?namestr=&geometry={"spatialReference":{"wkid":4326},"x":XXXX,"y":YYYY}&distance=1&unit=9035&areatype=&areaid=&f=report'
+EJSCREEN_URL_STUB = 'https://ejscreen.epa.gov/mapper/EJscreen_SOE_report.aspx?namestr=&geometry={"spatialReference":{"wkid":4326},"x":LONG,"y":LAT}&distance=1&unit=9035&areatype=&areaid=&f=report'
 
 
 def _get_data_for_census_tract_fetch(property_view_ids, organization):
@@ -126,17 +126,13 @@ def _fetch_census_tract(pv_data):
     # prioritize geocoded lat/lng over address string, which is more error-prone
 
     if pv_data['latitude'] and pv_data['longitude'] and pv_data['geocoding_confidence'] and 'High' in pv_data['geocoding_confidence']:
-        # print(" @@@@@ CENSUS GEOCODING using lat/lng")
         url = f"{CENSUS_GEOCODER_URL_COORDS_STUB}x={pv_data['longitude']}&y={pv_data['latitude']}"
     else:
         # use address string
-        # print(" @@@@@ GEOCODING USING ADDRESS")
         url = f"{CENSUS_GEOCODER_URL_STUB}{urllib.parse.quote(pv_data['location'])}"
     headers = {
         'accept': 'application/json'
     }
-    # for debugging:
-    # print(f"-------------- URL: {url}")
 
     try:
         response = requests.request("GET", url, headers=headers)
@@ -285,7 +281,7 @@ def _get_ejscreen_reports(results_by_apv, analysis_property_views):
                 errors_by_apv_id[apv.id].append('Cannot retrieve EJ Screen report URL without latitude and longitude values')
                 continue
 
-            url = EJSCREEN_URL_STUB.replace('XXXX', str(results_by_apv[apv.id]['longitude'])).replace('YYYY', str(results_by_apv[apv.id]['latitude']))
+            url = EJSCREEN_URL_STUB.replace('LONG', str(results_by_apv[apv.id]['longitude'])).replace('LAT', str(results_by_apv[apv.id]['latitude']))
 
             if apv.id not in results_by_apv:
                 results_by_apv[apv.id] = {}
