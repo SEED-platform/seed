@@ -225,7 +225,7 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, *args, **kwargs):
+def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, *args, **kwargs):
     """Helper function to has_hierarchy_access"""
     body = request.data
     params = request.GET
@@ -242,6 +242,10 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
         elif param_property_view_id and param_property_view_id in params:
             property_view = PropertyView.objects.get(pk=params[param_property_view_id])
             requests_ali = property_view.property.access_level_instance
+
+        elif param_import_file_id and param_import_file_id in params:
+            import_file = ImportFile.objects.get(pk=params[param_import_file_id])
+            requests_ali = import_file.access_level_instance
 
         elif taxlot_view_id_kwarg and taxlot_view_id_kwarg in kwargs:
             taxlot_view = TaxLotView.objects.get(pk=kwargs[taxlot_view_id_kwarg])
@@ -284,17 +288,17 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None):
+def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
