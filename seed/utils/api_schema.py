@@ -17,6 +17,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         'boolean': openapi.TYPE_BOOLEAN,
         'integer': openapi.TYPE_INTEGER,
         'object': openapi.TYPE_OBJECT,
+        'number': openapi.TYPE_NUMBER,
     }
 
     @classmethod
