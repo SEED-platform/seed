@@ -641,7 +641,7 @@ class FakeTaxLotFactory(BaseFake):
         self.label_factory = FakeStatusLabelFactory(organization=organization)
         self.access_level_instance = access_level_instance
 
-    def get_taxlot(self, organization=None, access_level_instance=None):
+    def get_taxlot(self, organization=None, access_level_instance=None, **kw):
         """Get taxlot instance."""
         organization = self._get_attr('organization', organization)
         taxlot_details = {

@@ -52,6 +52,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeTaxLotFactory,
+    FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
 from seed.utils.organizations import create_organization
@@ -170,6 +171,7 @@ class AccessLevelBaseTestCase(TestCase):
         self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
         self.note_factory = FakeNoteFactory(organization=self.org, user=self.root_owner_user)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def login_as_root_owner(self):
         """ Login to client as Root-Level owner user """
