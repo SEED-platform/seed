@@ -442,7 +442,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           users_payload: ['auth_payload', 'user_service', function (auth_payload, user_service) {
             // Require auth_payload to successfully complete before attempting
             return user_service.get_users();
-          }]
+          }],
+          access_level_tree: ['organization_service', 'user_service', function (organization_service, user_service) {
+            var organization_id = user_service.get_organization().id;;
+            return organization_service.get_organization_access_level_tree(organization_id);
+          }],
         }
       })
       .state({
