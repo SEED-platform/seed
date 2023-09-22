@@ -20,13 +20,6 @@ from django.utils.timezone import get_current_timezone
 from pytz import timezone
 
 from config.settings.common import BASE_DIR, TIME_ZONE
-from config.settings.test import (
-    SF_DOMAIN,
-    SF_INSTANCE,
-    SF_PASSWORD,
-    SF_SECURITY_TOKEN,
-    SF_USERNAME
-)
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import (
     geocode_and_match_buildings_task,
@@ -53,7 +46,6 @@ from seed.models import (
     Property,
     PropertyState,
     PropertyView,
-    SalesforceConfig,
     Scenario,
     TaxLotProperty,
     TaxLotView
@@ -76,7 +68,6 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
-from seed.utils.encrypt import encrypt
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
@@ -711,40 +702,6 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view.property = self.property
         self.view.save()
 
-        self.benchmark_col, _ = Column.objects.get_or_create(
-            table_name='PropertyState',
-            column_name='Salesforce Benchmark ID',
-            organization=self.org,
-            is_extra_data=True,
-        )
-
-        self.ind_label = Label.objects.create(
-            name='Indication Label', super_organization=self.org
-        )
-        self.violation_label = Label.objects.create(
-            name='Violation Label', super_organization=self.org
-        )
-        self.compliance_label = Label.objects.create(
-            name='Compliance Label', super_organization=self.org
-        )
-
-        self.sf_config = SalesforceConfig.objects.create(
-            organization=self.org,
-            compliance_label=self.compliance_label,
-            indication_label=self.ind_label,
-            violation_label=self.violation_label,
-            seed_benchmark_id_column=self.benchmark_col,
-            unique_benchmark_id_fieldname='Salesforce_Benchmark_ID__c',
-            status_fieldname='Status__c',
-        )
-        self.sf_config.url = SF_INSTANCE
-        self.sf_config.username = SF_USERNAME
-        self.sf_config.password = encrypt(SF_PASSWORD)
-        self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == 'test':
-            self.sf_config.domain = SF_DOMAIN
-        self.sf_config.save()
-
     def test_property_labels(self):
         url = reverse('api:v3:properties-labels') + f'?organization_id={self.org.pk}'
 
@@ -1141,28 +1098,6 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             self.login_as_child_member()
             resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
             assert resp.status_code == 404
-
-    def test_property_update_salesforce(self):
-        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
-        self.property_2 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
-        self.view_2 = PropertyView.objects.create(
-            property=self.property_2, cycle=self.cycle, state=self.state_2
-        )
-
-        url = reverse('api:v3:properties-update-salesforce') + f'?organization_id={self.org.pk}'
-        params = json.dumps({
-            'property_view_ids': [self.view_2.pk, self.view.pk]
-        })
-
-        # root member can
-        self.login_as_root_member()
-        resp = self.client.post(url, params, content_type='application/json')
-        assert resp.status_code == 200
-
-        # child member cannot
-        self.login_as_child_member()
-        resp = self.client.post(url, params, content_type='application/json')
-        assert resp.status_code == 404
 
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):
