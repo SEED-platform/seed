@@ -24,18 +24,18 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 location_attr='IN_PATH',
                 type='TYPE_INTEGER',
                 required=True,
-                description="ID of the property view where the meter is associated."),
+                description='ID of the property view where the meter is associated.'),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                "type": "string",
-                "alias": "string",
-                "source": "string",
-                "source_id": "string",
-                "scenario_id": "integer",
-                "is_virtual": "boolean"
+                'type': ('enum', Meter.ENERGY_TYPES),
+                'alias': 'string',
+                'source': ('enum', Meter.SOURCES),
+                'source_id': 'string',
+                'scenario_id': 'integer',
+                'is_virtual': 'boolean'
             },
-            required=['type', 'source', 'source_id', ],
+            required=['type', 'source'],
             description='New meter to add. The type must be taken from a constrained list.'
         )
     ),
