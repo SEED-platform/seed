@@ -148,7 +148,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
                 return result.cycles;
               });
             },
-            current_cycle: _.constant($scope.cycle),
+            current_cycle: () => $scope.cycle
           }
         }).result.then(function (data) {
           if (data) {

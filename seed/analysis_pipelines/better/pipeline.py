@@ -151,6 +151,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
     :param preprocess_meters: bool, if true aggregate and interpolate readings
         into monthly readings. If false, don't do any preprocessing of the property's
         meters and readings.
+    :param config: dict
     :return: List[dict], list of dictionaries of the form:
         { 'meter_type': <Meter.type>, 'readings': List[SimpleMeterReading | MeterReading] }
     """
@@ -166,12 +167,12 @@ def get_meter_readings(property_id, preprocess_meters, config):
     # check if dates are ok
 
     try:
-        if 'select_meters' in config and config['select_meters'] == 'date_range':
+        if config.get('select_meters') == 'date_range':
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
             value2 = value2 + timedelta(days=1)
-        elif 'select_meters' in config and config['select_meters'] == 'select_cycle':
+        elif config.get('select_meters') == 'select_cycle':
             cycle = Cycle.objects.get(pk=config['cycle_id'])
             value1 = dateutil.parser.parse(cycle.start.isoformat())
             value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
@@ -182,7 +183,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
 
     if preprocess_meters:
         for meter in meters:
-            if 'select_meters' in config and config['select_meters'] == 'date_range':
+            if config.get('select_meters') == 'date_range':
                 try:
                     meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
                 except Exception as err:
@@ -213,7 +214,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
 
-            if 'select_meters' in config and (config['select_meters'] == 'date_range' or config['select_meters'] == 'select_cycle'):
+            if config.get('select_meters') in ['date_range', 'select_cycle']:
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
