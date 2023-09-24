@@ -75,7 +75,7 @@ class Scenario(models.Model):
     cdd_base_temperature = models.FloatField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
-    event = models.ForeignKey(ATEvent, related_name='scenarios', on_delete=models.DO_NOTHING, null=True)
+    event = models.ForeignKey(ATEvent, related_name='scenarios', on_delete=models.CASCADE, null=True)
 
     def copy_initial_meters(self, source_scenario_id):
         """
