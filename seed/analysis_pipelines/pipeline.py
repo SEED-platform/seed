@@ -98,7 +98,7 @@ def analysis_pipeline_task(expected_status):
         @functools.wraps(func)
         def _run_task(*args, **kwargs):
             def _stop_task_chain(task_instance):
-                # stops the celery task chain (ie any child tasks)
+                # stops the celery task chain (i.e., any child tasks)
                 # see: https://github.com/celery/celery/issues/3550
                 task_instance.request.chain = task_instance.request.callbacks = None
 
@@ -270,6 +270,7 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.better import BETTERPipeline
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
+        from seed.analysis_pipelines.eeej import EEEJPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
@@ -280,6 +281,8 @@ class AnalysisPipeline(abc.ABC):
             return EUIPipeline(analysis.id)
         elif analysis.service == Analysis.CO2:
             return CO2Pipeline(analysis.id)
+        elif analysis.service == Analysis.EEEJ:
+            return EEEJPipeline(analysis.id)
         else:
             raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 
@@ -419,7 +422,7 @@ class AnalysisPipeline(abc.ABC):
         """Sets the analysis status to RUNNING and saves the analysis start time.
         This method should be called once for an analysis. In addition, it should
         only be called by the pipeline once the analysis task has officially started
-        (ie a worker has picked up the actual work of the task).
+        (i.e., a worker has picked up the actual work of the task).
 
         Therefore, this should only be called in the context of a pipeline task.
 
@@ -455,7 +458,7 @@ class AnalysisPipeline(abc.ABC):
         """Sets the analysis status to COMPLETED and saves the analysis end time.
         This method should be called once for an analysis. In addition, it should
         only be called by the pipeline once the analysis task has officially ended
-        (ie all work for the analysis is finished).
+        (i.e., all work for the analysis is finished).
 
         Therefore, this should only be called in the context of a pipeline task.
 

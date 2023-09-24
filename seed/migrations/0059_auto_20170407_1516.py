@@ -73,7 +73,8 @@ def forwards(apps, schema_editor):
                             print("    staging old column for delete {}".format(m.pk))
                             objs_to_delete.add(m)
 
-        print("objects to delete:")
+        if len(objs_to_delete):
+            print("objects to delete:")
         for obj in objs_to_delete:
             print("  {}  --  {}".format(obj.id, obj.column_name))
             obj.delete()

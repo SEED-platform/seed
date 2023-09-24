@@ -68,19 +68,19 @@
     			<!-- chart setup form-->
 				  <div class="form-group">
 				    <label for="cycleSelect">Cycle</label>
-				    <select class="form-control" id="cycleSelect" ng-model="chart_cycle" ng-change="update()" ng-options="operator.id as operator.name for operator in cycles">
+				    <select class="form-control" id="cycleSelect" ng-model="configs.chart_cycle" ng-change="update()" ng-options="operator.id as operator.name for operator in cycles">
 				    </select>
 				  </div>
 
 				  <!-- metric and X axis -->
 				  <div class="form-group">
 				    <label for="metricSelect">Metric Type</label>
-				    <select class="form-control" id="metricSelect" ng-model="chart_metric" ng-change="update()" ng-options="operator.id as operator.name for operator in y_axis_options">
+				    <select class="form-control" id="metricSelect" ng-model="configs.chart_metric" ng-change="update()" ng-options="operator.id as operator.name for operator in y_axis_options">
  				    </select>
 				  </div>
 				  <div class="form-group">
 				    <label for="xSelect">X Axis</label>
-				    <select class="form-control" id="xSelect" ng-model="chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options">
+				    <select class="form-control" id="xSelect" ng-model="configs.chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options">
  				    </select>
 				  </div>
 
@@ -108,42 +108,69 @@
 	                        <tr ng-click="show_properties_for_dataset['y'] = !show_properties_for_dataset['y']">
 	                            <td class="r-selectable r-selected"> Compliant </td>
 	                            <td>
-	                                {$ data.results_by_cycles[chart_cycle]['y'].length $}
+	                                {$ data.results_by_cycles[configs.chart_cycle]['y'].length $}
 	                            </td>
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['y']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[chart_cycle]['y']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[0]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                        <tr ng-click="show_properties_for_dataset['n'] = !show_properties_for_dataset['n']">
 	                            <td class="r-selectable r-selected"> Non-Compliant </td>
-	                            <td> {$ data.results_by_cycles[chart_cycle]['n'].length $}
+	                            <td> {$ data.results_by_cycles[configs.chart_cycle]['n'].length $}
 	                            </td>
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['n']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[chart_cycle]['n']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[1]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                        <tr ng-click="show_properties_for_dataset['u'] = !show_properties_for_dataset['u']">
 	                            <td class="r-selectable r-selected"> Unknown </td>
 	                            <td>
-	                                {$ data.results_by_cycles[chart_cycle]['u'].length $}
+	                                {$ data.results_by_cycles[configs.chart_cycle]['u'].length $}
 	                            </td>
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['u']">
 	                            <td></td>
-	                            <td>
-	                                <div ng-repeat="item in data.results_by_cycles[chart_cycle]['u']">
-	                                    <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item, cycle_id: cycle.id})">Property - {$:: get_display_field_value(chart_cycle, item) $}</a></td>
-	                                </div>
+	                            <td style="padding: 0px">
+									<table style="width: 100%">
+										<tr>
+										  <th>Name</th>
+										  <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
+										  <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+										</tr>
+										<tr ng-repeat="item in chart_datasets[2]['data']">
+											<td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
+											<td>{$ item.x $}</td>
+											<td>{$ item.y $}</td>
+										</tr>
+									</table>
 	                            </td>
 	                        </tr>
 	                    </tbody>

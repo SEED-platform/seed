@@ -62,6 +62,8 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       # - REDIS_PASSWORD
+      # - REDIS_HOST
+      # - WEB_HOST
       - SEED_ADMIN_USER
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
@@ -123,13 +125,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-  #oep-city-1:
-  # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-  #container_name: seed_oep
-  #image: 127.0.0.1:5000/oep
-  #environment:
-  #  - OEP_DISABLED=true
-  #restart: unless-stopped
 volumes:
   seed_pgdata:
     external: true

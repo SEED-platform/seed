@@ -44,6 +44,9 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.models import (
     AUDIT_IMPORT,
+    GREEN_BUTTON,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Column,
     Cycle,
     Property,
@@ -78,6 +81,7 @@ from seed.utils.organizations import (
 )
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.salesforce import toggle_salesforce_sync
+from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
 
@@ -118,7 +122,7 @@ def _dict_org(request, organizations):
                     user_is_owner = True
 
             if ou.user == request.user:
-                role_level = _get_js_role(ou.role_level)
+                role_level = get_js_role(ou.role_level)
 
         org = {
             'name': o.name,
@@ -154,6 +158,7 @@ def _dict_org(request, organizations):
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'salesforce_enabled': o.salesforce_enabled,
+            'ubid_threshold': o.ubid_threshold,
         }
         orgs.append(org)
 
@@ -169,7 +174,7 @@ def _dict_org_brief(request, organizations):
 
     role_levels = {}
     for r in organization_roles:
-        role_levels[r['organization_id']] = _get_js_role(r['role_level'])
+        role_levels[r['organization_id']] = get_js_role(r['role_level'])
 
     orgs = []
     for o in organizations:
@@ -194,20 +199,6 @@ def _dict_org_brief(request, organizations):
     return orgs
 
 
-def _get_js_role(role):
-    """return the JS friendly role name for user
-
-    :param role: role as defined in superperms.models
-    :returns: (string) JS role name
-    """
-    roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
-    }
-    return roles.get(role, 'viewer')
-
-
 def _get_match_merge_link_key(identifier):
     return "org_match_merge_link_result__%s" % identifier
 
@@ -222,7 +213,7 @@ def cache_match_merge_link_result(summary, identifier, progress_key):
 
 
 class OrganizationViewSet(viewsets.ViewSet):
-    # allow using `pk` in url path for authorization (ie for has_perm_class)
+    # allow using `pk` in url path for authorization (i.e., for has_perm_class)
     authz_org_id_kwarg = 'pk'
 
     @ajax_request_class
@@ -643,6 +634,17 @@ class OrganizationViewSet(viewsets.ViewSet):
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
 
+        # update the ubid threshold option
+        ubid_threshold = posted_org.get('ubid_threshold')
+        if ubid_threshold is not None and ubid_threshold != org.ubid_threshold:
+            if not type(ubid_threshold) in (float, int) or ubid_threshold < 0 or ubid_threshold > 1:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'ubid_threshold must be a float between 0 and 1'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            org.ubid_threshold = ubid_threshold
+
         org.save()
 
         # Update the selected exportable fields.
@@ -962,18 +964,23 @@ class OrganizationViewSet(viewsets.ViewSet):
             organization_id=organization_id
         ).order_by('start')
 
-    def get_data(self, property_view, x_var, y_var):
-        result = None
+    def get_data(self, property_view, x_var, y_var, matching_columns):
+        result = {}
         state = property_view.state
         if getattr(state, x_var, None) and getattr(state, y_var, None):
-            result = {
-                "id": property_view.property_id,
-                "x": getattr(state, x_var),
-                "y": getattr(state, y_var),
-            }
+            for matching_column in matching_columns:
+                name = matching_column.column_name
+                if matching_column.is_extra_data:
+                    result[name] = state.extra_data.get(name)
+                else:
+                    result[name] = getattr(state, name)
+
+            result["x"] = getattr(state, x_var)
+            result["y"] = getattr(state, y_var)
+
         return result
 
-    def get_raw_report_data(self, organization_id, cycles, x_var, y_var):
+    def get_raw_report_data(self, organization_id, cycles, x_var, y_var, addtional_columns=[]):
         all_property_views = PropertyView.objects.select_related(
             'property', 'state'
         ).filter(
@@ -990,7 +997,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             for property_view in property_views:
                 property_pk = property_view.property_id
                 count_total.append(property_pk)
-                result = self.get_data(property_view, x_var, y_var)
+                result = self.get_data(property_view, x_var, y_var, addtional_columns)
                 if result:
                     result['yr_e'] = cycle.end.strftime('%Y')
                     de_unitted_result = apply_display_unit_preferences(organization, result)
@@ -1324,20 +1331,24 @@ class OrganizationViewSet(viewsets.ViewSet):
         count_sheet.write(data_row_start, data_col_start + 1, 'Properties with Data', bold)
         count_sheet.write(data_row_start, data_col_start + 2, 'Total Properties', bold)
 
-        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
-        base_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('x_label'), bold)
-        base_sheet.write(data_row_start, data_col_start + 2, request.query_params.get('y_label'), bold)
-        base_sheet.write(data_row_start, data_col_start + 3, 'Year Ending', bold)
-
         agg_sheet.write(data_row_start, data_col_start, request.query_params.get('x_label'), bold)
         agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('y_label'), bold)
         agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
 
         # Gather base data
         cycles = self.get_cycles(params['start'], params['end'], pk)
+        matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         data = self.get_raw_report_data(
-            pk, cycles, params['x_var'], params['y_var']
+            pk, cycles, params['x_var'], params['y_var'], matching_columns
         )
+
+        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
+
+        for i, matching_column in enumerate(matching_columns):
+            base_sheet.write(data_row_start, data_col_start + i, matching_column.display_name, bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 0, request.query_params.get('x_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 1, request.query_params.get('y_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + len(matching_columns) + 2, 'Year Ending', bold)
 
         base_row = data_row_start + 1
         agg_row = data_row_start + 1
@@ -1358,10 +1369,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             # Write Base/Raw Data
             data_rows = cycle_results['chart_data']
             for datum in data_rows:
-                base_sheet.write(base_row, data_col_start, datum.get('id'))
-                base_sheet.write(base_row, data_col_start + 1, datum.get('x'))
-                base_sheet.write(base_row, data_col_start + 2, datum.get('y'))
-                base_sheet.write(base_row, data_col_start + 3, datum.get('yr_e'))
+                for i, k in enumerate(datum.keys()):
+                    base_sheet.write(base_row, data_col_start + i, datum.get(k))
 
                 base_row += 1
 
@@ -1538,7 +1547,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         import_meterdata = ImportFile.objects.create(
             import_record=import_record,
-            source_type='PM Meter Usage',
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle
@@ -1552,7 +1561,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         import_greenbutton = ImportFile.objects.create(
             import_record=import_record,
-            source_type='GreenButton',
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle,

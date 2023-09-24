@@ -18,7 +18,7 @@ from seed.models import (
     InventoryDocument,
     Organization
 )
-from seed.utils.api import OrgMixin
+from seed.utils.api import OrgMixin, api_endpoint_class
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -99,6 +99,7 @@ def check_file_permission(user, filepath):
 
 
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
+    @api_endpoint_class
     def retrieve(self, request, filepath):
         filepath = os.path.normpath(filepath)
         try:

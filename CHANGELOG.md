@@ -1,3 +1,70 @@
+# SEED Version 2.19.0
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Add Terms of Service by @kflemin in https://github.com/SEED-platform/seed/pull/4065
+* Multiple cycle upload by @anchapin in https://github.com/SEED-platform/seed/pull/4073
+* Add UBID relation to state by @perryr16 in https://github.com/SEED-platform/seed/pull/4074
+* Store additional geocoding results by @nllong in https://github.com/SEED-platform/seed/pull/4020
+### Improvements 📈
+* Move reports to insights page by @haneslinger in https://github.com/SEED-platform/seed/pull/4031
+* Direct to property insight on click of program overview column by @haneslinger in https://github.com/SEED-platform/seed/pull/4011
+* Add ranked sorting to insight property page by @haneslinger in https://github.com/SEED-platform/seed/pull/4030
+* Include x and y in property insights tables by @haneslinger in https://github.com/SEED-platform/seed/pull/4075
+* Add percentages to program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/4077
+* Add matching criteria to report export by @haneslinger in https://github.com/SEED-platform/seed/pull/4072
+### Maintenance 🧹
+* Bump django from 3.2.18 to 3.2.19 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4034
+* Improve inventory load times by @ebeers-png in https://github.com/SEED-platform/seed/pull/3990
+* Updated installation steps by @anchapin in https://github.com/SEED-platform/seed/pull/3987
+* Bump django-ses from 1.0.3 to 3.5.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4055
+* Bump requests from 2.28.0 to 2.31.0 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4056
+* Pin urllib3 by @axelstudios in https://github.com/SEED-platform/seed/pull/4059
+* Remove OEP by @kflemin in https://github.com/SEED-platform/seed/pull/4109
+* Bump django from 3.2.19 to 3.2.20 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4128
+* Merge sphinx spelling list with VSCode's Code Spelling version by @nllong in https://github.com/SEED-platform/seed/pull/4149
+### Bug Fixes 🐛
+* Fix duplicate users per organization by @axelstudios in https://github.com/SEED-platform/seed/pull/4033
+* Require org id from endpoints with has_perm_class by @haneslinger in https://github.com/SEED-platform/seed/pull/4027
+* Remove sync salesforce button due to timeout by @kflemin in https://github.com/SEED-platform/seed/pull/4038
+* Fix column list profile GET request syntax by @ebeers-png in https://github.com/SEED-platform/seed/pull/3988
+* Prevent Automatically Serving Static `index.html` Files by @axelstudios in https://github.com/SEED-platform/seed/pull/4057
+* Fix User Creation Bugs by @axelstudios in https://github.com/SEED-platform/seed/pull/4094
+* Fix categorical data on reports scatter plot by @haneslinger in https://github.com/SEED-platform/seed/pull/4085
+* Fix ESPM Source Types by @axelstudios in https://github.com/SEED-platform/seed/pull/4096
+* Fix Download URLs by @axelstudios in https://github.com/SEED-platform/seed/pull/4066
+* Use iterator() when rehashing to save memory by @nllong in https://github.com/SEED-platform/seed/pull/4139
+* Constrain uniqueness of column name and move geocoding column creation by @nllong in https://github.com/SEED-platform/seed/pull/4151
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.1...v2.19.0
+
+# SEED Version 2.18.1
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Codebuild & Elasticache Redis integration support by @dhaley in https://github.com/SEED-platform/seed/pull/3981
+### Improvements 📈
+* Add better error messaging that includes the property view ID by @kflemin in https://github.com/SEED-platform/seed/pull/3973
+* Add Salesforce fields to store data admin contact by @kflemin in https://github.com/SEED-platform/seed/pull/3985
+* Add salesforce mappings sort and more error checking and messaging by @kflemin in https://github.com/SEED-platform/seed/pull/3992
+* Add zoom and panning to insights property page by @haneslinger in https://github.com/SEED-platform/seed/pull/3879
+* Remove program overview tabular data by @haneslinger in https://github.com/SEED-platform/seed/pull/4007
+* Save Insight property config locally by @haneslinger in https://github.com/SEED-platform/seed/pull/3994
+* Add Salesforce delete_label_on_sync setting by @kflemin in https://github.com/SEED-platform/seed/pull/4022
+* Replace seed getting started guide for v2.18 by @kflemin in https://github.com/SEED-platform/seed/pull/4026
+* Add in the start and end cycle year to the title by @haneslinger in https://github.com/SEED-platform/seed/pull/4014
+### Bug Fixes 🐛
+* Validate property state before creating BuildingSync document by @perryr16 in https://github.com/SEED-platform/seed/pull/3953
+* Fix Update-Salesforce requests by @axelstudios in https://github.com/SEED-platform/seed/pull/3978
+* Enforce non-null `taxlot_id` attached to `TaxlotView`s by @axelstudios in https://github.com/SEED-platform/seed/pull/4006
+
+## New Contributors
+* @dhaley made their first contribution in https://github.com/SEED-platform/seed/pull/3981
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.18.0...v2.18.1
+
 # SEED Version 2.18.0
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
 
@@ -48,7 +115,7 @@
 ### Improvements 📈
 * Open New Tab on Insight Property Click by @haneslinger in https://github.com/SEED-platform/seed/pull/3853
 ### Maintenance 🧹
-* Improve NGINX security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
+* Improve nginx security by @nllong and @axelstudios in https://github.com/SEED-platform/seed/pull/3873
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.17.3...v2.17.4
 
@@ -66,7 +133,7 @@
 ### Maintenance 🧹
 * Bump django from 3.2.17 to 3.2.18 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/3863
 * Remove project and compliance models by @nllong in https://github.com/SEED-platform/seed/pull/3743
-* Fix Nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
+* Fix nginx Security by @axelstudios in https://github.com/SEED-platform/seed/pull/3866
 ### Bug Fixes 🐛
 * Fix ESPM xml report import by @nllong in https://github.com/SEED-platform/seed/pull/3856
 * Fix importing of GeoJSON property footprints by @nllong in https://github.com/SEED-platform/seed/pull/3848
@@ -636,7 +703,7 @@ Closed Issues and Features (Total: 54):
 - Feature [#2539]( https://github.com/SEED-platform/seed/issues/2539 ), Each user should have their own organization
 - Improved [#2541]( https://github.com/SEED-platform/seed/issues/2541 ), Links on About page should open separate tab
 - Feature [#2542]( https://github.com/SEED-platform/seed/issues/2542 ), Organization owners can delete their own organization
-- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), Nginx should render a more user-friendly page if SEED is offline.
+- Feature [#2543]( https://github.com/SEED-platform/seed/issues/2543 ), nginx should render a more user-friendly page if SEED is offline.
 - Fixed [#2546]( https://github.com/SEED-platform/seed/issues/2546 ), IntegrityError: duplicate key value violates unique constraint "seed_propertyview_property_id_f8bdf6c2_uniq"
 - Fixed [#2548]( https://github.com/SEED-platform/seed/issues/2548 ), 500 errors can be triggered on some endpoints
 - Fixed [#2549]( https://github.com/SEED-platform/seed/issues/2549 ), Mapping status at 0% even though file successfully imported

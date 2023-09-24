@@ -23,12 +23,14 @@ class Analysis(models.Model):
     BETTER = 2
     EUI = 3
     CO2 = 4
+    EEEJ = 5
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
         (EUI, 'EUI'),
-        (CO2, 'CO2')
+        (CO2, 'CO2'),
+        (EEEJ, 'EEEJ')
     )
 
     PENDING_CREATION = 8
@@ -61,7 +63,7 @@ class Analysis(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
-    # that are applicable to the entire analysis (ie all properties involved).
+    # that are applicable to the entire analysis (i.e., all properties involved).
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = models.JSONField(default=dict, blank=True)
 
@@ -101,6 +103,21 @@ class Analysis(models.Model):
         # BSyncr
         if self.service == self.BSYNCR:
             return [{'name': 'Completed', 'value': ''}]
+        # EEEJ
+        elif self.service == self.EEEJ:
+            tract = results.get('2010 Census Tract')
+            tract = 'N/A' if tract is None else tract
+
+            dac = results.get('DAC')
+            dac = 'N/A' if dac is None else dac
+
+            low_income = results.get('Low Income')
+            low_income = 'N/A' if low_income is None else low_income
+            return [
+                {'name': 'Census Tract', 'value': tract},
+                {'name': 'DAC', 'value': dac},
+                {'name': 'Low Income?', 'value': low_income}
+            ]
 
         # BETTER
         elif self.service == self.BETTER:

@@ -36,7 +36,9 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
+      # - REDIS_HOST=optional-need-to-configure-redis
       # - REDIS_PASSWORD=optional-need-to-configure-redis
+      # - WEB_HOST=optional-if-web-container-not-named-web
       - SEED_ADMIN_USER=user@seed-platform.org
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default
@@ -89,18 +91,6 @@ services:
       options:
         max-size: 50m
         max-file: "5"
-  #oep-city-1:
-  # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-  #  container_name: seed_oep
-  #  image: seedplatform/oep:1.6
-  #  depends_on:
-  #    - web
-  #  environment:
-  #    - OEP_DISABLED=true
-  #  logging:
-  #    options:
-  #      max-size: 50m
-  #      max-file: '5'
 volumes:
   seed_pgdata:
     external: true

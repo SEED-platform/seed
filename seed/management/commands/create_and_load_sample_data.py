@@ -5,9 +5,9 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import unicode_literals
 
-import datetime
 import itertools
 import logging
+from datetime import date, datetime
 from random import randint
 
 from django.core.management.base import BaseCommand
@@ -298,14 +298,13 @@ def get_cycle(org, year=2015):
     Gets (or creates if it does not exist) a year-long cycle for an organization.
     :param org: the organization associated with the cycle
     :param year: int, the year for the cycle
-    :return: cycle starting on datetime(year, 1, 1, 0, 0, 0) and ending on
-                datetime(year, 12, 31, 23, 59, 59)
+    :return: cycle starting on date(year, 1, 1) and ending on date(year, 12, 31)
     """
     cycle, _ = seed.models.Cycle.objects.get_or_create(
         name="{y} Annual".format(y=year),
         organization=org,
-        start=datetime.datetime(year, 1, 1),
-        end=datetime.datetime(year + 1, 1, 1) - datetime.timedelta(seconds=1)
+        start=date(year, 1, 1),
+        end=date(year, 12, 31)
     )
     return cycle
 
@@ -351,7 +350,7 @@ def create_cases(org, cycle, tax_lots, properties):
         def del_datetimes(d):
             res = {}
             for k, v in d.items():
-                if isinstance(v, datetime.date) or isinstance(v, datetime.datetime):
+                if isinstance(v, date) or isinstance(v, datetime):
                     continue
                 res[k] = str(v)
             return res
@@ -794,7 +793,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     extra_years = years[1:] if len(years) > 1 else None
     org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseALL")
     cycle = get_cycle(org, year)
-    year_ending = datetime.datetime(year, 1, 1)
+    year_ending = date(year, 1, 1)
 
     taxlot_extra_data_factory = FakeTaxLotExtraDataFactory()
     taxlot_factory = CreateSampleDataFakeTaxLotFactory(taxlot_extra_data_factory)

@@ -16,6 +16,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         'string': openapi.TYPE_STRING,
         'boolean': openapi.TYPE_BOOLEAN,
         'integer': openapi.TYPE_INTEGER,
+        'object': openapi.TYPE_OBJECT,
+        'number': openapi.TYPE_NUMBER,
     }
 
     @classmethod
@@ -177,6 +179,14 @@ class AutoSchemaHelper(SwaggerAutoSchema):
                 },
                 **kwargs
             )
+
+        if isinstance(obj, tuple):
+            k, v = obj
+            if k == 'enum':
+                return openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    enum=[enum_lookup[1] for enum_lookup in v]
+                )
 
         raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
 

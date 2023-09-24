@@ -12,6 +12,7 @@ from os import path
 
 from django.contrib.gis.db import models as geomodels
 from django.db import models
+from django.db.models import Case, Value, When
 from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
@@ -35,6 +36,7 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_to_js_timestamp
 
+from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -91,9 +93,7 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    # Note that ulid is not an actual project at the moment, but it is similar to UBID in that it
-    # is a unique string that represents the bounding box of the Land (or Lot)
-    ulid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
@@ -376,8 +376,41 @@ class TaxLotState(models.Model):
         return None
 
 
+@receiver(post_save, sender=TaxLotState)
+def post_save_taxlot_state(sender, **kwargs):
+    """
+    Generate UbidModels for a TaxLotState if the ubid field is present
+    """
+    state: TaxLotState = kwargs.get('instance')
+
+    ubid = getattr(state, 'ubid')
+    if not ubid:
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        return
+
+    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
+    if not ubid_model.exists():
+        # First set all others to non-preferred without calling save
+        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
+        # Add UBID and set as preferred
+        ubid_model = state.ubidmodel_set.create(
+            preferred=True,
+            ubid=ubid,
+        )
+        # Update lat/long/centroid
+        decode_unique_ids(state)
+        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
+    elif ubid_model.filter(preferred=False).exists():
+        state.ubidmodel_set.update(
+            preferred=Case(
+                When(ubid=ubid, then=Value(True)),
+                default=Value(False),
+            )
+        )
+
+
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views')
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
@@ -497,9 +530,11 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         longitude_change = original_obj.longitude != instance.longitude
         long_lat_change = original_obj.long_lat != instance.long_lat
         lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
-
-        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API,
+        # so the first block below is when a user manually changes the lat/long and the geocoding confidence
+        # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
+            # manual change
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
             instance.geocoding_confidence = "Manually geocoded (N/A)"
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:

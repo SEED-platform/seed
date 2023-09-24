@@ -16,11 +16,6 @@ services:
     container_name: seed_celery
     image: seedplatform/seed:latest
     build: .
-  oep-city:
-    container_name: seed_oep
-    image: seedplatform/oep:2.0
-    depends_on:
-      - web
 volumes:
   seed_pgdata:
     external: true

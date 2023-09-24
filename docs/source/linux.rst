@@ -243,7 +243,7 @@ Start the web server (this also starts celery):
 
 .. warning::
 
-    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as NGINX would be
+    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as nginx would be
     receiving requests on port 80 and passing requests to uwsgi running on a different port, e.g 8000.
 
 

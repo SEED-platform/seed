@@ -36,7 +36,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'current_profile',
     'labels_payload',
     'organization_payload',
-    'audit_template_service',
     'cycle_service',
     'simple_modal_service',
     'property_measure_service',
@@ -74,7 +73,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       current_profile,
       labels_payload,
       organization_payload,
-      audit_template_service,
       cycle_service,
       simple_modal_service,
       property_measure_service,
@@ -82,6 +80,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = {id: organization_payload.organization.id};
       $scope.static_url = urls.static_url;
@@ -97,6 +96,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
       };
       $scope.cycle = inventory_payload.cycle;
+      $scope.cycles = [$scope.cycle]
 
       views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views: views_payload.taxlot_views
       $scope.views = views_payload.map(
@@ -117,6 +117,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         return !_.isEmpty(label.is_applied);
       });
       $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+      $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
@@ -577,6 +578,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
           // Do nothing
         });
       };
+      $scope.open_ubid_admin_modal = function () {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/ubid_admin_modal.html',
+          controller: 'ubid_admin_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $scope.inventory_type === 'properties' ? $scope.inventory.view_id : null;
+            },
+            taxlot_view_id: function () {
+              return $scope.inventory_type === 'taxlots' ? $scope.inventory.view_id : null;
+            },
+            inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+              return $scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id);
+            }],
+          }
+        });
+      };
 
       $scope.open_analyses_modal = function () {
         const modalInstance = $uibModal.open({
@@ -633,6 +652,33 @@ angular.module('BE.seed.controller.inventory_detail', [])
             view_id: () => $stateParams.view_id
           },
           backdrop: 'static',
+        });
+      };
+
+      $scope.open_data_upload_espm_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/data_upload_espm_modal.html',
+          controller: 'data_upload_espm_modal_controller',
+          resolve: {
+            pm_property_id: () => $scope.pm_property_id,
+            organization: () => $scope.organization,
+            cycle_id: () => $scope.cycle.id,
+            upload_from_file: () => $scope.uploaderfunc,
+            view_id: () => $stateParams.view_id,
+            column_mapping_profiles: [
+              'column_mappings_service',
+              function (
+                column_mappings_service
+              ) {
+                return column_mappings_service.get_column_mapping_profiles_for_org(
+                  $scope.organization.id, []
+                ).then(function (response) {
+                  return response.data;
+                });
+              }]
+          }
+        });
+        modalInstance.result.then(function () {
         });
       };
 
@@ -715,6 +761,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.update_salesforce = function () {
         inventory_service.update_salesforce([$scope.inventory.view_id]).then(function (result) {
+          $state.reload();
           Notification.success({message: 'Salesforce Update Successful!', delay: 5000});
         }).catch( function (result) {
             Notification.error({message: 'Error updating Salesforce: ' + result.data.message, delay: 15000, closeOnClick: true});
@@ -772,6 +819,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.uploader = {
         invalid_xml_extension_alert: false,
+        invalid_xlsx_extension_alert: false,
         in_progress: false,
         progress: 0,
         complete: false,
@@ -784,9 +832,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
             $scope.uploader.invalid_xml_extension_alert = true;
             break;
 
+          case 'invalid_extension':
+            $scope.uploader.invalid_xlsx_extension_alert = true;
+            break;
+
           case 'upload_submitted':
             $scope.uploader.filename = file.filename;
             $scope.uploader.invalid_xml_extension_alert = false;
+            $scope.uploader.invalid_xlsx_extension_alert = false;
             $scope.uploader.in_progress = true;
             $scope.uploader.status_message = 'uploading file';
             break;

@@ -594,6 +594,15 @@
     "schema": ""
   },
   {
+    "display_name": "UBID",
+    "to_field": "ubid",
+    "to_table_name": "PropertyState",
+    "from_field": "Ubid",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
     "display_name": "Property Type",
     "to_field": "property_type",
     "to_table_name": "PropertyState",

@@ -1,16 +1,13 @@
 # Django
-django==3.2.18
+django==3.2.20
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
 django-crispy-forms==1.8.1
 
 # Persistence stores
-psycopg2-binary==2.8.4
+psycopg2-binary==2.9.6
 
-# Shapely 2.X fails to build. Force to use
-# the previous version
-shapely==1.8.5.post1
 
 # background process management
 celery==5.2.2
@@ -44,30 +41,31 @@ sentry-sdk==1.14.0
 # Various packages
 jellyfish==0.8.2
 Markdown==3.1.1
-pyyaml==5.4.1
 polling==0.3.2
-
+pyyaml==6.0.1
 street-address==0.4.0
 unidecode==1.1.1
-usaddress==0.5.10
 xlrd==1.2.0
 xlsxwriter==1.2.7
 xmltodict==0.12.0
-requests==2.28.0
+requests==2.31.0
 probablepeople==0.5.4
 xmlschema==1.1.1
 lark==0.11.3
+
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==2.5.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
-buildingsync-asset-extractor==0.1.12
+buildingsync-asset-extractor==v0.1.14
 
 # Salesforce Integration
 seed-salesforce==0.1.0
 
-# pnnl/buildingid-py
+# geospatial and pnnl/buildingid-py
+shapely==2.0.1
+usaddress==0.5.10
 -e git+https://github.com/SEED-platform/buildingid.git@f68219df82191563cc2aca818e0b0fa1b32dd52d#egg=pnnl-buildingid
 
 oauthlib==2.0.3

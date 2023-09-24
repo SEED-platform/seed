@@ -1,0 +1,29 @@
+<div class="modal-header">
+    <h4 class="modal-title" translate>Compare UBIDs</h4>
+    <div translate>JACCARD_EXPLANATION</div>
+</div>
+
+<div class="modal-body">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <div class="ubid-form">
+            <div style="margin-bottom: 10px;">
+                <div>UBID 1:</div>
+                <input type="text" class="form-control" style="width: 300px" ng-model="ubid1" ng-disabled="!editing" required ubid sd-enter="compare_ubids()" />
+            </div>
+            <div>
+                <div>UBID 2:</div>
+                <input type="text" class="form-control" style="width: 300px" ng-model="ubid2" ng-disabled="!editing" required ubid sd-enter="compare_ubids()" />
+            </div>
+        </div>
+    </div>
+
+    <div ng-if="!editing" style="margin-top: 30px;">
+        <h4>{$ 'UBID comparison result:' | translate $} <strong>{$ jaccard_index $} - {$ jaccard_quality(jaccard_index) $}</strong></h4>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="compare_ubids()" ng-if="editing" ng-disabled="!valid_ubids()" translate>Compare UBIDs</button>
+    <button type="button" class="btn btn-default" ng-click="edit()" ng-if="!editing" translate> Edit UBIDs</button>
+    <button type="button" class="btn btn-default" ng-click="close()">Close</button>
+</div>

@@ -56,20 +56,24 @@ def get_bae_mappings():
     # units field name is the same with " Units" appended.
 
     bsync_assets = BAE.get_default_asset_defs()
-    for item in bsync_assets:
+    for asset in bsync_assets:
+        if isinstance(asset, dict):
+            asset_type, export_name, export_units = asset['type'], asset['export_name'], asset['export_units']
+        else:
+            asset_type, export_name, export_units = asset.type, asset.export_name, asset.export_units
 
-        if item['type'] == 'sqft':
+        if asset_type == 'sqft':
             # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
             for i in ['Primary', 'Secondary']:
-                results.append(make_bae_hash(i + ' ' + item['export_name']))
-                if 'export_units' in item and item['export_units'] is True:
+                results.append(make_bae_hash(i + ' ' + export_name))
+                if export_units is True:
                     # also export units field
-                    results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
+                    results.append(make_bae_hash(i + ' ' + export_name + " Units"))
 
         else:
-            results.append(make_bae_hash(item['export_name']))
-            if 'export_units' in item and item['export_units'] is True:
-                results.append(make_bae_hash(item['export_name'] + " Units"))
+            results.append(make_bae_hash(export_name))
+            if export_units is True:
+                results.append(make_bae_hash(export_name + " Units"))
 
     return results
 
