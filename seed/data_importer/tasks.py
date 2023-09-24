@@ -16,7 +16,7 @@ import traceback
 import zipfile
 from bisect import bisect_left
 from builtins import str
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
@@ -64,11 +64,17 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_UNKNOWN,
+    GREEN_BUTTON,
     PORTFOLIO_BS,
-    PORTFOLIO_RAW,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
+    SEED_DATA_SOURCES_MAPPING,
+    SENSOR_METADATA,
+    SENSOR_READINGS,
     BuildingFile,
     Column,
     ColumnMapping,
+    Cycle,
     DataLogger,
     Meter,
     PropertyAuditLog,
@@ -83,11 +89,13 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
+from seed.utils.geocode import (
+    MapQuestAPIKeyError,
+    create_geocoded_additional_columns,
+    geocode_buildings
+)
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
-
-# from seed.utils.cprofile import cprofile
 
 _log = get_task_logger(__name__)
 
@@ -114,7 +122,7 @@ def finish_checking(progress_key):
     """
     Chord that is called after the data quality check is complete
 
-    :param identifier: import file primary key
+    :param progress_key: import file primary key
     :return: dict, results from queue
     """
     progress_data = ProgressData.from_key(progress_key)
@@ -537,12 +545,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     #     map_data.apply_async(args=[import_file_id], countdown=60, expires=120)
     #     return progress_data.finish_with_error('waiting for raw data save.')
 
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'Assessed Raw': ASSESSED_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
     qs = PropertyState.objects.filter(
         import_file=import_file,
@@ -593,6 +596,52 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     return tasks
 
 
+def map_data_synchronous(import_file_id: int) -> dict:
+    """This method is used to map data synchronously and intended for only mapping a
+    small set of data. It is used in the Update with ESPM workflow, which runs on a
+    single property. Further, this method is a copy of the `map_data` method but simplified
+    to run only in the foreground.
+
+    Args:
+        import_file_id (int): Database ID of the import file record
+
+    Returns:
+        dict: Result of the progress data.
+    """
+    import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # create a key, but this is just used to communicate the result
+    progress_data = ProgressData(func_name='map_data_only', unique_id=import_file_id)
+    progress_data.delete()
+
+    # Check for duplicate column headers
+    column_headers = import_file.first_row_columns or []
+    duplicate_tracker: dict = collections.defaultdict(lambda: 0)
+    for header in column_headers:
+        duplicate_tracker[header] += 1
+        if duplicate_tracker[header] > 1:
+            raise Exception("Duplicate column found in file: %s" % (header))
+
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
+
+    qs = PropertyState.objects.filter(
+        import_file=import_file,
+        source_type=source_type,
+        data_state=DATA_STATE_IMPORT,
+    ).only('id').iterator()
+
+    # This version of the `map_data` should only be run when the data
+    # set is reasonably small because it will block operations and prevent
+    # reporting status updates.
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    for ids in id_chunks:
+        map_row_chunk(ids, import_file_id, source_type, progress_data.key)
+
+    finish_mapping(import_file_id, True, progress_data.key)
+
+    return progress_data.result()
+
+
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
@@ -600,7 +649,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     :param remap: bool, if remapping, then delete previous objects from the database
     :param mark_as_done: bool, if skip review then the mapping_done flag will be set to true at the
     end.
-    :return: JSON
+    :return: dict
     """
     import_file = ImportFile.objects.get(pk=import_file_id)
 
@@ -729,31 +778,31 @@ def finish_raw_save(results, file_pk, progress_key):
     :param results: List of results from the parent task
     :param file_pk: ID of the file that was being imported
     :param progress_key: string, Progress Key to append progress
-    :param summary: Summary to be saved on ProgressData as a message
     :return: results: results from the other tasks before the chord ran
     """
     progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and progress_data.summary() is not None:
+    if import_file.source_type in [SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
+                                   SEED_DATA_SOURCES[GREEN_BUTTON][1]] and progress_data.summary() is not None:
         import_file.cycle_id = None
 
         new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
         finished_progress_data = progress_data.finish_with_success(new_summary)
-    elif import_file.source_type == "SensorMetaData":
+    elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_METADATA][1]:
         import_file.cycle_id = None
         new_summary = _append_sensor_import_results_to_summary(results)
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
-    elif import_file.source_type == "SensorReadings":
+    elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_READINGS][1]:
         new_summary = _append_sensor_readings_import_results_to_summary(results)
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
     else:
         finished_progress_data = progress_data.finish_with_success()
 
-    if import_file.source_type == 'BuildingSync Raw':
+    if import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         for result in results:
             import_file.raw_property_state_to_filename.update(result)
 
@@ -1216,7 +1265,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
-    elif import_file.source_type == 'BuildingSync Raw':
+    elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:
             parser = xml_reader.BuildingSyncParser(import_file.file)
         except Exception as e:
@@ -1253,6 +1302,67 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
+def save_raw_espm_data_synchronous(file_pk: int) -> dict:
+    """This method is a one-off method for saving ESPM the raw data synchronously. This
+    is needed for the ESPM update method that runs on a single property. The `save_raw_data`
+    method is not used because it is asynchronous and the pieces of that method were
+    copied here. Technically, this method will work with a CSV or XLSX spreadsheet too,
+    but was only intended for ESPM.
+
+    Args:
+        file_pk (int): Import file ID to import
+
+    Returns:
+        dict: returns the result of the progress data
+    """
+    progress_data = ProgressData(func_name='save_raw_data_synchronous', unique_id=file_pk)
+    try:
+        # Go get the tasks that need to be created, then call them in the chord here.
+        import_file = ImportFile.objects.get(pk=file_pk)
+        if import_file.raw_save_done:
+            return progress_data.finish_with_warning('Raw data already saved')
+
+        try:
+            parser = reader.MCMParser(import_file.local_file)
+        except Exception as e:
+            _log.debug(f'Error reading XLSX file: {str(e)}')
+            return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
+
+        import_file.has_generated_headers = False
+        if hasattr(parser, 'has_generated_headers'):
+            import_file.has_generated_headers = parser.has_generated_headers
+
+        cache_first_rows(import_file, parser)
+        import_file.num_rows = 0
+        import_file.num_columns = parser.num_columns()
+
+        chunks = []
+        for batch_chunk in batch(parser.data, 100):
+            import_file.num_rows += len(batch_chunk)
+            chunks.append(batch_chunk)
+        import_file.save()
+
+        progress_data.total = len(chunks)
+        progress_data.save()
+
+        # Save the raw data chunks. This should only happen
+        # on a small amount of data since it is running in the foreground
+        for chunk in chunks:
+            _save_raw_data_chunk(chunk, file_pk, progress_data.key)
+
+        finish_raw_save(file_pk, progress_data.key)
+    except Error as e:
+        progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
+    except KeyError as e:
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
+    except TypeError:
+        progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
+    except Exception as e:
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
+
+    return progress_data.result()
+
+
 def save_raw_data(file_pk):
     """
     Simply report to the user that we have queued up the save_run_data to run. This is the entry
@@ -1274,13 +1384,13 @@ def save_raw_data(file_pk):
         # queue up the tasks and immediately return. This is needed in the case of large files
         # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
         # large files can take quite some time.
-        if import_file.source_type == 'PM Meter Usage':
+        if import_file.source_type == SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1]:
             _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'GreenButton':
+        elif import_file.source_type == SEED_DATA_SOURCES[GREEN_BUTTON][1]:
             _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'SensorMetaData':
+        elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_METADATA][1]:
             _save_sensor_data_create_tasks.s(file_pk, progress_data.key).delay()
-        elif import_file.source_type == 'SensorReadings':
+        elif import_file.source_type == SEED_DATA_SOURCES[SENSOR_READINGS][1]:
             _save_sensor_readings_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
             _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
@@ -1299,6 +1409,7 @@ def save_raw_data(file_pk):
 
 def geocode_and_match_buildings_task(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
+    org = import_file.import_record.super_organization
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
@@ -1312,7 +1423,7 @@ def geocode_and_match_buildings_task(file_pk):
     if not import_file.mapping_done:
         _log.debug('Mapping is not done yet')
         return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
+            'Import file is not complete. Retry after mapping is complete')
 
     if import_file.cycle is None:
         _log.warning("Import file cycle is None; This should never happen in production")
@@ -1325,20 +1436,64 @@ def geocode_and_match_buildings_task(file_pk):
         .iterator()
     )
 
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
+    # If multiple cycle upload, split properties by cycle
+    # and map each cycle individually
+    # TODO: add a status to import_file to indicate multiple cycle upload
+    # maybe add new source_type Assessed Raw Multiple Cycle?
+    if import_file.multiple_cycle_upload:
+        # Create a dictionary to store the property_state_ids_by_cycle.
+        property_state_ids_by_cycle = defaultdict(list)
+
+        # Prefetch cycles
+        cycles = Cycle.objects.filter(organization=org)
+        default_cycle = cycles.get(pk=import_file.cycle_id)
+
+        # Loop through the property_state objects.
+        for property_state in property_states:
+            # Find the cycle that corresponds with property_state year_ending.
+
+            # Find the first cycle where start <= year_ending <= end
+            cycle = None
+            if property_state.year_ending:
+                cycle = cycles.filter(
+                    start__lte=property_state.year_ending,
+                    end__gte=property_state.year_ending,
+                ).first()
+            # Check if cycle is none
+            if cycle is None:
+                cycle = default_cycle
+            property_state_ids_by_cycle[cycle.id].append(property_state.id)
+
+        map_additional_models_group = group(
+            _map_additional_models.si(property_state_ids_by_cycle[cycle_id], file_pk, progress_data.key, cycle_id)
+            for cycle_id in property_state_ids_by_cycle.keys()
+        )
+
+    else:
+        # get the properties and chunk them into tasks
+        property_state_ids_by_cycle = None
+        id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
+        map_additional_models_group = group(
+            _map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks
+        )
 
     progress_data.total = (
         1  # geocoding
-        + len(id_chunks)  # map additional models tasks
+        + len(map_additional_models_group)  # map additional models tasks
         + 2  # match and link
         + 1  # finish
     )
     progress_data.save()
 
+    # create the geocode columns that may show up here. Otherwise,
+    # they might be created in parallel and cause a race condition.
+    _log.debug('Creating geocode columns before calling celery chain')
+    create_geocoded_additional_columns(org)
+
     celery_chain(
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
-        group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
-        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
+        map_additional_models_group,
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key, property_state_ids_by_cycle),
         finish_matching.s(file_pk, progress_data.key),
     )()
 
@@ -1346,21 +1501,6 @@ def geocode_and_match_buildings_task(file_pk):
     sub_progress_data.save()
 
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
-
-
-def geocode_buildings_task(file_pk):
-    """
-    NOTE: This is an older entrypoint into geocoding buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-    """
-    progress_data = ProgressData(func_name='geocode_buildings', unique_id=file_pk)
-    progress_data.delete()
-    progress_data.save()
-    async_result = _geocode_properties_or_tax_lots.s(file_pk, progress_data.key).apply_async()
-    result = [r for r in async_result.collect()]
-
-    return result
 
 
 @shared_task
@@ -1396,133 +1536,6 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
     if sub_progress_key:
         sub_progress_data.step('Geocoding')
         sub_progress_data.finish_with_success()
-
-
-def map_additional_models(file_pk):
-    """
-    NOTE: This is an older entrypoint into mapping buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-
-    kicks off mapping models other than PropertyState, returns progress key within the JSON response
-    E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
-
-    :param file_pk: ImportFile Primary Key
-    :return:
-    """
-    import_file = ImportFile.objects.get(pk=file_pk)
-
-    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
-    progress_data.delete()
-    progress_data.save()
-
-    if import_file.matching_done:
-        _log.debug('Matching is already done')
-        return progress_data.finish_with_warning('matching already complete')
-
-    if not import_file.mapping_done:
-        _log.debug('Mapping is not done yet')
-        return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
-
-    if import_file.cycle is None:
-        _log.warning("This should never happen in production")
-
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'Assessed Raw': ASSESSED_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
-
-    # get the properties and chunk them into tasks
-    qs = PropertyState.objects.filter(
-        import_file=import_file,
-        source_type=source_type,
-        data_state=DATA_STATE_MAPPING,
-    ).only('id').iterator()
-
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-
-    progress_data.total = len(id_chunks)
-    progress_data.save()
-
-    tasks = [_map_additional_models.si(ids, import_file.id, progress_data.key)
-             for ids in id_chunks]
-
-    chord(tasks)(
-        finish_mapping_additional_models.s(file_pk, progress_data.key))
-
-    return progress_data.result()
-
-
-@shared_task(ignore_result=True)
-def finish_mapping_additional_models(result, import_file_id, progress_key):
-    progress_data = ProgressData.from_key(progress_key)
-
-    import_file = ImportFile.objects.get(pk=import_file_id)
-    import_file.matching_done = True
-    import_file.mapping_completion = 100
-    if isinstance(result, list) and len(result) >= 0:
-        # merge the results from the tasks
-        # assumes that all values are numbers
-        merged_result = {}
-        for res in result:
-            for key, value in res.items():
-                if key in merged_result:
-                    merged_result[key] += value
-                else:
-                    merged_result[key] = value
-
-        import_file.matching_results_data = merged_result
-    else:
-        raise Exception('Expected result to be a list of one or more items')
-
-    import_file.save()
-    return progress_data.finish_with_success()
-
-
-# @cprofile()
-def match_buildings(file_pk):
-    """
-    NOTE: This is an older entrypoint into matching buildings and should no longer
-    be used. Use geocode_and_match_buildings_task instead.
-    TODO: remove this task once api v2 is removed
-
-    kicks off system matching, returns progress key within the JSON response
-
-    :param file_pk: ImportFile Primary Key
-    :return:
-    """
-    import_file = ImportFile.objects.get(pk=file_pk)
-
-    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
-    progress_data.delete()
-    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
-    sub_progress_data.delete()
-
-    if import_file.matching_done:
-        _log.debug('Matching is already done')
-        return progress_data.finish_with_warning('matching already complete')
-
-    if not import_file.mapping_done:
-        _log.debug('Mapping is not done yet')
-        return progress_data.finish_with_error(
-            'Import file is not complete. Retry after mapping is complete', )
-
-    if import_file.cycle is None:
-        _log.warning('This should never happen in production')
-
-    # Start, match, pair
-    progress_data.total = 3
-    progress_data.save()
-    sub_progress_data.total = 100
-    sub_progress_data.save()
-
-    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key, sub_progress_data.key), interval=15)(
-        finish_matching.s(file_pk, progress_data.key))
-
-    return progress_data.result()
 
 
 @shared_task(ignore_result=True)
@@ -1580,7 +1593,7 @@ def hash_state_object(obj, include_extra_data=True):
 
 
 @shared_task
-def _map_additional_models(ids, file_pk, progress_key):
+def _map_additional_models(ids, file_pk, progress_key, cycle_id=None):
     """
     Create any additional models, other than properties, that could come from the
     imported file. E.g. Scenarios and Meters from a BuildingSync file.
@@ -1591,14 +1604,12 @@ def _map_additional_models(ids, file_pk, progress_key):
     :return:
     """
     import_file = ImportFile.objects.get(pk=file_pk)
+    if cycle_id is None:
+        cycle_id = import_file.cycle_id
+
     progress_data = ProgressData.from_key(progress_key)
 
-    source_type_dict = {
-        'Portfolio Raw': PORTFOLIO_RAW,
-        'Assessed Raw': ASSESSED_RAW,
-        'BuildingSync Raw': BUILDINGSYNC_RAW
-    }
-    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
@@ -1613,7 +1624,7 @@ def _map_additional_models(ids, file_pk, progress_key):
             building_file = property_state.building_files.get()
             success, property_state, _, messages = building_file.process(
                 org.id,
-                import_file.cycle,
+                Cycle.objects.get(id=cycle_id),
                 promote_property_state=False
             )
 
@@ -1669,7 +1680,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
-        ('ulid',),
+        ('ubid',),
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),

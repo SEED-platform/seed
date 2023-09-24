@@ -6,7 +6,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from django.core.management.base import BaseCommand
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization
 from seed.utils.organizations import create_organization
 
 
@@ -71,8 +71,9 @@ class Command(BaseCommand):
         if Organization.objects.filter(name=options['organization']).exists():
             org = Organization.objects.get(name=options['organization'])
             self.stdout.write(
-                'Org <%s> already exists' % options['organization'], ending='\n'
+                'Org <%s> already exists, adding user' % options['organization'], ending='\n'
             )
+            org.add_member(u, ROLE_OWNER)
         else:
             self.stdout.write(
                 'Creating org <%s> ...' % options['organization'],

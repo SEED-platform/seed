@@ -1,7 +1,7 @@
 Migrations
 ==========
 
-Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documenation includes the required changes based on deployment and development for each release.
+Django handles the migration of the database very well; however, there are various changes to SEED that may require some custom (manual) migrations. The migration documentation includes the required changes based on deployment and development for each release.
 
 Version Develop
 ---------------
@@ -46,6 +46,18 @@ local_untracked.py file
             routing_key=CELERY_TASK_DEFAULT_QUEUE
         ),
     )
+
+Version 2.19.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.18.1
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.18.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
 
 Version 2.17.4
 --------------
@@ -206,7 +218,7 @@ Docker-based Deployment
 
     django.db.utils.OperationalError: could not open extension control file "/usr/share/postgresql/11/extension/postgis.control": No such file or directory
 
-- If you are using a copied version of the docker-compose.yml file (e.g., for OEP support), then you need to change `127.0.0.1:5000/postgres` to `127.0.0.1:5000/postgres-seed`
+- If you are using a copied version of the docker-compose.yml file, then you need to change `127.0.0.1:5000/postgres` to `127.0.0.1:5000/postgres-seed`
 
 Development
 ^^^^^^^^^^^

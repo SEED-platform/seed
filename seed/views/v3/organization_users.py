@@ -18,11 +18,11 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.views.v3.organizations import _get_js_role
+from seed.utils.users import get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
-    # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
+    # allow using `organization_pk` in url path for authorization (i.e., for has_perm_class)
     authz_org_id_kwarg = 'organization_pk'
 
     @api_endpoint_class
@@ -50,7 +50,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 'last_name': user.last_name,
                 'number_of_orgs': user_orgs,
                 'user_id': user.pk,
-                'role': _get_js_role(u.role_level)
+                'role': get_js_role(u.role_level)
             })
 
         return JsonResponse({'status': 'success', 'users': users})
@@ -61,15 +61,15 @@ class OrganizationUserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['PUT'])
     def add(self, request, organization_pk, pk):
         """
-        Adds an existing user to an organization.
+        Adds an existing user to an organization as an owner.
         """
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        _orguser, status = org.add_member(user)
+        created = org.add_member(user)
 
         # Send an email if a new user has been added to the organization
-        if status:
+        if created:
             try:
                 domain = request.get_host()
             except Exception:

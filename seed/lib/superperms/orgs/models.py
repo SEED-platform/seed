@@ -51,6 +51,9 @@ def _get_default_meter_units():
 
 class OrganizationUser(models.Model):
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'organization'], name='unique_user_for_organization'),
+        ]
         ordering = ['organization', '-role_level']
 
     user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
@@ -150,6 +153,12 @@ class Organization(models.Model):
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.CheckConstraint(
+                name="ubid_threshold_range",
+                check=models.Q(ubid_threshold__range=(0, 1)),
+            ),
+        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
@@ -215,6 +224,9 @@ class Organization(models.Model):
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
 
+    # UBID Threshold
+    ubid_threshold = models.FloatField(default=1.0)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
@@ -234,11 +246,18 @@ class Organization(models.Model):
         return user in self.users.all()
 
     def add_member(self, user, role=ROLE_OWNER):
-        """Add a user to an organization."""
+        """Add a user to an organization. Returns a boolean if a new OrganizationUser record was created"""
+        if OrganizationUser.objects.filter(user=user, organization=self).exists():
+            return False
+
         # Ensure that the user can login in case they had previously been deactivated due to no org associations
-        user.is_active = True
-        user.save()
-        return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        if not user.is_active:
+            user.is_active = True
+            user.save()
+
+        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+
+        return created
 
     def remove_member(self, user):
         """Remove user from organization."""

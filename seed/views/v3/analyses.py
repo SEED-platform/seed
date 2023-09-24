@@ -7,7 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 
-from django.db.models import Count
+from django.db.models import Count, F
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
@@ -133,31 +133,30 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('requires_member')
     def list(self, request):
         organization_id = self.get_organization(request)
-        property_id = request.query_params.get('property_id', None)
         include_views = json.loads(request.query_params.get('include_views', 'true'))
 
         analyses = []
-        if property_id is not None:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
-                .distinct()
-                .order_by('-id')
-            )
-        else:
-            analyses_queryset = (
-                Analysis.objects.filter(organization=organization_id)
-                .order_by('-id')
-            )
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id)
+            .order_by('-id')
+        )
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(analysis.get_property_view_info(property_id))
-            serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
+            serialized_analysis.update(analysis.get_property_view_info())
+            serialized_analysis.update({'highlights': analysis.get_highlights()})
             analyses.append(serialized_analysis)
 
         results = {'status': 'success', 'analyses': analyses}
 
         if analyses and include_views:
+            org = Organization.objects.get(pk=organization_id)
+            display_column = Column.objects.filter(organization=org, column_name=org.property_display_field).first()
+            display_column_field = display_column.column_name
+            if display_column.is_extra_data:
+                display_column_field = "extra_data__" + display_column_field
+
             views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
+            views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}')).prefetch_related("analysisoutputfile_set")
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
             results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
@@ -167,43 +166,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             }
 
         return JsonResponse(results)
-
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=False, methods=['post'])
-    def get_analyses_for_properties(self, request):
-        """
-        List all the analyses associated with provided canonical property ids
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: property_ids
-              description: List of canonical property ids
-              paramType: body
-        """
-        property_ids = request.data.get('property_ids', [])
-        organization_id = int(self.get_organization(request))
-        analyses = []
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id, analysispropertyview__property__in=property_ids)
-            .distinct()
-            .order_by('-id')
-        )
-        for analysis in analyses_queryset:
-            serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(analysis.get_property_view_info(None))
-            serialized_analysis.update({'highlights': analysis.get_highlights(None)})
-            analyses.append(serialized_analysis)
-        return JsonResponse({
-            'status': 'success',
-            'analyses': analyses
-        })
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
@@ -370,7 +332,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         property_types = get_counts('extra_data__Largest Property Use Type')
         year_built = get_counts('year_built')
         energy = get_counts('site_eui')
-        sqftage = get_counts('gross_floor_area')
+        square_footage = get_counts('gross_floor_area')
 
         from collections import defaultdict
 
@@ -444,16 +406,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             e[f['site_eui']] += f['count']
         energy_list2 = [{'site_eui': site_eui, 'percentage': count / views.count() * 100} for site_eui, count in e.items()]
 
-        sqftage_list = []
-        for i in sqftage:
+        square_footage_list = []
+        for i in square_footage:
             dict = i.copy()
             for k, v in i.items():
                 if isinstance(v, Quantity):
                     dict[k] = v.to(ureg.feet**2).magnitude
-            sqftage_list.append(dict)
+            square_footage_list.append(dict)
 
-        sqftage_agg = []
-        for record in sqftage_list:
+        square_footage_agg = []
+        for record in square_footage_list:
             dict = record.copy()
             if isinstance(record['gross_floor_area'], float):
                 if 0 < record['gross_floor_area'] <= 1000:
@@ -476,12 +438,12 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                     dict['gross_floor_area'] = "500,000-1,000,000"
                 else:
                     dict['gross_floor_area'] = "> 1,000,000"
-            sqftage_agg.append(dict)
+            square_footage_agg.append(dict)
 
         g = defaultdict(int)
-        for h in sqftage_agg:
+        for h in square_footage_agg:
             g[h['gross_floor_area']] += h['count']
-        sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
+        square_footage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
         extra_data_list = []
         for data in states.values_list('extra_data', flat=True):
@@ -510,7 +472,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'property_types': property_types,
             'year_built': year_built_list,
             'energy': energy_list2,
-            'square_footage': sqftage_list2
+            'square_footage': square_footage_list2
         })
 
     @swagger_auto_schema(manual_parameters=[

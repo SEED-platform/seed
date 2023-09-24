@@ -75,7 +75,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "db-redis:6379",
+            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
             'OPTIONS': {
                 'DB': 1
             },

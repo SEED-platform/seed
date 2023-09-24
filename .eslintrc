@@ -1,7 +1,7 @@
 {
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": 2018
+    "ecmaVersion": 2020
   },
   "env": {
     "browser": true,
@@ -25,7 +25,8 @@
     "qq": true,
     "saveAs": true,
     "Spinner": true,
-    "Terraformer": true
+    "Terraformer": true,
+    "UniqueBuildingIdentification": true
   },
   "plugins": ["angular", "lodash", "protractor"],
   "rules": {

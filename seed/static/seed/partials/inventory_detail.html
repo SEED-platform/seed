@@ -48,7 +48,7 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="display:flex;margin:10px 0;">
             <div style="flex-grow:1;display:flex;flex-direction:column;row-gap:10px;">
-                <div uib-dropdown class="btn-group pointer">
+                <div uib-dropdown class="btn-group">
                     <button id="btnInventoryActions"
                             type="button"
                             uib-dropdown-toggle
@@ -62,6 +62,10 @@
 
                         <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
                             <a ng-click="open_data_upload_audit_template_modal()">{$:: 'Update with Audit Template' | translate $}</a>
+                        </li>
+
+                        <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+                            <a ng-click="open_data_upload_espm_modal()">{$:: 'Update with ESPM' | translate $}</a>
                         </li>
 
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
@@ -92,6 +96,10 @@
                             <a ng-click="update_salesforce()">{$:: 'Update Salesforce' | translate $}</a>
                         </li>
 
+                        <li role="menuitem">
+                            <a ng-click="open_ubid_admin_modal()">Add/Update UBID</a>
+                        </li>
+
                         <li class="divider"></li>
 
                         <li role="menuitem">
@@ -100,6 +108,7 @@
                     </ul>
                     <div ng-if="::inventory_type === 'properties'">
                         <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+                        <div class="alert alert-danger" ng-show="uploader.invalid_xlsx_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
                     </div>
                 </div>
                 <div class="ellipsis">
@@ -125,6 +134,11 @@
                             <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
                         </div>
                     </span>
+                </div>
+            </div>
+            <div ng-controller="inventory_detail_map_controller" style="margin:20px;">
+                <div style="margin: auto; width: 402px; overflow: hidden;">
+                    <div id="map"></div>
                 </div>
             </div>
             <!-- NOTE: This is bad, using a controller created for someone else but it will work
@@ -338,7 +352,7 @@
                             <tbody>
                                 <tr ng-repeat="file in inventory_docs">
                                     <td class="data_file_name" style="border-right:0px;">
-                                        {$:: file.filename $} - {$:: file.id $}
+                                        {$:: file.filename $}
                                     </td>
                                     <td style="border-left:0px; text-align:right;">
                                         <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa fa-download" aria-hidden="true"></i></a>

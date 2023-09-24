@@ -323,16 +323,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     /** Update Salesforce for specified property views and organization
      *
-     * @param view_ids        List of Property View IDs
+     * @param property_view_ids        List of Property View IDs
      *
      * @returns {Promise}
      */
-    inventory_service.update_salesforce = function(view_ids) {
+    inventory_service.update_salesforce = function (property_view_ids) {
       spinner_utility.show();
       return $http.post('/api/v3/properties/update_salesforce/', {
+        property_view_ids
+      }, {
         params: {
-          organization_id: user_service.get_organization().id,
-          property_view_ids: view_ids
+          organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
         return response.data;
@@ -1160,7 +1161,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_column_list_profile = function (id) {
-      return $http.get('/api/v3/column_list_profiles/' + id, {
+      return $http.get('/api/v3/column_list_profiles/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id,
         }
@@ -1229,18 +1230,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.refresh_metadata = function (ids, states, inventory_type, progress_key) {
-      return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
-        ids: ids,
-        states: states,
-        inventory_type: inventory_type,
+    inventory_service.set_update_to_now = function (property_views, taxlot_views, progress_key) {
+      return $http.post(`/api/v3/tax_lot_properties/set_update_to_now/`, {
+        property_views: property_views,
+        taxlot_views: taxlot_views,
         progress_key: progress_key,
         organization_id: user_service.get_organization().id
       });
     };
 
-    inventory_service.start_refresh_metadata = function() {
-      return $http.get('/api/v3/tax_lot_properties/start_refresh_metadata/', {
+    inventory_service.start_set_update_to_now = function() {
+      return $http.get('/api/v3/tax_lot_properties/start_set_update_to_now/', {
         params: {
           organization_id: user_service.get_organization().id
         }
