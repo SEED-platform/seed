@@ -36,6 +36,7 @@ boolean
 BrowserDefinition
 bsync
 bsyncr
+Btus
 buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
@@ -83,6 +84,7 @@ datasources
 datatypes
 datestrings
 datetime
+dateutil
 dedeploy
 defaultdict
 dest
@@ -97,6 +99,8 @@ docstring
 docstrings
 Drozdyuk
 edgecase
+eeej
+ejscreen
 energystar
 enums
 env

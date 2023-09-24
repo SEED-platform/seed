@@ -1470,7 +1470,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
           case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
           case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
-          case 'open_refresh_metadata_modal': $scope.open_refresh_metadata_modal(selectedViewIds); break;
+          case 'open_set_update_to_now_modal': $scope.open_set_update_to_now_modal(selectedViewIds); break;
           case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
           case 'open_ubid_jaccard_index_modal': $scope.open_ubid_jaccard_index_modal(selectedViewIds); break;
           case 'open_ubid_decode_modal': $scope.open_ubid_decode_modal(selectedViewIds); break;
@@ -1484,31 +1484,25 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.model_actions = 'none';
       };
 
-      $scope.open_refresh_metadata_modal = function () {
+      $scope.open_set_update_to_now_modal = function () {
+        primary_rows = $scope.gridApi.selection.getSelectedRows().filter(r => r.$$treeLevel == 0)
+        secondary_rows = $scope.gridApi.selection.getSelectedRows().filter(r => r.$$treeLevel == undefined)
+
+        if ($scope.inventory_type === 'properties'){
+          property_rows = primary_rows
+          taxlot_rows = secondary_rows
+        } else {
+          taxlot_rows = primary_rows
+          property_rows = secondary_rows
+        }
+
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
-          controller: 'refresh_metadata_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/set_update_to_now_modal.html',
+          controller: 'set_update_to_now_modal_controller',
           backdrop: 'static',
           resolve: {
-            ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'id');
-            },
-            property_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
-            },
-            taxlot_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
-            },
-            inventory_type: _.constant($scope.inventory_type),
+            property_views: () => [...new Set(property_rows.map(r => r.property_view_id))] ,
+            taxlot_views: () => [...new Set(taxlot_rows.map(r => r.taxlot_view_id))] ,
           }
         });
       }
@@ -1871,7 +1865,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           var selectionChanged = function () {
             var selected = gridApi.selection.getSelectedRows();
             var parentsSelectedIds = _.map(_.filter(selected, {$$treeLevel: 0}), 'id');
-            $scope.selectedCount = selected.length;
+            $scope.selectedCount = selectionLengthByInventoryType(selected);
             $scope.selectedParentCount = parentsSelectedIds.length;
 
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
@@ -1901,10 +1895,16 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.selectedOrder = _.filter(sortedIds, function (id) {
                 return _.includes(parentsSelectedIds, id);
               });
-              $scope.selectedCount = allSelected.length;
+              $scope.selectedCount = selectionLengthByInventoryType(allSelected);
               $scope.selectedParentCount = parentsSelectedIds.length;
             }
             $scope.update_selected_display();
+          };
+
+          const selectionLengthByInventoryType = (selection) => {
+            return $scope.inventory_type == 'properties' ?
+              selection.filter(item => item.property_state_id || item.property_view_id).length :
+              selection.filter(item => item.taxlot_state_id || item.taxlot_view_id).length;
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);

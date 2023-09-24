@@ -89,6 +89,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           case 'EUI':
             $scope.new_analysis.configuration = {
               select_meters: 'all',
+              // cycle_id is ignored unless select_meters: 'select_cycle'
+              cycle_id: current_cycle.id,
             };
             break;
 
@@ -105,7 +107,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               min_model_r_squared: null,
               portfolio_analysis: false,
               preprocess_meters: false,
-              select_meters: 'all',
+              select_meters: 'select_cycle',
+              cycle_id: current_cycle.id,
               enable_pvwatts: false,
               meter: {
                 start_date: null,
@@ -118,7 +121,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               $scope.new_analysis.configuration.meter.end_date = new Date(current_cycle.end);
             }
             break;
-
+          case 'EEEJ':
+            $scope.new_analysis.configuration = {};
+            break;
           default:
             $log.error('Unknown analysis type.', $scope.new_analysis.service);
             Notification.error('Unknown analysis type: ' + $scope.new_analysis.service);
