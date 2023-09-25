@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import json
 import os
 import pathlib
@@ -22,6 +25,8 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_DELETE,
     DATA_STATE_MAPPING,
+    PORTFOLIO_METER_USAGE,
+    SEED_DATA_SOURCES,
     Meter,
     MeterReading,
     Property,
@@ -85,7 +90,7 @@ class MeterUsageImportTest(TestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -199,7 +204,7 @@ class MeterUsageImportTest(TestCase):
 
         import_file_with_invalids = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -239,7 +244,7 @@ class MeterUsageImportTest(TestCase):
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -663,7 +668,7 @@ class MeterUsageImportTest(TestCase):
 
         cost_meter_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -755,7 +760,7 @@ class MeterUsageImportTest(TestCase):
 
         dup_file = ImportFile.objects.create(
             import_record=dup_import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=dup_filename,
             file=SimpleUploadedFile(
                 name=dup_filename,
@@ -873,7 +878,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
 
         pm_meter_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,

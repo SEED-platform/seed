@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 describe('controller: organization_settings_controller', function () {
   // globals set up and used in each test scenario
@@ -76,6 +76,17 @@ describe('controller: organization_settings_controller', function () {
           is_parent_org_owner: false
         }
       },
+      labels_payload: [{
+        id: 47,
+        name: "Add to Salesforce",
+        organization_id: 4
+      }],
+      salesforce_mappings_payload: [],
+      salesforce_configs_payload: [{
+        id: 1,
+        organization_id: 4,
+        unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
+      }],
       property_column_names: { 'column_name': 'test', 'display_name': 'test' },
       taxlot_column_names: { 'column_name': 'test', 'display_name': 'test' }
     });

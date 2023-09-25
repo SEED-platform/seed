@@ -1,11 +1,10 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
- */
-/**
- This controller handles the inventory reports page, watching for and remembering
- the user's selections for chart parameters like date range and x and y variables,
- and then updating the chart directives when the user clicks the update chart button.
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
+ * This controller handles the inventory reports page, watching for and remembering
+ * the user's selections for chart parameters like date range and x and y variables,
+ * and then updating the chart directives when the user clicks the update chart button.
  */
 
 angular.module('BE.seed.controller.inventory_reports', [])
@@ -38,10 +37,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $translate,
       $uibModal
     ) {
-      $scope.inventory_type = $stateParams.inventory_type;
 
       var org_id = organization_payload.organization.id;
-      var base_storage_key = 'report.' + org_id + '.' + $scope.inventory_type;
+      var base_storage_key = 'report.' + org_id;
 
       var pretty_unit = function (pint_spec) {
         var mappings = {
@@ -233,7 +231,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                 ticks: {
                   // round values
                   callback: function (value, index, values) {
-                    return Math.round(value, 3);
+                    return this.getLabelForValue(value);
                   }
                 }
               }
@@ -260,7 +258,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                     let label = [];
                     let labeltmp = $scope.chartData.chartData.filter(function (entry) { return entry.id === ctx.raw.id; });
                     if (labeltmp.length > 0) {
-                      label.push($scope.yAxisSelectedItem.label + ': ' + ctx.parsed.y);
+                      label.push($scope.yAxisSelectedItem.label + ': ' + ctx.formattedValue);
                       // The x axis data is generated more programmatically than the y, so only
                       // grab the `label` since the `axisLabel` has redundant unit information.
                       label.push($scope.xAxisSelectedItem.label + ': ' + ctx.parsed.x);
@@ -476,6 +474,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
             // new chartJS chart data
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
+            $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every(d => typeof d.y === 'number')? 'linear': 'category';
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
             const colorMap = new Map(

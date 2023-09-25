@@ -1,5 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from django.contrib.gis.geos import Polygon
 from django.test import TestCase
 
@@ -106,10 +110,10 @@ class UbidUtilMethods(TestCase):
         self.assertAlmostEqual(refreshed_property.latitude, 41.7451)
         self.assertAlmostEqual(refreshed_property.longitude, -87.560328125)
 
-    def test_decode_ulids_is_successful_when_valid_ULID_provided(self):
+    def test_decode_taxlot_ubids_is_successful_when_valid_taxlot_UBID_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
-        taxlot_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
+        taxlot_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
 
         taxlot = TaxLotState(**taxlot_details)
         taxlot.save()
@@ -161,7 +165,7 @@ class UbidUtilMethods(TestCase):
         self.assertIsNone(bounding_box_wkt(refreshed_property))
         self.assertIsNone(centroid_wkt(refreshed_property))
 
-    def test_decode_ulids_does_nothing_if_no_ULID_provided(self):
+    def test_decode_taxlot_ubids_does_nothing_if_no_taxlot_UBID_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
 
@@ -191,10 +195,10 @@ class UbidUtilMethods(TestCase):
         self.assertIsNone(bounding_box_wkt(refreshed_property))
         self.assertIsNone(centroid_wkt(refreshed_property))
 
-    def test_decode_ulids_doesnt_throw_an_error_if_an_invalid_ulid_is_provided(self):
+    def test_decode_taxlot_ubids_doesnt_throw_an_error_if_an_invalid_ubid_is_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
         taxlot_details['organization_id'] = self.org.id
-        taxlot_details['ulid'] = 'invalidulid'
+        taxlot_details['ubid'] = 'invalidubid'
 
         taxlot = TaxLotState(**taxlot_details)
         taxlot.save()

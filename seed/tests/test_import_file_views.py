@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import ast
 import copy
 import json
@@ -19,10 +22,6 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW
 )
-from seed.data_importer.views import (
-    ImportFileViewSet,
-    convert_first_five_rows_to_list
-)
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.superperms.orgs.models import Organization
@@ -30,9 +29,12 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
+    GREEN_BUTTON,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
+    PORTFOLIO_METER_USAGE,
     PORTFOLIO_RAW,
+    SEED_DATA_SOURCES,
     Column,
     PropertyState,
     PropertyView
@@ -44,6 +46,10 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.views.v3.import_files import (
+    ImportFileViewSet,
+    convert_first_five_rows_to_list
+)
 
 
 class TestSensorViewSet(DataMappingBaseTestCase):
@@ -98,7 +104,7 @@ class TestSensorViewSet(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -177,7 +183,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -211,7 +217,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         import_file_with_invalids = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -284,7 +290,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -383,7 +389,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         xml_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -726,7 +732,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             import_record=import_record,
             uploaded_filename=filename,
             mapping_done=True,
-            source_type="Assessed Raw",
+            source_type=SEED_DATA_SOURCES[ASSESSED_RAW][1],
             file=SimpleUploadedFile(
                 name=filename,
                 content=pathlib.Path(filepath).read_bytes()

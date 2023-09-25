@@ -1,8 +1,7 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-// inventory services
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
@@ -322,6 +321,26 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    /** Update Salesforce for specified property views and organization
+     *
+     * @param property_view_ids        List of Property View IDs
+     *
+     * @returns {Promise}
+     */
+    inventory_service.update_salesforce = function (property_view_ids) {
+      spinner_utility.show();
+      return $http.post('/api/v3/properties/update_salesforce/', {
+        property_view_ids
+      }, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
 
     inventory_service.delete_property_states = function (property_view_ids) {
       return $http.delete('/api/v3/properties/batch_delete/', {
@@ -626,6 +645,22 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
         return property_columns.map(a => {
           return { column_name: a.column_name, display_name: a.display_name };
+        });
+      });
+    };
+
+    inventory_service.get_property_column_names_and_ids_for_org = function (org_id) {
+      return $http.get('/api/v3/columns/', {
+        params: {
+          inventory_type: 'property',
+          organization_id: org_id,
+          only_used: false,
+          display_units: true
+        }
+      }).then(function (response) {
+        let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
+        return property_columns.map(a => {
+          return { column_name: a.column_name, display_name: a.display_name, id: a.id };
         });
       });
     };
@@ -1126,7 +1161,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_column_list_profile = function (id) {
-      return $http.get('/api/v3/column_list_profiles/' + id, {
+      return $http.get('/api/v3/column_list_profiles/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id,
         }
@@ -1195,18 +1230,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.refresh_metadata = function (ids, states, inventory_type, progress_key) {
-      return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
-        ids: ids,
-        states: states,
-        inventory_type: inventory_type,
+    inventory_service.set_update_to_now = function (property_views, taxlot_views, progress_key) {
+      return $http.post(`/api/v3/tax_lot_properties/set_update_to_now/`, {
+        property_views: property_views,
+        taxlot_views: taxlot_views,
         progress_key: progress_key,
         organization_id: user_service.get_organization().id
       });
     };
 
-    inventory_service.start_refresh_metadata = function() {
-      return $http.get('/api/v3/tax_lot_properties/start_refresh_metadata/', {
+    inventory_service.start_set_update_to_now = function() {
+      return $http.get('/api/v3/tax_lot_properties/start_set_update_to_now/', {
         params: {
           organization_id: user_service.get_organization().id
         }

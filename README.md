@@ -41,7 +41,7 @@ task manager (Celery) with:
 
 ```
 ./manage.py runserver
-celery -A seed worker -l info -c 4 --max-tasks-per-child 1000 --events
+celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 ```
 
 ### Developer Resources
@@ -55,10 +55,7 @@ celery -A seed worker -l info -c 4 --max-tasks-per-child 1000 --events
 
 ### Copyright
 
-Copyright © 2014 - 2022, The Regents of the University of California, through
-Lawrence Berkeley National Laboratory (subject to receipt of any required
-approvals from the U.S. Department of Energy) and contributors. All rights
-reserved.
+See the information in the [LICENSE.md](LICENSE.md) file.
 
 [code-documentation]: https://seed-platform.org/code_documentation/latest/
 [code-documentation-links]: https://seed-platform.org/developer_resources/

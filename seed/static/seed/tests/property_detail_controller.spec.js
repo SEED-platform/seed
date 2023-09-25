@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 describe('controller: inventory_detail_controller', function () {
 
@@ -62,11 +62,11 @@ describe('controller: inventory_detail_controller', function () {
       },
       cycle: {
         created: '2016-08-02T16:38:22.925258Z',
-        end: '2011-01-01T07:59:59Z',
+        end: '2011-01-01',
         id: 1,
         name: '2010 Calendar Year',
         organization: 24,
-        start: '2010-01-01T08:00:00Z',
+        start: '2010-01-01',
         user: ''
       },
       taxlots: [{

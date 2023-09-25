@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 import logging
 
 from django.db import models
@@ -143,7 +142,7 @@ class DataView(models.Model):
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
-                    dataset = {'data': [], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
+                    dataset = {'data': [], 'column': column.display_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
                     for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)

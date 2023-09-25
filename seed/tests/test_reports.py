@@ -1,13 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import datetime
 
 from django.urls import reverse
 from django.utils import timezone
 from xlrd import open_workbook
 
-from seed.models import ASSESSED_RAW, Property, PropertyState, PropertyView
+from seed.models import (
+    ASSESSED_RAW,
+    Column,
+    Property,
+    PropertyState,
+    PropertyView
+)
 from seed.test_helpers.fake import FakeCycleFactory
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -86,9 +95,13 @@ class ExportReport(DataMappingBaseTestCase):
         self.assertEqual('Raw', raw_sheet.name)
 
         # check Site EUI values
-        self.assertEqual('Site EUI', raw_sheet.cell(0, 1).value)
-        self.assertEqual(1, raw_sheet.cell(1, 1).value)
-        self.assertEqual(2, raw_sheet.cell(2, 1).value)
+        matching_columns = Column.objects.filter(organization_id=self.org.id, is_matching_criteria=True, table_name="PropertyState")
+        for i, matching_column in enumerate(matching_columns):
+            self.assertEqual(matching_column.display_name, raw_sheet.cell(0, i).value)
+
+        self.assertEqual('Site EUI', raw_sheet.cell(0, len(matching_columns)).value)
+        self.assertEqual(1, raw_sheet.cell(1, len(matching_columns)).value)
+        self.assertEqual(2, raw_sheet.cell(2, len(matching_columns)).value)
 
         agg_sheet = wb.sheet_by_index(2)
         self.assertEqual('Agg', agg_sheet.name)

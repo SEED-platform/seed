@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
@@ -107,6 +110,10 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
                 ).count(),
+                'census_geocoder': PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values('state_id')),
+                    geocoding_confidence__startswith='Census'
+                ).count(),
                 'manual': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
@@ -134,6 +141,10 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 'low_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
+                ).count(),
+                'census_geocoder': TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values('state_id')),
+                    geocoding_confidence__startswith='Census'
                 ).count(),
                 'manual': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),

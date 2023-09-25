@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from string import Template, ascii_letters, digits
 
@@ -176,10 +176,10 @@ class TestExpressionEvaluator(TestCase):
     looks like, and it runs our tests many times over different types of data it generates.
     This allows us to test cases we would have never though of and find edge cases.
 
-    We create data specifications (ie what the data should look like) with "strategies".
+    We create data specifications (i.e., what the data should look like) with "strategies".
     We have written custom strategies for generating different types of expressions above.
     They all end with the `_st` suffix.
-    We then tell hypothesis which strategy to use for a test (ie what the data input is) by using the
+    We then tell hypothesis which strategy to use for a test (i.e., what the data input is) by using the
     `@given` decorator.
     """
 

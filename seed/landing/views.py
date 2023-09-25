@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 import logging
@@ -32,29 +32,8 @@ logger = logging.getLogger(__name__)
 def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
-    request.user = {
-        'first_name': '',
-        'last_name': '',
-        'email': ''
-    }
-    return render(request, 'landing/home.html', {
-        'context': {'self_registration': settings.INCLUDE_ACCT_REG},
-        'debug': settings.DEBUG,
-        'initial_org_id': 0,
-        'initial_org_user_role': 0,
-        'initial_org_name': '',
-        'login_form': LoginForm(),
-        'username': ''
-    })
 
-
-def login_view(request):
-    """
-    Standard Django login, with additions:
-        Lowercase the login email (username)
-        Check user has accepted ToS, if any.
-    """
-    if request.method == "POST":
+    if request.method == 'POST':
         redirect_to = request.POST.get('next', request.GET.get('next', False))
         if not redirect_to:
             redirect_to = reverse('seed:home')
@@ -66,27 +45,8 @@ def login_view(request):
                 password=form.cleaned_data['password']
             )
             if new_user is not None and new_user.is_active:
-                # TODO: the ToS haven't worked for awhile, renewable?
-                # determine if user has accepted ToS, if one exists
-                # try:
-                #     user_accepted_tos = has_user_agreed_latest_tos(new_user)
-                # except NoActiveTermsOfService:
-                #     there's no active ToS, skip interstitial
-                # user_accepted_tos = True
-                #
-                # if user_accepted_tos:
                 login(request, new_user)
                 return HttpResponseRedirect(redirect_to)
-                # else:
-                #     store login info for django-tos to handle
-                # request.session['tos_user'] = new_user.pk
-                # request.session['tos_backend'] = new_user.backend
-                # context = RequestContext(request)
-                # context.update({
-                #     'next': redirect_to,
-                #     'tos': TermsOfService.objects.get_current_tos()
-                # })
-                # return render(request, 'tos/tos_check.html', context)
             else:
                 errors = ErrorList()
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
@@ -95,19 +55,18 @@ def login_view(request):
     else:
         form = LoginForm()
 
-    # prepare the render request
     request.user = {
         'first_name': '',
         'last_name': '',
         'email': ''
     }
-    return render(request, 'landing/login.html', {
+    return render(request, 'landing/home.html', {
         'context': {'self_registration': settings.INCLUDE_ACCT_REG},
         'debug': settings.DEBUG,
         'initial_org_id': 0,
         'initial_org_user_role': 0,
         'initial_org_name': '',
-        'form': form,
+        'login_form': form,
         'username': ''
     })
 

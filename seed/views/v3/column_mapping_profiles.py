@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import csv
 
 from django.http import HttpResponse, JsonResponse
@@ -64,7 +67,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': data,
             })
         except Exception as e:
-            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),

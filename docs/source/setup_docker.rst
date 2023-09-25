@@ -62,7 +62,7 @@ Building and Running Containers for Non-Development
 Using Docker for Development
 ----------------------------
 
-The development environment is configured for live reloading (ie restart webserver when files change)
+The development environment is configured for live reloading (i.e., restart webserver when files change)
 and debugging. It builds off the base docker-compose.yml, so it's necessary
 to specify the files being used in docker-compose commands as seen below.
 
@@ -115,7 +115,7 @@ can restart the containers connecting to different volumes.
 Running Tests
 ^^^^^^^^^^^^^
 
-While the containers are running (ie after running the docker-compose up command), use docker exec to run tests in the web container:
+While the containers are running (i.e., after running the docker-compose up command), use docker exec to run tests in the web container:
 
 .. code-block:: bash
 

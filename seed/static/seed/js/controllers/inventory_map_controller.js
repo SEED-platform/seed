@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_map', [])
   .controller('inventory_map_controller', [
@@ -125,9 +125,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         // Map
         var base_layer = new ol.layer.Tile({
-          source: new ol.source.Stamen({
-            layer: 'terrain'
-          }),
+          source: new ol.source.OSM(),
           zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
         });
 
@@ -189,7 +187,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           return new ol.source.Vector({features: features});
         };
 
-        // Define taxlot ULID bounding box
+        // Define taxlot UBID bounding box
         var taxlotBB = function (taxlot) {
           var format = new ol.format.WKT();
 
@@ -201,7 +199,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           return feature;
         };
 
-        // Define taxlot ULID centroid box
+        // Define taxlot UBID centroid box
         var taxlotCentroid = function (taxlot) {
           var format = new ol.format.WKT();
 
@@ -284,7 +282,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           });
         };
 
-        // style for taxlot ulid bounding and centroid boxes
+        // style for taxlot ubid bounding and centroid boxes
         var taxlotStyle = function (/*feature*/) {
           return new ol.style.Style({
             stroke: new ol.style.Stroke({
@@ -634,5 +632,11 @@ angular.module('BE.seed.controller.inventory_map', [])
           $scope.cycle.selected_cycle = cycle;
           refreshUsingCycle();
         };
+
+        // Map attribution moved to /about page
+        ['.ol-attribution', '.ol-rotate'].forEach(className => {
+          const element = $scope.map.getViewport().querySelector(className);
+          element && (element.style.display = 'none');
+        })
       });
     }]);

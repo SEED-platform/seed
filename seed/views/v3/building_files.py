@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import os
 import zipfile
@@ -109,8 +109,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                             data_file.seek(0)
                             size = os.path.getsize(data_file.name)
                             content_type = 'text/xml'
-                            # print("DATAFILE:")
-                            # print(data_file)
+
                             a_file = InMemoryUploadedFile(
                                 data_file, 'data_file', f.filename, content_type,
                                 size, charset=None)
@@ -122,8 +121,6 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
                             )
 
                         p_status_tmp, property_state_tmp, property_view, messages_tmp = building_file.process(organization_id, cycle)
-                        # print('messages_tmp: ')
-                        # print(messages_tmp)
 
                         # append errors to overall messages
                         for i in messages_tmp['errors']:

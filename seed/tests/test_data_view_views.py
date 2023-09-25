@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 from datetime import datetime
@@ -596,8 +596,8 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(4, sum_count)
         self.assertEqual(4, count_count)
 
-        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'site_eui'])
-        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'total_ghg_emissions'])
+        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'Site EUI'])
+        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'Total GHG Emissions'])
         self.assertEqual(10, site_eui_count)
         self.assertEqual(10, ghg_count)
 

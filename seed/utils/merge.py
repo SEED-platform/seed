@@ -1,13 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.apps import apps
 from django.db.models import Subquery
 
@@ -30,6 +26,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+from seed.utils.ubid import merge_ubid_models
 
 
 def merge_states_with_views(state_ids, org_id, log_name, StateClass):
@@ -56,6 +53,7 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
         merged_state = PropertyState.objects.create(organization_id=org_id)
+        merged_state = merge_ubid_models(state_ids, merged_state.id, PropertyState)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -106,6 +104,7 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
         state_2 = TaxLotState.objects.get(id=state_ids[index])
 
         merged_state = TaxLotState.objects.create(organization_id=org_id)
+        merged_state = merge_ubid_models(state_ids, merged_state.id, TaxLotState)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))

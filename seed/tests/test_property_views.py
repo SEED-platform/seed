@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import ast
 import json
@@ -10,7 +10,6 @@ import os
 import pathlib
 import unittest
 from datetime import datetime
-from unittest import skip
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
@@ -30,6 +29,11 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     DATA_STATE_MAPPING,
+    DATA_STATE_MATCHING,
+    GREEN_BUTTON,
+    PORTFOLIO_METER_USAGE,
+    PORTFOLIO_RAW,
+    SEED_DATA_SOURCES,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -45,6 +49,10 @@ from seed.models import (
     TaxLotView
 )
 from seed.models.sensors import DataLogger, Sensor, SensorReading
+from seed.serializers.properties import (
+    PropertyStatePromoteWritableSerializer,
+    PropertyStateSerializer
+)
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
@@ -90,6 +98,76 @@ class PropertyViewTests(DataMappingBaseTestCase):
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
+
+    def test_create_property(self):
+        state = self.property_state_factory.get_property_state()
+        cycle_id = self.cycle.id
+
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data
+        })
+
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        response = self.client.post(url, params, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['status'], 'success')
+
+    def test_create_property_in_diff_org(self):
+        state = self.property_state_factory.get_property_state()
+        cycle_id = self.cycle.id
+        user_2 = User.objects.create_superuser(
+            **{'username': 'test_user2@demo.com', 'password': 'test_pass', 'email': 'test_user2@demo.com'})
+        org_2, _, _ = create_organization(user_2)
+
+        # verify that user (1) can't post to user_2's org
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data
+        })
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(org_2.pk)
+        response = self.client.post(url, params, content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json()['detail'], 'You do not have permission to perform this action.')
+
+    def test_create_property_with_protected_fields(self):
+        state = self.property_state_factory.get_property_state()
+        state.normalized_address = '741 Evergreen Terrace'
+        state.data_state = 999
+        cycle_id = self.cycle.id
+
+        params = json.dumps({
+            "cycle_id": cycle_id,
+            "state": PropertyStateSerializer(state).data
+        })
+
+        url = reverse('api:v3:properties-list') + '?organization_id={}'.format(self.org.pk)
+        response = self.client.post(url, params, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['status'], 'success')
+
+        # verify that the protected fields were not overwritten
+        new_state_data = response.json()['view']['state']
+        self.assertNotEqual(new_state_data['normalized_address'], state.normalized_address)
+        self.assertNotEqual(new_state_data['data_state'], state.data_state)
+        self.assertEqual(new_state_data['data_state'], DATA_STATE_MATCHING)
+
+        # above was for spot checking, now look at the serializer and make sure that the
+        # protected column objects are read_only.
+        serializer = PropertyStatePromoteWritableSerializer(new_state_data)
+        protected_columns = list(set(Column.EXCLUDED_MAPPING_FIELDS + Column.COLUMN_EXCLUDE_FIELDS))
+        # go through each of the Column's class columns and ensure that the serializer is read only
+        # map the related object ids to the column names
+        protected_columns.pop(protected_columns.index('import_file'))
+        protected_columns.pop(protected_columns.index('extra_data'))  # extra_data is allowed
+        protected_columns.append('import_file_id')
+        protected_columns.append('measures')
+        protected_columns.append('scenarios')
+        protected_columns.append('files')
+
+        for column in protected_columns:
+            self.assertIsNotNone(serializer.fields.get(column), f"Column {column} is not in the serializer")
+            self.assertTrue(serializer.fields[column].read_only, f"Column {column} is not read_only in the write serializer")
 
     def test_get_and_edit_properties(self):
         state = self.property_state_factory.get_property_state()
@@ -147,8 +225,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        test_filepath = os.path.relpath(os.path.join(location, 'data', 'test-document.pdf'))
+
+        test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'test-document.pdf')
+
         url = reverse('api:v3:properties-detail', args=[view.id]) + f'upload_inventory_document/?organization_id={self.org.pk}'
 
         document = open(test_filepath, 'rb')
@@ -511,7 +590,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -689,7 +768,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -724,7 +803,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -760,7 +839,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -780,7 +859,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -824,7 +903,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -845,7 +924,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_overlapping_filename,
             file=SimpleUploadedFile(
                 name=gb_overlapping_filename,
@@ -942,7 +1021,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=pm_filename,
             file=SimpleUploadedFile(
                 name=pm_filename,
@@ -1052,7 +1131,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_filename
         gb_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=gb_filename,
             file=SimpleUploadedFile(
                 name=gb_filename,
@@ -1200,7 +1279,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        response = self.client.get(url, {'profile_id': profile.id})
+        response = self.client.get(url, {'profile_id': profile.id, "organization_id": prprty.organization.id})
 
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
@@ -1240,9 +1319,9 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        default_export_response = self.client.get(url, {'profile_id': default_profile.id})
+        default_export_response = self.client.get(url, {'profile_id': default_profile.id, "organization_id": prprty.organization.id})
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id})
+        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id, "organization_id": prprty.organization.id})
 
         # -- Assert
         self.assertEqual(200, default_export_response.status_code, default_export_response.content)
@@ -1500,7 +1579,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1651,7 +1730,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         cost_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -1944,126 +2023,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    @skip('Overlapping data is not valid through ESPM. This test is no longer valid')
-    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
-        # add initial meters and readings
-        save_raw_data(self.import_file.id)
-
-        # add additional entries for the Electricity meter
-        tz_obj = timezone(TIME_ZONE)
-        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
-        # 2016 January reading that should override the existing reading
-        reading_details = {
-            'meter_id': meter.id,
-            'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
-            'end_time': make_aware(datetime(2016, 1, 20, 23, 59, 59), timezone=tz_obj),
-            'reading': 100000000000000,
-            'source_unit': 'kBtu (thousand Btu)',
-            'conversion_factor': 1
-        }
-        MeterReading.objects.create(**reading_details)
-
-        # 2016 January reading that should be ignored
-        reading_details['start_time'] = make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 31, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 0.1
-        MeterReading.objects.create(**reading_details)
-
-        # Create March 2016 entries having disregarded readings when finding monthly total
-        # 1 week - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 6, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 1
-        MeterReading.objects.create(**reading_details)
-
-        # 1 week - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 7, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 13, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 10
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 2, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 11, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 100
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 3, 12, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 3, 21, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 1000
-        MeterReading.objects.create(**reading_details)
-
-        # Create April 2016 entries having disregarded readings when finding monthly total
-        # 5 days - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 4, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 2
-        MeterReading.objects.create(**reading_details)
-
-        # 10 days - not included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 6, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 15, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 20
-        MeterReading.objects.create(**reading_details)
-
-        # 20 days - included in total
-        reading_details['start_time'] = make_aware(datetime(2016, 4, 2, 0, 0, 0), timezone=tz_obj)
-        reading_details['end_time'] = make_aware(datetime(2016, 4, 21, 23, 59, 59), timezone=tz_obj)
-        reading_details['reading'] = 200
-        MeterReading.objects.create(**reading_details)
-
-        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
-        url += f'?organization_id={self.org.pk}'
-
-        post_params = json.dumps({
-            'interval': 'Month',
-            'excluded_meter_ids': [],
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
-
-        expectation = {
-            'readings': [
-                {
-                    'month': 'January 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 100000000000000 / 3.41,
-                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
-                },
-                {
-                    'month': 'February 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 548603.7 / 3.41,
-                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
-                },
-                {
-                    'month': 'March 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 1100 / 3.41,
-                },
-                {
-                    'month': 'April 2016',
-                    'Electric - Grid - Portfolio Manager - 5766973-0': 200 / 3.41,
-                },
-            ],
-            'column_defs': [
-                {
-                    'field': 'month',
-                    '_filter_type': 'datetime',
-                },
-                {
-                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
-                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
-                    '_filter_type': 'reading',
-                },
-                {
-                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
-                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
-                    '_filter_type': 'reading',
-                },
-            ]
-        }
-        self.assertCountEqual(result_dict['readings'], expectation['readings'])
-        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
-
     def test_property_meter_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
@@ -2250,3 +2209,84 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+
+class PropertyViewUpdateWithESPMTests(DataMappingBaseTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        selfvars = self.set_up(
+            PORTFOLIO_RAW, user_details['username'], user_details['password']
+        )
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        # create the test factories
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+
+        # log into the client
+        self.client.login(**user_details)
+
+    def test_update_property_view_with_espm(self):
+        """Simple test to verify that the property state is merged with an updated
+        ESPM download XLSX file."""
+        pm_property_id = '22482007'
+        pv = self.property_view_factory.get_property_view(
+            cycle=self.cycle_1, pm_property_id=pm_property_id
+        )
+        self.assertTrue(pv.state.pm_property_id, pm_property_id)
+
+        # save some of the pv state's data to verify merging
+        pv_city = pv.state.city
+        pv_address_line_1 = pv.state.address_line_1
+        pv_site_eui = pv.state.site_eui
+
+        mapping_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv'
+        )
+
+        # need to upload the mappings for the ESPM data to a new profile
+        mapping_profile = ColumnMappingProfile.create_from_file(
+            mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True
+        )
+
+        test_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
+        )
+
+        url = reverse('api:v3:properties-update-with-espm', args=[pv.id])
+        url += f"?organization_id={self.org.id}&cycle_id={self.cycle_1.id}&mapping_profile_id={mapping_profile.id}"
+        doc = open(test_filepath, 'rb')
+        # need to encode the data as multipart form data since this is a PUT. A
+        # POST in the client defaults to multipart, so in a PUT we have to construct it.
+        response = self.client.put(
+            path=url,
+            data=encode_multipart(data=dict(
+                file=doc,
+                file_type='XLSX',
+                name=doc.name),
+                boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # now spot check that some of fields were updated
+        pv.refresh_from_db()
+        self.assertNotEqual(pv.state.city, pv_city)
+        self.assertNotEqual(pv.state.address_line_1, pv_address_line_1)
+        # site_eui should not have changed
+        self.assertEqual(pv.state.site_eui.magnitude, pv_site_eui)
+
+        # check that the values are what is in the XLSX file
+        self.assertEqual(pv.state.city, 'WASHINGTON')
+        self.assertEqual(pv.state.address_line_1, '2425 N STREET NW')
+
+        # verify that the property has meters too, which came from the XLSX file
+        self.assertEqual(pv.property.meters.count(), 2)

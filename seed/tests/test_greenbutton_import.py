@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import json
 import os
 import pathlib
@@ -17,6 +20,8 @@ from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    GREEN_BUTTON,
+    SEED_DATA_SOURCES,
     Meter,
     MeterReading,
     Property,
@@ -66,7 +71,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
 
         self.import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,
@@ -233,7 +238,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
 
         one_dup_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="GreenButton",
+            source_type=SEED_DATA_SOURCES[GREEN_BUTTON][1],
             uploaded_filename=filename,
             file=SimpleUploadedFile(
                 name=filename,

@@ -13,7 +13,7 @@ The contribution process for SEED is composed of three steps:
 1.  Send consent email
 
     In order for us to distribute your code as part of SEED under the SEED
-    [license](https://github.com/SEED-platform/seed/blob/main/LICENSE), we’ll need
+    [license](https://github.com/SEED-platform/seed/blob/main/LICENSE.md), we’ll need
     your consent. An email acknowledging understanding of these terms and agreeing to them is
     all that will be asked of any contributor. Send an email to the SEED project manager (see
     below for the address) including the following text and a list of co-contributors (if any):

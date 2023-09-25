@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -40,37 +40,20 @@ STATUS_CHOICES = (
 )
 
 
-# This should be cleaned/DRYed up with Organization._default_display_meter_units
-def _get_default_display_meter_units():
-    return {
-        'Coal (anthracite)': 'kBtu (thousand Btu)',
-        'Coal (bituminous)': 'kBtu (thousand Btu)',
-        'Coke': 'kBtu (thousand Btu)',
-        'Diesel': 'kBtu (thousand Btu)',
-        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
-        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
-        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
-        'District Chilled Water - Other': 'kBtu (thousand Btu)',
-        'District Hot Water': 'kBtu (thousand Btu)',
-        'District Steam': 'kBtu (thousand Btu)',
-        'Electric - Grid': 'kWh (thousand Watt-hours)',
-        'Electric - Solar': 'kWh (thousand Watt-hours)',
-        'Electric - Wind': 'kWh (thousand Watt-hours)',
-        'Electric - Unknown': 'kWh (thousand Watt-hours)',
-        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
-        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
-        'Kerosene': 'kBtu (thousand Btu)',
-        'Natural Gas': 'kBtu (thousand Btu)',
-        'Other:': 'kBtu (thousand Btu)',
-        'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
-    }
+def _get_default_meter_units():
+    """Returns the default meter units for an organization. This method
+    is used only to set the default units for a new organization.
+
+    Do not use this method otherwise, simply call
+    `Organization._default_display_meter_units` directly."""
+    return Organization._default_display_meter_units
 
 
 class OrganizationUser(models.Model):
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'organization'], name='unique_user_for_organization'),
+        ]
         ordering = ['organization', '-role_level']
 
     user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
@@ -139,18 +122,20 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
-    # This should be cleaned/DRYed up with the ._get_default_display_meter_units method
     _default_display_meter_units = {
         'Coal (anthracite)': 'kBtu (thousand Btu)',
         'Coal (bituminous)': 'kBtu (thousand Btu)',
         'Coke': 'kBtu (thousand Btu)',
+        'Default': 'kBtu (thousand Btu)',
         'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water': 'kBtu (thousand Btu)',
         'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
         'District Chilled Water - Electric': 'kBtu (thousand Btu)',
         'District Chilled Water - Engine': 'kBtu (thousand Btu)',
         'District Chilled Water - Other': 'kBtu (thousand Btu)',
         'District Hot Water': 'kBtu (thousand Btu)',
         'District Steam': 'kBtu (thousand Btu)',
+        'Electric': 'kWh (thousand Watt-hours)',
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
@@ -161,13 +146,19 @@ class Organization(models.Model):
         'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
         'Kerosene': 'kBtu (thousand Btu)',
         'Natural Gas': 'kBtu (thousand Btu)',
-        'Other:': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',  # yes, other has a colon at the end.
         'Propane': 'kBtu (thousand Btu)',
-        'Wood': 'kBtu (thousand Btu)'
+        'Wood': 'kBtu (thousand Btu)',
     }
 
     class Meta:
         ordering = ['name']
+        constraints = [
+            models.CheckConstraint(
+                name="ubid_threshold_range",
+                check=models.Q(ubid_threshold__range=(0, 1)),
+            ),
+        ]
 
     name = models.CharField(max_length=100)
     users = models.ManyToManyField(
@@ -200,7 +191,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = models.JSONField(default=_get_default_display_meter_units)
+    display_meter_units = models.JSONField(default=_get_default_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
@@ -230,6 +221,12 @@ class Organization(models.Model):
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
 
+    # Salesforce Functionality
+    salesforce_enabled = models.BooleanField(default=False)
+
+    # UBID Threshold
+    ubid_threshold = models.FloatField(default=1.0)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
@@ -249,11 +246,18 @@ class Organization(models.Model):
         return user in self.users.all()
 
     def add_member(self, user, role=ROLE_OWNER):
-        """Add a user to an organization."""
+        """Add a user to an organization. Returns a boolean if a new OrganizationUser record was created"""
+        if OrganizationUser.objects.filter(user=user, organization=self).exists():
+            return False
+
         # Ensure that the user can login in case they had previously been deactivated due to no org associations
-        user.is_active = True
-        user.save()
-        return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+        if not user.is_active:
+            user.is_active = True
+            user.save()
+
+        _, created = OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
+
+        return created
 
     def remove_member(self, user):
         """Remove user from organization."""

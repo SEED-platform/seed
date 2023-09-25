@@ -1,7 +1,7 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from rest_framework import serializers
 
@@ -13,6 +13,7 @@ class SaveSettingsOrgFieldSerializer(serializers.Serializer):
 
 
 class SaveSettingsOrganizationSerializer(serializers.Serializer):
+
     query_threshold = serializers.IntegerField()
     name = serializers.CharField(max_length=100)
     fields = SaveSettingsOrgFieldSerializer(many=True)
@@ -35,6 +36,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     at_organization_token = serializers.CharField(max_length=128)
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
+    salesforce_enabled = serializers.BooleanField()
 
 
 class SaveSettingsSerializer(serializers.Serializer):

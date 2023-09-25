@@ -1,8 +1,7 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-// organization services
 angular.module('BE.seed.service.organization', []).factory('organization_service', [
   '$http',
   '$q',
@@ -243,7 +242,9 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       // if nothing is returned, check in extra data
       let return_field = inventory_state[field];
       if (return_field == null) {
-        return_field = inventory_state.extra_data[field];
+        if (field in inventory_state.extra_data) {
+          return_field = inventory_state.extra_data[field];
+        }
       }
 
       return return_field;

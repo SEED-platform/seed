@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from __future__ import absolute_import
 
 import collections
@@ -112,7 +111,7 @@ class EquivalencePartitioner(object):
         """
         tax_lot_equivalence_fields = [
             ("jurisdiction_tax_lot_id", "custom_id_1"),
-            ("ulid",),
+            ("ubid",),
             ("custom_id_1",),
             ("normalized_address",)
         ]

@@ -14,9 +14,11 @@
 
     <div class="section_content_container">
         <div class="section_content">
+            <div class="analysis-description" translate="ANALYSIS_DESCRIPTION_{$ analysis.service $}"></div>
             <div ng-controller="analysis_details_controller">
                 <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
             </div>
+
             <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
         </div>
     </div>
@@ -32,7 +34,13 @@
         <div class="section_content_container">
                 <div class="section_content with_padding">
                     <div ng-if="analysis.service !== 'BETTER' && !angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
-                        <pre>{$:: view.parsed_results | json $}</pre>
+                        <pre>
+                            <div ng-repeat="(key, val) in view.parsed_results" class="analysis-results-section" >
+                                <div ng-if="key.includes('URL')">{$:: key.replace(' URL', '') $}: <span ng-if="val != null"><a href="{$:: val $}" target="_blank">View Report <i class="glyphicon glyphicon-log-out"></i></a></span></div>
+                                <div ng-if="!key.includes('URL')">{$:: key $}: {$:: val $}
+                            <!-- {$:: view.parsed_results | json $}-->
+                            </div>
+                        </pre>
                     </div>
                     <div ng-repeat="file in view.output_files | filter:filter_params:strict">
                         <div ng-if="file.content_type == 'html'">
@@ -42,7 +50,7 @@
                             </div>
                         </div>
                         <div ng-if="file.content_type == 'PNG'" style='width: 50%; min-width: 200px;'>
-                            <img ng-attr-src="{$:: file.file $}" style="width: 100%"></img>
+                            <img ng-attr-src="{$:: file.file $}" style="width: 100%">
                             <div ng-repeat-end ng-if="!$last">
                                 <br />
                             </div>

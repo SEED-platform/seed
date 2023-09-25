@@ -1,13 +1,13 @@
-/*
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-
 angular.module('BE.seed.controller.derived_columns_editor', [])
   .controller('derived_columns_editor_controller', [
     '$scope',
     '$log',
     '$state',
+    '$stateParams',
     'derived_columns_service',
     'Notification',
     'modified_service',
@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       $scope,
       $log,
       $state,
+      $stateParams,
       derived_columns_service,
       Notification,
       modified_service,
@@ -35,6 +36,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       property_columns_payload,
       taxlot_columns_payload
     ) {
+      $scope.state = $state.current;
       // lazy - always ask user to confirm page change (unless they save / create the derived column)
       modified_service.setModified();
 
@@ -63,7 +65,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         return {
           name: null,
           expression: `$${param.parameter_name} / 100`,
-          inventory_type: 'Property',
+          inventory_type: $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot',
           parameters: [param]
         };
       };
@@ -87,7 +89,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
       // turn each parameter's source_column (an ID to a Column) into an object
       // which includes the display name and add an empty array to for storing validation errors later
       $scope.parameters = $scope.parameters.map(param => {
-        // if this parameter is 'new' (ie from make_param) it won't have a source column
+        // if this parameter is 'new' (i.e., from make_param) it won't have a source column
         if (!param.source_column) {
           return {
             ...param,
@@ -226,14 +228,14 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
 
       $scope.update_column_name_error = function () {
         $scope.duplicate_column_name = false;
-        if ($scope.derived_column.inventory_type === 'Property') {
-          if ($scope.property_columns.some(col => col.column_name === $scope.derived_column.name)) {
-            $scope.duplicate_column_name = true
-          }
-        }else {
-          if ($scope.taxlot_columns.some(col => col.column_name === $scope.derived_column.name)) {
-            $scope.duplicate_column_name = true
-          }
+        let applicableColumns = $scope.derived_column.inventory_type === 'Property' ? $scope.property_columns : $scope.taxlot_columns;
+        if ($scope.derived_column.id) {
+          // Exclude consideration of the derived column itself when verifying the name
+          applicableColumns = applicableColumns.filter(col => col.derived_column !== $scope.derived_column.id)
+        }
+
+        if (applicableColumns.some(col => col.column_name === $scope.derived_column.name)) {
+          $scope.duplicate_column_name = true;
         }
 
         $scope.invalid_column_name = !$scope.derived_column.name;
@@ -335,7 +337,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
             spinner_utility.hide();
             modified_service.resetModified();
             Notification.success(`${creating ? 'Created' : 'Updated'} "${res.derived_column.name}"`);
-            $state.go('organization_derived_columns', {organization_id: $scope.org.id, inventory_type: 'properties'});
+            $state.go('organization_derived_columns', {organization_id: $scope.org.id, inventory_type: derived_column_data.inventory_type === 'Property' ? 'properties' : 'taxlots' });
           }).catch(err => {
             spinner_utility.hide();
             $log.error(err);

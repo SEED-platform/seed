@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author Paul Munday <paul@paulmunday.net>
 :author Nicholas Long <nicholas.long@nrel.gov>
 """
@@ -375,18 +374,18 @@ class TestProfileIdMixin(TestCase):
         self.assertListEqual(columns['extra_data'], ['field_1'])
 
         # no extra data
-        columnlistprofile = self.column_list_factory.get_columnlistprofile(
+        column_list_profile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], [])
 
         # with extra data
-        columnlistprofile = self.column_list_factory.get_columnlistprofile(
+        column_list_profile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui', 'field_1']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, column_list_profile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], ['field_1'])
 

@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.inventory_list_legacy', [])
   .controller('inventory_list_legacy_controller', [
@@ -976,10 +976,10 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
 
       processData();
 
-      $scope.open_ubid_modal = function () {
+      $scope.open_ubid_decode_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
-          controller: 'ubid_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/ubid_decode_modal.html',
+          controller: 'ubid_decode_modal_controller',
           resolve: {
             property_view_ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
@@ -1159,31 +1159,26 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
         });
       };
 
-      $scope.open_refresh_metadata_modal = function () {
+      $scope.open_set_update_to_now_modal = function () {
+        rows = $scope.gridApi.selection.getSelectedRows()
+        primary_rows = rows.filter(r => r.$$treeLevel == 0)
+        secondary_rows = rows.filter(r => r.$$treeLevel == undefined)
+
+        if ($scope.inventory_type === 'properties'){
+          property_rows = primary_rows
+          taxlot_rows = secondary_rows
+        } else {
+          taxlot_rows = primary_rows
+          property_rows = secondary_rows
+        }
+
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
-          controller: 'refresh_metadata_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/set_update_to_now_modal.html',
+          controller: 'set_update_to_now_modal_controller',
           backdrop: 'static',
           resolve: {
-            ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'id');
-            },
-            property_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
-            },
-            taxlot_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
-            },
-            inventory_type: _.constant($scope.inventory_type),
+            property_views: () => [...new Set(property_rows.map(r => r.property_view_id))],
+            taxlot_views: () => [...new Set(taxlot_rows.map(r => r.taxlot_view_id))],
           }
         });
       }
@@ -1199,7 +1194,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', [])
                 return !_.has(row, '$$treeLevel');
               }), 'property_view_id');
             },
-            current_cycle: _.constant($scope.cycle.selected_cycle),
+            cycles: _.constant(cycles.cycles),
+            current_cycle: _.constant($scope.cycle.selected_cycle)
           }
         });
         modalInstance.result.then(function (data) {

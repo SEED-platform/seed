@@ -1,0 +1,122 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+                <i class="fa fa-chevron-left"></i>
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+            </a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+</div>
+<div class="section_header_container">
+    <div class="section_header fixed_height_short has_no_padding">
+        <div class="section_action_container left" style="width: 50%;">
+            <span>
+                <h2>
+                    <span ng-if="::inventory_type === 'properties'">
+                        <i class="fa fa-building-o"></i><span translate>Property</span> :
+                    </span>
+                    <span ng-if="::inventory_type === 'taxlots'">
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
+                    </span>
+                    <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
+                    <span ng-if="!inventory_name">({$:: inventory_name_error $})
+                        <i class="glyphicon glyphicon-question-sign"
+                            title="This can be changed from the organization settings page."></i>
+                    </span>
+                </h2>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="section_header_container" style="padding-left: 10px;">
+    <div class="section_header fixed_height_short" style="padding: 0">
+        <div class="event-select">
+            <div class="bold" style="font-size: 16px;">Event Selection</div>
+            <div id="event-select-ui-grid" ui-grid="eventSelectGridOptions" ui-grid-selection></div>
+        </div>
+        <div>
+            <span>
+                <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)"
+                    style="padding: 1px 10px; margin-bottom: 2px">{$ accordionsCollapsed ? 'Expand All' : 'Collapse All' $}</button>
+            </span>
+            <span uib-dropdown class="btn-group" style="margin: 10px;">
+                <span>
+                    <span class="bold" style="padding-right: 5px;">Sort By:</span>
+                    <span uib-dropdown-toggle class="pointer" style="border: 1px solid gray; border-radius: 3px; padding: 3px;">
+                        {$ orderDesc ? 'Oldest to Newest' : 'Newest to Oldest' $} <span class="caret"></span>
+                    </span>
+                </span>
+                <ul ui-dropdown-menu class="dropdown-menu" role="menu" style="margin-left: 47px;">
+                    <li role="menuitem">
+                        <a ng-click="setDesc(false)">Newest to Oldest</a>
+                    </li>
+                    <li role="menuitem">
+                        <a ng-click="setDesc(true)">Oldest to Newest</a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+    </div>
+</div>
+<!-- Timeline: cycles -> events -> trigger -->
+<div>
+    <div class="accordion" id="cycle-container">
+        <div class="accordion-item" ng-repeat="cycle in timeline track by cycle.cycle" id="cycle-{$ cycle.cycle $}">
+            <div class="accordion-header">
+                <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
+                    <div style="display: flex;">
+                        <i class="fa fa-chevron-down accordion-indicator-default-open"></i>
+                        <div style="min-width: 300px; width: fit-content;">
+                            {$ cycleNameById[cycle.cycle] $}
+                        </div>
+                        <div>
+                            <span ng-repeat="(event_type, count) in cycle.eventTotals track by event_type"
+                                style="width: fit-content; margin-right: 40px;">
+                                <i class="{$ eventIconLookup[event_type] $}"></i>{$ event_type $}: {$ count $}
+                            </span>
+                        </div>
+                    </div>
+                </button>
+
+            </div>
+            <div id="cycle-events-{$ $index $}" class="accordion-body collapse in cycle-collapse">
+                <div class="accordion-item" ng-repeat="event in cycle.events track by event.id" id="cycle-event-{$ event.id $}">
+                    <div class="accordion-header">
+                        <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
+                            <i class="fa fa-chevron-right accordion-indicator-default-closed"></i>
+                            <span class="event-detail">{$ formatDate(event.modified) $}</span>
+                            <span class="event-detail" style="min-width: 200px; width: fit-content;">{$ formatUser(event.user_id) $}</span>
+                            <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
+                            <span class="event-detail" ng-if="event.audit_date">Audit Date: {$ event.audit_date $}</span>
+                            <span class="event-detail" ng-if="event.analysis">{$ event.analysis.service $}</span>
+                        </button>
+                    </div>
+                    <div id="event-{$ event.id $}" class="accordion-body collapse event-collapse">
+                        <div ng-if="event.event_type == 'NoteEvent'">
+                            <div
+                                id="note-{$ event.note.id $}"
+                                ui-grid="noteGridOptionsById[event.note.id]"
+                                ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns
+                                style="margin: 0 10px;"
+                            ></div>
+                        </div>
+                        <div ng-if="event.event_type == 'AnalysisEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/event_analysis_card.html'"></div>
+                        </div>
+                        <div ng-if="event.event_type == 'ATEvent'">
+                            <div class="event-trigger" ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'" ng-init="scenarios = event.scenarios"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

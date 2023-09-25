@@ -1,3 +1,7 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import csv
 import datetime
 import logging
@@ -370,9 +374,9 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         f = ImportFile.objects.create(import_record=record,
                                       uploaded_filename=file_name,
                                       file=path,
-                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
-                                      **{'source_program': 'PortfolioManager',
-                                         'source_program_version': '1.0'})
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
+                                      source_program='PortfolioManager',
+                                      source_program_version='1.0')
 
         # Return the newly created import file ID
         return JsonResponse({'success': True, 'import_file_id': f.pk})

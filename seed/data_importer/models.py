@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import hashlib
@@ -552,6 +552,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
     matching_results_data = models.JSONField(default=dict, blank=True)
+    multiple_cycle_upload = models.BooleanField(default=False)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)
@@ -610,6 +611,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def local_file(self):
+        """This method is used to create a copy of a remote file locally. We shouldn't need to use
+        this unless we start storing files remotely and we need to save locally to parse. If that
+        is the case, then we should handle the removal of the temp files otherwise these can add up
+        to a lot of storage space.
+        """
         if not hasattr(self, '_local_file'):
             temp_file = tempfile.NamedTemporaryFile(mode='w+b', delete=False)
             for chunk in self.file.chunks(1024):

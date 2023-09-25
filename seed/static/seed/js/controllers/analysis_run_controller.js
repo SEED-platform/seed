@@ -1,6 +1,6 @@
-/*
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 
 angular.module('BE.seed.controller.analysis_run', [])
@@ -8,7 +8,6 @@ angular.module('BE.seed.controller.analysis_run', [])
     '$scope',
     '$stateParams',
     '$state',
-    'organization_service',
     'analysis_payload',
     'organization_payload',
     'messages_payload',
@@ -19,7 +18,6 @@ angular.module('BE.seed.controller.analysis_run', [])
       $scope,
       $stateParams,
       $state,
-      organization_service,
       analysis_payload,
       organization_payload,
       messages_payload,
@@ -50,14 +48,5 @@ angular.module('BE.seed.controller.analysis_run', [])
         if (typeof value == 'object') {
           return true;
         }
-      };
-
-      $scope.get_display_name = function (inventory_state) {
-        return organization_service.get_inventory_display_value(
-          $scope.org,
-          // NOTE: hardcoding 'property' b/c you can only run analyses on properties
-          'property',
-          inventory_state
-        );
       };
     }]);

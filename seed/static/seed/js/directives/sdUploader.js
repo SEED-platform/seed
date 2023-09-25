@@ -1,8 +1,7 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
- */
-/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ *
  * directive sd-uploader: wraps Fine Uploader
  *   sourcetype: string - upon upload successful, send the sourcetype param to
  *                        the server to store the linked file
@@ -304,6 +303,148 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
+var makeESPMUpdater = function (scope, element, allowed_extensions) {
+  var uploader = new qq.FineUploaderBasic({
+    button: element[0],
+    request: {
+      method: 'PUT',
+      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId + '&mapping_profile_id=' + scope.mappingProfileId,
+      inputName: 'file',
+      paramsInBody: true,
+      forceMultipart: true,
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      },
+      params: {
+      }
+    },
+    validation: {
+      allowedExtensions: allowed_extensions
+    },
+    text: {
+      fileInputTitle: '',
+      uploadButton: scope.buttontext
+    },
+    retry: {
+      enableAuto: false
+    },
+    iframeSupport: {
+      localBlankPathPage: '/success.html'
+    },
+    /**
+     * multiple: only allow one file to be uploaded at a time
+     */
+    multiple: false,
+    maxConnections: 20,
+    callbacks: {
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        scope.eventfunc({
+          message: 'upload_submitted',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          }
+        });
+        var params = {
+          csrf_token: BE.csrftoken,
+          csrf_name: 'csrfmiddlewaretoken',
+          csrf_xname: 'X-CSRFToken',
+          file_type: 1,
+          organization_id: scope.organizationId,
+          cycle_id: scope.cycleId
+        };
+
+        uploader.setParams(params);
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+
+        // Only handle success because error transition is in onError event handler
+        if (responseJSON.status === 'success') {
+          scope.eventfunc({
+            message: 'upload_complete',
+            file: {
+              filename: fileName,
+              view_id: _.get(responseJSON, 'data.property_view.id'),
+              source_type: scope.sourcetype
+            }
+          });
+        }
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc({
+          message: 'upload_in_progress',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          },
+          progress: {
+            loaded: loaded,
+            total: total
+          }
+        });
+      },
+      /**
+       * onError: overloaded callback that calls the callback defined
+       * in the element attribute. Primarily for non-conforming files
+       * that return 400 from the backend and invalid file extensions.
+       */
+      onError: function (id, fileName, errorReason, xhr) {
+        if (_.includes(errorReason, ' has an invalid extension.')) {
+          scope.eventfunc({message: 'invalid_extension'});
+          return;
+        }
+
+        // Ignore this error handler if the network request hasn't taken place yet (e.g., invalid file extension)
+        if (!xhr) {
+          alert(errorReason);
+          return;
+        }
+
+        var error = errorReason;
+        try {
+          var json = JSON.parse(xhr.responseText);
+          if (_.has(json, 'message')) {
+            error = json.message;
+          }
+        } catch (e) {
+          // no-op
+        }
+
+        scope.eventfunc({
+          message: 'upload_error',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype,
+            error: error
+          }
+        });
+      }
+    }
+  });
+  return uploader;
+};
+
 /* Inventory Document Uploader for files to attach to a property */
 var makeDocumentUploader = function (scope, element, allowed_extensions) {
 
@@ -452,6 +593,8 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   var uploader;
   if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
+  } else if (scope.sourcetype === 'ESPMUpdate') {
+    uploader = makeESPMUpdater(scope, element, ['xlsx']);
   } else if (scope.sourcetype === 'GreenButton') {
     uploader = makeFileSystemUploader(scope, element, ['xml']);
   } else if (scope.sourcetype === 'SensorMetaData') {
@@ -475,6 +618,7 @@ angular.module('sdUploader', []).directive('sdUploader', function () {
       eventfunc: '&',
       importrecord: '=',
       organizationId: '=',
+      mappingProfileId: '=?',
       sourceprog: '@',
       sourcetype: '@',
       sourcever: '='

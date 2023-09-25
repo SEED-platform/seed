@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 /**
     This service provides a simple, standardized way to show a basic modal dialog.
@@ -29,8 +29,7 @@
 
     Again, this service is only for simple modals. More complex modal windows should be
     created as a separate service.
-
-*/
+ */
 angular.module('BE.seed.service.simple_modal', [])
   .factory('simple_modal_service', ['$uibModal',
     'urls',

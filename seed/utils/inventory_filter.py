@@ -1,8 +1,7 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from typing import Literal, Optional, Type, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -85,96 +84,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         str(request.query_params.get('include_related', 'true')).lower() == 'true'
     )
 
-    # Retrieve all the columns that are in the db for this organization
-    columns_from_database = Column.retrieve_all(
-        org_id=org_id,
-        inventory_type=inventory_type,
-        only_used=False,
-        include_related=include_related,
-        exclude_derived=True,
-    )
-    try:
-        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
-    except FilterException as e:
-        return JsonResponse(
-            {
-                'status': 'error',
-                'message': f'Error filtering: {str(e)}'
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
-
-    # If we are returning the children, build the childrens filters.
-    if include_related:
-        other_inventory_type: Literal['property', 'taxlot'] = "taxlot" if inventory_type == "property" else "property"
-
-        other_columns_from_database = Column.retrieve_all(
-            org_id=org_id,
-            inventory_type=other_inventory_type,
-            only_used=False,
-            include_related=include_related,
-            exclude_derived=True,
-        )
-        try:
-            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
-        except FilterException as e:
-            return JsonResponse(
-                {
-                    'status': 'error',
-                    'message': f'Error filtering: {str(e)}'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # If the children have filters, filter views_list by their children.
-        if len(filters) > 0 or len(annotations) > 0:
-            other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = TaxLotView if inventory_type == "property" else PropertyView
-            other_views_list = (
-                other_inventory_type_class.objects.select_related('taxlot', 'state', 'cycle')
-                .filter(taxlot__organization_id=org_id, cycle=cycle)
-            )
-
-            other_views_list = other_views_list.annotate(**annotations).filter(filters)
-            taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
-            views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
-
-    # return property views limited to the 'include_view_ids' list if not empty
-    if 'include_view_ids' in request.data and request.data['include_view_ids']:
-        views_list = views_list.filter(id__in=request.data['include_view_ids'])
-
-    # exclude property views limited to the 'exclude_view_ids' list if not empty
-    if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
-        views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
-
-    if ids_only:
-        id_list = list(views_list.values_list('id', flat=True))
-        return JsonResponse({
-            'results': id_list
-        })
-
-    paginator = Paginator(views_list, per_page)
-
-    try:
-        views = paginator.page(page)
-        page = int(page)
-    except PageNotAnInteger:
-        views = paginator.page(1)
-        page = 1
-    except EmptyPage:
-        views = paginator.page(paginator.num_pages)
-        page = paginator.num_pages
-    except DataError as e:
-        return JsonResponse(
-            {
-                'status': 'error',
-                'recommended_action': 'update_column_settings',
-                'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
     # This uses an old method of returning the show_columns. There is a new method that
     # is preferred in v2.1 API with the ProfileIdMixin.
     if inventory_type == 'property':
@@ -216,6 +125,98 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             ).values_list('column_id', flat=True))
         except ColumnListProfile.DoesNotExist:
             show_columns = None
+
+    # Retrieve all the columns that are in the db for this organization
+    columns_from_database = Column.retrieve_all(
+        org_id=org_id,
+        inventory_type=inventory_type,
+        only_used=False,
+        include_related=include_related,
+        exclude_derived=True,
+        column_ids=show_columns
+    )
+    try:
+        filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+    except FilterException as e:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': f'Error filtering: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+
+    # If we are returning the children, build the childrens filters.
+    if include_related:
+        other_inventory_type: Literal['property', 'taxlot'] = "taxlot" if inventory_type == "property" else "property"
+
+        other_columns_from_database = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type=other_inventory_type,
+            only_used=False,
+            include_related=include_related,
+            exclude_derived=True,
+            column_ids=show_columns
+        )
+        try:
+            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database)
+        except FilterException as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # If the children have filters, filter views_list by their children.
+        if len(filters) > 0 or len(annotations) > 0:
+            other_inventory_type_class: Union[Type[TaxLotView], Type[PropertyView]] = TaxLotView if inventory_type == "property" else PropertyView
+            other_views_list = (
+                other_inventory_type_class.objects.select_related(other_inventory_type, 'state', 'cycle')
+                .filter(**{f'{other_inventory_type}__organization_id': org_id, 'cycle': cycle})
+            )
+
+            other_views_list = other_views_list.annotate(**annotations).filter(filters)
+            taxlot_properties = TaxLotProperty.objects.filter(**{f'{other_inventory_type}_view__in': other_views_list})
+            views_list = views_list.filter(taxlotproperty__in=taxlot_properties)
+
+    # return property views limited to the 'include_view_ids' list if not empty
+    if 'include_view_ids' in request.data and request.data['include_view_ids']:
+        views_list = views_list.filter(id__in=request.data['include_view_ids'])
+
+    # exclude property views limited to the 'exclude_view_ids' list if not empty
+    if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
+        views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
+
+    if ids_only:
+        id_list = list(views_list.values_list('id', flat=True))
+        return JsonResponse({
+            'results': id_list
+        })
+
+    paginator = Paginator(views_list, per_page)
+
+    try:
+        views = paginator.page(page)
+        page = int(page)
+    except PageNotAnInteger:
+        views = paginator.page(1)
+        page = 1
+    except EmptyPage:
+        views = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+    except DataError as e:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'recommended_action': 'update_column_settings',
+                'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     try:
         related_results = TaxLotProperty.serialize(

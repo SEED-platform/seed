@@ -1,9 +1,6 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import absolute_import
 
@@ -95,7 +92,6 @@ DJANGO_CORE_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-
     'compressor',
     'django_extensions',
     'django_filters',
@@ -105,7 +101,9 @@ DJANGO_CORE_APPS = (
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
     'post_office',
+    'django_celery_beat',
 )
+
 
 SEED_CORE_APPS = (
     'config',
@@ -113,7 +111,7 @@ SEED_CORE_APPS = (
     'seed.data_importer',
     'seed',
     'seed.lib.superperms.orgs',
-    'seed.docs'
+    'seed.docs',
 )
 
 # Added by Ashray Wadhwa (08/19/2020)
@@ -225,6 +223,7 @@ CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
 CELERY_TASK_COMPRESSION = 'gzip'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # hmm, we are logging outside the context of the app?
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
@@ -333,9 +332,6 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 # should be a integer representing a number of days
 # GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
 GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
-
-# Config to include v2 APIs
-INCLUDE_SEED_V2_APIS = os.environ.get('INCLUDE_SEED_V2_APIS', 'true').lower() == 'true'
 
 # Config self registration
 INCLUDE_ACCT_REG = os.environ.get('INCLUDE_ACCT_REG', 'true').lower() == 'true'

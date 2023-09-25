@@ -1,14 +1,45 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.base_field(
+                name='property_pk',
+                location_attr='IN_PATH',
+                type='TYPE_INTEGER',
+                required=True,
+                description='ID of the property view where the meter is associated.'),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'type': ('enum', Meter.ENERGY_TYPES),
+                'alias': 'string',
+                'source': ('enum', Meter.SOURCES),
+                'source_id': 'string',
+                'scenario_id': 'integer',
+                'is_virtual': 'boolean'
+            },
+            required=['type', 'source'],
+            description='New meter to add. The type must be taken from a constrained list.'
+        )
+    ),
+)
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
 

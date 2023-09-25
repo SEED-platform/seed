@@ -1,8 +1,7 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-// uploader services
 angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
   '$http',
   '$q',
@@ -66,10 +65,13 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * This service call will simply call a view on the backend to save raw
      * data into BuildingSnapshot instances.
      * @param file_id: the pk of a ImportFile object we're going to save raw.
+     * @param {string} cycle_id: the id of the cycle
+     * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
      */
-    uploader_factory.save_raw_data = function (file_id, cycle_id) {
+    uploader_factory.save_raw_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
       return $http.post('/api/v3/import_files/' + file_id + '/start_save_data/', {
-        cycle_id: cycle_id
+        cycle_id,
+        multiple_cycle_upload
       }, {
         params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {

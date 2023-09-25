@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
@@ -148,55 +148,6 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # Assert
         self.assertEqual(400, response.status_code)
 
-    def test_set_default_columns(self):
-        url = reverse_lazy('api:v1:set_default_columns')
-        columns = ['s', 'c1', 'c2']
-        post_data = {
-            'columns': columns,
-            'show_shared_buildings': True
-        }
-        # set the columns
-        response = self.client.post(
-            url,
-            content_type='application/json',
-            data=json.dumps(post_data)
-        )
-        json_string = response.content
-        data = json.loads(json_string)
-        self.assertEqual(200, response.status_code)
-
-        # get the columns
-        # url = reverse_lazy('api:v1:columns-get-default-columns')
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['columns'], columns)
-
-        # get show_shared_buildings
-        url = reverse_lazy('api:v3:user-shared-buildings', args=[self.user.pk])
-        response = self.client.get(url)
-        data = response.json()
-        self.assertEqual(data['show_shared_buildings'], True)
-
-        # set show_shared_buildings to False
-        # post_data['show_shared_buildings'] = False
-        # url = reverse_lazy('api:v1:set_default_columns')
-        # response = self.client.post(
-        #     url,
-        #     content_type='application/json',
-        #     data=json.dumps(post_data)
-        # )
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(200, response.status_code)
-
-        # get show_shared_buildings
-        # url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
-        # response = self.client.get(url)
-        # json_string = response.content
-        # data = json.loads(json_string)
-        # self.assertEqual(data['show_shared_buildings'], False)
-
     def test_get_all_columns(self):
         # test building list columns
         response = self.client.get(reverse('api:v3:columns-list'), {
@@ -271,7 +222,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id
             })
         )
         result = response.json()
@@ -303,7 +255,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -315,7 +268,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': True
+                'overwrite': True,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -352,7 +306,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -370,6 +325,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[self.cross_org_column.pk]),
             content_type='application/json',
+            data={'organization_id': self.org.id}
         )
         result = response.json()
         # self.assertFalse(result['success'])
@@ -383,6 +339,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[-999]),
             content_type='application/json',
+            data={'organization_id': self.org.id},
         )
         self.assertEqual(response.status_code, 404)
         result = response.json()

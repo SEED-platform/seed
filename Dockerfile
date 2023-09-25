@@ -18,7 +18,7 @@ RUN apk add --no-cache python3-dev \
         npm \
         nginx \
         openssl-dev \
-        geos \
+        geos-dev \
         gdal \
         gcc \
         musl-dev \
@@ -65,18 +65,18 @@ COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 
-# nginx configuration - replace the root/default nginx config file
-COPY /docker/nginx-seed.conf /etc/nginx/nginx.conf
+# nginx configuration - replace the root/default nginx config file and add included files
+COPY ./docker/nginx/*.conf /etc/nginx/
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
 # set execute permissions on the maint script to toggle on and off
 RUN chmod +x ./docker/maintenance.sh
 
 # Supervisor looks in /etc/supervisor for the configuration file.
-COPY /docker/supervisor-seed.conf /etc/supervisor/supervisord.conf
+COPY ./docker/supervisor-seed.conf /etc/supervisor/supervisord.conf
 
 # entrypoint sets some permissions on directories that may be shared volumes
-COPY /docker/seed-entrypoint.sh /usr/local/bin/seed-entrypoint
+COPY ./docker/seed-entrypoint.sh /usr/local/bin/seed-entrypoint
 RUN chmod 775 /usr/local/bin/seed-entrypoint
 ENTRYPOINT ["seed-entrypoint"]
 

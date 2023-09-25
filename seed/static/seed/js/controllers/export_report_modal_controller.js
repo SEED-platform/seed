@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.export_report_modal', []).controller('export_report_modal_controller', [
   '$scope',
@@ -21,6 +21,8 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
 
     $scope.export_selected = function () {
       var filename = $scope.export_name;
+
+      if (!filename) return;
 
       var ext = '.xlsx';
       if (!_.endsWith(filename, ext)) filename += ext;

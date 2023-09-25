@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db import models
 
@@ -18,7 +18,7 @@ def analysis_input_path(instance, filename):
     :returns: str
     """
     if instance.analysis_id is None:
-        raise Exception('Unable to save analysis input file. Linked Analysis must have an ID (ie already saved in db)')
+        raise Exception('Unable to save analysis input file. Linked Analysis must have an ID (i.e., already saved in db)')
     return f'analysis_input_files/{instance.analysis_id}/{filename}'
 
 

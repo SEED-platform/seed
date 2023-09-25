@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from __future__ import absolute_import
 
 import logging
@@ -57,20 +56,24 @@ def get_bae_mappings():
     # units field name is the same with " Units" appended.
 
     bsync_assets = BAE.get_default_asset_defs()
-    for item in bsync_assets:
+    for asset in bsync_assets:
+        if isinstance(asset, dict):
+            asset_type, export_name, export_units = asset['type'], asset['export_name'], asset['export_units']
+        else:
+            asset_type, export_name, export_units = asset.type, asset.export_name, asset.export_units
 
-        if item['type'] == 'sqft':
+        if asset_type == 'sqft':
             # these types need 2 different entries: 1 for "primary" and 1 for "secondary"
             for i in ['Primary', 'Secondary']:
-                results.append(make_bae_hash(i + ' ' + item['export_name']))
-                if 'export_units' in item and item['export_units'] is True:
+                results.append(make_bae_hash(i + ' ' + export_name))
+                if export_units is True:
                     # also export units field
-                    results.append(make_bae_hash(i + ' ' + item['export_name'] + " Units"))
+                    results.append(make_bae_hash(i + ' ' + export_name + " Units"))
 
         else:
-            results.append(make_bae_hash(item['export_name']))
-            if 'export_units' in item and item['export_units'] is True:
-                results.append(make_bae_hash(item['export_name'] + " Units"))
+            results.append(make_bae_hash(export_name))
+            if export_units is True:
+                results.append(make_bae_hash(export_name + " Units"))
 
     return results
 

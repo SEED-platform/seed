@@ -1,20 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import base64
-import datetime
 import json
-import os
-import pathlib
-import time
-from unittest import skip
+from datetime import date
 
 from django.test import TestCase
-from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Cycle
@@ -31,21 +25,6 @@ class SchemaGenerationTests(TestCase):
         for url, fn in res.items():
             self.assertTrue(fn.is_api_endpoint)
             self.assertTrue(url.startswith('/'))
-
-    def test_get_api_schema(self):
-        """
-        Test of 'schema' generator.
-        """
-        url = reverse('api:v2:schema')
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, 200)
-        endpoints = json.loads(res.content)
-
-        # the url we just hit should be in here
-        self.assertTrue(url in endpoints)
-        endpoint = endpoints[url]
-        self.assertEqual(endpoint['name'], 'get_api_schema')
-        self.assertTrue('description' in endpoint)
 
 
 class TestApi(TestCase):
@@ -64,8 +43,8 @@ class TestApi(TestCase):
         self.cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
             organization=self.org,
-            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2015, 1, 1),
+            end=date(2015, 12, 31),
         )
         auth_string = base64.urlsafe_b64encode(bytes(
             '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
@@ -145,7 +124,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                'name': str(datetime.date.today().year - 1) + ' Calendar Year',
+                'name': str(date.today().year - 1) + ' Calendar Year',
                 'num_properties': 0,
                 'num_taxlots': 0,
                 'cycle_id': self.default_cycle.pk,
@@ -315,188 +294,3 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
         self.assertEqual(r['public_fields'], [])
-
-    @skip('appears to be broken by use of login_required')
-    def test_upload_buildings_file(self):
-        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
-        r = json.loads(r.content)
-        organization_id = self.get_org_id(r, self.user.username)
-
-        raw_building_file = os.path.abspath(
-            os.path.join('seed/tests/data', 'covered-buildings-sample.csv'))
-        self.assertTrue(os.path.isfile(raw_building_file), 'could not find file')
-
-        payload = {'name': 'API Test'}
-
-        # create the data set
-        r = self.client.post('/api/v3/datasets/?organization_id=' + str(organization_id),
-                             data=json.dumps(payload),
-                             content_type='application/json',
-                             **self.headers)
-        self.assertEqual(r.status_code, 200)
-        r = json.loads(r.content)
-        self.assertEqual(r['status'], 'success')
-
-        data_set_id = r['id']
-
-        # retrieve the upload details
-        upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
-        self.assertEqual(upload_details.status_code, 200)
-        upload_details = json.loads(upload_details.content)
-        self.assertEqual(upload_details['upload_path'], '/api/v3/upload/')
-
-        # create hash for /data/upload/
-        fsysparams = {
-            'import_record': data_set_id,
-            'source_type': 'Assessed Raw',
-            'file': pathlib.Path(raw_building_file).read_bytes()
-        }
-
-        # upload data and check response
-        r = self.client.post(upload_details['upload_path'], fsysparams, **self.headers)
-        self.assertEqual(r.status_code, 200)
-
-        r = json.loads(r.content)
-        self.assertEqual(r['success'], True)
-        import_file_id = r['import_file_id']
-        self.assertNotEqual(import_file_id, None)
-
-        # Save the data to the Property / TaxLots
-        payload = {
-            'cycle_id': self.cycle.id,
-        }
-        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/start_save_data/?organization_id=' + organization_id,
-                             data=json.dumps(payload),
-                             content_type='application/json',
-                             follow=True, **self.headers)
-        self.assertEqual(r.status_code, 200)
-
-        # {
-        #     "status": "success",
-        #     "progress_key": ":1:SEED:save_raw_data:PROG:1"
-        # }
-        r = json.loads(r.content)
-        self.assertEqual(r['status'], 'success')
-        self.assertIsNotNone(r['progress_key'])
-        time.sleep(15)
-
-        # check the progress bar
-        progress_key = r['progress_key']
-        r = self.client.get(reverse_lazy('api:v3:progress-detail', args=[progress_key]),
-                            content_type='application/json', follow=True, **self.headers)
-        self.assertEqual(r.status_code, 200)
-
-        r = json.loads(r.content)
-        # {
-        #   "status": "success",
-        #   "progress": 100,
-        #   "progress_key": ":1:SEED:save_raw_data:PROG:1"
-        # }
-        self.assertEqual(r['status'], 'success')
-        self.assertEqual(r['progress'], 100)
-
-        # Save the column mappings.
-        payload = {
-            'mappings': [
-                {
-                    'from_field': 'City',  # raw field in import file
-                    'to_field': 'city',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'Zip',  # raw field in import file
-                    'to_field': 'postal_code',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'GBA',  # raw field in import file
-                    'to_field': 'gross_floor_area',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'BLDGS',  # raw field in import file
-                    'to_field': 'building_count',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'UBI',  # raw field in import file
-                    'to_field': 'jurisdiction_tax_lot_id',
-                    'to_table_name': 'TaxLotState',
-                }, {
-                    'from_field': 'State',  # raw field in import file
-                    'to_field': 'state_province',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'Address',  # raw field in import file
-                    'to_field': 'address_line_1',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'Owner',  # raw field in import file
-                    'to_field': 'owner',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'Property Type',  # raw field in import file
-                    'to_field': 'use_description',
-                    'to_table_name': 'PropertyState',
-                }, {
-                    'from_field': 'AYB_YearBuilt',  # raw field in import file
-                    'to_field': 'year_built',
-                    'to_table_name': 'PropertyState',
-                }
-            ]
-        }
-        r = self.client.post(
-            '/api/v3/organizations/' + str(organization_id) + '/column_mappings/?import_file_id=' + str(import_file_id),
-            data=json.dumps(payload),
-            content_type='application/json',
-            follow=True,
-            **self.headers)
-        self.assertEqual(r.status_code, 200)
-        r = json.loads(r.content)
-
-        # {
-        #   "status": "success"
-        # }
-        self.assertEqual(r['status'], 'success')
-
-        # Map the buildings with new column mappings.
-        payload = {
-            'remap': True,
-        }
-        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/map/?organization_id=' + str(organization_id),
-                             data=json.dumps(payload), content_type='application/json', follow=True,
-                             **self.headers)
-        self.assertEqual(r.status_code, 200)
-        r = json.loads(r.content)
-
-        # {
-        #     "status": "success",
-        #     "progress_key": ":1:SEED:map_data:PROG:1"
-        # }
-
-        self.assertEqual(r['status'], 'success')
-        self.assertNotEqual(r['progress_key'], None)
-
-        # time.sleep(10)
-        # TODO: create a loop to check the progress. stop when status is success
-
-        # check the progress bar
-        progress_key = r['progress_key']
-        r = self.client.get('/api/v3/progress/{}/'.format(progress_key),
-                            content_type='application/json', follow=True, **self.headers)
-        self.assertEqual(r.status_code, 200)
-
-        r = json.loads(r.content)
-        # {
-        #   "status": "success",
-        #   "progress": 100,
-        #   "progress_key": ":1:SEED:map_data:PROG:1"
-        # }
-
-        # self.assertEqual(r['status'], 'success')
-        # self.assertEqual(r['progress'], 100)
-
-        # # Get the mapping suggestions
-        r = self.client.post(
-            '/api/v3/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
-                                                                                     organization_id),
-            content_type='application/json',
-            follow=True,
-            **self.headers
-        )

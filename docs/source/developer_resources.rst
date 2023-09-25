@@ -1,6 +1,12 @@
 Developer Resources
 ===================
 
+.. toctree::
+
+    migrations
+    translation
+
+
 General Notes
 -------------
 
@@ -34,7 +40,7 @@ to emulate the same checks as the CI machine.
 
 To run flake locally call:
 
-.. code-block:: console
+.. code-block:: bash
 
     tox -e flake8
 
@@ -71,7 +77,7 @@ your own IDE, we recommend the following extensions:
 
 To run the same typechecking applied in CI (i.e., using mypy) you can run the following
 
-.. code-block:: console
+.. code-block:: bash
 
     tox -e mypy
 
@@ -166,12 +172,12 @@ fields. Follow the steps below to add new fields to the SEED database:
 #. Test import workflow with mapping to new fields
 
 
-NginX Notes
+NGINX Notes
 -----------
 
 Toggle *maintenance mode* to display a maintenance page and prevent access to all site resources including API endpoints:
 
-.. code-block:: Bash
+.. code-block:: bash
 
     docker exec seed_web ./docker/maintenance.sh on
     docker exec seed_web ./docker/maintenance.sh off
@@ -251,7 +257,7 @@ Below is a standard set of error messages from Django.
 A logger is configured to have a log level. This log level describes the severity of
 the messages that the logger will handle. Python defines the following log levels:
 
-.. code-block:: console
+.. code-block:: bash
 
     DEBUG: Low level system information for debugging purposes
     INFO: General system information
@@ -294,7 +300,7 @@ that you require.
 Below are the commands for resetting the database and creating a new
 user:
 
-.. code-block:: console
+.. code-block:: bash
 
     createuser -U seed seeduser
 
@@ -316,7 +322,7 @@ user:
 Restoring a Database Dump
 -------------------------
 
-.. code-block:: console
+.. code-block:: bash
 
     psql -c 'DROP DATABASE "seed";'
     psql -c 'CREATE DATABASE "seed" WITH OWNER = "seeduser";'
@@ -365,7 +371,7 @@ JS tests can be run with Jasmine at the url `/angular_js_tests/`.
 
 Python unit tests are run with
 
-.. code-block:: console
+.. code-block:: bash
 
     python manage.py test --settings=config.settings.test
 
@@ -378,14 +384,14 @@ Note on geocode-related testing:
 
 Run coverage using
 
-.. code-block:: console
+.. code-block:: bash
 
     coverage run manage.py test --settings=config.settings.test
     coverage report --fail-under=83
 
 Python compliance uses PEP8 with flake8
 
-.. code-block:: console
+.. code-block:: bash
 
     flake8
     # or
@@ -393,7 +399,7 @@ Python compliance uses PEP8 with flake8
 
 JS Compliance uses jshint
 
-.. code-block:: console
+.. code-block:: bash
 
     jshint seed/static/seed/js
 
@@ -402,7 +408,7 @@ Building Documentation
 
 Older versions of the source code documentation are (still) on readthedocs; however, newer versions are built and pushed to the seed-website repository manually. To build the documentation follow the script below:
 
-.. code-block:: console
+.. code-block:: bash
 
         cd docs
         rm -rf htmlout

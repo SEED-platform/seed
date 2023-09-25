@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author Paul Munday <paul@paulmunday.net>
 """
 # pylint:disable=no-name-in-module
@@ -62,7 +61,7 @@ class PermissionsFunctionsTests(TestCase):
     def test_get_org_id(self):
         """Test getting org id from request."""
         # Priority of id sources should be, in order:
-        # - request parser context (ie view kwarg matches an organization id keyword)
+        # - request parser context (i.e., view kwarg matches an organization id keyword)
         # - path (under `organizations` resource)
         # - query_params
         # - data
@@ -95,7 +94,7 @@ class PermissionsFunctionsTests(TestCase):
         mock_request = mock_request_factory(
             view_authz_org_id_kwarg=None,
             parser_kwargs={'not_org_id': 1},
-            path='/api/v2/organizations/2',
+            path='/api/v3/organizations/2',
             query_params={'organization_id': 3},
             data={'organization_id': 4}
         )

@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import ast
 
 from django.test import TestCase
@@ -91,6 +94,14 @@ class GeocodeViewTests(TestCase):
 
         property_manual_view = self.property_view_factory.get_property_view(state=property_manual)
 
+        property_census_details = self.property_state_factory.get_details()
+        property_census_details["organization_id"] = self.org.parent_id
+        property_census_details["geocoding_confidence"] = "Census Geocoder (L1AAA)"
+        property_census = PropertyState(**property_census_details)
+        property_census.save()
+
+        property_census_view = self.property_view_factory.get_property_view(state=property_census)
+
         property_missing_details = self.property_state_factory.get_details()
         property_missing_details["organization_id"] = self.org.id
         property_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
@@ -145,6 +156,7 @@ class GeocodeViewTests(TestCase):
                 property_none_view.id,
                 property_high_view.id,
                 property_low_view.id,
+                property_census_view.id,
                 property_manual_view.id,
                 property_missing_view.id
             ],
@@ -164,6 +176,7 @@ class GeocodeViewTests(TestCase):
                 "not_geocoded": 1,
                 "high_confidence": 1,
                 "low_confidence": 1,
+                "census_geocoder": 1,
                 "manual": 1,
                 "missing_address_components": 1
             },
@@ -171,6 +184,7 @@ class GeocodeViewTests(TestCase):
                 "not_geocoded": 1,
                 "high_confidence": 1,
                 "low_confidence": 1,
+                "census_geocoder": 0,
                 "manual": 1,
                 "missing_address_components": 1
             }

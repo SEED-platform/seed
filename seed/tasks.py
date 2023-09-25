@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from __future__ import absolute_import
 
+import itertools
 import math
 import sys
 from datetime import datetime
@@ -34,10 +35,12 @@ from seed.models import (
     Property,
     PropertyState,
     PropertyView,
+    SalesforceConfig,
     TaxLot,
     TaxLotState,
     TaxLotView
 )
+from seed.utils.salesforce import auto_sync_salesforce_properties
 
 logger = get_task_logger(__name__)
 
@@ -155,6 +158,26 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
+
+
+def send_salesforce_error_log(org_pk, errors):
+    """ send salesforce error log to logging email when errors are encountered during scheduled sync """
+    sf_conf = SalesforceConfig.objects.get(organization_id=org_pk)
+    org = Organization.objects.get(pk=org_pk)
+
+    if sf_conf.logging_email:
+
+        context = {
+            'organization_name': org.name,
+            'errors': errors
+        }
+
+        subject = 'Salesforce Automatic Update Errors'
+        email_body = loader.render_to_string(
+            'seed/salesforce_update_errors.html',
+            context
+        )
+        send_mail(subject, email_body, settings.SERVER_EMAIL, [sf_conf.logging_email])
 
 
 def delete_organization(org_pk):
@@ -415,35 +438,38 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
 
 
 @shared_task
-def update_inventory_metadata(ids, states, inventory_type, progress_key):
+def sync_salesforce(org_id):
+    status, messages = auto_sync_salesforce_properties(org_id)
+    if not status:
+        # send email with errors
+        send_salesforce_error_log(org_id, messages)
+
+
+@shared_task
+def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
     now = datetime.now(pytz.UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
-    id_count = len(ids)
+    id_count = len(property_view_ids) + len(taxlot_view_ids)
     batch_size = math.ceil(id_count / 100)
 
-    # Find related Properties and PropertyStates
-    if inventory_type == 'properties':
-        properties = Property.objects.filter(id__in=ids)
-        states = PropertyState.objects.filter(id__in=states)
-        inventory = list(properties) + list(states)
+    property_views = PropertyView.objects.filter(id__in=property_view_ids).prefetch_related("state", "property")
+    taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids).prefetch_related("state", "taxlot")
 
-    elif inventory_type == 'taxlots':
-        taxlots = TaxLot.objects.filter(id__in=ids)
-        states = TaxLotState.objects.filter(id__in=states)
-        inventory = list(taxlots) + list(states)
+    with transaction.atomic():
+        for idx, view in enumerate(itertools.chain(property_views, taxlot_views)):
+            view.state.updated = now
+            view.state.save()
 
-    else:
-        return
+            if isinstance(view, PropertyView):
+                view.property.update = now
+                view.property.save()
+            else:
+                view.taxlot.update = now
+                view.taxlot.save()
 
-    # Iterates across Properties (or Taxlots) and -States and refreshes each 'updated' attribute
-    # Updating Properties (or Taxlots) for OEP Connection
-    # Updating -States for UI feedback on inventory list
-    for idx, state in enumerate(inventory):
-        state.updated = now
-        state.save()
-        if batch_size > 0 and idx % batch_size == 0:
-            progress_data.step(f'Refreshing ({idx}/{id_count})')
+            if batch_size > 0 and idx % batch_size == 0:
+                progress_data.step(f'Refreshing ({idx}/{id_count})')
 
     progress_data.finish_with_success()
     return progress_data.result()['progress']

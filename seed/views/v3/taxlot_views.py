@@ -1,12 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of any
-required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 
@@ -23,7 +20,7 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
-        List all the properties
+        List all the taxlots
         """
         org_id = request.query_params.get('organization_id')
 

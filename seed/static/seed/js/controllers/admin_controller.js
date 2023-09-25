@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.admin', [])
   .controller('admin_controller', [
@@ -68,7 +68,7 @@ angular.module('BE.seed.controller.admin', [])
           get_organizations().then(function () {
             $scope.$emit('organization_list_updated');
           });
-          update_alert(true, 'Organization ' + org.name + ' created');
+          update_alert(true, `Organization ${org.name} created`);
 
         }).catch(function (response) {
           update_alert(false, 'error creating organization: ' + response.data.message);
@@ -77,16 +77,18 @@ angular.module('BE.seed.controller.admin', [])
       $scope.user_form.add = function (user) {
         user_service.add(user).then(function (data) {
 
-          var alert_message = 'User ' + user.email + ' created and added';
+          let alert_message = `User ${user.email} created and added`;
           if (data.org_created) {
-            alert_message = alert_message + ' as head of new org ' + data.org;
+            alert_message = `${alert_message} as head of new org ${data.org}`;
           } else {
-            alert_message = alert_message + ' to existing org ' + data.org;
+            alert_message = `${alert_message} to existing org ${data.org}`;
           }
 
           update_alert(true, alert_message);
           get_users();
-          get_organizations();
+          get_organizations().then(function () {
+            $scope.$emit('organization_list_updated');
+          });
           $scope.user_form.reset();
 
         }).catch(function (response) {

@@ -1,7 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+
 :author 'Piper Merriam <pmerriam@quickleft.com'
 """
 import operator
@@ -76,7 +78,7 @@ def is_not_empty_match(q):
 
 
 def is_case_insensitive_match(q):
-    # Carat and matching quotes? eg ^"sacramento"
+    # Carat and matching quotes? e.g., ^"sacramento"
     if is_string_query(q):
         return re.match(r"""^\^(["'])(.+)\1$""", q)
     return False

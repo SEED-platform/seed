@@ -1,17 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import datetime
 import logging
 import os.path as osp
 import pathlib
+from datetime import date
 
 from django.contrib.gis.geos import Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -52,8 +51,8 @@ class TestDemoV2(DataMappingBaseTestCase):
         cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
             organization=org,
-            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2015, 1, 1),
+            end=date(2015, 12, 31),
         )
 
         import_record_1 = ImportRecord.objects.create(

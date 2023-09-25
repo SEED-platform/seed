@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 describe('controller: data_upload_modal_controller', function () {
   // globals set up and used in each test scenario
@@ -12,12 +12,12 @@ describe('controller: data_upload_modal_controller', function () {
 
   var cycles = {
     cycles: [{
-      end: '2015-01-01T07:59:59Z',
+      end: '2015-01-01',
       id: 2017,
       name: '2014 Calendar Year',
       num_properties: 1496,
       num_taxlots: 1519,
-      start: '2014-01-01T08:00:00Z'
+      start: '2014-01-01'
     }],
     status: 'success'
   };

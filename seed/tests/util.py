@@ -1,15 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
-import datetime
 import json
+from datetime import date
 
 from django.test import TestCase
-from django.utils import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
@@ -17,6 +15,7 @@ from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_IMPORT,
+    SEED_DATA_SOURCES,
     Column,
     ColumnMapping,
     Cycle,
@@ -90,22 +89,22 @@ class DeleteModelsTestCase(TestCase):
 class DataMappingBaseTestCase(DeleteModelsTestCase):
     """Base Test Case Class to handle data import"""
 
-    def set_up(self, import_file_source_type):
+    def set_up(self, import_file_source_type, user_name='test_user@demo.com', user_password='test_pass'):
         # default_values
         import_file_data_state = getattr(self, 'import_file_data_state', DATA_STATE_IMPORT)
 
-        if not User.objects.filter(username='test_user@demo.com').exists():
-            user = User.objects.create_user('test_user@demo.com', password='test_pass')
+        if not User.objects.filter(username=user_name).exists():
+            user = User.objects.create_user(user_name, password=user_password)
         else:
-            user = User.objects.get(username='test_user@demo.com')
+            user = User.objects.get(username=user_name)
 
         org, _, _ = create_organization(user, "test-organization-a")
 
         cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
             organization=org,
-            start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
+            start=date(2015, 1, 1),
+            end=date(2015, 12, 31),
         )
 
         import_record, import_file = self.create_import_file(
@@ -120,7 +119,7 @@ class DataMappingBaseTestCase(DeleteModelsTestCase):
             owner=user, last_modified_by=user, super_organization=org
         )
         import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
-        import_file.source_type = source_type
+        import_file.source_type = SEED_DATA_SOURCES[source_type][1]
         import_file.data_state = data_state
         import_file.save()
 

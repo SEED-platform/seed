@@ -1,8 +1,3 @@
-exclude: |
-  (?x)(
-    .*/migrations
-  )
-
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -18,9 +13,12 @@ repos:
         exclude: .*/templates
       - id: debug-statements
       - id: end-of-file-fixer
+        exclude: seed/static/seed/locales/
       - id: mixed-line-ending
+        exclude: seed/static/seed/locales/
       - id: pretty-format-json
         args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
+        exclude: seed/static/seed/locales/
   - repo: https://github.com/pre-commit/mirrors-isort
     rev: v5.10.1
     hooks:

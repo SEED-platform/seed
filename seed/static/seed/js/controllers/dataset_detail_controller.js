@@ -1,6 +1,6 @@
 /**
- * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
- * :author
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.controller.dataset_detail', [])
   .controller('dataset_detail_controller', [
@@ -61,6 +61,11 @@ angular.module('BE.seed.controller.dataset_detail', [])
       $scope.getCycleName = function (id) {
         var cycle = _.find(cycles.cycles, {id: id});
         return cycle ? cycle.name : undefined;
+      };
+
+      $scope.downloadUrl = (importFile) => {
+        const segments = importFile.file.split(/[\\/]/);
+        return `/api/v3/media/${segments.slice(segments.indexOf('media') + 1).join('/')}`;
       };
 
       var init = function () {
