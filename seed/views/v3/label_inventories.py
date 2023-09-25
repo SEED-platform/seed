@@ -17,6 +17,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import PropertyView
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotView
@@ -209,6 +210,7 @@ class LabelInventoryViewSet(APIView):
         remove_label_ids = request.data.get('remove_label_ids', [])
         inventory_ids = request.data.get('inventory_ids', [])
         organization_id = request.query_params['organization_id']
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         error = None
         # ensure add_label_ids and remove_label_ids are different
         if not set(add_label_ids).isdisjoint(remove_label_ids):
@@ -224,6 +226,13 @@ class LabelInventoryViewSet(APIView):
             }
             status_code = error.status_code
         else:
+            Model = self.inventory_models[inventory_type]
+            inventory_ids = Model.objects.filter(**{
+                "id__in": inventory_ids,
+                f"{inventory_type}__access_level_instance__lft__gte": access_level_instance.lft,
+                f"{inventory_type}__access_level_instance__rgt__lte": access_level_instance.rgt,
+            }).values_list("id", flat=True)
+
             qs = self.get_queryset(inventory_type, organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
             removed = self.remove_labels(qs, inventory_type, remove_label_ids)
