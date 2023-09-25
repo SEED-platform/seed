@@ -80,8 +80,9 @@
                             </div>
                         </div>
                         <div class="btn-group">
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
                             <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
                         </div>
                         <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
                             <div class="row">
@@ -102,6 +103,18 @@
                                             <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'"
+                            style="padding-top: 1em">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label class="control-label sectionLabel">Cycle</label>
+                                    <select class="form-control" ng-model="new_analysis.configuration.cycle_id"
+                                        ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
+                                        <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
