@@ -4,18 +4,19 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from typing import TypedDict
 from django.db import transaction
+from typing_extensions import NotRequired, TypedDict
+
 from seed.models import Uniformat
 
 
 class UniformatEntry(TypedDict):
     code: str
     category: str
-    definition: str
-    imperial_units: str
-    metric_units: str
-    quantity_definition: str
+    definition: NotRequired[str]
+    imperial_units: NotRequired[str]
+    metric_units: NotRequired[str]
+    quantity_definition: NotRequired[str]
 
 
 uniformat_data: list[UniformatEntry] = [
@@ -4408,13 +4409,10 @@ uniformat_data: list[UniformatEntry] = [
 ]
 
 
-def import_uniformat():
+def import_uniformat() -> None:
     with transaction.atomic():
         ids: dict[str, Uniformat] = {}
         for entry in uniformat_data:
             code = entry['code']
-            parent = {}
-            if len(code) > 1:
-                parent = {'parent': ids[code[:-2]]}
-            u = Uniformat.objects.create(**entry, **parent)
-            ids[code] = u
+            parent = {} if len(code) == 1 else {'parent': ids[code[:-2]]}
+            ids[code] = Uniformat.objects.create(**entry, **parent)
