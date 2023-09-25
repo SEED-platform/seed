@@ -174,7 +174,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         email = body['email']
         username = body['email']
         access_level_instance_id = body.get("access_level_instance_id")
-        role = body.get('role')
+        role = body.get('role', 'owner')
         user, created = User.objects.get_or_create(username=username.lower())
 
         if org_id:
@@ -200,6 +200,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({
                 'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'
             }, status=status.HTTP_400_BAD_REQUEST)
+
         if not org.is_member(user):
             try:
                 org.add_member(user, access_level_instance_id, role)
