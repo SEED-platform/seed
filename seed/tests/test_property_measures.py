@@ -80,9 +80,10 @@ class TestPropertyMeasures(DeleteModelsTestCase):
             args=[property_view.id, 1234567]
         )
         response = self.client.get(url, **self.headers)
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json()['message'], "No Measures found for given pks")
-        self.assertEqual(response.json()['status'], 'error')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        data = response.json()['data']
+        self.assertEqual(len(data), 0)
 
         url = reverse_lazy(
             'api:v3:property-measures-list',
