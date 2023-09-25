@@ -136,7 +136,7 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role': 'member',
+            'role': 'owner',
             'access_level_instance_id': child.id,
         }
 
