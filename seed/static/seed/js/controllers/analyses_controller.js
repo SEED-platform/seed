@@ -85,10 +85,10 @@ angular.module('BE.seed.controller.analyses', [])
         analysis_polling_stoppers[analysis.id] = stop_func;
       };
 
-      $scope.get_cycle_name = function(cycle_id) {
-        cycle = $scope.cycles.find(cycle => cycle.id == cycle_id)
-        return cycle ? cycle.name : ''
-      }
+      $scope.get_cycle_name = (cycle_id) => {
+        const cycle = $scope.cycles.find(cycle => cycle.id === cycle_id);
+        return cycle?.name ?? '';
+      };
 
       // start polling all of the analyses
       $scope.analyses.forEach(analysis => {
