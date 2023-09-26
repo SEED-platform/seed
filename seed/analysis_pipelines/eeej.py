@@ -35,7 +35,7 @@ WARNING_SOME_INVALID_PROPERTIES = 3
 ERROR_NO_TRACT_OR_LOCATION = 4
 
 EEEJ_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_LOCATION: 'Property missing one of Address Line 1, City & State, or Postal Code).',
+    ERROR_INVALID_LOCATION: 'Property missing one of Address Line 1, City & State, or Postal Code.',
     ERROR_RETRIEVING_CENSUS_TRACT: 'Unable to retrieve Census Tract for this property.',
     ERROR_NO_TRACT_OR_LOCATION: 'Property missing location or Census Tract',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
@@ -100,16 +100,21 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
                 if property_view.id not in errors_by_property_view_id:
                     errors_by_property_view_id[property_view.id] = []
                 errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_INVALID_LOCATION])
+                del loc_data_by_property_view[property_view.id]
                 continue
             # save location
             loc_data_by_property_view[property_view.id]['location'] = location
 
         # if both are None, error
-        if loc_data_by_property_view[property_view.id]['tract'] is None and loc_data_by_property_view[property_view.id]['location'] is None and loc_data_by_property_view[property_view.id]['geocoding_confidence'] is None:
+        if loc_data_by_property_view[property_view.id]['tract'] is None \
+            and loc_data_by_property_view[property_view.id]['location'] is None \
+                and 'Census' not in loc_data_by_property_view[property_view.id]['geocoding_confidence'] \
+                    and 'High' not in loc_data_by_property_view[property_view.id]:
             # invalid_location.append(property_view.id)
             if property_view.id not in errors_by_property_view_id:
                 errors_by_property_view_id[property_view.id] = []
             errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_NO_TRACT_OR_LOCATION])
+            del loc_data_by_property_view[property_view.id]
             continue
 
     return loc_data_by_property_view, errors_by_property_view_id

@@ -150,8 +150,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           $scope.$close(data);
         }, function (response) {
           $scope.waiting_for_server = false;
-          $log.error('Error creating new analysis.', response);
+          $log.error('Error creating new analysis:', response);
           Notification.error('Failed to create Analysis: ' + response.data.message);
+          $uibModalInstance.dismiss('cancel');
         });
       };
 
