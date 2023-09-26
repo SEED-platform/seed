@@ -98,7 +98,8 @@ class AccountsViewTests(TestCase):
             'audit_template_user': '',
             'audit_template_password': '',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1.0,
+            'inventory_count': 0,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -122,12 +123,16 @@ class AccountsViewTests(TestCase):
             ts.promote(self.cycle)
             ts.save()
 
-        expected_single_org_payload['cycles'] = [{
-            'num_taxlots': 5,
-            'num_properties': 10,
-            'name': self.cal_year_name,
-            'cycle_id': self.cycle.pk
-        }]
+        expected_single_org_payload.update({
+            'cycles': [{
+                'num_taxlots': 5,
+                'num_properties': 10,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk
+            }],
+            'inventory_count': 15
+        })
+
         org_payload_2 = _dict_org(self.fake_request, [self.org])[0]
         # pop the urls again
         org_payload_2.pop('better_host_url')
@@ -197,7 +202,8 @@ class AccountsViewTests(TestCase):
                 'audit_template_user': '',
                 'audit_template_password': '',
                 'salesforce_enabled': False,
-                'ubid_threshold': 1
+                'ubid_threshold': 1.0,
+                'inventory_count': 0,
             }],
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -227,7 +233,8 @@ class AccountsViewTests(TestCase):
             'audit_template_user': '',
             'audit_template_password': '',
             'salesforce_enabled': False,
-            'ubid_threshold': 1
+            'ubid_threshold': 1.0,
+            'inventory_count': 0,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())

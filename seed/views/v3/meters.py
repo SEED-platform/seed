@@ -28,9 +28,9 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'type': ('enum', Meter.ENERGY_TYPES),
+                'type': Meter.ENERGY_TYPES,
                 'alias': 'string',
-                'source': ('enum', Meter.SOURCES),
+                'source': Meter.SOURCES,
                 'source_id': 'string',
                 'scenario_id': 'integer',
                 'is_virtual': 'boolean'
