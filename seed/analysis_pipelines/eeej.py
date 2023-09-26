@@ -235,13 +235,14 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
         tract = None
         latitude = None
         longitude = None
-        if loc_data_by_analysis_property_view[apv.id]['tract'] is not None:
-            tract = loc_data_by_analysis_property_view[apv.id]['tract']
-            longitude = loc_data_by_analysis_property_view[apv.id]['longitude']
-            latitude = loc_data_by_analysis_property_view[apv.id]['latitude']
+
+        if loc_data_by_analysis_property_view[str(apv.id)]['tract'] is not None:
+            tract = loc_data_by_analysis_property_view[str(apv.id)]['tract']
+            longitude = loc_data_by_analysis_property_view[str(apv.id)]['longitude']
+            latitude = loc_data_by_analysis_property_view[str(apv.id)]['latitude']
         else:
             # fetch census tract from https://geocoding.geo.census.gov/
-            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[apv.id])
+            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[str(apv.id)])
             if 'error' in status:
                 # invalid_location.append(apv.id)
                 if apv.id not in errors_by_apv_id:
