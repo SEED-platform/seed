@@ -17,7 +17,8 @@ from seed.analysis_pipelines.pipeline import (
 )
 from seed.analysis_pipelines.utils import (
     SimpleMeterReading,
-    get_days_in_reading
+    get_days_in_reading,
+    user_owns_property
 )
 from seed.models import (
     Analysis,
@@ -430,7 +431,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             'Total GHG Emissions Intensity (kgCO2e/ft\u00b2/year)': co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
-        if save_co2_results:
+        if save_co2_results and user_owns_property(analysis.user, property_view.property):
             # Convert the analysis results which reports in kgCO2e to MtCO2e which is the canonical database field units
             property_view.state.total_ghg_emissions = co2['average_annual_kgco2e'] / 1000
             property_view.state.total_ghg_emissions_intensity = co2['average_annual_kgco2e'] / property_view.state.gross_floor_area.magnitude

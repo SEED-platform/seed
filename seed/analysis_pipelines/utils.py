@@ -325,7 +325,7 @@ def get_days_in_reading(meter_reading):
 
 def user_owns_property(user, property):
     """
-    Determine if a user has tree ownership of a property
+    Determine if a user has ownership of a property
     :param user: SEEDUser 
     :param property: Property
     :return: boolean, ownership
@@ -333,10 +333,8 @@ def user_owns_property(user, property):
     org_user = user.organizationuser_set.filter(organization=property.organization).first()
     if not org_user: return False
 
-    u_ali = org_user.access_level_instance 
-    p_ali = property.access_level_instance
-    if not (u_ali == p_ali or p_ali.is_descendant_of(u_ali)):
-        return False
-    
-    return True
+    user_ali = org_user.access_level_instance 
+    property_ali = property.access_level_instance
+    # User has ownership if ali is equal, or property ali is a descendant
+    return user_ali == property_ali or property_ali.is_descendant_of(user_ali)
 
