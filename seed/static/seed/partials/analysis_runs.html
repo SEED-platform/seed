@@ -16,13 +16,13 @@
                         {$:: view.display_name || 'Property ' + original_views[view.id] $} <i class="glyphicon glyphicon-log-out"></i>
                     </a>
                     <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists">
-                        {$:: view.display_name || 'Unknown' $}
+                        <i class="fa fa-exclamation-triangle"></i> {$:: view.display_name || 'Unknown' $}
                     </span>
                 </td>
                 <td>
                     <ul>
                         <li style="white-space: normal" ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
-                            {$:: message['user_message'] $}
+                            {$:: message['user_message'] $}<span ng-if="::message['debug_message']"> - {$:: message['debug_message'] $}</span>
                         </li>
                     </ul>
                 </td>

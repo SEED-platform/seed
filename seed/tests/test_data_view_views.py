@@ -596,8 +596,8 @@ class DataViewEvaluationTests(TestCase):
         self.assertEqual(4, sum_count)
         self.assertEqual(4, count_count)
 
-        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'site_eui'])
-        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'total_ghg_emissions'])
+        site_eui_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'Site EUI'])
+        ghg_count = len([dataset for dataset in graph_data['datasets'] if dataset['column'] == 'Total GHG Emissions'])
         self.assertEqual(10, site_eui_count)
         self.assertEqual(10, ghg_count)
 
