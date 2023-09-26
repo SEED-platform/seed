@@ -17,7 +17,8 @@ from seed.analysis_pipelines.pipeline import (
 )
 from seed.analysis_pipelines.utils import (
     SimpleMeterReading,
-    get_days_in_reading
+    get_days_in_reading,
+    user_owns_property
 )
 from seed.models import (
     Analysis,
@@ -282,9 +283,10 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         analysis_property_view.save()
 
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        property_view.state.extra_data.update({'analysis_eui': eui['eui']})
-        property_view.state.extra_data.update({'analysis_eui_coverage': eui['coverage']})
-        property_view.state.save()
+        if user_owns_property(analysis.user, property_view.property):
+            property_view.state.extra_data.update({'analysis_eui': eui['eui']})
+            property_view.state.extra_data.update({'analysis_eui_coverage': eui['coverage']})
+            property_view.state.save()
 
     # all done!
     pipeline.set_analysis_status_to_completed()
