@@ -28,8 +28,14 @@ def import_hud():
     # property_name comes from PROJECT_NAME or PROPERTY_NAME_TEXT columns
     """
     # Note: instead of update_or_create, it might be better to clear and start over
-    HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/', 'Public_Housing_Developments.xlsx')
-    HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/', 'Multifamily_Properties_-_Assisted.xlsx')
+    # Use smaller files to test with
+    settings_env = os.environ.get('DJANGO_SETTINGS_MODULE', None)
+    if settings_env == 'config.settings.test':
+        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Public_Housing_Developments.xlsx')
+        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.xlsx')
+    else:
+        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Public_Housing_Developments.xlsx')
+        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Multifamily_Properties_-_Assisted.xlsx')
 
     # header mappings
     housing_headers = {
@@ -109,7 +115,12 @@ def import_cejst():
         Headers of interest: Census tract 2010 ID, Identified as disadvantaged,
         Greater than or equal to the 90th percentile for energy burden and is low income?, Energy burden (percentile)
     """
-    CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/', 'CEJST-1.0-communities-with-indicators.xlsx')
+    # Use a smaller file to test with
+    settings_env = os.environ.get('DJANGO_SETTINGS_MODULE', None)
+    if settings_env == 'config.settings.test':
+        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-CEJST-1.0-communities-with-indicators.xlsx')
+    else:
+        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'CEJST-1.0-communities-with-indicators.xlsx')
 
     # import CEJST
     headers = {
