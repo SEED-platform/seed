@@ -22,7 +22,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['GET'])
     def get_building_xml(self, request, pk):
         """
-        Fetches a Buidling XML for a Audit Template property and updates the corresponding PropertyView
+        Fetches a Building XML for an Audit Template property and updates the corresponding PropertyView
         """
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
@@ -57,7 +57,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=['PUT'])
     def batch_get_building_xml(self, request):
         """
-        Fetches Buidling XMLs for a list of Audit Template properties and updates corresponding PropertyViews.
+        Fetches Building XMLs for a list of Audit Template properties and updates corresponding PropertyViews.
         The return value is a ProgressData object used to monitor the status of the background task.
         """
 
