@@ -143,10 +143,10 @@ def _fetch_census_tract(pv_data):
         response = requests.request("GET", url, headers=headers)
         if response.status_code != 200:
             logger.error(f"EEEJ Analysis: Expected 200 response from CENSUS GEOCODER service but got {response.status_code}: {response.content} for location: {pv_data['location']}")
-            return None, 'error'
+            return None, None, None, 'error'
     except Exception as e:
         logger.error(f"EEEJ Analysis: Unexpected error retrieving census tract from CENSUS GEOCODER service {e} for location: {pv_data['location']}, error: {e}")
-        return None, 'error'
+        return None, None, None, 'error'
 
     # find census tract (response format is different for lat/lng vs. location search)
     results = response.json()

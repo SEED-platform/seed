@@ -340,6 +340,7 @@ UI
 Uncomment
 ungeocoded
 unicode
+uniformat
 unittest
 unlinkable
 unmatch

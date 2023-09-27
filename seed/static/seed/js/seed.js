@@ -1648,11 +1648,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
               return filter_groups_service.get_filter_group(lastFilterGroupId);
             }
-            var currentFilterGroup = _.first(filter_groups);
-            if (currentFilterGroup) {
-              filter_groups_service.save_last_filter_group(currentFilterGroup.id, $stateParams.inventory_type);
-              return currentFilterGroup;
-            }
             return null;
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
