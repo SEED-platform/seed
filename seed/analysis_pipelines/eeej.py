@@ -53,7 +53,8 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
     """Performs basic validation of the properties for running EEEJ and returns any errors
     Fetches census tract information based on address if it doesn't exist already
 
-    :param analysis: property_view_ids, organization
+    :param property_view_ids
+    :param organization
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     # invalid_location = []
@@ -232,17 +233,16 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
     results = {}
     errors_by_apv_id = {}
     for apv in analysis_property_views:
-        tract = None
-        latitude = None
-        longitude = None
+        # The keys in loc_data_by_analysis_property_view will be `str` normally, or `int` if using CELERY_TASK_ALWAYS_EAGER
+        key = str(apv.id) if str(apv.id) in loc_data_by_analysis_property_view else apv.id
 
-        if loc_data_by_analysis_property_view[str(apv.id)]['tract'] is not None:
-            tract = loc_data_by_analysis_property_view[str(apv.id)]['tract']
-            longitude = loc_data_by_analysis_property_view[str(apv.id)]['longitude']
-            latitude = loc_data_by_analysis_property_view[str(apv.id)]['latitude']
+        if loc_data_by_analysis_property_view[key]['tract'] is not None:
+            tract = loc_data_by_analysis_property_view[key]['tract']
+            longitude = loc_data_by_analysis_property_view[key]['longitude']
+            latitude = loc_data_by_analysis_property_view[key]['latitude']
         else:
             # fetch census tract from https://geocoding.geo.census.gov/
-            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[str(apv.id)])
+            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[key])
             if 'error' in status:
                 # invalid_location.append(apv.id)
                 if apv.id not in errors_by_apv_id:
@@ -482,7 +482,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     # save results
     for analysis_property_view in analysis_property_views:
         if analysis_property_view.id not in results:
-            # if not in results, means an error occured.
+            # if not in results, means an error occurred.
             continue
 
         analysis_property_view.parsed_results = {
