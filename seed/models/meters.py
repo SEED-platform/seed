@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db import connection, models
+from psycopg2.extras import execute_values
 
 from seed.models import Property, Scenario
 
@@ -154,22 +155,21 @@ class Meter(models.Model):
         bulk_create is used.
         """
         if overlaps_possible:
-            reading_strings = [
-                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
-                for reading
-                in source_meter.meter_readings.all()
-            ]
-
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) '
+                'VALUES %s '
+                'ON CONFLICT (meter_id, start_time, end_time) '
+                'DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+                'RETURNING reading'
             )
 
             with connection.cursor() as cursor:
-                cursor.execute(sql)
+                execute_values(
+                    cursor,
+                    sql,
+                    source_meter.meter_readings.values(),
+                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
+                )
         else:
             readings = {
                 MeterReading(
