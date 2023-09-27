@@ -4,9 +4,12 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from typing import Tuple
+
 import dateutil.parser
-from django.db.utils import IntegrityError
+from django.db import connection
 from django.utils.timezone import make_aware
+from psycopg2.extras import execute_values
 from pytz import timezone
 from rest_framework import serializers
 
@@ -15,6 +18,8 @@ from seed.models import MeterReading
 
 # import logging
 # _log = logging.getLogger(__name__)
+
+meter_fields = ['meter_id', 'start_time', 'end_time', 'reading', 'source_unit', 'conversion_factor']
 
 
 class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
@@ -26,22 +31,28 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
                 datum['end_time']), timezone=timezone(TIME_ZONE))
         return data
 
-    def create(self, validated_data):
-        meter_data = [MeterReading(**item) for item in validated_data]
+    def create(self, validated_data) -> list[MeterReading]:
+        upsert_sql = (
+            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
+            'VALUES %s '
+            'ON CONFLICT (meter_id, start_time, end_time) '
+            'DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+            f"RETURNING {', '.join(meter_fields)}"
+        )
 
-        try:
-            # Presently update_conflicts are not supported in Django 3.x.
-            # An older github patch has happened, but we need to evaluate
-            # it: https://github.com/martinphellwig/django-query-signals/commit/a3ed59614287f1ef9e7398d325a8bbcc11bf0b3c.
-            # For now, if there is a conflict with the date/times, then it will
-            # ignore the conflict and not update the reading values.
-            #   update_conflicts=True,
-            #   update_fields=['reading', 'source_unit', 'conversion_factor'],
-            result = MeterReading.objects.bulk_create(meter_data, ignore_conflicts=True)
-        except IntegrityError as e:
-            raise serializers.ValidationError(e)
+        with connection.cursor() as cursor:
+            results: list[Tuple] = execute_values(
+                cursor,
+                upsert_sql,
+                validated_data,
+                template='(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)',
+                fetch=True
+            )
 
-        return result
+        # Convert list of tuples to list of MeterReadings for response
+        updated_readings = list(map(lambda result: MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}), results))
+
+        return updated_readings
 
 
 class MeterReadingSerializer(serializers.ModelSerializer):
@@ -68,13 +79,24 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         data['end_time'] = make_aware(end_time, timezone=timezone(TIME_ZONE))
         return data
 
-    def create(self, validated_data):
-        instance = MeterReading(**validated_data)
+    def create(self, validated_data) -> MeterReading:
+        # Can't use update_or_insert here due to manually setting the primary key for timescale
+        upsert_sql = (
+            'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) '
+            'VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) '
+            'ON CONFLICT (meter_id, start_time, end_time) DO UPDATE '
+            'SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
+            'RETURNING meter_id, start_time, end_time, reading, source_unit, conversion_factor'
+        )
 
-        if isinstance(self._kwargs["data"], dict):
-            instance.save()
+        with connection.cursor() as cursor:
+            cursor.execute(upsert_sql, validated_data)
+            result: Tuple = cursor.fetchone()
 
-        return instance
+        # Convert tuple to MeterReadings for response
+        updated_reading = MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)})
+
+        return updated_reading
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
@@ -87,8 +109,8 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         # put the ID first
         result.move_to_end('id', last=False)
 
-        # do we want to convert this to a user friendly value here?
-        result['converted_value'] = obj.reading / 3.412
+        # do we want to convert this to a user-friendly value here?
+        result['converted_value'] = obj.reading / 3.41
         result['converted_units'] = 'kWh'
 
         return result
