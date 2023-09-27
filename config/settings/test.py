@@ -8,6 +8,7 @@ from __future__ import absolute_import
 import importlib.util
 import logging
 import os
+from distutils.util import strtobool
 
 from celery.utils import LOG_LEVELS
 
@@ -90,4 +91,7 @@ if 'SF_INSTANCE' not in vars():
     SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')
 
 # load small EEEJ dataset for testing
-EEEJ_LOAD_SMALL_TEST_DATASET = os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', True)
+try:
+    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', 'True')))
+except Exception:
+    EEEJ_LOAD_SMALL_TEST_DATASET = True
