@@ -220,6 +220,7 @@ class Organization(models.Model):
     at_organization_token = models.CharField(blank=True, max_length=128, default='')
     audit_template_user = models.EmailField(blank=True, max_length=128, default='')
     audit_template_password = models.CharField(blank=True, max_length=128, default='')
+    audit_template_report_type = models.CharField(blank=True, max_length=128, default='Demo City Report')
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
