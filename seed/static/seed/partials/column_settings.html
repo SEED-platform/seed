@@ -227,10 +227,13 @@
                                 <input type="checkbox" ng-checked="column.recognize_empty" class="no-click">
                             </td>
 
-                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
+                            <td class="text-center" ng-if="matching_status(column) == 'eligible'" ng-click="change_is_matching_criteria(column)">
                                 <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
                             </td>
-                            <td class="text-center" ng-if="::column.is_extra_data">
+                            <td class="text-center" ng-if="matching_status(column) == 'locked'">
+                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click" ng-disabled="true">
+                            </td>
+                            <td class="text-center" ng-if="::matching_status(column) == 'ineligible'">
                                 <span ng-if="column.is_extra_data" translate>Ineligible</span>
                             </td>
                             <td class="text-center" ng-if="::org.comstock_enabled">

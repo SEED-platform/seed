@@ -55,6 +55,8 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         'GENERATE'
       ];
 
+      $scope.current_cycle = current_cycle
+
       // Datepickers
       $scope.datePickersOpen = {
         start: false,
