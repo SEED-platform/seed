@@ -76,6 +76,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.export_report_modal',
+  'BE.seed.controller.export_to_audit_template_modal',
   'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
@@ -1647,11 +1648,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
             if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
               return filter_groups_service.get_filter_group(lastFilterGroupId);
-            }
-            var currentFilterGroup = _.first(filter_groups);
-            if (currentFilterGroup) {
-              filter_groups_service.save_last_filter_group(currentFilterGroup.id, $stateParams.inventory_type);
-              return currentFilterGroup;
             }
             return null;
           }],

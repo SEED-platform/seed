@@ -14,6 +14,9 @@
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
+    <h4 class="modal-title" ng-switch-when="17" translate>Confirm Audit Template Building Import?</h4>
+    <h4 class="modal-title" ng-switch-when="18" translate>Select Properties to Update</h4>
+    <h4 class="modal-title" ng-switch-when="19" translate>Audit Template Upload Results</h4>
 
 </div>
 <div class="modal-body" ng-switch on="step.number">
@@ -85,10 +88,16 @@
                 <div class="tab-content-section" ng-hide="uploader.in_progress">
                     <div ng-switch on="step.number" ng-disabled="!selectedCycle">
                         <div class="row" ng-switch-when="2">
-                            <div class="col-sm-offset-4 col-sm-8">
+                            <div class="col-sm-offset-4 col-sm-8" style="margin-bottom: 10px;">
                                 <div class="btn btn-primary upload-btn flex-centered" ng-click="goto_step(13)">
                                     <i class="fa fa-id-card-o fa-2x"></i>
                                     <span class="grow">{$:: 'Import Portfolio Manager Data' | translate $}</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-offset-4 col-sm-8">
+                                <div class="btn btn-primary upload-btn flex-centered"  ng-click="goto_step(17)">
+                                    <i class="fa fa-id-card-o fa-2x"></i>
+                                    <span class="grow" translate>Import Audit Template Buildings</span>
                                 </div>
                             </div>
                         </div>
@@ -413,6 +422,57 @@
             </div>
         </div>
     </div>
+    <!-- Step 17: Confirm Audit Template Building Import Results-->
+    <div ng-switch-when="17">
+        <div ng-if="!show_loading" translate>
+            This action updates properties within the selected cycle with data from the
+            Audit Template account associated with this organization.
+            Only Properties with Audit Template Building IDs corresponding to those saved in
+            Audit Template will be updated.
+        </div>
+        <div ng-if="show_loading">
+            <div translate>
+                Fetching your buildings from Audit Template...
+            </div>
+            <uib-progress class="progress-striped active" style="margin: 10px 0">
+                <uib-bar value="100" type="info"></uib-bar>
+            </uib-progress>
+        </div>
+    </div>
+    <!-- Step 18: Select Matching Properties to Update -->
+    <div class='data-upload-steps' ng-switch-when="18">
+        <div ng-if="!show_loading">
+            <div class="alert alert-warning" ng-if="show_error" >
+                {$ error_message $}
+            </div>
+            <div ng-if="!show_error">
+                <div class="at-property-select" >
+                    <div id="at-property-select-ui-grid" ui-grid="atPropertySelectGridOptions" ui-grid-selection ui-grid-auto-resize ui-grid-resize-columns></div>
+                </div>
+            </div>
+        </div>
+        <div ng-if="show_loading">
+            <div translate>
+                Updating selected properties...
+            </div>
+            <div class="progress_bar_container">
+                <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+                    uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Step 19: Summarize Results of AT Update -->
+    <div class="data-upload-steps" ng-switch-when="19">
+        <div class="alert alert-success">
+            New Property Views: {$ at_upload_summary.success $}
+
+        </div>
+        <div class="alert alert-danger" ng-if="at_upload_summary.failure">
+            Failed to update: {$ at_upload_summary.failure $}
+        </div>
+    </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
@@ -482,6 +542,22 @@
     <div ng-switch-when="15">
         <div class="row text-center" ng-hide="uploader.in_progress" ng-if="proposed_imports_options.data.length">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
+        </div>
+    </div>
+    <div ng-switch-when="17">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="import_audit_template_buildings()" ng-if="!show_loading" translate>Confirm</button>
+        </div>
+    </div>
+    <div ng-switch-when="18">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_buildings_from_audit_template()" ng-if="!show_loading && !show_error" ng-disabled="!rowsSelected()" translate>Update</button>
+        </div>
+    </div>
+    <div ng-switch-when="19">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()"
+                ng-disabled="preparing_pm_meters_preview" translate>View my properties</button>
         </div>
     </div>
     <div class="row text-center">

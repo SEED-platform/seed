@@ -33,6 +33,7 @@
                     <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
                     <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
                     <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+                    <option value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
                     <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
                     <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
                     <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
@@ -84,17 +85,16 @@
         <div class="row">
             <label>{$:: 'Filter Group' | translate $}:</label>
             <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
-                <option value="-1">-- No filter --</option>
                 <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
             </select>
             <div class="btn-group">
-                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
+                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Rename">
                     <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
+                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Delete">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
                 <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">

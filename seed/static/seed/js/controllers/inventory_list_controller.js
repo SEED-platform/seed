@@ -119,8 +119,20 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       // Filter Groups
-      $scope.filterGroups = filter_groups;
-      $scope.currentFilterGroup = current_filter_group;
+      $scope.filterGroups = [{
+        id: -1,
+        name: '-- No filter --',
+        inventory_type: $scope.inventory_type,
+        labels: [],
+        label_logic: 'and',
+        query_dict: {},
+      }];
+      $scope.filterGroups = $scope.filterGroups.concat(filter_groups);
+      if (current_filter_group === null) {
+        $scope.currentFilterGroup = $scope.filterGroups[0]
+      } else {
+        $scope.currentFilterGroup = current_filter_group;
+      }
       $scope.currentFilterGroupId = current_filter_group ? String(current_filter_group.id) : '-1';
 
       $scope.Modified = false;
@@ -154,6 +166,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.Modified=false;
           $scope.currentFilterGroup = _.last($scope.filterGroups);
           $scope.currentFilterGroupId = String(new_filter_group.id)
+          updateCurrentFilterGroup($scope.currentFilterGroup);
 
           Notification.primary('Created ' + $scope.currentFilterGroup.name);
         });
@@ -174,7 +187,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           _.remove($scope.filterGroups, $scope.currentFilterGroup);
           $scope.Modified=false;
-          $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroup = _.first($scope.filterGroups);
+          $scope.currentFilterGroupId = String($scope.currentFilterGroup.id);
+          updateCurrentFilterGroup($scope.currentFilterGroup);
 
           Notification.primary('Removed ' + oldFilterGroupName);
         });
@@ -302,30 +317,13 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           // update filtering
           updateColumnFilterSort();
-        } else {
-          // Clear filter group
-          $scope.currentFilterGroupId = -1
-          filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
-          $scope.selected_labels = [];
-          $scope.filterUsingLabels();
-
-            // clear table filters
-            $scope.gridApi.grid.columns.forEach(column => {
-              column.filters[0] = {
-                term: null
-              };
-            });
-            updateColumnFilterSort();
         }
       };
 
       $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroupId) => {
         currentFilterGroupId = +currentFilterGroupId;
 
-        let selectedFilterGroup = null;
-        if (currentFilterGroupId !== -1) {
-          selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
-        }
+        let selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
 
         if ($scope.Modified) {
           $uibModal.open({
@@ -1429,6 +1427,21 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_export_to_audit_template_modal = function (selectedViewIds) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_to_audit_template_modal.html',
+          controller: 'export_to_audit_template_modal_controller',
+          resolve: {
+            ids: function() {
+              return selectedViewIds;
+            },
+            org_id: function() {
+              return $scope.organization.id
+            }
+          }
+        })
+      }
+
       $scope.model_actions = 'none';
       const elSelectActions = document.getElementById('select-actions');
       $scope.run_action = function (viewIds=[], action=null) {
@@ -1466,6 +1479,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_merge_modal': $scope.open_merge_modal(selectedViewIds); break;
           case 'open_delete_modal': $scope.open_delete_modal(selectedViewIds); break;
           case 'open_export_modal': $scope.open_export_modal(selectedViewIds); break;
+          case 'open_export_to_audit_template_modal': $scope.open_export_to_audit_template_modal(selectedViewIds); break;
           case 'open_update_labels_modal': $scope.open_update_labels_modal(selectedViewIds); break;
           case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
           case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;

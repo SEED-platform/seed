@@ -20,10 +20,31 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     };
 
-    const update_building_with_xml = function (org_id, cycle_id, property_view_id, xml_string) {
+    const batch_get_building_xml_and_update = function (org_id, cycle_id, properties) {
+      return $http.put([
+        '/api/v3/audit_template/batch_get_building_xml/?organization_id=', org_id, '&cycle_id=', cycle_id
+      ].join(''), properties).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    }
+
+    const get_buildings = function (org_id, cycle_id) {
+      return $http.get([
+        '/api/v3/audit_template/get_buildings/?organization_id=', org_id, '&cycle_id=', cycle_id
+      ].join('')).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data
+      })
+    }
+
+    const update_building_with_xml = function (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) {
       let body = new FormData();
       let blob = new Blob([xml_string], {type: 'text/xml'});
-      body.append('file', blob, ['at_', new Date().getTime() , '.xml'].join(''));
+      let title = `at_${audit_template_building_id}_${moment().format('YYYYMMDD_HHmmss')}.xml`
+      body.append('file', blob, title);
       body.append('file_type', 1);
       let headers = {'Content-Type': undefined};
 
@@ -38,9 +59,22 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       });
     }
 
+    const batch_export_to_audit_template = function (org_id, property_view_ids) {
+      return $http.post(
+        `/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`,
+        property_view_ids).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data
+      })
+    }
+
     const analyses_factory = {
       'get_building_xml': get_building_xml,
-      'update_building_with_xml': update_building_with_xml
+      'batch_get_building_xml_and_update': batch_get_building_xml_and_update,
+      'get_buildings': get_buildings,
+      'update_building_with_xml': update_building_with_xml,
+      'batch_export_to_audit_template': batch_export_to_audit_template,
     };
 
     return analyses_factory;

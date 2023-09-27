@@ -32,6 +32,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'uiGridConstants',
     'uploader_service',
     '$state',
+    'audit_template_service',
     'dataset_service',
     'mapping_service',
     'matching_service',
@@ -52,6 +53,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       uiGridConstants,
       uploader_service,
       $state,
+      audit_template_service,
       dataset_service,
       mapping_service,
       matching_service,
@@ -821,6 +823,79 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name);
       }
+
+      $scope.import_audit_template_buildings = function () {
+        $scope.show_loading = true;
+        audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function(response) {
+          $scope.show_error = !response.success
+
+          if ($scope.show_error) {
+            $scope.error_message = response.message
+          } else {
+            const parsed_message = JSON.parse(response.message)
+
+            if (parsed_message.length) {
+              $scope.at_building_data = parsed_message
+              setAtPropertyGrid();
+            } else {
+              $scope.show_error = true
+              $scope.error_message = 'Your inventory is already synced with your Audit Template account'
+            }
+          }
+          $scope.show_loading = false;
+          $scope.step.number = 18;
+        })
+      }
+
+      const setAtPropertyGrid = () => {
+        $scope.atPropertySelectGridOptions = {
+          data: $scope.at_building_data.map(building => ({
+            'audit_template_building_id': building.audit_template_building_id,
+            'name': building.name,
+            'email': building.email,
+            'updated_at': building.updated_at,
+            'property_view': building.property_view
+          })),
+          columnDefs: [
+            {field: 'audit_template_building_id', displayName: 'Audit Template Building ID'},
+            {field: 'name', displayName: 'Name'},
+            {field: 'email', displayName: 'Owner Email'},
+            {field: 'updated_at', displayName: 'Updated At'},
+            {field: 'property_view', visible: false}
+          ],
+          enableColumnMenus: false,
+          enableColumnResizing: true,
+          enableFiltering: true,
+          enableSorting: true,
+          enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+          enableVerticalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
+          minRowsToShow: Math.min($scope.at_building_data.length, 25),
+          rowHeight: '30px',
+          onRegisterApi: (gridApi) => {
+            $scope.gridApiAtPropertySelection = gridApi;
+          }
+        };
+      }
+
+      $scope.update_buildings_from_audit_template = () => {
+        $scope.show_loading = true;
+        const selected_property_views = $scope.gridApiAtPropertySelection.selection.getSelectedRows()
+          .map(row => row['property_view'])
+          .sort()
+        const selected_data = $scope.at_building_data.filter(building =>  selected_property_views.includes(building.property_view))
+        audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then(response => {
+          progress_key = response.progress_key
+          uploader_service.check_progress_loop(progress_key, 0, 1, function (summary) {
+            $scope.show_loading = false;
+            $scope.at_upload_summary = summary.message
+            $scope.step.number = 19
+          }, function () {
+            // do nothing
+          }, $scope.uploader)
+        })
+      }
+
+      $scope.rowsSelected = () => $scope.gridApiAtPropertySelection && $scope.gridApiAtPropertySelection.selection.getSelectedRows().length;
 
       /**
        * init: ran upon the controller load

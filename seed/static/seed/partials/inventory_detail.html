@@ -76,6 +76,10 @@
                             <a ng-click="export_building_sync_xlsx()">Export BuildingSync (Excel)</a>
                         </li>
 
+                        <li ng-if="::inventory_type === 'properties'" role="menuitem">
+                            <a ng-click="open_export_to_audit_template_modal()">Export to Audit Template</a>
+                        </li>
+
                         <li role="menuitem">
                             <a ng-click="open_update_labels_modal()">{$:: 'Add/Remove Labels' | translate $}</a>
                         </li>
