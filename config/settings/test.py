@@ -88,3 +88,6 @@ if 'SF_INSTANCE' not in vars():
     SF_PASSWORD = os.environ.get('SF_PASSWORD', '')
     SF_DOMAIN = os.environ.get('SF_DOMAIN', '')
     SF_SECURITY_TOKEN = os.environ.get('SF_SECURITY_TOKEN', '')
+
+# load small EEEJ dataset for testing
+EEEJ_LOAD_SMALL_TEST_DATASET = os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', True)

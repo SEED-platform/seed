@@ -312,6 +312,8 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': '/accounts/logout',
 }
 
+EEEJ_LOAD_SMALL_TEST_DATASET = os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', False)
+
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 
