@@ -561,11 +561,6 @@ BASE_MAPPING_V2 = {
                 'value': 'text',
                 'formatter': to_float,
             },
-            'property_name': {
-                'xpath': './auc:Buildings/auc:Building',
-                'type': 'value',
-                'value': '@ID',
-            },
             'property_type': {
                 'xpath': './auc:Buildings/auc:Building/auc:Sections/auc:Section/auc:OccupancyClassification',
                 'type': 'value',

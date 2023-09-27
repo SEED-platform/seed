@@ -1427,6 +1427,21 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_export_to_audit_template_modal = function (selectedViewIds) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_to_audit_template_modal.html',
+          controller: 'export_to_audit_template_modal_controller',
+          resolve: {
+            ids: function() {
+              return selectedViewIds;
+            },
+            org_id: function() {
+              return $scope.organization.id
+            }
+          }
+        })
+      }
+
       $scope.model_actions = 'none';
       const elSelectActions = document.getElementById('select-actions');
       $scope.run_action = function (viewIds=[], action=null) {
@@ -1464,6 +1479,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           case 'open_merge_modal': $scope.open_merge_modal(selectedViewIds); break;
           case 'open_delete_modal': $scope.open_delete_modal(selectedViewIds); break;
           case 'open_export_modal': $scope.open_export_modal(selectedViewIds); break;
+          case 'open_export_to_audit_template_modal': $scope.open_export_to_audit_template_modal(selectedViewIds); break;
           case 'open_update_labels_modal': $scope.open_update_labels_modal(selectedViewIds); break;
           case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
           case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
