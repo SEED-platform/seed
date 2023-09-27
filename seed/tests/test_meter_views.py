@@ -261,6 +261,126 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 3)
 
+    def test_create_two_meters_readings(self):
+        """Test edge case to make sure that data for two different meters don't overwrite each other"""
+        property_view = self.property_view_factory.get_property_view()
+        url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+        response = self.client.post(url_meters, data=json.dumps(payload), content_type='application/json')
+        meter_pk_1 = response.json()['id']
+
+        payload = {
+            'type': 'Natural Gas',
+            'source': 'Manual Entry',
+            'source_id': '9876543210',
+        }
+        response = self.client.post(url_meters, data=json.dumps(payload), content_type='application/json')
+        meter_pk_2 = response.json()['id']
+
+        # create meter readings
+        url_1 = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk_1})
+        url_2 = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk_2})
+
+        readings_1 = {
+            "start_time": "2022-01-05 05:00:00",
+            "end_time": "2022-01-05 06:00:00",
+            "reading": 6.0,
+            "source_unit": "Wh (Watt-hours)",
+            "conversion_factor": 0.00341,
+        }
+        readings_2 = readings_1.copy()
+        readings_2['reading'] = -6.0
+
+        response_1 = self.client.post(url_1, data=json.dumps(readings_1), content_type='application/json')
+        response_2 = self.client.post(url_2, data=json.dumps(readings_2), content_type='application/json')
+        self.assertEqual(response_1.status_code, 201)
+        self.assertEqual(response_2.status_code, 201)
+
+        # check that there are two meters
+        url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        response_meters = self.client.get(url_meters, content_type='application/json')
+        self.assertEqual(len(response_meters.json()), 2)
+
+        # read all the values from the meter and check the results
+        response_1 = self.client.get(url_1, content_type='application/json')
+        response_2 = self.client.get(url_2, content_type='application/json')
+        self.assertEqual(response_1.status_code, 200)
+        self.assertEqual(response_2.status_code, 200)
+        # check that the results are different between the two meters
+        self.assertEqual(len(response_1.json()), 1)
+        self.assertEqual(len(response_2.json()), 1)
+        self.assertEqual(response_1.json()[0]['reading'], 6.0)
+        self.assertEqual(response_2.json()[0]['reading'], -6.0)
+
+    def test_create_two_meters_bulk_readings(self):
+        """Test edge case to make sure that data for two different meters don't overwrite each other"""
+        property_view = self.property_view_factory.get_property_view()
+        url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+        response = self.client.post(url_meters, data=json.dumps(payload), content_type='application/json')
+        meter_pk_1 = response.json()['id']
+
+        payload = {
+            'type': 'Natural Gas',
+            'source': 'Manual Entry',
+            'source_id': '9876543210',
+        }
+        response = self.client.post(url_meters, data=json.dumps(payload), content_type='application/json')
+        meter_pk_2 = response.json()['id']
+
+        # create meter readings
+        url_1 = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk_1})
+        url_2 = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk_2})
+
+        # write a few values to the database
+        for values in [("2022-01-05 05:00:00", "2022-01-05 06:00:00", 6.0),
+                       ("2022-01-05 06:00:00", "2022-01-05 07:00:00", 12.0),
+                       ("2022-01-05 07:00:00", "2022-01-05 08:00:00", 18.0), ]:
+
+            payload = {
+                "start_time": values[0],
+                "end_time": values[1],
+                "reading": values[2],
+                "source_unit": "Wh (Watt-hours)",
+                # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                "conversion_factor": 0.00341,
+            }
+
+            response = self.client.post(url_1, data=json.dumps(payload), content_type='application/json')
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json()['reading'], values[2])
+            # for the second readings just negate the reading value
+            payload['reading'] = -values[2]
+            response = self.client.post(url_2, data=json.dumps(payload), content_type='application/json')
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.json()['reading'], -values[2])
+
+        # check that there are two meters
+        url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        response_meters = self.client.get(url_meters, content_type='application/json')
+        self.assertEqual(len(response_meters.json()), 2)
+
+        # read all the values from the meter and check the results
+        response_1 = self.client.get(url_1, content_type='application/json')
+        response_2 = self.client.get(url_2, content_type='application/json')
+        self.assertEqual(response_1.status_code, 200)
+        self.assertEqual(response_2.status_code, 200)
+        # check that the results are different between the two meters
+        self.assertEqual(len(response_1.json()), 3)
+        self.assertEqual(len(response_2.json()), 3)
+        self.assertEqual(response_1.json()[0]['reading'], 6.0)
+        self.assertEqual(response_2.json()[0]['reading'], -6.0)
+
     def test_error_with_time_aware(self):
         property_view = self.property_view_factory.get_property_view()
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})

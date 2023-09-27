@@ -66,6 +66,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.meterGridOptions = {
         data: 'sorted_meters',
         columnDefs: [
+          {field: "id"},
           {field: "type"},
           {field: "alias"},
           {field: "source"},

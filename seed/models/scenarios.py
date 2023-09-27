@@ -102,3 +102,19 @@ class Scenario(models.Model):
             meter.property = property_
             meter.save()  # save to get new id / association
             meter.copy_readings(source_meter, overlaps_possible=False)
+
+    @classmethod
+    def str_to_temporal_status(cls, status):
+        if not status:
+            return None
+
+        if isinstance(status, int):
+            if status in [(t[0]) for t in cls.TEMPORAL_STATUS_TYPES]:
+                return status
+            return None
+
+        value = [y[0] for x, y in enumerate(cls.TEMPORAL_STATUS_TYPES) if y[1] == status]
+        if len(value) == 1:
+            return value[0]
+        else:
+            return None

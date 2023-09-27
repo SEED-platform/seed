@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
     'analyses_payload',
     'users_payload',
     'organization_payload',
+    'views_payload',
     'urls',
     '$log',
     'analyses_service',
@@ -31,16 +32,18 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       analyses_payload,
       users_payload,
       organization_payload,
+      views_payload,
       urls,
       $log,
       analyses_service,
       Notification,
       uploader_service,
-      cycle_service,
+      cycle_service
     ) {
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.view_id = $stateParams.view_id;
+      $scope.cycle = inventory_payload.cycle;
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = organization_payload.organization;
       $scope.users = users_payload.users;
@@ -49,11 +52,26 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         view_id: $stateParams.view_id
       };
       $scope.tab = 0;
+      $scope.cycle = inventory_payload.cycle;
+
+      views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views : views_payload.taxlot_views;
+      $scope.views = views_payload.map(
+        ({id, cycle}) => {
+          return {
+            view_id: id,
+            cycle_name: cycle.name
+          };
+        }
+      ).sort((a, b) => a.cycle_name.localeCompare(b.cycle_name));
+      $scope.selected_view = $scope.views.find(({view_id}) => view_id === $scope.inventory.view_id);
+      $scope.changeView = () => {
+        $state.go('inventory_detail_analyses', {inventory_type: $scope.inventory_type, view_id: $scope.selected_view.view_id});
+      };
 
       const refresh_analyses = function () {
         analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
           .then(function (data) {
-            $scope.analyses = data.analyses;
+            $scope.analyses = analyses_payload.analyses.filter(analysis => analysis.cycles.includes($scope.cycle.id));
             $scope.analyses_by_type = {};
             for (let analysis in $scope.analyses) {
               if (!$scope.analyses_by_type[$scope.analyses[analysis].service]) {
@@ -147,7 +165,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
                 return result.cycles;
               });
             },
-            current_cycle: {},
+            current_cycle: () => $scope.cycle
           }
         }).result.then(function (data) {
           if (data) {

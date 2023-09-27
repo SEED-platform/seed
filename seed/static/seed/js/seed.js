@@ -466,7 +466,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }, function (data) {
                 return $q.reject(data.message);
               });
-          }]
+          }],
+          cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+            return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          }],
         }
       })
       .state({
@@ -501,7 +504,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }, function (data) {
                 return $q.reject(data.message);
               });
-          }]
+          }],
+          cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+            return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          }],
         }
       })
       .state({
@@ -1643,11 +1649,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
               return filter_groups_service.get_filter_group(lastFilterGroupId);
             }
-            var currentFilterGroup = _.first(filter_groups);
-            if (currentFilterGroup) {
-              filter_groups_service.save_last_filter_group(currentFilterGroup.id, $stateParams.inventory_type);
-              return currentFilterGroup;
-            }
             return null;
           }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
@@ -1950,7 +1951,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           users_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
-          }]
+          }],
+          views_payload: ['$stateParams', 'user_service', 'inventory_service', 'inventory_payload', function ($stateParams, user_service, inventory_service, inventory_payload) {
+            const organization_id = user_service.get_organization().id
+            var promise;
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property_views(organization_id, inventory_payload.property.id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_views(organization_id, inventory_payload.taxlot.id);
+
+            return promise;
+          }],
         }
       })
       .state({

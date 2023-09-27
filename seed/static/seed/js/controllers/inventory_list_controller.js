@@ -119,8 +119,20 @@ angular.module('BE.seed.controller.inventory_list', [])
       }
 
       // Filter Groups
-      $scope.filterGroups = filter_groups;
-      $scope.currentFilterGroup = current_filter_group;
+      $scope.filterGroups = [{
+        id: -1,
+        name: '-- No filter --',
+        inventory_type: $scope.inventory_type,
+        labels: [],
+        label_logic: 'and',
+        query_dict: {},
+      }];
+      $scope.filterGroups = $scope.filterGroups.concat(filter_groups);
+      if (current_filter_group === null) {
+        $scope.currentFilterGroup = $scope.filterGroups[0]
+      } else {
+        $scope.currentFilterGroup = current_filter_group;
+      }
       $scope.currentFilterGroupId = current_filter_group ? String(current_filter_group.id) : '-1';
 
       $scope.Modified = false;
@@ -154,6 +166,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.Modified=false;
           $scope.currentFilterGroup = _.last($scope.filterGroups);
           $scope.currentFilterGroupId = String(new_filter_group.id)
+          updateCurrentFilterGroup($scope.currentFilterGroup);
 
           Notification.primary('Created ' + $scope.currentFilterGroup.name);
         });
@@ -174,7 +187,9 @@ angular.module('BE.seed.controller.inventory_list', [])
         modalInstance.result.then(function () {
           _.remove($scope.filterGroups, $scope.currentFilterGroup);
           $scope.Modified=false;
-          $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroup = _.first($scope.filterGroups);
+          $scope.currentFilterGroupId = String($scope.currentFilterGroup.id);
+          updateCurrentFilterGroup($scope.currentFilterGroup);
 
           Notification.primary('Removed ' + oldFilterGroupName);
         });
@@ -302,30 +317,13 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           // update filtering
           updateColumnFilterSort();
-        } else {
-          // Clear filter group
-          $scope.currentFilterGroupId = -1
-          filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
-          $scope.selected_labels = [];
-          $scope.filterUsingLabels();
-
-            // clear table filters
-            $scope.gridApi.grid.columns.forEach(column => {
-              column.filters[0] = {
-                term: null
-              };
-            });
-            updateColumnFilterSort();
         }
       };
 
       $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroupId) => {
         currentFilterGroupId = +currentFilterGroupId;
 
-        let selectedFilterGroup = null;
-        if (currentFilterGroupId !== -1) {
-          selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
-        }
+        let selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
 
         if ($scope.Modified) {
           $uibModal.open({
@@ -1881,7 +1879,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           var selectionChanged = function () {
             var selected = gridApi.selection.getSelectedRows();
             var parentsSelectedIds = _.map(_.filter(selected, {$$treeLevel: 0}), 'id');
-            $scope.selectedCount = selected.length;
+            $scope.selectedCount = selectionLengthByInventoryType(selected);
             $scope.selectedParentCount = parentsSelectedIds.length;
 
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
@@ -1911,10 +1909,16 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.selectedOrder = _.filter(sortedIds, function (id) {
                 return _.includes(parentsSelectedIds, id);
               });
-              $scope.selectedCount = allSelected.length;
+              $scope.selectedCount = selectionLengthByInventoryType(allSelected);
               $scope.selectedParentCount = parentsSelectedIds.length;
             }
             $scope.update_selected_display();
+          };
+
+          const selectionLengthByInventoryType = (selection) => {
+            return $scope.inventory_type == 'properties' ?
+              selection.filter(item => item.property_state_id || item.property_view_id).length :
+              selection.filter(item => item.taxlot_state_id || item.taxlot_view_id).length;
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);

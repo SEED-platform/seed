@@ -36,6 +36,7 @@ boolean
 BrowserDefinition
 bsync
 bsyncr
+Btus
 buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
@@ -83,6 +84,7 @@ datasources
 datatypes
 datestrings
 datetime
+dateutil
 dedeploy
 defaultdict
 dest
@@ -338,6 +340,7 @@ UI
 Uncomment
 ungeocoded
 unicode
+uniformat
 unittest
 unlinkable
 unmatch
