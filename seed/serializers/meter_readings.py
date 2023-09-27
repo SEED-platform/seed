@@ -82,18 +82,18 @@ class MeterReadingSerializer(serializers.ModelSerializer):
     def create(self, validated_data) -> MeterReading:
         # Can't use update_or_insert here due to manually setting the primary key for timescale
         upsert_sql = (
-            'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) '
+            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "
             'VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) '
             'ON CONFLICT (meter_id, start_time, end_time) DO UPDATE '
             'SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor '
-            'RETURNING meter_id, start_time, end_time, reading, source_unit, conversion_factor'
+            f"RETURNING {', '.join(meter_fields)}"
         )
 
         with connection.cursor() as cursor:
             cursor.execute(upsert_sql, validated_data)
             result: Tuple = cursor.fetchone()
 
-        # Convert tuple to MeterReadings for response
+        # Convert tuple to MeterReading for response
         updated_reading = MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)})
 
         return updated_reading
