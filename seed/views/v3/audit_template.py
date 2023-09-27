@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import Cycle
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -70,8 +71,22 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'message': message
             }, status=400)
 
+        org = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id')
-        at = AuditTemplate(self.get_organization(request))
+
+        if not cycle_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Missing Cycle ID'
+            })
+
+        if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Cycle does not exist'
+            }, status=404)
+
+        at = AuditTemplate(org)
         progress_data = at.batch_get_building_xml(cycle_id, properties)
 
         if progress_data is None:
@@ -113,13 +128,21 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         """
         Fetches all properties associated with the linked Audit Template account via the Audit Template API
         """
+        org = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id')
         if not cycle_id:
             return JsonResponse({
                 'success': False,
                 'message': 'Missing Cycle ID'
             })
-        at = AuditTemplate(self.get_organization(request))
+
+        if not Cycle.objects.filter(id=cycle_id, organization=org).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Cycle does not exist'
+            }, status=404)
+
+        at = AuditTemplate(org)
         result = at.get_buildings(cycle_id)
 
         if type(result) is tuple:

@@ -308,7 +308,7 @@ def _batch_get_building_xml(org_id, cycle_id, token, properties, progress_key):
 def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
-    views = PropertyView.objects.filter(id__in=view_ids).select_related('state')
+    views = PropertyView.objects.filter(id__in=view_ids, state__organization_id=org_id).select_related('state')
     results = {}
 
     for view in views:
@@ -333,7 +333,7 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
             state.save()
             audit_template.update_export_results(view.id, results, 'success', at_building_id=at_building_id)
         else:
-            audit_template.update_export_results(view.id, results, 'error', message='Unexepcted Response from Audit Template')
+            audit_template.update_export_results(view.id, results, 'error', message='Unexpected Response from Audit Template')
 
         progress_data.update_summary(results)
         progress_data.step('Exporting properties to Audit Template...')
