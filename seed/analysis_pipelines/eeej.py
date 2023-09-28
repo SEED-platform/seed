@@ -5,6 +5,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
+import re
 import urllib.parse
 
 import requests
@@ -75,25 +76,16 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
-        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'location': None, 'valid_coords': 1}
+        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'location': None, 'valid_coords': False}
 
-        # check that we have lat/lon
-        if property_view.state.latitude:
-            loc_data_by_property_view[property_view.id]['latitude'] = property_view.state.latitude
-        else:
-            loc_data_by_property_view[property_view.id]['valid_coords'] = 0
-        if property_view.state.longitude:
-            loc_data_by_property_view[property_view.id]['longitude'] = property_view.state.longitude
-        else:
-            loc_data_by_property_view[property_view.id]['valid_coords'] = 0
-        try:
-            loc_data_by_property_view[property_view.id]['geocoding_confidence'] = property_view.state.geocoding_confidence
-            if 'Census' not in loc_data_by_property_view[property_view.id]['geocoding_confidence'] \
-                and 'High' not in loc_data_by_property_view[property_view.id]['geocoding_confidence'] \
-                    and 'Manually' not in loc_data_by_property_view[property_view.id]['geocoding_confidence']:
-                loc_data_by_property_view[property_view.id]['valid_coords'] = 0
-        except Exception:
-            loc_data_by_property_view[property_view.id]['valid_coords'] = 0
+        latitude, longitude, geocoding_confidence = [getattr(property_view.state, field) for field in ['latitude', 'longitude', 'geocoding_confidence']]
+        high_confidence = bool(re.search(r'^(High \(.+?\)|Census Geocoder \(.+?\)|Manually geocoded \(.+?\))$', str(geocoding_confidence)))
+
+        if latitude and longitude and high_confidence:
+            loc_data_by_property_view[property_view.id]['latitude'] = latitude
+            loc_data_by_property_view[property_view.id]['longitude'] = longitude
+            loc_data_by_property_view[property_view.id]['geocoding_confidence'] = geocoding_confidence
+            loc_data_by_property_view[property_view.id]['valid_coords'] = True
 
         # census tract already computed?
         if TRACT_FIELDNAME in property_view.state.extra_data.keys():
@@ -103,7 +95,7 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
                 loc_data_by_property_view[property_view.id]['tract'] = None
         if loc_data_by_property_view[property_view.id]['tract'] is None:
             # get location ONLY if we need it (no valid coords)
-            if loc_data_by_property_view[property_view.id]['valid_coords'] == 0:
+            if not loc_data_by_property_view[property_view.id]['valid_coords']:
                 location, status = _get_location(property_view)
                 if 'error' in status:
                     # invalid_location.append(property_view.id)
@@ -118,7 +110,7 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
         # if both are None, error
         if loc_data_by_property_view[property_view.id]['tract'] is None \
             and loc_data_by_property_view[property_view.id]['location'] is None \
-                and loc_data_by_property_view[property_view.id]['valid_coords'] == 0:
+                and not loc_data_by_property_view[property_view.id]['valid_coords']:
             # invalid_location.append(property_view.id)
             if property_view.id not in errors_by_property_view_id:
                 errors_by_property_view_id[property_view.id] = []
