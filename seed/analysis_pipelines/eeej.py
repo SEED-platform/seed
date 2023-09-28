@@ -5,6 +5,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
+import re
 import urllib.parse
 
 import requests
@@ -35,10 +36,10 @@ WARNING_SOME_INVALID_PROPERTIES = 3
 ERROR_NO_TRACT_OR_LOCATION = 4
 
 EEEJ_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_LOCATION: 'Property missing one of Address Line 1, City & State, or Postal Code).',
+    ERROR_INVALID_LOCATION: 'Property missing Lat/Lng (High, Census, or Manually geocoded) or one of: Address Line 1, City & State, or Postal Code.',
     ERROR_RETRIEVING_CENSUS_TRACT: 'Unable to retrieve Census Tract for this property.',
     ERROR_NO_TRACT_OR_LOCATION: 'Property missing location or Census Tract',
-    ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
+    ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties to analyze.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
 }
 
@@ -53,7 +54,8 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
     """Performs basic validation of the properties for running EEEJ and returns any errors
     Fetches census tract information based on address if it doesn't exist already
 
-    :param analysis: property_view_ids, organization
+    :param property_view_ids
+    :param organization
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     # invalid_location = []
@@ -74,16 +76,16 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
 
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
-        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'location': None}
-        # check that we have lat/lon
-        if property_view.state.latitude:
-            loc_data_by_property_view[property_view.id]['latitude'] = property_view.state.latitude
-        if property_view.state.longitude:
-            loc_data_by_property_view[property_view.id]['longitude'] = property_view.state.longitude
-        try:
-            loc_data_by_property_view[property_view.id]['geocoding_confidence'] = property_view.state.geocoding_confidence
-        except Exception:
-            pass
+        loc_data_by_property_view[property_view.id] = {'tract': None, 'latitude': None, 'longitude': None, 'geocoding_confidence': None, 'location': None, 'valid_coords': False}
+
+        latitude, longitude, geocoding_confidence = [getattr(property_view.state, field) for field in ['latitude', 'longitude', 'geocoding_confidence']]
+        high_confidence = bool(re.search(r'^(High \(.+?\)|Census Geocoder \(.+?\)|Manually geocoded \(.+?\))$', str(geocoding_confidence)))
+
+        if latitude and longitude and high_confidence:
+            loc_data_by_property_view[property_view.id]['latitude'] = latitude
+            loc_data_by_property_view[property_view.id]['longitude'] = longitude
+            loc_data_by_property_view[property_view.id]['geocoding_confidence'] = geocoding_confidence
+            loc_data_by_property_view[property_view.id]['valid_coords'] = True
 
         # census tract already computed?
         if TRACT_FIELDNAME in property_view.state.extra_data.keys():
@@ -91,25 +93,29 @@ def _get_data_for_census_tract_fetch(property_view_ids, organization):
             if not loc_data_by_property_view[property_view.id]['tract']:
                 # reset to None if blank so we can re-geocode
                 loc_data_by_property_view[property_view.id]['tract'] = None
-
         if loc_data_by_property_view[property_view.id]['tract'] is None:
-            # try to calculate it
-            location, status = _get_location(property_view)
-            if 'error' in status:
-                # invalid_location.append(property_view.id)
-                if property_view.id not in errors_by_property_view_id:
-                    errors_by_property_view_id[property_view.id] = []
-                errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_INVALID_LOCATION])
-                continue
-            # save location
-            loc_data_by_property_view[property_view.id]['location'] = location
+            # get location ONLY if we need it (no valid coords)
+            if not loc_data_by_property_view[property_view.id]['valid_coords']:
+                location, status = _get_location(property_view)
+                if 'error' in status:
+                    # invalid_location.append(property_view.id)
+                    if property_view.id not in errors_by_property_view_id:
+                        errors_by_property_view_id[property_view.id] = []
+                    errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_INVALID_LOCATION])
+                    del loc_data_by_property_view[property_view.id]
+                    continue
+                # save location
+                loc_data_by_property_view[property_view.id]['location'] = location
 
         # if both are None, error
-        if loc_data_by_property_view[property_view.id]['tract'] is None and loc_data_by_property_view[property_view.id]['location'] is None and loc_data_by_property_view[property_view.id]['geocoding_confidence'] is None:
+        if loc_data_by_property_view[property_view.id]['tract'] is None \
+            and loc_data_by_property_view[property_view.id]['location'] is None \
+                and not loc_data_by_property_view[property_view.id]['valid_coords']:
             # invalid_location.append(property_view.id)
             if property_view.id not in errors_by_property_view_id:
                 errors_by_property_view_id[property_view.id] = []
             errors_by_property_view_id[property_view.id].append(EEEJ_ANALYSIS_MESSAGES[ERROR_NO_TRACT_OR_LOCATION])
+            del loc_data_by_property_view[property_view.id]
             continue
 
     return loc_data_by_property_view, errors_by_property_view_id
@@ -124,9 +130,13 @@ def _fetch_census_tract(pv_data):
 
     # first check if we have lat/lng already with geocoding confidence of HIGH
     # prioritize geocoded lat/lng over address string, which is more error-prone
-
-    if pv_data['latitude'] and pv_data['longitude'] and pv_data['geocoding_confidence'] and 'High' in pv_data['geocoding_confidence']:
-        url = f"{CENSUS_GEOCODER_URL_COORDS_STUB}x={pv_data['longitude']}&y={pv_data['latitude']}"
+    # allows High, Census, and Manually geocoded lat/lng to be used for tract retrieval
+    if pv_data['valid_coords']:
+        # use lat/lng
+        # celery was mad at when I did this in the url string
+        lat = str(pv_data['latitude'])
+        lng = str(pv_data['longitude'])
+        url = f"{CENSUS_GEOCODER_URL_COORDS_STUB}x={lng}&y={lat}"
     else:
         # use address string
         url = f"{CENSUS_GEOCODER_URL_STUB}{urllib.parse.quote(pv_data['location'])}"
@@ -227,16 +237,16 @@ def _get_eeej_indicators(analysis_property_views, loc_data_by_analysis_property_
     results = {}
     errors_by_apv_id = {}
     for apv in analysis_property_views:
-        tract = None
-        latitude = None
-        longitude = None
-        if loc_data_by_analysis_property_view[apv.id]['tract'] is not None:
-            tract = loc_data_by_analysis_property_view[apv.id]['tract']
-            longitude = loc_data_by_analysis_property_view[apv.id]['longitude']
-            latitude = loc_data_by_analysis_property_view[apv.id]['latitude']
+        # The keys in loc_data_by_analysis_property_view will be `str` normally, or `int` if using CELERY_TASK_ALWAYS_EAGER
+        key = str(apv.id) if str(apv.id) in loc_data_by_analysis_property_view else apv.id
+
+        if loc_data_by_analysis_property_view[key]['tract'] is not None:
+            tract = loc_data_by_analysis_property_view[key]['tract']
+            longitude = loc_data_by_analysis_property_view[key]['longitude']
+            latitude = loc_data_by_analysis_property_view[key]['latitude']
         else:
             # fetch census tract from https://geocoding.geo.census.gov/
-            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[apv.id])
+            tract, latitude, longitude, status = _fetch_census_tract(loc_data_by_analysis_property_view[key])
             if 'error' in status:
                 # invalid_location.append(apv.id)
                 if apv.id not in errors_by_apv_id:
@@ -476,7 +486,7 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
     # save results
     for analysis_property_view in analysis_property_views:
         if analysis_property_view.id not in results:
-            # if not in results, means an error occured.
+            # if not in results, means an error occurred.
             continue
 
         analysis_property_view.parsed_results = {
