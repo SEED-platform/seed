@@ -312,6 +312,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -1643,6 +1644,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update_with_espm(self, request, pk):
         """Update an existing PropertyView with an exported singular ESPM file.
         """
