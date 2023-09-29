@@ -47,6 +47,11 @@ local_untracked.py file
         ),
     )
 
+Version 2.20.0
+--------------
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There is a single long running migration related to importing census tract disadvantaged community data. This migration should take around 7 minutes to complete.
+
 Version 2.19.0
 --------------
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
