@@ -34,6 +34,11 @@ class EeejCejst(models.Model):
     # Share of neighbors that are identified as disadvantaged (0-100)
     share_neighbors_disadvantaged = models.IntegerField(null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['census_tract_geoid', 'dac']),
+        ]
+
 
 class EeejHud(models.Model):
     # Stores subset of HUD data
@@ -42,3 +47,8 @@ class EeejHud(models.Model):
     long_lat = geomodels.PointField(geography=True)
     housing_type = models.IntegerField(choices=HOUSING_TYPE)
     name = models.CharField(max_length=150)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['census_tract_geoid']),
+        ]

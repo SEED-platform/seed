@@ -2491,13 +2491,11 @@ select {
 
 #label_admin {
   .sectionLabel {
-    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial,
-      sans-serif;
+    font-family: $font-family-base-narrow;
   }
 
   .tableHeader {
-    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial,
-      sans-serif;
+    font-family: $font-family-base-narrow;
     white-space: nowrap;
     padding: 6px 10px 5px 10px;
     text-transform: uppercase;
@@ -2625,13 +2623,11 @@ select {
   }
 
   .sectionCycle {
-    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial,
-      sans-serif;
+    font-family: $font-family-base-narrow;
   }
 
   .tableHeader {
-    font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial,
-      sans-serif;
+    font-family: $font-family-base-narrow;
     white-space: nowrap;
     padding: 6px 10px 5px 10px;
     text-transform: uppercase;
@@ -2986,6 +2982,10 @@ tags-input .tags .tag-item .remove-button {
   input[type="checkbox"] {
     cursor: pointer;
     margin: 0 6px 2px 0;
+
+    &[disabled] {
+      cursor: default;
+    }
   }
 
   label {
@@ -2995,6 +2995,7 @@ tags-input .tags .tag-item .remove-button {
     user-select: none;
 
     &:has(input[disabled]) {
+      cursor: default;
       color: #999;
     }
   }
@@ -5010,18 +5011,23 @@ tags-input .tags .tag-item {
   &:has(.label-success) {
     background: #5cb85c;
   }
+
   &:has(.label-danger) {
     background: #d9534f;
   }
+
   &:has(.label-default) {
     background: #777;
   }
+
   &:has(.label-warning) {
     background: #f0ad4e;
   }
+
   &:has(.label-info) {
     background: #5bc0de;
   }
+
   &:has(.label-primary) {
     background: #337ab7;
   }

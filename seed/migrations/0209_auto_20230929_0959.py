@@ -53,4 +53,12 @@ class Migration(migrations.Migration):
             name='hud_object_id',
             field=models.CharField(max_length=20, primary_key=True, serialize=False),
         ),
+        migrations.AddIndex(
+            model_name='eeejcejst',
+            index=models.Index(fields=['census_tract_geoid', 'dac'], name='seed_eeejce_census__bcc6d1_idx'),
+        ),
+        migrations.AddIndex(
+            model_name='eeejhud',
+            index=models.Index(fields=['census_tract_geoid'], name='seed_eeejhu_census__d1faf7_idx'),
+        ),
     ]

@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_map', [])
     '$uibModal',
     'cycles',
     'inventory_service',
+    'map_service',
     'user_service',
     'organization_service',
     'labels',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       $uibModal,
       cycles,
       inventory_service,
+      map_service,
       user_service,
       organization_service,
       labels,
@@ -34,6 +36,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.data = [];
       $scope.geocoded_data = [];
       $scope.filteredRecords = 0;
+      $scope.highlightDACs = true;
 
       // find organization's property/taxlot default type to display in popup
       const org_id = user_service.get_organization().id;
@@ -45,6 +48,11 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.cycle = {
         selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
         cycles: cycles.cycles
+      };
+
+      $scope.update_cycle = (cycle) => {
+        inventory_service.save_last_cycle(cycle.id);
+        $state.reload();
       };
 
       const chunk = 250;
@@ -70,31 +78,12 @@ angular.module('BE.seed.controller.inventory_map', [])
         scope: $scope
       });
 
-      const getInventoryFunc = isPropertiesTab ? inventory_service.get_properties : inventory_service.get_taxlots;
-
-      const getCensusTractGeojson = async () => {
-        try {
-          // Only show census tracts at a reasonable zoom level
-          if ($scope.map?.getView().getZoom() >= 11) {
-            const bounds = $scope.map.getView().calculateExtent($scope.map.getSize());
-            const [west, south, east, north] = ol.proj.transformExtent(bounds, $scope.map.getView().getProjection(), 'EPSG:4326');
-            const url = `https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/usa_november_2022/FeatureServer/0/query?where=1%3D1&outFields=GEOID10&geometry=${west}%2C${south}%2C${east}%2C${north}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
-            return (await fetch(url)).json();
-          }
-          return {
-            type: 'FeatureCollection',
-            features: []
-          };
-        } catch (e) {
-          console.error(e);
-        }
-      };
-
-      return fetchRecords(getInventoryFunc).then(async (data) => {
+      const getInventoryFn = isPropertiesTab ? inventory_service.get_properties : inventory_service.get_taxlots;
+      fetchRecords(getInventoryFn).then(async (data) => {
         loadingModal.close();
 
         $scope.data = data;
-        $scope.geocoded_data = $scope.data.filter(({long_lat}) => long_lat);
+        $scope.geocoded_data = data.filter(({long_lat}) => long_lat);
         $scope.filteredRecords = $scope.geocoded_data.length;
 
         // buildings with UBID bounding boxes and geocoded data
@@ -102,146 +91,110 @@ angular.module('BE.seed.controller.inventory_map', [])
           const related = [];
           for (const record of data) {
             if (record.related) {
-              related.push(..._.filter(record.related, field));
+              related.push(...record.related.filter((related) => related[field]));
             }
           }
           return _.uniqBy(related, 'id');
         };
         if (isPropertiesTab) {
-          $scope.geocoded_properties = _.filter($scope.data, 'bounding_box');
+          $scope.geocoded_properties = $scope.data.filter(({bounding_box}) => bounding_box);
           $scope.geocoded_taxlots = geocodedRelated($scope.data, 'bounding_box');
         } else {
           $scope.geocoded_properties = geocodedRelated($scope.data, 'bounding_box');
-          $scope.geocoded_taxlots = _.filter($scope.data, 'bounding_box');
+          $scope.geocoded_taxlots = $scope.data.filter(({bounding_box}) => bounding_box);
         }
 
         // store a mapping of layers z-index and visibility
         /** @type {Object.<string, {zIndex: number, visible: boolean}>} */
         $scope.layers = {
           base_layer: {zIndex: 0, visible: true},
-          hexbin_layer: {zIndex: 1, visible: isPropertiesTab},
-          points_layer: {zIndex: 2, visible: true},
-          building_bb_layer: {zIndex: 3, visible: isPropertiesTab},
-          building_centroid_layer: {zIndex: 4, visible: isPropertiesTab},
+          census_tract_layer: {zIndex: 1, visible: true},
+          hexbin_layer: {zIndex: 2, visible: isPropertiesTab},
+          property_bb_layer: {zIndex: 3, visible: isPropertiesTab},
+          property_centroid_layer: {zIndex: 4, visible: isPropertiesTab},
           taxlot_bb_layer: {zIndex: 5, visible: !isPropertiesTab},
           taxlot_centroid_layer: {zIndex: 6, visible: !isPropertiesTab},
-          census_tract_layer: {zIndex: 7, visible: true}
+          points_layer: {zIndex: 7, visible: true}
         };
 
-        // Map
-        const base_layer = new ol.layer.Tile({
-          source: new ol.source.OSM(),
-          zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
-        });
-
-        // Define buildings source - the basis of layers
-        const buildingPoint = (building) => {
-          const format = new ol.format.WKT();
-
-          const feature = format.readFeature(building.long_lat, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
+        const buildingSources = (records) => {
+          const features = records.map((record) => {
+            const feature = (new ol.format.WKT()).readFeature(record.long_lat, {
+              dataProjection: 'EPSG:4326',
+              featureProjection: 'EPSG:3857'
+            });
+            feature.setProperties(record);
+            return feature;
           });
-
-          feature.setProperties(building);
-          return feature;
-        };
-
-        const buildingSources = (records = $scope.geocoded_data) => {
-          const features = _.map(records, buildingPoint);
 
           return new ol.source.Vector({features});
         };
 
-        // Define building UBID bounding box
-        const buildingBB = (building) => {
-          if (building.bounding_box) {
-            try {
-              const format = new ol.format.WKT();
-
-              const feature = format.readFeature(building.bounding_box, {
-                dataProjection: 'EPSG:4326',
-                featureProjection: 'EPSG:3857'
-              });
-              feature.setProperties(building);
-              return feature;
-            } catch (e) {
-              console.error(`Failed to process bounding box for id ${building.id}`);
-            }
-          }
-        };
-
-        // Define building UBID centroid box
-        const buildingCentroid = (building) => {
-          const format = new ol.format.WKT();
-
-          const feature = format.readFeature(building.centroid, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
-          });
-          feature.setProperties(building);
-          return feature;
-        };
-
-        const buildingBBSources = (records = $scope.geocoded_properties) => {
-          console.log('buildingBBSources');
+        const boundingBoxSource = (records) => {
           const features = records.reduce((acc, record) => {
-            const result = buildingBB(record);
-            if (result) acc.push(result);
+            if (record.bounding_box) {
+              try {
+                const feature = (new ol.format.WKT()).readFeature(record.bounding_box, {
+                  dataProjection: 'EPSG:4326',
+                  featureProjection: 'EPSG:3857'
+                });
+                feature.setProperties(record);
+                acc.push(feature);
+              } catch (e) {
+                console.error(`Failed to process bounding box for id ${record.id}`);
+              }
+            }
             return acc;
           }, []);
 
           return new ol.source.Vector({features});
         };
 
-        const buildingCentroidSources = (records = $scope.geocoded_properties) => {
-          const features = _.map(records, buildingCentroid);
+        const centroidSource = (records) => {
+          const features = records.reduce((acc, record) => {
+            if (record.centroid) {
+              try {
+                const feature = (new ol.format.WKT()).readFeature(record.centroid, {
+                  dataProjection: 'EPSG:4326',
+                  featureProjection: 'EPSG:3857'
+                });
+                feature.setProperties(record);
+                acc.push(feature);
+              } catch (e) {
+                console.error(`Failed to process centroid for id ${record.id}`);
+              }
+            }
+            return acc;
+          }, []);
 
-          return new ol.source.Vector({features: features});
+          return new ol.source.Vector({features});
         };
 
-        /**
-         * Define taxlot UBID bounding box
-         * @param taxlot
-         * @returns {*}
-         */
-        const taxlotBB = (taxlot) => {
-          const format = new ol.format.WKT();
+        const censusTractSource = async () => {
+          let geojson = {
+            type: 'FeatureCollection',
+            features: []
+          };
 
-          const feature = format.readFeature(taxlot.bounding_box, {
-            dataProjection: 'EPSG:4326',
+          try {
+            // Only show census tracts at a reasonable zoom level
+            if ($scope.map?.getView().getZoom() >= 11) {
+              const extents = $scope.map.getView().calculateExtent($scope.map.getSize());
+              const [west, south, east, north] = ol.proj.transformExtent(extents, $scope.map.getView().getProjection(), 'EPSG:4326');
+              const url = `https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/usa_november_2022/FeatureServer/0/query?where=1%3D1&outFields=GEOID10&geometry=${west}%2C${south}%2C${east}%2C${north}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outSR=4326&f=geojson`;
+              geojson = await (await fetch(url)).json();
+              const tractIds = geojson.features.reduce((acc, {properties: {GEOID10}}) => acc.concat(GEOID10), []);
+              await map_service.checkDisadvantagedStatus(tractIds);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+
+          const features = (new ol.format.GeoJSON()).readFeatures(geojson, {
             featureProjection: 'EPSG:3857'
           });
-          feature.setProperties(taxlot);
-          return feature;
-        };
 
-        /**
-         * Define taxlot UBID centroid box
-         * @param taxlot
-         * @returns {*}
-         */
-        const taxlotCentroid = (taxlot) => {
-          const format = new ol.format.WKT();
-
-          const feature = format.readFeature(taxlot.centroid, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
-          });
-          feature.setProperties(taxlot);
-          return feature;
-        };
-
-        const taxlotBBSources = (records = $scope.geocoded_taxlots) => {
-          const features = _.map(records, taxlotBB);
-
-          return new ol.source.Vector({features: features});
-        };
-
-        const taxlotCentroidSources = (records = $scope.geocoded_taxlots) => {
-          const features = _.map(records, taxlotCentroid);
-
-          return new ol.source.Vector({features: features});
+          return new ol.source.Vector({features});
         };
 
         /**
@@ -266,27 +219,21 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         const singlePointStyle = () => new ol.style.Style({
           image: new ol.style.Icon({
-            src: `${urls.static_url}seed/images/map_pin.png`,
-            scale: 0.05,
+            src: `${urls.static_url}seed/images/map_pin.webp`,
             anchor: [0.5, 1]
           })
         });
 
-        const clusterSource = (records = $scope.geocoded_data) => new ol.source.Cluster({
+        const pointsSource = (records = $scope.geocoded_data) => new ol.source.Cluster({
           source: buildingSources(records),
           distance: 45
         });
-
-        const pointsLayerStyle = (feature) => {
-          const size = feature.get('features').length;
-          return size > 1 ? clusterPointStyle(size) : singlePointStyle();
-        };
 
         /**
          * style for building ubid bounding and centroid boxes
          * @returns {ol.style.Style}
          */
-        const buildingStyle = (/*feature*/) => new ol.style.Style({
+        const propertyStyle = (/*feature*/) => new ol.style.Style({
           stroke: new ol.style.Stroke({
             color: '#185189',
             width: 2
@@ -304,42 +251,58 @@ angular.module('BE.seed.controller.inventory_map', [])
           })
         });
 
+        $scope.base_layer = new ol.layer.Tile({
+          source: new ol.source.OSM(),
+          zIndex: $scope.layers.base_layer.zIndex
+        });
+
         $scope.points_layer = new ol.layer.Vector({
-          source: clusterSource(),
-          zIndex: $scope.layers.points_layer.zIndex, // Note: This is used for layer toggling.
-          style: pointsLayerStyle
+          source: pointsSource(),
+          zIndex: $scope.layers.points_layer.zIndex,
+          style: (feature) => {
+            const size = feature.get('features').length;
+            return size > 1 ? clusterPointStyle(size) : singlePointStyle();
+          }
         });
 
-        $scope.building_bb_layer = new ol.layer.Vector({
-          source: buildingBBSources(),
-          zIndex: $scope.layers.building_bb_layer.zIndex,
-          style: buildingStyle
+        $scope.property_bb_layer = new ol.layer.Vector({
+          source: boundingBoxSource($scope.geocoded_properties),
+          zIndex: $scope.layers.property_bb_layer.zIndex,
+          style: propertyStyle
         });
 
-        $scope.building_centroid_layer = new ol.layer.Vector({
-          source: buildingCentroidSources(),
-          zIndex: $scope.layers.building_centroid_layer.zIndex,
-          style: buildingStyle
+        $scope.property_centroid_layer = new ol.layer.Vector({
+          source: centroidSource($scope.geocoded_properties),
+          zIndex: $scope.layers.property_centroid_layer.zIndex,
+          style: propertyStyle
         });
 
         $scope.taxlot_bb_layer = new ol.layer.Vector({
-          source: taxlotBBSources(),
+          source: boundingBoxSource($scope.geocoded_taxlots),
           zIndex: $scope.layers.taxlot_bb_layer.zIndex,
           style: taxlotStyle
         });
 
         $scope.taxlot_centroid_layer = new ol.layer.Vector({
-          source: taxlotCentroidSources(),
+          source: centroidSource($scope.geocoded_taxlots),
           zIndex: $scope.layers.taxlot_centroid_layer.zIndex,
           style: taxlotStyle
         });
 
-        const geojson = await getCensusTractGeojson();
-        console.log('geojson', geojson);
         $scope.census_tract_layer = new ol.layer.Vector({
-          source: new ol.source.Vector({
-            features: (new ol.format.GeoJSON()).readFeatures(geojson, {featureProjection: 'EPSG:3857'})
-          })
+          source: await censusTractSource(),
+          zIndex: $scope.layers.census_tract_layer.zIndex,
+          style: (feature) => {
+            const tractId = feature.values_.GEOID10;
+            const isDisadvantaged = map_service.isDisadvantaged(tractId);
+            return new ol.style.Style({
+              stroke: new ol.style.Stroke({
+                color: '#185189',
+                width: 2
+              }),
+              fill: (isDisadvantaged && $scope.highlightDACs) ? new ol.style.Fill({color: 'rgba(69, 130, 155, 0.4)'}) : undefined
+            });
+          }
         });
 
         // Hexbin layer
@@ -366,72 +329,43 @@ angular.module('BE.seed.controller.inventory_map', [])
           };
         };
 
-        /**
-         * @param {number} opacity
-         * @returns {[ol.style.Style]}
-         */
-        const hexagonStyle = (opacity) => {
-          const color = [...$scope.hexbin_color, opacity];
-          return [
-            new ol.style.Style({
-              fill: new ol.style.Fill({color})
-            })
-          ];
-        };
-
-        const hexbinStyle = (feature) => {
-          const {features} = feature.getProperties();
-          const site_eui_key = _.find(_.keys(features[0].values_), (key) => key.startsWith('site_eui'));
-          const site_euis = _.map(features, (point) => point.values_[site_eui_key]);
-          const total_eui = _.sum(site_euis);
-          const opacity = Math.max(hexbin_min_opacity, total_eui / hexagon_size);
-
-          return hexagonStyle(opacity);
-        };
-
         $scope.hexbin_layer = new ol.layer.Vector({
           source: hexbinSource(),
-          zIndex: $scope.layers.hexbin_layer.zIndex, // Note: This is used for layer toggling.
+          zIndex: $scope.layers.hexbin_layer.zIndex,
           opacity: hexbin_max_opacity,
-          style: hexbinStyle
+          style: (feature) => {
+            const {features} = feature.getProperties();
+            const site_eui_key = _.find(_.keys(features[0].values_), (key) => key.startsWith('site_eui'));
+            const site_euis = _.map(features, (point) => point.values_[site_eui_key]);
+            const total_eui = _.sum(site_euis);
+            const opacity = Math.max(hexbin_min_opacity, total_eui / hexagon_size);
+
+            const color = [...$scope.hexbin_color, opacity];
+            return [
+              new ol.style.Style({
+                fill: new ol.style.Fill({color})
+              })
+            ];
+          }
         });
 
         // Render map
-        const layers = [];
-        if (isPropertiesTab) {
-          layers.push(...[base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer, $scope.census_tract_layer]);
-        } else {
-          layers.push(...[base_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer, $scope.census_tract_layer]);
-        }
+        const layers = Object.entries($scope.layers).reduce((acc, [layerName, {visible}]) => {
+          if (visible) acc.push($scope[layerName]);
+          return acc;
+        }, []);
         $scope.map = new ol.Map({
           target: 'map',
-          layers: layers,
+          layers,
           view: new ol.View({
             maxZoom: 19
           })
         });
 
-        $scope.map.on('moveend', async (e) => {
-          const geojson = await getCensusTractGeojson();
-          console.log('MOVE END', geojson);
-          $scope.census_tract_layer.setSource(new ol.source.Vector({
-            features: (new ol.format.GeoJSON()).readFeatures(geojson, {featureProjection: 'EPSG:3857'})
-          }));
+        $scope.map.on('moveend', async () => {
+          // Re-fetch census tracts
+          $scope.census_tract_layer.setSource(await censusTractSource());
         });
-
-        // Toggle layers
-
-        // If a layer's z-index is changed, it should be changed here as well.
-        const layer_at_z_index = {
-          0: base_layer,
-          1: $scope.hexbin_layer,
-          2: $scope.points_layer,
-          3: $scope.building_bb_layer,
-          4: $scope.building_centroid_layer,
-          5: $scope.taxlot_bb_layer,
-          6: $scope.taxlot_centroid_layer,
-          7: $scope.census_tract_layer
-        };
 
         /**
          * @param {number} zIndex
@@ -449,16 +383,17 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.toggleLayer = (layerName, visibility) => {
           const layer = $scope.layers[layerName];
           if (layer) {
-            const {visible, zIndex} = layer;
-            const updatedVisibility = visibility ?? !visible;
+            const updatedVisibility = visibility ?? !layer.visible;
             $scope.layers[layerName].visible = updatedVisibility;
             if (updatedVisibility) {
-              $scope.map.addLayer(layer_at_z_index[zIndex]);
+              $scope.map.addLayer($scope[layerName]);
             } else {
-              $scope.map.removeLayer(layer_at_z_index[zIndex]);
+              $scope.map.removeLayer($scope[layerName]);
             }
           }
         };
+
+        $scope.toggleDACHighlight = () => $scope.highlightDACs = !$scope.highlightDACs;
 
         // Define overlay attaching html element
         const popupOverlay = new ol.Overlay({
@@ -505,14 +440,11 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.map.on('click', (event) => {
           const element = popupOverlay.getElement();
           const points = [];
-          console.log('CLICKED');
 
           $scope.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
             // Disregard hexbin/census clicks
-            console.log('Feature', feature);
-            console.log('Layer', layer);
             if (![$scope.layers.hexbin_layer.zIndex, $scope.layers.census_tract_layer.zIndex, undefined].includes(layer.getProperties().zIndex)) {
-              points.push(...feature.get('features'));
+              points.push(...feature.get('features') ?? []);
             }
           });
 
@@ -550,18 +482,20 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         // Set initial zoom and center
-        zoomCenter(clusterSource().getSource());
+        zoomCenter(pointsSource().getSource());
 
         const rerenderPoints = (records) => {
           $scope.filteredRecords = records.length;
 
-          $scope.points_layer.setSource(clusterSource(records));
+          $scope.points_layer.setSource(pointsSource(records));
 
           if (isPropertiesTab) {
             $scope.hexbin_layer.setSource(hexbinSource(records));
-            $scope.building_bb_layer.setSource(buildingBBSources(records));
+            $scope.property_bb_layer.setSource(boundingBoxSource(records));
+            $scope.property_centroid_layer.setSource(centroidSource(records));
           } else {
-
+            $scope.taxlot_bb_layer.setSource(boundingBoxSource(records));
+            $scope.taxlot_centroid_layer.setSource(centroidSource(records));
           }
         };
 
@@ -653,21 +587,8 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         $scope.$watchCollection('selected_labels', filterUsingLabels);
 
-        const refreshUsingCycle = () => {
-          if (isPropertiesTab) {
-            $scope.data = inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined).results;
-            $state.reload();
-          } else {
-            $scope.data = inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined).results;
-            $state.reload();
-          }
-        };
-
-        $scope.update_cycle = (cycle) => {
-          inventory_service.save_last_cycle(cycle.id);
-          $scope.cycle.selected_cycle = cycle;
-          refreshUsingCycle();
-        };
+        // Redraw census tracts on toggle to update styles
+        $scope.$watch('highlightDACs', () => $scope.census_tract_layer.changed());
 
         // Map attribution moved to /about page
         for (const className of ['.ol-attribution', '.ol-rotate']) {
