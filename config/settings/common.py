@@ -5,6 +5,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from __future__ import absolute_import
 
 import os
+from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -311,6 +312,11 @@ SWAGGER_SETTINGS = {
     'DOC_EXPANSION': 'none',
     'LOGOUT_URL': '/accounts/logout',
 }
+
+try:
+    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', 'False')))
+except Exception:
+    EEEJ_LOAD_SMALL_TEST_DATASET = False
 
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')

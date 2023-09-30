@@ -30,8 +30,7 @@ def import_hud():
     """
     # Note: instead of update_or_create, it might be better to clear and start over
     # Use smaller files to test with
-    settings_env = os.environ.get('DJANGO_SETTINGS_MODULE', None)
-    if settings_env == 'config.settings.test':
+    if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
         HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Public_Housing_Developments.csv.xz')
         HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.csv.xz')
     else:
@@ -86,8 +85,7 @@ def import_cejst():
         Greater than or equal to the 90th percentile for energy burden and is low income?, Energy burden (percentile)
     """
     # Use a smaller file to test with
-    settings_env = os.environ.get('DJANGO_SETTINGS_MODULE', None)
-    if settings_env == 'config.settings.test':
+    if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
         CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-cejst-1.0-communities.csv.xz')
     else:
         CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'cejst-1.0-communities.csv.xz')
