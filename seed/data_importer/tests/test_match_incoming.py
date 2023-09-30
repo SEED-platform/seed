@@ -126,7 +126,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
 
     def test_match_properties_if_all_default_fields_match(self):
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': '123 Match Custom ID',
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -168,7 +168,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         ps_1_plus_2 = PropertyState.objects.filter(
             pm_property_id__isnull=True,
             city='Denver',
-            address_line_1='123 Match Street'
+            custom_id_1='123 Match Custom ID'
         ).exclude(
             data_state=DATA_STATE_MAPPING,
             merge_state=MERGE_STATE_UNKNOWN
@@ -188,7 +188,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         ps_3_plus_4 = PropertyState.objects.filter(
             pm_property_id='11111',
             city='Philadelphia',
-            address_line_1='123 Match Street'
+            custom_id_1='123 Match Custom ID'
         ).exclude(
             data_state=DATA_STATE_MAPPING,
             merge_state=MERGE_STATE_UNKNOWN
@@ -201,6 +201,9 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(rps_5.merge_state, MERGE_STATE_NEW)
 
     def test_match_taxlots_if_all_default_fields_match(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'address_line_1': '123 Match Street',
             'import_file_id': self.import_file.id,
@@ -299,6 +302,9 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.count(), 3)
 
     def test_match_properties_normalized_address_used_instead_of_address_line_1(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
@@ -322,6 +328,9 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.count(), 3)
 
     def test_match_taxlots_normalized_address_used_instead_of_address_line_1(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
@@ -383,7 +392,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         Reminder, this is only for -States within an ImportFile.
         """
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': 'MyCustomId123',
             'import_file_id': self.import_file.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -456,7 +465,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
     def test_match_properties_if_all_default_fields_match(self):
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': '123 Custom ID',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -512,7 +521,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         ps_1_plus_2 = PropertyState.objects.filter(
             pm_property_id__isnull=True,
             city='Denver',
-            address_line_1='123 Match Street'
+            custom_id_1='123 Custom ID',
         ).exclude(
             data_state=DATA_STATE_MATCHING,
             merge_state=MERGE_STATE_UNKNOWN
@@ -584,6 +593,9 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         self.assertEqual(audit_log.name, 'System Match')
 
     def test_match_taxlots_if_all_default_fields_match(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'address_line_1': '123 Match Street',
             'import_file_id': self.import_file_1.id,
@@ -722,6 +734,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_properties(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         # Define matching values
         matching_pm_property_id = '11111'
         matching_address_line_1 = '123 Match Street'
@@ -864,6 +879,9 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
         self.assertEqual(results, expected)
 
     def test_taxlots(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         # Define matching values
         matching_jurisdiction_tax_lot_id = '11111'
         matching_address_line_1 = '123 Match Street'
@@ -1099,12 +1117,10 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         """If a BuildingSync file is merged into an existing property WITHOUT scenarios and meters,
         we expect the final property to have only the new scenarios and meters"""
         # -- Setup
-        # make address_line_1 the only matching criteria
-        (
-            Column.objects.filter(is_matching_criteria=True)
-            .exclude(column_name='address_line_1')
-            .update(is_matching_criteria=False)
-        )
+        # make address_line_1 the only matching criteria, by default address line 1 is no longer a matching criteria
+        Column.objects.filter(is_matching_criteria=True).exclude(column_name='address_line_1').update(is_matching_criteria=False)
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         # this should be the address in the BSync file
         ADDRESS_LINE_1 = '123 MAIN BLVD'
         base_details = {
@@ -1153,12 +1169,10 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         """If a BuildingSync file is merged into an existing property with scenarios and meters
         that differ from the ones in the file, we expect the final property to have only the new scenarios and meters"""
         # -- Setup
-        # make address_line_1 the only matching criteria
-        (
-            Column.objects.filter(is_matching_criteria=True)
-            .exclude(column_name='address_line_1')
-            .update(is_matching_criteria=False)
-        )
+        # make address_line_1 the only matching criteria, by default address line 1 is no longer a matching criteria
+        Column.objects.filter(is_matching_criteria=True).exclude(column_name='address_line_1').update(is_matching_criteria=False)
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         # this should be the address in the BSync file
         ADDRESS_LINE_1 = '123 MAIN BLVD'
         base_details = {
