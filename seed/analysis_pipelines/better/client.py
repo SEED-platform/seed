@@ -262,7 +262,6 @@ class BETTERClient:
             building to the portfolio
         :returns: tuple(int, list[str]), BETTER Building ID followed by list of errors
         """
-        url = ""
         if better_portfolio_id is None:
             url = f"{self.API_URL}/buildings/"
         else:

@@ -23,9 +23,10 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
+    EeejCejst,
+    EeejHud,
     PropertyView
 )
-from seed.models.eeej import EeejCejst, EeejHud
 
 logger = logging.getLogger(__name__)
 
@@ -506,17 +507,19 @@ def _run_analysis(self, loc_data_by_analysis_property_view, analysis_id):
 
         # TODO: save each indicators back to property_view
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        property_view.state.extra_data.update({'analysis_census_tract': results[analysis_property_view.id]['census_tract']})
-        property_view.state.extra_data.update({'analysis_dac': results[analysis_property_view.id]['dac']})
-        property_view.state.extra_data.update({'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income']})
-        property_view.state.extra_data.update({'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile']})
-        property_view.state.extra_data.update({'analysis_low_income': results[analysis_property_view.id]['low_income']})
-        property_view.state.extra_data.update({'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged']})
-        property_view.state.extra_data.update({'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing']})
+        property_view.state.extra_data.update({
+            'analysis_census_tract': results[analysis_property_view.id]['census_tract'],
+            'analysis_dac': results[analysis_property_view.id]['dac'],
+            'analysis_energy_burden_low_income': results[analysis_property_view.id]['energy_burden_low_income'],
+            'analysis_energy_burden_percentile': results[analysis_property_view.id]['energy_burden_percentile'],
+            'analysis_low_income': results[analysis_property_view.id]['low_income'],
+            'analysis_share_neighbors_disadvantaged': results[analysis_property_view.id]['share_neighbors_disadvantaged'],
+            'analysis_number_affordable_housing': results[analysis_property_view.id]['number_affordable_housing'],
+        })
 
         # store lat/lng (if blank) Census geocoder codes at the street address level (not Point level like mapquest)
         # store anyway but record as "Census Geocoder (L1AAA)" vs. mapquest "High (P1AAA)"
-        if (not property_view.state.latitude or not property_view.state.longitude) and (property_view.state.geocoding_confidence is None or 'High' not in property_view.state.geocoding_confidence):
+        if (not property_view.state.latitude or not property_view.state.longitude) and ('High' not in str(property_view.state.geocoding_confidence)):
             # don't overwrite the mapquest geocoding
             property_view.state.latitude = results[analysis_property_view.id]['latitude']
             property_view.state.longitude = results[analysis_property_view.id]['longitude']

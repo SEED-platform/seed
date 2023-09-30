@@ -1,10 +1,17 @@
+<script type="text/ng-template" id="colored-labels">
+  <div class="label-{$:: data.label $}">
+    <span ng-bind="$getDisplayText()"></span>
+    <a class="remove-button" ng-click="$removeTag()">×</a>
+  </div>
+</script>
+
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container"></div>
         <div class="page_title">
             <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
         </div>
-        <div class="right page_action_container page_action_btn"></div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 
@@ -71,7 +78,7 @@
         <div class="row">
             <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
                 <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
@@ -105,6 +112,14 @@
     </form>
 </div>
 <div class="inventory-list-tab-container">
+    <ul class="nav nav-tabs" style="pointer-events: none;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
+            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
+            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
     <div class="item-count">
         {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
         <i ng-if="selectedCount > 0">
@@ -123,14 +138,6 @@
             <i class="fa fa-chevron-right"></i>
         </button>
     </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px; pointer-events: none;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">

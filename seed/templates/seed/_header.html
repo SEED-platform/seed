@@ -4,10 +4,20 @@
             ID: {$ hover_org_id $}
         </span>
     </div>
+    <div class="logo_container">
+        <a class="logo" href="/">
+            <div class="logo_text">
+                <span class="logo_text_seed">Seed</span>
+                <span class="logo_text_platform">Platform™</span>
+            </div>
+        </a>
+    </div>
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
             <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-                <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
+                <div>
+                    <span style="color: #808080">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
+                </div>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs" ng-mousemove="track_mouse($event)">
                 <li ng-if="!menu.user.organizations.length" style="text-align: center;">
@@ -54,13 +64,5 @@
                 <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>-->
             </ul>
         </div>
-    </div>
-    <div class="logo_container">
-        <a class="logo" href="/">
-            <div class="logo_text">
-                <span class="logo_text_seed">Seed</span>
-                <span class="logo_text_platform">Platform™</span>
-            </div>
-        </a>
     </div>
 </div>

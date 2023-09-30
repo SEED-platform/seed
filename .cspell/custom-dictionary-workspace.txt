@@ -33,6 +33,7 @@ bedes
 biffh
 Bool
 boolean
+bricr
 BrowserDefinition
 bsync
 bsyncr
@@ -47,6 +48,7 @@ canonicalbuilding
 CanonicalBuilding
 casted
 cb
+CEJST
 cfg
 changelog
 checkbox

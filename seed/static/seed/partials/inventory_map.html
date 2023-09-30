@@ -1,120 +1,186 @@
-<div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
+<script type="text/ng-template" id="colored-labels">
+  <div class="label-{$:: data.label $}">
+    <span ng-bind="$getDisplayText()"></span>
+    <a class="remove-button" ng-click="$removeTag()">×</a>
+  </div>
+</script>
 
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
-        </div>
-        <div class="right page_action_container page_action_btn"></div>
+<div class="page_header_container" ng-cloak>
+  <div class="page_header">
+    <div class="left page_action_container">
+
     </div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="inventory-list-controls">
-    <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
-        <div class="form-group">
-            <div uib-dropdown class="btn-group">
-                <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
-                    {$:: 'Actions' | translate $} <span class="caret"></span>
-                </button>
-                <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.hexbin_layer.zIndex)" translate>Toggle Hexbins</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.points_layer.zIndex)" translate>Toggle Points</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.building_bb_layer.zIndex)" translate>Toggle Property UBID Bounding Boxes</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.building_centroid_layer.zIndex)" translate>Toggle Property UBID Centroids</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.taxlot_bb_layer.zIndex)" translate>Toggle Taxlot UBID Bounding Boxes</a>
-                    </li>
-                    <li role="menuitem">
-                        <a ng-click="toggle_layer(layers.taxlot_centroid_layer.zIndex)" translate>Toggle Taxlot UBID Centroids</a>
-                    </li>
-
-                </ul>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="tags-input" translate>Filter by label:</label>
-            <div class="btn-group">
-                <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
-                </tags-input>
-            </div>
-        </div>
-        <div class="form-group btn-group">
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
-            <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
-            <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
-        </div>
-        <div class="form-group btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length" translate>Clear Labels</button>
-        </div>
-    </form>
-
-    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
-        <span>
-            <label>{$:: 'Cycle' | translate $}:</label>
-            <div style="display: inline-block;">
-                <select class="form-control input-sm pointer" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
-                </select>
-            </div>
-        </span>
-
-        <span ng-show="layerVisible(1)" style="width: 500px">
-            <p class="text-center">Total Site EUI (kBtu/ft2)</p>
-            <div>
-                <p class="col-sm-2 text-right" style="float: left">20 -</p>
-                <p class="col-sm-2 text-left" style="float: right">+ 750</p>
-            </div>
-            <div>
-                <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
-            </div>
-        </span>
-
+  <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
+    <div class="form-group">
+      <div uib-dropdown class="btn-group">
+        <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
+          {$:: 'Actions' | translate $} <span class="caret"></span>
+        </button>
+        <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+          <li role="menuitem" ng-if="::inventory_type === 'properties'">
+            <a ng-click="toggleLayer('hexbin_layer')" translate>Toggle Hexagonal Bins</a>
+          </li>
+          <li role="menuitem">
+            <a ng-click="toggleLayer('points_layer')">{$:: inventory_type === 'properties' ? 'Toggle Property Points' : 'Toggle Tax Lot Points' | translate $}</a>
+          </li>
+          <li role="menuitem" ng-if="::inventory_type === 'properties'">
+            <a ng-click="toggleLayer('building_bb_layer')" translate>Toggle Property UBID Bounding Boxes</a>
+          </li>
+          <li role="menuitem" ng-if="::inventory_type === 'properties'">
+            <a ng-click="toggleLayer('building_centroid_layer')" translate>Toggle Property UBID Centroids</a>
+          </li>
+          <li role="menuitem" ng-if="::inventory_type === 'taxlots'">
+            <a ng-click="toggleLayer('taxlot_bb_layer')" translate>Toggle Tax Lot UBID Bounding Boxes</a>
+          </li>
+          <li role="menuitem" ng-if="::inventory_type === 'taxlots'">
+            <a ng-click="toggleLayer('taxlot_centroid_layer')" translate>Toggle Tax Lot UBID Centroids</a>
+          </li>
+        </ul>
+      </div>
     </div>
+    <div class="form-group">
+      <label for="tags-input" translate>Filter by label:</label>
+      <div class="input-group">
+        <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
+          <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+        </tags-input>
+        <span ng-click="clearLabels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
+      </div>
+    </div>
+    <div class="form-group btn-group">
+      <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
+      <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
+      <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
+    </div>
+    <div class="form-group">
+      <label>{$:: 'Filter Group' | translate $}:</label>
+      <div class="input-group">
+        <select class="form-control" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})" style="border-radius: 3px; min-width: 500px">
+          <option>-- No filter --</option>
+          <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Save">
+          <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Rename">
+          <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Delete">
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">
+          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <div class="form-group settings_profile" style="margin-right: 10px; display: flex; justify-content: space-between; min-height: 52px;">
+    <span>
+      <label>{$:: 'Cycle' | translate $}:</label>
+      <div style="display: inline-block;">
+        <select class="form-control input-sm pointer" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id"></select>
+      </div>
+    </span>
+
+    <div class="map-eui-gradient" ng-show="layerVisible(1)">
+      <div class="text-center title">Total Site EUI (kBtu/ft&sup2;)</div>
+      <div class="gradient-container">
+        <span class="text-right">20 -</span>
+        <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
+        <span class="text-left">+ 750</span>
+      </div>
+    </div>
+
+  </div>
 
 </div>
 
 <div class="inventory-list-tab-container">
-    <div class="item-count">
-        <span ng-if="::inventory_type === 'properties'">
-            <i class="fa fa-building-o"></i>
-            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
-        </span>
+  <ul class="nav nav-tabs">
+    <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+      <a ui-sref="inventory_map(::{inventory_type: 'properties'})" translate>View by Property</a>
+    </li>
+    <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+      <a ui-sref="inventory_map(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+    </li>
+  </ul>
+  <div class="item-count">
+    <span ng-if="::inventory_type === 'properties'">
+      <i class="fa fa-building-o"></i>
+      <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (filteredRecords | number: 0)}"></span>
+    </span>
 
-        <span ng-if="::inventory_type === 'taxlots'">
-            <i class="fa fa-map-o"></i>
-            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
-        </span>
-    </div>
-    <ul class="nav nav-tabs" style="margin-bottom:0px;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
-            <a ui-sref="inventory_map(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_map(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
-    <div class="label-tabs">
-        <label class="pad-left-20 pad-right-20"> <input type="checkbox" name="hexbin" ng-model="layers.hexbin_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.hexbin_layer.zIndex)" ng-disabled="::inventory_type === 'taxlots'">&nbsp;&nbsp;Hexagonal Bins</label>
-        <label class="pad-right-20"> <input type="checkbox" name="points" ng-model="layers.points_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.points_layer.zIndex)">{$:: inventory_type === 'properties'?'  Building Points':'  Tax Lot Points' $}</label>
-        <label class="pad-right-20"> <input type="checkbox" name="building_bb" ng-model="layers.building_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_bb_layer.zIndex)">&nbsp;&nbsp;Property UBIDs</label>
-        <label class="pad-right-20"> <input type="checkbox" name="building_centroid" ng-model="layers.building_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_centroid_layer.zIndex)">&nbsp;&nbsp;Property UBID Centroids</label>
-        <label class="pad-right-20"> <input type="checkbox" name="taxlot_bb" ng-model="layers.taxlot_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_bb_layer.zIndex)">&nbsp;&nbsp;Taxlot UBIDs</label>
-        <label class="pad-right-20"> <input type="checkbox" name="taxlot_centroid" ng-model="layers.taxlot_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_centroid_layer.zIndex)">&nbsp;&nbsp;Taxlot UBID Centroids</label>
-    </div>
+    <span ng-if="::inventory_type === 'taxlots'">
+      <i class="fa fa-map-o"></i>
+      <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (filteredRecords | number: 0)}"></span>
+    </span>
+  </div>
+</div>
+<div class="label-tabs">
+  <label ng-if="::inventory_type === 'properties'">
+    <input type="checkbox" name="hexbin"
+           ng-model="layers.hexbin_layer.visible"
+           ng-change="toggleLayer('hexbin_layer', layers.hexbin_layer.visible)">
+    {$:: 'Hexagonal Bins' | translate $}
+  </label>
+  <label>
+    <input type="checkbox" name="points"
+           ng-model="layers.points_layer.visible"
+           ng-change="toggleLayer('points_layer', layers.points_layer.visible)">
+    {$:: inventory_type === 'properties' ? 'Property Points' : 'Tax Lot Points' | translate $}
+  </label>
+  <label ng-if="::inventory_type === 'properties'">
+    <input type="checkbox" name="building_bb"
+           ng-model="layers.building_bb_layer.visible"
+           ng-change="toggleLayer('building_bb_layer', layers.building_bb_layer.visible)">
+    {$:: 'Property UBIDs' | translate $}
+  </label>
+  <label ng-if="::inventory_type === 'properties'">
+    <input type="checkbox" name="building_centroid"
+           ng-model="layers.building_centroid_layer.visible"
+           ng-change="toggleLayer('building_centroid_layer', layers.building_centroid_layer.visible)">
+    {$:: 'Property UBID Centroids' | translate $}
+  </label>
+  <label ng-if="::inventory_type === 'taxlots'">
+    <input type="checkbox" name="taxlot_bb"
+           ng-model="layers.taxlot_bb_layer.visible"
+           ng-change="toggleLayer('taxlot_bb_layer', layers.taxlot_bb_layer.visible)">
+    {$:: 'Tax Lot UBIDs' | translate $}
+  </label>
+  <label ng-if="::inventory_type === 'taxlots'">
+    <input type="checkbox" name="taxlot_centroid"
+           ng-model="layers.taxlot_centroid_layer.visible"
+           ng-change="toggleLayer('taxlot_centroid_layer', layers.taxlot_centroid_layer.visible)">
+    {$:: 'Tax Lot UBID Centroids' | translate $}
+  </label>
+  <label>
+    <input type="checkbox" name="census_tracts"
+           ng-model="layers.census_tract_layer.visible"
+           ng-change="toggleLayer('census_tract_layer', layers.census_tract_layer.visible)">
+    {$:: 'Census Tracts' | translate $}
+  </label>
+  <label>
+    <input type="checkbox" name="highlight_dacs"
+           ng-model="highlight_dacs"
+           ng-change="highlight_dacs = !highlight_dacs">
+    {$:: 'Highlight DACs' | translate $}
+  </label>
 </div>
 <div id="map">
-    <div id="popup-element"></div>
+  <div id="popup-element"></div>
 </div>

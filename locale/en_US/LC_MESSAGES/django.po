@@ -1019,7 +1019,7 @@ msgid "ESPM_FILE_UPLOAD"
 msgstr "ESPM Spreadsheet Upload (xlsx). The spreadsheet should contain a single property."
 
 msgid "ESPM_IMPORT_TEXT"
-msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data.\n"
+msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data."
 
 msgid "EUI"
 msgstr "EUI"
@@ -1398,6 +1398,9 @@ msgstr "HTTP Error! Status Code: 500. Internal Server Error."
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
 
+msgid "Hexagonal Bins"
+msgstr "Hexagonal Bins"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
 
@@ -1441,7 +1444,7 @@ msgid "INVALID_GEOJSON_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
 
 msgid "INVALID_XLSX_EXTENSION_ALERT"
-msgstr "<strong>Sorry!<\\/strong> SEED doesn't currently support that file format. Only <strong>.xlsx<\\/strong> files are supported.\n"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xlsx</strong> files are supported."
 
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
@@ -2371,11 +2374,20 @@ msgstr "Property Name"
 msgid "Property Notes"
 msgstr "Property Notes"
 
+msgid "Property Points"
+msgstr "Property Points"
+
 msgid "Property Reports"
 msgstr "Property Reports"
 
 msgid "Property Type"
 msgstr "Property Type"
+
+msgid "Property UBID Centroids"
+msgstr "Property UBID Centroids"
+
+msgid "Property UBIDs"
+msgstr "Property UBIDs"
 
 msgid "Property Visibility"
 msgstr "Property Visibility"
@@ -3055,6 +3067,15 @@ msgstr "Tax Lot Detail Settings"
 msgid "Tax Lot ID"
 msgstr "Tax Lot ID"
 
+msgid "Tax Lot Points"
+msgstr "Tax Lot Points"
+
+msgid "Tax Lot UBID Centroids"
+msgstr "Tax Lot UBID Centroids"
+
+msgid "Tax Lot UBIDs"
+msgstr "Tax Lot UBIDs"
+
 msgid "Tax Lot Visibility"
 msgstr "Tax Lot Visibility"
 
@@ -3063,6 +3084,9 @@ msgstr "Tax Lots"
 
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
+
+msgid "Tax Lots List (legacy)"
+msgstr "Tax Lots List (legacy)"
 
 msgid "Taxlot Display Field"
 msgstr "Taxlot Display Field"
@@ -3203,17 +3227,32 @@ msgstr "To set up your account, enter your password twice in the form below."
 msgid "Toggle Dropdown"
 msgstr "Toggle Dropdown"
 
+msgid "Toggle Hexagonal Bins"
+msgstr "Toggle Hexagonal Bins"
+
 msgid "Toggle Hexbins"
-msgstr "Toggle Hexbins"
+msgstr "Toggle Hexagonal Bins"
 
 msgid "Toggle Points"
-msgstr "Toggle Points"
+msgstr "Toggle Property Points"
+
+msgid "Toggle Property Points"
+msgstr "Toggle Property Points"
 
 msgid "Toggle Property UBID Bounding Boxes"
 msgstr "Toggle Property UBID Bounding Boxes"
 
 msgid "Toggle Property UBID Centroids"
 msgstr "Toggle Property UBID Centroids"
+
+msgid "Toggle Tax Lot Points"
+msgstr "Toggle Tax Lot Points"
+
+msgid "Toggle Tax Lot UBID Bounding Boxes"
+msgstr "Toggle Tax Lot UBID Bounding Boxes"
+
+msgid "Toggle Tax Lot UBID Centroids"
+msgstr "Toggle Tax Lot UBID Centroids"
 
 msgid "Toggle Taxlot UBID Bounding Boxes"
 msgstr "Toggle Taxlot UBID Bounding Boxes"
