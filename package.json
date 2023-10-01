@@ -1,6 +1,6 @@
 {
   "name": "seed",
-  "version": "2.19.0",
+  "version": "2.20.0",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE.md",
   "directories": {
@@ -17,21 +17,21 @@
     "node": ">=8.10.0"
   },
   "devDependencies": {
-    "autoprefixer": "~9.7.6",
-    "eslint": "~6.8.0",
-    "eslint-plugin-angular": "~4.0.1",
-    "eslint-plugin-lodash": "~7.1.0",
-    "eslint-plugin-protractor": "~2.1.1",
-    "lodash": "~4.17.15",
-    "postcss-cli": "~7.1.1",
-    "protractor": "~7.0.0",
-    "webdriver-manager": "~12.1.7"
+    "autoprefixer": "^10.4.15",
+    "eslint": "^8.48.0",
+    "eslint-plugin-angular": "^4.1.0",
+    "eslint-plugin-lodash": "^7.4.0",
+    "eslint-plugin-protractor": "^2.1.1",
+    "lodash": "^4.17.21",
+    "postcss-cli": "^10.1.0",
+    "protractor": "^7.0.0",
+    "webdriver-manager": "^12.1.9"
   },
   "scripts": {
     "postinstall": "cd vendors && npm install",
-    "lint": "./node_modules/.bin/eslint './seed/docs/static/**/*.js' './seed/landing/static/**/*.js' './seed/static/seed/**/*.js'",
+    "lint": "npx eslint './seed/docs/static/**/*.js' './seed/landing/static/**/*.js' './seed/static/seed/**/*.js'",
     "lint:fix": "npm run lint -- --fix",
-    "test": "./node_modules/.bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
+    "test": "npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   },
   "browserslist": [
     "last 3 versions",

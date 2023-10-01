@@ -9,6 +9,7 @@
         <div class="page_title">
             <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
         </div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 <div class="section_nav_container">
@@ -64,12 +65,20 @@
                             <a ng-click="open_data_upload_audit_template_modal()">{$:: 'Update with Audit Template' | translate $}</a>
                         </li>
 
+                        <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+                            <a ng-click="open_data_upload_espm_modal()">{$:: 'Update with ESPM' | translate $}</a>
+                        </li>
+
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
                             <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
                         </li>
 
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
                             <a ng-click="export_building_sync_xlsx()">Export BuildingSync (Excel)</a>
+                        </li>
+
+                        <li ng-if="::inventory_type === 'properties'" role="menuitem">
+                            <a ng-click="open_export_to_audit_template_modal()">Export to Audit Template</a>
                         </li>
 
                         <li role="menuitem">
@@ -104,6 +113,7 @@
                     </ul>
                     <div ng-if="::inventory_type === 'properties'">
                         <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+                        <div class="alert alert-danger" ng-show="uploader.invalid_xlsx_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
                     </div>
                 </div>
                 <div class="ellipsis">
@@ -347,7 +357,7 @@
                             <tbody>
                                 <tr ng-repeat="file in inventory_docs">
                                     <td class="data_file_name" style="border-right:0px;">
-                                        {$:: file.filename $} - {$:: file.id $}
+                                        {$:: file.filename $}
                                     </td>
                                     <td style="border-left:0px; text-align:right;">
                                         <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa fa-download" aria-hidden="true"></i></a>

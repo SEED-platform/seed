@@ -72,7 +72,6 @@ def _create_default_columns(organization_id):
         details.update(column)
 
         original_identity_fields = [
-            'address_line_1',  # Technically this was normalized_address, but matching logic handles this as such
             'custom_id_1',
             'pm_property_id',
             'jurisdiction_tax_lot_id',

@@ -4,7 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.conf.urls import include, re_path
+from django.urls import include, re_path
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
@@ -25,6 +25,7 @@ from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_views import DataViewViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.derived_columns import DerivedColumnViewSet
+from seed.views.v3.eeej import EEEJViewSet
 from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
@@ -64,44 +65,45 @@ from seed.views.v3.users import UserViewSet
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r'analyses', AnalysisViewSet, basename='analyses')
 api_v3_router.register(r'audit_template', AuditTemplateViewSet, basename='audit_template')
-api_v3_router.register(r'building_files', BuildingFileViewSet, basename="building_files")
-api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basename="column_list_profiles")
+api_v3_router.register(r'building_files', BuildingFileViewSet, basename='building_files')
+api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basename='column_list_profiles')
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, basename='column_mapping_profiles')
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
 api_v3_router.register(r'compliance_metrics', ComplianceMetricViewSet, basename='compliance_metrics')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
-api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
+api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename='data_logger')
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
 api_v3_router.register(r'data_views', DataViewViewSet, basename='data_views')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
 api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
+api_v3_router.register(r'eeej', EEEJViewSet, basename='eeej')
 api_v3_router.register(r'filter_groups', FilterGroupViewSet, basename='filter_groups')
-api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename="properties")
+api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename='properties')
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
-api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename="green_assessment_properties")
-api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename="green_assessment_urls")
-api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, basename="green_assessments")
-api_v3_router.register(r'labels', LabelViewSet, basename='labels')
+api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename='green_assessment_properties')
+api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename='green_assessment_urls')
+api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, basename='green_assessments')
 api_v3_router.register(r'import_files', ImportFileViewSet, basename='import_files')
+api_v3_router.register(r'labels', LabelViewSet, basename='labels')
 api_v3_router.register(r'measures', MeasureViewSet, basename='measures')
 api_v3_router.register(r'organizations', OrganizationViewSet, basename='organizations')
-api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, basename="portfolio_manager")
+api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, basename='portfolio_manager')
 api_v3_router.register(r'postoffice', PostOfficeViewSet, basename='postoffice')
 api_v3_router.register(r'postoffice_email', PostOfficeEmailViewSet, basename='postoffice_email')
-api_v3_router.register(r'progress', ProgressViewSet, basename="progress")
+api_v3_router.register(r'progress', ProgressViewSet, basename='progress')
 api_v3_router.register(r'properties', PropertyViewSet, basename='properties')
-api_v3_router.register(r'property_states', PropertyStateViewSet, basename="property_states")
-api_v3_router.register(r'property_views', PropertyViewViewSet, basename="property_views")
-api_v3_router.register(r'salesforce_configs', SalesforceConfigViewSet, basename="salesforce_configs")
-api_v3_router.register(r'salesforce_mappings', SalesforceMappingViewSet, basename="salesforce_mappings")
+api_v3_router.register(r'property_states', PropertyStateViewSet, basename='property_states')
+api_v3_router.register(r'property_views', PropertyViewViewSet, basename='property_views')
+api_v3_router.register(r'salesforce_configs', SalesforceConfigViewSet, basename='salesforce_configs')
+api_v3_router.register(r'salesforce_mappings', SalesforceMappingViewSet, basename='salesforce_mappings')
+api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, basename='tax_lot_properties')
 api_v3_router.register(r'taxlot_views', TaxlotViewViewSet, basename='taxlot_views')
-api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, basename="tax_lot_properties")
 api_v3_router.register(r'taxlots', TaxlotViewSet, basename='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, basename='ubid')
 api_v3_router.register(r'upload', UploadViewSet, basename='upload')
 api_v3_router.register(r'users', UserViewSet, basename='user')
 
-data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
+data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup='nested')
 data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, basename='data_quality_check-rules')
 
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')

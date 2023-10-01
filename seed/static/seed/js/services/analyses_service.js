@@ -23,20 +23,9 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      const get_analyses_for_canonical_properties = function (property_ids) {
-        const org = user_service.get_organization().id;
-        return $http.post('/api/v3/analyses/get_analyses_for_properties/', { property_ids: property_ids }, {
-          params: { organization_id: org }
-        }).then(function (response) {
-          return response.data;
-        }).catch(function (response) {
-          return response.data;
-        });
-      };
-
       const get_analyses_for_canonical_property = function (property_id) {
         const org = user_service.get_organization().id;
-        return $http.get('/api/v3/analyses/?&include_views=false&organization_id=' + org + '&property_id=' + property_id).then(function (response) {
+        return $http.get('/api/v3/properties/' + property_id + '/analyses/?organization_id=' + org).then(function (response) {
           return response.data;
         });
       };
@@ -252,7 +241,6 @@ angular.module('BE.seed.service.analyses', [])
       const analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
         get_analyses_for_canonical_property: get_analyses_for_canonical_property,
-        get_analyses_for_canonical_properties: get_analyses_for_canonical_properties,
         get_analysis_for_org: get_analysis_for_org,
         get_analysis_messages_for_org: get_analysis_messages_for_org,
         get_analyses_messages_for_org: get_analyses_messages_for_org,

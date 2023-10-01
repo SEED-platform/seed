@@ -1,10 +1,17 @@
+<script type="text/ng-template" id="colored-labels">
+  <div class="label-{$:: data.label $}">
+    <span ng-bind="$getDisplayText()"></span>
+    <a class="remove-button" ng-click="$removeTag()">×</a>
+  </div>
+</script>
+
 <div class="page_header_container" ng-cloak>
     <div class="page_header">
         <div class="left page_action_container"></div>
         <div class="page_title">
             <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
         </div>
-        <div class="right page_action_container page_action_btn"></div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 
@@ -33,11 +40,12 @@
                     <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
                     <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
                     <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+                    <option value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
                     <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
                     <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
                     <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
                     <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
-                    <option value="open_refresh_metadata_modal" ng-disabled="selectedCount === 0" translate>Refresh Metadata</option>
+                    <option value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
                     <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
                     <option value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
                     <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
@@ -70,7 +78,7 @@
         <div class="row">
             <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
                 <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
@@ -84,17 +92,16 @@
         <div class="row">
             <label>{$:: 'Filter Group' | translate $}:</label>
             <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
-                <option value="-1">-- No filter --</option>
                 <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
             </select>
             <div class="btn-group">
-                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
+                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Rename">
                     <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
+                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1" tooltip-placement="bottom" uib-tooltip="Delete">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
                 <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">
@@ -105,6 +112,14 @@
     </form>
 </div>
 <div class="inventory-list-tab-container">
+    <ul class="nav nav-tabs" style="pointer-events: none;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
+            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
+            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
     <div class="item-count">
         {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
         <i ng-if="selectedCount > 0">
@@ -123,14 +138,6 @@
             <i class="fa fa-chevron-right"></i>
         </button>
     </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px; pointer-events: none;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">

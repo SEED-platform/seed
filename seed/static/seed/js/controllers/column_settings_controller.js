@@ -16,7 +16,6 @@ angular.module('BE.seed.controller.column_settings', [])
     'auth_payload',
     'columns_service',
     'modified_service',
-    'organization_service',
     'spinner_utility',
     'urls',
     'naturalSort',
@@ -35,7 +34,6 @@ angular.module('BE.seed.controller.column_settings', [])
       auth_payload,
       columns_service,
       modified_service,
-      organization_service,
       spinner_utility,
       urls,
       naturalSort,
@@ -50,6 +48,10 @@ angular.module('BE.seed.controller.column_settings', [])
 
       var originalColumns = angular.copy(columns);
       $scope.columns = columns;
+      const initial_matching_ids = columns.reduce((acc, cur) => {
+        cur.is_matching_criteria && acc.push(cur.id)
+        return acc;
+      }, [])
       var diff = {};
 
       $scope.filter_params = {};
@@ -119,6 +121,12 @@ angular.module('BE.seed.controller.column_settings', [])
         column.is_matching_criteria = !column.is_matching_criteria;
         $scope.setModified();
       };
+
+      $scope.matching_status = function(column) {
+        if (column.is_extra_data) return 'ineligible';
+        if ($scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
+        return 'eligible';
+      }
 
       $scope.change_recognize_empty = function (column) {
         column.recognize_empty = !column.recognize_empty;
@@ -330,27 +338,6 @@ angular.module('BE.seed.controller.column_settings', [])
         $state.reload();
       };
 
-      $scope.complete_column_update = function () {
-        var matching_criteria_changed = _.find(_.values(diff), function (delta) {
-          return _.has(delta, 'is_matching_criteria');
-        });
-
-        if (matching_criteria_changed) {
-          // reset the spinner and run whole org match merge link
-          spinner_utility.show(undefined, $('.display')[0]);
-
-          organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then(function (response) {
-            organization_service.check_match_merge_link_status(response.progress_key).then(function (completion_notice) {
-              organization_service.get_match_merge_link_result($scope.org.id, completion_notice.unique_id).then(column_update_complete);
-            });
-          }).catch(function () {
-            Notification.error('There was an error trying to match, merge, link records for this organization.');
-          });
-        } else {
-          column_update_complete();
-        }
-      };
-
       // Saves the modified columns
       $scope.save_settings = function () {
         $scope.columns_updated = false;
@@ -378,7 +365,7 @@ angular.module('BE.seed.controller.column_settings', [])
           });
 
           spinner_utility.show();
-          $q.all(promises).then($scope.complete_column_update, function (data) {
+          $q.all(promises).then(column_update_complete, function (data) {
             $scope.$emit('app_error', data);
           });
         }).catch(function () { // User cancelled

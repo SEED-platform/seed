@@ -25,9 +25,9 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.tests.util import FakeRequest
 from seed.utils.organizations import create_organization
+from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
-from seed.views.organizations import _dict_org
-from seed.views.users import _get_js_role, _get_role_from_js
+from seed.views.v3.organizations import _dict_org
 
 
 class AccountsViewTests(TestCase):
@@ -57,38 +57,60 @@ class AccountsViewTests(TestCase):
         """_dict_org turns our org structure into a json payload."""
 
         expected_single_org_payload = {
-            'sub_orgs': [],
+            'name': 'my org',
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'number_of_users': 1,
+            'user_is_owner': True,
+            'user_role': 'owner',
             'owners': [{
                 'first_name': 'Johnny',
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
-                'id': self.user.pk}],
-            'number_of_users': 1,
-            'name': 'my org',
-            'display_decimal_places': 2,
-            'display_units_area': 'ft**2',
-            'display_units_eui': 'kBtu/ft**2/year',
-            'user_role': 'owner',
+                'id': self.user.pk
+            }],
+            'sub_orgs': [],
             'is_parent': True,
-            'mapquest_api_key': '',
-            'display_meter_units': Organization._default_display_meter_units,
-            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
+            'display_units_eui': 'kBtu/ft**2/year',
+            'display_units_area': 'ft**2',
+            'display_decimal_places': 2,
             'cycles': [{
-                'num_taxlots': 0,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk,
                 'num_properties': 0,
-                'name': str(self.cal_year_name),
-                'cycle_id': self.cycle.pk
+                'num_taxlots': 0
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'mapquest_api_key': '',
+            'geocoding_enabled': True,
+            'better_analysis_api_key': '',
+            'property_display_field': 'address_line_1',
+            'taxlot_display_field': 'address_line_1',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'comstock_enabled': False,
+            'new_user_email_from': 'info@seed-platform.org',
+            'new_user_email_subject': 'New SEED account',
+            'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+            'new_user_email_signature': 'The SEED Team',
+            'at_organization_token': '',
+            'audit_template_user': '',
+            'audit_template_password': '',
+            'audit_template_report_type': 'Demo City Report',
+            'salesforce_enabled': False,
+            'ubid_threshold': 1.0,
+            'inventory_count': 0,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
+
         self.assertEqual(len(org_payload), 1)
+        # pull out and test the URLs that can be configured differently based on the test environment.
+        better_url = org_payload[0].pop('better_host_url')
+        self.assertRegexpMatches(better_url, r'^https://.*better.*$')
+        at_url = org_payload[0].pop('at_host_url')
+        self.assertRegexpMatches(at_url, r'^https://.*labworks.*$|https://buildingenergyscore.energy.gov$')
         self.assertDictEqual(org_payload[0], expected_single_org_payload)
 
         # Now let's make sure that we pick up related buildings correctly.
@@ -102,18 +124,23 @@ class AccountsViewTests(TestCase):
             ts.promote(self.cycle)
             ts.save()
 
-        expected_single_org_payload['cycles'] = [{
-            'num_taxlots': 5,
-            'num_properties': 10,
-            'name': self.cal_year_name,
-            'cycle_id': self.cycle.pk
-        }]
-        self.assertDictEqual(
-            _dict_org(self.fake_request, [self.org])[0],
-            expected_single_org_payload
-        )
+        expected_single_org_payload.update({
+            'cycles': [{
+                'num_taxlots': 5,
+                'num_properties': 10,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk
+            }],
+            'inventory_count': 15
+        })
 
-    def test_dic_org_w_member_in_parent_and_child(self):
+        org_payload_2 = _dict_org(self.fake_request, [self.org])[0]
+        # pop the urls again
+        org_payload_2.pop('better_host_url')
+        org_payload_2.pop('at_host_url')
+        self.assertDictEqual(org_payload_2, expected_single_org_payload)
+
+    def test_dict_org_w_member_in_parent_and_child(self):
         """What happens when a user has a role in parent and child."""
 
         new_org, _, _ = create_organization(self.user, "sub")
@@ -122,66 +149,104 @@ class AccountsViewTests(TestCase):
         new_cycle = Cycle.objects.filter(organization=new_org).first()
 
         expected_multiple_org_payload = {
-            'sub_orgs': [{
-                'sub_orgs': [],
-                'owners': [{
-                    'first_name': 'Johnny',
-                    'last_name': 'Energy',
-                    'email': 'test_user@demo.com',
-                    'id': self.user.pk}],
-                'number_of_users': 1,
-                'name': 'sub',
-                'user_role': 'owner',
-                'is_parent': False,
-                'mapquest_api_key': '',
-                'display_meter_units': Organization._default_display_meter_units,
-                'thermal_conversion_assumption': Organization.US,
-                'parent_id': self.org.pk,
-                'org_id': new_org.pk,
-                'id': new_org.pk,
-                'user_is_owner': True,
-                'display_units_area': 'ft**2',
-                'display_units_eui': 'kBtu/ft**2/year',
-                'display_decimal_places': 2,
-                'cycles': [{
-                    'num_taxlots': 0,
-                    'num_properties': 0,
-                    'name': str(self.cal_year_name),
-                    'cycle_id': new_cycle.pk
-                }],
-                'created': self.org.created.strftime('%Y-%m-%d'),
-                'comstock_enabled': False,
-            }],
+            'name': 'my org',
+            'org_id': self.org.pk,
+            'id': self.org.pk,
+            'number_of_users': 1,
+            'user_is_owner': True,
+            'user_role': 'owner',
             'owners': [{
                 'first_name': 'Johnny',
                 'last_name': 'Energy',
                 'email': 'test_user@demo.com',
-                'id': self.user.pk}],
-            'number_of_users': 1,
-            'name': 'my org',
-            'user_role': 'owner',
+                'id': self.user.pk
+            }],
+            'sub_orgs': [{
+                'name': 'sub',
+                'org_id': new_org.pk,
+                'id': new_org.pk,
+                'number_of_users': 1,
+                'user_is_owner': True,
+                'user_role': 'owner',
+                'owners': [{
+                    'first_name': 'Johnny',
+                    'last_name': 'Energy',
+                    'email': 'test_user@demo.com',
+                    'id': self.user.pk
+                }],
+                'sub_orgs': [],
+                'is_parent': False,
+                'parent_id': self.org.pk,
+                'display_units_eui': 'kBtu/ft**2/year',
+                'display_units_area': 'ft**2',
+                'display_decimal_places': 2,
+                'cycles': [{
+                    'name': self.cal_year_name,
+                    'cycle_id': new_cycle.pk,
+                    'num_properties': 0,
+                    'num_taxlots': 0
+                }],
+                'created': new_org.created.strftime('%Y-%m-%d'),
+                'mapquest_api_key': '',
+                'geocoding_enabled': True,
+                'better_analysis_api_key': '',
+                'property_display_field': 'address_line_1',
+                'taxlot_display_field': 'address_line_1',
+                'display_meter_units': Organization._default_display_meter_units,
+                'thermal_conversion_assumption': Organization.US,
+                'comstock_enabled': False,
+                'new_user_email_from': 'info@seed-platform.org',
+                'new_user_email_subject': 'New SEED account',
+                'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+                'new_user_email_signature': 'The SEED Team',
+                'at_organization_token': '',
+                'audit_template_user': '',
+                'audit_template_password': '',
+                'audit_template_report_type': 'Demo City Report',
+                'salesforce_enabled': False,
+                'ubid_threshold': 1.0,
+                'inventory_count': 0,
+            }],
             'is_parent': True,
-            'mapquest_api_key': '',
-            'display_meter_units': Organization._default_display_meter_units,
-            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
-            'org_id': self.org.pk,
-            'id': self.org.pk,
-            'user_is_owner': True,
-            'display_decimal_places': 2,
-            'display_units_area': 'ft**2',
             'display_units_eui': 'kBtu/ft**2/year',
+            'display_units_area': 'ft**2',
+            'display_decimal_places': 2,
             'cycles': [{
-                'num_taxlots': 0,
+                'name': self.cal_year_name,
+                'cycle_id': self.cycle.pk,
                 'num_properties': 0,
-                'name': str(self.cal_year_name),
-                'cycle_id': self.cycle.pk
+                'num_taxlots': 0
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'mapquest_api_key': '',
+            'geocoding_enabled': True,
+            'better_analysis_api_key': '',
+            'property_display_field': 'address_line_1',
+            'taxlot_display_field': 'address_line_1',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'comstock_enabled': False,
+            'new_user_email_from': 'info@seed-platform.org',
+            'new_user_email_subject': 'New SEED account',
+            'new_user_email_content': 'Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}',
+            'new_user_email_signature': 'The SEED Team',
+            'at_organization_token': '',
+            'audit_template_user': '',
+            'audit_template_password': '',
+            'audit_template_report_type': 'Demo City Report',
+            'salesforce_enabled': False,
+            'ubid_threshold': 1.0,
+            'inventory_count': 0,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())
+
+        # pop the better and at urls
+        org_payload[0].pop('better_host_url')
+        org_payload[0].pop('at_host_url')
+        org_payload[0]['sub_orgs'][0].pop('better_host_url')
+        org_payload[0]['sub_orgs'][0].pop('at_host_url')
 
         self.assertEqual(len(org_payload), 2)
         self.assertDictEqual(org_payload[0], expected_multiple_org_payload)
@@ -343,15 +408,15 @@ class AccountsViewTests(TestCase):
                 'message': 'Organization does not exist'
             })
 
-    def test__get_js_role(self):
-        self.assertEqual(_get_js_role(ROLE_OWNER), 'owner')
-        self.assertEqual(_get_js_role(ROLE_MEMBER), 'member')
-        self.assertEqual(_get_js_role(ROLE_VIEWER), 'viewer')
+    def test_get_js_role(self):
+        self.assertEqual(get_js_role(ROLE_OWNER), 'owner')
+        self.assertEqual(get_js_role(ROLE_MEMBER), 'member')
+        self.assertEqual(get_js_role(ROLE_VIEWER), 'viewer')
 
-    def test__get_role_from_js(self):
-        self.assertEqual(_get_role_from_js('owner'), ROLE_OWNER)
-        self.assertEqual(_get_role_from_js('member'), ROLE_MEMBER)
-        self.assertEqual(_get_role_from_js('viewer'), ROLE_VIEWER)
+    def test_get_role_from_js(self):
+        self.assertEqual(get_role_from_js('owner'), ROLE_OWNER)
+        self.assertEqual(get_role_from_js('member'), ROLE_MEMBER)
+        self.assertEqual(get_role_from_js('viewer'), ROLE_VIEWER)
 
     def test_update_role(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -549,78 +614,6 @@ class AccountsViewTests(TestCase):
         self.assertTrue(('PropertyState', 'ubid') in fields)
         self.assertTrue(('PropertyState', 'address_line_1') in fields)
         self.assertEqual(len(fields), 2)
-
-    # def test_get_data_quality_rules_matching(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'category': CATEGORY_MISSING_MATCHING_FIELD,
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_get_data_quality_rules_values(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'category': CATEGORY_MISSING_VALUES,
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_get_data_quality_rules_range(self):
-    #     dq = DataQualityCheck.retrieve(self.org)
-    #     dq.add_rule({
-    #         'table_name': 'PropertyState',
-    #         'field': 'address_line_1',
-    #         'severity': 0,
-    #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
-    #     self.assertEqual('success', json.loads(response.content)['status'])
-    #
-    # def test_save_data_quality_rules(self):
-    #     payload = {
-    #         'organization_id': self.org.pk,
-    #         'data_quality_rules': {
-    #             'missing_matching_field': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'address_line_1',
-    #                     'severity': 'error'
-    #                 }
-    #             ],
-    #             'missing_values': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'address_line_1',
-    #                     'severity': 'error'
-    #                 }
-    #             ],
-    #             'in_range_checking': [
-    #                 {
-    #                     'table_name': 'PropertyState',
-    #                     'field': 'conditioned_floor_area',
-    #                     'enabled': True,
-    #                     'type': 'number',
-    #                     'min': None,
-    #                     'max': 7000000,
-    #                     'severity': 'error',
-    #                     'units': 'square feet'
-    #                 },
-    #             ]
-    #         }
-    #     }
-    #
-    #     resp = self.client.put(
-    #         reverse_lazy('api:v2:organizations-save-data-quality-rules', args=[self.org.pk]),
-    #         data=json.dumps(payload),
-    #         content_type='application/json',
-    #     )
-    #     self.assertEqual('success', json.loads(resp.content)['status'])
 
     def test_update_user(self):
         """test for update_user"""

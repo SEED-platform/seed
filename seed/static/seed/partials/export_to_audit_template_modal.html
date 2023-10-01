@@ -1,0 +1,84 @@
+<div class="modal-header" ng-switch on="step.number">
+    <h4 class="modal-title" ng-switch-when="0" translate>Export properties to your Audit Template account</h4>
+    <h4 class="modal-title" ng-switch-when="1" translate>Exporting properties to your Audit Template account</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>Export Results</h4>
+</div>
+<div class="modal-body form-horizontal" ng-switch on="step.number">
+    <!-- step 0 -->
+    <div ng-switch-when="0">
+        <h5><b>{$ ids.length $} Propert{$ ids.length == 1 ? 'y' : 'ies' $} Selected</b></h5>
+        <div translate>
+            The following Property fields are required.
+        </div>
+        <strong translate>
+            Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built
+        </strong>
+
+        <div style="margin: 10px 0;" translate>
+            Other fields can be manually updated on <a href="https://buildingenergyscore.energy.gov/rp/buildings">Audit Template</a>
+            following the export. Properties with Audit Template Building IDs will be skipped.
+        </div>
+    </div>
+
+    <!-- step 1 -->
+    <div ng-switch-when="1">
+        <div>
+            <div translate>
+                Exporting selected properties...
+            </div>
+            <div class="progress_bar_container">
+                <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+                    uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- step 2 -->
+    <div ng-switch-when="2">
+        <div class="table_list_container has_borders" style="max-width: 400px">
+            <table id="export-at-table" class="table table-striped">
+                <tbody style="border: 1px solid #CCCCCC">
+                    <tr style="background: #DFF0D8">
+                        <td translate>Successful Exports</td>
+                        <td>{$ upload_summary.success.count || 0 $}</td>
+                    </tr>
+                    <tr class="export-summary-row">
+                        <td translate>Existing Audit Template Properties (skipped)</td>
+                        <td>{$ upload_summary.info.count || 0 $}</td>
+                    </tr>
+                    <tr class="export-detail-row" ng-if="upload_summary.info.details.length">
+                        <td>
+                            <div class="export-details">
+                                <div ng-repeat="detail in upload_summary.info.details" class="alert-warning">
+                                    {$ detail.message $}
+                                </div>
+                            </div>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr class="export-summary-row">
+                        <td translate>Unsuccessful Exports</td>
+                        <td>{$ upload_summary.error.count || 0 $}</td>
+                    </tr>
+                    <tr class="export-detail-row" ng-if="upload_summary.error.details.length">
+                        <td>
+                            <div class="export-details">
+                                <div ng-repeat="detail in upload_summary.error.details" class="alert-danger">
+                                    {$ detail.message $}
+                                </div>
+                            </div>
+                        </td>
+                        <td></td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" ng-click="export()" ng-if="step.number == 0" translate>Export</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="step.number == 0 || step.number == 1" translate>Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel(true)" ng-if="step.number == 2" translate>Close</button>
+</div>

@@ -35,6 +35,7 @@ class BuildingAnalysis:
 
 class PortfolioBuildingAnalysis:
     """Used to track AnalysisPropertyViews and BETTER portfolio building analysis IDs"""
+
     def __init__(self, analysis_property_view_id, better_portfolio_id, better_building_id, better_analysis_id, better_portfolio_building_analysis_id):
         self.analysis_property_view_id = analysis_property_view_id
         self.better_portfolio_id = better_portfolio_id

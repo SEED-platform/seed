@@ -1,6 +1,7 @@
 <div>
     <div class="modal-header">
         <h4 class="modal-title" id="manageLabelsModalLabel" translate>Run Analysis</h4>
+        <div>An analysis will be created for cycle <span style="font-weight: bold">{$ current_cycle.name $}</span></div>
     </div>
     <div class="modal-body">
         <div class="newAnalysisInput" style="margin-top:0;">
@@ -18,6 +19,7 @@
                         <option ng-option value='BETTER' selected="selected">BETTER</option>
                         <option ng-option value='EUI' selected="selected">EUI</option>
                         <option ng-option value='CO2' selected="selected">Average Annual CO2</option>
+                        <option ng-option value='EEEJ' selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
                     </select>
                 </div>
 
@@ -79,8 +81,9 @@
                             </div>
                         </div>
                         <div class="btn-group">
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
                             <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
+                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
                         </div>
                         <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
                             <div class="row">
@@ -101,6 +104,18 @@
                                             <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
                                         </span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'"
+                            style="padding-top: 1em">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label class="control-label sectionLabel">Cycle</label>
+                                    <select class="form-control" ng-model="new_analysis.configuration.cycle_id"
+                                        ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
+                                        <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>

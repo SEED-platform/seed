@@ -306,10 +306,9 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       };
 
       $scope.updateHeight = function () {
-        var height = 0;
-        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], function (selector) {
-          var element = angular.element(selector)[0];
-          if (element) height += element.offsetHeight;
+        let height = -6;
+        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], (selector) => {
+          height += angular.element(selector)[0]?.offsetHeight ?? 0;
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');

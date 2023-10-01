@@ -24,6 +24,7 @@ from .column_list_profiles import *  # noqa
 from .column_list_profile_columns import *  # noqa
 from .compliance_metrics import *  # noqa
 from .auditlog import *  # noqa
+from .eeej import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa
 from .meters import *  # noqa
@@ -42,6 +43,7 @@ from .postoffice import *  # noqa
 from .filter_group import *  # noqa
 from .events import *  # noqa
 from .ubid_models import *  # noqa
+from .uniformat import *  # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

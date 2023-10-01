@@ -63,6 +63,7 @@ seed/data_importer/tests/data/tmp_*
 seed/data_importer/tests/data/~*
 seed/tests/api/api_test_user.json
 seed/building_sync/tests/data/test_file.xml
+seed/tests/output
 test.sqlite
 
 # Ignore all protractor coverage

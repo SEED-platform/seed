@@ -374,7 +374,6 @@ class BuildingSync(object):
             'postal_code': property_['postal_code'],
             'longitude': property_['longitude'],
             'latitude': property_['latitude'],
-            'property_name': property_['property_name'],
             'property_type': property_['property_type'],
             'year_built': property_['year_built'],
             'floors_above_grade': property_['floors_above_grade'],
@@ -412,9 +411,9 @@ class BuildingSync(object):
         assets = bae.get_assets()
 
         # add to data and column headers
+        # Asset is now typed Asset with methods for name and value
         for item in assets:
-            seed_result[item['name']] = item['value']
-
+            seed_result[item.name] = item.value
         return seed_result, messages
 
     def process(self, table_mappings=None):
@@ -424,7 +423,7 @@ class BuildingSync(object):
         :return: list, [dict, dict], [results, dict of errors and warnings]
         """
         # API call to BuildingSync Selection Tool on other server for appropriate use case
-        # prcess_struct = new_use_case (from Building Selection Tool)
+        # process_struct = new_use_case (from Building Selection Tool)
         base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
         if base_mapping is None:
             raise ParsingError(f'Version of BuildingSync object is not supported: "{self.version}"')

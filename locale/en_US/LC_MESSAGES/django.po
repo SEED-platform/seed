@@ -77,6 +77,9 @@ msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 msgid "ALSO_DELETE_BATCH_ANALYSES"
 msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}."
 
+msgid "ANALYSIS_DESCRIPTION_EEEJ"
+msgstr "The EEEJ Analysis uses each property's address to identify the 2010 census tract. Based on census tract, disadvantaged community classification and energy burden information can be retrieved from the CEJST dataset. The number of affordable housing locations is retrieved from HUD datasets. Location is used to generate a link to view an EJScreen Report providing more demographic indicators."
+
 msgid "AND"
 msgstr "AND"
 
@@ -198,6 +201,9 @@ msgstr "Address Line 1 (Property)"
 msgid "Address Line 1 (Tax Lot)"
 msgstr "Address Line 1 (Tax Lot)"
 
+msgid "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+msgstr "Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built"
+
 msgid "Address Line 2 (Property)"
 msgstr "Address Line 2 (Property)"
 
@@ -214,10 +220,10 @@ msgid "An error occurred while processing the file. Please ensure that your file
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
 msgid "Analyses"
-msgstr "Analyses (beta)"
+msgstr "Analyses"
 
 msgid "Analysis"
-msgstr "Analysis (beta)"
+msgstr "Analysis"
 
 msgid "Analysis Name"
 msgstr "Analysis Name"
@@ -281,6 +287,12 @@ msgstr "Audit Template Organization Token"
 
 msgid "Audit Template Password"
 msgstr "Audit Template Password"
+
+msgid "Audit Template Report Type"
+msgstr "Audit Template Report Type"
+
+msgid "Audit Template Upload Results"
+msgstr "Audit Template Upload Results"
 
 #: seed/models/models.py:136
 msgid "Auditing"
@@ -569,6 +581,9 @@ msgstr "Configuration"
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
 msgstr "Confirm"
+
+msgid "Confirm Audit Template Building Import?"
+msgstr "Confirm Audit Template Building Import?"
 
 msgid "Confirm Save Mappings?"
 msgstr "Confirm Save Mappings?"
@@ -991,6 +1006,21 @@ msgstr "----Choose energy type----"
 msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
 msgstr "----Change display unit----"
 
+msgid "ESPM Password"
+msgstr "ESPM Password"
+
+msgid "ESPM Property ID"
+msgstr "ESPM Property ID"
+
+msgid "ESPM Username"
+msgstr "ESPM Username"
+
+msgid "ESPM_FILE_UPLOAD"
+msgstr "ESPM Spreadsheet Upload (xlsx). The spreadsheet should contain a single property."
+
+msgid "ESPM_IMPORT_TEXT"
+msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data."
+
 msgid "EUI"
 msgstr "EUI"
 
@@ -1084,6 +1114,9 @@ msgstr "Error Processing Data"
 msgid "Example Usage"
 msgstr "Example Usage"
 
+msgid "Existing Audit Template Properties (skipped)"
+msgstr "Existing Audit Template Properties (skipped)"
+
 msgid "Existing Cycles"
 msgstr "Existing Cycles"
 
@@ -1117,14 +1150,29 @@ msgstr "Export GeoJSON"
 msgid "Export Name"
 msgstr "Export Name"
 
+msgid "Export Results"
+msgstr "Export Results"
+
 msgid "Export Selected"
 msgstr "Export Selected"
 
 msgid "Export Spreadsheet"
 msgstr "Export Spreadsheet"
 
+msgid "Export properties to your Audit Template account"
+msgstr "Export properties to your Audit Template account"
+
+msgid "Export to Audit Template"
+msgstr "Export to Audit Template"
+
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
+
+msgid "Exporting properties to your Audit Template account"
+msgstr "Exporting properties to your Audit Template account"
+
+msgid "Exporting selected properties..."
+msgstr "Exporting selected properties..."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -1143,6 +1191,9 @@ msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <str
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
+
+msgid "Fetching your buildings from Audit Template..."
+msgstr "Fetching your buildings from Audit Template..."
 
 msgid "Field"
 msgstr "Field"
@@ -1347,6 +1398,9 @@ msgstr "HTTP Error! Status Code: 500. Internal Server Error."
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
 
+msgid "Hexagonal Bins"
+msgstr "Hexagonal Bins"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
 
@@ -1389,6 +1443,9 @@ msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format.
 msgid "INVALID_GEOJSON_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
 
+msgid "INVALID_XLSX_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xlsx</strong> files are supported."
+
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
 
@@ -1416,8 +1473,14 @@ msgstr "Ignored tax lot duplicates within the import file"
 msgid "Import Access Level Instances"
 msgstr "Import Access Level Instances"
 
+msgid "Import Audit Template Buildings"
+msgstr "Import Audit Template Buildings"
+
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
+
+msgid "Import directly from ESPM"
+msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
@@ -1886,7 +1949,7 @@ msgid "National Renewable Energy Laboratory"
 msgstr "National Renewable Energy Laboratory"
 
 msgid "New Analysis"
-msgstr "New Analysis (beta)"
+msgstr "New Analysis"
 
 msgid "New Note"
 msgstr "New Note"
@@ -1991,7 +2054,7 @@ msgid "OR"
 msgstr "OR"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against.  Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.  Then the records across multiple cycles will be reevaluated to update property and taxlot links or associations.  If you continue you may first preview the pending changes before committing."
+msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory."
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Overwrite data?"
@@ -2038,6 +2101,9 @@ msgstr "Organizations I Manage"
 
 msgid "Organizations:"
 msgstr "Organizations:"
+
+msgid "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+msgstr "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
 
 msgid "Owner"
 msgstr "Owner"
@@ -2308,11 +2374,20 @@ msgstr "Property Name"
 msgid "Property Notes"
 msgstr "Property Notes"
 
+msgid "Property Points"
+msgstr "Property Points"
+
 msgid "Property Reports"
 msgstr "Property Reports"
 
 msgid "Property Type"
 msgstr "Property Type"
+
+msgid "Property UBID Centroids"
+msgstr "Property UBID Centroids"
+
+msgid "Property UBIDs"
+msgstr "Property UBIDs"
 
 msgid "Property Visibility"
 msgstr "Property Visibility"
@@ -2479,7 +2554,7 @@ msgid "Rules for a single field must have the same Data Type. Note that some Dat
 msgstr "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
 
 msgid "Run Analysis"
-msgstr "Run Analysis (beta)"
+msgstr "Run Analysis"
 
 msgid "Run Author"
 msgstr "Run Author"
@@ -2509,6 +2584,9 @@ msgstr "SEED Platform"
 #: seed/templates/seed/base.html:7
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
+
+msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
+msgstr "SEED Properties will be exported to Audit Template with the Organization Report Type"
 
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "SEED Unique Benchmark ID Fieldname"
@@ -2753,6 +2831,9 @@ msgstr "Select All Columns"
 msgid "Select None"
 msgstr "Select None"
 
+msgid "Select Properties to Update"
+msgstr "Select Properties to Update"
+
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
 
@@ -2929,6 +3010,9 @@ msgstr "Success"
 msgid "Success!"
 msgstr "Success!"
 
+msgid "Successful Exports"
+msgstr "Successful Exports"
+
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
@@ -2983,6 +3067,15 @@ msgstr "Tax Lot Detail Settings"
 msgid "Tax Lot ID"
 msgstr "Tax Lot ID"
 
+msgid "Tax Lot Points"
+msgstr "Tax Lot Points"
+
+msgid "Tax Lot UBID Centroids"
+msgstr "Tax Lot UBID Centroids"
+
+msgid "Tax Lot UBIDs"
+msgstr "Tax Lot UBIDs"
+
 msgid "Tax Lot Visibility"
 msgstr "Tax Lot Visibility"
 
@@ -2991,6 +3084,9 @@ msgstr "Tax Lots"
 
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
+
+msgid "Tax Lots List (legacy)"
+msgstr "Tax Lots List (legacy)"
 
 msgid "Taxlot Display Field"
 msgstr "Taxlot Display Field"
@@ -3056,6 +3152,9 @@ msgstr "The comparison relies on the Jaccard Index, which ranges from 0.0 (no ov
 msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 
+msgid "The following Property fields are required."
+msgstr "The following Property fields are required."
+
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
 
@@ -3085,6 +3184,9 @@ msgstr "There was an error loading the page"
 
 msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
 msgstr "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+
+msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
+msgstr "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
 
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
@@ -3125,17 +3227,32 @@ msgstr "To set up your account, enter your password twice in the form below."
 msgid "Toggle Dropdown"
 msgstr "Toggle Dropdown"
 
+msgid "Toggle Hexagonal Bins"
+msgstr "Toggle Hexagonal Bins"
+
 msgid "Toggle Hexbins"
-msgstr "Toggle Hexbins"
+msgstr "Toggle Hexagonal Bins"
 
 msgid "Toggle Points"
-msgstr "Toggle Points"
+msgstr "Toggle Property Points"
+
+msgid "Toggle Property Points"
+msgstr "Toggle Property Points"
 
 msgid "Toggle Property UBID Bounding Boxes"
 msgstr "Toggle Property UBID Bounding Boxes"
 
 msgid "Toggle Property UBID Centroids"
 msgstr "Toggle Property UBID Centroids"
+
+msgid "Toggle Tax Lot Points"
+msgstr "Toggle Tax Lot Points"
+
+msgid "Toggle Tax Lot UBID Bounding Boxes"
+msgstr "Toggle Tax Lot UBID Bounding Boxes"
+
+msgid "Toggle Tax Lot UBID Centroids"
+msgstr "Toggle Tax Lot UBID Centroids"
 
 msgid "Toggle Taxlot UBID Bounding Boxes"
 msgstr "Toggle Taxlot UBID Bounding Boxes"
@@ -3244,6 +3361,9 @@ msgstr "Units"
 msgid "Unknown"
 msgstr "Unknown"
 
+msgid "Unsuccessful Exports"
+msgstr "Unsuccessful Exports"
+
 msgid "Until last date of"
 msgstr "Until last date of"
 
@@ -3259,11 +3379,20 @@ msgstr "Update Salesforce"
 msgid "Update UBID"
 msgstr "Update UBID"
 
+msgid "Update with Audit Template"
+msgstr "Update with Audit Template"
+
 msgid "Update with BuildingSync"
 msgstr "Update with BuildingSync"
 
+msgid "Update with ESPM"
+msgstr "Update with ESPM"
+
 msgid "Updated"
 msgstr "Updated"
+
+msgid "Updating selected properties..."
+msgstr "Updating selected properties..."
 
 msgid "Upload Access Level Instances"
 msgstr "Upload Access Level Instances"
@@ -3279,6 +3408,9 @@ msgstr "Upload Green Button Data"
 
 msgid "Upload Portfolio Manager Data"
 msgstr "Upload Portfolio Manager Data"
+
+msgid "Upload Single ESPM Property"
+msgstr "Upload ESPM Property"
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
@@ -3536,6 +3668,9 @@ msgstr "Your Role"
 
 msgid "Your SEED account is not associated with any organizations.  Please contact a SEED administrator."
 msgstr "Your SEED account is not associated with any organizations. Please contact a SEED administrator."
+
+msgid "Your inventory is already synced with your Audit Template account"
+msgstr "Your inventory is already synced with your Audit Template account"
 
 msgid "Your page could not be located!"
 msgstr "Your page could not be located!"

@@ -5,6 +5,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from __future__ import absolute_import
 
 import os
+from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -312,6 +313,11 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': '/accounts/logout',
 }
 
+try:
+    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', 'False')))
+except Exception:
+    EEEJ_LOAD_SMALL_TEST_DATASET = False
+
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 
@@ -332,9 +338,6 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 # should be a integer representing a number of days
 # GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
 GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
-
-# Config to include v2 APIs
-INCLUDE_SEED_V2_APIS = os.environ.get('INCLUDE_SEED_V2_APIS', 'true').lower() == 'true'
 
 # Config self registration
 INCLUDE_ACCT_REG = os.environ.get('INCLUDE_ACCT_REG', 'true').lower() == 'true'

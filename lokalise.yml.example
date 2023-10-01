@@ -7,7 +7,7 @@ token: MY_API_TOKEN
 
 # Default Project ID
 # If set, used for all endpoints requiring project-id flag.
-#project-id: 3537487659ca9b1dce98a7.36378626
+project-id: 3537487659ca9b1dce98a7.36378626
 
 # Number of retries for API requests.
 # Default is 3.
