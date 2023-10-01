@@ -19,6 +19,7 @@ class UniformatEntry(TypedDict):
     quantity_definition: NotRequired[str]
 
 
+# https://www.wbdg.org/ffc/navy-navfac/design-build-request-proposal/uniformat-structure
 uniformat_data: list[UniformatEntry] = [
     {
         'code': 'A',

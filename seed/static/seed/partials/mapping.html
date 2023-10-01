@@ -241,13 +241,13 @@
         </div>
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.properties.length">
+        <ul class="nav nav-tabs">
+            <li heading="View by Property" class="active"><a translate>View by Property</a></li>
+        </ul>
         <div class="item-count">
             <i class="fa fa-calendar"></i> <span class="pad-right-20">{$ cycleName $}</span>
             <i class="fa fa-building-o"></i> <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
-        <ul class="nav nav-tabs" style="margin-bottom:1px;">
-            <li heading="View by Property" class="active"><a translate>View by Property</a></li>
-        </ul>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
         <div class="section_content">
@@ -257,13 +257,13 @@
         </div>
     </div>
     <div class="inventory-list-tab-container" ng-if="show_mapped_buildings && mappedData.tax_lots.length" style="margin-top: 20px;">
+        <ul class="nav nav-tabs">
+            <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>
+        </ul>
         <div class="item-count">
             <i class="fa fa-calendar"></i> <span class="pad-right-20">{$ cycleName $}</span>
             <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
         </div>
-        <ul class="nav nav-tabs" style="margin-bottom:1px;">
-            <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>
-        </ul>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">
         <div class="section_content">

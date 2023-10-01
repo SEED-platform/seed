@@ -6,7 +6,7 @@
         <div class="page_title">
             <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
         </div>
-        <div class="right page_action_container page_action_btn"></div>
+        <div class="right page_action_container"></div>
     </div>
 </div>
 
@@ -101,6 +101,14 @@
 </div>
 
 <div class="inventory-list-tab-container">
+    <ul class="nav nav-tabs">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+            <a ui-sref="inventory_list_legacy(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_list_legacy(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
     <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
         <span ng-if="::inventory_type === 'properties'">
             <i class="fa fa-building-o"></i>
@@ -112,14 +120,6 @@
             <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
         </span>
     </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
-            <a ui-sref="inventory_list_legacy(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_list_legacy(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
 </div>
 
 <div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">

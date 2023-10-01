@@ -1029,7 +1029,7 @@ msgid "ESPM_FILE_UPLOAD"
 msgstr "Téléchargement de la feuille de calcul ESPM (xlsx). La feuille de calcul doit contenir une seule propriété."
 
 msgid "ESPM_IMPORT_TEXT"
-msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio Manager (ESPM) ci-dessous: vous pouvez soit télécharger une feuille de calcul de propriétés précédemment téléchargée depuis ESPM, soit vous connecter directement à ESPM pour accéder aux données.\n"
+msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio Manager (ESPM) ci-dessous: vous pouvez soit télécharger une feuille de calcul de propriétés précédemment téléchargée depuis ESPM, soit vous connecter directement à ESPM pour accéder aux données."
 
 msgid "EUI"
 msgstr "IUE"
@@ -1411,6 +1411,9 @@ msgstr "Erreur HTTP! Code d'état : 500. Erreur interne du serveur."
 msgid "Hello %(first_name)s, "
 msgstr "Bonjour% (first_name) s,"
 
+msgid "Hexagonal Bins"
+msgstr "Bacs Hexagonaux"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
 
@@ -1454,7 +1457,7 @@ msgid "INVALID_GEOJSON_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.geojson</strong>, et <strong>.json</strong> sont pris en charge."
 
 msgid "INVALID_XLSX_EXTENSION_ALERT"
-msgstr "<strong> Désolé ! < \\/strong > SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong> .xlsx < \\/strong > sont pris en charge.\n"
+msgstr "<strong>Désolé!</strong> SEED ne prend actuellement pas en charge ce format de fichier. Seuls les fichiers <strong>.xlsx</strong> sont pris en charge."
 
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Désolée!</strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.xml</strong> sont pris en charge."
@@ -2389,11 +2392,20 @@ msgstr "Nom de la propriété"
 msgid "Property Notes"
 msgstr "Notes de propriété"
 
+msgid "Property Points"
+msgstr "Points de Propriété"
+
 msgid "Property Reports"
 msgstr "Rapports de propriété"
 
 msgid "Property Type"
 msgstr "Type de propriété"
+
+msgid "Property UBID Centroids"
+msgstr "Propriété Centroïdes UBID"
+
+msgid "Property UBIDs"
+msgstr "UBID de propriété"
 
 msgid "Property Visibility"
 msgstr "Visibilité de la propriété"
@@ -3080,6 +3092,16 @@ msgstr "Paramètres de détail du lot d'impôt"
 msgid "Tax Lot ID"
 msgstr "Numéro de lot d'impôt"
 
+msgid "Tax Lot Points"
+msgstr "Points de lot fiscal"
+
+msgid "Tax Lot UBID Centroids"
+msgstr "Centres de gravité UBID du lot fiscal"
+
+#, fuzzy
+msgid "Tax Lot UBIDs"
+msgstr "UBID de lots fiscaux"
+
 msgid "Tax Lot Visibility"
 msgstr "Visibilité du lot d'impôt"
 
@@ -3088,6 +3110,9 @@ msgstr "Lots d'impôt"
 
 msgid "Tax Lots List"
 msgstr "Liste des lots d'impôt"
+
+msgid "Tax Lots List (legacy)"
+msgstr "Liste des lots fiscaux (ancienne version)"
 
 msgid "Taxlot Display Field"
 msgstr "Champ d'affichage du lot de taxes"
@@ -3228,17 +3253,32 @@ msgstr "Pour configurer votre compte, saisissez votre mot de passe deux fois dan
 msgid "Toggle Dropdown"
 msgstr "Basculer le menu déroulant"
 
+msgid "Toggle Hexagonal Bins"
+msgstr "Basculer les bacs hexagonaux"
+
 msgid "Toggle Hexbins"
-msgstr "Basculer les Hexbins"
+msgstr "Basculer les bacs hexagonaux"
 
 msgid "Toggle Points"
-msgstr "Basculer les points"
+msgstr "Basculer les points de propriété"
+
+msgid "Toggle Property Points"
+msgstr "Basculer les points de propriété"
 
 msgid "Toggle Property UBID Bounding Boxes"
 msgstr "Toggle Boîtes englobantes UBID de propriété"
 
 msgid "Toggle Property UBID Centroids"
 msgstr "Basculer les centroïdes UBID de propriété"
+
+msgid "Toggle Tax Lot Points"
+msgstr "Basculer les points du lot fiscal"
+
+msgid "Toggle Tax Lot UBID Bounding Boxes"
+msgstr "Toggle Zones de délimitation UBID du lot de taxes"
+
+msgid "Toggle Tax Lot UBID Centroids"
+msgstr "Toggle Centroïdes UBID du lot de taxes"
 
 msgid "Toggle Taxlot UBID Bounding Boxes"
 msgstr "Toggle Boîtes englobantes UBID Taxlot"
