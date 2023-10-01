@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.utils import IntegrityError
 
-from seed.models.eeej import MULTIFAMILY, PUBLIC_HOUSING, EeejCejst, EeejHud
+from seed.models.eeej import EeejCejst, EeejHud, HousingType
 
 
 def add_eeej_data():
@@ -38,8 +38,8 @@ def import_hud():
         HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Multifamily_Properties_-_Assisted.csv.xz')
 
     files = [
-        {'type': PUBLIC_HOUSING, 'path': HUD_DATA_PATH_HOUSING},
-        {'type': MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY}
+        {'type': HousingType.PUBLIC_HOUSING, 'path': HUD_DATA_PATH_HOUSING},
+        {'type': HousingType.MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY}
     ]
     errors = []
     for file in files:
@@ -50,10 +50,10 @@ def import_hud():
                 col[header] = col_index
 
             for row_index, row in enumerate(reader, start=1):
-                if file['type'] == PUBLIC_HOUSING:
+                if file['type'] == HousingType.PUBLIC_HOUSING:
                     hud_object_id = f"PH_{row[col['OBJECTID']]}"
                     name = row[col['PROJECT_NAME']]
-                elif file['type'] == MULTIFAMILY:
+                elif file['type'] == HousingType.MULTIFAMILY:
                     hud_object_id = f"MF_{row[col['OBJECTID']]}"
                     name = row[col['PROPERTY_NAME_TEXT']]
 

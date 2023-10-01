@@ -5,19 +5,16 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
-from typing import Tuple
 
 from django.contrib.gis.db import models as geomodels
 from django.db import models
 
 logger = logging.getLogger(__name__)
 
-PUBLIC_HOUSING = 0
-MULTIFAMILY = 1
-HOUSING_TYPE: list[Tuple[int, str]] = [
-    (PUBLIC_HOUSING, 'Public housing development'),
-    (MULTIFAMILY, 'Multi-family assisted property'),
-]
+
+class HousingType(models.TextChoices):
+    PUBLIC_HOUSING = 'public housing development'
+    MULTIFAMILY = 'multi-family assisted property'
 
 
 class EeejCejst(models.Model):
@@ -45,7 +42,7 @@ class EeejHud(models.Model):
     hud_object_id = models.CharField(max_length=20, primary_key=True)
     census_tract_geoid = models.CharField(max_length=11)
     long_lat = geomodels.PointField(geography=True)
-    housing_type = models.IntegerField(choices=HOUSING_TYPE)
+    housing_type = models.CharField(max_length=100, choices=HousingType.choices)
     name = models.CharField(max_length=150)
 
     class Meta:

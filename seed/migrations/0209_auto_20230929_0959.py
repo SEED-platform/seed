@@ -45,11 +45,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='eeejhud',
-            name='housing_type',
-            field=models.IntegerField(choices=[(0, 'Public housing development'), (1, 'Multi-family assisted property')]),
-        ),
-        migrations.AlterField(
-            model_name='eeejhud',
             name='hud_object_id',
             field=models.CharField(max_length=20, primary_key=True, serialize=False),
         ),
