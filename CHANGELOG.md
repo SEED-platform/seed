@@ -18,6 +18,9 @@
 * Update default meter range selection for BETTER analysis by @perryr16 in https://github.com/SEED-platform/seed/pull/3819
 * Add a cycle indicator to the analysis modal and filter analyses for current cycle by @perryr16 in https://github.com/SEED-platform/seed/pull/3837
 * Add envvar to specify loading test EEEJ dataset by @kflemin in https://github.com/SEED-platform/seed/pull/4254
+* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
+* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
+
 ### Maintenance 🧹
 * Remove Deprecated APIs by @axelstudios in https://github.com/SEED-platform/seed/pull/4049
 * Lock `google-chrome` to v114 by @axelstudios in https://github.com/SEED-platform/seed/pull/4165
@@ -59,8 +62,6 @@
 * Include x and y in property insights tables by @haneslinger in https://github.com/SEED-platform/seed/pull/4075
 * Add percentages to program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/4077
 * Add matching criteria to report export by @haneslinger in https://github.com/SEED-platform/seed/pull/4072
-* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
-* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
 ### Maintenance 🧹
 * Bump django from 3.2.18 to 3.2.19 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4034
 * Improve inventory load times by @ebeers-png in https://github.com/SEED-platform/seed/pull/3990
