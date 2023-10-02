@@ -163,6 +163,7 @@ def _dict_org(request, organizations):
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
+            "access_level_names": o.access_level_names,
         }
         orgs.append(org)
 

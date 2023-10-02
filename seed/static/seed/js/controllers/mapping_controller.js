@@ -777,6 +777,28 @@ angular.module('BE.seed.controller.mapping', [])
             return _.defaults(prop, prop.extra_data);
           });
           $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
+          // Add access level instances to grid
+          ["raw_access_level_instance_error", ...$scope.organization.access_level_names].reverse().forEach((level) => {
+            $scope.propertiesGridOptions.columnDefs.unshift({
+              name: level,
+              displayName: level,
+              group: 'access_level_instance',
+              enableColumnMenu: true,
+              enableColumnMoving: false,
+              enableColumnResizing: true,
+              enableFiltering: true,
+              enableHiding: true,
+              enableSorting: true,
+              enablePinning: false,
+              exporterSuppressExport: true,
+              pinnedLeft: true,
+              visible: true,
+              width: 100,
+              cellClass: 'ali-cell',
+              headerCellClass: 'ali-header',
+            })
+          });
+
           $scope.taxlotsGridOptions = angular.copy(gridOptions);
           $scope.taxlotsGridOptions.data = _.map(data.tax_lots, function (taxlot) {
             return _.defaults(taxlot, taxlot.extra_data);

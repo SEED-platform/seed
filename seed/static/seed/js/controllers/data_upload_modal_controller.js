@@ -704,10 +704,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.property_initial_incoming = result_data.properties.initial_incoming;
                 $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;
                 $scope.property_duplicates_within_file = result_data.properties.duplicates_within_file;
+                $scope.property_duplicates_within_file_errors = result_data.properties.duplicates_within_file_errors;
                 $scope.property_merges_against_existing = result_data.properties.merges_against_existing;
+                $scope.property_merges_against_existing_errors = result_data.properties.merges_against_existing_errors;
                 $scope.property_merges_between_existing = result_data.properties.merges_between_existing;
                 $scope.property_merges_within_file = result_data.properties.merges_within_file;
+                $scope.property_merges_within_file_errors = result_data.properties.merges_within_file_errors;
                 $scope.property_new = result_data.properties.new;
+                $scope.property_new_errors = result_data.properties.new_errors;
 
                 $scope.properties_geocoded_high_confidence = result_data.properties.geocoded_high_confidence;
                 $scope.properties_geocoded_low_confidence = result_data.properties.geocoded_low_confidence;
@@ -717,10 +721,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.tax_lot_initial_incoming = result_data.tax_lots.initial_incoming;
                 $scope.tax_lot_duplicates_against_existing = result_data.tax_lots.duplicates_against_existing;
                 $scope.tax_lot_duplicates_within_file = result_data.tax_lots.duplicates_within_file;
+                $scope.tax_lot_duplicates_within_file_errors = result_data.tax_lots.duplicates_within_file_errors;
                 $scope.tax_lot_merges_against_existing = result_data.tax_lots.merges_against_existing;
+                $scope.tax_lot_merges_against_existing_errors = result_data.tax_lots.merges_against_existing_errors;
                 $scope.tax_lot_merges_between_existing = result_data.tax_lots.merges_between_existing;
                 $scope.tax_lot_merges_within_file = result_data.tax_lots.merges_within_file;
+                $scope.tax_lot_merges_within_file_errors = result_data.tax_lots.merges_within_file_errors;
                 $scope.tax_lot_new = result_data.tax_lots.new;
+                $scope.tax_lot_new_errors = result_data.tax_lots.new_errors;
 
                 $scope.tax_lots_geocoded_high_confidence = result_data.tax_lots.geocoded_high_confidence;
                 $scope.tax_lots_geocoded_low_confidence = result_data.tax_lots.geocoded_low_confidence;

@@ -420,6 +420,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         fields=prop.extra_data.keys(),
                     ).items()
                 )
+                if prop.raw_access_level_instance is not None:
+                    prop_dict.update(prop.raw_access_level_instance.path)
+                prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
 
                 prop_dict = apply_display_unit_preferences(org, prop_dict)
                 property_results.append(prop_dict)
@@ -448,6 +451,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
+                if tax_lot.raw_access_level_instance is not None:
+                    tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
+                tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
 
                 tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
                 tax_lot_results.append(tax_lot_dict)
@@ -840,10 +846,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),
                 'duplicates_within_file': import_file.matching_results_data.get('property_duplicates_within_file', None),
+                'duplicates_within_file_errors': import_file.matching_results_data.get('property_duplicates_within_file_errors', None),
                 'merges_against_existing': import_file.matching_results_data.get('property_merges_against_existing', None),
+                'merges_against_existing_errors': import_file.matching_results_data.get('property_merges_against_existing_errors', None),
                 'merges_between_existing': import_file.matching_results_data.get('property_merges_between_existing', None),
                 'merges_within_file': import_file.matching_results_data.get('property_merges_within_file', None),
+                'merges_within_file_errors': import_file.matching_results_data.get('property_merges_within_file_errors', None),
                 'new': import_file.matching_results_data.get('property_new', None),
+                'new_errors': import_file.matching_results_data.get('property_new_errors', None),
                 'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
                 'geocoded_manually': property_geocode_results.get('manual'),
@@ -853,10 +863,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'initial_incoming': import_file.matching_results_data.get('tax_lot_initial_incoming', None),
                 'duplicates_against_existing': import_file.matching_results_data.get('tax_lot_duplicates_against_existing', None),
                 'duplicates_within_file': import_file.matching_results_data.get('tax_lot_duplicates_within_file', None),
+                'duplicates_within_file_errors': import_file.matching_results_data.get('tax_lot_duplicates_within_file_errors', None),
                 'merges_against_existing': import_file.matching_results_data.get('tax_lot_merges_against_existing', None),
+                'merges_against_existing_errors': import_file.matching_results_data.get('tax_lot_merges_against_existing_errors', None),
                 'merges_between_existing': import_file.matching_results_data.get('tax_lot_merges_between_existing', None),
                 'merges_within_file': import_file.matching_results_data.get('tax_lot_merges_within_file', None),
+                'merges_within_file_errors': import_file.matching_results_data.get('tax_lot_merges_within_file_errors', None),
                 'new': import_file.matching_results_data.get('tax_lot_new', None),
+                'new_errors': import_file.matching_results_data.get('tax_lot_new_errors', None),
                 'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
                 'geocoded_manually': tax_lot_geocode_results.get('manual'),
