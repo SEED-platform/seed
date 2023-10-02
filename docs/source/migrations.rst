@@ -54,7 +54,19 @@ Version 2.20.0
 
 Version 2.19.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- Run `./manage.py migrate`.
+- There is a new migration in this release that requires column names to be unique across `organization`, `table_name`, and `is_extra_data`. This migration will fail if there are duplicate column names. If you have duplicate column names, you will need to manually fix them in your database before running the migration. The following steps will help you identify and fix the duplicate column names:
+    - Check the organization. If it is a deprecated org to gauge the impact of the change. Often this issue arose in older organizations when units were not part of the columns. The old mapping columns were not upserts with the units, so typically the columns impacted are the ones with units.
+    - Query the `seed_column` table for the organization and column name displayed on the screen (e.g., `organization_id = 300 and column_name = 'Source EUI (kBtu/ft2)'`). If there is no `table_name` set, it is likely an import file column name and can easy be cleaned up without causing issues. In such cases, there will be two rows, and you want to keep the one with the `units_pint` column set.
+    - More complex columns may require deleting or updating the `column_id` in the `seed_columnmapping_*` tables. If there is a foreign key constraint with `seed_columnmapping_*`, take note of the ID you want to remove and the ID you want it to be replaced with (preferably keep the one with units_pint).
+    - If the constraint is on `seed_columnmapping_column_raw`:
+        - The field should be an import file column (i.e., no `table_name` item). Query for the old column in `seed_columnmapping_column_raw` (e.g., `column_name = <old_id>`).
+        - Replace the old ID with the new one. If it errors because it already exists, then the row can be deleted.
+        - Return to the `seed_column` table and remove the old ID.
+    - If the constraint is on `seed_columnmapping_column_mapped`:
+        - The mapped column should have a `table_name` in the field. If not, it is likely an older organization.
+        - If there is no `table_name`, remove the row from the `seed_columnmapping_column_mapped` table.
+        - Return to the `seed_column` table and remove the old ID.
 
 Version 2.18.1
 --------------
