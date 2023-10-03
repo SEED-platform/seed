@@ -182,6 +182,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.inventory_reports',
   'BE.seed.service.label',
   'BE.seed.service.main',
+  'BE.seed.service.map',
   'BE.seed.service.mapping',
   'BE.seed.service.matching',
   'BE.seed.service.meter',

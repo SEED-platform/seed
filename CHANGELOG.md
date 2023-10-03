@@ -1,3 +1,52 @@
+# SEED Version 2.20.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Add new `create_property` and `update_with_espm` endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4012
+* EEEJ Analysis Functionality by @kflemin in https://github.com/SEED-platform/seed/pull/4208
+* Add Uniformat Table by @axelstudios in https://github.com/SEED-platform/seed/pull/4238
+* Add Import Export to Audit Template by @perryr16 in https://github.com/SEED-platform/seed/pull/4215
+### Improvements 📈
+* Optimize list analyses endpoint by @haneslinger in https://github.com/SEED-platform/seed/pull/4206
+* Move analyses endpoint by @haneslinger in https://github.com/SEED-platform/seed/pull/4210
+* Remove Beta label from text of analysis button  by @kflemin in https://github.com/SEED-platform/seed/pull/4225
+* Show Analysis `debug_message` If Available by @axelstudios in https://github.com/SEED-platform/seed/pull/4198
+* Use display name in custom reports legend by @haneslinger in https://github.com/SEED-platform/seed/pull/4060
+* Add more API documentation for meter and meter readings by @nllong in https://github.com/SEED-platform/seed/pull/4237
+* Update default meter range selection for BETTER analysis by @perryr16 in https://github.com/SEED-platform/seed/pull/3819
+* Add a cycle indicator to the analysis modal and filter analyses for current cycle by @perryr16 in https://github.com/SEED-platform/seed/pull/3837
+* Add envvar to specify loading test EEEJ dataset by @kflemin in https://github.com/SEED-platform/seed/pull/4254
+* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
+* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
+### Maintenance 🧹
+* Remove Deprecated APIs by @axelstudios in https://github.com/SEED-platform/seed/pull/4049
+* Lock `google-chrome` to v114 by @axelstudios in https://github.com/SEED-platform/seed/pull/4165
+* Bump word-wrap from 1.2.3 to 1.2.4 by @dependabot in https://github.com/SEED-platform/seed/pull/4154
+* Remove ID from inventory document display name by @perryr16 in https://github.com/SEED-platform/seed/pull/4125
+* Bump uwsgi from 2.0.17.1 to 2.0.22 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4209
+* Allow analysis property view related properties to be null by @perryr16 in https://github.com/SEED-platform/seed/pull/4227
+* Disable ability to remove matching criteria fields once inventory is added by @perryr16 in https://github.com/SEED-platform/seed/pull/4222
+* Add documentation for cleaning up conflicting column names during migration by @nllong in https://github.com/SEED-platform/seed/pull/4264
+### Bug Fixes 🐛
+* Add Open Street Map to CSP rules by @axelstudios in https://github.com/SEED-platform/seed/pull/4169
+* add error handling for sf edge case by @kflemin in https://github.com/SEED-platform/seed/pull/4159
+* Fix display name by @haneslinger in https://github.com/SEED-platform/seed/pull/4223
+* Fix refresh_metadata by @haneslinger in https://github.com/SEED-platform/seed/pull/4221
+* Fix Meters Without `source_id` by @axelstudios in https://github.com/SEED-platform/seed/pull/4229
+* Fix performance for fetching analyses and force user email to lowercase by @ebeers-png in https://github.com/SEED-platform/seed/pull/4213
+* Update inventory selection to include current inventory type only by @perryr16 in https://github.com/SEED-platform/seed/pull/3862
+* Delete BuildingFiles and Related Events on PropertyState delete by @perryr16 in https://github.com/SEED-platform/seed/pull/4217
+* Fixed Issues with Scenario/Measure CRUD Operations by @axelstudios in https://github.com/SEED-platform/seed/pull/4240
+* Fix Meter Overwrites by @axelstudios in https://github.com/SEED-platform/seed/pull/4250
+* Fix filter group dropdown bugs by @ebeers-png in https://github.com/SEED-platform/seed/pull/4249
+* Fix EEEJ analysis errors when there are no lat/long or address by @kflemin in https://github.com/SEED-platform/seed/pull/4247
+* ArcGIS CSP rule by @axelstudios in https://github.com/SEED-platform/seed/pull/4265
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.19.0...v2.20.0
+
 # SEED Version 2.19.0
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
 

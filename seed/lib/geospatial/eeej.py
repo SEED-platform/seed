@@ -2,12 +2,13 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import csv
+import lzma
 import os
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.utils import IntegrityError
-from xlrd import open_workbook
 
 from seed.models.eeej import EeejCejst, EeejHud, HousingType
 
@@ -30,82 +31,51 @@ def import_hud():
     # Note: instead of update_or_create, it might be better to clear and start over
     # Use smaller files to test with
     if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
-        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Public_Housing_Developments.xlsx')
-        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.xlsx')
+        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Public_Housing_Developments.csv.xz')
+        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-Multifamily_Properties_-_Assisted.csv.xz')
     else:
-        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Public_Housing_Developments.xlsx')
-        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Multifamily_Properties_-_Assisted.xlsx')
+        HUD_DATA_PATH_HOUSING = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Public_Housing_Developments.csv.xz')
+        HUD_DATA_PATH_MULTIFAMILY = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'Multifamily_Properties_-_Assisted.csv.xz')
 
-    # header mappings
-    housing_headers = {
-        'tract': {'name': 'TRACT2KX', 'loc': None},
-        'state': {'name': 'STATE2KX', 'loc': None},
-        'county': {'name': 'CNTY2KX', 'loc': None},
-        'object_id': {'name': 'OBJECTID', 'loc': None},
-        'lat': {'name': 'LAT', 'loc': None},
-        'lon': {'name': 'LON', 'loc': None},
-        'property_name': {'name': 'PROJECT_NAME', 'loc': None}
-    }
-    mf_headers = {
-        'tract': {'name': 'TRACT2KX', 'loc': None},
-        'state': {'name': 'STATE2KX', 'loc': None},
-        'county': {'name': 'CNTY2KX', 'loc': None},
-        'object_id': {'name': 'OBJECTID', 'loc': None},
-        'lat': {'name': 'LAT', 'loc': None},
-        'lon': {'name': 'LON', 'loc': None},
-        'property_name': {'name': 'PROPERTY_NAME_TEXT', 'loc': None}
-    }
-
-    # format
-    header_data = [
-        {'name': HousingType.PUBLIC_HOUSING, 'path': HUD_DATA_PATH_HOUSING, 'headers': housing_headers},
-        {'name': HousingType.MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY, 'headers': mf_headers}
+    files = [
+        {'type': HousingType.PUBLIC_HOUSING, 'path': HUD_DATA_PATH_HOUSING},
+        {'type': HousingType.MULTIFAMILY, 'path': HUD_DATA_PATH_MULTIFAMILY}
     ]
     errors = []
-    for ds in header_data:
+    for file in files:
+        with lzma.open(file['path'], mode='rt', encoding='utf-8') as fd:
+            reader = csv.reader(fd)
+            col: dict[str, int] = {}
+            for col_index, header in enumerate(next(reader, None)):
+                col[header] = col_index
 
-        book = open_workbook(ds['path'])
-        sheet = book.sheet_by_index(0)
-        for key, header in ds['headers'].items():
-            for col_index in range(sheet.ncols):
-                if sheet.cell(0, col_index).value == header['name']:
-                    header['loc'] = col_index
-                    break
+            for row_index, row in enumerate(reader, start=1):
+                if file['type'] == HousingType.PUBLIC_HOUSING:
+                    hud_object_id = f"PH_{row[col['OBJECTID']]}"
+                    name = row[col['PROJECT_NAME']]
+                elif file['type'] == HousingType.MULTIFAMILY:
+                    hud_object_id = f"MF_{row[col['OBJECTID']]}"
+                    name = row[col['PROPERTY_NAME_TEXT']]
 
-        for row_index in range(1, sheet.nrows):
-            try:
-                # calculate census tract GEOID
-                state = int(sheet.cell(row_index, ds['headers']['state']['loc']).value)
-                county = int(sheet.cell(row_index, ds['headers']['county']['loc']).value)
-                tract = int(sheet.cell(row_index, ds['headers']['tract']['loc']).value)
-                census_tract_geoid = str(state).zfill(2) + str(county).zfill(3) + str(tract).zfill(6)
+                try:
+                    EeejHud.objects.update_or_create(
+                        census_tract_geoid=(row[col['TRACT_LEVEL']] or None).zfill(11),
+                        hud_object_id=hud_object_id,
+                        name=name,
+                        housing_type=file['type'],
+                        defaults={'long_lat': Point(
+                            float(row[col['LON']]),
+                            float(row[col['LAT']])
+                        )}
+                    )
+                except IntegrityError as e:
+                    errors.append("EEEJ HUD Row already exists: {}. error: {}".format(row_index, str(e)))
+                    # print(str(e))
+                except Exception as e:
+                    errors.append("EEEJ HUD - could not add row: {}. error: {}".format(row_index, str(e)))
+                    # print(str(e))
 
-                # Unique HUD object ID
-                hud_object_id = 'PH' if ds['name'] == HousingType.PUBLIC_HOUSING else 'MF'
-                hud_object_id = hud_object_id + "_" + str(int(sheet.cell(row_index, ds['headers']['object_id']['loc']).value))
-                # lon/lat Point
-                lon = sheet.cell(row_index, ds['headers']['lat']['loc']).value
-                lat = sheet.cell(row_index, ds['headers']['lon']['loc']).value
-                long_lat = None
-                if lon != '' and lat != '':
-                    long_lat = Point(float(lon), float(lat))
-
-                # add to DB
-                obj, created = EeejHud.objects.update_or_create(
-                    census_tract_geoid=census_tract_geoid,
-                    hud_object_id=hud_object_id,
-                    defaults={'long_lat': long_lat},
-                    name=sheet.cell(row_index, ds['headers']['property_name']['loc']).value,
-                    housing_type=ds['name'],
-                )
-            except IntegrityError as e:
-                errors.append("EEEJ HUD Row already exists: {}. error: {}".format(row_index, str(e)))
-                # print(str(e))
-
-            except Exception as e:
-                errors.append("EEEJ HUD - could not add row: {}. error: {}".format(row_index, str(e)))
-                # print(str(e))
-    print(f"{len(errors)} errors encountered when loading HUD data")
+    # print(f"{len(errors)} errors encountered when loading HUD data")
 
 
 def import_cejst():
@@ -116,53 +86,31 @@ def import_cejst():
     """
     # Use a smaller file to test with
     if settings.EEEJ_LOAD_SMALL_TEST_DATASET:
-        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-CEJST-1.0-communities-with-indicators.xlsx')
+        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'test-cejst-1.0-communities.csv.xz')
     else:
-        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'CEJST-1.0-communities-with-indicators.xlsx')
+        CEJST_DATA_PATH = os.path.join(settings.BASE_DIR, 'seed/lib/geospatial/data', 'cejst-1.0-communities.csv.xz')
 
     # import CEJST
-    headers = {
-        'census_tract': {'name': 'Census tract 2010 ID', 'loc': None},
-        'dac': {'name': 'Identified as disadvantaged', 'loc': None},
-        'energy_burden_low_income': {'name': 'Greater than or equal to the 90th percentile for energy burden and is low income?', 'loc': None},
-        'energy_burden_percent': {'name': 'Energy burden (percentile)', 'loc': None},
-        'low_income': {'name': 'Is low income?', 'loc': None},
-        'share_neighbors_disadvantaged': {'name': 'Share of neighbors that are identified as disadvantaged', 'loc': None}
-    }
+    with lzma.open(CEJST_DATA_PATH, mode='rt', encoding='utf-8') as fd:
+        reader = csv.reader(fd)
+        col: dict[str, int] = {}
+        for col_index, header in enumerate(next(reader, None)):
+            col[header] = col_index
 
-    book = open_workbook(CEJST_DATA_PATH)
-    sheet = book.sheet_by_index(0)
-    for key, header in headers.items():
-        for col_index in range(sheet.ncols):
-            if sheet.cell(0, col_index).value == header['name']:
-                header['loc'] = col_index
-                break
-    errors = []
+        errors = []
+        for row_index, row in enumerate(reader, start=1):
+            try:
+                EeejCejst.objects.update_or_create(
+                    census_tract_geoid=row[col['Census tract 2010 ID']],
+                    dac=row[col['Identified as disadvantaged']],
+                    energy_burden_low_income=row[col['Greater than or equal to the 90th percentile for energy burden and is low income?']],
+                    energy_burden_percent=row[col['Energy burden (percentile)']] or None,
+                    low_income=row[col['Is low income?']],
+                    share_neighbors_disadvantaged=row[col['Share of neighbors that are identified as disadvantaged']] or None
+                )
+            except IntegrityError as e:
+                errors.append("EEEJ CEJST Row already exists: {}. error: {}".format(row_index, str(e)))
+            except Exception as e:
+                errors.append("EEEJ CEJST - could not add row: {}. error: {}".format(row_index, str(e)))
 
-    for row_index in range(1, sheet.nrows):
-        try:
-            burden_percent = None
-            if sheet.cell(row_index, headers['energy_burden_percent']['loc']).value != '':
-                burden_percent = sheet.cell(row_index, headers['energy_burden_percent']['loc']).value
-
-            share_neighbors_dac = None
-            if sheet.cell(row_index, headers['share_neighbors_disadvantaged']['loc']).value != '':
-                share_neighbors_dac = sheet.cell(row_index, headers['share_neighbors_disadvantaged']['loc']).value
-            low_income = False
-            if sheet.cell(row_index, headers['low_income']['loc']).value != '':
-                low_income = sheet.cell(row_index, headers['low_income']['loc']).value
-
-            obj, created = EeejCejst.objects.update_or_create(
-                census_tract_geoid=sheet.cell(row_index, headers['census_tract']['loc']).value,
-                dac=sheet.cell(row_index, headers['dac']['loc']).value,
-                energy_burden_low_income=sheet.cell(row_index, headers['energy_burden_low_income']['loc']).value,
-                energy_burden_percent=burden_percent,
-                low_income=low_income,
-                share_neighbors_disadvantaged=share_neighbors_dac
-            )
-        except IntegrityError as e:
-            errors.append("EEEJ CEJST Row already exists: {}. error: {}".format(row_index, str(e)))
-
-        except Exception as e:
-            errors.append("EEEJ CEJST - could not add row: {}. error: {}".format(row_index, str(e)))
-    print(f"{len(errors)} errors encountered when loading CEJST data")
+        # print(f"{len(errors)} errors encountered when loading CEJST data")
