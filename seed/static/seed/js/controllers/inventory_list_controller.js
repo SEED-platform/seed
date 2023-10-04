@@ -589,7 +589,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             inventory_type: function () {
               return $scope.inventory_type;
-            }
+            },
+            is_ali_root: () => $scope.menu.user.is_ali_root,
           }
         });
         modalInstance.result.then(function () {

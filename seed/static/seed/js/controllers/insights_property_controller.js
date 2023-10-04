@@ -548,7 +548,8 @@ angular.module('BE.seed.controller.insights_property', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: $scope.visibleIds,
-            inventory_type: () => 'properties'
+            inventory_type: () => 'properties',
+            is_ali_root: () => $scope.menu.user.is_ali_root,
           }
         });
       };
