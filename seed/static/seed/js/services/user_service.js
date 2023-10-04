@@ -36,6 +36,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       return access_level_instance || {
         "id": window.BE.access_level_instance_id,
         "name": window.BE.access_level_instance_name,
+        "is_ali_root": window.BE.is_ali_root == "True",
       };
     };
 

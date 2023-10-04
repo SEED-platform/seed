@@ -54,9 +54,10 @@ def _get_default_org(user):
         org_user_role = get_js_role(ou.role_level) if ou else ""
         ali_name = ou.access_level_instance.name
         ali_id = ou.access_level_instance.id
-        return org_id, org_name, org_user_role, ali_name, ali_id
+        is_ali_root = ou.access_level_instance == ou.organization.root
+        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root
     else:
-        return "", "", "", "", ""
+        return "", "", "", "", "", ""
 
 
 @login_required
@@ -68,7 +69,7 @@ def home(request):
         * **username**: the request user's username (first and last name)
     """
     username = request.user.first_name + " " + request.user.last_name
-    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id = _get_default_org(
+    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root = _get_default_org(
         request.user
     )
     debug = settings.DEBUG

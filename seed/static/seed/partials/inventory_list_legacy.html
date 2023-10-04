@@ -55,7 +55,7 @@
                     </li>
                     <li class="divider"></li>
                     <li role="menuitem">
-                        <a ng-click="open_show_populated_columns_modal()" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
+                        <a ng-click="open_show_populated_columns_modal()" ng-if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>Only Show Populated Columns</a>
                     </li>
                 </ul>
             </div>
