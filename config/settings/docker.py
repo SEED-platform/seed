@@ -94,7 +94,7 @@ elif 'REDIS_PASSWORD' in os.environ:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis') + ':6379',
+            'LOCATION': f"{os.environ.get('REDIS_HOST', 'db-redis')}:6379",
             'OPTIONS': {
                 'DB': 1,
                 'PASSWORD': REDIS_PASSWORD,  # noqa F405

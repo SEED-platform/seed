@@ -263,6 +263,7 @@ readthedocs
 Recurse
 redis
 Redis
+rediss
 Redistributions
 regex
 repo
