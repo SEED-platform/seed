@@ -43,6 +43,7 @@
 * Fix filter group dropdown bugs by @ebeers-png in https://github.com/SEED-platform/seed/pull/4249
 * Fix EEEJ analysis errors when there are no lat/long or address by @kflemin in https://github.com/SEED-platform/seed/pull/4247
 * ArcGIS CSP rule by @axelstudios in https://github.com/SEED-platform/seed/pull/4265
+* Fix edge case for map label filtering by @axelstudios in https://github.com/SEED-platform/seed/pull/4270
 
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.19.0...v2.20.0
