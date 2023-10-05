@@ -86,7 +86,7 @@
 
     			<div class="button-grid">
     				<div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="downloadChart()">
-    					<i class="fas fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span>
+    					<i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span>
     				</button></div>
     				<div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Labels</button></div>
     			</div>
@@ -96,7 +96,7 @@
 	          <canvas id="property-insights-chart"></canvas>
 	        </div>
 	          <div class="section_content r-columns" style="display:unset !important;" >
-	            <div class="r-column r-shrink table_list_container" ngIf="data" style="margin-top:2vw; margin-right: 5vw">
+	            <div class="r-column r-shrink table_list_container" ng-if="data" style="margin-top:2vw; margin-right: 5vw">
 	                <table>
 	                    <thead>
 	                        <tr>
@@ -113,7 +113,7 @@
 	                        </tr>
 	                        <tr ng-show="show_properties_for_dataset['y']">
 	                            <td></td>
-	                            <td style="padding: 0px">
+	                            <td style="padding: 0">
 									<table style="width: 100%">
 										<tr>
 										  <th>Name</th>

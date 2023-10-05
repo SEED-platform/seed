@@ -5,9 +5,9 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@fontsource/pt-sans": "^4.5.11",
-    "@fontsource/pt-sans-narrow": "^4.5.11",
-    "@fortawesome/fontawesome-free": "^6.3.0",
+    "@fontsource/pt-sans": "^5.0.8",
+    "@fontsource/pt-sans-narrow": "^5.0.15",
+    "@fortawesome/fontawesome-free": "^6.4.2",
     "angular": "^1.8.3",
     "angular-animate": "^1.8.3",
     "angular-aria": "^1.8.3",

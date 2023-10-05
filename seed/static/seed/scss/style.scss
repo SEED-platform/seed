@@ -231,14 +231,6 @@ a:not([href]) {
       text-overflow: ellipsis;
     }
 
-    #sidebar-menu-open,
-    #sidebar-menu-close {
-      font-size: 1em;
-      position: absolute;
-      top: 0.3em;
-      left: 1.5em;
-    }
-
     .item {
       position: relative;
       overflow: hidden;
@@ -276,14 +268,25 @@ a:not([href]) {
       }
 
       .icon {
+        display: flex;
+        align-items: center;
         position: relative;
         float: left;
         width: 20px;
         text-align: center;
+
+        i {
+          width: 100%;
+        }
+
+        .toggle {
+          display: flex;
+          padding-left: 2px;
+        }
       }
 
-      i {
-        font-size: 20px;
+      i:not(.fa-sm) {
+        font-size: 18px;
       }
 
       .item_name {
@@ -1225,7 +1228,7 @@ a:not([href]) {
                   padding: 0 10px;
                 }
 
-                i.fa-cog {
+                i.fa-gear {
                   color: $gray_lighter;
                 }
 
@@ -1234,7 +1237,7 @@ a:not([href]) {
                     visibility: visible;
                   }
 
-                  i.fa-cog {
+                  i.fa-gear {
                     color: $gray;
                   }
                 }
@@ -1369,7 +1372,7 @@ a:not([href]) {
                 padding: 0 10px;
               }
 
-              i.fa-cog {
+              i.fa-gear {
                 color: $gray_lighter;
               }
 
@@ -1378,7 +1381,7 @@ a:not([href]) {
                   visibility: visible;
                 }
 
-                i.fa-cog {
+                i.fa-gear {
                   color: $gray;
                 }
               }
@@ -2952,6 +2955,11 @@ tags-input .tags .tag-item .remove-button {
         color: #222;
         border-radius: 6px 6px 0 0;
 
+        display: flex;
+        align-items: center;
+        height: 41px;
+        padding: 0 15px;
+
         &:hover {
           background-color: $blue;
           color: #fff;
@@ -3111,7 +3119,7 @@ tags-input .tags .tag-item .remove-button {
 //}
 
 .ui-grid-cell-contents {
-  &:not(.fas) {
+  &:not(.fas):not(.fa-solid) {
     font-weight: normal;
   }
 
@@ -3823,11 +3831,9 @@ $pairedCellWidth: 60px;
 }
 
 .merged-indicator {
-  transform: scaleY(-1);
-  padding-top: 8px;
+  padding-top: 6px;
 
-  i.fa {
-    font-size: 16px;
+  i.fa-solid {
     text-align: center;
     width: 100%;
 

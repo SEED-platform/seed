@@ -83,7 +83,7 @@
                 </tags-input>
                 <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-lg fa-trash"></i></span>
             </div>
-            <div class="btn-group">
+            <div class="btn-group" style="height: 30px">
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and'); filterUsingLabels()" ng-disabled="!labels.length" translate>AND</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or'); filterUsingLabels()" ng-disabled="!labels.length" translate>OR</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude'); filterUsingLabels()" ng-disabled="!labels.length" translate>EXCLUDE</span>
@@ -140,10 +140,10 @@
     </div>
 </div>
 
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
+<div class="section_content_container" ng-cloak style="display: flex; flex: 1">
+    <div class="section_content" style="display: flex; width: 100%">
+        <div id="grid-container" style="display: flex; width: 100%; overflow-x: hidden">
+            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view style="display: flex; width: 100%"></div>
         </div>
     </div>
 </div>

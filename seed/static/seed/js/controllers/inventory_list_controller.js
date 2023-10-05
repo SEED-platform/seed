@@ -808,7 +808,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           headerCellTemplate: '<span></span>', // remove header
           cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <div title="' + $translate.instant('Merged Records') + '" class="ui-grid-cell-contents merged-indicator">' +
-          '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
+          '    <i class="fa-solid fa-code-fork fa-lg fa-rotate-180" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
           '  </div>' +
           '</div>',
           enableColumnMenu: false,
@@ -908,7 +908,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           headerCellTemplate: '<span></span>', // remove header
           cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <div title="' + $translate.instant('Merged Records') + '" class="ui-grid-cell-contents merged-indicator">' +
-          '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
+          '    <i class="fa-solid fa-code-fork fa-lg fa-rotate-180" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
           '  </div>' +
           '</div>',
           enableColumnMenu: false,
@@ -1379,13 +1379,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       $scope.updateHeight = function () {
-        var height = 0;
+        let height = 0;
         _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], function (selector) {
           var element = angular.element(selector)[0];
           if (element) height += element.offsetHeight;
         });
-        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-        angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height - 1) + 'px)');
         $scope.gridApi.core.handleWindowResize();
       };
 

@@ -79,7 +79,7 @@
                                         <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
                                         <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
                                             <span class="r-grow">{$:: get_cycle_display(item) $}</span>
-                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
+                                            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
                                         </li>
                                         <li class="r-row r-row-centered">
                                             <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection">

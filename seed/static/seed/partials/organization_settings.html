@@ -16,7 +16,7 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa-solid fa-cogs"></i> {$:: 'Settings' | translate $}</h2>
+                <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
             </div>
             <div class="section_action_container right section_action_btn">
                 <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
@@ -24,7 +24,7 @@
                 </button>
             </div>
         </div>
-        <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right"><i class="fa-solid fa-exclamation-circle fa-lg"></i> Error saving: {$ form_errors $}</div>
+        <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
 
     </div>
 
@@ -103,9 +103,9 @@
                                 >
                                     {$ token_validity.message $}
                                     <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
-                                    <i class="fa-solid fa-times" ng-show="token_validity.status == 'invalid'"></i>
+                                    <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                                 </button>
-                                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0px" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
+                                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
                                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
@@ -260,7 +260,7 @@
 
             <div class="section_header_container has_btm_margin">
                 <div class="section_header">
-                    <h2><i class="fa-solid fa-exchange"></i> {$:: 'Salesforce Integration' | translate $}</h2>
+                    <h2><i class="fa-solid fa-arrow-right-arrow-left"></i> {$:: 'Salesforce Integration' | translate $}</h2>
                 </div>
             </div>
             <div class="section_content_container">
@@ -373,10 +373,10 @@
                                 </div>
                                 <div class="col-sm-11">
                                     <div ng-if="test_sf == 'success'" class="r-panel r-success r-margin-bottom-10 r-margin-top-10" aria-hidden="false">
-                                        <i class="fa-solid fa-check-circle-o fa-lg"></i> {$:: 'Success!' | translate $}
+                                        <i class="fa-regular fa-circle-check fa-lg"></i> {$:: 'Success!' | translate $}
                                     </div>
                                     <div ng-if="test_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
-                                        <i class="fa-solid fa-exclamation-circle fa-lg"></i>
+                                        <i class="fa-solid fa-circle-exclamation fa-lg"></i>
                                         Error: {$ test_sf_msg $}
                                     </div>
                                 </div>
@@ -388,7 +388,7 @@
 
                 <div class="section_header_container has_btm_margin">
                     <div class="section_header">
-                        <h2><i class="fa-solid fa-clock-o"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
+                        <h2><i class="fa-solid fa-clock"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
                     </div>
                 </div>
                  <div class="section_content_container">
@@ -453,7 +453,7 @@
                                 </div>
                                 <div class="col-sm-11">
                                     <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
-                                        <i class="fa-solid fa-exclamation-circle fa-lg"></i>
+                                        <i class="fa-solid fa-circle-exclamation fa-lg"></i>
                                         Error: {$ sync_sf_msg $}
                                     </div>
                                 </div>
@@ -464,7 +464,7 @@
 
                 <div class="section_header_container has_btm_margin">
                     <div class="section_header">
-                        <h2><i class="fa-solid fa-cogs"></i> {$:: 'Configuration' | translate $}</h2>
+                        <h2><i class="fa-solid fa-gears"></i> {$:: 'Configuration' | translate $}</h2>
                     </div>
                 </div>
                 <div class="section_content_container">
@@ -965,7 +965,7 @@
     <div class="section_content_container" style="margin: 30px 0;" ng-if="::auth.requires_owner">
         <div class="section_content with_padding">
             <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
-            <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-exclamation-circle fa-lg"></i> Error saving: {$ form_errors $}</div>
+            <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
 
         </div>
     </div>

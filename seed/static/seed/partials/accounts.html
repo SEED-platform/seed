@@ -39,17 +39,17 @@
                                 <a ui-sref="organization_labels(::{organization_id: org.id})"><i class="fa-solid fa-tags"></i>{$:: 'Labels' | translate $}</a>
                                 <a ui-sref="organization_members(::{organization_id: org.id})"><i class="fa-solid fa-user"></i>{$:: 'Members' | translate $}</a>
                                 <a ui-sref="programs(::{organization_id: org.id})"><i class="fa-solid fa-gauge-high"></i>{$:: 'Program Setup' | translate $}</a>
-                                <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa-solid fa-cogs"></i>Settings</a>
+                                <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa-solid fa-gears"></i>Settings</a>
                                 <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-solid fa-share-from-square"></i>{$:: 'Sharing' | translate $}</a>
                                 <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-solid fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
-                                <i class="fa-solid fa-cog"></i>
+                                <i class="fa-solid fa-gear"></i>
                             </td>
                         </tr>
                         <tr ng-if="::org.is_parent">
                             <th class="sub_head sub_org" translate>Sub-Organizations</th>
                             <th class="sub_head sub_org right">
                                 <a ng-click="create_sub_organization_modal(org)"><i class="fa-solid fa-plus"></i>{$:: 'Create new sub-organization' | translate $}</a>
-                                <i class="fa-solid fa-cog"></i>
+                                <i class="fa-solid fa-gear"></i>
                             </th>
                         </tr>
                         <tr ng-repeat="sub_org in org.sub_orgs">
@@ -57,10 +57,10 @@
                                 <a ui-sref="organization_members(::{organization_id: sub_org.id})">{$:: sub_org.name $}</a>
                             </td>
                             <td class="account_org right">
-                                <a ui-sref="organization_settings(::{organization_id: sub_org.id})"><i class="fa-solid fa-cogs"></i>{$:: 'Settings' | translate $}</a>
+                                <a ui-sref="organization_settings(::{organization_id: sub_org.id})"><i class="fa-solid fa-gears"></i>{$:: 'Settings' | translate $}</a>
                                 <a ui-sref="organization_labels(::{organization_id: sub_org.id})"><i class="fa-solid fa-tags"></i>{$:: 'Labels' | translate $}</a>
                                 <a ui-sref="organization_members(::{organization_id: sub_org.id})"><i class="fa-solid fa-user"></i>{$:: 'Members' | translate $}</a>
-                                <i class="fa-solid fa-cog"></i>
+                                <i class="fa-solid fa-gear"></i>
                             </td>
                         </tr>
                     </tbody>

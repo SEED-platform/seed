@@ -2,7 +2,7 @@
     <div class="page_header">
         <div class="left page_action_container">
             <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i>
+                <i class="fa-solid fa-chevron-left"></i>
                 {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
             </a>
         </div>
@@ -21,10 +21,10 @@
             <span>
                 <h2>
                     <span ng-if="::inventory_type === 'properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> :
+                        <i class="fa-regular fa-building"></i><span translate>Property</span> :
                     </span>
                     <span ng-if="::inventory_type === 'taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
+                        <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> :
                     </span>
                     <span ng-if="inventory_name">{$:: inventory_name | translate $}</span>
                     <span ng-if="!inventory_name">({$:: inventory_name_error $})
@@ -73,7 +73,7 @@
             <div class="accordion-header">
                 <button class="accordion-button cycle-button" type="button" data-toggle="collapse" data-target="#cycle-events-{$ $index $}">
                     <div style="display: flex;">
-                        <i class="fa fa-chevron-down accordion-indicator-default-open"></i>
+                        <i class="fa-solid fa-chevron-down accordion-indicator-default-open"></i>
                         <div style="min-width: 300px; width: fit-content;">
                             {$ cycleNameById[cycle.cycle] $}
                         </div>
@@ -91,7 +91,7 @@
                 <div class="accordion-item" ng-repeat="event in cycle.events track by event.id" id="cycle-event-{$ event.id $}">
                     <div class="accordion-header">
                         <button class="accordion-button event-button" type="button" data-toggle="collapse" data-target="#event-{$ event.id $}" ng-click="resizeGridByEventType(event)">
-                            <i class="fa fa-chevron-right accordion-indicator-default-closed"></i>
+                            <i class="fa-solid fa-chevron-right accordion-indicator-default-closed"></i>
                             <span class="event-detail">{$ formatDate(event.modified) $}</span>
                             <span class="event-detail" style="min-width: 200px; width: fit-content;">{$ formatUser(event.user_id) $}</span>
                             <span class="event-detail">{$ eventTypeLookup[event.event_type] $}</span>
