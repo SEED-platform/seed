@@ -556,21 +556,22 @@ angular.module('BE.seed.controller.inventory_map', [])
             return rerenderPoints(records);
           }
 
+          const viewIdProperty = isPropertiesTab ? 'property_view_id' : 'taxlot_view_id';
           if ($scope.labelLogic === 'and') {
             // Find properties/taxlots with all labels
-            const ids = new Set($scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => acc.filter(id => ids.includes(id))));
-            records = $scope.geocoded_data.filter(({id}) => ids.has(id));
+            const viewIds = new Set($scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => acc.filter(id => ids.includes(id))));
+            records = $scope.geocoded_data.filter((record) => viewIds.has(record[viewIdProperty]));
           } else if ($scope.labelLogic === 'or') {
             // Find properties/taxlots with any label
-            const ids = $scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => {
+            const viewIds = $scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => {
               for (const id of ids) acc.add(id);
               return acc;
             }, new Set());
-            records = $scope.geocoded_data.filter(({id}) => ids.has(id));
+            records = $scope.geocoded_data.filter((record) => viewIds.has(record[viewIdProperty]));
           } else if ($scope.labelLogic === 'exclude') {
             // Find properties/taxlots with all labels, return everything else
-            const ids = new Set($scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => acc.filter(id => ids.includes(id))));
-            records = $scope.geocoded_data.filter(({id}) => !ids.has(id));
+            const viewIds = new Set($scope.selected_labels.map(({is_applied}) => is_applied).reduce((acc, ids) => acc.filter(id => ids.includes(id))));
+            records = $scope.geocoded_data.filter((record) => !viewIds.has(record[viewIdProperty]));
           }
 
           inventory_service.saveSelectedLabels(localStorageLabelKey, $scope.selected_labels.map(({id}) => id));

@@ -1,6 +1,6 @@
 # SEED Version 2.20.0
 
-<!-- Release notes generated using configuration in .github/release.yml at prep-release-2.20.0 -->
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
 
 ## What's Changed
 ### New Features 🎉
@@ -18,6 +18,8 @@
 * Update default meter range selection for BETTER analysis by @perryr16 in https://github.com/SEED-platform/seed/pull/3819
 * Add a cycle indicator to the analysis modal and filter analyses for current cycle by @perryr16 in https://github.com/SEED-platform/seed/pull/3837
 * Add envvar to specify loading test EEEJ dataset by @kflemin in https://github.com/SEED-platform/seed/pull/4254
+* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
+* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
 ### Maintenance 🧹
 * Remove Deprecated APIs by @axelstudios in https://github.com/SEED-platform/seed/pull/4049
 * Lock `google-chrome` to v114 by @axelstudios in https://github.com/SEED-platform/seed/pull/4165
@@ -26,6 +28,7 @@
 * Bump uwsgi from 2.0.17.1 to 2.0.22 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4209
 * Allow analysis property view related properties to be null by @perryr16 in https://github.com/SEED-platform/seed/pull/4227
 * Disable ability to remove matching criteria fields once inventory is added by @perryr16 in https://github.com/SEED-platform/seed/pull/4222
+* Add documentation for cleaning up conflicting column names during migration by @nllong in https://github.com/SEED-platform/seed/pull/4264
 ### Bug Fixes 🐛
 * Add Open Street Map to CSP rules by @axelstudios in https://github.com/SEED-platform/seed/pull/4169
 * add error handling for sf edge case by @kflemin in https://github.com/SEED-platform/seed/pull/4159
@@ -39,6 +42,8 @@
 * Fix Meter Overwrites by @axelstudios in https://github.com/SEED-platform/seed/pull/4250
 * Fix filter group dropdown bugs by @ebeers-png in https://github.com/SEED-platform/seed/pull/4249
 * Fix EEEJ analysis errors when there are no lat/long or address by @kflemin in https://github.com/SEED-platform/seed/pull/4247
+* ArcGIS CSP rule by @axelstudios in https://github.com/SEED-platform/seed/pull/4265
+* Fix edge case for map label filtering by @axelstudios in https://github.com/SEED-platform/seed/pull/4270
 
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.19.0...v2.20.0
