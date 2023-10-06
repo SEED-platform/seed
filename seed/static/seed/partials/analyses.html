@@ -61,7 +61,7 @@
                         <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>
                         <td class="analysis-status {$ analysis.status.toLowerCase() $}">
                             <i
-                                class="fa fa-refresh fa-pulse fa-fw" style="padding-right: 0"
+                                class="fa-solid fa-arrows-rotate fa-pulse fa-fw" style="padding-right: 0"
                                 ng-if="!analysis._finished_with_tasks"></i>
                             {$ analysis.status $}
                         </td>
@@ -96,7 +96,7 @@
                                     {$:: view.display_name || 'Property ' + original_views[view.id] $}
                                 </a>
                                 <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists">
-                                    <i class="fa fa-exclamation-triangle"></i> {$:: view.display_name || 'Unknown' $}
+                                    <i class="fa-solid fa-triangle-exclamation"></i> {$:: view.display_name || 'Unknown' $}
                                 </span>
                             </td>
                             <td>
@@ -108,8 +108,8 @@
                             </td>
                             <td>
                                 <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-                                    <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa fa-download"></span></a>
-                                    <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa fa-download"></span></a>
+                                    <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa-solid fa-download"></span></a>
+                                    <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa-solid fa-download"></span></a>
                                     <span ng-repeat-end ng-if="!$last">, </span>
                                 </span>
                             </td>

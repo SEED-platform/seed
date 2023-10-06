@@ -64,7 +64,7 @@
             <div class="input-group input-group-sm grow">
                 <tags-input id="sort-list" class="ti-input-sm tags-input-style grow" ng-model="column_sorts" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_sort($tag)">
                 </tags-input>
-                <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa fa-lg fa-trash"></i></span>
+                <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa-solid fa-lg fa-trash"></i></span>
             </div>
         </div>
         <div class="row">
@@ -72,7 +72,7 @@
             <div class="input-group input-group-sm grow">
                 <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
                 </tags-input>
-                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
+                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa-solid fa-lg fa-trash"></i></span>
             </div>
         </div>
         <div class="row">
@@ -81,9 +81,9 @@
                 <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
-                <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
+                <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-lg fa-trash"></i></span>
             </div>
-            <div class="btn-group">
+            <div class="btn-group" style="height: 30px">
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and'); filterUsingLabels()" ng-disabled="!labels.length" translate>AND</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or'); filterUsingLabels()" ng-disabled="!labels.length" translate>OR</span>
                 <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude'); filterUsingLabels()" ng-disabled="!labels.length" translate>EXCLUDE</span>
@@ -129,21 +129,21 @@
             ng-click="load_inventory(inventory_pagination.page - 1)"
             ng-disabled="!inventory_pagination.has_previous"
             class="btn btn-default btn-sm">
-            <i class="fa fa-chevron-left"></i>
+            <i class="fa-solid fa-chevron-left"></i>
         </button>
         <button
             ng-click="load_inventory(inventory_pagination.page + 1)"
             ng-disabled="!inventory_pagination.has_next"
             class="btn btn-default btn-sm">
-            <i class="fa fa-chevron-right"></i>
+            <i class="fa-solid fa-chevron-right"></i>
         </button>
     </div>
 </div>
 
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
+<div class="section_content_container" ng-cloak style="display: flex; flex: 1">
+    <div class="section_content" style="display: flex; width: 100%">
+        <div id="grid-container" style="display: flex; width: 100%; overflow-x: hidden">
+            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view style="display: flex; width: 100%"></div>
         </div>
     </div>
 </div>

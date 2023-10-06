@@ -2,7 +2,7 @@
     <div class="page_header">
         <div class="left page_action_container">
             <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa fa-chevron-left"></i>
+                <i class="fa-solid fa-chevron-left"></i>
                 {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
             </a>
         </div>
@@ -22,10 +22,10 @@
                 <span>
                     <h2>
                         <span ng-if="::inventory_type==='properties'">
-                            <i class="fa fa-building-o"></i><span translate>Property</span> :
+                            <i class="fa-regular fa-building"></i><span translate>Property</span> :
                         </span>
                         <span ng-if="::inventory_type==='taxlots'">
-                            <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
+                            <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> :
                         </span>
                         <span ng-style="!inventory_display_name && {'opacity': 0.5}">
                             {$ (inventory_display_name || 'Unknown') | translate $}
@@ -35,7 +35,7 @@
                 </span>
             </div>
             <div id="inventory-detail-edit" class="section_action_container right" ng-hide="edit_form_showing">
-                <a ng-click="on_edit()" ng-show="::user_role !== 'viewer'"><i class="fa fa-pencil"></i> {$:: 'Edit' | translate $}</a>
+                <a ng-click="on_edit()" ng-show="::user_role !== 'viewer'"><i class="fa-solid fa-pencil"></i> {$:: 'Edit' | translate $}</a>
             </div>
             <div id="inventory-detail-buttons" class="section_action_container right section_action_btn" ng-show="edit_form_showing">
                 <a role="button" class="btn btn-primary btn-sm" ng-click="on_save()" ng-disabled="!modified()" translate>Save Changes</a>
@@ -184,7 +184,7 @@
                                 <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
                                     {$:: historical_item.filename $}
                                     <a ng-if="::historical_item.file" style="padding-left: 8px;" href="{$:: historical_item.file $}" download="{$:: historical_item.filename $}">
-                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                        <i class="fa-solid fa-download" aria-hidden="true"></i>
                                     </a>
                                 </div>
                             </th>
@@ -193,7 +193,7 @@
                     <tbody>
                         <tr ng-repeat="col in ::columns">
                             <!-- Column name -->
-                            <td ng-attr-title="{$:: col.column_name $}"><i ng-if="col.derived_column" class="fa fa-link"></i> {$:: col.displayName | translate $}</td>
+                            <td ng-attr-title="{$:: col.column_name $}"><i ng-if="col.derived_column" class="fa-solid fa-link"></i> {$:: col.displayName | translate $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
@@ -219,7 +219,7 @@
                             <!-- Show read-only current derived column value -->
                             <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
                                 <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                                    <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
+                                    <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
                                     <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
                                 </span>
                             </td>
@@ -263,10 +263,10 @@
                 <div class="section_action_container left">
                 <span>
                     <h2 ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-building-o"></i> {$:: 'Paired Properties' | translate $}
+                        <i class="fa-regular fa-building"></i> {$:: 'Paired Properties' | translate $}
                     </h2>
                     <h2 ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-map-o"></i> {$:: 'Paired Tax Lots' | translate $}
+                        <i class="fa-regular fa-map"></i> {$:: 'Paired Tax Lots' | translate $}
                     </h2>
                     </span>
                 </div>
@@ -333,12 +333,12 @@
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                         <span>
-                            <h2><i class="fa fa-paperclip"></i>{$:: 'Inventory Documents' | translate $} </h2>
+                            <h2><i class="fa-solid fa-paperclip"></i>{$:: 'Inventory Documents' | translate $} </h2>
                         </span>
                         </div>
                     </div>
                     <button type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px;">
-                        <i class="fa fa-paperclip"></i> <span translate>Add a Document</span>
+                        <i class="fa-solid fa-paperclip"></i> <span translate>Add a Document</span>
                     </button>
                 </div>
             </div>
@@ -360,8 +360,8 @@
                                         {$:: file.filename $}
                                     </td>
                                     <td style="border-left:0px; text-align:right;">
-                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa fa-download" aria-hidden="true"></i></a>
-                                        <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
+                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
+                                        <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa-solid fa-trash-can"></i></a>
                                     </td>
                                     <td> {$ file.file_type $}</td>
                                     <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
@@ -377,7 +377,7 @@
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                         <span>
-                            <h2><i class="fa fa-file"></i>{$:: 'Building Files (Main State Only)' | translate $} </h2>
+                            <h2><i class="fa-solid fa-file"></i>{$:: 'Building Files (Main State Only)' | translate $} </h2>
                         </span>
                         </div>
                     </div>
@@ -413,7 +413,7 @@
                         <div class="section_action_container left" style="width: 50%;">
                             <span>
                                 <h2>
-                                    <!-- <i class="fa fa-bolt"></i> -->
+                                    <!-- <i class="fa-solid fa-bolt"></i> -->
                                     <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg">
                                     <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0;">
 
@@ -441,7 +441,7 @@
                             data-toggle="collapse"
                             data-target="#historical-item-{$ $index $}"
                         >
-                            <i class="fa fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
+                            <i class="fa-solid fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
                             <span class="event-detail">Audit Date: {$ historical_item.state.extra_data.audit_date $}</span>
                             <span class="event-detail">Upload Date: {$ format_epoch(historical_item.date_edited) $}</span>
                             <span class="event-detail">{$ historical_item.state.extra_data.audit_date_type $}</span>

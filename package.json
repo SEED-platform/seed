@@ -14,7 +14,7 @@
     "url": "https://github.com/SEED-platform/seed/issues"
   },
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=16"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.15",
@@ -34,7 +34,6 @@
     "test": "npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   },
   "browserslist": [
-    "last 3 versions",
-    "ie >= 10"
+    "last 3 versions"
   ]
 }

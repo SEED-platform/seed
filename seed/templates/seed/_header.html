@@ -31,14 +31,14 @@
                         ng-mouseout="mouseout_org()"
                     >
                         {$ org.name $}
-                        <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i>
+                        <i class="fa-solid fa-check" ng-show="org.id == menu.user.organization.id"></i>
                     </a>
                 </li>
             </ul>
         </div>
         <div class="btn-group" uib-dropdown ng-hide="menu.user.organization.user_role === 'viewer'">
             <button id="btnCreateNew" type="button" class="btn dropdown-toggle" uib-dropdown-toggle>
-                <i class="fa fa-plus"></i>
+                <i class="fa-solid fa-plus"></i>
                 <span class="sr-only" translate>Toggle Dropdown</span>
             </button>
             <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
