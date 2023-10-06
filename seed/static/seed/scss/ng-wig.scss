@@ -19,12 +19,12 @@
   padding: 0 !important;
   list-style: none !important;
   font-size: 12px;
-  color: #6B7277;
+  color: #6b7277;
 
   background: -webkit-linear-gradient(90deg, #ffffff 0%, #f9f9f9 100%);
   background: -moz-linear-gradient(90deg, #ffffff 0%, #f9f9f9 100%);
   background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
-  border: 1px solid #CCCCCC;
+  border: 1px solid #cccccc;
   border-radius: 3px 3px 0 0;
 }
 
@@ -33,7 +33,7 @@
   vertical-align: top;
   margin: 0;
 
-  border-right: 1px solid #DEDEDE;
+  border-right: 1px solid #dedede;
 }
 
 .nw-toolbar label {
@@ -42,7 +42,7 @@
   padding: 0 6px 0 3px;
 }
 
-.nw-toolbar input[type=checkbox] {
+.nw-toolbar input[type="checkbox"] {
   vertical-align: -3px;
   margin-right: -1px;
 }
@@ -56,7 +56,7 @@
 }
 
 .nw-editor-container {
-  border: 1px solid #CCCCCC;
+  border: 1px solid #cccccc;
   border-top: none;
   border-radius: 0 0 3px 3px;
   position: relative;
@@ -143,35 +143,35 @@
 }
 
 .nw-button.bold:before {
-  content: '\f032';
+  content: "\f032";
 }
 
 .nw-button.italic:before {
-  content: '\f033';
+  content: "\f033";
 }
 
 .nw-button.list-ul:before {
-  content: '\f0ca';
+  content: "\f0ca";
 }
 
 .nw-button.list-ol:before {
-  content: '\f0cb';
+  content: "\f0cb";
 }
 
 .nw-button.link:before {
-  content: '\f0c1';
+  content: "\f0c1";
 }
 
 .nw-button.font-color:before {
-  content: '\f031';
+  content: "\f031";
 }
 
 .nw-button.nw-button--source:before {
-  content: '\f040';
+  content: "\f040";
 }
 
 .nw-button.clear-styles:before {
-  content: '\f12d';
+  content: "\f12d";
 }
 
 .nw-button:focus {
@@ -180,11 +180,11 @@
 
 .nw-button:hover,
 .nw-button.nw-button--active {
-  opacity: 1
+  opacity: 1;
 }
 
 .nw-button--active {
-  background-color: #EEEEEE;
+  background-color: #eeeeee;
 }
 
 .nw-button:disabled {
