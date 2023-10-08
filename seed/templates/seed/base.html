@@ -33,7 +33,6 @@
         <link rel="shortcut icon" href="{{STATIC_URL}}seed/images/favicon.ico">
         {% compress css %}
         <link href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/ng-tags-input/build/ng-tags-input.min.css" rel="stylesheet" type="text/css">
@@ -41,13 +40,12 @@
         <link href="/static/node_modules/angular-xeditable/dist/css/xeditable.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/ng-wig/dist/css/ng-wig.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/ol/ol.css" rel="stylesheet" type="text/css">
         {% endcompress %}
 
         {% block css %}{{block.super}}
             {% compress css %}
-        <style type="text/css">
+        <style>
           [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
             display: none !important;
           }
@@ -123,7 +121,7 @@
         <!-- reports -->
         <script src="/static/node_modules/d3/dist/d3.min.js"></script>
         <script src="/static/node_modules/dimple/dist/dimple.latest.min.js"></script>
-        <script src="/static/node_modules/chart.js/dist/chart.js"></script>
+        <script src="/static/node_modules/chart.js/dist/chart.min.js"></script>
         <script src="/static/node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
         <script src="/static/node_modules/hammerjs/hammer.min.js"></script>
         <script src="/static/node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>

@@ -15,7 +15,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-code" style="font-weight: bold;"></i> {$:: 'API Key' | translate $}</h2>
+            <h2><i class="fa-solid fa-code" style="font-weight: bold;"></i> {$:: 'API Key' | translate $}</h2>
         </div>
     </div>
     <div class="section_content_container">
@@ -43,7 +43,7 @@
                         </table>
                     </div>
                     <div class="table_footer">
-                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa fa-check" ng-show="new_key_generated"></i></button>
+                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa-solid fa-check" ng-show="new_key_generated"></i></button>
                     </div>
                     <div ng-if="user.api_key" style="margin-top: 30px;">
                         <p translate>Example Usage</p>

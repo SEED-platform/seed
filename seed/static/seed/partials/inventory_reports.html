@@ -19,7 +19,7 @@
                 <div class="col-md-12">
                     <div class="row">
                         <div class="col-md-2">
-                            <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
+                            <h2 style="font-size:18px;"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
                         </div>
                         <div class="col-md-10">
                             <form class="form-inline pull-right chart-inputs" role="form">
@@ -85,7 +85,7 @@
                             <tbody>
                                 <tr ng-repeat="obj in propertyCounts">
                                     <td>
-                                        <i class="fa fa-circle" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
+                                        <i class="fa-solid fa-circle" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
                                     </td>
                                     <td>{$ obj['num_properties_w-data'] $}</td>
                                     <td>{$ obj.num_properties $}</td>
@@ -122,7 +122,7 @@
                             <tbody>
                                 <tr ng-repeat="obj in aggPropertyCounts">
                                     <td>
-                                        <i class="fa fa-square" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
+                                        <i class="fa-solid fa-square" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
                                     </td>
                                     <td>{$ obj['num_properties_w-data'] $}</td>
                                     <td>{$ obj.num_properties $}</td>

@@ -7,7 +7,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a class="page_action" ui-sref="dataset_detail(::{dataset_id: import_file.dataset.id})"><i class="fa fa-chevron-left"></i> {$:: import_file.dataset.name $}</a>
+            <a class="page_action" ui-sref="dataset_detail(::{dataset_id: import_file.dataset.id})"><i class="fa-solid fa-chevron-left"></i> {$:: import_file.dataset.name $}</a>
         </div>
         <div class="page_title">
             <h1 translate="DATA_MAPPING_AND_VALIDATION"
@@ -220,17 +220,17 @@
         <div class="section_header fixed_height">
             <div class="left_40 section_action_container">
                 <button type="button" class="btn btn-primary" ng-click="backToMapping()">
-                    <i class="fa fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
+                    <i class="fa-solid fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
                 </button>
             </div>
             <div class="right_60 section_action_container section_action_btn">
                 <button type="button" class="btn btn-default" ng-click="open_data_quality_modal()">
-                    <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
+                    <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
                     <span ng-if="data_quality_results_ready && data_quality_errors > 0">
-                        {$ data_quality_errors $} <i class="fa fa-exclamation-triangle" style="color: #ffb7b7"></i>
+                        {$ data_quality_errors $} <i class="fa-solid fa-triangle-exclamation" style="color: #ffb7b7"></i>
                     </span>
                     <span ng-if="data_quality_results_ready && data_quality_warnings > 0">
-                        {$ data_quality_warnings $} <i class="fa fa-exclamation-triangle" style="color: #fdf4bf"></i>
+                        {$ data_quality_warnings $} <i class="fa-solid fa-triangle-exclamation" style="color: #fdf4bf"></i>
                     </span>
                     {$:: 'Data Quality Results' | translate $}
                 </button>
@@ -245,8 +245,8 @@
             <li heading="View by Property" class="active"><a translate>View by Property</a></li>
         </ul>
         <div class="item-count">
-            <i class="fa fa-calendar"></i> <span class="pad-right-20">{$ cycleName $}</span>
-            <i class="fa fa-building-o"></i> <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
+            <i class="fa-regular fa-calendar-days"></i> <span class="pad-right-20">{$ cycleName $}</span>
+            <i class="fa-regular fa-building"></i> <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: mappedData.properties.length }"></span>
         </div>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.properties.length">
@@ -261,8 +261,8 @@
             <li heading="View by Tax Lot" class="active"><a translate>View by Tax Lot</a></li>
         </ul>
         <div class="item-count">
-            <i class="fa fa-calendar"></i> <span class="pad-right-20">{$ cycleName $}</span>
-            <i class="fa fa-map-o"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
+            <i class="fa-regular fa-calendar-days"></i> <span class="pad-right-20">{$ cycleName $}</span>
+            <i class="fa-regular fa-map"></i> <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: mappedData.tax_lots.length }"></span>
         </div>
     </div>
     <div class="section_content_container" ng-if="show_mapped_buildings && mappedData.tax_lots.length">
@@ -275,7 +275,7 @@
     <div class="section_bottom_container row" style="margin: 16px auto;">
         <div class="col-sm-6">
             <button type="button" class="btn btn-primary" ng-click="backToMapping()" ng-show="show_mapped_buildings">
-                <i class="fa fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
+                <i class="fa-solid fa-chevron-left"></i> {$:: 'Back to Mapping' | translate $}
             </button>
         </div>
         <div class="col-sm-6" ng-hide="review_mappings">

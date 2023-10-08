@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+            <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
         </div>
         <div class="page_title">
             <h1>{$:: org.name $}</h1>
@@ -19,11 +19,11 @@
     <div class="section_header_container">
         <div class="section_header has_no_padding fixed_height_short">
             <div class="section_action_container left">
-                <h2><i class="fa fa-tachometer"></i> {$:: 'Program Setup' | translate $}</h2>
+                <h2><i class="fa-solid fa-gauge-high"></i> {$:: 'Program Setup' | translate $}</h2>
             </div>
             <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
                 <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
-                <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa fa-check" ng-show="settings_updated"></i></button>
+                <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
             </div>
         </div>
     </div>
@@ -35,26 +35,26 @@
                     <li class="r-list-header" translate>Program</li>
                     <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
                         <span class="r-grow">{$ selected_compliance_metric.name $}</span>
-                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                        <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
                     </li>
                 </ul>
                 <ul class="r-list r-scrollable">
                     <li ng-show="!selected_compliance_metric || compliance_metric.id != selected_compliance_metric.id" ng-repeat-start="compliance_metric in compliance_metrics" ng-repeat-end class="r-row r-row-centered">
                         <a ui-sref="program_setup(::{organization_id: org.id, id: compliance_metric.id})" class="r-grow">{$:: compliance_metric.name $}</a>
-                        <i class="fa fa-times r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                        <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
                     </li>
                 </ul>
                 <ul class="r-list">
-                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed"><i class="fa fa-plus-circle r-pad-right-5"></i>New Program</button></li>
+                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Program</button></li>
                 </ul>
             </div>
 
             <div ng-show="!selected_compliance_metric && program_settings_not_changed" class="r-panel r-column">
                 <div ng-show="compliance_metrics_error.length > 1" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
                 <b ng-show="!has_compliance_metrics" translate>No program created</b>
-                <p ng-show="!has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Create a Program to get started!</span></p>
+                <p ng-show="!has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Create a Program to get started!</span></p>
                 <b ng-show="has_compliance_metrics" translate>No program selected</b>
-                <p ng-show="has_compliance_metrics"><i class="fa fa-arrow-left r-pad-right-5"></i><span translate>Select a Program to get started!</span></p>
+                <p ng-show="has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Select a Program to get started!</span></p>
             </div>
             <div ng-show="selected_compliance_metric || !program_settings_not_changed" class="r-panel r-columns r-no-margin" disabled>
                 <form class="section_content">
@@ -79,7 +79,7 @@
                                         <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
                                         <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
                                             <span class="r-grow">{$:: get_cycle_display(item) $}</span>
-                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
+                                            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
                                         </li>
                                         <li class="r-row r-row-centered">
                                             <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection">
@@ -108,7 +108,7 @@
                                         <li class="r-list-header" translate>X-Axis Field Options</li>
                                         <li ng-repeat="item in selected_compliance_metric.x_axis_columns" class="r-row r-row-centered">
                                             <span class="r-grow">{$:: get_x_axis_display(item) $}</span>
-                                            <i class="fa fa-times r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
+                                            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
                                         </li>
                                         <li class="r-row r-row-centered">
                                             <select id="select-x-axis" class="form-control" ng-change="select_x_axis()" ng-model="x_axis_selection">

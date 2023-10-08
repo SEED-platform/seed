@@ -60,12 +60,12 @@
     </ul>
     <div class="item-count">
         <span ng-if="::inventory_type === 'properties'">
-            <i class="fa fa-building-o"></i>
+            <i class="fa-regular fa-building"></i>
             <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (data.length | number: 0) }"></span>
         </span>
 
         <span ng-if="::inventory_type === 'taxlots'">
-            <i class="fa fa-map-o"></i>
+            <i class="fa-regular fa-map"></i>
             <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (data.length | number: 0) }"></span>
         </span>
     </div>

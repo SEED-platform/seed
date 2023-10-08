@@ -2,7 +2,7 @@
     <div class="page_header">
         <div class="left page_action_container"></div>
         <div class="page_title">
-            <h1><i class="fa fa-sitemap"></i>
+            <h1><i class="fa-solid fa-sitemap"></i>
                 <span translate translate-values="{ num: (datasets.length | number: 0) }">NUMBER_OF_DATASETS</span>
             </h1>
         </div>
@@ -26,8 +26,8 @@
                             <td class="name container-fluid">
                                 <span class="view" id="data-link-{$:: $index $}">
                                     <a ui-sref="dataset_detail(::{dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$:: d.name $}</a>
-                                    <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa fa-trash-o'></i></a>
-                                    <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa fa-pencil"></i></a>
+                                    <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa-solid fa-trash-can'></i></a>
+                                    <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa-solid fa-pencil"></i></a>
                                 </span>
                                 <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
                                     <div class="form-group col-sm-8">

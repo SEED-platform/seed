@@ -1,4 +1,5 @@
 @import "fonts.scss";
+@import "ng-wig";
 
 @keyframes fadein {
   from {
@@ -230,14 +231,6 @@ a:not([href]) {
       text-overflow: ellipsis;
     }
 
-    #sidebar-menu-open,
-    #sidebar-menu-close {
-      font-size: 1em;
-      position: absolute;
-      top: 0.3em;
-      left: 1.5em;
-    }
-
     .item {
       position: relative;
       overflow: hidden;
@@ -275,14 +268,25 @@ a:not([href]) {
       }
 
       .icon {
+        display: flex;
+        align-items: center;
         position: relative;
         float: left;
         width: 20px;
         text-align: center;
+
+        i {
+          width: 100%;
+        }
+
+        .toggle {
+          display: flex;
+          padding-left: 2px;
+        }
       }
 
-      i {
-        font-size: 20px;
+      i:not(.fa-sm) {
+        font-size: 18px;
       }
 
       .item_name {
@@ -923,15 +927,15 @@ a:not([href]) {
               padding-right: 10px;
               font-size: 48px;
 
-              &.fa-cloud-upload {
+              &.fa-cloud-arrow-up {
                 color: $lightBlue;
               }
 
-              &.fa-exchange {
+              &.fa-arrow-right-arrow-left {
                 color: lighten($purple, 25%);
               }
 
-              &.fa-check-square {
+              &.fa-square-check {
                 color: lighten($green, 20%);
               }
             }
@@ -1224,7 +1228,7 @@ a:not([href]) {
                   padding: 0 10px;
                 }
 
-                i.fa-cog {
+                i.fa-gear {
                   color: $gray_lighter;
                 }
 
@@ -1233,7 +1237,7 @@ a:not([href]) {
                     visibility: visible;
                   }
 
-                  i.fa-cog {
+                  i.fa-gear {
                     color: $gray;
                   }
                 }
@@ -1368,7 +1372,7 @@ a:not([href]) {
                 padding: 0 10px;
               }
 
-              i.fa-cog {
+              i.fa-gear {
                 color: $gray_lighter;
               }
 
@@ -1377,7 +1381,7 @@ a:not([href]) {
                   visibility: visible;
                 }
 
-                i.fa-cog {
+                i.fa-gear {
                   color: $gray;
                 }
               }
@@ -2951,6 +2955,11 @@ tags-input .tags .tag-item .remove-button {
         color: #222;
         border-radius: 6px 6px 0 0;
 
+        display: flex;
+        align-items: center;
+        height: 41px;
+        padding: 0 15px;
+
         &:hover {
           background-color: $blue;
           color: #fff;
@@ -3110,7 +3119,9 @@ tags-input .tags .tag-item .remove-button {
 //}
 
 .ui-grid-cell-contents {
-  font-weight: normal;
+  &:not(.fas):not(.fa-solid) {
+    font-weight: normal;
+  }
 
   &.pinnable[disabled] {
     color: #222;
@@ -3777,8 +3788,10 @@ $pairedCellWidth: 60px;
   text-decoration: none !important;
 
   i.fa {
-    font-size: 13px;
-    padding-left: 3px;
+    font-size: 16px;
+    padding-top: 1px;
+    text-align: center;
+    width: 100%;
 
     &.text-muted {
       color: #222;
@@ -3800,7 +3813,8 @@ $pairedCellWidth: 60px;
 
   i.fa {
     font-size: 17px;
-    padding-left: 6px;
+    text-align: center;
+    width: 100%;
 
     &.text-muted {
       color: #222;
@@ -3817,12 +3831,11 @@ $pairedCellWidth: 60px;
 }
 
 .merged-indicator {
-  transform: scaleY(-1);
-  padding-top: 8px;
+  padding-top: 6px;
 
-  i.fa {
-    font-size: 16px;
-    padding-left: 5px;
+  i.fa-solid {
+    text-align: center;
+    width: 100%;
 
     &.text-muted {
       color: #222;
@@ -4318,7 +4331,7 @@ iframe.analysis-results {
 // Inserts an fa-link in front of the element
 // Used in the inventory list to identify derived columns
 .derived-column-display-name::before {
-  font-family: "FontAwesome";
+  font-family: FontAwesome;
   content: "\f0c1";
   margin: 0.5em 0 0 0.5em;
   float: left;
