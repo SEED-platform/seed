@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
   'Notification',
   'uploader_service',
   'cycle_service',
+  // eslint-disable-next-line func-names
   function (
     $state,
     $scope,
@@ -143,9 +144,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       if (!$scope.item_state[field]) {
         error += `${(error === '' ? '' : ' and default ') + field} is blank`;
       }
-      $scope.inventory_name = $scope.item_state[field]
-        ? $scope.item_state[field]
-        : `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
+      $scope.inventory_name = $scope.item_state[field] ?
+        $scope.item_state[field] :
+        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
     $scope.open_analysis_modal = function () {

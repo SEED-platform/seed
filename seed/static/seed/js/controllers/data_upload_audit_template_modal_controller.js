@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
   'organization_service',
   'audit_template_building_id',
   'view_id',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $state,
@@ -43,12 +44,12 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
       audit_template_building_id
     };
 
-    $scope.upload_from_file_and_close = function (event_message, file, progress) {
+    $scope.upload_from_file_and_close = (event_message, file, progress) => {
       $scope.close();
       $scope.upload_from_file(event_message, file, progress);
     };
 
-    $scope.confirm_import = function () {
+    $scope.confirm_import = () => {
       if (!$scope.fields.audit_template_building_id) {
         $scope.error = 'An Audit Template building ID is required.';
       } else {
@@ -56,7 +57,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
       }
     };
 
-    $scope.submit_request = function () {
+    $scope.submit_request = () => {
       $scope.error = '';
       $scope.busy = true;
       spinner_utility.show();
@@ -75,7 +76,7 @@ angular.module('BE.seed.controller.data_upload_audit_template_modal', []).contro
       });
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.dismiss();
     };
   }

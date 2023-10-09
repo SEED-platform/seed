@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.about', []).controller('about_controller', [
   '$scope',
   'version_payload',
+  // eslint-disable-next-line func-names
   function ($scope, version_payload) {
     $scope.version = version_payload.version;
     $scope.sha = version_payload.sha;

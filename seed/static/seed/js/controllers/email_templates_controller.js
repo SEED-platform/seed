@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
   '$translate',
   'i18nService',
   'Notification',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $filter,

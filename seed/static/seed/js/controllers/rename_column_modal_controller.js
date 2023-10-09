@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.rename_column_modal', []).controller('rename_
   'columns_service',
   'spinner_utility',
   'org_id',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, all_column_names, column_id, column_name, columns_service, spinner_utility, org_id) {
     $scope.step = {
       number: 1
@@ -31,11 +32,11 @@ angular.module('BE.seed.controller.rename_column_modal', []).controller('rename_
       overwrite_preference: false
     };
 
-    $scope.check_name_exists = function () {
+    $scope.check_name_exists = () => {
       $scope.column.exists = _.find($scope.all_column_names, (col_name) => col_name === $scope.column.name);
     };
 
-    $scope.accept_rename = function () {
+    $scope.accept_rename = () => {
       spinner_utility.show();
       columns_service.rename_column_for_org(org_id, $scope.column.id, $scope.column.name, $scope.settings.overwrite_preference).then((response) => {
         $scope.results = {
@@ -47,16 +48,16 @@ angular.module('BE.seed.controller.rename_column_modal', []).controller('rename_
       });
     };
 
-    $scope.dismiss_and_refresh = function () {
+    $scope.dismiss_and_refresh = () => {
       $state.reload();
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.close();
     };
 
-    $scope.valid = function () {
+    $scope.valid = () => {
       if (!$scope.column.name || $scope.column.name === $scope.current_column_name) return false;
 
       if ($scope.column.exists) {

@@ -7,22 +7,22 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
   '$q',
   'user_service',
   'naturalSort',
+  // eslint-disable-next-line func-names
   function ($http, $q, user_service, naturalSort) {
     const filter_groups_factory = {};
 
-    filter_groups_factory.get_filter_groups = (inventory_type, organization_id = user_service.get_organization().id) =>
-      $http
-        .get('/api/v3/filter_groups/', {
-          params: {
-            organization_id,
-            inventory_type
-          }
-        })
-        .then((response) => {
-          const filter_groups = response.data.data.sort((a, b) => naturalSort(a.name, b.name));
+    filter_groups_factory.get_filter_groups = (inventory_type, organization_id = user_service.get_organization().id) => $http
+      .get('/api/v3/filter_groups/', {
+        params: {
+          organization_id,
+          inventory_type
+        }
+      })
+      .then((response) => {
+        const filter_groups = response.data.data.sort((a, b) => naturalSort(a.name, b.name));
 
-          return filter_groups;
-        });
+        return filter_groups;
+      });
 
     filter_groups_factory.get_last_filter_group = function (inventory_type) {
       const organization_id = user_service.get_organization().id;
@@ -40,23 +40,21 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
       localStorage.setItem(`filter_groups.${inventory_type}`, JSON.stringify(filter_groups));
     };
 
-    filter_groups_factory.get_filter_group = (id) =>
-      $http
-        .get(`/api/v3/filter_groups/${id}/`, {
-          params: {
-            organization_id: user_service.get_organization().id
-          }
-        })
-        .then((response) => response.data.data);
+    filter_groups_factory.get_filter_group = (id) => $http
+      .get(`/api/v3/filter_groups/${id}/`, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      })
+      .then((response) => response.data.data);
 
-    filter_groups_factory.new_filter_group = (data) =>
-      $http
-        .post('/api/v3/filter_groups/', data, {
-          params: {
-            organization_id: user_service.get_organization().id
-          }
-        })
-        .then((response) => response.data.data);
+    filter_groups_factory.new_filter_group = (data) => $http
+      .post('/api/v3/filter_groups/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      })
+      .then((response) => response.data.data);
 
     filter_groups_factory.update_filter_group = function (id, data) {
       if (id === null) {

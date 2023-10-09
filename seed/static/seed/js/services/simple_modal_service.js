@@ -33,6 +33,7 @@
 angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service', [
   '$uibModal',
   'urls',
+  // eslint-disable-next-line func-names
   function ($uibModal, urls) {
     // Define types of modals allowed.
     // TODO:    Create more configurations for different types of modals, e.g., standard, error
@@ -78,7 +79,7 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
     }
 
     /* Private method. Show Angular UI modal based on config options */
-    var show = function (customModalOptions, customModalDefaults) {
+    var show = (customModalOptions, customModalDefaults) => {
       // Create temp objects to work with since we're in a singleton service
       const tempModalDefaults = {};
       const tempModalOptions = {};
@@ -94,12 +95,12 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
       // Map modal.html $scope custom properties to defaults defined in service
       angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
-      tempModalDefaults.controller = function ($scope, $uibModalInstance) {
+      tempModalDefaults.controller = ($scope, $uibModalInstance) => {
         $scope.modalOptions = tempModalOptions;
-        $scope.modalOptions.ok = function () {
+        $scope.modalOptions.ok = () => {
           $uibModalInstance.close(tempModalOptions.okResult);
         };
-        $scope.modalOptions.cancel = function () {
+        $scope.modalOptions.cancel = () => {
           $uibModalInstance.dismiss('cancel');
         };
       };

@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', []).controller('e
   'property_view_id',
   'column_mapping_profiles',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, $window, $scope, $uibModalInstance, property_view_id, column_mapping_profiles, user_service) {
     $scope.column_mapping_profiles = column_mapping_profiles;
     $scope.current_column_mapping_profile = column_mapping_profiles[0];

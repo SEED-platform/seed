@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
   'organization_payload',
   'spinner_utility',
   'auth_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $stateParams, $uibModal, urls, compliance_metrics, compliance_metric_service, organization_payload, spinner_utility, auth_payload) {
     $scope.id = $stateParams.id;
     $scope.static_url = urls.static_url;
@@ -21,7 +22,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
-    const saved_configs = JSON.parse(localStorage.getItem('insights.property.configs.' + $scope.organization.id));
+    const saved_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`));
     $scope.configs = {
       compliance_metric: {},
       chart_cycle: null,
@@ -68,18 +69,18 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
     $scope.$watch(
       'configs',
-      function (new_configs) {
+      (new_configs) => {
         const local_storage_configs = {
           ..._.omit(new_configs, 'compliance_metric'),
           compliance_metric_id: new_configs.compliance_metric.id
         };
-        localStorage.setItem('insights.property.configs.' + $scope.organization.id, JSON.stringify(local_storage_configs));
+        localStorage.setItem(`insights.property.configs.${$scope.organization.id}`, JSON.stringify(local_storage_configs));
       },
       true
     );
 
     // load data
-    let _load_data = function () {
+    const _load_data = function () {
       if (_.isEmpty($scope.configs.compliance_metric)) {
         spinner_utility.hide();
         return;
@@ -103,7 +104,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
                   $scope.configs.chart_cycle = saved_cycle.id;
                   $scope.chart_cycle_name = saved_cycle.name;
                 }
-                delete saved_configs['chart_cycle']; // don't trigger this if again, only the first time.
+                delete saved_configs.chart_cycle; // don't trigger this if again, only the first time.
               }
 
               // don't clear out a valid existing selection
@@ -123,7 +124,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
                 if (saved_chart_xaxis !== undefined) {
                   $scope.configs.chart_xaxis = saved_chart_xaxis.id;
                 }
-                delete saved_configs['chart_xaxis']; // don't trigger this if again, only the first time.
+                delete saved_configs.chart_xaxis; // don't trigger this if again, only the first time.
               }
 
               // don't clear out a valid existing selection
@@ -146,7 +147,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
                 if (saved_chart_metric !== undefined) {
                   $scope.configs.chart_metric = saved_chart_metric.id;
                 }
-                delete saved_configs['saved_chart_metric']; // don't trigger this if again, only the first time.
+                delete saved_configs.saved_chart_metric; // don't trigger this if again, only the first time.
               }
 
               // don't clear out a valid existing selection
@@ -168,9 +169,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.update = function () {
       spinner_utility.show();
 
-      let record = _.find($scope.cycles, function (o) {
-        return o.id === $scope.configs.chart_cycle;
-      });
+      const record = _.find($scope.cycles, (o) => o.id === $scope.configs.chart_cycle);
       $scope.chart_cycle_name = record.name;
 
       // redraw dataset
@@ -184,9 +183,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       spinner_utility.show();
 
       // compliance metric
-      $scope.configs.compliance_metric = _.find($scope.compliance_metrics, function (o) {
-        return o.id === $scope.selected_metric;
-      });
+      $scope.configs.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
 
       // reload data for selected metric
       _load_data();
@@ -201,14 +198,16 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     const _rebuild_datasets = () => {
       $scope.x_categorical = false;
 
-      let datasets = [
+      const datasets = [
         { data: [], label: 'compliant', pointStyle: 'circle' },
-        { data: [], label: 'non-compliant', pointStyle: 'triangle', radius: 7 },
+        {
+          data: [], label: 'non-compliant', pointStyle: 'triangle', radius: 7
+        },
         { data: [], label: 'unknown', pointStyle: 'rect' }
       ];
 
       $scope.display_annotation = true;
-      let annotation = {
+      const annotation = {
         type: 'line',
         xMin: 0,
         xMax: 0,
@@ -228,54 +227,42 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
       $scope.annotations = {};
 
-      _.forEach($scope.data.properties_by_cycles[$scope.configs.chart_cycle], function (prop) {
+      _.forEach($scope.data.properties_by_cycles[$scope.configs.chart_cycle], (prop) => {
         item = { id: prop.property_view_id };
-        item['name'] = _.find(prop, function (v, k) {
-          return _.startsWith(k, $scope.organization.property_display_field);
-        });
+        item.name = _.find(prop, (v, k) => _.startsWith(k, $scope.organization.property_display_field));
         // x axis is easy
-        item['x'] = _.find(prop, function (v, k) {
-          return _.endsWith(k, '_' + String($scope.configs.chart_xaxis));
-        });
+        item.x = _.find(prop, (v, k) => _.endsWith(k, `_${String($scope.configs.chart_xaxis)}`));
 
         // is x axis categorical?
-        if ($scope.x_categorical === false && isNaN(item['x'])) {
+        if ($scope.x_categorical === false && isNaN(item.x)) {
           $scope.x_categorical = true;
         }
 
         // y axis depends on metric selection
         if ($scope.configs.chart_metric === 0) {
           // ENERGY
-          item['y'] = _.find(prop, function (v, k) {
-            return _.endsWith(k, '_' + String($scope.data.metric.actual_energy_column));
-          });
+          item.y = _.find(prop, (v, k) => _.endsWith(k, `_${String($scope.data.metric.actual_energy_column)}`));
           if ($scope.data.metric.energy_bool === false) {
-            item['target'] = _.find(prop, function (v, k) {
-              return _.endsWith(k, '_' + String($scope.data.metric.target_energy_column));
-            });
+            item.target = _.find(prop, (v, k) => _.endsWith(k, `_${String($scope.data.metric.target_energy_column)}`));
           }
         } else if ($scope.configs.chart_metric === 1) {
           // EMISSIONS
-          item['y'] = _.find(prop, function (v, k) {
-            return _.endsWith(k, '_' + String($scope.data.metric.actual_emission_column));
-          });
+          item.y = _.find(prop, (v, k) => _.endsWith(k, `_${String($scope.data.metric.actual_emission_column)}`));
           if ($scope.data.metric.emission_bool === false) {
-            item['target'] = _.find(prop, function (v, k) {
-              return _.endsWith(k, '_' + String($scope.data.metric.target_emission_column));
-            });
+            item.target = _.find(prop, (v, k) => _.endsWith(k, `_${String($scope.data.metric.target_emission_column)}`));
           }
         }
 
         // place in appropriate dataset
-        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle]['y'], prop.property_view_id)) {
+        if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].y, prop.property_view_id)) {
           // compliant dataset
-          datasets[0]['data'].push(item);
-        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle]['n'], prop.property_view_id)) {
+          datasets[0].data.push(item);
+        } else if (_.includes($scope.data.results_by_cycles[$scope.configs.chart_cycle].n, prop.property_view_id)) {
           // non-compliant dataset
-          datasets[1]['data'].push(item);
+          datasets[1].data.push(item);
         } else {
           // unknown dataset
-          datasets[2]['data'].push(item);
+          datasets[2].data.push(item);
         }
       });
       non_compliant = datasets.find((ds) => ds.label === 'non-compliant');
@@ -283,13 +270,13 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       // Rank
       if ($scope.configs.chart_xaxis === 'Ranked') {
         non_compliant.data.sort((a, b) => {
-          a_diff = Math.abs(a['y'] - a['target']);
-          b_diff = Math.abs(b['y'] - b['target']);
+          a_diff = Math.abs(a.y - a.target);
+          b_diff = Math.abs(b.y - b.target);
 
           return b_diff - a_diff;
         });
         non_compliant.data.forEach((d, i) => {
-          d['x'] = i;
+          d.x = i;
         });
       }
 
@@ -299,20 +286,20 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         // don't add whisker if data is in range for that metric or it looks bad
         let add = false;
         metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
-        if (item['x'] && item['y'] && item['target']) {
-          if ((metric_type === 1 && item['target'] < item['y']) || (metric_type === 2 && item['target'] > item['y'])) {
+        if (item.x && item.y && item.target) {
+          if ((metric_type === 1 && item.target < item.y) || (metric_type === 2 && item.target > item.y)) {
             add = true;
           }
         }
 
         if (add) {
           // add it
-          let anno = Object.assign({}, annotation);
-          anno.xMin = item['x'];
-          anno.xMax = item['x'];
-          anno.yMin = item['y'];
-          anno.yMax = item['target'];
-          $scope.annotations['prop' + item.id] = anno;
+          const anno = { ...annotation };
+          anno.xMin = item.x;
+          anno.xMax = item.x;
+          anno.yMin = item.y;
+          anno.yMax = item.target;
+          $scope.annotations[`prop${item.id}`] = anno;
         }
       });
 
@@ -320,16 +307,16 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     };
 
     // CHARTS
-    var colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
+    const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
 
     const tooltip_footer = (tooltipItems) => {
       let text = '';
-      tooltipItems.forEach(function (tooltipItem) {
+      tooltipItems.forEach((tooltipItem) => {
         if (tooltipItem.raw.name) {
-          text = 'Property: ' + tooltipItem.raw.name;
+          text = `Property: ${tooltipItem.raw.name}`;
         } else {
           // revise this in future
-          text = 'Property ID: ' + tooltipItem.raw.id;
+          text = `Property ID: ${tooltipItem.raw.id}`;
         }
       });
 
@@ -351,11 +338,11 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
           data: {},
           options: {
             onClick: (event) => {
-              var activePoints = event.chart.getActiveElements(event);
+              const activePoints = event.chart.getActiveElements(event);
 
               if (activePoints[0]) {
-                var activePoint = activePoints[0];
-                var item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index];
+                const activePoint = activePoints[0];
+                const item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index];
                 $state.go('inventory_detail', { inventory_type: 'properties', view_id: item.id });
               }
             },
@@ -421,7 +408,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
                   display: true
                 },
                 ticks: {
-                  callback: function (value) {
+                  callback(value) {
                     return this.getLabelForValue(value);
                   }
                 },
@@ -447,15 +434,15 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     };
 
     $scope.downloadChart = () => {
-      var a = document.createElement('a');
+      const a = document.createElement('a');
       a.href = $scope.insightsChart.toBase64Image();
       a.download = 'Property Insights.png';
       a.click();
     };
 
     const _update_chart = () => {
-      let x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
-      let x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
+      const x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
+      const x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
 
       let y_axis_name = null;
       if ($scope.configs.chart_metric === 0) {
@@ -476,20 +463,20 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
       // update chart datasets
       $scope.insightsChart.data.datasets = $scope.chart_datasets;
-      _.forEach($scope.insightsChart.data.datasets, function (ds) {
-        ds['backgroundColor'] = colors[ds['label']];
+      _.forEach($scope.insightsChart.data.datasets, (ds) => {
+        ds.backgroundColor = colors[ds.label];
       });
 
       // update x axis ticks (for year)
       if (_.includes(_.lowerCase(x_axis_name), 'year')) {
         $scope.insightsChart.options.scales.x.ticks = {
-          callback: function (value, index, ticks) {
+          callback(value, index, ticks) {
             return this.getLabelForValue(value).replace(',', '');
           }
         };
       } else {
         $scope.insightsChart.options.scales.x.ticks = {
-          callback: function (value) {
+          callback(value) {
             return this.getLabelForValue(value);
           }
         };
@@ -499,12 +486,10 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       $scope.insightsChart.data.labels = [];
       if ($scope.x_categorical) {
         let labels = [];
-        _.forEach($scope.chart_datasets, function (ds) {
-          labels = _.uniq(_.concat(labels, _.map(ds['data'], 'x')));
+        _.forEach($scope.chart_datasets, (ds) => {
+          labels = _.uniq(_.concat(labels, _.map(ds.data, 'x')));
         });
-        labels = labels.filter(function (element) {
-          return element !== undefined;
-        });
+        labels = labels.filter((element) => element !== undefined);
         $scope.insightsChart.data.labels = labels;
       }
 
@@ -541,7 +526,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
     $scope.open_update_labels_modal = function () {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/update_item_labels_modal.html`,
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: $scope.visibleIds,

@@ -7,15 +7,16 @@ angular.module('BE.seed.controller.delete_dataset_modal', []).controller('delete
   '$uibModalInstance',
   'dataset_service',
   'dataset',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, dataset_service, dataset) {
     $scope.dataset = dataset;
-    $scope.delete_dataset = function () {
+    $scope.delete_dataset = () => {
       dataset_service.delete_dataset($scope.dataset.id).then(() => {
         $uibModalInstance.close();
       });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

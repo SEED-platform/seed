@@ -10,7 +10,8 @@ angular.module('BE.seed.controller.export_to_audit_template_modal', []).controll
   'org_id',
   'audit_template_service',
   'uploader_service',
-  ($scope, $state, $uibModalInstance, ids, org_id, audit_template_service, uploader_service) => {
+  // eslint-disable-next-line func-names
+  function ($scope, $state, $uibModalInstance, ids, org_id, audit_template_service, uploader_service) {
     $scope.ids = ids;
     $scope.org_id = org_id;
     $scope.step = { number: 0 };

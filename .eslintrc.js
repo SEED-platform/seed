@@ -1,7 +1,7 @@
 module.exports = {
   extends: 'airbnb-base',
   parserOptions: {
-    ecmaVersion: 2018
+    ecmaVersion: 2022
   },
   env: {
     browser: true,
@@ -16,6 +16,7 @@ module.exports = {
     angular: true,
     angularDragula: true,
     BE: true,
+    Chart: true,
     dimple: true,
     inject: true,
     module: true,
@@ -25,14 +26,19 @@ module.exports = {
     qq: true,
     saveAs: true,
     Spinner: true,
-    Terraformer: true
+    Terraformer: true,
+    UniqueBuildingIdentification: true
   },
   plugins: [
     'angular',
-    "prefer-arrow",
+    'prefer-arrow',
     'protractor'
   ],
   rules: {
+    'arrow-parens': [
+      'error',
+      'always'
+    ],
     'comma-dangle': [
       'error',
       'never'
@@ -46,7 +52,7 @@ module.exports = {
     ],
     'linebreak-style': 'off',
     'max-len': [
-      'error',
+      'warn',
       200,
       2,
       {
@@ -62,12 +68,12 @@ module.exports = {
       'error',
       'after'
     ],
-    "prefer-arrow/prefer-arrow-functions": [
-      "error",
+    'prefer-arrow/prefer-arrow-functions': [
+      'error',
       {
-        "disallowPrototype": true,
-        "singleReturnOnly": true,
-        "classPropertiesAllowed": false
+        disallowPrototype: true,
+        singleReturnOnly: true,
+        classPropertiesAllowed: false
       }
     ],
     // FIX LATER

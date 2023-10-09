@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
   'label_service',
   'Notification',
   'org_id',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, label_service, notification, org_id) {
     // keep track of status of service call
     $scope.loading = false;
@@ -27,11 +28,11 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
     // new_label serves as model for the "Create a new label" UI
     $scope.new_label = {};
 
-    // list of colors for the create label UI
+    // list of colors for the create-label UI
     $scope.available_colors = label_service.get_available_colors();
 
     /* Initialize the label props for a 'new' label */
-    $scope.initialize_new_label = function () {
+    $scope.initialize_new_label = () => {
       $scope.new_label = {
         color: 'gray',
         label: 'default',
@@ -41,7 +42,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
     };
 
     /* Create a new label based on user input */
-    $scope.submitNewLabelForm = function (form) {
+    $scope.submitNewLabelForm = (form) => {
       $scope.createdLabel = null;
       if (form.$invalid) return;
       label_service.create_label_for_org(org_id, $scope.new_label).then(
@@ -64,19 +65,19 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
     };
 
     /* Toggle the add button for a label */
-    $scope.toggle_add = function (label) {
+    $scope.toggle_add = (label) => {
       // console.log(label)
       $uibModalInstance.close(label);
     };
 
     /* User has cancelled dialog */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
 
     /* init: Gets the list of labels. Sets up new label object. */
-    const init = function () {
+    const init = () => {
       $scope.initialize_new_label();
       // get labels with 'is_applied' property by passing in current search state
       $scope.loading = true;

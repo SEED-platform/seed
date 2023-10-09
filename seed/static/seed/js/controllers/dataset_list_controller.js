@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
   '$uibModal',
   'urls',
   'dataset_service',
+  // eslint-disable-next-line func-names
   function ($scope, $rootScope, datasets_payload, $uibModal, urls, dataset_service) {
     $scope.datasets = datasets_payload.datasets;
     $scope.columns = [
@@ -31,15 +32,15 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     /**
      * Functions for dealing with editing a dataset's name
      */
-    $scope.edit_dataset_name = function (dataset) {
+    $scope.edit_dataset_name = (dataset) => {
       dataset.edit_form_showing = true;
       dataset.old_name = dataset.name;
     };
-    $scope.cancel_edit_name = function (dataset) {
+    $scope.cancel_edit_name = (dataset) => {
       dataset.name = dataset.old_name;
       dataset.edit_form_showing = false;
     };
-    $scope.save_dataset_name = function (dataset) {
+    $scope.save_dataset_name = (dataset) => {
       if (dataset.name !== dataset.old_name) {
         dataset_service.update_dataset(dataset).then(() => {
           refresh_datasets();
@@ -51,7 +52,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     /**
      * open_data_upload_modal: opens the data upload modal to step 4, add energy files
      */
-    $scope.open_data_upload_modal = function (dataset) {
+    $scope.open_data_upload_modal = (dataset) => {
       let step = 2;
       if (_.isUndefined(dataset)) {
         step = 1;
@@ -75,7 +76,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
       });
     };
 
-    $scope.confirm_delete = function (dataset) {
+    $scope.confirm_delete = (dataset) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/delete_dataset_modal.html`,
         controller: 'delete_dataset_modal_controller',
@@ -92,7 +93,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     /**
      * missing_assessor_files: true if the dataset has no assessed files
      */
-    $scope.missing_assessor_files = function (dataset) {
+    $scope.missing_assessor_files = (dataset) => {
       for (let i = 0; i < dataset.importfiles.length; i++) {
         const importfile = dataset.importfiles[i];
         if (importfile.source_type === 'Assessed Raw') {
@@ -105,7 +106,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     /**
      * missing_pm_files: true if the dataset has no Portfolio Manager files
      */
-    $scope.missing_pm_files = function (dataset) {
+    $scope.missing_pm_files = (dataset) => {
       for (let i = 0; i < dataset.importfiles.length; i++) {
         const importfile = dataset.importfiles[i];
         if (importfile.source_type === 'Portfolio Raw') {
@@ -118,7 +119,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     /**
      * refresh_datasets: refreshes dataset list
      */
-    var refresh_datasets = function () {
+    var refresh_datasets = () => {
       dataset_service.get_datasets().then((data) => {
         $scope.datasets = data.datasets;
       });

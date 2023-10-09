@@ -6,6 +6,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
   '$http',
   '$log',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, $log, user_service) {
     /**
      * Get inventory data given the provided parameters.

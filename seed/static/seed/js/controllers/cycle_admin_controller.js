@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
   '$translate',
   '$sce',
   '$uibModal',
+  // eslint-disable-next-line func-names
   function ($scope, $filter, $log, urls, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;

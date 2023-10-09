@@ -5,82 +5,79 @@
 angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
   '$http',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, user_service) {
     const pairing_service = {};
 
-    pairing_service.pair_property_to_taxlot = (taxlot_id, property_id) =>
-      $http
-        .put(
-          `/api/v3/taxlots/${taxlot_id}/pair/`,
-          {},
-          {
-            params: {
-              organization_id: user_service.get_organization().id,
-              property_id
-            }
+    pairing_service.pair_property_to_taxlot = (taxlot_id, property_id) => $http
+      .put(
+        `/api/v3/taxlots/${taxlot_id}/pair/`,
+        {},
+        {
+          params: {
+            organization_id: user_service.get_organization().id,
+            property_id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
-    pairing_service.pair_taxlot_to_property = (property_id, taxlot_id) =>
-      $http
-        .put(
-          `/api/v3/properties/${property_id}/pair/`,
-          {},
-          {
-            params: {
-              organization_id: user_service.get_organization().id,
-              taxlot_id
-            }
+    pairing_service.pair_taxlot_to_property = (property_id, taxlot_id) => $http
+      .put(
+        `/api/v3/properties/${property_id}/pair/`,
+        {},
+        {
+          params: {
+            organization_id: user_service.get_organization().id,
+            taxlot_id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
-    pairing_service.unpair_property_from_taxlot = (taxlot_id, property_id) =>
-      $http
-        .put(
-          `/api/v3/taxlots/${taxlot_id}/unpair/`,
-          {},
-          {
-            params: {
-              organization_id: user_service.get_organization().id,
-              property_id
-            }
+    pairing_service.unpair_property_from_taxlot = (taxlot_id, property_id) => $http
+      .put(
+        `/api/v3/taxlots/${taxlot_id}/unpair/`,
+        {},
+        {
+          params: {
+            organization_id: user_service.get_organization().id,
+            property_id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
-    pairing_service.unpair_taxlot_from_property = (property_id, taxlot_id) =>
-      $http
-        .put(
-          `/api/v3/properties/${property_id}/unpair/`,
-          {},
-          {
-            params: {
-              organization_id: user_service.get_organization().id,
-              taxlot_id
-            }
+    pairing_service.unpair_taxlot_from_property = (property_id, taxlot_id) => $http
+      .put(
+        `/api/v3/properties/${property_id}/unpair/`,
+        {},
+        {
+          params: {
+            organization_id: user_service.get_organization().id,
+            taxlot_id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
-    pairing_service.reorderSettings = function (columns) {
+    pairing_service.reorderSettings = (columns) => {
       const selected = _.remove(columns, 'visible');
       return selected.concat(columns);
     };
 
-    pairing_service.removeSettings = function (key) {
+    pairing_service.removeSettings = (key) => {
       key += `.${user_service.get_organization().id}`;
       localStorage.removeItem(key);
     };
 
-    pairing_service.savePropertyColumns = function (key, columns) {
+    pairing_service.savePropertyColumns = (key, columns) => {
       key += `.properties.${user_service.get_organization().id}`;
       const toSave = pairing_service.reorderSettings(_.map(columns, (col) => _.pick(col, ['name', 'visible'])));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
-    pairing_service.loadPropertyColumns = function (key, columns) {
+    pairing_service.loadPropertyColumns = (key, columns) => {
       key += `.properties.${user_service.get_organization().id}`;
       columns = angular.copy(columns);
 
@@ -115,13 +112,13 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
       return pairing_service.reorderSettings(filteredColumns.concat(columns));
     };
 
-    pairing_service.saveTaxlotColumns = function (key, columns) {
+    pairing_service.saveTaxlotColumns = (key, columns) => {
       key += `.taxlots.${user_service.get_organization().id}`;
       const toSave = pairing_service.reorderSettings(_.map(columns, (col) => _.pick(col, ['name', 'visible'])));
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
-    pairing_service.loadTaxlotColumns = function (key, columns) {
+    pairing_service.loadTaxlotColumns = (key, columns) => {
       key += `.taxlots.${user_service.get_organization().id}`;
       columns = angular.copy(columns);
 
@@ -155,12 +152,12 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
       return pairing_service.reorderSettings(filteredColumns.concat(columns));
     };
 
-    pairing_service.saveSort = function (key, settings) {
+    pairing_service.saveSort = (key, settings) => {
       key += `.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(settings));
     };
 
-    pairing_service.loadSort = function (key) {
+    pairing_service.loadSort = (key) => {
       key += `.${user_service.get_organization().id}`;
       return localStorage.getItem(key);
     };

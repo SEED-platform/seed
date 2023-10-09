@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'profile_id',
   'spinner_utility',
   'filter_header_string',
+  // eslint-disable-next-line func-names
   function ($http, $scope, $uibModalInstance, user_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
     $scope.export_name = '';
     $scope.include_notes = true;

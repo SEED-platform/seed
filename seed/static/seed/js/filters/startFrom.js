@@ -7,9 +7,11 @@
  */
 angular.module('startFrom', []).filter(
   'startFrom',
-  () =>
-    function (input, start) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (input, start) => {
       start = +start; // parse to int
       return input.slice(start);
-    }
+    };
+  }
 );

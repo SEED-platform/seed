@@ -9,12 +9,13 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
   'column_mappings_service',
   'data',
   'org_id',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, action, column_mappings_service, data, org_id) {
     $scope.action = action;
     $scope.data = data;
     $scope.org_id = org_id;
 
-    $scope.rename_profile = function () {
+    $scope.rename_profile = () => {
       if (!$scope.disabled()) {
         const profile_id = $scope.data.id;
         const updated_data = { name: $scope.newName };
@@ -24,13 +25,13 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
       }
     };
 
-    $scope.remove_profile = function () {
+    $scope.remove_profile = () => {
       column_mappings_service.delete_column_mapping_profile($scope.org_id, $scope.data.id).then(() => {
         $uibModalInstance.close();
       });
     };
 
-    $scope.new_profile = function () {
+    $scope.new_profile = () => {
       if (!$scope.disabled()) {
         column_mappings_service
           .new_column_mapping_profile_for_org($scope.org_id, {
@@ -44,16 +45,17 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
       }
     };
 
-    $scope.disabled = function () {
+    $scope.disabled = () => {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
       }
       if ($scope.action === 'new') {
         return _.isEmpty($scope.newName);
       }
+      return false;
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

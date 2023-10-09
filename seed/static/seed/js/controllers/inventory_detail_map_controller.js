@@ -6,7 +6,8 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
   '$scope',
   '$stateParams',
   '$state',
-  ($scope, $stateParams, $state) => {
+  // eslint-disable-next-line func-names
+  function ($scope, $stateParams, $state) {
     $scope.inventory_type = $stateParams.inventory_type;
 
     $scope.geocoded_data = _.filter([$scope.item_state], 'long_lat');
@@ -149,29 +150,26 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         return new ol.source.Vector({ features });
       };
 
-      const clusterSource = () =>
-        new ol.source.Cluster({
-          source: buildingSources(),
-          distance: 45
-        });
+      const clusterSource = () => new ol.source.Cluster({
+        source: buildingSources(),
+        distance: 45
+      });
 
       // style for building ubid bounding and centroid boxes
-      const buildingStyle = (/* feature */) =>
-        new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: '#185189',
-            width: 2
-          })
-        });
+      const buildingStyle = (/* feature */) => new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#185189',
+          width: 2
+        })
+      });
 
       // style for taxlot ubid bounding and centroid boxes
-      const taxlotStyle = (/* feature */) =>
-        new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: '#10A0A0',
-            width: 2
-          })
-        });
+      const taxlotStyle = (/* feature */) => new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#10A0A0',
+          width: 2
+        })
+      });
 
       $scope.building_bb_layer = new ol.layer.Vector({
         source: buildingBBSources(),

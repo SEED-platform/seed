@@ -20,7 +20,8 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
   'shared_fields_payload',
   'flippers',
   '$translate',
-  'i18nService', // from ui-grid
+  'i18nService',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $window,

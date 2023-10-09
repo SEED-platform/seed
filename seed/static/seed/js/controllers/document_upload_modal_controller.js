@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
   'organization_id',
   'uploader_service',
   'view_id',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, organization_id, uploader_service, view_id) {
     $scope.step = {
       number: 1
@@ -25,11 +26,11 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       status_message: ''
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.uploaderfunc = function (event_message, file, progress) {
+    $scope.uploaderfunc = (event_message, file, progress) => {
       switch (event_message) {
         case 'invalid_extension':
           $scope.uploader.invalid_file_extension_alert = true;
@@ -70,7 +71,7 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       });
     };
 
-    const saveFailure = function (error) {
+    const saveFailure = (error) => {
       // present error message
 
       $scope.uploader.invalid_file_extension_alert = false;
@@ -80,7 +81,7 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       $scope.step.number = 1;
     };
 
-    const saveSuccess = function (progress_data) {
+    const saveSuccess = (progress_data) => {
       // recheck progress in order to ensure message has been appended to progress_data
       uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
@@ -89,7 +90,7 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       });
     };
 
-    $scope.refresh_page = function () {
+    $scope.refresh_page = () => {
       $state.reload();
       $uibModalInstance.dismiss('cancel');
     };

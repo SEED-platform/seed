@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
   'organization_service',
   'labels',
   'urls',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, urls) {
     $scope.inventory_type = $stateParams.inventory_type;
     const isPropertiesTab = $scope.inventory_type === 'properties';
@@ -42,19 +43,17 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
     };
 
     const chunk = 250;
-    const fetchRecords = (fn, page = 1) => {
-      return fn(page, chunk, undefined, undefined).then((data) => {
-        $scope.progress = {
-          current: data.pagination.end,
-          total: data.pagination.total,
-          percent: Math.round((data.pagination.end / data.pagination.total) * 100)
-        };
-        if (data.pagination.has_next) {
-          return fetchRecords(fn, page + 1).then((newData) => data.results.concat(newData));
-        }
-        return data.results;
-      });
-    };
+    const fetchRecords = (fn, page = 1) => fn(page, chunk, undefined, undefined).then((data) => {
+      $scope.progress = {
+        current: data.pagination.end,
+        total: data.pagination.total,
+        percent: Math.round((data.pagination.end / data.pagination.total) * 100)
+      };
+      if (data.pagination.has_next) {
+        return fetchRecords(fn, page + 1).then((newData) => data.results.concat(newData));
+      }
+      return data.results;
+    });
 
     $scope.progress = {};
     const loadingModal = $uibModal.open({
@@ -203,43 +202,39 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         });
       };
 
-      const singlePointStyle = () =>
-        new ol.style.Style({
-          image: new ol.style.Icon({
-            src: `${urls.static_url}seed/images/map_pin.webp`,
-            anchor: [0.5, 1]
-          })
-        });
+      const singlePointStyle = () => new ol.style.Style({
+        image: new ol.style.Icon({
+          src: `${urls.static_url}seed/images/map_pin.webp`,
+          anchor: [0.5, 1]
+        })
+      });
 
-      const pointsSource = (records = $scope.geocoded_data) =>
-        new ol.source.Cluster({
-          source: buildingSources(records),
-          distance: 45
-        });
+      const pointsSource = (records = $scope.geocoded_data) => new ol.source.Cluster({
+        source: buildingSources(records),
+        distance: 45
+      });
 
       /**
        * style for building ubid bounding and centroid boxes
        * @returns {ol.style.Style}
        */
-      const propertyStyle = (/*feature*/) =>
-        new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: '#185189',
-            width: 2
-          })
-        });
+      const propertyStyle = (/* feature */) => new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#185189',
+          width: 2
+        })
+      });
 
       /**
        * style for taxlot ubid bounding and centroid boxes
        * @returns {ol.style.Style}
        */
-      const taxlotStyle = (/*feature*/) =>
-        new ol.style.Style({
-          stroke: new ol.style.Stroke({
-            color: '#10A0A0',
-            width: 2
-          })
-        });
+      const taxlotStyle = (/* feature */) => new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#10A0A0',
+          width: 2
+        })
+      });
 
       $scope.base_layer = new ol.layer.Tile({
         source: new ol.source.OSM(),
@@ -298,12 +293,10 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
       // Hexbin layer
       const hexagon_size = 750;
 
-      const hexbinSource = (records = $scope.geocoded_data) => {
-        return new ol.source.HexBin({
-          source: buildingSources(records),
-          size: hexagon_size
-        });
-      };
+      const hexbinSource = (records = $scope.geocoded_data) => new ol.source.HexBin({
+        source: buildingSources(records),
+        size: hexagon_size
+      });
 
       $scope.hexbin_color = [75, 0, 130];
       const hexbin_max_opacity = 0.8;
@@ -405,9 +398,8 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
 
         if (isPropertiesTab) {
           return `<a href="#/properties/${point_info.property_view_id}">${icon_html}</a>`;
-        } else {
-          return `<a href="#/taxlots/${point_info.taxlot_view_id}">${icon_html}</a>`;
         }
+        return `<a href="#/taxlots/${point_info.taxlot_view_id}">${icon_html}</a>`;
       };
 
       const showPointInfo = (point, element) => {
@@ -463,13 +455,11 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
           $scope.map.setView(empty_view);
         } else {
           const extent = points_source.getExtent();
-          const view_options = Object.assign(
-            {
-              size: $scope.map.getSize(),
-              padding: [10, 10, 10, 10]
-            },
-            extra_view_options
-          );
+          const view_options = {
+            size: $scope.map.getSize(),
+            padding: [10, 10, 10, 10],
+            ...extra_view_options
+          };
           $scope.map.getView().fit(extent, view_options);
         }
       };
@@ -504,14 +494,10 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         } else {
           inventoryIds = new Set($scope.data.map(({ taxlot_view_id }) => taxlot_view_id));
         }
-        $scope.labels = labels.filter((label) => {
-          return label.is_applied.some((id) => inventoryIds.has(id));
-        });
+        $scope.labels = labels.filter((label) => label.is_applied.some((id) => inventoryIds.has(id)));
         // TODO check this
         // Ensure that no previously-applied labels remain
-        const new_labels = $scope.selected_labels.filter((label) => {
-          return $scope.labels.includes(label.id);
-        });
+        const new_labels = $scope.selected_labels.filter((label) => $scope.labels.includes(label.id));
         if ($scope.selected_labels.length !== new_labels.length) {
           $scope.selected_labels = new_labels;
         }
@@ -536,10 +522,9 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
        */
       $scope.loadLabelsForFilter = (query) => {
         if (!query.trim()) return $scope.labels;
-        return $scope.labels.filter(({ name }) => {
+        return $scope.labels.filter(({ name }) =>
           // Only include label if its name contains the query string.
-          return name.toLowerCase().includes(query.toLowerCase());
-        });
+          name.toLowerCase().includes(query.toLowerCase()));
       };
 
       const filterUsingLabels = () => {

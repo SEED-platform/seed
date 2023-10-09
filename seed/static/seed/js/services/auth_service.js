@@ -6,6 +6,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
   'user_service',
   'generated_urls',
+  // eslint-disable-next-line func-names
   function ($http, user_service, generated_urls) {
     const auth_factory = {};
     const urls = generated_urls;
@@ -25,22 +26,19 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = (organization_id, actions) =>
-      user_service.get_user_id().then((user_id) =>
-        $http
-          .post(
-            `/api/v3/users/${user_id}/is_authorized/`,
-            {
-              actions
-            },
-            {
-              params: {
-                organization_id
-              }
-            }
-          )
-          .then((response) => response.data)
-      );
+    auth_factory.is_authorized = (organization_id, actions) => user_service.get_user_id().then((user_id) => $http
+      .post(
+        `/api/v3/users/${user_id}/is_authorized/`,
+        {
+          actions
+        },
+        {
+          params: {
+            organization_id
+          }
+        }
+      )
+      .then((response) => response.data));
 
     /**
      * gets all available actions

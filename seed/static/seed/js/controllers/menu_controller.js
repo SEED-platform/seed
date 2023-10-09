@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
   'inventory_service',
   '$timeout',
   '$state',
+  // eslint-disable-next-line func-names
   function ($rootScope, $scope, $location, $window, $uibModal, $log, urls, auth_service, organization_service, user_service, dataset_service, modified_service, inventory_service, $timeout, $state) {
     // initial state of css classes for menu and sidebar
     $scope.expanded_controller = false;
@@ -137,22 +138,21 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
           cycle: [
             'Notification',
             'organization_service',
-            (Notification, organization_service) =>
-              organization_service.get_organization($scope.menu.user.organization.org_id).then((response) => {
-                if (!response.organization.cycles.length) {
-                  Notification.error('Error: please create a cycle before Auto-Populating data');
-                  return;
-                }
-                const lastCycleId = inventory_service.get_last_cycle();
-                let lastCycle;
-                if (typeof lastCycleId === 'number') {
-                  lastCycle = response.organization.cycles.find((cycle) => cycle.cycle_id === lastCycleId);
-                }
-                if (lastCycleId === undefined || !lastCycle) {
-                  lastCycle = response.organization.cycles[0];
-                }
-                return lastCycle;
-              })
+            (Notification, organization_service) => organization_service.get_organization($scope.menu.user.organization.org_id).then((response) => {
+              if (!response.organization.cycles.length) {
+                Notification.error('Error: please create a cycle before Auto-Populating data');
+                return;
+              }
+              const lastCycleId = inventory_service.get_last_cycle();
+              let lastCycle;
+              if (typeof lastCycleId === 'number') {
+                lastCycle = response.organization.cycles.find((cycle) => cycle.cycle_id === lastCycleId);
+              }
+              if (lastCycleId === undefined || !lastCycle) {
+                lastCycle = response.organization.cycles[0];
+              }
+              return lastCycle;
+            })
           ],
           profiles: ['inventory_service', (inventory_service) => inventory_service.get_column_list_profiles('List View Profile', 'Property')]
         }

@@ -11,7 +11,8 @@ angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_edit
   'view_id',
   'inventory_key',
   'ubid_service',
-  ($scope, $uibModalInstance, ubid, ubids, state_id, view_id, inventory_key, ubid_service) => {
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, ubid, ubids, state_id, view_id, inventory_key, ubid_service) {
     $scope.ubid = angular.copy(ubid);
     $scope.state_id = state_id;
     $scope.inventory_key = inventory_key;

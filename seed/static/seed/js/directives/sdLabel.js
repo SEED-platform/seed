@@ -6,31 +6,34 @@
  */
 angular.module('sdLabel', []).directive('sdLabel', [
   '$log',
-  ($log) => ({
-    scope: {},
-    restrict: 'E',
-    link(scope, element, attrs) {
-      scope.name = attrs.name;
-      const lookup_label = function (color) {
-        const lookup_colors = {
-          red: 'danger',
-          gray: 'default',
-          grey: 'default',
-          orange: 'warning',
-          green: 'success',
-          blue: 'primary',
-          'light blue': 'info'
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions
+  function ($log) {
+    return {
+      scope: {},
+      restrict: 'E',
+      link(scope, element, attrs) {
+        scope.name = attrs.name;
+        const lookup_label = (color) => {
+          const lookup_colors = {
+            red: 'danger',
+            gray: 'default',
+            grey: 'default',
+            orange: 'warning',
+            green: 'success',
+            blue: 'primary',
+            'light blue': 'info'
+          };
+          try {
+            return lookup_colors[color];
+          } catch (err) {
+            $log.log(err);
+            return lookup_colors.white;
+          }
         };
-        try {
-          return lookup_colors[color];
-        } catch (err) {
-          $log.log(err);
-          return lookup_colors.white;
-        }
-      };
-      scope.label = lookup_label(attrs.color);
-    },
-    replace: true,
-    template: '<span class="label label-{$ label $}">{$ name $}</span>'
-  })
+        scope.label = lookup_label(attrs.color);
+      },
+      replace: true,
+      template: '<span class="label label-{$ label $}">{$ name $}</span>'
+    };
+  }
 ]);

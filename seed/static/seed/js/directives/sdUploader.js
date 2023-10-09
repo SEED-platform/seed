@@ -15,7 +15,7 @@
  *
  */
 
-const makeFileSystemUploader = function (scope, element, allowed_extensions) {
+const makeFileSystemUploader = (scope, element, allowed_extensions) => {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
@@ -443,7 +443,7 @@ const makeESPMUpdater = function (scope, element, allowed_extensions) {
 };
 
 /* Inventory Document Uploader for files to attach to a property */
-const makeDocumentUploader = function (scope, element, allowed_extensions) {
+const makeDocumentUploader = (scope, element, allowed_extensions) => {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
@@ -585,7 +585,7 @@ const makeDocumentUploader = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-const sdUploaderFineUploader = function (scope, element /* , attrs, filename */) {
+const sdUploaderFineUploader = (scope, element /* , attrs, filename */) => {
   let uploader;
   if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
@@ -607,19 +607,22 @@ const sdUploaderFineUploader = function (scope, element /* , attrs, filename */)
   return uploader;
 };
 
-angular.module('sdUploader', []).directive('sdUploader', () => ({
-  scope: {
-    cycleId: '=',
-    eventfunc: '&',
-    importrecord: '=',
-    organizationId: '=',
-    mappingProfileId: '=?',
-    sourceprog: '@',
-    sourcetype: '@',
-    sourcever: '='
-  },
-  restrict: 'A',
-  link(scope, element, attrs) {
-    $(sdUploaderFineUploader(scope, element, attrs));
-  }
-}));
+// eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+angular.module('sdUploader', []).directive('sdUploader', function () {
+  return {
+    scope: {
+      cycleId: '=',
+      eventfunc: '&',
+      importrecord: '=',
+      organizationId: '=',
+      mappingProfileId: '=?',
+      sourceprog: '@',
+      sourcetype: '@',
+      sourcever: '='
+    },
+    restrict: 'A',
+    link(scope, element, attrs) {
+      $(sdUploaderFineUploader(scope, element, attrs));
+    }
+  };
+});

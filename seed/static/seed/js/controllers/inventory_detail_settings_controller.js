@@ -17,7 +17,8 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
   'profiles',
   'current_profile',
   '$translate',
-  'i18nService', // from ui-grid
+  'i18nService',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $window,

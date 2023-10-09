@@ -6,6 +6,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
   '$http',
   '$log',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, $log, user_service) {
     /** Label Service:
        --------------------------------------------------
@@ -99,14 +100,13 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        */
     const create_label = (label) => create_label_for_org(user_service.get_organization().id, label);
 
-    const create_label_for_org = (org_id, label) =>
-      $http
-        .post('/api/v3/labels/', label, {
-          params: {
-            organization_id: org_id
-          }
-        })
-        .then((response) => map_label(response.data));
+    const create_label_for_org = (org_id, label) => $http
+      .post('/api/v3/labels/', label, {
+        params: {
+          organization_id: org_id
+        }
+      })
+      .then((response) => map_label(response.data));
 
     /*  Update an existing a label in an organization
 
@@ -121,14 +121,13 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        */
     const update_label = (label) => update_label_for_org(user_service.get_organization().id, label);
 
-    const update_label_for_org = (org_id, label) =>
-      $http
-        .put(`/api/v3/labels/${label.id}/`, label, {
-          params: {
-            organization_id: org_id
-          }
-        })
-        .then((response) => map_label(response.data));
+    const update_label_for_org = (org_id, label) => $http
+      .put(`/api/v3/labels/${label.id}/`, label, {
+        params: {
+          organization_id: org_id
+        }
+      })
+      .then((response) => map_label(response.data));
 
     /*  Delete a label from the set of labels for an organization.
 
@@ -141,14 +140,13 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        */
     const delete_label = (label) => delete_label_for_org(user_service.get_organization().id, label);
 
-    const delete_label_for_org = (org_id, label) =>
-      $http
-        .delete(`/api/v3/labels/${label.id}/`, {
-          params: {
-            organization_id: org_id
-          }
-        })
-        .then((response) => response.data);
+    const delete_label_for_org = (org_id, label) => $http
+      .delete(`/api/v3/labels/${label.id}/`, {
+        params: {
+          organization_id: org_id
+        }
+      })
+      .then((response) => response.data);
 
     /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -166,22 +164,21 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        (success or error).
 
        */
-    const update_property_labels = (add_label_ids, remove_label_ids, selected) =>
-      $http
-        .put(
-          '/api/v3/labels_property/',
-          {
-            inventory_ids: selected,
-            add_label_ids,
-            remove_label_ids
-          },
-          {
-            params: {
-              organization_id: user_service.get_organization().id
-            }
+    const update_property_labels = (add_label_ids, remove_label_ids, selected) => $http
+      .put(
+        '/api/v3/labels_property/',
+        {
+          inventory_ids: selected,
+          add_label_ids,
+          remove_label_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
     /**
        This method updates selected Tax Lots with a group
@@ -195,22 +192,21 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        (success or error).
 
        */
-    const update_taxlot_labels = (add_label_ids, remove_label_ids, selected) =>
-      $http
-        .put(
-          '/api/v3/labels_taxlot/',
-          {
-            inventory_ids: selected,
-            add_label_ids,
-            remove_label_ids
-          },
-          {
-            params: {
-              organization_id: user_service.get_organization().id
-            }
+    const update_taxlot_labels = (add_label_ids, remove_label_ids, selected) => $http
+      .put(
+        '/api/v3/labels_taxlot/',
+        {
+          inventory_ids: selected,
+          add_label_ids,
+          remove_label_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
        styles for labels. These are defined locally.

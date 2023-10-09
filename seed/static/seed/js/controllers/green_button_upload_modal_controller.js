@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
   'uploader_service',
   'view_id',
   'datasets',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, uiGridConstants, filler_cycle, dataset_service, organization_id, uploader_service, view_id, datasets) {
     $scope.step = {
       number: 1

@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.service.map', []).factory('map_service', [
   '$http',
+  // eslint-disable-next-line func-names
   function ($http) {
     // Save disadvantaged tract results to avoid unnecessary requests
     /** @type {Object.<string, boolean>} */

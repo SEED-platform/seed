@@ -11,10 +11,11 @@ angular.module('BE.seed.controller.meter_deletion_modal', []).controller('meter_
   'meter',
   'view_id',
   'refresh_meters_and_readings',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, meter_service, spinner_utility, meter, view_id, refresh_meters_and_readings) {
     $scope.meter_name = meter.alias ?? 'meter';
 
-    $scope.delete_meter = function () {
+    $scope.delete_meter = () => {
       spinner_utility.show();
       meter_service.delete_meter(view_id, meter.id).then(() => {
         refresh_meters_and_readings();
@@ -23,7 +24,7 @@ angular.module('BE.seed.controller.meter_deletion_modal', []).controller('meter_
       });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
   }

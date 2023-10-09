@@ -4,25 +4,22 @@
  */
 angular.module('BE.seed.service.audit_template', []).factory('audit_template_service', [
   '$http',
-  '$log',
-  function ($http, $log) {
-    const get_building_xml = (org_id, audit_template_building_id) =>
-      $http
-        .get(['/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id].join(''))
-        .then((response) => response.data)
-        .catch((response) => response.data);
+  // eslint-disable-next-line func-names
+  function ($http) {
+    const get_building_xml = (org_id, audit_template_building_id) => $http
+      .get(['/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id].join(''))
+      .then((response) => response.data)
+      .catch((response) => response.data);
 
-    const batch_get_building_xml_and_update = (org_id, cycle_id, properties) =>
-      $http
-        .put(['/api/v3/audit_template/batch_get_building_xml/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''), properties)
-        .then((response) => response.data)
-        .catch((response) => response.data);
+    const batch_get_building_xml_and_update = (org_id, cycle_id, properties) => $http
+      .put(['/api/v3/audit_template/batch_get_building_xml/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''), properties)
+      .then((response) => response.data)
+      .catch((response) => response.data);
 
-    const get_buildings = (org_id, cycle_id) =>
-      $http
-        .get(['/api/v3/audit_template/get_buildings/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''))
-        .then((response) => response.data)
-        .catch((response) => response.data);
+    const get_buildings = (org_id, cycle_id) => $http
+      .get(['/api/v3/audit_template/get_buildings/?organization_id=', org_id, '&cycle_id=', cycle_id].join(''))
+      .then((response) => response.data)
+      .catch((response) => response.data);
 
     const update_building_with_xml = function (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) {
       const body = new FormData();
@@ -38,11 +35,10 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
         .catch((response) => response.data);
     };
 
-    const batch_export_to_audit_template = (org_id, property_view_ids) =>
-      $http
-        .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, property_view_ids)
-        .then((response) => response.data)
-        .catch((response) => response.data);
+    const batch_export_to_audit_template = (org_id, property_view_ids) => $http
+      .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, property_view_ids)
+      .then((response) => response.data)
+      .catch((response) => response.data);
 
     const analyses_factory = {
       get_building_xml,

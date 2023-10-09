@@ -7,19 +7,20 @@
  */
 angular.module('stripImportPrefix', []).filter(
   'stripImportPrefix',
-  () =>
-    /** ids are sometime prefixed by the Import Record id.
-     * e.g., import 28 would prefix all assessor data ids with 'IMP28-' and
-     *      stripImportPrefix would strip out the 'IMP28-'s from the html and only
-     *      display the ids.
-     *
-     * Usage: building.id = "IMP12-007"
-     *        HTML: <span> {$ building.id | stripImportPrefix $} </span>
-     *         compiles to: <span> 007 </span>
-     *        JS  : stripImportPrefix(building.id)
-     *         returns: "007"
-     */
-    function (input) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (input) => {
+      /** ids are sometime prefixed by the Import Record id.
+       * e.g., import 28 would prefix all assessor data ids with 'IMP28-' and
+       *      stripImportPrefix would strip out the 'IMP28-'s from the html and only
+       *      display the ids.
+       *
+       * Usage: building.id = "IMP12-007"
+       *        HTML: <span> {$ building.id | stripImportPrefix $} </span>
+       *         compiles to: <span> 007 </span>
+       *        JS  : stripImportPrefix(building.id)
+       *         returns: "007"
+       */
       if (_.isNil(input)) {
         return input;
       }
@@ -31,5 +32,6 @@ angular.module('stripImportPrefix', []).filter(
       }
 
       return input;
-    }
+    };
+  }
 );

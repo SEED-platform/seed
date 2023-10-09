@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
   'naturalSort',
   'flippers',
   '$translate',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $q,
@@ -373,31 +374,29 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
         });
     };
 
-    $scope.open_create_column_modal = () =>
-      $uibModal.open({
-        templateUrl: `${urls.static_url}seed/partials/create_column_modal.html`,
-        controller: 'create_column_modal_controller',
-        // size: 'lg',
-        resolve: {
-          org_id: $scope.org.id,
-          table_name: () => ($scope.inventory_type == 'properties' ? 'PropertyState' : 'TaxlotState'),
-          black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
-        }
-      });
+    $scope.open_create_column_modal = () => $uibModal.open({
+      templateUrl: `${urls.static_url}seed/partials/create_column_modal.html`,
+      controller: 'create_column_modal_controller',
+      // size: 'lg',
+      resolve: {
+        org_id: $scope.org.id,
+        table_name: () => ($scope.inventory_type == 'properties' ? 'PropertyState' : 'TaxlotState'),
+        black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
+      }
+    });
 
-    $scope.open_confirm_column_settings_modal = () =>
-      $uibModal.open({
-        templateUrl: `${urls.static_url}seed/partials/confirm_column_settings_modal.html`,
-        controller: 'confirm_column_settings_modal_controller',
-        size: 'lg',
-        resolve: {
-          proposed_changes: () => diff,
-          all_columns: () => all_columns,
-          columns: () => $scope.columns,
-          inventory_type: () => $scope.inventory_type,
-          org_id: () => $scope.org.id
-        }
-      });
+    $scope.open_confirm_column_settings_modal = () => $uibModal.open({
+      templateUrl: `${urls.static_url}seed/partials/confirm_column_settings_modal.html`,
+      controller: 'confirm_column_settings_modal_controller',
+      size: 'lg',
+      resolve: {
+        proposed_changes: () => diff,
+        all_columns: () => all_columns,
+        columns: () => $scope.columns,
+        inventory_type: () => $scope.inventory_type,
+        org_id: () => $scope.org.id
+      }
+    });
 
     $scope.open_rename_column_modal = function (column_id, column_name) {
       $uibModal.open({

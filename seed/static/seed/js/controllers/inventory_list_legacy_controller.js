@@ -29,10 +29,11 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
   'naturalSort',
   '$translate',
   'uiGridConstants',
-  'i18nService', // from ui-grid
+  'i18nService',
   'organization_payload',
   'gridUtil',
   'uiGridGridMenuService',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $filter,
@@ -251,15 +252,14 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
       });
     }
 
-    $scope.loadLabelsForFilter = (query) =>
-      _.filter($scope.labels, (lbl) => {
-        if (_.isEmpty(query)) {
-          // Empty query so return the whole list.
-          return true;
-        }
-        // Only include element if its name contains the query string.
-        return _.includes(_.toLower(lbl.name), _.toLower(query));
-      });
+    $scope.loadLabelsForFilter = (query) => _.filter($scope.labels, (lbl) => {
+      if (_.isEmpty(query)) {
+        // Empty query so return the whole list.
+        return true;
+      }
+      // Only include element if its name contains the query string.
+      return _.includes(_.toLower(lbl.name), _.toLower(query));
+    });
 
     function updateApplicableLabels(current_labels) {
       let inventoryIds;
@@ -349,22 +349,20 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/postoffice_modal.html`,
         controller: 'postoffice_modal_controller',
         resolve: {
-          property_states: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'property_state_id'
-            ),
-          taxlot_states: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'taxlot_state_id'
-            ),
+          property_states: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'property_state_id'
+          ),
+          taxlot_states: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'taxlot_state_id'
+          ),
           inventory_type: () => $scope.inventory_type
         }
       });
@@ -921,12 +919,10 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
       const all_evaluation_results = [];
       for (const col of attached_derived_columns) {
         all_evaluation_results.push(
-          ...batched_inventory_ids.map((ids) =>
-            derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
-              formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
-              return { derived_column_id: col.id, results: formatted_results };
-            })
-          )
+          ...batched_inventory_ids.map((ids) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
+            formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
+            return { derived_column_id: col.id, results: formatted_results };
+          }))
         );
       }
 
@@ -993,22 +989,20 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/ubid_decode_modal.html`,
         controller: 'ubid_decode_modal_controller',
         resolve: {
-          property_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'property_view_id'
-            ),
-          taxlot_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'taxlot_view_id'
-            )
+          property_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'property_view_id'
+          ),
+          taxlot_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'taxlot_view_id'
+          )
         }
       });
     };
@@ -1018,22 +1012,20 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/geocode_modal.html`,
         controller: 'geocode_modal_controller',
         resolve: {
-          property_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'property_view_id'
-            ),
-          taxlot_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'taxlot_view_id'
-            ),
+          property_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'property_view_id'
+          ),
+          taxlot_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'taxlot_view_id'
+          ),
           org_id: () => $scope.organization.id,
           inventory_type: () => $scope.inventory_type
         }
@@ -1050,22 +1042,20 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/delete_modal.html`,
         controller: 'delete_modal_controller',
         resolve: {
-          property_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'property_view_id'
-            ),
-          taxlot_view_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'taxlot_view_id'
-            )
+          property_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'property_view_id'
+          ),
+          taxlot_view_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'taxlot_view_id'
+          )
         }
       });
 
@@ -1190,14 +1180,13 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
-          inventory_ids: () =>
-            _.map(
-              _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }),
-              'property_view_id'
-            ),
+          inventory_ids: () => _.map(
+            _.filter($scope.gridApi.selection.getSelectedRows(), (row) => {
+              if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+              return !_.has(row, '$$treeLevel');
+            }),
+            'property_view_id'
+          ),
           cycles: _.constant(cycles.cycles),
           current_cycle: _.constant($scope.cycle.selected_cycle)
         }
@@ -1242,8 +1231,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
       // Save all columns except first 3
       let gridCols = _.filter(
         $scope.gridApi.grid.columns,
-        (col) =>
-          !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist', 'merged_indicator', 'id', 'labels'], col.name) && col.visible && !col.colDef.is_derived_column
+        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist', 'merged_indicator', 'id', 'labels'], col.name) && col.visible && !col.colDef.is_derived_column
       );
 
       // Ensure pinned ordering first

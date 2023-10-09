@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.analysis', []).controller('analysis_controlle
   'users_payload',
   'views_payload',
   'auth_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, $state, organization_service, analysis_payload, organization_payload, messages_payload, users_payload, views_payload, auth_payload) {
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
     $scope.org = organization_payload.organization;
@@ -25,18 +26,17 @@ angular.module('BE.seed.controller.analysis', []).controller('analysis_controlle
     $scope.view_id = $stateParams.view_id;
     $scope.original_views = views_payload.original_views;
 
-    $scope.has_children = function (value) {
+    $scope.has_children = (value) => {
       if (typeof value === 'object') {
         return true;
       }
     };
 
-    $scope.get_display_name = (inventory_state) =>
-      organization_service.get_inventory_display_value(
-        $scope.org,
-        // NOTE: hardcoding 'property' b/c you can only run analyses on properties
-        'property',
-        inventory_state
-      );
+    $scope.get_display_name = (inventory_state) => organization_service.get_inventory_display_value(
+      $scope.org,
+      // NOTE: hardcoding 'property' b/c you can only run analyses on properties
+      'property',
+      inventory_state
+    );
   }
 ]);

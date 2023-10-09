@@ -14,14 +14,14 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
   'Notification',
   '$translate',
   '$sce',
+  // eslint-disable-next-line func-names
   function ($scope, $log, urls, organization_payload, labels_payload, auth_payload, label_service, simple_modal_service, notification, $translate, $sce) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
     $scope.available_colors = _.map(label_service.get_available_colors(), (color) =>
       // label is already used for danger, success, etc.
-      _.extend(color, { uiLabel: $translate.instant(color.color) })
-    );
+      _.extend(color, { uiLabel: $translate.instant(color.color) }));
     $scope.labels = labels_payload;
 
     function initialize_new_label() {

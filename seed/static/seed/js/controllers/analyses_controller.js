@@ -17,6 +17,7 @@ angular
     'urls',
     'analyses_service',
     'Notification',
+    // eslint-disable-next-line func-names
     function ($scope, analyses_payload, cycles_payload, organization_payload, organization_service, users_payload, auth_payload, messages_payload, urls, analyses_service, Notification) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -35,29 +36,25 @@ angular
         Object.values(analysis_polling_stoppers).forEach((stop_func) => stop_func());
       });
 
-      const refresh_analyses = function () {
-        analyses_service.get_analyses_for_org($scope.org.id).then(function (data) {
+      const refresh_analyses = () => {
+        analyses_service.get_analyses_for_org($scope.org.id).then((data) => {
           $scope.analyses = data.analyses;
         });
       };
 
-      const refresh_analysis = (analysis_id) => {
+      const refresh_analysis = (analysis_id) =>
         // update analysis in scope
-        return analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
-          const analysis_index = $scope.analyses.findIndex((analysis) => {
-            return analysis.id === analysis_id;
-          });
+        analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+          const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
           $scope.analyses[analysis_index] = data.analysis;
           return data.analysis;
-        });
-      };
+        })
+      ;
 
       // add flag to the analysis indicating it has no currently running tasks
       // Used to determine if we should indicate on UI if an analysis's status is being polled
       const mark_analysis_not_active = (analysis_id) => {
-        const analysis_index = $scope.analyses.findIndex((analysis) => {
-          return analysis.id === analysis_id;
-        });
+        const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
         $scope.analyses[analysis_index]._finished_with_tasks = true;
       };
 
@@ -82,59 +79,51 @@ angular
         poll_analysis_progress(analysis);
       });
 
-      $scope.start_analysis = function (analysis_id) {
-        const analysis = $scope.analyses.find(function (a) {
-          return a.id === analysis_id;
-        });
+      $scope.start_analysis = (analysis_id) => {
+        const analysis = $scope.analyses.find((a) => a.id === analysis_id);
         analysis.status = 'Starting...';
 
-        analyses_service.start_analysis(analysis_id).then(function (result) {
+        analyses_service.start_analysis(analysis_id).then((result) => {
           if (result.status === 'success') {
             Notification.primary('Analysis started');
             refresh_analysis(analysis_id).then((updated_analysis) => {
               poll_analysis_progress(updated_analysis);
             });
           } else {
-            Notification.error('Failed to start analysis: ' + result.message);
+            Notification.error(`Failed to start analysis: ${result.message}`);
           }
         });
       };
 
-      $scope.stop_analysis = function (analysis_id) {
-        const analysis = $scope.analyses.find(function (a) {
-          return a.id === analysis_id;
-        });
+      $scope.stop_analysis = (analysis_id) => {
+        const analysis = $scope.analyses.find((a) => a.id === analysis_id);
         analysis.status = 'Stopping...';
 
-        analyses_service.stop_analysis(analysis_id).then(function (result) {
+        analyses_service.stop_analysis(analysis_id).then((result) => {
           if (result.status === 'success') {
             Notification.primary('Analysis stopped');
             refresh_analysis(analysis_id).then((updated_analysis) => {
               poll_analysis_progress(updated_analysis);
             });
           } else {
-            Notification.error('Failed to stop analysis: ' + result.message);
+            Notification.error(`Failed to stop analysis: ${result.message}`);
           }
         });
       };
 
-      $scope.delete_analysis = function (analysis_id) {
-        const analysis = $scope.analyses.find(function (a) {
-          return a.id === analysis_id;
-        });
+      $scope.delete_analysis = (analysis_id) => {
+        const analysis = $scope.analyses.find((a) => a.id === analysis_id);
         analysis.status = 'Deleting...';
 
-        analyses_service.delete_analysis(analysis_id).then(function (result) {
+        analyses_service.delete_analysis(analysis_id).then((result) => {
           if (result.status === 'success') {
             Notification.primary('Analysis deleted');
             // stop polling and remove the analysis from the scope
             analysis_polling_stoppers[analysis_id]();
-            const analysis_index = $scope.analyses.findIndex((analysis) => {
-              return analysis.id === analysis_id;
-            });
+            const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
             $scope.analyses.splice(analysis_index, 1);
           } else {
-            Notification.error('Failed to delete analysis: ' + result.message);
+            Notification.error(`Failed to delete analysis: ${result.message}`);
           }
         });
       };
@@ -142,28 +131,26 @@ angular
       $scope.is_object = _.isObject;
     }
   ])
-  .filter('get_run_duration', function () {
-    return function (analysis) {
-      if (!analysis || !analysis.start_time || !analysis.end_time) {
-        return ''; // no start and/or stop time, display nothing
-      }
+  .filter('get_run_duration', () => (analysis) => {
+    if (!analysis || !analysis.start_time || !analysis.end_time) {
+      return ''; // no start and/or stop time, display nothing
+    }
 
-      let oneSecond = 1000;
-      var oneMinute = oneSecond * 60;
-      var oneHour = oneMinute * 60;
-      var oneDay = oneHour * 24;
+    const oneSecond = 1000;
+    const oneMinute = oneSecond * 60;
+    const oneHour = oneMinute * 60;
+    const oneDay = oneHour * 24;
 
-      let milliseconds = new Date(analysis.end_time).getTime() - new Date(analysis.start_time).getTime();
-      let seconds = Math.floor((milliseconds % oneMinute) / oneSecond);
-      let minutes = Math.floor((milliseconds % oneHour) / oneMinute);
-      let hours = Math.floor((milliseconds % oneDay) / oneHour);
-      let days = Math.floor(milliseconds / oneDay);
+    const milliseconds = new Date(analysis.end_time).getTime() - new Date(analysis.start_time).getTime();
+    const seconds = Math.floor((milliseconds % oneMinute) / oneSecond);
+    const minutes = Math.floor((milliseconds % oneHour) / oneMinute);
+    const hours = Math.floor((milliseconds % oneDay) / oneHour);
+    const days = Math.floor(milliseconds / oneDay);
 
-      let time = [];
-      if (days !== 0) time.push(days !== 1 ? days + ' days' : days + ' day');
-      if (hours !== 0) time.push(hours !== 1 ? hours + ' hours' : hours + ' hour');
-      if (minutes !== 0) time.push(minutes !== 1 ? minutes + ' minutes' : minutes + ' minute');
-      if (seconds !== 0 || milliseconds < 1000) time.push(seconds !== 1 ? seconds + ' seconds' : seconds + ' second');
-      return time.join(', ');
-    };
+    const time = [];
+    if (days !== 0) time.push(days !== 1 ? `${days} days` : `${days} day`);
+    if (hours !== 0) time.push(hours !== 1 ? `${hours} hours` : `${hours} hour`);
+    if (minutes !== 0) time.push(minutes !== 1 ? `${minutes} minutes` : `${minutes} minute`);
+    if (seconds !== 0 || milliseconds < 1000) time.push(seconds !== 1 ? `${seconds} seconds` : `${seconds} second`);
+    return time.join(', ');
   });

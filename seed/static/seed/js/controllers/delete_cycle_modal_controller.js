@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
   'uploader_service',
   'cycle',
   'organization_id',
+  // eslint-disable-next-line func-names
   function ($scope, $window, $state, $q, $uibModalInstance, inventory_service, user_service, cycle_service, uploader_service, cycle, organization_id) {
     $scope.cycle_id = cycle.cycle_id;
     $scope.cycle_name = cycle.name;

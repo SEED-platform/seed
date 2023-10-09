@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.service.meter', []).factory('meter_service', [
   '$http',
+  // eslint-disable-next-line func-names
   function ($http) {
     const meter_factory = {};
 
@@ -11,7 +12,7 @@ angular.module('BE.seed.service.meter', []).factory('meter_service', [
 
     meter_factory.delete_meter = (property_view_id, meter_id) => $http.delete(`/api/v3/properties/${property_view_id}/meters/${meter_id}`).then((response) => response.data);
 
-    meter_factory.property_meter_usage = function (property_view_id, organization_id, interval, excluded_meter_ids) {
+    meter_factory.property_meter_usage = (property_view_id, organization_id, interval, excluded_meter_ids) => {
       if (_.isUndefined(excluded_meter_ids)) excluded_meter_ids = [];
       return $http
         .post(`/api/v3/properties/${property_view_id}/meter_usage/?organization_id=${organization_id}`, {

@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
   'uploaded',
   'run_id',
   'orgId',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, search_service, data_quality_service, naturalSort, dataQualityResults, name, uploaded, run_id, orgId) {
     $scope.name = name;
     $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
@@ -21,14 +22,14 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
     $scope.run_id = run_id;
     $scope.orgId = orgId;
 
-    $scope.download_results_csv = function () {
+    $scope.download_results_csv = () => {
       data_quality_service.get_data_quality_results_csv($scope.orgId, $scope.run_id).then((data) => {
         const blob = new Blob([data], { type: 'text/csv' });
         saveAs(blob, 'Data Quality Check Results.csv');
       });
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
@@ -84,7 +85,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
       field.data_type = 'string';
     });
 
-    $scope.sortData = function () {
+    $scope.sortData = () => {
       const result = originalDataQualityResults.slice().sort((a, b) => naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]));
       if ($scope.search.sort_reverse) result.reverse();
       $scope.dataQualityResults = result;
@@ -93,7 +94,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
     $scope.search = angular.copy(search_service);
 
     // Override storage, search, and filter functions
-    $scope.search.init_storage = function (prefix) {
+    $scope.search.init_storage = (prefix) => {
       // Check session storage for order and sort values.
       if (!_.isUndefined(Storage)) {
         $scope.search.prefix = prefix;
@@ -133,6 +134,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         $scope.sortData();
       }
     };
+    // eslint-disable-next-line func-names
     $scope.search.column_prototype.sorted_class = function () {
       if ($scope.search.sort_column === this.sort_column) {
         if ($scope.search.sort_reverse) {

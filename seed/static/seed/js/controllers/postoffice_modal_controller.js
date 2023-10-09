@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.postoffice_modal', []).controller('postoffice
   'property_states',
   'taxlot_states',
   'inventory_type',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, postoffice_service, property_states, taxlot_states, inventory_type) {
     $scope.loading = false;
     $scope.available_templates = [];

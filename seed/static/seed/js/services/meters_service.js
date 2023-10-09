@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.service.meters', []).factory('meters_service', [
   '$http',
+  // eslint-disable-next-line func-names
   function ($http) {
     const meters_factory = {};
 

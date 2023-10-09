@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
   'derived_columns_payload',
   'property_columns_payload',
   'taxlot_columns_payload',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $log,
@@ -94,9 +95,9 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       }
 
       const source_column =
-        $scope.derived_column.inventory_type === 'Property'
-          ? $scope.property_columns.find((col) => col.id === param.source_column)
-          : $scope.taxlot_columns.find((col) => col.id === param.source_column);
+        $scope.derived_column.inventory_type === 'Property' ?
+          $scope.property_columns.find((col) => col.id === param.source_column) :
+          $scope.taxlot_columns.find((col) => col.id === param.source_column);
 
       return {
         ...param,

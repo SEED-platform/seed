@@ -7,8 +7,9 @@
  */
 angular.module('titleCase', []).filter(
   'titleCase',
-  () =>
-    function (input) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (input) => {
       if (_.isNil(input)) {
         return input;
       }
@@ -17,5 +18,6 @@ angular.module('titleCase', []).filter(
       input = input.replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());
 
       return input;
-    }
+    };
+  }
 );

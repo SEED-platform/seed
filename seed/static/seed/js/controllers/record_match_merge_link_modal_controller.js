@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
   'inventory_type',
   'organization_id',
   'organization_service',
+  // eslint-disable-next-line func-names
   function ($scope, $q, $uibModalInstance, headers, inventory_service, inventory_type, organization_id, organization_service) {
     $scope.headers = headers;
 

@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.security', []).controller('security_controlle
   'auth_payload',
   'user_service',
   'user_profile_payload',
+  // eslint-disable-next-line func-names
   function ($scope, urls, auth_payload, user_service, user_profile_payload) {
     $scope.is_superuser = auth_payload.auth.requires_superuser;
     $scope.username = `${user_profile_payload.first_name} ${user_profile_payload.last_name}`;

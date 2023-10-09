@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
   'uploader_service',
   'organization_id',
   'column',
+  // eslint-disable-next-line func-names
   function ($scope, $window, $log, $interval, $uibModalInstance, spinner_utility, columns_service, uploader_service, organization_id, column) {
     $scope.column_name = column.column_name;
 
@@ -20,14 +21,14 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
       progress: 0
     };
 
-    $scope.delete = function () {
+    $scope.delete = () => {
       $scope.state = 'pending';
       columns_service
         .delete_column_for_org(organization_id, column.id)
         .then((result) => {
           $scope.state = 'evaluating';
           $scope.interval = $interval(() => {
-            $scope.state == 'running' ? $scope.updateTime() : $scope.setRunningState();
+            $scope.state === 'running' ? $scope.updateTime() : $scope.setRunningState();
           }, 1000);
           $scope.updateTime();
           uploader_service.check_progress_loop(

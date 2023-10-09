@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
   'import_file_payload',
   'propertyColumns',
   'taxlotColumns',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, pairing_service, import_file_payload, propertyColumns, taxlotColumns) {
     $scope.import_file = import_file_payload.import_file;
     $scope.inventory_type = $stateParams.inventory_type;

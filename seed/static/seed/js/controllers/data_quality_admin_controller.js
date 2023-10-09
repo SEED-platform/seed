@@ -25,6 +25,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
   'naturalSort',
   'flippers',
   '$translate',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $q,
@@ -206,28 +207,27 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     // Reset all rules
-    $scope.reset_all_rules = () =>
-      modified_service.showResetDialog().then(() => {
-        $scope.rules_reset = false;
-        $scope.rules_updated = false;
-        spinner_utility.show();
-        return data_quality_service
-          .reset_all_data_quality_rules($scope.org.org_id)
-          .then(
-            (rules) => {
-              $scope.original_rules = angular.copy(rules);
-              loadRules(rules);
-              $scope.rules_reset = true;
-              modified_service.resetModified();
-            },
-            (data) => {
-              $scope.$emit('app_error', data);
-            }
-          )
-          .finally(() => {
-            spinner_utility.hide();
-          });
-      });
+    $scope.reset_all_rules = () => modified_service.showResetDialog().then(() => {
+      $scope.rules_reset = false;
+      $scope.rules_updated = false;
+      spinner_utility.show();
+      return data_quality_service
+        .reset_all_data_quality_rules($scope.org.org_id)
+        .then(
+          (rules) => {
+            $scope.original_rules = angular.copy(rules);
+            loadRules(rules);
+            $scope.rules_reset = true;
+            modified_service.resetModified();
+          },
+          (data) => {
+            $scope.$emit('app_error', data);
+          }
+        )
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    });
 
     // In order to save rules, the configured rules need to be reformatted.
     const get_configured_rules = function () {
@@ -238,10 +238,9 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
         _.forEach(ruleGroups, (ruleGroup) => {
           const duplicate_rules = _.groupBy(
             ruleGroup,
-            (rule) =>
-              `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${
-                !_.isUndefined(rule.label) ? rule.label : rule.status_label
-              }`
+            (rule) => `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${
+              !_.isUndefined(rule.label) ? rule.label : rule.status_label
+            }`
           );
           _.forEach(Object.keys(duplicate_rules), (key) => {
             if (duplicate_rules[key].length > 1) {
@@ -478,8 +477,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
           condition: 'required',
           data_type: $scope.data_type_keys.string
         })
-      )
-        rule.text_match = null;
+      ) rule.text_match = null;
       if (rule.condition !== 'range') {
         rule.units = '';
         rule.min = null;

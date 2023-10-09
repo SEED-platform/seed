@@ -28,7 +28,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
   'organization_service',
   'dataset_service',
   '$translate',
-  'i18nService', // from ui-grid
+  'i18nService',
   'simple_modal_service',
   'Notification',
   'organization_payload',
@@ -37,6 +37,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
   'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
   'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
   'derived_columns_payload',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $state,
@@ -479,13 +480,10 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * check_reset_mappings
      * Return true if the mappings match the original import file
      */
-    $scope.check_reset_mappings = () =>
-      _.every($scope.mappings, (col) =>
-        _.isMatch(col, {
-          suggestion: col.name,
-          suggestion_table_name: 'PropertyState'
-        })
-      );
+    $scope.check_reset_mappings = () => _.every($scope.mappings, (col) => _.isMatch(col, {
+      suggestion: col.name,
+      suggestion_table_name: 'PropertyState'
+    }));
 
     /**
      * Get_mappings
@@ -564,11 +562,10 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       const intersections = _.intersectionWith(
         required_property_fields,
         $scope.mappings.filter((m) => !m.isOmitted),
-        (required_field, raw_col) =>
-          _.isMatch(required_field, {
-            column_name: raw_col.suggestion_column_name,
-            inventory_type: raw_col.suggestion_table_name
-          })
+        (required_field, raw_col) => _.isMatch(required_field, {
+          column_name: raw_col.suggestion_column_name,
+          inventory_type: raw_col.suggestion_table_name
+        })
       ).length;
 
       return intersections > 0;
@@ -585,12 +582,10 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       const taxlot_mappings_found = _.find($scope.mappings, { suggestion_table_name: 'TaxLotState' });
       if (!taxlot_mappings_found) return true;
 
-      const intersections = _.intersectionWith(required_taxlot_fields, $scope.mappings, (required_field, raw_col) =>
-        _.isMatch(required_field, {
-          column_name: raw_col.suggestion_column_name,
-          inventory_type: raw_col.suggestion_table_name
-        })
-      ).length;
+      const intersections = _.intersectionWith(required_taxlot_fields, $scope.mappings, (required_field, raw_col) => _.isMatch(required_field, {
+        column_name: raw_col.suggestion_column_name,
+        inventory_type: raw_col.suggestion_table_name
+      })).length;
 
       return intersections > 0;
     };
@@ -599,19 +594,17 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * empty_fields_present: used to disable or enable the 'show & review
      *   mappings' button.
      */
-    $scope.empty_fields_present = () =>
-      Boolean(
-        _.find(
-          $scope.mappings.filter((m) => !m.isOmitted),
-          { suggestion: '' }
-        )
-      );
+    $scope.empty_fields_present = () => Boolean(
+      _.find(
+        $scope.mappings.filter((m) => !m.isOmitted),
+        { suggestion: '' }
+      )
+    );
 
     /**
      * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
      */
-    $scope.empty_units_present = () =>
-      Boolean(_.find($scope.mappings, (field) => field.suggestion_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field))));
+    $scope.empty_units_present = () => Boolean(_.find($scope.mappings, (field) => field.suggestion_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field))));
 
     /**
      * empty_fields_present: used to disable or enable the 'show & review
@@ -626,8 +619,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
      */
-    $scope.check_fields = () =>
-      $scope.duplicates_present ||
+    $scope.check_fields = () => $scope.duplicates_present ||
       $scope.empty_fields_present() ||
       $scope.empty_units_present() ||
       !$scope.required_property_fields_present() ||

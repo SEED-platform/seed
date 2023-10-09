@@ -4,7 +4,8 @@
  *
  * Directive sd-scroll-sync used for keeping the horizontal scrollbar in sync across multiple scrolling areas
  */
-angular.module('sdScrollSync', []).directive('sdScrollSync', () => {
+// eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+angular.module('sdScrollSync', []).directive('sdScrollSync', function () {
   let scrollLeft = 0;
 
   function combine(elements) {

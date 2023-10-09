@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
   'view_id',
   'pm_property_id',
   'column_mapping_profiles',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, spinner_utility, organization, cycle_id, upload_from_file, espm_service, view_id, pm_property_id, column_mapping_profiles) {
     $scope.organization = organization;
     $scope.view_id = view_id;
@@ -32,16 +33,16 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
 
     // password field
     $scope.secret = 'password';
-    $scope.toggle_secret = function () {
-      $scope.secret = $scope.secret == 'password' ? 'text' : 'password';
+    $scope.toggle_secret = () => {
+      $scope.secret = $scope.secret === 'password' ? 'text' : 'password';
     };
 
-    $scope.upload_from_file_and_close = function (event_message, file, progress) {
+    $scope.upload_from_file_and_close = (event_message, file, progress) => {
       $scope.close();
       $scope.upload_from_file(event_message, file, progress);
     };
 
-    $scope.confirm_import = function () {
+    $scope.confirm_import = () => {
       if (!$scope.fields.pm_property_id) {
         $scope.error = 'An ESPM Property ID is required.';
       } else {
@@ -49,7 +50,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
       }
     };
 
-    $scope.submit_request = function () {
+    $scope.submit_request = () => {
       $scope.error = '';
       $scope.busy = true;
       spinner_utility.show();
@@ -73,7 +74,7 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
       });
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.dismiss();
     };
   }

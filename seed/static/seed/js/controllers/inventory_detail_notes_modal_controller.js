@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', []).controller
   'viewId',
   'note',
   'orgId',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, action, note_service, inventoryType, viewId, note, orgId) {
     $scope.inventoryType = inventoryType;
     $scope.viewId = viewId;

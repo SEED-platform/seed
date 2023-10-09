@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.set_update_to_now_modal', []).controller('set
   'taxlot_views',
   'inventory_service',
   'uploader_service',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, property_views, taxlot_views, inventory_service, uploader_service) {
     $scope.property_views = property_views;
     $scope.taxlot_views = taxlot_views;
@@ -19,7 +20,7 @@ angular.module('BE.seed.controller.set_update_to_now_modal', []).controller('set
     };
     $scope.refreshing = false;
 
-    $scope.set_update_to_now = function () {
+    $scope.set_update_to_now = () => {
       $scope.refreshing = true;
       inventory_service.start_set_update_to_now().then((data) => {
         uploader_service.check_progress_loop(
@@ -36,12 +37,12 @@ angular.module('BE.seed.controller.set_update_to_now_modal', []).controller('set
       });
     };
 
-    $scope.refresh_page = function () {
+    $scope.refresh_page = () => {
       $state.reload();
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
   }

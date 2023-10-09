@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.inventory_detail_ubid', []).controller('inven
   '$stateParams',
   'inventory_payload',
   'organization_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, inventory_payload, organization_payload) {
     $scope.item_state = inventory_payload.state;
     $scope.org = organization_payload.organization;
@@ -27,9 +28,9 @@ angular.module('BE.seed.controller.inventory_detail_ubid', []).controller('inven
       if (!$scope.item_state[field]) {
         error += `${error === '' ? '' : ' and default '}${field} is blank`;
       }
-      $scope.inventory_name = $scope.item_state[field]
-        ? $scope.item_state[field]
-        : `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
+      $scope.inventory_name = $scope.item_state[field] ?
+        $scope.item_state[field] :
+        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
     $scope.$on('reload', () => {

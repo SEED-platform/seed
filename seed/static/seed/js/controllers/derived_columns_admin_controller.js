@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
   'auth_payload',
   'organization_payload',
   'derived_columns_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $log, $state, $stateParams, derived_columns_service, Notification, simple_modal_service, auth_payload, organization_payload, derived_columns_payload) {
     $scope.state = $state.current;
     $scope.auth = auth_payload.auth;
@@ -24,23 +25,23 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
     // used to determine column sorting. 0 = no sort, 1 = ascending, 2 = descending
     $scope.column_sorting = 0;
 
-    $scope.toggle_name_order_sort = function () {
+    $scope.toggle_name_order_sort = () => {
       $scope.column_sorting = ($scope.column_sorting + 1) % 3;
-      if ($scope.column_sorting == 0) {
+      if ($scope.column_sorting === 0) {
         $scope.derived_columns.sort((a, b) => (a.id > b.id ? 1 : -1));
-      } else if ($scope.column_sorting == 1) {
+      } else if ($scope.column_sorting === 1) {
         $scope.derived_columns.sort((a, b) => (a.name > b.name ? 1 : -1));
       } else {
         $scope.derived_columns.sort((a, b) => (a.name < b.name ? 1 : -1));
       }
     };
 
-    $scope.edit_derived_column = function (derived_column_id) {
+    $scope.edit_derived_column = (derived_column_id) => {
       $state.go('organization_derived_column_editor', { organization_id: $scope.org.id, derived_column_id });
     };
 
-    $scope.delete_derived_column = function (derived_column_id) {
-      const derived_column = $scope.derived_columns.find((dc) => dc.id == derived_column_id);
+    $scope.delete_derived_column = (derived_column_id) => {
+      const derived_column = $scope.derived_columns.find((dc) => dc.id === derived_column_id);
 
       const modalOptions = {
         type: 'default',
@@ -67,7 +68,7 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
             })
             .catch((err) => {
               $log.error(err);
-              if (err.data.detail == 'Cannot delete protected objects while related objects still exist') {
+              if (err.data.detail === 'Cannot delete protected objects while related objects still exist') {
                 Notification.error(`Cannot delete Derived Column "${derived_column.name}" while related Derived Columns exist. Delete unrelated Derived Columns and retry.`);
               } else {
                 Notification.error(`Error attempting to delete "${derived_column.name}". Please refresh the page and try again.`);

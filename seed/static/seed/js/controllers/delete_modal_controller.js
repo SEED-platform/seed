@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
   'inventory_service',
   'property_view_ids',
   'taxlot_view_ids',
+  // eslint-disable-next-line func-names
   function ($scope, $q, $uibModalInstance, inventory_service, property_view_ids, taxlot_view_ids) {
     $scope.property_view_ids = _.uniq(property_view_ids);
     $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);

@@ -8,10 +8,11 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
   '$timeout',
   'user_service',
   'uploader_service',
+  // eslint-disable-next-line func-names
   function ($http, $log, $timeout, user_service, uploader_service) {
     const get_analyses_for_org = (org_id) => $http.get(`/api/v3/analyses/?organization_id=${org_id}`).then((response) => response.data);
 
-    const get_analyses_for_canonical_property = function (property_id) {
+    const get_analyses_for_canonical_property = (property_id) => {
       const org = user_service.get_organization().id;
       return $http.get(`/api/v3/properties/${property_id}/analyses/?organization_id=${org}`).then((response) => response.data);
     };
@@ -26,7 +27,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
 
     const get_analysis_view_for_org = (analysis_id, view_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/views/${view_id}/?organization_id=${org_id}`).then((response) => response.data);
 
-    const create_analysis = function (name, service, configuration, property_view_ids) {
+    const create_analysis = (name, service, configuration, property_view_ids) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: '/api/v3/analyses/',
@@ -41,7 +42,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       }).then((response) => response.data);
     };
 
-    const start_analysis = function (analysis_id) {
+    const start_analysis = (analysis_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: `/api/v3/analyses/${analysis_id}/start/`,
@@ -52,7 +53,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const stop_analysis = function (analysis_id) {
+    const stop_analysis = (analysis_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: `/api/v3/analyses/${analysis_id}/stop/`,
@@ -63,7 +64,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const delete_analysis = function (analysis_id) {
+    const delete_analysis = (analysis_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: `/api/v3/analyses/${analysis_id}/`,
@@ -74,7 +75,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const get_summary = function (cycle_id) {
+    const get_summary = (cycle_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: '/api/v3/analyses/stats',
@@ -85,16 +86,15 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const verify_token = (organization_id) =>
-      $http({
-        url: '/api/v3/analyses/verify_better_token/',
-        method: 'GET',
-        params: { organization_id }
-      })
-        .then((response) => response.data)
-        .catch((response) => response.data);
+    const verify_token = (organization_id) => $http({
+      url: '/api/v3/analyses/verify_better_token/',
+      method: 'GET',
+      params: { organization_id }
+    })
+      .then((response) => response.data)
+      .catch((response) => response.data);
 
-    const get_progress_key = function (analysis_id) {
+    const get_progress_key = (analysis_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: `/api/v3/analyses/${analysis_id}/progress_key/`,
@@ -113,7 +113,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
      * @param {fn} no_current_task_callback: called when there are no more progress data for the analysis. Provided one parameter, analysis id
      * @returns {fn}: a function which when called stops the polling
      */
-    const check_progress_loop = function ({ id, status }, status_update_callback, no_current_task_callback) {
+    const check_progress_loop = ({ id, status }, status_update_callback, no_current_task_callback) => {
       // These statuses are assumed to have no progress data
       const NOT_ACTIVE_STATUSES = ['Pending Creation', 'Ready', 'Completed', 'Stopped', 'Failed'];
       if (NOT_ACTIVE_STATUSES.indexOf(status) >= 0) {

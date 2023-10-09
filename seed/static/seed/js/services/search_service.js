@@ -35,6 +35,7 @@
 angular.module('BE.seed.service.search', []).factory('search_service', [
   '$http',
   'spinner_utility',
+  // eslint-disable-next-line func-names
   function ($http, spinner_utility) {
     /** **********
      * variables

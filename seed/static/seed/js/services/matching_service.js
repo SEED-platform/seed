@@ -6,6 +6,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
   '$http',
   'user_service',
   'spinner_utility',
+  // eslint-disable-next-line func-names
   function ($http, user_service, spinner_utility) {
     const matching_service = {};
 
@@ -15,19 +16,18 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
      *@param import_file_id: int, the database id of the import file
      * we wish to match against other buildings for an organization.
      */
-    matching_service.start_system_matching = (import_file_id) =>
-      $http
-        .post(
-          `/api/v3/import_files/${import_file_id}/start_system_matching_and_geocoding/`,
-          {},
-          {
-            params: { organization_id: user_service.get_organization().id }
-          }
-        )
-        .then((response) => response.data)
-        .catch((e) => e.data);
+    matching_service.start_system_matching = (import_file_id) => $http
+      .post(
+        `/api/v3/import_files/${import_file_id}/start_system_matching_and_geocoding/`,
+        {},
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }
+      )
+      .then((response) => response.data)
+      .catch((e) => e.data);
 
-    matching_service.mergeProperties = function (property_view_ids) {
+    matching_service.mergeProperties = (property_view_ids) => {
       spinner_utility.show();
       return $http
         .post(
@@ -47,7 +47,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         });
     };
 
-    matching_service.unmergeProperties = function (view_id) {
+    matching_service.unmergeProperties = (view_id) => {
       spinner_utility.show();
       return $http
         .put(
@@ -65,7 +65,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         });
     };
 
-    matching_service.mergeTaxlots = function (taxlot_view_ids) {
+    matching_service.mergeTaxlots = (taxlot_view_ids) => {
       spinner_utility.show();
       return $http
         .post(
@@ -85,7 +85,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         });
     };
 
-    matching_service.unmergeTaxlots = function (view_id) {
+    matching_service.unmergeTaxlots = (view_id) => {
       spinner_utility.show();
       return $http
         .post(

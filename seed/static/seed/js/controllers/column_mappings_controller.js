@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
   'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
   'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
   'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $state,
@@ -256,18 +257,18 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       });
     };
 
-    $scope.export_profile = function () {
+    $scope.export_profile = () => {
       column_mappings_service.export_mapping_profile($scope.org.id, $scope.current_profile.id).then((data) => {
         const blob = new Blob([data], { type: 'text/csv' });
         saveAs(blob, `${$scope.current_profile.name}_mapping_profile.csv`);
-        Notification.primary(`Data exported for \'${$scope.current_profile.name}\'`);
+        Notification.primary(`Data exported for '${$scope.current_profile.name}'`);
       });
     };
 
     // Track changes to warn users about losing changes when data could be lost
     $scope.changes_possible = false;
 
-    $scope.flag_change = function (col) {
+    $scope.flag_change = (col) => {
       if (col) {
         // Reevaluate units
         col.from_units = get_default_quantity_units(col);
@@ -276,7 +277,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       $scope.changes_possible = true;
     };
 
-    $scope.check_for_changes = function () {
+    $scope.check_for_changes = () => {
       if ($scope.changes_possible) {
         $uibModal
           .open({
@@ -309,14 +310,14 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     const ghg_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg' });
     $scope.is_ghg_column = (
       mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, { displayName: mapping.to_field }));
+    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(ghg_columns, { displayName: mapping.to_field }));
 
     const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
     $scope.is_ghg_intensity_column = (
       mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { displayName: mapping.to_field }));
+    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { displayName: mapping.to_field }));
 
-    var get_default_quantity_units = function (col) {
+    var get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
       if ($scope.is_eui_column(col)) {
         return 'kBtu/ft**2/year';
@@ -334,7 +335,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // Add and remove column methods
-    $scope.add_new_column = function () {
+    $scope.add_new_column = () => {
       const empty_row = {
         from_field: '',
         from_units: null,
@@ -350,12 +351,12 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       $scope.flag_change();
     };
 
-    $scope.remove_column = function (index) {
+    $scope.remove_column = (index) => {
       $scope.current_profile.mappings.splice(index, 1);
       $scope.flag_change();
     };
 
-    $scope.remove_all_columns = function () {
+    $scope.remove_all_columns = () => {
       $scope.current_profile.mappings = [];
       $scope.flag_change();
     };
@@ -363,7 +364,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     // Copy Comma-delimited list into headers
     $scope.csv_headers = '';
 
-    $scope.copy_csv_headers = function () {
+    $scope.copy_csv_headers = () => {
       $uibModal
         .open({
           template:
@@ -387,7 +388,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // Copy Data File Header values into SEED Header values
-    $scope.mirror_data_file_headers = function () {
+    $scope.mirror_data_file_headers = () => {
       _.forEach($scope.current_profile.mappings, (mapping) => {
         mapping.to_field = mapping.from_field;
       });
@@ -395,7 +396,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       $scope.flag_change();
     };
 
-    $scope.suggestions_from_existing_columns = function () {
+    $scope.suggestions_from_existing_columns = () => {
       const raw_headers = _.map($scope.current_profile.mappings, 'from_field');
 
       column_mappings_service.get_header_suggestions(raw_headers).then((results) => {
@@ -411,26 +412,25 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // Identify individual header duplicates and if a profile has header duplicates
-    $scope.is_file_header_duplicate = function (mapping) {
+    $scope.is_file_header_duplicate = (mapping) => {
       const mapping_by_from_field = _.filter($scope.current_profile.mappings, { from_field: mapping.from_field });
       return mapping_by_from_field.length > 1;
     };
 
-    $scope.header_duplicates_present = function () {
+    $scope.header_duplicates_present = () => {
       const grouped_by_from_field = _.groupBy($scope.current_profile.mappings, 'from_field');
 
       return Boolean(_.find(_.values(grouped_by_from_field), (group) => group.length > 1));
     };
 
-    $scope.empty_units_present = () =>
-      Boolean(
-        _.find($scope.current_profile.mappings, (field) => {
-          const has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
-          return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
-        })
-      );
+    $scope.empty_units_present = () => Boolean(
+      _.find($scope.current_profile.mappings, (field) => {
+        const has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
+        return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
+      })
+    );
 
-    $scope.profile_action_ok = function (action) {
+    $scope.profile_action_ok = (action) => {
       if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_NORMAL) {
         return true;
       }

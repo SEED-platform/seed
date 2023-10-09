@@ -6,8 +6,9 @@
  */
 angular.module('sdWhenScrolled', []).directive(
   'sdWhenScrolled',
-  () =>
-    function (scope, elm, attr) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (scope, elm, attr) => {
       const raw = elm[0];
 
       elm.bind('scroll', () => {
@@ -15,5 +16,6 @@ angular.module('sdWhenScrolled', []).directive(
           scope.$apply(attr.sdWhenScrolled);
         }
       });
-    }
+    };
+  }
 );

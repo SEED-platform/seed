@@ -6,28 +6,27 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
   '$http',
   '$log',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, $log, user_service) {
     // get all compliance metrics defined
-    const get_compliance_metrics = (organization_id = user_service.get_organization().id) =>
-      $http
-        .get('/api/v3/compliance_metrics/', {
-          params: {
-            organization_id
-          }
-        })
-        .then((response) => response.data.compliance_metrics)
-        .catch((response) => response.data);
+    const get_compliance_metrics = (organization_id = user_service.get_organization().id) => $http
+      .get('/api/v3/compliance_metrics/', {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data.compliance_metrics)
+      .catch((response) => response.data);
 
     // retrieve compliance metric
-    const get_compliance_metric = (metric_id, organization_id = user_service.get_organization().id) =>
-      $http
-        .get(`/api/v3/compliance_metrics/${metric_id}/`, {
-          params: {
-            organization_id
-          }
-        })
-        .then((response) => response.data.compliance_metric)
-        .catch((response) => response.data);
+    const get_compliance_metric = (metric_id, organization_id = user_service.get_organization().id) => $http
+      .get(`/api/v3/compliance_metrics/${metric_id}/`, {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data.compliance_metric)
+      .catch((response) => response.data);
 
     // delete
     const delete_compliance_metric = function (metric_id, organization_id = user_service.get_organization().id) {
@@ -46,37 +45,34 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
     };
 
     // evaluate
-    const evaluate_compliance_metric = (metric_id, organization_id = user_service.get_organization().id) =>
-      $http
-        .get(`/api/v3/compliance_metrics/${metric_id}/evaluate/`, {
-          params: {
-            organization_id
-          }
-        })
-        .then((response) => response.data.data)
-        .catch((response) => response.data);
+    const evaluate_compliance_metric = (metric_id, organization_id = user_service.get_organization().id) => $http
+      .get(`/api/v3/compliance_metrics/${metric_id}/evaluate/`, {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data.data)
+      .catch((response) => response.data);
 
     // update
-    const update_compliance_metric = (metric_id, data, organization_id = user_service.get_organization().id) =>
-      $http
-        .put(`/api/v3/compliance_metrics/${metric_id}/`, data, {
-          params: {
-            organization_id
-          }
-        })
-        .then((response) => response.data.compliance_metric)
-        .catch((response) => response.data);
+    const update_compliance_metric = (metric_id, data, organization_id = user_service.get_organization().id) => $http
+      .put(`/api/v3/compliance_metrics/${metric_id}/`, data, {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data.compliance_metric)
+      .catch((response) => response.data);
 
     // create
-    const new_compliance_metric = (data, organization_id = user_service.get_organization().id) =>
-      $http
-        .post('/api/v3/compliance_metrics/', data, {
-          params: {
-            organization_id
-          }
-        })
-        .then((response) => response.data.compliance_metric)
-        .catch((response) => response.data);
+    const new_compliance_metric = (data, organization_id = user_service.get_organization().id) => $http
+      .post('/api/v3/compliance_metrics/', data, {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data.compliance_metric)
+      .catch((response) => response.data);
 
     return {
       get_compliance_metrics,

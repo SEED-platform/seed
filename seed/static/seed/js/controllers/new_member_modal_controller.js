@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
   'user_service',
   '$timeout',
   '$translate',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, organization, user_service, $timeout, $translate) {
     $scope.roles = [
       {
@@ -32,7 +33,7 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
     /**
      * adds a user to the org
      */
-    $scope.submit_form = function () {
+    $scope.submit_form = () => {
       // make `role` a string
       const u = _.cloneDeep($scope.user);
       u.role = u.role.value;
@@ -47,11 +48,11 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
       );
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 

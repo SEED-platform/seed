@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
   'spinner_utility',
   'taxlot_columns',
   'valid_column_data_types',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $state,

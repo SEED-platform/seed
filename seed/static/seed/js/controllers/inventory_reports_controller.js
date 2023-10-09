@@ -21,11 +21,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$sce',
   '$translate',
   '$uibModal',
+  // eslint-disable-next-line func-names
   function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, flippers, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
-    const pretty_unit = function (pint_spec) {
+    const pretty_unit = (pint_spec) => {
       const mappings = {
         'ft**2': 'ft²',
         'm**2': 'm²',
@@ -38,12 +39,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return mappings[pint_spec] || pint_spec;
     };
 
-    const eui_units = function () {
+    const eui_units = () => {
       const unit = organization_payload.organization.display_units_eui;
       return pretty_unit(unit);
     };
 
-    const area_units = function () {
+    const area_units = () => {
       const unit = organization_payload.organization.display_units_area;
       return pretty_unit(unit);
     };
@@ -58,7 +59,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     $scope.fromCycle = {};
     $scope.toCycle = {};
 
-    const translateAxisLabel = function (label, units) {
+    const translateAxisLabel = (label, units) => {
       let str = '';
       str += $translate.instant(label);
       if (units) {
@@ -67,7 +68,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return str;
     };
 
-    const parse_axis_label = function (column) {
+    const parse_axis_label = (column) => {
       if (column.column_name.includes('eui')) {
         return translateAxisLabel(column.displayName, eui_units());
       }
@@ -162,7 +163,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     $scope.aggChartStatusMessage = 'No Data';
 
     /* NEW CHART STUFF */
-    const createChart = function (elementId, type, indexAxis, pointColors) {
+    const createChart = (elementId, type, indexAxis, pointColors) => {
       const canvas = document.getElementById(elementId);
       const ctx = canvas.getContext('2d');
 
@@ -258,12 +259,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     /* ~~~~~~~~~~~ */
 
     // Handle datepicker open/close events
-    $scope.openStartDatePicker = function ($event) {
+    $scope.openStartDatePicker = ($event) => {
       $event.preventDefault();
       $event.stopPropagation();
       $scope.startDatePickerOpen = !$scope.startDatePickerOpen;
     };
-    $scope.openEndDatePicker = function ($event) {
+    $scope.openEndDatePicker = ($event) => {
       $event.preventDefault();
       $event.stopPropagation();
       $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
@@ -277,12 +278,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.checkInvalidDate();
     });
 
-    $scope.checkInvalidDate = function () {
+    $scope.checkInvalidDate = () => {
       $scope.invalidDates = $scope.endDate < $scope.startDate;
     };
 
     /* Update data used by the chart. This will force the charts to re-render */
-    $scope.updateChartData = function () {
+    $scope.updateChartData = () => {
       // TODO Form check, although at the moment it's just four selects so user shouldn't be able to get form into an invalid state. */
 
       // if ($scope.invalidDates) {
@@ -316,12 +317,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     /* ~~~~~~~~~~~~~~~~~~~~~ */
 
     /* The directive will call this, so we can update our flag for the state of the chart. */
-    $scope.chartRendered = function () {
+    $scope.chartRendered = () => {
       $scope.chartIsLoading = false;
     };
 
     /* The directive will call this, so we can update our flag for the state of the chart. */
-    $scope.aggChartRendered = function () {
+    $scope.aggChartRendered = () => {
       $scope.aggChartIsLoading = false;
     };
 
@@ -363,7 +364,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.barChart.options.scales.y.title.text = $scope.yAxisSelectedItem.label;
     }
 
-    $scope.open_export_modal = function () {
+    $scope.open_export_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_report_modal.html`,
         controller: 'export_report_modal_controller',

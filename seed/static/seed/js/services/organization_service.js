@@ -7,36 +7,34 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
   '$q',
   '$timeout',
   'naturalSort',
+  // eslint-disable-next-line func-names
   function ($http, $q, $timeout, naturalSort) {
     const organization_factory = { total_organizations_for_user: 0 };
 
-    organization_factory.get_organizations = () =>
-      $http.get('/api/v3/organizations/').then((response) => {
+    organization_factory.get_organizations = () => $http.get('/api/v3/organizations/').then((response) => {
+      organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
+      response.data.organizations = response.data.organizations.sort((a, b) => naturalSort(a.name, b.name));
+      return response.data;
+    });
+
+    organization_factory.get_organizations_brief = () => $http
+      .get('/api/v3/organizations/', {
+        params: {
+          brief: true
+        }
+      })
+      .then((response) => {
         organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
         response.data.organizations = response.data.organizations.sort((a, b) => naturalSort(a.name, b.name));
         return response.data;
       });
 
-    organization_factory.get_organizations_brief = () =>
-      $http
-        .get('/api/v3/organizations/', {
-          params: {
-            brief: true
-          }
-        })
-        .then((response) => {
-          organization_factory.total_organizations_for_user = _.has(response.data.organizations, 'length') ? response.data.organizations.length : 0;
-          response.data.organizations = response.data.organizations.sort((a, b) => naturalSort(a.name, b.name));
-          return response.data;
-        });
-
-    organization_factory.add = (org) =>
-      $http
-        .post('/api/v3/organizations/', {
-          user_id: org.email.user_id,
-          organization_name: org.name
-        })
-        .then((response) => response.data);
+    organization_factory.add = (org) => $http
+      .post('/api/v3/organizations/', {
+        user_id: org.email.user_id,
+        organization_name: org.name
+      })
+      .then((response) => response.data);
 
     organization_factory.get_organization_users = (org) => $http.get(`/api/v3/organizations/${org.org_id}/users/`).then((response) => response.data);
 
@@ -46,14 +44,13 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
 
     organization_factory.get_organization = (org_id) => $http.get(`/api/v3/organizations/${org_id}/`).then((response) => response.data);
 
-    organization_factory.get_organization_brief = (org_id) =>
-      $http
-        .get(`/api/v3/organizations/${org_id}/`, {
-          params: {
-            brief: true
-          }
-        })
-        .then((response) => response.data);
+    organization_factory.get_organization_brief = (org_id) => $http
+      .get(`/api/v3/organizations/${org_id}/`, {
+        params: {
+          brief: true
+        }
+      })
+      .then((response) => response.data);
 
     /**
      * updates the role for a user within an org
@@ -62,24 +59,23 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
      * @param  {str} role    role
      * @return {promise obj}         promise object
      */
-    organization_factory.update_role = (user_id, org_id, role) =>
-      $http
-        .put(
-          `/api/v3/users/${user_id}/role/`,
-          {
-            role
-          },
-          {
-            params: { organization_id: org_id }
-          }
-        )
-        .then((response) => response.data);
+    organization_factory.update_role = (user_id, org_id, role) => $http
+      .put(
+        `/api/v3/users/${user_id}/role/`,
+        {
+          role
+        },
+        {
+          params: { organization_id: org_id }
+        }
+      )
+      .then((response) => response.data);
 
     /**
      * saves the organization settings
      * @param  {obj} org an organization with fields to share between sub-orgs
      */
-    organization_factory.save_org_settings = function (org) {
+    organization_factory.save_org_settings = (org) => {
       org.organization_id = org.id;
       return $http
         .put(`/api/v3/organizations/${org.id}/save_settings/`, {
@@ -105,13 +101,12 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
      * gets the query threshold for an org
      * @param  {int} org_id the id of the organization
      */
-    organization_factory.create_sub_org = (parent_org, sub_org) =>
-      $http
-        .post(`/api/v3/organizations/${parent_org.id}/sub_org/`, {
-          sub_org_name: sub_org.name,
-          sub_org_owner_email: sub_org.email
-        })
-        .then((response) => response.data);
+    organization_factory.create_sub_org = (parent_org, sub_org) => $http
+      .post(`/api/v3/organizations/${parent_org.id}/sub_org/`, {
+        sub_org_name: sub_org.name,
+        sub_org_owner_email: sub_org.email
+      })
+      .then((response) => response.data);
 
     organization_factory.delete_organization_inventory = (org_id) => $http.delete(`/api/v3/organizations/${org_id}/inventory/`).then((response) => response.data);
 
@@ -125,7 +120,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
 
     organization_factory.insert_sample_data = (org_id) => $http.get(`/api/v3/organizations/${org_id}/insert_sample_data/`).then((response) => response.data);
 
-    const checkStatusLoop = function (deferred, progress_key) {
+    const checkStatusLoop = (deferred, progress_key) => {
       $http.get(`/api/v3/progress/${progress_key}/`).then(
         (response) => {
           $timeout(() => {
@@ -148,7 +143,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
      * @param  {string} inventory_type 'property' or 'taxlot'
      * @param  {object} inventory_state state object of the inventory
      */
-    organization_factory.get_inventory_display_value = function ({ property_display_field, taxlot_display_field }, inventory_type, inventory_state) {
+    organization_factory.get_inventory_display_value = ({ property_display_field, taxlot_display_field }, inventory_type, inventory_state) => {
       const field = inventory_type === 'property' ? property_display_field : taxlot_display_field;
       if (field == null) {
         throw Error(`Provided display field for type "${inventory_type}" is undefined`);

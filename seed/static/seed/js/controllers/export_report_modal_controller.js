@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
   'cycle_start',
   'cycle_end',
   'inventory_reports_service',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, axes_data, cycle_start, cycle_end, inventory_reports_service) {
     $scope.export_name = '';
 

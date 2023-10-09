@@ -10,13 +10,14 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
   'data',
   'profile_location',
   'inventory_type',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, inventory_service, action, data, profile_location, inventory_type) {
     $scope.action = action;
     $scope.data = data;
     $scope.profile_location = profile_location;
     $scope.inventory_type = inventory_type;
 
-    $scope.rename_profile = function () {
+    $scope.rename_profile = () => {
       if (!$scope.disabled()) {
         const { id } = $scope.data;
         const profile = _.omit($scope.data, 'id');
@@ -32,7 +33,7 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
       }
     };
 
-    $scope.remove_profile = function () {
+    $scope.remove_profile = () => {
       inventory_service
         .remove_column_list_profile($scope.data.id)
         .then(() => {
@@ -43,7 +44,7 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
         });
     };
 
-    $scope.new_profile = function () {
+    $scope.new_profile = () => {
       if (!$scope.disabled()) {
         inventory_service
           .new_column_list_profile({
@@ -61,7 +62,7 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
       }
     };
 
-    $scope.disabled = function () {
+    $scope.disabled = () => {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
       }
@@ -70,7 +71,7 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
       }
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

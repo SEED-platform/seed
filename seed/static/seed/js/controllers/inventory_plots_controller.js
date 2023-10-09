@@ -28,9 +28,10 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
   'naturalSort',
   '$translate',
   'uiGridConstants',
-  'i18nService', // from ui-grid
+  'i18nService',
   'organization_payload',
   'gridUtil',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $filter,
@@ -214,16 +215,14 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
 
     charts = $scope.chartsInfo
       .filter((chartInfo) => chartInfo.populated)
-      .map((chartInfo) =>
-        createChart(
-          (elementId = chartInfo.chartName),
-          (xAxisKey = chartInfo.xName),
-          (xAxisName = chartInfo.xDisplayName),
-          (yAxisKey = chartInfo.yName),
-          (yAxisName = chartInfo.yDisplayName),
-          (onHover = hoverOnAllCharts)
-        )
-      );
+      .map((chartInfo) => createChart(
+        (elementId = chartInfo.chartName),
+        (xAxisKey = chartInfo.xName),
+        (xAxisName = chartInfo.xDisplayName),
+        (yAxisKey = chartInfo.yName),
+        (yAxisName = chartInfo.yDisplayName),
+        (onHover = hoverOnAllCharts)
+      ));
 
     $scope.update_charts = function () {
       spinner_utility.show();

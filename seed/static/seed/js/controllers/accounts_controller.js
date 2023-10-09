@@ -8,8 +8,14 @@ angular.module('BE.seed.controller.accounts', []).controller('accounts_controlle
   'organization_payload',
   'urls',
   'organization_service',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModal, organization_payload, urls, organization_service) {
-    $scope.create_sub_organization_modal = function (org) {
+    const init = () => {
+      $scope.orgs = organization_payload.organizations;
+      $scope.orgs_I_own = organization_payload.organizations.filter((o) => o.user_is_owner);
+    };
+
+    $scope.create_sub_organization_modal = (org) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/create_sub_organization_modal.html`,
         controller: 'create_sub_organization_modal_controller',
@@ -31,10 +37,6 @@ angular.module('BE.seed.controller.accounts', []).controller('accounts_controlle
       );
     };
 
-    var init = function () {
-      $scope.orgs = organization_payload.organizations;
-      $scope.orgs_I_own = organization_payload.organizations.filter((o) => o.user_is_owner);
-    };
     init();
   }
 ]);

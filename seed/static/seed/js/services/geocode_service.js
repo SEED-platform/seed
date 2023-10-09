@@ -5,44 +5,43 @@
 angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
   '$http',
   'user_service',
+  // eslint-disable-next-line func-names
   function ($http, user_service) {
     const geocode_factory = {};
 
-    geocode_factory.geocode_by_ids = (property_view_ids, taxlot_view_ids) =>
-      $http
-        .post(
-          '/api/v3/geocode/geocode_by_ids/',
-          {
-            property_view_ids,
-            taxlot_view_ids
-          },
-          {
-            params: {
-              organization_id: user_service.get_organization().id
-            }
+    geocode_factory.geocode_by_ids = (property_view_ids, taxlot_view_ids) => $http
+      .post(
+        '/api/v3/geocode/geocode_by_ids/',
+        {
+          property_view_ids,
+          taxlot_view_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
           }
-        )
-        .then((response) => response)
-        .catch((e) => {
-          if (_.includes(e.data, 'MapQuestAPIKeyError')) throw { status: 403, message: 'MapQuestAPIKeyError' };
-          else throw e;
-        });
+        }
+      )
+      .then((response) => response)
+      .catch((e) => {
+        if (_.includes(e.data, 'MapQuestAPIKeyError')) throw { status: 403, message: 'MapQuestAPIKeyError' };
+        else throw e;
+      });
 
-    geocode_factory.confidence_summary = (property_view_ids, taxlot_view_ids) =>
-      $http
-        .post(
-          '/api/v3/geocode/confidence_summary/',
-          {
-            property_view_ids,
-            taxlot_view_ids
-          },
-          {
-            params: {
-              organization_id: user_service.get_organization().id
-            }
+    geocode_factory.confidence_summary = (property_view_ids, taxlot_view_ids) => $http
+      .post(
+        '/api/v3/geocode/confidence_summary/',
+        {
+          property_view_ids,
+          taxlot_view_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
           }
-        )
-        .then((response) => response.data);
+        }
+      )
+      .then((response) => response.data);
 
     geocode_factory.check_org_has_api_key = function (org_id) {
       const params = { organization_id: org_id };

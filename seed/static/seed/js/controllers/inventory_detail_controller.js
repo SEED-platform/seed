@@ -39,6 +39,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'simple_modal_service',
   'property_measure_service',
   'scenario_service',
+  // eslint-disable-next-line func-names
   function (
     $http,
     $state,
@@ -192,14 +193,13 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $scope.columns = _.reject(columns, 'is_extra_data');
     }
 
-    const profile_formatted_columns = () =>
-      _.map($scope.columns, (col, index) => ({
-        column_name: col.column_name,
-        id: col.id,
-        order: index + 1,
-        pinned: false,
-        table_name: col.table_name
-      }));
+    const profile_formatted_columns = () => _.map($scope.columns, (col, index) => ({
+      column_name: col.column_name,
+      id: col.id,
+      order: index + 1,
+      pinned: false,
+      table_name: col.table_name
+    }));
 
     $scope.newProfile = function () {
       const modalInstance = $uibModal.open({
@@ -332,11 +332,10 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $anchorScroll();
     };
 
-    $scope.init_labels = (item) =>
-      _.map(item.labels, (lbl) => {
-        lbl.label = label_service.lookup_label(lbl.color);
-        return lbl;
-      });
+    $scope.init_labels = (item) => _.map(item.labels, (lbl) => {
+      lbl.label = label_service.lookup_label(lbl.color);
+      return lbl;
+    });
 
     /* User clicked 'cancel' button */
     $scope.on_cancel = function () {
@@ -545,8 +544,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
             '$state',
             '$stateParams',
             'inventory_service',
-            ($state, $stateParams, inventory_service) =>
-              $scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id)
+            ($state, $stateParams, inventory_service) => ($scope.inventory_type === 'properties' ? inventory_service.get_property($scope.inventory.view_id) : inventory_service.get_taxlot($scope.inventory.view_id))
           ]
         }
       });
@@ -839,12 +837,10 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       column_name_lookup = {};
       visible_columns_with_derived_columns.forEach((col) => (column_name_lookup[col.column_name] = col.name));
 
-      const all_evaluation_results = attatched_derived_columns.map((col) =>
-        derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id]).then((res) => ({
-          derived_column_id: col.id,
-          value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
-        }))
-      );
+      const all_evaluation_results = attatched_derived_columns.map((col) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id]).then((res) => ({
+        derived_column_id: col.id,
+        value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
+      })));
 
       $q.all(all_evaluation_results).then((results) => {
         results.forEach((result) => {

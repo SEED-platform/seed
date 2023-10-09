@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
   'filter_groups_service',
   'action',
   'data',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, filter_groups_service, action, data) {
     $scope.action = action;
     $scope.data = data;

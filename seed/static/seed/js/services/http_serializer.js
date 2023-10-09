@@ -7,6 +7,7 @@
  * Temporary until a fix is landed in angular.
  */
 angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
+  // eslint-disable-next-line func-names
   function () {
     function serializeValue(v) {
       if (angular.isObject(v)) {
@@ -23,13 +24,12 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
       return keys;
     }
 
-    const encodeUriQuerySeed = (val, pctEncodeSpaces) =>
-      encodeURIComponent(val)
-        .replace(/%40/gi, '@')
-        .replace(/%3A/gi, ':')
-        .replace(/%24/g, '$')
-        .replace(/%2C/gi, ',')
-        .replace(/%20/g, pctEncodeSpaces ? '%20' : '+');
+    const encodeUriQuerySeed = (val, pctEncodeSpaces) => encodeURIComponent(val)
+      .replace(/%40/gi, '@')
+      .replace(/%3A/gi, ':')
+      .replace(/%24/g, '$')
+      .replace(/%2C/gi, ',')
+      .replace(/%20/g, pctEncodeSpaces ? '%20' : '+');
 
     return function (params) {
       if (!params) return '';

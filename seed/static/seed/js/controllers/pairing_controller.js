@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
   'dragulaService',
   'naturalSort',
   '$translate',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $log,

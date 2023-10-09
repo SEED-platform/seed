@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('da
   'organization_id',
   'sensor_service',
   'view_id',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, filler_cycle, organization_id, sensor_service, view_id) {
     $scope.view_id = view_id;
     $scope.selectedCycle = filler_cycle;
@@ -24,8 +25,8 @@ angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('da
       identifier: null
     };
 
-    $scope.create_data_logger = function () {
-      if ($scope.data_logger.display_name == null || $scope.data_logger.display_name == '') {
+    $scope.create_data_logger = () => {
+      if ($scope.data_logger.display_name == null || $scope.data_logger.display_name === '') {
         $scope.data_logger_display_name_not_entered_alert = true;
       } else {
         $scope.data_logger_display_name_not_entered_alert = false;
@@ -46,19 +47,19 @@ angular.module('BE.seed.controller.data_logger_upload_modal', []).controller('da
             $scope.refresh_page();
           })
           .catch((err) => {
-            if (err.status == 400) {
+            if (err.status === 400) {
               $scope.data_logger_display_name_not_unique_alert = true;
             }
           });
       }
     };
 
-    $scope.refresh_page = function () {
+    $scope.refresh_page = () => {
       $state.reload();
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
   }

@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.sensors_upload_modal', []).controller('sensor
   'view_id',
   'data_logger',
   'datasets',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, uiGridConstants, filler_cycle, dataset_service, organization_id, sensor_service, uploader_service, view_id, data_logger, datasets) {
     $scope.step = {
       number: 1

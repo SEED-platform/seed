@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
   'inventory_payload',
   'organization_payload',
   'notes',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, urls, note_service, inventory_type, view_id, inventory_payload, organization_payload, notes) {
     $scope.inventory_type = inventory_type;
     $scope.notes = notes;
@@ -22,25 +23,25 @@ angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
 
     $scope.inventory = { view_id };
 
-    $scope.close = function () {
+    $scope.close = () => {
       if ($uibModalInstance) {
         $uibModalInstance.close($scope.notes.length);
       }
     };
 
-    $scope.open_create_note_modal = function () {
+    $scope.open_create_note_modal = () => {
       note_service.open_create_note_modal($scope.inventory_type, $scope.org_id, view_id).then((notes) => {
         $scope.notes = notes;
       });
     };
 
-    $scope.open_edit_note_modal = function (note) {
+    $scope.open_edit_note_modal = (note) => {
       note_service.open_edit_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });
     };
 
-    $scope.open_delete_note_modal = function (note) {
+    $scope.open_delete_note_modal = (note) => {
       note_service.open_delete_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });

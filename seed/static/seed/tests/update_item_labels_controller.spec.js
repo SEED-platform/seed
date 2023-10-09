@@ -115,7 +115,7 @@ describe('controller: update_item_labels_modal_controller', function () {
 
       //mock the notification service
       mock_notification = Notification;
-      spyOn(mock_notification, 'primary').andCallFake(function () {
+      spyOn(mock_notification, 'primary').andCallFake(() => {
         // Do nothing
       });
 
@@ -123,13 +123,13 @@ describe('controller: update_item_labels_modal_controller', function () {
         $dirty: false,
         $valid: true
       };
-      mock_new_label_form.$setPristine = function () {};
+      mock_new_label_form.$setPristine = () => {};
 
       scope.form = mock_new_label_form;
     });
   });
 
-  // this is outside the beforeEach so it can be configured by each unit test
+  // this is outside the `beforeEach` so it can be configured by each unit test
   function create_update_item_labels_modal_controller() {
     controller('update_item_labels_modal_controller', {
       $scope: update_controller_scope,
@@ -152,7 +152,7 @@ describe('controller: update_item_labels_modal_controller', function () {
    * Test scenarios
    */
 
-  it('should initialize the default "new" label', function () {
+  it('should initialize the default "new" label', () => {
     // arrange
     create_update_item_labels_modal_controller();
     // act

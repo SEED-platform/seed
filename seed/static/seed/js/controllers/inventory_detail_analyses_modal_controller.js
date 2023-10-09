@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
   'inventory_ids',
   'current_cycle',
   'cycles',
+  // eslint-disable-next-line func-names
   function ($scope, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
@@ -105,7 +106,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
           break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
-          Notification.error('Unknown analysis type: ' + $scope.new_analysis.service);
+          Notification.error(`Unknown analysis type: ${$scope.new_analysis.service}`);
       }
     };
 
@@ -117,16 +118,16 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
       $scope.waiting_for_server = true;
 
       analyses_service.create_analysis($scope.new_analysis.name, $scope.new_analysis.service, $scope.new_analysis.configuration, inventory_ids).then(
-        function (data) {
+        (data) => {
           $scope.waiting_for_server = false;
           Notification.primary('Created Analysis');
           form.$setPristine();
           $scope.$close(data);
         },
-        function (response) {
+        (response) => {
           $scope.waiting_for_server = false;
           $log.error('Error creating new analysis:', response);
-          Notification.error('Failed to create Analysis: ' + response.data.message);
+          Notification.error(`Failed to create Analysis: ${response.data.message}`);
           $uibModalInstance.dismiss('cancel');
         }
       );
@@ -134,15 +135,15 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
 
     /* User has cancelled dialog */
     $scope.cancel = function () {
-      //don't do anything, just close modal.
+      // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.$watch('new_analysis.configuration.meter.start_date', function () {
+    $scope.$watch('new_analysis.configuration.meter.start_date', () => {
       $scope.checkInvalidDate();
     });
 
-    $scope.$watch('new_analysis.configuration.meter.end_date', function () {
+    $scope.$watch('new_analysis.configuration.meter.end_date', () => {
       $scope.checkInvalidDate();
     });
 

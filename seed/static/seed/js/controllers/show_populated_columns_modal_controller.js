@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', []).controller
   'cycle',
   'provided_inventory',
   'inventory_type',
+  // eslint-disable-next-line func-names
   function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle, provided_inventory, inventory_type) {
     $scope.columns = columns;
     $scope.currentProfile = currentProfile;

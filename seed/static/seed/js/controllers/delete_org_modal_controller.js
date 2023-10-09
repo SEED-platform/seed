@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.delete_org_modal', []).controller('delete_org
   'organization_service',
   'uploader_service',
   'org',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, organization_service, uploader_service, org) {
     $scope.org = org;
     $scope.status = {

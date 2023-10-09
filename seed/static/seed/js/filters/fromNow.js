@@ -7,12 +7,14 @@
  */
 angular.module('fromNow', []).filter(
   'fromNow',
-  () =>
-    function (dateString) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (dateString) => {
       if (_.isNumber(dateString) || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/.test(dateString)) {
         const m = moment(dateString);
         if (m.isValid()) return m.fromNow();
       }
       return 'a few seconds ago';
-    }
+    };
+  }
 );

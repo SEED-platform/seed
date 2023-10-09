@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
   'property_view_ids',
   'taxlot_view_ids',
   'ubid_service',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, property_view_ids, taxlot_view_ids, ubid_service) {
     $scope.property_view_ids = _.uniq(property_view_ids);
     $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);

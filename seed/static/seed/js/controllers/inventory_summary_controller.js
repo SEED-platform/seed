@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
   'analyses_service',
   'inventory_service',
   'cycles',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, $uibModal, urls, analyses_service, inventory_service, cycles_payload) {
     $scope.inventory_type = $stateParams.inventory_type;
 

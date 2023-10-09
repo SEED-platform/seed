@@ -4,8 +4,9 @@
  */
 angular.module('getAnalysisRunAuthor', []).filter(
   'getAnalysisRunAuthor',
-  () =>
-    function (users) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (users) => {
       if (!users || users.length < 1) {
         return ''; // no user, display nothing
       }
@@ -14,5 +15,6 @@ angular.module('getAnalysisRunAuthor', []).filter(
         return user.email; // no full name, display email
       }
       return [user.last_name, user.first_name].join(', '); // display full name
-    }
+    };
+  }
 );

@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
   'organization',
   'cycle',
   'profiles',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, Notification, inventory_service, organization_service, organization, cycle, profiles) {
     $scope.inProgress = false;
     $scope.hasData = cycle.num_properties > 0 || cycle.num_taxlots > 0;
@@ -45,17 +46,13 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
 
           return organization_service
             .insert_sample_data(organization.org_id)
-            .then(() =>
-              inventory_service.get_property_columns().then((columns) =>
-                inventory_service.get_properties(1, undefined, cycle, -1).then((inventory) => {
-                  const visibleColumns = findPopulatedColumns(columns, inventory.results);
-                  const profileId = profile.id;
-                  profile = _.omit(profile, 'id');
-                  profile.columns = visibleColumns;
-                  return inventory_service.update_column_list_profile(profileId, profile);
-                })
-              )
-            )
+            .then(() => inventory_service.get_property_columns().then((columns) => inventory_service.get_properties(1, undefined, cycle, -1).then((inventory) => {
+              const visibleColumns = findPopulatedColumns(columns, inventory.results);
+              const profileId = profile.id;
+              profile = _.omit(profile, 'id');
+              profile.columns = visibleColumns;
+              return inventory_service.update_column_list_profile(profileId, profile);
+            })))
             .catch((response) => {
               let msg = 'Error: Failed to insert sample data';
               if (response.data.message) {

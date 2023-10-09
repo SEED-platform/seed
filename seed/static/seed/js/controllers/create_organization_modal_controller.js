@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.create_organization_modal', []).controller('c
   'user_service',
   'user_id',
   'organization_service',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, user_service, user_id, organization_service) {
     user_service.get_user_profile().then((data) => {
       $scope.email = data.email;
@@ -24,7 +25,7 @@ angular.module('BE.seed.controller.create_organization_modal', []).controller('c
     /**
      * adds a user to the org
      */
-    $scope.submit_form = function () {
+    $scope.submit_form = () => {
       const org = _.cloneDeep($scope.org);
       organization_service
         .add(org)
@@ -36,7 +37,7 @@ angular.module('BE.seed.controller.create_organization_modal', []).controller('c
         });
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
   }

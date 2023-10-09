@@ -7,7 +7,8 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', []).controller('ub
   '$uibModalInstance',
   'ubids',
   'ubid_service',
-  ($scope, $uibModalInstance, ubids, ubid_service) => {
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, ubids, ubid_service) {
     $scope.ubid1 = ubids[0];
     $scope.ubid2 = ubids[1];
 

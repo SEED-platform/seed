@@ -31,10 +31,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
   'naturalSort',
   '$translate',
   'uiGridConstants',
-  'i18nService', // from ui-grid
+  'i18nService',
   'organization_payload',
   'gridUtil',
   'uiGridGridMenuService',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $filter,
@@ -531,15 +532,14 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.loadLabelsForFilter = (
       query // Find all labels associated with the current cycle.
-    ) =>
-      _.filter($scope.labels, (lbl) => {
-        if (_.isEmpty(query)) {
-          // Empty query so return the whole list.
-          return true;
-        }
-        // Only include element if its name contains the query string.
-        return _.includes(_.toLower(lbl.name), _.toLower(query));
-      });
+    ) => _.filter($scope.labels, (lbl) => {
+      if (_.isEmpty(query)) {
+        // Empty query so return the whole list.
+        return true;
+      }
+      // Only include element if its name contains the query string.
+      return _.includes(_.toLower(lbl.name), _.toLower(query));
+    });
 
     $scope.filterUsingLabels = function () {
       inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
@@ -1147,12 +1147,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       const all_evaluation_results = [];
       for (const col of attached_derived_columns) {
         all_evaluation_results.push(
-          ...batched_inventory_ids.map((ids) =>
-            derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
-              formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
-              return { derived_column_id: col.id, results: formatted_results };
-            })
-          )
+          ...batched_inventory_ids.map((ids) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
+            formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
+            return { derived_column_id: col.id, results: formatted_results };
+          }))
         );
       }
 
@@ -1588,8 +1586,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       // Save all columns except first 3
       let gridCols = _.filter(
         $scope.gridApi.grid.columns,
-        (col) =>
-          !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name) &&
+        (col) => !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name) &&
           col.visible &&
           !col.colDef.is_derived_column
       );
@@ -1682,7 +1679,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     // https://regexr.com/6cka2
     const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
-    const parseFilter = function (expression) {
+    const parseFilter = (expression) => {
       // parses an expression string into an object containing operator and value
       const filterData = expression.match(combinedRegex);
       if (filterData) {
@@ -1739,7 +1736,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       }
     };
 
-    const updateColumnFilterSort = function () {
+    const updateColumnFilterSort = () => {
       const columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
 
       inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
@@ -1794,7 +1791,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       $scope.isModified();
     };
 
-    const restoreGridSettings = function () {
+    const restoreGridSettings = () => {
       $scope.restore_status = RESTORE_SETTINGS;
       let state = inventory_service.loadGridSettings(`${localStorageKey}.sort`);
       if (!_.isNull(state)) {
@@ -1807,14 +1804,14 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       }
     };
 
-    $scope.select_all = function () {
+    $scope.select_all = () => {
       // select all rows to visibly support everything has been selected
       $scope.gridApi.selection.selectAllRows();
       $scope.selectedCount = $scope.inventory_pagination.total;
       $scope.update_selected_display();
     };
 
-    $scope.select_none = function () {
+    $scope.select_none = () => {
       $scope.gridApi.selection.clearSelectedRows();
       $scope.selectedCount = 0;
       $scope.update_selected_display();
@@ -1907,7 +1904,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         );
         gridApi.pinning.on.columnPinned($scope, saveSettings);
 
-        const selectionChanged = function () {
+        const selectionChanged = () => {
           const selected = gridApi.selection.getSelectedRows();
           const parentsSelectedIds = _.map(_.filter(selected, { $$treeLevel: 0 }), 'id');
           $scope.selectedCount = selectionLengthByInventoryType(selected);
@@ -1923,7 +1920,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           $scope.update_selected_display();
         };
 
-        const selectPageChanged = function () {
+        const selectPageChanged = () => {
           const allSelected = $scope.gridApi.selection.getSelectedRows();
 
           if (!allSelected.length) {
@@ -1940,10 +1937,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           $scope.update_selected_display();
         };
 
-        const selectionLengthByInventoryType = (selection) =>
-          $scope.inventory_type == 'properties'
-            ? selection.filter((item) => item.property_state_id || item.property_view_id).length
-            : selection.filter((item) => item.taxlot_state_id || item.taxlot_view_id).length;
+        const selectionLengthByInventoryType = (selection) => ($scope.inventory_type === 'properties' ?
+          selection.filter((item) => item.property_state_id || item.property_view_id).length :
+          selection.filter((item) => item.taxlot_state_id || item.taxlot_view_id).length);
 
         gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
         gridApi.selection.on.rowSelectionChangedBatch($scope, selectPageChanged);

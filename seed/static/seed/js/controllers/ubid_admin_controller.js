@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.ubid_admin', []).controller('ubid_admin_contr
   'simple_modal_service',
   '$uibModal',
   'urls',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, ubid_service, simple_modal_service, $uibModal, urls) {
     let view_id;
     $scope.inventory_type = $stateParams.inventory_type;
@@ -26,14 +27,13 @@ angular.module('BE.seed.controller.ubid_admin', []).controller('ubid_admin_contr
 
     const inventory_key = $scope.inventory_type === 'properties' ? 'property' : 'taxlot';
 
-    const refresh_ubids = () =>
-      ubid_service.get_ubid_models_by_state(view_id, inventory_key).then((results) => {
-        if ('data' in results) {
-          $scope.ubids = results.data.sort(({ preferred }) => (preferred ? -1 : 1));
-        } else {
-          $scope.message = results.message;
-        }
-      });
+    const refresh_ubids = () => ubid_service.get_ubid_models_by_state(view_id, inventory_key).then((results) => {
+      if ('data' in results) {
+        $scope.ubids = results.data.sort(({ preferred }) => (preferred ? -1 : 1));
+      } else {
+        $scope.message = results.message;
+      }
+    });
 
     $scope.edit_or_create = (ubid = false) => {
       const ubid_editor_modal = $uibModal.open({

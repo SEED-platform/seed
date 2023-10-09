@@ -7,8 +7,9 @@
  */
 angular.module('district', []).filter(
   'district',
-  () =>
-    function (input) {
+  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
+  function () {
+    return (input) => {
       if (_.isNil(input)) {
         return input;
       }
@@ -16,5 +17,6 @@ angular.module('district', []).filter(
         return 'County/District/Ward/Borough';
       }
       return input;
-    }
+    };
+  }
 );

@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
   'organization_service',
   'property_view_ids',
   'taxlot_view_ids',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance, geocode_service, inventory_type, org_id, organization_service, property_view_ids, taxlot_view_ids) {
     $scope.inventory_type = inventory_type;
     $scope.property_view_ids = _.uniq(property_view_ids);
@@ -53,7 +54,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
       }
     });
 
-    $scope.geocode_buildings = function () {
+    $scope.geocode_buildings = () => {
       $scope.geocode_state = 'geocoding';
 
       geocode_service
@@ -79,7 +80,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
         })
         .catch((e) => {
           $scope.geocode_state = 'fail';
-          if (e.message == 'MapQuestAPIKeyError') $scope.error_message = 'MapQuest API key may be invalid or at its limit.';
+          if (e.message === 'MapQuestAPIKeyError') $scope.error_message = 'MapQuest API key may be invalid or at its limit.';
           else $scope.error_message = e.statusText;
         });
     };
@@ -87,7 +88,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
     /**
      * cancel: dismisses the modal
      */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss({
         geocode_state: $scope.geocode_state,
         property_view_ids: $scope.property_view_ids,
@@ -98,7 +99,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
     /**
      * close: closes the modal
      */
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close({
         geocode_state: $scope.geocode_state,
         property_view_ids: $scope.property_view_ids,

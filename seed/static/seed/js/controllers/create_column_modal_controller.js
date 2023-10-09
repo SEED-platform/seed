@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.create_column_modal', []).controller('create_
   'org_id',
   'table_name',
   'black_listed_names',
+  // eslint-disable-next-line func-names
   function ($scope, $state, $uibModalInstance, uiGridConstants, spinner_utility, Notification, columns_service, org_id, table_name, black_listed_names) {
     $scope.column = {
       column_name: '',

@@ -8,6 +8,7 @@
  */
 angular.module('BE.seed.service.flippers', []).factory('flippers', [
   '$log',
+  // eslint-disable-next-line func-names
   function ($log) {
     const registry = {};
     const flippers = new Object();

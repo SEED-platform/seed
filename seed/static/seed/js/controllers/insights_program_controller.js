@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
   'organization_payload',
   'cycles',
   'auth_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, $state, $uibModal, urls, compliance_metrics, compliance_metric_service, spinner_utility, organization_payload, cycles, auth_payload) {
     $scope.id = $stateParams.id;
     $scope.cycles = cycles.cycles;
@@ -34,9 +35,7 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
     $scope.data = null;
 
     $scope.updateSelectedMetric = () => {
-      $scope.compliance_metric = _.find($scope.compliance_metrics, function (o) {
-        return o.id == $scope.selected_metric;
-      });
+      $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id == $scope.selected_metric);
 
       // reload data for selected metric
       _load_data();
@@ -55,7 +54,7 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
       }
       spinner_utility.show();
       // console.log("get data for metric id: ", $scope.compliance_metric.id);
-      let data = compliance_metric_service
+      const data = compliance_metric_service
         .evaluate_compliance_metric($scope.compliance_metric.id)
         .then((data) => {
           $scope.data = data;
@@ -68,8 +67,8 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
           compliance_metric_cycles = $scope.cycles.filter((c) => $scope.compliance_metric.cycles.includes(c.id));
           first_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.start < curr.start ? prev : curr));
           last_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.end > curr.end ? prev : curr));
-          cycle_range = first_cycle == last_cycle ? first_cycle.name : first_cycle.name + ' - ' + last_cycle.name;
-          $scope.chart_name = $scope.compliance_metric.name + ': ' + cycle_range;
+          cycle_range = first_cycle == last_cycle ? first_cycle.name : `${first_cycle.name} - ${last_cycle.name}`;
+          $scope.chart_name = `${$scope.compliance_metric.name}: ${cycle_range}`;
         })
         .finally(() => {
           spinner_utility.hide();
@@ -77,22 +76,22 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
     };
 
     $scope.downloadChart = () => {
-      var a = document.createElement('a');
+      const a = document.createElement('a');
       a.href = $scope.insightsChart.toBase64Image();
       a.download = 'Property Overview.png';
       a.click();
     };
 
     // CHARTS
-    var colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
+    const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
 
-    let _load_datasets = () => {
+    const _load_datasets = () => {
       // load data
 
       $scope.insightsChart.data.labels = $scope.data.graph_data.labels;
       $scope.insightsChart.data.datasets = $scope.data.graph_data.datasets;
-      _.forEach($scope.insightsChart.data.datasets, function (ds) {
-        ds['backgroundColor'] = colors[ds['label']];
+      _.forEach($scope.insightsChart.data.datasets, (ds) => {
+        ds.backgroundColor = colors[ds.label];
       });
 
       $scope.insightsChart.update();
@@ -109,29 +108,29 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
         const canvas = document.getElementById('program-overview-chart');
         const ctx = canvas.getContext('2d');
 
-        let first_axis_name = 'Number of Buildings';
+        const first_axis_name = 'Number of Buildings';
 
         $scope.insightsChart = new Chart(ctx, {
           type: 'bar',
           data: {},
           options: {
             onClick: (event) => {
-              var activePoints = event.chart.getActiveElements(event);
+              const activePoints = event.chart.getActiveElements(event);
 
               if (activePoints[0]) {
-                var activePoint = activePoints[0];
+                const activePoint = activePoints[0];
                 cycle_name = $scope.data.graph_data.labels[activePoint.index];
                 cycle = $scope.cycles.find((c) => c.name == cycle_name);
                 shown_dataset_index = activePoint.datasetIndex;
 
                 // update locally stored insights_property configs
-                const property_configs = JSON.parse(localStorage.getItem('insights.property.configs.' + $scope.organization.id)) ?? {};
+                const property_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`)) ?? {};
                 property_configs.compliance_metric_id = $scope.selected_metric;
                 property_configs.chart_cycle = cycle.id;
                 property_configs.dataset_visibility = [false, false, false];
                 property_configs.dataset_visibility[shown_dataset_index] = true;
                 property_configs.annotation_visibility = shown_dataset_index == 1;
-                localStorage.setItem('insights.property.configs.' + $scope.organization.id, JSON.stringify(property_configs));
+                localStorage.setItem(`insights.property.configs.${$scope.organization.id}`, JSON.stringify(property_configs));
 
                 $state.go('insights_property');
               }
@@ -178,11 +177,11 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
       const tooltipItem = tooltipItems[0];
       if (tooltipItem === undefined) return '';
 
-      const dataIndex = tooltipItem.dataIndex;
+      const { dataIndex } = tooltipItem;
       const barValues = $scope.insightsChart.data.datasets.map((ds) => ds.data[dataIndex]);
       const barTotal = barValues.reduce((acc, curr) => acc + curr, 0);
 
-      return ((tooltipItem.raw / barTotal) * 100).toPrecision(4) + '%';
+      return `${((tooltipItem.raw / barTotal) * 100).toPrecision(4)}%`;
     };
 
     setTimeout(_load_data, 0); // avoid race condition with route transition spinner.

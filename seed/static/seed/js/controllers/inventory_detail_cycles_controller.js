@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
   'profiles',
   'current_profile',
   'organization_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $filter, $stateParams, $window, cycles, spinner_utility, inventory_service, inventory_payload, columns, profiles, current_profile, organization_payload) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory = {
@@ -93,9 +94,9 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
       if (!$scope.base_state[field]) {
         error += `${(error == '' ? '' : ' and default ') + field} is blank`;
       }
-      $scope.inventory_name = $scope.base_state[field]
-        ? $scope.base_state[field]
-        : `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
+      $scope.inventory_name = $scope.base_state[field] ?
+        $scope.base_state[field] :
+        `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
     $scope.displayValue = function (dataType, value) {

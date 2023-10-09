@@ -10,7 +10,8 @@ angular.module('BE.seed.controller.ubid_admin_modal', []).controller('ubid_admin
   'property_view_id',
   'taxlot_view_id',
   'inventory_payload',
-  ($scope, $state, urls, $uibModalInstance, property_view_id, taxlot_view_id, inventory_payload) => {
+  // eslint-disable-next-line func-names
+  function ($scope, $state, urls, $uibModalInstance, property_view_id, taxlot_view_id, inventory_payload) {
     $scope.inventory_payload = inventory_payload;
     $scope.urls = urls;
     $scope.property_view_id = property_view_id;

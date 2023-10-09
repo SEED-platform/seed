@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.analysis_run', []).controller('analysis_run_c
   'users_payload',
   'view_payload',
   'auth_payload',
+  // eslint-disable-next-line func-names
   function ($scope, $stateParams, $state, analysis_payload, organization_payload, messages_payload, users_payload, view_payload, auth_payload) {
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
     $scope.org = organization_payload.organization;

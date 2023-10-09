@@ -42,6 +42,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
   'cycles',
   'organization',
   'urls',
+  // eslint-disable-next-line func-names
   function (
     $http,
     $scope,

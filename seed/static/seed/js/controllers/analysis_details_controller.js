@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
   '$state',
   'analyses_service',
   'cycle_service',
+  // eslint-disable-next-line func-names
   function ($scope, $state, analyses_service, cycle_service) {
     $scope.is_object = _.isObject;
 

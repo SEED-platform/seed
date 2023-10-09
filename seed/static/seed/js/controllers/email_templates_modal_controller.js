@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
   'action',
   'data',
   'org_id',
+  // eslint-disable-next-line func-names
   function ($scope, postoffice_service, $uibModalInstance, action, data, org_id) {
     $scope.action = action;
     $scope.data = data;

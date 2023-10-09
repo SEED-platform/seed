@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
   'cycles',
   '$uibModal',
   'urls',
+  // eslint-disable-next-line func-names
   function ($scope, dataset_payload, $log, dataset_service, cycles, $uibModal, urls) {
     $scope.dataset = dataset_payload.dataset;
 
@@ -17,7 +18,13 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
       value.created = new Date(value.created);
     });
 
-    $scope.confirm_delete = function (file) {
+    const init = () => {
+      dataset_service.get_dataset($scope.dataset.id).then((data) => {
+        $scope.dataset = data.dataset;
+      });
+    };
+
+    $scope.confirm_delete = (file) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/delete_file_modal.html`,
         controller: 'delete_file_modal_controller',
@@ -34,7 +41,7 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
     /**
      * open_data_upload_modal: opens the data upload modal to step 4, add energy files
      */
-    $scope.open_data_upload_modal = function () {
+    $scope.open_data_upload_modal = () => {
       const dataModalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
         controller: 'data_upload_modal_controller',
@@ -51,7 +58,7 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
       });
     };
 
-    $scope.getCycleName = function (id) {
+    $scope.getCycleName = (id) => {
       const cycle = _.find(cycles.cycles, { id });
       return cycle ? cycle.name : undefined;
     };
@@ -59,12 +66,6 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
     $scope.downloadUrl = (importFile) => {
       const segments = importFile.file.split(/[\\/]/);
       return `/api/v3/media/${segments.slice(segments.indexOf('media') + 1).join('/')}`;
-    };
-
-    var init = function () {
-      dataset_service.get_dataset($scope.dataset.id).then((data) => {
-        $scope.dataset = data.dataset;
-      });
     };
   }
 ]);

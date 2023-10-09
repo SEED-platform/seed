@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
   '$uibModalInstance',
   'organization_service',
   'organization',
+  // eslint-disable-next-line func-names
   function ($scope, $rootScope, $uibModalInstance, organization_service, organization) {
     $scope.sub_org = {};
     $scope.error_message = '';
@@ -15,7 +16,7 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
     /**
      * creates a sub organization with an owner
      */
-    $scope.submit_form = function () {
+    $scope.submit_form = () => {
       organization_service.create_sub_org(organization, $scope.sub_org).then(
         () => {
           $rootScope.$broadcast('organization_list_updated');
@@ -28,11 +29,11 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
       );
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 

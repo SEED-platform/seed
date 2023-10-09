@@ -5,12 +5,13 @@
 angular.module('BE.seed.controller.reset_modal', []).controller('reset_modal_controller', [
   '$scope',
   '$uibModalInstance',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModalInstance) {
-    $scope.reset = function () {
+    $scope.reset = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

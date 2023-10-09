@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
   'proposed_changes',
   'spinner_utility',
   'uiGridGroupingConstants',
+  // eslint-disable-next-line func-names
   function (
     $scope,
     $uibModalInstance,

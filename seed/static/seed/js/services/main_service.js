@@ -4,6 +4,7 @@
  */
 angular.module('BE.seed.service.main', []).factory('main_service', [
   '$http',
+  // eslint-disable-next-line func-names
   function ($http) {
     const main_factory = {};
 

@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
   'organization_service',
   'user_profile_payload',
   'urls',
+  // eslint-disable-next-line func-names
   function ($scope, $uibModal, users_payload, organization_payload, auth_payload, auth_service, organization_service, user_profile_payload, urls) {
     $scope.ownerRoles = ['owner', 'member', 'viewer'];
     $scope.memberRoles = ['member', 'viewer'];

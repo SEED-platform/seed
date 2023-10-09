@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
   'urls',
   'user_service',
   'organization_payload',
+  // eslint-disable-next-line func-names
   function (
     $state,
     $scope,
@@ -49,7 +50,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
 
-    var resetSelections = function () {
+    const resetSelections = function () {
       $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
     };
 
@@ -84,18 +85,16 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       flatEntityAccess: true,
       fastWatch: true,
       gridMenuShowHideColumns: false,
-      rowIdentity: (meter) => {
-        return meter.id;
-      },
+      rowIdentity: (meter) => meter.id,
       minRowsToShow: Math.min($scope.sorted_meters.length, 10),
-      onRegisterApi: function (meterGridApi) {
+      onRegisterApi(meterGridApi) {
         $scope.meterGridApi = meterGridApi;
 
         _.delay($scope.updateHeight, 150);
 
-        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+        const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
         angular.element($window).on('resize', debouncedHeightUpdate);
-        $scope.$on('$destroy', function () {
+        $scope.$on('$destroy', () => {
           angular.element($window).off('resize', debouncedHeightUpdate);
         });
 
@@ -104,7 +103,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
         // only run once, once data is ready, TODO: find a better way to do this.
         init = true;
-        $scope.meterGridApi.core.on.rowsRendered($scope, function () {
+        $scope.meterGridApi.core.on.rowsRendered($scope, () => {
           if (init) {
             $scope.meterGridApi.selection.selectAllRows();
             init = false;
@@ -127,14 +126,14 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       fastWatch: true,
       gridMenuShowHideColumns: false,
       minRowsToShow: Math.min($scope.data.length, 15),
-      onRegisterApi: function (readingGridApi) {
+      onRegisterApi(readingGridApi) {
         $scope.readingGridApi = readingGridApi;
 
         _.delay($scope.updateHeight, 150);
 
-        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+        const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
         angular.element($window).on('resize', debouncedHeightUpdate);
-        $scope.$on('$destroy', function () {
+        $scope.$on('$destroy', () => {
           angular.element($window).off('resize', debouncedHeightUpdate);
         });
       }
@@ -142,24 +141,18 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     $scope.open_meter_deletion_modal = function (meter) {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/meter_deletion_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
         controller: 'meter_deletion_modal_controller',
         resolve: {
-          meter: function () {
-            return meter;
-          },
-          view_id: function () {
-            return $scope.inventory.view_id;
-          },
-          refresh_meters_and_readings: function () {
-            return $scope.refresh_meters_and_readings;
-          }
+          meter: () => meter,
+          view_id: () => $scope.inventory.view_id,
+          refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
         }
       });
     };
 
     $scope.apply_column_settings = function () {
-      _.forEach($scope.meterReadGridOptions.columnDefs, function (column) {
+      _.forEach($scope.meterReadGridOptions.columnDefs, (column) => {
         column.enableHiding = false;
         column.enableColumnResizing = true;
 
@@ -186,15 +179,11 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     // given a list of meter labels, it returns the filtered readings and column defs
     // This is used by the primary filterBy... functions
-    var filterByMeterLabels = function filterByMeterLabels(readings, columnDefs, meterLabels) {
-      var timeColumns = ['start_time', 'end_time', 'month', 'year'];
-      var selectedColumns = meterLabels.concat(timeColumns);
-      var filteredReadings = readings.filter((reading) => {
-        return meterLabels.some((label) => Object.keys(reading).includes(label));
-      });
-      var filteredColumnDefs = columnDefs.filter(function (columnDef) {
-        return selectedColumns.includes(columnDef.field);
-      });
+    const filterByMeterLabels = function filterByMeterLabels(readings, columnDefs, meterLabels) {
+      const timeColumns = ['start_time', 'end_time', 'month', 'year'];
+      const selectedColumns = meterLabels.concat(timeColumns);
+      const filteredReadings = readings.filter((reading) => meterLabels.some((label) => Object.keys(reading).includes(label)));
+      const filteredColumnDefs = columnDefs.filter((columnDef) => selectedColumns.includes(columnDef.field));
       return {
         readings: filteredReadings,
         columnDefs: filteredColumnDefs
@@ -202,12 +191,10 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     };
 
     // given the meter selections, it returns the filtered readings and column defs
-    var filterByMeterSelections = function (readings, columnDefs) {
+    const filterByMeterSelections = function (readings, columnDefs) {
       // filter according to meter selections
-      var selected_meters = $scope.meterGridApi.selection.getSelectedGridRows();
-      var selectedMeterLabels = selected_meters.map(function (row) {
-        return getMeterLabel(row.entity);
-      });
+      const selected_meters = $scope.meterGridApi.selection.getSelectedGridRows();
+      const selectedMeterLabels = selected_meters.map((row) => getMeterLabel(row.entity));
 
       return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
     };
@@ -233,7 +220,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         $scope.interval.selected,
         [] // Not excluding any meters from the query
       );
-      Promise.all([get_meters_Promise, get_readings_Promise]).then(function (data) {
+      Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
         // update the base data and reset filters
         [meters, property_meter_usage] = data;
 
@@ -254,7 +241,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
           $scope.interval.selected,
           [] // Not excluding any meters from the query
         )
-        .then(function (usage) {
+        .then((usage) => {
           // update the base data and reset filters
           property_meter_usage = usage;
 
@@ -266,23 +253,13 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     $scope.open_green_button_upload_modal = function () {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/green_button_upload_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
         controller: 'green_button_upload_modal_controller',
         resolve: {
-          filler_cycle: function () {
-            return $scope.filler_cycle;
-          },
-          organization_id: function () {
-            return $scope.organization.id;
-          },
-          view_id: function () {
-            return $scope.inventory.view_id;
-          },
-          datasets: function () {
-            return dataset_service.get_datasets().then(function (result) {
-              return result.datasets;
-            });
-          }
+          filler_cycle: () => $scope.filler_cycle,
+          organization_id: () => $scope.organization.id,
+          view_id: () => $scope.inventory.view_id,
+          datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
         }
       });
     };
@@ -303,12 +280,12 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     $scope.updateHeight = function () {
       let height = 0;
-      _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], function (selector) {
-        var element = angular.element(selector)[0];
+      _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], (selector) => {
+        const element = angular.element(selector)[0];
         if (element) height += element.offsetHeight;
       });
-      angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-      angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+      angular.element('#grid-container').css('height', `calc(100vh - ${height + 2}px)`);
+      angular.element('#grid-container > div').css('height', `calc(100vh - ${height + 4}px)`);
       $scope.readingGridApi.core.handleWindowResize();
       $scope.meterGridApi.core.handleWindowResize();
     };

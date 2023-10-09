@@ -6,6 +6,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
   '$http',
   '$q',
   'generated_urls',
+  // eslint-disable-next-line func-names
   function ($http, $q, generated_urls) {
     const user_factory = {};
     const urls = generated_urls;
@@ -34,17 +35,15 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.set_organization = function (org) {
       organization = org;
-      return user_factory.get_user_id().then((this_user_id) =>
-        $http
-          .put(
-            `/api/v3/users/${this_user_id}/default_organization/`,
-            {},
-            {
-              params: { organization_id: org.id }
-            }
-          )
-          .then((response) => response.data)
-      );
+      return user_factory.get_user_id().then((this_user_id) => $http
+        .put(
+          `/api/v3/users/${this_user_id}/default_organization/`,
+          {},
+          {
+            params: { organization_id: org.id }
+          }
+        )
+        .then((response) => response.data));
     };
 
     user_factory.get_users = () => $http.get('/api/v3/users/').then((response) => response.data);
@@ -85,35 +84,30 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.generate_api_key = () => user_factory.get_user_id().then((this_user_id) => $http.post(`/api/v3/users/${this_user_id}/generate_api_key/`).then((response) => response.data));
 
-    user_factory.set_default_columns = (columns, show_shared_buildings) =>
-      $http
-        .post(urls.seed.set_default_columns, {
-          columns,
-          show_shared_buildings
-        })
-        .then((response) => response.data);
+    user_factory.set_default_columns = (columns, show_shared_buildings) => $http
+      .post(urls.seed.set_default_columns, {
+        columns,
+        show_shared_buildings
+      })
+      .then((response) => response.data);
 
-    user_factory.set_default_building_detail_columns = (columns) =>
-      $http
-        .post(urls.seed.set_default_building_detail_columns, {
-          columns
-        })
-        .then((response) => response.data);
+    user_factory.set_default_building_detail_columns = (columns) => $http
+      .post(urls.seed.set_default_building_detail_columns, {
+        columns
+      })
+      .then((response) => response.data);
 
     /**
      * updates the user's PR
      * @param  {obj} user
      */
-    user_factory.update_user = (user) =>
-      user_factory.get_user_id().then((this_user_id) =>
-        $http
-          .put(`/api/v3/users/${this_user_id}/`, {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email
-          })
-          .then((response) => response.data)
-      );
+    user_factory.update_user = (user) => user_factory.get_user_id().then((this_user_id) => $http
+      .put(`/api/v3/users/${this_user_id}/`, {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email
+      })
+      .then((response) => response.data));
 
     /**
      * sets the user's password
@@ -121,16 +115,13 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * @param {string} password_1
      * @param {string} password_2
      */
-    user_factory.set_password = (current_password, password_1, password_2) =>
-      user_factory.get_user_id().then((this_user_id) =>
-        $http
-          .put(`/api/v3/users/${this_user_id}/set_password/`, {
-            current_password,
-            password_1,
-            password_2
-          })
-          .then((response) => response.data)
-      );
+    user_factory.set_password = (current_password, password_1, password_2) => user_factory.get_user_id().then((this_user_id) => $http
+      .put(`/api/v3/users/${this_user_id}/set_password/`, {
+        current_password,
+        password_1,
+        password_2
+      })
+      .then((response) => response.data));
 
     /**
      * gets the current user's id
