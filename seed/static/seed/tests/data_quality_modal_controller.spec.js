@@ -9,14 +9,16 @@ describe('controller: data_quality_modal_controller', function () {
   var data_quality_controller_scope;
 
   var cycles = {
-    cycles: [{
-      end: '2015-01-01',
-      id: 2017,
-      name: '2014 Calendar Year',
-      num_properties: 1496,
-      num_taxlots: 1519,
-      start: '2014-01-01'
-    }],
+    cycles: [
+      {
+        end: '2015-01-01',
+        id: 2017,
+        name: '2014 Calendar Year',
+        num_properties: 1496,
+        num_taxlots: 1519,
+        start: '2014-01-01'
+      }
+    ],
     status: 'success'
   };
 
@@ -31,7 +33,7 @@ describe('controller: data_quality_modal_controller', function () {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope/*, $q, search_service*/) {
+    inject(function ($controller, $rootScope /*, $q, search_service*/) {
       controller = $controller;
       data_quality_controller_scope = $rootScope.$new();
       modal_state = '';
@@ -39,7 +41,7 @@ describe('controller: data_quality_modal_controller', function () {
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_data_quality_modal_controller () {
+  function create_data_quality_modal_controller() {
     controller('data_quality_modal_controller', {
       $scope: data_quality_controller_scope,
       $uibModalInstance: {
@@ -59,8 +61,7 @@ describe('controller: data_quality_modal_controller', function () {
    * Test scenarios
    */
 
-
-   /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
+  /*  set this up but doesn't do anything anyway, tested in e2e now. Kept file in case it's useful later */
   it('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();

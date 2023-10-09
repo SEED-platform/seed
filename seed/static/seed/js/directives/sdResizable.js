@@ -5,14 +5,12 @@
 (function () {
   'use strict';
 
-  angular
-    .module('sdResizable', [])
-    .directive('sdResizable', resizable);
+  angular.module('sdResizable', []).directive('sdResizable', resizable);
 
   /**
    * angular directive to wrap jQuery's resizable functionality
    */
-  function resizable () {
+  function resizable() {
     var resizableConfig = {
       handles: 'e',
       alsoResize: 'table.resizable'
@@ -23,7 +21,7 @@
       scope: {
         callback: '&onResize'
       },
-      link: function postLink (scope, elem) {
+      link: function postLink(scope, elem) {
         elem.resizable(resizableConfig);
         elem.css('position', 'relative');
         elem.on('resizestop', function () {

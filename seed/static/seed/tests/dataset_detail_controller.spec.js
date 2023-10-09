@@ -23,70 +23,74 @@ describe('controller: dataset_detail_controller', function () {
       // mock the dataset_service factory methods used in the controller
       // and return their promises
       mock_dataset_service = dataset_service;
-      spyOn(mock_dataset_service, 'get_dataset')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
-          var fake_importfiles = [{
+      spyOn(mock_dataset_service, 'get_dataset').andCallFake(function () {
+        // return $q.reject for error scenario
+        var fake_importfiles = [
+          {
             name: 'DC_CoveredBuildings_50k.csv',
             number_of_buildings: 511,
             number_of_mappings: 511,
             number_of_cleanings: 1349,
             source_type: 'Assessed Raw',
             number_of_matchings: 403
-          }, {
+          },
+          {
             name: 'DC_ESPM_Report.csv',
             number_of_buildings: 511,
             number_of_matchings: 403,
             source_type: 'Portfolio Raw'
-          }];
-          var fake_dataset = {
-            name: 'DC 2013 data',
-            last_modified: (new Date()).getTime(),
-            last_modified_by: 'demo@seed-platform.org',
-            number_of_buildings: 89,
-            id: 1,
-            importfiles: fake_importfiles
-          };
-          var fake_payload = {
-            status: 'success',
-            dataset: fake_dataset
-          };
-          if (delete_called) {
-            fake_payload.dataset.importfiles.pop();
           }
-          // console.log({delete_called: delete_called, ds: fake_payload});
-          return $q.resolve(fake_payload);
-        });
+        ];
+        var fake_dataset = {
+          name: 'DC 2013 data',
+          last_modified: new Date().getTime(),
+          last_modified_by: 'demo@seed-platform.org',
+          number_of_buildings: 89,
+          id: 1,
+          importfiles: fake_importfiles
+        };
+        var fake_payload = {
+          status: 'success',
+          dataset: fake_dataset
+        };
+        if (delete_called) {
+          fake_payload.dataset.importfiles.pop();
+        }
+        // console.log({delete_called: delete_called, ds: fake_payload});
+        return $q.resolve(fake_payload);
+      });
 
-      spyOn(mock_dataset_service, 'delete_file')
-        .andCallFake(function () {
-          delete_called = true;
-          // console.log({d: 'delete_called'});
-          return $q.resolve({
-            status: 'success'
-          });
+      spyOn(mock_dataset_service, 'delete_file').andCallFake(function () {
+        delete_called = true;
+        // console.log({d: 'delete_called'});
+        return $q.resolve({
+          status: 'success'
         });
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_dataset_detail_controller () {
-    var fake_importfiles = [{
-      name: 'DC_CoveredBuildings_50k.csv',
-      number_of_buildings: 511,
-      number_of_mappings: 511,
-      number_of_cleanings: 1349,
-      source_type: 'Assessed Raw',
-      number_of_matchings: 403
-    }, {
-      name: 'DC_ESPM_Report.csv',
-      number_of_buildings: 511,
-      number_of_matchings: 403,
-      source_type: 'Portfolio Raw'
-    }];
+  function create_dataset_detail_controller() {
+    var fake_importfiles = [
+      {
+        name: 'DC_CoveredBuildings_50k.csv',
+        number_of_buildings: 511,
+        number_of_mappings: 511,
+        number_of_cleanings: 1349,
+        source_type: 'Assessed Raw',
+        number_of_matchings: 403
+      },
+      {
+        name: 'DC_ESPM_Report.csv',
+        number_of_buildings: 511,
+        number_of_matchings: 403,
+        source_type: 'Portfolio Raw'
+      }
+    ];
     var fake_dataset = {
       name: 'DC 2013 data',
-      last_modified: (new Date()).getTime(),
+      last_modified: new Date().getTime(),
       last_modified_by: 'demo@seed-platform.org',
       number_of_buildings: 89,
       id: 1,
@@ -97,14 +101,16 @@ describe('controller: dataset_detail_controller', function () {
       dataset: fake_dataset
     };
     var fake_cycles = {
-      cycles: [{
-        end: '2015-01-01',
-        id: 2017,
-        name: '2014 Calendar Year',
-        num_properties: 1496,
-        num_taxlots: 1519,
-        start: '2014-01-01'
-      }],
+      cycles: [
+        {
+          end: '2015-01-01',
+          id: 2017,
+          name: '2014 Calendar Year',
+          num_properties: 1496,
+          num_taxlots: 1519,
+          start: '2014-01-01'
+        }
+      ],
       status: 'success'
     };
     controller('dataset_detail_controller', {
@@ -127,5 +133,4 @@ describe('controller: dataset_detail_controller', function () {
     // assertions
     expect(dataset_detail_controller_scope.dataset.importfiles.length).toBe(2);
   });
-
 });

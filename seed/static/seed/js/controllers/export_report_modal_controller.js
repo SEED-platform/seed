@@ -9,14 +9,7 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
   'cycle_start',
   'cycle_end',
   'inventory_reports_service',
-  function (
-    $scope,
-    $uibModalInstance,
-    axes_data,
-    cycle_start,
-    cycle_end,
-    inventory_reports_service
-  ) {
+  function ($scope, $uibModalInstance, axes_data, cycle_start, cycle_end, inventory_reports_service) {
     $scope.export_name = '';
 
     $scope.export_selected = function () {
@@ -27,15 +20,14 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
       var ext = '.xlsx';
       if (!_.endsWith(filename, ext)) filename += ext;
 
-      inventory_reports_service.export_reports_data(axes_data, cycle_start, cycle_end)
-        .then(function (response) {
-          var blob_type = response.headers()['content-type'];
+      inventory_reports_service.export_reports_data(axes_data, cycle_start, cycle_end).then(function (response) {
+        var blob_type = response.headers()['content-type'];
 
-          var blob = new Blob([response.data], {type: blob_type});
-          saveAs(blob, filename);
+        var blob = new Blob([response.data], { type: blob_type });
+        saveAs(blob, filename);
 
-          $scope.close();
-        });
+        $scope.close();
+      });
     };
 
     $scope.cancel = function () {
@@ -45,4 +37,5 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
     $scope.close = function () {
       $uibModalInstance.close();
     };
-  }]);
+  }
+]);

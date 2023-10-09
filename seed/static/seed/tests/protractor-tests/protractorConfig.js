@@ -5,9 +5,7 @@
 
 // config for protractor tests
 exports.config = {
-  specs: [
-    '**/jasmineTests.spec.js'
-  ],
+  specs: ['**/jasmineTests.spec.js'],
   baseUrl: 'http://localhost:80/',
   rootElement: '.app',
   params: {

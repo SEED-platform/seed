@@ -7,7 +7,6 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
   '$uibModal',
   'urls',
   function ($http, $uibModal, urls) {
-
     const note_factory = {};
 
     /*
@@ -28,13 +27,15 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       }
     */
     note_factory.get_notes = function (org_id, inventory_type, view_id) {
-      return $http.get('/api/v3/' + inventory_type + '/' + view_id + '/notes/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .get('/api/v3/' + inventory_type + '/' + view_id + '/notes/', {
+          params: {
+            organization_id: org_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /* create_note -- Creates a new note on the taxlot or property
@@ -84,56 +85,62 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     };
 
     note_factory.open_create_note_modal = function (inventory_type, org_id, view_id) {
-      return $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
-        controller: 'inventory_detail_notes_modal_controller',
-        size: 'lg',
-        resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant({text: ''}),
-          action: _.constant('new')
-        }
-      }).result.then(function () {
-        return note_factory.get_notes(org_id, inventory_type, view_id);
-      });
+      return $uibModal
+        .open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: _.constant(inventory_type),
+            viewId: _.constant(view_id),
+            orgId: _.constant(org_id),
+            note: _.constant({ text: '' }),
+            action: _.constant('new')
+          }
+        })
+        .result.then(function () {
+          return note_factory.get_notes(org_id, inventory_type, view_id);
+        });
     };
 
     note_factory.open_edit_note_modal = function (inventory_type, org_id, view_id, note) {
-      return $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
-        controller: 'inventory_detail_notes_modal_controller',
-        size: 'lg',
-        resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant(note),
-          action: _.constant('update')
-        }
-      }).result.then(function () {
-        return note_factory.get_notes(org_id, inventory_type, view_id);
-      });
+      return $uibModal
+        .open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: _.constant(inventory_type),
+            viewId: _.constant(view_id),
+            orgId: _.constant(org_id),
+            note: _.constant(note),
+            action: _.constant('update')
+          }
+        })
+        .result.then(function () {
+          return note_factory.get_notes(org_id, inventory_type, view_id);
+        });
     };
 
     note_factory.open_delete_note_modal = function (inventory_type, org_id, view_id, note) {
-      return $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
-        controller: 'inventory_detail_notes_modal_controller',
-        size: 'lg',
-        resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant(note),
-          action: _.constant('delete')
-        }
-      }).result.then(function () {
-        return note_factory.get_notes(org_id, inventory_type, view_id);
-      });
+      return $uibModal
+        .open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: _.constant(inventory_type),
+            viewId: _.constant(view_id),
+            orgId: _.constant(org_id),
+            note: _.constant(note),
+            action: _.constant('delete')
+          }
+        })
+        .result.then(function () {
+          return note_factory.get_notes(org_id, inventory_type, view_id);
+        });
     };
 
     return note_factory;
-
-  }]);
+  }
+]);

@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.taxlot_column_names = taxlot_column_names;
     $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
-    $scope.token_validity = {message: 'Verify Token'};
+    $scope.token_validity = { message: 'Verify Token' };
     $scope.labels = labels_payload;
     $scope.test_sf = false;
     $scope.test_sf_msg = null;
@@ -63,24 +63,30 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.table_errors = null;
     $scope.config_errors = null;
     $scope.changes_possible = false;
-    $scope.secrets = {pwd: 'password', token: 'password'};
+    $scope.secrets = { pwd: 'password', token: 'password' };
 
-    $scope.unit_options_eui = [{
-      label: $translate.instant('kBtu/sq. ft./year'),
-      value: 'kBtu/ft**2/year'
-    }, {
-      label: $translate.instant('GJ/m²/year'),
-      value: 'GJ/m**2/year'
-    }, {
-      label: $translate.instant('MJ/m²/year'),
-      value: 'MJ/m**2/year'
-    }, {
-      label: $translate.instant('kWh/m²/year'),
-      value: 'kWh/m**2/year'
-    }, {
-      label: $translate.instant('kBtu/m²/year'),
-      value: 'kBtu/m**2/year'
-    }];
+    $scope.unit_options_eui = [
+      {
+        label: $translate.instant('kBtu/sq. ft./year'),
+        value: 'kBtu/ft**2/year'
+      },
+      {
+        label: $translate.instant('GJ/m²/year'),
+        value: 'GJ/m**2/year'
+      },
+      {
+        label: $translate.instant('MJ/m²/year'),
+        value: 'MJ/m**2/year'
+      },
+      {
+        label: $translate.instant('kWh/m²/year'),
+        value: 'kWh/m**2/year'
+      },
+      {
+        label: $translate.instant('kBtu/m²/year'),
+        value: 'kBtu/m**2/year'
+      }
+    ];
 
     // Ideally, these units and types for meters should be translatable.
     $scope.chosen_type_unit = {
@@ -124,38 +130,50 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
     };
 
-    $scope.unit_options_area = [{
-      label: $translate.instant('square feet'),
-      value: 'ft**2'
-    }, {
-      label: $translate.instant('square metres'),
-      value: 'm**2'
-    }];
+    $scope.unit_options_area = [
+      {
+        label: $translate.instant('square feet'),
+        value: 'ft**2'
+      },
+      {
+        label: $translate.instant('square metres'),
+        value: 'm**2'
+      }
+    ];
 
-    $scope.decimal_places_options = [{
-      label: '0 (e.g., 0)',
-      value: 0
-    }, {
-      label: '1 (e.g., 0.1)',
-      value: 1
-    }, {
-      label: '2 (e.g., 0.12)',
-      value: 2
-    }, {
-      label: '3 (e.g., 0.123)',
-      value: 3
-    }, {
-      label: '4 (e.g., 0.1234)',
-      value: 4
-    }];
+    $scope.decimal_places_options = [
+      {
+        label: '0 (e.g., 0)',
+        value: 0
+      },
+      {
+        label: '1 (e.g., 0.1)',
+        value: 1
+      },
+      {
+        label: '2 (e.g., 0.12)',
+        value: 2
+      },
+      {
+        label: '3 (e.g., 0.123)',
+        value: 3
+      },
+      {
+        label: '4 (e.g., 0.1234)',
+        value: 4
+      }
+    ];
 
-    $scope.thermal_conversion_countries = [{
-      label: 'US',
-      value: 1
-    }, {
-      label: 'Canada',
-      value: 2
-    }];
+    $scope.thermal_conversion_countries = [
+      {
+        label: 'US',
+        value: 1
+      },
+      {
+        label: 'Canada',
+        value: 2
+      }
+    ];
 
     $scope.confirm_delete = function (org) {
       $uibModal.open({
@@ -176,12 +194,9 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     $scope.verify_token = () => {
-      analyses_service.verify_token($scope.org.id)
-        .then((response) =>
-          $scope.token_validity = response.validity ?
-            {message: 'Valid Token', status: 'valid'} :
-            {message: 'Invalid Token', status: 'invalid'}
-        );
+      analyses_service
+        .verify_token($scope.org.id)
+        .then((response) => ($scope.token_validity = response.validity ? { message: 'Valid Token', status: 'valid' } : { message: 'Invalid Token', status: 'invalid' }));
     };
 
     /**
@@ -189,38 +204,37 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
      */
     $scope.save_settings = function () {
       $scope.settings_updated = false;
-      $scope.token_validity = {message: 'Verify Token'};
+      $scope.token_validity = { message: 'Verify Token' };
       $scope.form_errors = null;
       update_display_unit_for_scoped_org();
-      organization_service.save_org_settings($scope.org).then(function () {
-
-        $scope.settings_updated = true;
-        $scope.org_static = angular.copy($scope.org);
-        $scope.$emit('organization_list_updated');
-
-      })
+      organization_service
+        .save_org_settings($scope.org)
+        .then(function () {
+          $scope.settings_updated = true;
+          $scope.org_static = angular.copy($scope.org);
+          $scope.$emit('organization_list_updated');
+        })
         .catch(function (response) {
           if (response.data && response.data.status == 'error') {
             $scope.form_errors = response.data.message;
           } else {
             $scope.form_errors = 'An unknown error has occurred';
           }
-
         });
 
       // also save salesforce configs
       if ($scope.org.salesforce_enabled) {
         if ($scope.conf.id) {
           // update
-          salesforce_config_service.update_salesforce_config($scope.org.id, $scope.conf.id, $scope.conf, $scope.timezone)
+          salesforce_config_service
+            .update_salesforce_config($scope.org.id, $scope.conf.id, $scope.conf, $scope.timezone)
             .then(function (response) {
               if (response.status == 'error') {
                 $scope.config_errors = response.errors;
               } else {
-                salesforce_config_service.get_salesforce_configs($scope.org.id)
-                  .then(function (data) {
-                    $scope.conf = (data.length > 0) ? data[0] : {};
-                  });
+                salesforce_config_service.get_salesforce_configs($scope.org.id).then(function (data) {
+                  $scope.conf = data.length > 0 ? data[0] : {};
+                });
               }
             })
             .catch(function (response) {
@@ -230,16 +244,16 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
                 $scope.config_errors = 'An unknown error has occurred';
               }
               // console.log("config ERRORS: ", $scope.config_errors);
-              Notification.error({message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true});
+              Notification.error({ message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true });
             });
         } else {
           // create
-          salesforce_config_service.new_salesforce_config($scope.org.id, $scope.conf, $scope.timezone)
+          salesforce_config_service
+            .new_salesforce_config($scope.org.id, $scope.conf, $scope.timezone)
             .then(function () {
-              salesforce_config_service.get_salesforce_configs($scope.org.id)
-                .then(function (data) {
-                  $scope.conf = (data.length > 0) ? data[0] : {};
-                });
+              salesforce_config_service.get_salesforce_configs($scope.org.id).then(function (data) {
+                $scope.conf = data.length > 0 ? data[0] : {};
+              });
             })
             .catch(function (response) {
               if (response.data && response.data.status == 'error') {
@@ -248,7 +262,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
                 $scope.config_errors = 'An unknown error has occurred';
               }
               // console.log("CONFIG ERRORS: ", $scope.config_errors);
-              Notification.error({message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true});
+              Notification.error({ message: 'Error: ' + $scope.config_errors, delay: 15000, closeOnClick: true });
             });
         }
       }
@@ -260,38 +274,34 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           let promise;
           if (mapping.id) {
             // has ID, update call
-            promise = salesforce_mapping_service.update_salesforce_mapping($scope.org.id, mapping.id, mapping)
-              .catch(function (response) {
-                if (response.data?.status === 'error') {
-                  $scope.table_errors = response.data.message;
-                } else {
-                  $scope.table_errors = 'An unknown error has occurred';
-                }
-                Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
-              });
+            promise = salesforce_mapping_service.update_salesforce_mapping($scope.org.id, mapping.id, mapping).catch(function (response) {
+              if (response.data?.status === 'error') {
+                $scope.table_errors = response.data.message;
+              } else {
+                $scope.table_errors = 'An unknown error has occurred';
+              }
+              Notification.error({ message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true });
+            });
           } else {
             // no ID, save new
-            promise = salesforce_mapping_service.new_salesforce_mapping($scope.org.id, mapping)
-              .catch(function (response) {
-                if (response.data?.status === 'error') {
-                  $scope.table_errors = response.data.message;
-                } else {
-                  $scope.table_errors = 'An unknown error has occurred';
-                }
-                Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
-              });
+            promise = salesforce_mapping_service.new_salesforce_mapping($scope.org.id, mapping).catch(function (response) {
+              if (response.data?.status === 'error') {
+                $scope.table_errors = response.data.message;
+              } else {
+                $scope.table_errors = 'An unknown error has occurred';
+              }
+              Notification.error({ message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true });
+            });
           }
           promises.push(promise);
         });
-        return Promise.all(promises)
-          .then(function (results) {
-            $scope.changes_possible = false;
-            // retrieve mappings again
-            salesforce_mapping_service.get_salesforce_mappings($scope.org.id)
-              .then(function (response) {
-                $scope.salesforce_mappings = response;
-              });
+        return Promise.all(promises).then(function (results) {
+          $scope.changes_possible = false;
+          // retrieve mappings again
+          salesforce_mapping_service.get_salesforce_mappings($scope.org.id).then(function (response) {
+            $scope.salesforce_mappings = response;
           });
+        });
       }
     };
 
@@ -320,7 +330,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
 
     // Add and remove column methods
     $scope.add_new_column = function () {
-      var empty_row = {id: null, salesforce_fieldname: '', column: null, organization: $scope.org.id};
+      var empty_row = { id: null, salesforce_fieldname: '', column: null, organization: $scope.org.id };
 
       if ($scope.salesforce_mappings[0]) {
         $scope.salesforce_mappings.push(empty_row);
@@ -334,7 +344,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.remove_column = function (index) {
       if ($scope.salesforce_mappings[index].id) {
         // remove from db
-        salesforce_mapping_service.delete_salesforce_mapping($scope.org.id, $scope.salesforce_mappings[index].id)
+        salesforce_mapping_service
+          .delete_salesforce_mapping($scope.org.id, $scope.salesforce_mappings[index].id)
           .then(function () {
             $scope.salesforce_mappings.splice(index, 1);
           })
@@ -344,21 +355,19 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             } else {
               $scope.table_errors = 'An unknown error has occurred';
             }
-            Notification.error({message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true});
-
+            Notification.error({ message: 'Error: ' + $scope.table_errors, delay: 15000, closeOnClick: true });
           });
       } else {
         // not saved to db yet, just remove from table
         $scope.salesforce_mappings.splice(index, 1);
       }
-
     };
 
     /**
      * toggle secret fields
      */
     $scope.toggle_secret = function (field) {
-      $scope.secrets[field] = ($scope.secrets[field] == 'password') ? 'text' : 'password';
+      $scope.secrets[field] = $scope.secrets[field] == 'password' ? 'text' : 'password';
     };
 
     /**
@@ -367,19 +376,20 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.sync_salesforce = function () {
       $scope.sync_sf = null;
       $scope.sync_sf_msg = null;
-      salesforce_config_service.sync_salesforce($scope.org.id).then(function (response) {
-        $scope.sync_sf = 'success';
-        // reload configs to grab new update date
-        salesforce_config_service.get_salesforce_configs($scope.org.id)
-          .then(function (data) {
-            $scope.conf = (data.length > 0) ? data[0] : {};
+      salesforce_config_service
+        .sync_salesforce($scope.org.id)
+        .then(function (response) {
+          $scope.sync_sf = 'success';
+          // reload configs to grab new update date
+          salesforce_config_service.get_salesforce_configs($scope.org.id).then(function (data) {
+            $scope.conf = data.length > 0 ? data[0] : {};
           });
-        // show notification
-        Notification.success({
-          message: ('Salesforce Sync Successful!'),
-          delay: 4000
-        });
-      })
+          // show notification
+          Notification.success({
+            message: 'Salesforce Sync Successful!',
+            delay: 4000
+          });
+        })
         .catch(function (response) {
           $scope.sync_sf = 'error';
           if (response.data && response.data.message) {
@@ -402,11 +412,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
      * reset the last update date (to null)
      */
     $scope.reset_date = function () {
-
       $scope.conf.last_update_date = null;
       $scope.save_settings();
       Notification.success({
-        message: ('Reset successful!'),
+        message: 'Reset successful!',
         delay: 4000
       });
     };
@@ -419,9 +428,11 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.test_sf_msg = null;
 
       // test connection: if works, set to success, if fails set to error.
-      salesforce_config_service.salesforce_connection($scope.org.id, $scope.conf).then(function (response) {
-        $scope.test_sf = 'success';
-      })
+      salesforce_config_service
+        .salesforce_connection($scope.org.id, $scope.conf)
+        .then(function (response) {
+          $scope.test_sf = 'success';
+        })
         .catch(function (response) {
           $scope.test_sf = 'error';
           if (response.data && response.data.message) {
@@ -430,7 +441,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             $scope.test_sf_msg = 'Unknown Error';
           }
         });
-
     };
 
     $scope.audit_template_report_types = [
@@ -448,6 +458,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       'Open Efficiency Report',
       'San Francisco Report',
       'WA Commerce Clean Buildings - Form D Report',
-      'WA Commerce Grants Report',
-    ]
-  }]);
+      'WA Commerce Grants Report'
+    ];
+  }
+]);

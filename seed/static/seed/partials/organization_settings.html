@@ -1,972 +1,1017 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$ org_static.name $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$ org_static.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left">
-                <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
-            </div>
-            <div class="section_action_container right section_action_btn">
-                <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
-                    <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-                </button>
-            </div>
-        </div>
-        <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
-
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left">
+        <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
+      </div>
+      <div class="section_action_container right section_action_btn">
+        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+          {$:: 'Save Changes' | translate $}
+          <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+        </button>
+      </div>
     </div>
+    <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
+  </div>
 
-    <uib-tabset class="org-settings" active="activePill" vertical="true" type="pills">
-
-        <uib-tab index="0" heading="{$:: 'Options' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Organization Name</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="editOrganizationName" ng-model="org.name" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Enable Geocoding</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="checkbox" class="form-control" style="width: 34px;" ng-model="org.geocoding_enabled" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Enable ComStock Functionality</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="checkbox" class="form-control" style="width: 34px;" ng-model="org.comstock_enabled" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="1" heading="{$:: 'API Key' | translate $}">
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>MapQuest API Key</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" ng-model="org.mapquest_api_key" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>BETTER Analysis API Key</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
-                                <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
-                                    ng-click="verify_token()"
-                                    style="margin-bottom: 10px;"
-                                    ng-disabled="token_validity.status"
-                                >
-                                    {$ token_validity.message $}
-                                    <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
-                                    <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
-                                </button>
-                                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
-                                <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="2" heading="Audit Template">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Audit Template Organization Token</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
-                                <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Audit Template Email</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
-                                <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Audit Template Password</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
-                                <div class="input-group">
-                                    <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Audit Template Report Type</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
-                                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
-                                    <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Property Display Field</h3>
-                    <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Taxlot Display Field</h3>
-                    <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="4" heading="{$:: 'Email' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>New User Email</h3>
-                    <small>Customizes the email sent when a new user is invited to SEED.  The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
-                    <form class="form-horizontal email-form" role="form">
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
-                            <div class="col-sm-3">
-                                <textarea id="new-user-email-content" rows="10" style="resize:vertical;" class="form-control" ng-model="org.new_user_email_content" ng-disabled="::!auth.requires_owner" ng-focus="resize_textarea()" ng-keyup="resize_textarea()"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
-                            <div class="col-sm-3">
-                                <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="5" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
-            <div class="section_content_container">
-                <div class="section_content with_padding maintenance">
-                    <h3 translate>Maintenance Actions</h3>
-                    <small translate>The following actions have destructive effects, please read all warnings after clicking an option.</small>
-                    <button class="btn btn-danger" type="button" ng-click="confirm_delete(org)" ng-disabled="org.progress > -1">
-                        <i class="fa-solid fa-triangle-exclamation"></i> {$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
-                    </button>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}">
-
-            <div class="section_header_container has_btm_margin">
-                <div class="section_header">
-                    <h2><i class="fa-solid fa-arrow-right-arrow-left"></i> {$:: 'Salesforce Integration' | translate $}</h2>
-                </div>
-            </div>
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <p translate="SF_INTEGRATION_TEXT"></p>
-                </div>
-            </div>
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Enable Salesforce Integration</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <input type="checkbox" class="form-control" style="width: 34px;" ng-model="org.salesforce_enabled" ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div ng-if="org.salesforce_enabled" class="salesforce-form">
-                <div class="section_header_container has_btm_margin">
-                    <div class="section_header">
-                        <h2><i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>
-                    </div>
-                </div>
-                 <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <p translate="SF_CONNECTION_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="url" translate>Salesforce Instance URL</label>
-                                <div class="col-sm-5">
-                                    <input type="text" class="form-control" id="url" ng-model="conf.url" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="username" translate>Username</label>
-                                <div class="col-sm-5">
-                                    <input type="text" id="username" class="form-control" ng-model="conf.username" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="pwd" translate>Password</label>
-                                <div class="col-sm-5">
-                                    <div class="input-group">
-                                        <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="conf.password" autocomplete="new-password" ng-disabled="::!auth.requires_owner">
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="token" translate>Security Token</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_SECURITY_TOKEN_TEXT"></p>
-                                    <div class="input-group">
-                                        <input type="{$ secrets['token'] $}" class="form-control" id="token" ng-model="conf.security_token" autocomplete="token" ng-disabled="::!auth.requires_owner">
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('token')"><i class="glyphicon glyphicon-eye-open"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="domain" translate>Domain</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DOMAIN_TEXT"></p>
-                                    <input type="text" class="form-control" id="domain" ng-model="conf.domain" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <div class="col-sm-11 text-center">
-                                     <button type="button" class="btn btn-info" ng-click="test_connection()">{$:: 'Test Connection' | translate $}
-                                    </button>
-                                </div>
-                                <div class="col-sm-11">
-                                    <div ng-if="test_sf == 'success'" class="r-panel r-success r-margin-bottom-10 r-margin-top-10" aria-hidden="false">
-                                        <i class="fa-regular fa-circle-check fa-lg"></i> {$:: 'Success!' | translate $}
-                                    </div>
-                                    <div ng-if="test_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
-                                        <i class="fa-solid fa-circle-exclamation fa-lg"></i>
-                                        Error: {$ test_sf_msg $}
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-
-                    </div>
-                </div>
-
-                <div class="section_header_container has_btm_margin">
-                    <div class="section_header">
-                        <h2><i class="fa-solid fa-clock"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
-                    </div>
-                </div>
-                 <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <p translate="SF_SCHEDULED_UPDATE_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_hour" translate>Hour</label>
-                                <div class="col-sm-5">
-                                    <p><span translate="SF_UPDATE_HOUR_TEXT"></span> Timezone: {$ timezone $}</p>
-                                    <input type="text" class="form-control" id="update_at_hour" ng-model="conf.update_at_hour" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_minute" translate>Minute</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_UPDATE_MINUTE_TEXT"></p>
-                                    <input type="text" class="form-control" id="update_at_minute" ng-model="conf.update_at_minute" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="logging_email" translate>Logging Email</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_LOGGING_EMAIL_TEXT"></p>
-                                    <input type="text" class="form-control" id="logging_email" ng-model="conf.logging_email" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_date" translate>Last Salesforce Update</label>
-                                <div class="col-sm-3">
-                                    <!-- <input type="text" id="update_date" class="form-control" ng-model="conf.last_update_date" readonly> -->
-                                    <span class="form-control updated_date_field" ng-bind="conf.last_update_date | date:'MM/dd/yyyy hh:mm:ss a'"></span>
-                                </div>
-                                <div class="col-sm-2">
-                                    <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}
-                                    </button>
-                                    <!-- leaving it here in case we want to move this functionality to the background in the future -->
-                                    <!-- <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
-                                    </button> -->
-                                </div>
-                                <div class="col-sm-11">
-                                    <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
-                                        <i class="fa-solid fa-circle-exclamation fa-lg"></i>
-                                        Error: {$ sync_sf_msg $}
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="section_header_container has_btm_margin">
-                    <div class="section_header">
-                        <h2><i class="fa-solid fa-gears"></i> {$:: 'Configuration' | translate $}</h2>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <p translate="SF_CONFIGURATION_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_ind" translate>Indication Label</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_INDICATION_LABEL_TEXT"></p>
-                                    <select class="form-control" id="sf_ind" ng-options="label.id as label.name for label in labels" ng-model="conf.indication_label">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                 <label class="col-sm-2 col-sm-offset-1 control-label" for="delete_label_after_sync" translate>Delete Indication Label After Successful Salesforce Update</label>
-                                 <div class="col-sm-5">
-                                    <p translate="SF_DELETE_LABEL_AFTER_SYNC_TEXT"></p>
-
-                                    <input type="checkbox" id="delete_label_after_sync" class="form-control" style="width: 34px;" ng-model="conf.delete_label_after_sync" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_violation" translate>Violation Label</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_VIOLATION_LABEL_TEXT"></p>
-                                    <select class="form-control" id="sf_violation" ng-options="o.id as o.name for o in labels" ng-model="conf.violation_label">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_compliance" translate>Compliance Label</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_COMPLIANCE_LABEL_TEXT"></p>
-                                    <select class="form-control" id="sf_compliance" ng-options="o.id as o.name for o in labels" ng-model="conf.compliance_label">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_benchmark_id" translate>Salesforce Unique Benchmark ID Fieldname</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_BENCHMARK_ID_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="sf_benchmark_id" ng-model="conf.unique_benchmark_id_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="seed_benchmark_id" translate>SEED Unique Benchmark ID Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="seed_benchmark_id" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.seed_benchmark_id_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="cycle_fieldname" translate>Cycle Name Benchmark Field</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_CYCLE_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="cycle_fieldname" ng-model="conf.cycle_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="status_fieldname" translate>Status Label Benchmark Field</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_STATUS_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="status_fieldname" ng-model="conf.status_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="labels_fieldname" translate>All Labels Benchmark Field</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_LABELS_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="labels_fieldname" ng-model="conf.labels_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="section_header_container has_btm_margin">
-                    <div class="section_header">
-                        <h2><i class="fa-solid fa-users"></i> {$:: 'Contacts and Accounts' | translate $}</h2>
-                    </div>
-                </div>
-                 <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <p translate="SF_CONTACTS_AND_ACCOUNTS_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <h3 translate></h3>
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="acc_rec" translate>Salesforce Account Object Record Type</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_ACCOUNT_RECORD_TYPE_TEXT"></p>
-                                    <input type="text" class="form-control" id="acc_rec" ng-model="conf.account_rec_type" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_rec" translate>Salesforce Contact Object Record Type</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_CONTACT_RECORD_TYPE_TEXT"></p>
-                                    <input type="text" id="contact_rec" class="form-control" ng-model="conf.contact_rec_type" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding col-sm-10">
-                        <h3 translate>Main Contact Settings</h3>
-                        <p translate="SF_CONTACT_HEADER_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_column" translate>Contact Account Name Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="account_column" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.account_name_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_default" translate>Default Contact Account Name</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DEFAULT_ACCOUNT_NAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="account_default" ng-model="conf.default_contact_account_name" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_fieldname" translate>Contact Name Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_CONTACT_NAME_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="contact_fieldname" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.contact_name_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_email" translate>Contact Email Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_CONTACT_EMAIL_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="contact_email" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.contact_email_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="benchmark_contact_fieldname" translate>Contact Benchmark Field</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="benchmark_contact_fieldname" ng-model="conf.benchmark_contact_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding col-sm-10">
-                        <h3 translate>Data Administrator Contact Settings</h3>
-                        <p translate="SF_DATA_ADMIN_HEADER_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_column" translate>Data Administrator Account Name Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="admin_account_column" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.data_admin_account_name_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_default" translate>Default Data Administrator Account Name</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="admin_account_default" ng-model="conf.default_data_admin_account_name" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_name" translate>Data Administrator Name Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="admin_name" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.data_admin_name_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_email" translate>Data Administrator Email Column</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"></p>
-                                    <select class="form-control" id="admin_email" ng-options="col.id as col.display_name for col in property_column_names" ng-model="conf.data_admin_email_column" ng-disabled="::!auth.requires_owner">
-                                        <option value=""></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-2 col-sm-offset-1 control-label" for="data_admin_contact_fieldname" translate>Data Administrator Contact Field</label>
-                                <div class="col-sm-5">
-                                    <p translate="SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"></p>
-                                    <input type="text" class="form-control" id="data_admin_contact_fieldname" ng-model="conf.data_admin_contact_fieldname" ng-disabled="::!auth.requires_owner">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="section_header_container has_btm_margin">
-                    <div class="section_header">
-                        <h2><i class="fa-solid fa-gear"></i> {$:: 'Salesforce Field Mappings' | translate $}</h2>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding">
-                        <p translate="SF_MAPPINGS_TEXT"></p>
-                    </div>
-                </div>
-                <div class="section_content_container">
-                    <div class="section_content with_padding" style="margin-bottom:15px;">
-
-                        <div class="table_list_container has_borders">
-                          <table class="table table-striped">
-                              <thead>
-                                  <tr>
-                                      <th class="source_data"
-                                        ng-click="toggle_sf_name_order_sort()">
-                                        <span><translate>Salesforce Field Name</translate>&nbsp;<i class="glyphicon glyphicon-sort"></i></span>
-                                        </th>
-                                      <th class="source_data">
-                                        <span><translate>SEED Field Name</translate></span>
-                                      </th>
-                                      <th class="source_data"></th>
-                                  </tr>
-                              </thead>
-
-                              <tbody id="mapped-table">
-                                  <tr ng-repeat="(index, col) in salesforce_mappings">
-                                      <td>
-                                          <input type="text" class="form-control input-sm tcm_field" ng-model="col.salesforce_fieldname" ng-change="flag_change()">
-                                      </td>
-                                      <td ng-attr-id="mapped-row-input-{$:: $index $}">
-                                          <select id="select-column" class="form-control" ng-model="col.column" ng-change="flag_change()">
-                                            <option ng-repeat="property_column in property_column_names" ng-value="property_column.id">{$:: property_column.display_name $}</option>
-                                        </select>
-                                      </td>
-
-                                      <td style='text-align: center;'>
-                                          <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
-                                              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                          </button>
-                                      </td>
-                                  </tr>
-                              </tbody>
-                          </table>
-                        </div>
-                        <button class="btn btn-success" type="button" ng-click="add_new_column()" tooltip-placement="bottom" uib-tooltip="New" translate>
-                            Add Mapping
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="7" heading="UBID">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Set UBID Threshold</h3>
-                </div>
-            </div>
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <p translate>The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable.
-                    When the threshold is satisfied, the incoming property can be merged with the existing property.</p>
-                    <p translate>
-                        UBID thresholds are between 0.0 and 1.0
-                    </p>
-                    <form class="form-horizontal" role="form" lang="en-US">
-                        <div class="form-group">
-                            <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
-                            <div class="col-sm-3">
-                                <input
-                                    id="ubid-threshold-form"
-                                    class="form-control"
-                                    type="number"
-                                    min="0"
-                                    max="1"
-                                    ng-model="org.ubid_threshold"
-                                    ng-change="ubid_threshold_change()"
-                                    ng-disabled="::!auth.requires_owner">
-                            </div>
-                        </div>
-                    </form>
-                    <div style="margin-top: 30px;">
-                        <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate>
-                            UBID Threshold must be between 0.0 and 1.0
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </uib-tab>
-
-        <uib-tab index="8" heading="{$:: 'Units' | translate $}">
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="o.value as o.label for o in unit_options_eui" ng-model="org.display_units_eui"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-change="get_valid_units_for_type()" ng-options="type.value as type.label for type in energy_type_options" ng-model="chosen_type_unit.type">
-                                    <option value="" translate>ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-disabled="chosen_type_unit.type === null" ng-options="unit as unit for unit in energy_unit_options[chosen_type_unit.type]" ng-model="chosen_type_unit.unit">
-                                    <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Measurement unit display for areas</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="o.value as o.label for o in unit_options_area" ng-model="org.display_units_area"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>Number of decimal places to display</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4">
-                                <select class="form-control" ng-options="o.value as o.label for o in decimal_places_options" ng-model="org.display_decimal_places"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="section_content_container">
-                <div class="section_content with_padding">
-                    <h3 translate>THERMAL_CONV_ASSUMPTION_TITLE</h3>
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <div class="col-sm-4" uib-popover="Warning: Meters will be imported as and viewed according to this assumption." popover-trigger="mouseenter" popover-placement="right-top">
-                                <select class="form-control" ng-options="country.value as country.label for country in thermal_conversion_countries" ng-model="org.thermal_conversion_assumption"></select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </uib-tab>
-
-    </uib-tabset>
-
-    <div class="section_content_container" style="margin: 30px 0;" ng-if="::auth.requires_owner">
+  <uib-tabset class="org-settings" active="activePill" vertical="true" type="pills">
+    <uib-tab index="0" heading="{$:: 'Options' | translate $}">
+      <div class="section_content_container">
         <div class="section_content with_padding">
-            <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
-            <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
-
+          <h3 translate>Organization Name</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="editOrganizationName" ng-model="org.name" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
         </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Geocoding</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.geocoding_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable ComStock Functionality</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.comstock_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="1" heading="{$:: 'API Key' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>MapQuest API Key</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="text" class="form-control" ng-model="org.mapquest_api_key" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>BETTER Analysis API Key</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p><span translate translate-values="{ link: org.better_host_url }">BETTER_TOKEN_TEXT</span> {$:: org.better_host_url $}.</p>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  ng-class="{'btn-danger': token_validity.status == 'invalid', 'btn-success': token_validity.status == 'valid'}"
+                  ng-click="verify_token()"
+                  style="margin-bottom: 10px"
+                  ng-disabled="token_validity.status"
+                >
+                  {$ token_validity.message $}
+                  <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
+                  <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
+                </button>
+                <i class="ui-grid-icon-info-circled" style="position: absolute; margin-top: 0" ng-if="token_validity.status" uib-tooltip-html="'Save Settings to verify BETTER token'"></i>
+                <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="2" heading="Audit Template">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Organization Token</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
+                <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Email</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
+                <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Password</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
+                <div class="input-group">
+                  <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner" />
+                  <span class="input-group-btn">
+                    <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Audit Template Report Type</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <p translate>SEED Properties will be exported to Audit Template with the Organization Report Type</p>
+                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
+                  <option ng-repeat="report_type in audit_template_report_types" value="{$ report_type $}">{$ report_type$}</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Property Display Field</h3>
+          <small>Determines which column field is used when displaying and identifying a property. Defaults to "Address Line 1".</small>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Taxlot Display Field</h3>
+          <small>Determines which column field is used when displaying and identifying a taxlot. Defaults to "Address Line 1".</small>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="4" heading="{$:: 'Email' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>New User Email</h3>
+          <small>Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
+          <form class="form-horizontal email-form" role="form">
+            <div class="form-group">
+              <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
+              <div class="col-sm-3">
+                <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
+              <div class="col-sm-3">
+                <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
+              <div class="col-sm-3">
+                <textarea
+                  id="new-user-email-content"
+                  rows="10"
+                  style="resize: vertical"
+                  class="form-control"
+                  ng-model="org.new_user_email_content"
+                  ng-disabled="::!auth.requires_owner"
+                  ng-focus="resize_textarea()"
+                  ng-keyup="resize_textarea()"
+                ></textarea>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
+              <div class="col-sm-3">
+                <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="5" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
+      <div class="section_content_container">
+        <div class="section_content with_padding maintenance">
+          <h3 translate>Maintenance Actions</h3>
+          <small translate>The following actions have destructive effects, please read all warnings after clicking an option.</small>
+          <button class="btn btn-danger" type="button" ng-click="confirm_delete(org)" ng-disabled="org.progress > -1">
+            <i class="fa-solid fa-triangle-exclamation"></i> {$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
+          </button>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}">
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-arrow-right-arrow-left"></i> {$:: 'Salesforce Integration' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <p translate="SF_INTEGRATION_TEXT"></p>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Salesforce Integration</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.salesforce_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div ng-if="org.salesforce_enabled" class="salesforce-form">
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_CONNECTION_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="url" translate>Salesforce Instance URL</label>
+                <div class="col-sm-5">
+                  <input type="text" class="form-control" id="url" ng-model="conf.url" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="username" translate>Username</label>
+                <div class="col-sm-5">
+                  <input type="text" id="username" class="form-control" ng-model="conf.username" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="pwd" translate>Password</label>
+                <div class="col-sm-5">
+                  <div class="input-group">
+                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="conf.password" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
+                    <span class="input-group-btn">
+                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="token" translate>Security Token</label>
+                <div class="col-sm-5">
+                  <p translate="SF_SECURITY_TOKEN_TEXT"></p>
+                  <div class="input-group">
+                    <input type="{$ secrets['token'] $}" class="form-control" id="token" ng-model="conf.security_token" autocomplete="token" ng-disabled="::!auth.requires_owner" />
+                    <span class="input-group-btn">
+                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('token')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="domain" translate>Domain</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DOMAIN_TEXT"></p>
+                  <input type="text" class="form-control" id="domain" ng-model="conf.domain" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <div class="col-sm-11 text-center">
+                  <button type="button" class="btn btn-info" ng-click="test_connection()">{$:: 'Test Connection' | translate $}</button>
+                </div>
+                <div class="col-sm-11">
+                  <div ng-if="test_sf == 'success'" class="r-panel r-success r-margin-bottom-10 r-margin-top-10" aria-hidden="false">
+                    <i class="fa-regular fa-circle-check fa-lg"></i> {$:: 'Success!' | translate $}
+                  </div>
+                  <div ng-if="test_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
+                    <i class="fa-solid fa-circle-exclamation fa-lg"></i>
+                    Error: {$ test_sf_msg $}
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-clock"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_SCHEDULED_UPDATE_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_hour" translate>Hour</label>
+                <div class="col-sm-5">
+                  <p><span translate="SF_UPDATE_HOUR_TEXT"></span> Timezone: {$ timezone $}</p>
+                  <input type="text" class="form-control" id="update_at_hour" ng-model="conf.update_at_hour" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_minute" translate>Minute</label>
+                <div class="col-sm-5">
+                  <p translate="SF_UPDATE_MINUTE_TEXT"></p>
+                  <input type="text" class="form-control" id="update_at_minute" ng-model="conf.update_at_minute" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="logging_email" translate>Logging Email</label>
+                <div class="col-sm-5">
+                  <p translate="SF_LOGGING_EMAIL_TEXT"></p>
+                  <input type="text" class="form-control" id="logging_email" ng-model="conf.logging_email" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_date" translate>Last Salesforce Update</label>
+                <div class="col-sm-3">
+                  <!-- <input type="text" id="update_date" class="form-control" ng-model="conf.last_update_date" readonly> -->
+                  <span class="form-control updated_date_field" ng-bind="conf.last_update_date | date:'MM/dd/yyyy hh:mm:ss a'"></span>
+                </div>
+                <div class="col-sm-2">
+                  <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}</button>
+                  <!-- leaving it here in case we want to move this functionality to the background in the future -->
+                  <!-- <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
+                                    </button> -->
+                </div>
+                <div class="col-sm-11">
+                  <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
+                    <i class="fa-solid fa-circle-exclamation fa-lg"></i>
+                    Error: {$ sync_sf_msg $}
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-gears"></i> {$:: 'Configuration' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_CONFIGURATION_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_ind" translate>Indication Label</label>
+                <div class="col-sm-5">
+                  <p translate="SF_INDICATION_LABEL_TEXT"></p>
+                  <select class="form-control" id="sf_ind" ng-options="label.id as label.name for label in labels" ng-model="conf.indication_label">
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="delete_label_after_sync" translate>Delete Indication Label After Successful Salesforce Update</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DELETE_LABEL_AFTER_SYNC_TEXT"></p>
+
+                  <input type="checkbox" id="delete_label_after_sync" class="form-control" style="width: 34px" ng-model="conf.delete_label_after_sync" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_violation" translate>Violation Label</label>
+                <div class="col-sm-5">
+                  <p translate="SF_VIOLATION_LABEL_TEXT"></p>
+                  <select class="form-control" id="sf_violation" ng-options="o.id as o.name for o in labels" ng-model="conf.violation_label">
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_compliance" translate>Compliance Label</label>
+                <div class="col-sm-5">
+                  <p translate="SF_COMPLIANCE_LABEL_TEXT"></p>
+                  <select class="form-control" id="sf_compliance" ng-options="o.id as o.name for o in labels" ng-model="conf.compliance_label">
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_benchmark_id" translate>Salesforce Unique Benchmark ID Fieldname</label>
+                <div class="col-sm-5">
+                  <p translate="SF_BENCHMARK_ID_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="sf_benchmark_id" ng-model="conf.unique_benchmark_id_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="seed_benchmark_id" translate>SEED Unique Benchmark ID Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="seed_benchmark_id"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.seed_benchmark_id_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="cycle_fieldname" translate>Cycle Name Benchmark Field</label>
+                <div class="col-sm-5">
+                  <p translate="SF_CYCLE_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="cycle_fieldname" ng-model="conf.cycle_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="status_fieldname" translate>Status Label Benchmark Field</label>
+                <div class="col-sm-5">
+                  <p translate="SF_STATUS_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="status_fieldname" ng-model="conf.status_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="labels_fieldname" translate>All Labels Benchmark Field</label>
+                <div class="col-sm-5">
+                  <p translate="SF_LABELS_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="labels_fieldname" ng-model="conf.labels_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-users"></i> {$:: 'Contacts and Accounts' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_CONTACTS_AND_ACCOUNTS_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <h3 translate></h3>
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="acc_rec" translate>Salesforce Account Object Record Type</label>
+                <div class="col-sm-5">
+                  <p translate="SF_ACCOUNT_RECORD_TYPE_TEXT"></p>
+                  <input type="text" class="form-control" id="acc_rec" ng-model="conf.account_rec_type" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_rec" translate>Salesforce Contact Object Record Type</label>
+                <div class="col-sm-5">
+                  <p translate="SF_CONTACT_RECORD_TYPE_TEXT"></p>
+                  <input type="text" id="contact_rec" class="form-control" ng-model="conf.contact_rec_type" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding col-sm-10">
+            <h3 translate>Main Contact Settings</h3>
+            <p translate="SF_CONTACT_HEADER_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_column" translate>Contact Account Name Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="account_column"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.account_name_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_default" translate>Default Contact Account Name</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DEFAULT_ACCOUNT_NAME_TEXT"></p>
+                  <input type="text" class="form-control" id="account_default" ng-model="conf.default_contact_account_name" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_fieldname" translate>Contact Name Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_CONTACT_NAME_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="contact_fieldname"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.contact_name_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_email" translate>Contact Email Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_CONTACT_EMAIL_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="contact_email"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.contact_email_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="benchmark_contact_fieldname" translate>Contact Benchmark Field</label>
+                <div class="col-sm-5">
+                  <p translate="SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="benchmark_contact_fieldname" ng-model="conf.benchmark_contact_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding col-sm-10">
+            <h3 translate>Data Administrator Contact Settings</h3>
+            <p translate="SF_DATA_ADMIN_HEADER_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_column" translate>Data Administrator Account Name Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="admin_account_column"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.data_admin_account_name_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_default" translate>Default Data Administrator Account Name</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"></p>
+                  <input type="text" class="form-control" id="admin_account_default" ng-model="conf.default_data_admin_account_name" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_name" translate>Data Administrator Name Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="admin_name"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.data_admin_name_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_email" translate>Data Administrator Email Column</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"></p>
+                  <select
+                    class="form-control"
+                    id="admin_email"
+                    ng-options="col.id as col.display_name for col in property_column_names"
+                    ng-model="conf.data_admin_email_column"
+                    ng-disabled="::!auth.requires_owner"
+                  >
+                    <option value=""></option>
+                  </select>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="data_admin_contact_fieldname" translate>Data Administrator Contact Field</label>
+                <div class="col-sm-5">
+                  <p translate="SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"></p>
+                  <input type="text" class="form-control" id="data_admin_contact_fieldname" ng-model="conf.data_admin_contact_fieldname" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-gear"></i> {$:: 'Salesforce Field Mappings' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_MAPPINGS_TEXT"></p>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding" style="margin-bottom: 15px">
+            <div class="table_list_container has_borders">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th class="source_data" ng-click="toggle_sf_name_order_sort()">
+                      <span><translate>Salesforce Field Name</translate>&nbsp;<i class="glyphicon glyphicon-sort"></i></span>
+                    </th>
+                    <th class="source_data">
+                      <span><translate>SEED Field Name</translate></span>
+                    </th>
+                    <th class="source_data"></th>
+                  </tr>
+                </thead>
+
+                <tbody id="mapped-table">
+                  <tr ng-repeat="(index, col) in salesforce_mappings">
+                    <td>
+                      <input type="text" class="form-control input-sm tcm_field" ng-model="col.salesforce_fieldname" ng-change="flag_change()" />
+                    </td>
+                    <td ng-attr-id="mapped-row-input-{$:: $index $}">
+                      <select id="select-column" class="form-control" ng-model="col.column" ng-change="flag_change()">
+                        <option ng-repeat="property_column in property_column_names" ng-value="property_column.id">{$:: property_column.display_name $}</option>
+                      </select>
+                    </td>
+
+                    <td style="text-align: center">
+                      <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" tooltip-placement="bottom" uib-tooltip="New" translate>Add Mapping</button>
+          </div>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="7" heading="UBID">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Set UBID Threshold</h3>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <p translate>
+            The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged
+            with the existing property.
+          </p>
+          <p translate>UBID thresholds are between 0.0 and 1.0</p>
+          <form class="form-horizontal" role="form" lang="en-US">
+            <div class="form-group">
+              <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
+              <div class="col-sm-3">
+                <input
+                  id="ubid-threshold-form"
+                  class="form-control"
+                  type="number"
+                  min="0"
+                  max="1"
+                  ng-model="org.ubid_threshold"
+                  ng-change="ubid_threshold_change()"
+                  ng-disabled="::!auth.requires_owner"
+                />
+              </div>
+            </div>
+          </form>
+          <div style="margin-top: 30px">
+            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0 and 1.0 </span>
+          </div>
+        </div>
+      </div>
+    </uib-tab>
+
+    <uib-tab index="8" heading="{$:: 'Units' | translate $}">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_eui" ng-model="org.display_units_eui"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-change="get_valid_units_for_type()" ng-options="type.value as type.label for type in energy_type_options" ng-model="chosen_type_unit.type">
+                  <option value="" translate>ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select
+                  class="form-control"
+                  ng-disabled="chosen_type_unit.type === null"
+                  ng-options="unit as unit for unit in energy_unit_options[chosen_type_unit.type]"
+                  ng-model="chosen_type_unit.unit"
+                >
+                  <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Measurement unit display for areas</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_area" ng-model="org.display_units_area"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Number of decimal places to display</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in decimal_places_options" ng-model="org.display_decimal_places"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>THERMAL_CONV_ASSUMPTION_TITLE</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4" uib-popover="Warning: Meters will be imported as and viewed according to this assumption." popover-trigger="mouseenter" popover-placement="right-top">
+                <select class="form-control" ng-options="country.value as country.label for country in thermal_conversion_countries" ng-model="org.thermal_conversion_assumption"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </uib-tab>
+  </uib-tabset>
+
+  <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
+    <div class="section_content with_padding">
+      <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
+        {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+      </button>
+      <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
     </div>
+  </div>
 </div>

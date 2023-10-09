@@ -1,5 +1,5 @@
 .ng-wig,
-[class^="nw-"] {
+[class^='nw-'] {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -o-box-sizing: border-box;
@@ -42,7 +42,7 @@
   padding: 0 6px 0 3px;
 }
 
-.nw-toolbar input[type="checkbox"] {
+.nw-toolbar input[type='checkbox'] {
   vertical-align: -3px;
   margin-right: -1px;
 }
@@ -143,35 +143,35 @@
 }
 
 .nw-button.bold:before {
-  content: "\f032";
+  content: '\f032';
 }
 
 .nw-button.italic:before {
-  content: "\f033";
+  content: '\f033';
 }
 
 .nw-button.list-ul:before {
-  content: "\f0ca";
+  content: '\f0ca';
 }
 
 .nw-button.list-ol:before {
-  content: "\f0cb";
+  content: '\f0cb';
 }
 
 .nw-button.link:before {
-  content: "\f0c1";
+  content: '\f0c1';
 }
 
 .nw-button.font-color:before {
-  content: "\f031";
+  content: '\f031';
 }
 
 .nw-button.nw-button--source:before {
-  content: "\f040";
+  content: '\f040';
 }
 
 .nw-button.clear-styles:before {
-  content: "\f12d";
+  content: '\f12d';
 }
 
 .nw-button:focus {

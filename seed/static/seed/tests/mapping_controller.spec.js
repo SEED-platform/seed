@@ -8,7 +8,6 @@ describe('controller: mapping_controller', function () {
   var mapping_controller_scope;
   var timeout, mock_geocode_service, mock_user_service, mock_organization_service;
 
-
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
@@ -25,163 +24,174 @@ describe('controller: mapping_controller', function () {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_user_service, 'set_default_columns')
-        .andCallFake(function () {
-          return undefined;
-        });
-
-      spyOn(mock_geocode_service, 'check_org_has_api_key')
-        .andCallFake(function () {
-          return $q.resolve({
-            status: 'success',
-          });
-        });
-
-      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled')
-        .andCallFake(function () {
-          return $q.resolve(true);
+      spyOn(mock_user_service, 'set_default_columns').andCallFake(function () {
+        return undefined;
       });
 
-      spyOn(mock_organization_service, 'geocoding_columns')
-        .andCallFake(function () {
-          return $q.resolve({
-            status: 'success',
-          });
+      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(function () {
+        return $q.resolve({
+          status: 'success'
         });
+      });
+
+      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(function () {
+        return $q.resolve(true);
+      });
+
+      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(function () {
+        return $q.resolve({
+          status: 'success'
+        });
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_mapping_controller() {
-    var mock_datasets = [{
-      name: 'DC 2013 data',
-      last_modified: (new Date()).getTime(),
-      last_modified_by: 'demo@seed-platform.org',
-      number_of_buildings: 89,
-      id: 1
-    }, {
-      name: 'DC 2014 data',
-      last_modified: (new Date()).getTime() - 1550 * 60 * 60 * 1000,
-      last_modified_by: 'demo2@seed-platform.org',
-      number_of_buildings: 70,
-      id: 2
-    }];
+    var mock_datasets = [
+      {
+        name: 'DC 2013 data',
+        last_modified: new Date().getTime(),
+        last_modified_by: 'demo@seed-platform.org',
+        number_of_buildings: 89,
+        id: 1
+      },
+      {
+        name: 'DC 2014 data',
+        last_modified: new Date().getTime() - 1550 * 60 * 60 * 1000,
+        last_modified_by: 'demo2@seed-platform.org',
+        number_of_buildings: 70,
+        id: 2
+      }
+    ];
     var fake_import_file_payload = {
       status: 'success',
       import_file: {
         file_name: 'assessor_fun.csv',
-        last_modified: (new Date()).getTime(),
+        last_modified: new Date().getTime(),
         last_modified_by: 'demo@seed-platform.org',
         source_type: 'AssessorRaw',
         dataset: mock_datasets[0],
         id: 1,
-        cycle: 2015,
+        cycle: 2015
       }
     };
 
-    var fake_property_columns = [{
-      column_name: 'pm_property_id',
-      data_type: 'string',
-      display_name: 'PM Property ID',
-      column_description: 'PM Property ID',
-      id: 1,
-      is_extra_data: false,
-      name: 'pm_property_id_1',
-      pinnedLeft: true,
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }, {
-      column_name: 'property_name',
-      data_type: 'string',
-      display_name: 'Property Name',
-      column_description: 'Property Name',
-      id: 2,
-      is_extra_data: false,
-      name: 'property_name_2',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }, {
-      column_name: 'property_notes',
-      data_type: 'string',
-      display_name: 'Property Notes',
-      column_description: 'Property Notes',
-      id: 3,
-      is_extra_data: false,
-      name: 'property_notes_3',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }, {
-      column_name: 'address_line_1',
-      data_type: 'string',
-      display_name: 'Address Line 1',
-      column_description: 'Address Line 1',
-      id: 4,
-      is_extra_data: false,
-      name: 'address_line_1_4',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }, {
-      column_name: 'custom_id_1',
-      data_type: 'string',
-      display_name: 'Custom ID 1',
-      column_description: 'Custom ID 1',
-      id: 5,
-      is_extra_data: false,
-      name: 'custom_id_1_5',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }, {
-      column_name: 'ubid',
-      data_type: 'string',
-      display_name: 'UBID',
-      column_description: 'UBID',
-      id: 6,
-      is_extra_data: false,
-      name: 'ubid_6',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState'
-    }];
+    var fake_property_columns = [
+      {
+        column_name: 'pm_property_id',
+        data_type: 'string',
+        display_name: 'PM Property ID',
+        column_description: 'PM Property ID',
+        id: 1,
+        is_extra_data: false,
+        name: 'pm_property_id_1',
+        pinnedLeft: true,
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      },
+      {
+        column_name: 'property_name',
+        data_type: 'string',
+        display_name: 'Property Name',
+        column_description: 'Property Name',
+        id: 2,
+        is_extra_data: false,
+        name: 'property_name_2',
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      },
+      {
+        column_name: 'property_notes',
+        data_type: 'string',
+        display_name: 'Property Notes',
+        column_description: 'Property Notes',
+        id: 3,
+        is_extra_data: false,
+        name: 'property_notes_3',
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      },
+      {
+        column_name: 'address_line_1',
+        data_type: 'string',
+        display_name: 'Address Line 1',
+        column_description: 'Address Line 1',
+        id: 4,
+        is_extra_data: false,
+        name: 'address_line_1_4',
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      },
+      {
+        column_name: 'custom_id_1',
+        data_type: 'string',
+        display_name: 'Custom ID 1',
+        column_description: 'Custom ID 1',
+        id: 5,
+        is_extra_data: false,
+        name: 'custom_id_1_5',
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      },
+      {
+        column_name: 'ubid',
+        data_type: 'string',
+        display_name: 'UBID',
+        column_description: 'UBID',
+        id: 6,
+        is_extra_data: false,
+        name: 'ubid_6',
+        sharedFieldType: 'None',
+        table_name: 'PropertyState'
+      }
+    ];
 
-    var fake_taxlot_columns = [{
-      column_name: 'address_line_1',
-      data_type: 'string',
-      display_name: 'Address Line 1',
-      id: 7,
-      is_extra_data: false,
-      name: 'address_line_1_7',
-      sharedFieldType: 'None',
-      table_name: 'TaxLotState'
-    }, {
-      column_name: 'custom_id_1',
-      data_type: 'string',
-      display_name: 'Custom ID 1',
-      column_description: 'Custom ID 1',
-      id: 8,
-      is_extra_data: false,
-      name: 'custom_id_1_8',
-      sharedFieldType: 'None',
-      table_name: 'TaxLotState'
-    }, {
-      column_name: 'jurisdiction_tax_lot_id',
-      data_type: 'string',
-      display_name: 'Jurisdiction Tax Lot ID',
-      column_description: 'Jurisdiction Tax Lot ID',
-      id: 9,
-      is_extra_data: false,
-      name: 'jurisdiction_tax_lot_id_9',
-      sharedFieldType: 'None',
-      table_name: 'TaxLotState'
-    }, {
-      column_name: 'ubid',
-      data_type: 'string',
-      display_name: 'UBID',
-      column_description: 'UBID',
-      id: 10,
-      is_extra_data: false,
-      name: 'ubid_10',
-      sharedFieldType: 'None',
-      table_name: 'TaxLotState'
-    }];
+    var fake_taxlot_columns = [
+      {
+        column_name: 'address_line_1',
+        data_type: 'string',
+        display_name: 'Address Line 1',
+        id: 7,
+        is_extra_data: false,
+        name: 'address_line_1_7',
+        sharedFieldType: 'None',
+        table_name: 'TaxLotState'
+      },
+      {
+        column_name: 'custom_id_1',
+        data_type: 'string',
+        display_name: 'Custom ID 1',
+        column_description: 'Custom ID 1',
+        id: 8,
+        is_extra_data: false,
+        name: 'custom_id_1_8',
+        sharedFieldType: 'None',
+        table_name: 'TaxLotState'
+      },
+      {
+        column_name: 'jurisdiction_tax_lot_id',
+        data_type: 'string',
+        display_name: 'Jurisdiction Tax Lot ID',
+        column_description: 'Jurisdiction Tax Lot ID',
+        id: 9,
+        is_extra_data: false,
+        name: 'jurisdiction_tax_lot_id_9',
+        sharedFieldType: 'None',
+        table_name: 'TaxLotState'
+      },
+      {
+        column_name: 'ubid',
+        data_type: 'string',
+        display_name: 'UBID',
+        column_description: 'UBID',
+        id: 10,
+        is_extra_data: false,
+        name: 'ubid_10',
+        sharedFieldType: 'None',
+        table_name: 'TaxLotState'
+      }
+    ];
 
     var mock_mapping_suggestions_payload = {
       status: 'success',
@@ -201,13 +211,7 @@ describe('controller: mapping_controller', function () {
       TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ubid']
     };
 
-    var mock_raw_column_names = [
-      'property id',
-      'property_name',
-      'property_notes',
-      'lot number',
-      'lot size'
-    ];
+    var mock_raw_column_names = ['property id', 'property_name', 'property_notes', 'lot number', 'lot size'];
 
     var mock_first_five_rows = [];
     for (var i = 0; i < 4; i++) {
@@ -246,16 +250,16 @@ describe('controller: mapping_controller', function () {
       first_five_rows: mock_first_five_rows
     };
     var fake_derived_columns_payload = {
-      derived_columns: [],
+      derived_columns: []
     };
 
     const fake_organization_payload = {
       status: 'success',
       organization: {
         display_decimal_places: 2,
-        id: 1,
+        id: 1
       }
-    }
+    };
 
     controller('mapping_controller', {
       $scope: mapping_controller_scope,
@@ -268,7 +272,7 @@ describe('controller: mapping_controller', function () {
       cycles: mock_cycles,
       inventory_service: mock_inventory_service,
       organization_payload: fake_organization_payload,
-      derived_columns_payload: fake_derived_columns_payload,
+      derived_columns_payload: fake_derived_columns_payload
     });
   }
 
@@ -366,5 +370,4 @@ describe('controller: mapping_controller', function () {
     expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
-
 });

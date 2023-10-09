@@ -2,8 +2,9 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('sdDropdown', [])
-  .directive('sdDropdown', ['urls', function (urls) {
+angular.module('sdDropdown', []).directive('sdDropdown', [
+  'urls',
+  function (urls) {
     return {
       restrict: 'E',
       require: '^ngModel',
@@ -30,4 +31,5 @@ angular.module('sdDropdown', [])
       },
       templateUrl: urls.static_url + 'seed/js/directives/sd-dropdown-template.html'
     };
-  }]);
+  }
+]);

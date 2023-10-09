@@ -31,10 +31,13 @@ describe('When I go to the dataset options page', function () {
     // $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
     var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
       expect(rows.length).not.toBeLessThan(1);
-      return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-        // expect(label).toEqual('Tax Lot');
-        return;
-      });
+      return rows
+        .$('[ng-model="tcm.suggestion_table_name"]')
+        .getText()
+        .then(function (label) {
+          // expect(label).toEqual('Tax Lot');
+          return;
+        });
     });
   });
 
@@ -67,10 +70,13 @@ describe('When I go to the dataset options page', function () {
     // $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Tax Lot')).click();
     var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
       expect(rows.length).not.toBeLessThan(1);
-      return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-        // expect(label).toEqual('Tax Lot');
-        return;
-      });
+      return rows
+        .$('[ng-model="tcm.suggestion_table_name"]')
+        .getText()
+        .then(function (label) {
+          // expect(label).toEqual('Tax Lot');
+          return;
+        });
     });
   });
 

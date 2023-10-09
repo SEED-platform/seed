@@ -37,24 +37,28 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
 
     // Extracting EmailTemplate objects by running a get request on postoffice
     template_factory.get_templates_for_org = function (organization_id) {
-      return $http.get('/api/v3/postoffice/', {
-        params: {
-          organization_id: organization_id
-        }
-      }).then(function (response) {
-        return template_factory.sort_templates(response);
-      });
+      return $http
+        .get('/api/v3/postoffice/', {
+          params: {
+            organization_id: organization_id
+          }
+        })
+        .then(function (response) {
+          return template_factory.sort_templates(response);
+        });
     };
 
     // Create new template
     template_factory.new_template = function (data, organization_id) {
-      return $http.post('/api/v3/postoffice/', data, {
-        params: {
-          organization_id: organization_id
-        }
-      }).then(function (response) {
-        return response.data.data;
-      });
+      return $http
+        .post('/api/v3/postoffice/', data, {
+          params: {
+            organization_id: organization_id
+          }
+        })
+        .then(function (response) {
+          return response.data.data;
+        });
     };
 
     // Renaming the selected template in the available templates drop-down menu (Organization-->Email Templates)
@@ -63,13 +67,15 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
         Notification.error('This template is protected from modifications');
         return $q.reject();
       }
-      return $http.put('/api/v3/postoffice/' + id + '/', data, {
-        params: {
-          organization_id: organization_id
-        }
-      }).then(function (response) {
-        return response.data.data;
-      });
+      return $http
+        .put('/api/v3/postoffice/' + id + '/', data, {
+          params: {
+            organization_id: organization_id
+          }
+        })
+        .then(function (response) {
+          return response.data.data;
+        });
     };
 
     // Removing the selected template in the available templates drop-down menu (Organization-->Email Templates)
@@ -97,13 +103,16 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
         inventory_id: inventory_id,
         inventory_type: inventory_type
       };
-      return $http.post('/api/v3/postoffice_email/', data, {
-        params: {
-          organization_id: organization_id
-        }
-      }).then(function (response) {
-        return response.data;
-      }).catch(_.constant('Error fetching templates'));
+      return $http
+        .post('/api/v3/postoffice_email/', data, {
+          params: {
+            organization_id: organization_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        })
+        .catch(_.constant('Error fetching templates'));
     };
 
     template_factory.get_last_template = function (organization_id) {
@@ -117,4 +126,5 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
     };
 
     return template_factory;
-  }]);
+  }
+]);

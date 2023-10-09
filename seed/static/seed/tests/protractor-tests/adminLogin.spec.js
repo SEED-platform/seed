@@ -8,7 +8,6 @@ var EC = protractor.ExpectedConditions;
 
 // Login
 describe('When I visit the login page', function () {
-
   // manually
   it('should set sync', function () {
     browser.ignoreSynchronization = true;

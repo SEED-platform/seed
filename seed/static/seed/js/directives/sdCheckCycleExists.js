@@ -9,10 +9,8 @@ angular.module('sdCheckCycleExists', []).directive('sdCheckCycleExists', functio
       existingCycles: '=sdCheckCycleExists'
     },
     link: function (scope, elm, attrs, ctrl) {
-
       ctrl.$validators.sdCheckCycleExists = function (modelValue) {
-
-        if(!modelValue) return true;
+        if (!modelValue) return true;
 
         var cycles = scope.existingCycles;
         if (!cycles) return true;
@@ -26,7 +24,6 @@ angular.module('sdCheckCycleExists', []).directive('sdCheckCycleExists', functio
         }
 
         return true;
-
       };
     }
   };

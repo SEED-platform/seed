@@ -24,7 +24,7 @@
     }
     execJasmine();
   };
-  function execJasmine () {
+  function execJasmine() {
     jasmineEnv.execute();
   }
 })();

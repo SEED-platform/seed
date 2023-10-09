@@ -20,18 +20,16 @@ describe('controller: inventory_detail_controller', function () {
       controller = $controller;
       inventory_detail_controller_scope = $rootScope.$new();
 
-
       // mock the inventory_service factory methods used in the controller
       // and return their promises
       mock_building_service = inventory_service;
 
-      spyOn(mock_building_service, 'update_property')
-        .andCallFake(function (view_id, state) {
-          mock_building = state;
-          return $q.resolve({
-            status: 'success'
-          });
+      spyOn(mock_building_service, 'update_property').andCallFake(function (view_id, state) {
+        mock_building = state;
+        return $q.resolve({
+          status: 'success'
         });
+      });
     });
   });
 
@@ -117,52 +115,57 @@ describe('controller: inventory_detail_controller', function () {
         inventory_documents: []
       }
     };
-    var fake_all_columns = [{
-      title: 'PM Property ID',
-      sort_column: 'pm_property_id',
-      'class': 'is_aligned_right',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Tax Lot ID',
-      sort_column: 'tax_lot_id',
-      'class': 'is_aligned_right',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Custom ID 1',
-      sort_column: 'custom_id_1',
-      'class': 'is_aligned_right whitespace',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Property Name',
-      sort_column: 'property_name',
-      'class': '',
-      title_class: '',
-      type: 'string',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false
-    }];
+    var fake_all_columns = [
+      {
+        title: 'PM Property ID',
+        sort_column: 'pm_property_id',
+        class: 'is_aligned_right',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Tax Lot ID',
+        sort_column: 'tax_lot_id',
+        class: 'is_aligned_right',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Custom ID 1',
+        sort_column: 'custom_id_1',
+        class: 'is_aligned_right whitespace',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Property Name',
+        sort_column: 'property_name',
+        class: '',
+        title_class: '',
+        type: 'string',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false
+      }
+    ];
 
     var fake_derived_columns_payload = {
-      derived_columns: [],
+      derived_columns: []
     };
     controller('inventory_detail_controller', {
       $scope: inventory_detail_controller_scope,
@@ -183,8 +186,8 @@ describe('controller: inventory_detail_controller', function () {
           id: 1,
           display_decimal_places: 2,
           property_display_field: 'address_line_1',
-          taxlot_display_field: 'address_line_1',
-        },
+          taxlot_display_field: 'address_line_1'
+        }
       },
       analyses_payload: {
         analyses: []
@@ -193,8 +196,8 @@ describe('controller: inventory_detail_controller', function () {
         users: []
       },
       views_payload: {
-        status:	"success",
-        property_views: [],
+        status: 'success',
+        property_views: []
       }
     });
   }
@@ -256,7 +259,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, {gross_floor_area: 43214});
+    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, { gross_floor_area: 43214 });
     expect(mock_building.gross_floor_area).toEqual(43214);
   });
 

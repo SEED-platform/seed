@@ -8,7 +8,6 @@ describe('controller: dataset_list_controller', function () {
   var dataset_list_controller_scope;
   var mock_uploader_service;
 
-
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
@@ -25,41 +24,42 @@ describe('controller: dataset_list_controller', function () {
       // mock the uploader_service factory methods used in the controller
       // and return their promises
       mock_uploader_service = uploader_service;
-      spyOn(mock_uploader_service, 'create_dataset')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              import_record_id: 3,
-              import_record_name: dataset_name
-            });
-          } else {
-            return $q.reject({
-              status: 'error',
-              message: 'name already in use'
-            });
-          }
-        });
-      }
-    );
+      spyOn(mock_uploader_service, 'create_dataset').andCallFake(function (dataset_name) {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
+          return $q.resolve({
+            status: 'success',
+            import_record_id: 3,
+            import_record_name: dataset_name
+          });
+        } else {
+          return $q.reject({
+            status: 'error',
+            message: 'name already in use'
+          });
+        }
+      });
+    });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_list_controller() {
     var fake_datasets_payload = {
       status: 'success',
-      datasets: [{
-        name: 'DC 2013 data',
-        last_modified: (new Date()).getTime(),
-        last_modified_by: 'demo@seed-platform.org',
-        number_of_buildings: 89
-      }, {
-        name: 'DC 2014 data',
-        last_modified: (new Date()).getTime() - 1550 * 60 * 60 * 1000,
-        last_modified_by: 'demo2@seed-platform.org',
-        number_of_buildings: 70
-      }]
+      datasets: [
+        {
+          name: 'DC 2013 data',
+          last_modified: new Date().getTime(),
+          last_modified_by: 'demo@seed-platform.org',
+          number_of_buildings: 89
+        },
+        {
+          name: 'DC 2014 data',
+          last_modified: new Date().getTime() - 1550 * 60 * 60 * 1000,
+          last_modified_by: 'demo2@seed-platform.org',
+          number_of_buildings: 70
+        }
+      ]
     };
     controller('dataset_list_controller', {
       $scope: dataset_list_controller_scope,
@@ -85,11 +85,14 @@ describe('controller: dataset_list_controller', function () {
   it('should disable the mapping button if the dataset has no Assessor files', function () {
     // arrange
     var dataset = {
-      importfiles: [{
-        source_type: 'Portfolio Raw'
-      }, {
-        source_type: 'Portfolio Raw'
-      }]
+      importfiles: [
+        {
+          source_type: 'Portfolio Raw'
+        },
+        {
+          source_type: 'Portfolio Raw'
+        }
+      ]
     };
     create_dataset_list_controller();
 
@@ -101,15 +104,17 @@ describe('controller: dataset_list_controller', function () {
     expect(disabled).toEqual(true);
   });
 
-  it('should enable the mapping button if the dataset has at least one' +
-    ' Assessor file', function () {
+  it('should enable the mapping button if the dataset has at least one' + ' Assessor file', function () {
     // arrange
     var dataset = {
-      importfiles: [{
-        source_type: 'Portfolio Raw'
-      }, {
-        source_type: 'Assessed Raw'
-      }]
+      importfiles: [
+        {
+          source_type: 'Portfolio Raw'
+        },
+        {
+          source_type: 'Assessed Raw'
+        }
+      ]
     };
     create_dataset_list_controller();
 
@@ -120,15 +125,17 @@ describe('controller: dataset_list_controller', function () {
     // assertions
     expect(disabled).toEqual(false);
   });
-  it('should disable the matching button if the dataset has no' +
-    ' Portfolio Manger files', function () {
+  it('should disable the matching button if the dataset has no' + ' Portfolio Manger files', function () {
     // arrange
     var dataset = {
-      importfiles: [{
-        source_type: 'Assessed Raw'
-      }, {
-        source_type: 'Assessed Raw'
-      }]
+      importfiles: [
+        {
+          source_type: 'Assessed Raw'
+        },
+        {
+          source_type: 'Assessed Raw'
+        }
+      ]
     };
     create_dataset_list_controller();
 
@@ -139,15 +146,17 @@ describe('controller: dataset_list_controller', function () {
     // assertions
     expect(disabled).toEqual(true);
   });
-  it('should enable the matching button if the dataset has at least one' +
-    ' Portfolio Manger file', function () {
+  it('should enable the matching button if the dataset has at least one' + ' Portfolio Manger file', function () {
     // arrange
     var dataset = {
-      importfiles: [{
-        source_type: 'Portfolio Raw'
-      }, {
-        source_type: 'Assessed Raw'
-      }]
+      importfiles: [
+        {
+          source_type: 'Portfolio Raw'
+        },
+        {
+          source_type: 'Assessed Raw'
+        }
+      ]
     };
     create_dataset_list_controller();
 
@@ -166,7 +175,6 @@ describe('controller: dataset_list_controller', function () {
     dataset_list_controller_scope.$digest();
 
     // assertions
-    expect($state.href('mapping', {importfile_id: 3})).toBe('#/data/mapping/3');
+    expect($state.href('mapping', { importfile_id: 3 })).toBe('#/data/mapping/3');
   });
-
 });

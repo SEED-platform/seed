@@ -11,7 +11,6 @@ var remote = require('selenium-webdriver/remote');
 // Data Set page
 // Select my new sub org
 describe('When I click the orgs button', function () {
-
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
@@ -25,7 +24,6 @@ describe('When I click the orgs button', function () {
 });
 
 describe('When I visit the data set page', function () {
-
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
@@ -45,7 +43,6 @@ describe('When I visit the data set page', function () {
   });
 
   it('should be able to create a new data set async', function () {
-
     // for remote ci to grab files
     browser.setFileDetector(new remote.FileDetector());
 
@@ -82,7 +79,6 @@ describe('When I visit the data set page', function () {
     expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
   });
 
-
   // manually
   it('should reset sync', function () {
     browser.ignoreSynchronization = true;
@@ -94,7 +90,6 @@ describe('When I visit the data set page', function () {
       return elm;
     });
   });
-
 
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
@@ -115,7 +110,6 @@ describe('When I visit the data set page', function () {
   });
 
   it('should be able to add tax lots file too', function () {
-
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     // for remote ci to grab the files
@@ -145,10 +139,13 @@ describe('When I visit the data set page', function () {
     $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Property')).click();
     var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
       expect(rows.length).not.toBeLessThan(1);
-      return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-        expect(label).toEqual('Property');
-        return;
-      });
+      return rows
+        .$('[ng-model="tcm.suggestion_table_name"]')
+        .getText()
+        .then(function (label) {
+          expect(label).toEqual('Property');
+          return;
+        });
     });
     $$('[ng-change="updateInventoryTypeDropdown(); change(tcm)"]').first().element(by.cssContainingText('option', 'Tax Lot')).click();
     $('#mapped-row-input-box-0').clear();

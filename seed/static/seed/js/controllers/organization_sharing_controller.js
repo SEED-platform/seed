@@ -11,16 +11,7 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
   'auth_payload',
   'organization_service',
   '$filter',
-  function (
-    $scope,
-    all_columns,
-    organization_payload,
-    query_threshold_payload,
-    shared_fields_payload,
-    auth_payload,
-    organization_service,
-    $filter
-  ) {
+  function ($scope, all_columns, organization_payload, query_threshold_payload, shared_fields_payload, auth_payload, organization_service, $filter) {
     $scope.fields = all_columns.columns;
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};
@@ -62,11 +53,14 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       $scope.org.public_fields = $scope.fields.filter(function (f) {
         return f.public_checked;
       });
-      organization_service.save_org_settings($scope.org).then(function () {
-        $scope.settings_updated = true;
-      }, function (data) {
-        $scope.$emit('app_error', data);
-      });
+      organization_service.save_org_settings($scope.org).then(
+        function () {
+          $scope.settings_updated = true;
+        },
+        function (data) {
+          $scope.$emit('app_error', data);
+        }
+      );
     };
 
     /**
@@ -85,5 +79,5 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       });
     };
     init();
-
-  }]);
+  }
+]);

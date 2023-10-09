@@ -7,9 +7,7 @@
 
 <div class="page_header_container" ng-cloak>
   <div class="page_header">
-    <div class="left page_action_container">
-
-    </div>
+    <div class="left page_action_container"></div>
     <div class="page_title">
       <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
     </div>
@@ -25,9 +23,7 @@
   <form class="form-inline" role="form" novalidate>
     <div class="form-group">
       <div uib-dropdown class="btn-group">
-        <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
-          {$:: 'Actions' | translate $} <span class="caret"></span>
-        </button>
+        <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">{$:: 'Actions' | translate $} <span class="caret"></span></button>
         <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
           <li role="menuitem" ng-if="::inventory_type === 'properties'">
             <a ng-click="toggleLayer('hexbin_layer')" translate>Toggle Hexagonal Bins</a>
@@ -59,16 +55,27 @@
     <div class="form-group">
       <label for="tags-input" translate>Filter by label:</label>
       <div class="input-group">
-        <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" template="colored-labels" ng-disabled="!labels.length">
+        <tags-input
+          id="tags-input"
+          ng-model="selected_labels"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          template="colored-labels"
+          ng-disabled="!labels.length"
+        >
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
         <span ng-click="clearLabels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-trash fa-lg"></i></span>
       </div>
     </div>
     <div class="form-group btn-group">
-      <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
-      <label class="btn btn-default btn-sm" style="width:50px;" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
-      <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
+      <label class="btn btn-default btn-sm" style="width: 50px" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</label>
+      <label class="btn btn-default btn-sm" style="width: 50px" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</label>
+      <label class="btn btn-default btn-sm" style="width: 75px" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate
+        >EXCLUDE</label
+      >
     </div>
     <!--<div class="form-group">
       <label>{$:: 'Filter Group' | translate $}:</label>
@@ -94,11 +101,16 @@
     </div>-->
   </form>
 
-  <div class="form-group settings_profile" style="margin-right: 10px; display: flex; justify-content: space-between; min-height: 52px;">
+  <div class="form-group settings_profile" style="margin-right: 10px; display: flex; justify-content: space-between; min-height: 52px">
     <span>
       <label>{$:: 'Cycle' | translate $}:</label>
-      <div style="display: inline-block;">
-        <select class="form-control input-sm pointer" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id"></select>
+      <div style="display: inline-block">
+        <select
+          class="form-control input-sm pointer"
+          ng-model="cycle.selected_cycle"
+          ng-change="update_cycle(cycle.selected_cycle)"
+          ng-options="option.name for option in ::cycle.cycles track by option.id"
+        ></select>
       </div>
     </span>
 
@@ -110,9 +122,7 @@
         <span class="text-left">+ 750</span>
       </div>
     </div>
-
   </div>
-
 </div>
 
 <div class="inventory-list-tab-container">
@@ -138,51 +148,35 @@
 </div>
 <div class="label-tabs">
   <label ng-if="::inventory_type === 'properties'">
-    <input type="checkbox" name="hexbin"
-           ng-model="layers.hexbin_layer.visible"
-           ng-change="toggleLayer('hexbin_layer', layers.hexbin_layer.visible)">
+    <input type="checkbox" name="hexbin" ng-model="layers.hexbin_layer.visible" ng-change="toggleLayer('hexbin_layer', layers.hexbin_layer.visible)" />
     {$:: 'Hexagonal Bins' | translate $}
   </label>
   <label>
-    <input type="checkbox" name="points"
-           ng-model="layers.points_layer.visible"
-           ng-change="toggleLayer('points_layer', layers.points_layer.visible)">
+    <input type="checkbox" name="points" ng-model="layers.points_layer.visible" ng-change="toggleLayer('points_layer', layers.points_layer.visible)" />
     {$:: inventory_type === 'properties' ? 'Property Points' : 'Tax Lot Points' | translate $}
   </label>
   <label ng-if="::inventory_type === 'properties'">
-    <input type="checkbox" name="building_bb"
-           ng-model="layers.property_bb_layer.visible"
-           ng-change="toggleLayer('property_bb_layer', layers.property_bb_layer.visible)">
+    <input type="checkbox" name="building_bb" ng-model="layers.property_bb_layer.visible" ng-change="toggleLayer('property_bb_layer', layers.property_bb_layer.visible)" />
     {$:: 'Property UBIDs' | translate $}
   </label>
   <label ng-if="::inventory_type === 'properties'">
-    <input type="checkbox" name="building_centroid"
-           ng-model="layers.property_centroid_layer.visible"
-           ng-change="toggleLayer('property_centroid_layer', layers.property_centroid_layer.visible)">
+    <input type="checkbox" name="building_centroid" ng-model="layers.property_centroid_layer.visible" ng-change="toggleLayer('property_centroid_layer', layers.property_centroid_layer.visible)" />
     {$:: 'Property UBID Centroids' | translate $}
   </label>
   <label ng-if="::inventory_type === 'taxlots'">
-    <input type="checkbox" name="taxlot_bb"
-           ng-model="layers.taxlot_bb_layer.visible"
-           ng-change="toggleLayer('taxlot_bb_layer', layers.taxlot_bb_layer.visible)">
+    <input type="checkbox" name="taxlot_bb" ng-model="layers.taxlot_bb_layer.visible" ng-change="toggleLayer('taxlot_bb_layer', layers.taxlot_bb_layer.visible)" />
     {$:: 'Tax Lot UBIDs' | translate $}
   </label>
   <label ng-if="::inventory_type === 'taxlots'">
-    <input type="checkbox" name="taxlot_centroid"
-           ng-model="layers.taxlot_centroid_layer.visible"
-           ng-change="toggleLayer('taxlot_centroid_layer', layers.taxlot_centroid_layer.visible)">
+    <input type="checkbox" name="taxlot_centroid" ng-model="layers.taxlot_centroid_layer.visible" ng-change="toggleLayer('taxlot_centroid_layer', layers.taxlot_centroid_layer.visible)" />
     {$:: 'Tax Lot UBID Centroids' | translate $}
   </label>
   <label>
-    <input type="checkbox" name="census_tracts"
-           ng-model="layers.census_tract_layer.visible"
-           ng-change="toggleLayer('census_tract_layer', layers.census_tract_layer.visible)">
+    <input type="checkbox" name="census_tracts" ng-model="layers.census_tract_layer.visible" ng-change="toggleLayer('census_tract_layer', layers.census_tract_layer.visible)" />
     {$:: 'Census Tracts' | translate $}
   </label>
   <label>
-    <input type="checkbox" name="highlight_dacs"
-           ng-model="highlightDACs"
-           ng-disabled="!layers.census_tract_layer.visible">
+    <input type="checkbox" name="highlight_dacs" ng-model="highlightDACs" ng-disabled="!layers.census_tract_layer.visible" />
     {$:: 'Highlight DACs' | translate $}
   </label>
 </div>

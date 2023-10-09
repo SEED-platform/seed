@@ -98,12 +98,14 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     };
 
     data_quality_factory.start_data_quality_checks_for_org = function (org_id, property_view_ids, taxlot_view_ids) {
-      return $http.post('/api/v3/data_quality_checks/' + org_id + '/start/', {
-        property_view_ids: property_view_ids,
-        taxlot_view_ids: taxlot_view_ids
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post('/api/v3/data_quality_checks/' + org_id + '/start/', {
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     data_quality_factory.data_quality_checks_status = function (progress_key) {
@@ -113,18 +115,22 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     };
 
     var checkStatusLoop = function (deferred, progress_key) {
-      $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
-        $timeout(function () {
-          if (response.data.progress < 100) {
-            checkStatusLoop(deferred, progress_key);
-          } else {
-            deferred.resolve(response.data);
-          }
-        }, 750);
-      }, function (error) {
-        deferred.reject(error);
-      });
+      $http.get('/api/v3/progress/' + progress_key + '/').then(
+        function (response) {
+          $timeout(function () {
+            if (response.data.progress < 100) {
+              checkStatusLoop(deferred, progress_key);
+            } else {
+              deferred.resolve(response.data);
+            }
+          }, 750);
+        },
+        function (error) {
+          deferred.reject(error);
+        }
+      );
     };
 
     return data_quality_factory;
-  }]);
+  }
+]);

@@ -6,51 +6,74 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
   '$http',
   'user_service',
   function ($http, user_service) {
-
     var pairing_service = {};
 
     pairing_service.pair_property_to_taxlot = function (taxlot_id, property_id) {
-      return $http.put('/api/v3/taxlots/' + taxlot_id + '/pair/', {}, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          property_id: property_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .put(
+          '/api/v3/taxlots/' + taxlot_id + '/pair/',
+          {},
+          {
+            params: {
+              organization_id: user_service.get_organization().id,
+              property_id: property_id
+            }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     pairing_service.pair_taxlot_to_property = function (property_id, taxlot_id) {
-      return $http.put('/api/v3/properties/' + property_id + '/pair/', {}, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          taxlot_id: taxlot_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .put(
+          '/api/v3/properties/' + property_id + '/pair/',
+          {},
+          {
+            params: {
+              organization_id: user_service.get_organization().id,
+              taxlot_id: taxlot_id
+            }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     pairing_service.unpair_property_from_taxlot = function (taxlot_id, property_id) {
-      return $http.put('/api/v3/taxlots/' + taxlot_id + '/unpair/', {}, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          property_id: property_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .put(
+          '/api/v3/taxlots/' + taxlot_id + '/unpair/',
+          {},
+          {
+            params: {
+              organization_id: user_service.get_organization().id,
+              property_id: property_id
+            }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     pairing_service.unpair_taxlot_from_property = function (property_id, taxlot_id) {
-      return $http.put('/api/v3/properties/' + property_id + '/unpair/', {}, {
-        params: {
-          organization_id: user_service.get_organization().id,
-          taxlot_id: taxlot_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .put(
+          '/api/v3/properties/' + property_id + '/unpair/',
+          {},
+          {
+            params: {
+              organization_id: user_service.get_organization().id,
+              taxlot_id: taxlot_id
+            }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     pairing_service.reorderSettings = function (columns) {
@@ -65,9 +88,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
     pairing_service.savePropertyColumns = function (key, columns) {
       key += '.properties.' + user_service.get_organization().id;
-      var toSave = pairing_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'visible']);
-      }));
+      var toSave = pairing_service.reorderSettings(
+        _.map(columns, function (col) {
+          return _.pick(col, ['name', 'visible']);
+        })
+      );
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
@@ -86,11 +111,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name});
+          return !_.find(columns, { name: col.name });
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          return _.defaults(col, _.remove(columns, { name: col.name })[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -101,9 +126,9 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         return pairing_service.reorderSettings(localColumns.concat(columns));
       } else {
         var filteredColumns = [];
-        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'address_line_1', table_name: 'PropertyState'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'pm_property_id', table_name: 'PropertyState'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'custom_id_1', table_name: 'PropertyState'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, { column_name: 'address_line_1', table_name: 'PropertyState' }));
+        filteredColumns = filteredColumns.concat(_.remove(columns, { column_name: 'pm_property_id', table_name: 'PropertyState' }));
+        filteredColumns = filteredColumns.concat(_.remove(columns, { column_name: 'custom_id_1', table_name: 'PropertyState' }));
         _.forEach(columns, function (col) {
           col.visible = false;
         });
@@ -113,9 +138,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
     pairing_service.saveTaxlotColumns = function (key, columns) {
       key += '.taxlots.' + user_service.get_organization().id;
-      var toSave = pairing_service.reorderSettings(_.map(columns, function (col) {
-        return _.pick(col, ['name', 'visible']);
-      }));
+      var toSave = pairing_service.reorderSettings(
+        _.map(columns, function (col) {
+          return _.pick(col, ['name', 'visible']);
+        })
+      );
       localStorage.setItem(key, JSON.stringify(toSave));
     };
 
@@ -134,11 +161,11 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
 
         // Remove nonexistent columns
         _.remove(localColumns, function (col) {
-          return !_.find(columns, {name: col.name});
+          return !_.find(columns, { name: col.name });
         });
         // Use saved column settings with original data as defaults
         localColumns = _.map(localColumns, function (col) {
-          return _.defaults(col, _.remove(columns, {name: col.name})[0]);
+          return _.defaults(col, _.remove(columns, { name: col.name })[0]);
         });
         // If no columns are visible, reset visibility only
         if (!_.find(localColumns, 'visible')) {
@@ -149,8 +176,8 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
         return pairing_service.reorderSettings(localColumns.concat(columns));
       } else {
         var filteredColumns = [];
-        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'address_line_1', table_name: 'TaxLotState'}));
-        filteredColumns = filteredColumns.concat(_.remove(columns, {column_name: 'jurisdiction_tax_lot_id', table_name: 'TaxLotState'}));
+        filteredColumns = filteredColumns.concat(_.remove(columns, { column_name: 'address_line_1', table_name: 'TaxLotState' }));
+        filteredColumns = filteredColumns.concat(_.remove(columns, { column_name: 'jurisdiction_tax_lot_id', table_name: 'TaxLotState' }));
         _.forEach(columns, function (col) {
           col.visible = false;
         });
@@ -169,5 +196,5 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
     };
 
     return pairing_service;
-
-  }]);
+  }
+]);

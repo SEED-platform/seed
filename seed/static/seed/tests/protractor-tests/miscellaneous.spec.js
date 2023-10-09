@@ -5,9 +5,7 @@
 // test Data Quality, labels, delete function and other misc items after data is loaded
 var EC = protractor.ExpectedConditions;
 
-
 describe('When I do miscellaneous things', function () {
-
   it('should reset sync', function () {
     browser.ignoreSynchronization = false;
   });
@@ -20,19 +18,21 @@ describe('When I do miscellaneous things', function () {
   });
 
   it('should go to parent organization', function () {
-    var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent))
-      .element(by.xpath('..')).$('.account_org.right');
+    var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent)).element(by.xpath('..')).$('.account_org.right');
     expect(myNewOrg.isPresent()).toBe(true);
     browser.actions().mouseMove(myNewOrg).perform();
     myNewOrg.$$('a').first().click();
   });
 
   it('should select Data Quality tab', function () {
-    var myOptions = element.all(by.css('a')).filter(function (elm) {
-      return elm.getText().then(function (label) {
-        return label === 'Data Quality';
-      });
-    }).first();
+    var myOptions = element
+      .all(by.css('a'))
+      .filter(function (elm) {
+        return elm.getText().then(function (label) {
+          return label === 'Data Quality';
+        });
+      })
+      .first();
     myOptions.click();
     expect($('.table_list_container').isPresent()).toBe(true);
   });
@@ -41,9 +41,13 @@ describe('When I do miscellaneous things', function () {
     var rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
-    $$('[ng-model="rule.min"]').first().click().clear().then(function () {
-      $$('[ng-model="rule.min"]').first().sendKeys('0');
-    });
+    $$('[ng-model="rule.min"]')
+      .first()
+      .click()
+      .clear()
+      .then(function () {
+        $$('[ng-model="rule.min"]').first().sendKeys('0');
+      });
     $$('[ng-click="create_new_rule()"]').first().click();
     expect(rowCount.count()).toBe(2);
 
@@ -57,7 +61,7 @@ describe('When I do miscellaneous things', function () {
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-click="selectAll()"]').first().click();
-    browser.sleep(1000)
+    browser.sleep(1000);
     $$('[ng-click="selectAll()"]').first().click();
     $$('[ng-model="rule.field"]').first().click();
     $$('[label="Campus"]').first().click();
@@ -139,11 +143,14 @@ describe('When I do miscellaneous things', function () {
   });
 
   it('should go to labels page and check that new label was created with new rule', function () {
-    var myOptions2 = element.all(by.css('a')).filter(function (elm) {
-      return elm.getText().then(function (label) {
-        return label === 'Labels';
-      });
-    }).first();
+    var myOptions2 = element
+      .all(by.css('a'))
+      .filter(function (elm) {
+        return elm.getText().then(function (label) {
+          return label === 'Labels';
+        });
+      })
+      .first();
     myOptions2.click();
     expect($('b').getText()).toContain('Existing Labels');
 
@@ -157,12 +164,15 @@ describe('When I do miscellaneous things', function () {
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     $$('.ui-grid-menu-button').first().click();
-    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
-      return elm.getText().then(function (label) {
-        // expect(label).toBe('fake');
-        return label === '  Clear all filters';
-      });
-    }).first();
+    var myOptions = element
+      .all(by.repeater('item in menuItems'))
+      .filter(function (elm) {
+        return elm.getText().then(function (label) {
+          // expect(label).toBe('fake');
+          return label === '  Clear all filters';
+        });
+      })
+      .first();
     myOptions.click();
 
     $$('[ng-click="toggleMenu($event)"]').first().click();
@@ -179,7 +189,6 @@ describe('When I do miscellaneous things', function () {
   });
 
   it('should go to taxlots and and test the same', function () {
-
     //run on taxlots
     $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
 
@@ -212,12 +221,10 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="c.toggle_sort()"]').get(2).click().click();
     browser.sleep(500);
     $$('[ng-click="close()"]').click();
-
   }, 60000);
 
   it('should test labels were applied correctly', function () {
-    var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container')
-      .all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+    var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
     //check labels -
     $('[ng-click="clear_labels()"]').click();
@@ -234,9 +241,7 @@ describe('When I do miscellaneous things', function () {
     expect(rows.count()).toBe(3);
     $('[ng-click="clear_labels()"]').click();
     expect(rows.count()).toBe(11);
-
   });
-
 
   it('should test delete and export modals', function () {
     //select rows and delete
@@ -272,22 +277,27 @@ describe('When I do miscellaneous things', function () {
     $$('.ui-grid-icon-left-open').first().click();
 
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
-      return elm.getText().then(function (label) {
-        // expect(label).toBe('fake');
-        return label === '  Unpin';
-      });
-    }).first();
+    var myOptions = element
+      .all(by.repeater('item in menuItems'))
+      .filter(function (elm) {
+        return elm.getText().then(function (label) {
+          // expect(label).toBe('fake');
+          return label === '  Unpin';
+        });
+      })
+      .first();
     myOptions.click();
 
-
     $$('.ui-grid-icon-angle-down').first().click();
-    var myOptions = element.all(by.repeater('item in menuItems')).filter(function (elm) {
-      return elm.getText().then(function (label) {
-        // expect(label).toBe('fake');
-        return label === '  Hide Column';
-      });
-    }).first();
+    var myOptions = element
+      .all(by.repeater('item in menuItems'))
+      .filter(function (elm) {
+        return elm.getText().then(function (label) {
+          // expect(label).toBe('fake');
+          return label === '  Hide Column';
+        });
+      })
+      .first();
     myOptions.click();
   }, 45000);
 
@@ -374,5 +384,4 @@ describe('When I do miscellaneous things', function () {
     rows = element.all(by.repeater('d in datasets'));
     expect(rows.count()).toBe(0);
   });
-
 });

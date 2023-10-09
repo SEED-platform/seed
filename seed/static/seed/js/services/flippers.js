@@ -6,9 +6,9 @@
  * bit minimum-usable right now .. just want this to squawk after it goes stale so as not to
  * forget about it.
  */
-angular.module('BE.seed.service.flippers', [])
-  .factory('flippers', ['$log', function ($log) {
-
+angular.module('BE.seed.service.flippers', []).factory('flippers', [
+  '$log',
+  function ($log) {
     var registry = {};
     var flippers = new Object();
 
@@ -25,19 +25,20 @@ angular.module('BE.seed.service.flippers', [])
     var is_stale = function (flipper, now) {
       if (!flipper.expires) return false;
       var expires = Date.parse(flipper.expires);
-      return (now > expires);
+      return now > expires;
     };
 
     var log_stale_flipper = function (flipper) {
       // TODO throw someplace more useful; sentry?
-      $log.warn('Flipper \'' + flipper.label + '\' is stale; tell ' + flipper.owner + ' to tidy up.');
+      $log.warn("Flipper '" + flipper.label + "' is stale; tell " + flipper.owner + ' to tidy up.');
     };
 
     flippers.is_active = function (s) {
-      var flipper = registry[s] || {'boolean': false};
+      var flipper = registry[s] || { boolean: false };
       if (is_stale(flipper, new Date())) log_stale_flipper(flipper);
       return flipper.boolean;
     };
 
     return flippers;
-  }]);
+  }
+]);

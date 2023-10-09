@@ -18,16 +18,15 @@ describe('controller: create_sub_organization_modal_controller', function () {
       modal_state = '';
 
       mock_organization_service = organization_service;
-      spyOn(mock_organization_service, 'create_sub_org')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.resolve({status: 'success'});
-        });
+      spyOn(mock_organization_service, 'create_sub_org').andCallFake(function () {
+        // return $q.reject for error scenario
+        return $q.resolve({ status: 'success' });
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_sub_organization_modal_controller () {
+  function create_sub_organization_modal_controller() {
     controller('create_sub_organization_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {
@@ -38,7 +37,7 @@ describe('controller: create_sub_organization_modal_controller', function () {
           modal_state = 'dismiss';
         }
       },
-      organization: {organization_id: 1}
+      organization: { organization_id: 1 }
     });
   }
 
@@ -57,13 +56,14 @@ describe('controller: create_sub_organization_modal_controller', function () {
     ctrl_scope.submit_form(true);
 
     // assertions
-    expect(mock_organization_service.create_sub_org)
-      .toHaveBeenCalledWith({
+    expect(mock_organization_service.create_sub_org).toHaveBeenCalledWith(
+      {
         organization_id: 1
-      }, {
+      },
+      {
         name: 'my shiny new org',
         email: 'jb.smooth@be.com'
-      });
+      }
+    );
   });
-
 });

@@ -14,4 +14,5 @@ angular.module('BE.seed.service.main', []).factory('main_service', [
     };
 
     return main_factory;
-  }]);
+  }
+]);

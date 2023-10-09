@@ -5,7 +5,6 @@
 angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_service', [
   '$http',
   function ($http) {
-
     const derived_columns_factory = {};
 
     derived_columns_factory.get_derived_columns = function (organization_id, inventory_type) {
@@ -70,4 +69,5 @@ angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_s
       });
     };
     return derived_columns_factory;
-  }]);
+  }
+]);

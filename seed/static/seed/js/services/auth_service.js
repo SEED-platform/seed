@@ -7,7 +7,6 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
   'user_service',
   'generated_urls',
   function ($http, user_service, generated_urls) {
-
     var auth_factory = {};
     var urls = generated_urls;
 
@@ -28,15 +27,21 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      */
     auth_factory.is_authorized = function (organization_id, actions) {
       return user_service.get_user_id().then(function (user_id) {
-        return $http.post('/api/v3/users/' + user_id + '/is_authorized/', {
-          actions: actions
-        }, {
-          params: {
-            organization_id: organization_id
-          }
-        }).then(function (response) {
-          return response.data;
-        });
+        return $http
+          .post(
+            '/api/v3/users/' + user_id + '/is_authorized/',
+            {
+              actions: actions
+            },
+            {
+              params: {
+                organization_id: organization_id
+              }
+            }
+          )
+          .then(function (response) {
+            return response.data;
+          });
       });
     };
 
@@ -51,4 +56,5 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
     };
 
     return auth_factory;
-  }]);
+  }
+]);

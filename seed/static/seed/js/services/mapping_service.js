@@ -22,33 +22,39 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      *  }
      */
     mapping_factory.get_column_mapping_suggestions = function (import_file_id) {
-      return $http.get('/api/v3/import_files/' + import_file_id + '/mapping_suggestions/', {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .get('/api/v3/import_files/' + import_file_id + '/mapping_suggestions/', {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     mapping_factory.get_raw_columns = function (import_file_id) {
-      return $http.get('/api/v3/import_files/' + import_file_id + '/raw_column_names/', {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .get('/api/v3/import_files/' + import_file_id + '/raw_column_names/', {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     mapping_factory.get_first_five_rows = function (import_file_id) {
-      return $http.get('/api/v3/import_files/' + import_file_id + '/first_five_rows/', {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .get('/api/v3/import_files/' + import_file_id + '/first_five_rows/', {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /**
@@ -57,13 +63,19 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      */
     mapping_factory.save_mappings = function (import_file_id, mappings) {
       const organization_id = user_service.get_organization().id;
-      return $http.post('/api/v3/organizations/' + organization_id + '/column_mappings/', {
-        mappings
-      }, {
-        params: { import_file_id }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post(
+          '/api/v3/organizations/' + organization_id + '/column_mappings/',
+          {
+            mappings
+          },
+          {
+            params: { import_file_id }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /**
@@ -72,14 +84,20 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * @param import_file_id: int, represents file import id.
      */
     mapping_factory.start_mapping = function (import_file_id) {
-      return $http.post('/api/v3/import_files/' + import_file_id + '/map/', {
-        remap: false,
-        mark_as_done: false
-      }, {
-        params: { organization_id: user_service.get_organization().id }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post(
+          '/api/v3/import_files/' + import_file_id + '/map/',
+          {
+            remap: false,
+            mark_as_done: false
+          },
+          {
+            params: { organization_id: user_service.get_organization().id }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /**
@@ -88,15 +106,22 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
      * @param import_file_id: int, represents file import id.
      */
     mapping_factory.remap_buildings = function (import_file_id) {
-      return $http.post('/api/v3/import_files/' + import_file_id + '/map/', {
-        remap: true,
-        mark_as_done: false
-      }, {
-        params: { organization_id: user_service.get_organization().id }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post(
+          '/api/v3/import_files/' + import_file_id + '/map/',
+          {
+            remap: true,
+            mark_as_done: false
+          },
+          {
+            params: { organization_id: user_service.get_organization().id }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     return mapping_factory;
-  }]);
+  }
+]);

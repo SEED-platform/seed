@@ -1,5 +1,5 @@
-@import "fonts.scss";
-@import "ng-wig";
+@import 'fonts.scss';
+@import 'ng-wig';
 
 @keyframes fadein {
   from {
@@ -10,10 +10,8 @@
   }
 }
 
-$font-family-sans-serif: "PT Sans", "Helvetica Neue", Helvetica, Arial,
-  sans-serif;
-$font-family-sans-serif-narrow: "PT Sans Narrow", "Helvetica Neue", Helvetica,
-  Arial, sans-serif;
+$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -77,7 +75,7 @@ $pairingCellWidth: 200px;
   *zoom: 1; // For IE 6/7 (trigger hasLayout)
   &:before,
   &:after {
-    content: "";
+    content: '';
     line-height: 0;
     display: table;
   }
@@ -817,7 +815,7 @@ a:not([href]) {
       .check_action {
         display: inline-block;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           margin-right: 10px;
         }
 
@@ -883,7 +881,7 @@ a:not([href]) {
     }
 
     .bg.jumbotron {
-      background: url("../../seed/images/kc_2.jpg") no-repeat center bottom;
+      background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
       background-size: cover;
       min-height: 402px;
       margin-bottom: 0;
@@ -1010,7 +1008,7 @@ a:not([href]) {
       height: 400px;
       overflow-y: scroll;
       border-bottom: 1px solid $gray_lighter;
-      background: url("../../seed/images/bg_first_td.png") repeat-x top center;
+      background: url('../../seed/images/bg_first_td.png') repeat-x top center;
     }
 
     .table_list_container {
@@ -1169,7 +1167,7 @@ a:not([href]) {
             font-family: FontAwesome;
             top: 7px;
             right: 7px;
-            content: "\f0dd";
+            content: '\f0dd';
           }
 
           &.sort_desc:after {
@@ -1177,7 +1175,7 @@ a:not([href]) {
             font-family: FontAwesome;
             top: 7px;
             right: 7px;
-            content: "\f0de";
+            content: '\f0de';
           }
 
           &.sub_head {
@@ -2179,7 +2177,7 @@ select {
 }
 
 .export_radio .radio-inline {
-  input[type="radio"] {
+  input[type='radio'] {
     margin-top: 2px;
   }
 }
@@ -2195,7 +2193,7 @@ select {
     }
 
     .radio-inline {
-      input[type="radio"] {
+      input[type='radio'] {
         margin-top: 2px;
       }
     }
@@ -2214,7 +2212,7 @@ select {
     font-size: 18px;
     padding: 4px 8px;
     transform: rotate(-5deg) translateX(-25px) translateY(-25px);
-    content: "Tip!";
+    content: 'Tip!';
     background: #5bc0de;
     line-height: 24px;
     color: #fff;
@@ -2242,7 +2240,7 @@ select {
     font-size: 12px;
     font-family: FontAwesome;
     padding: 4px 8px 4px 8px;
-    content: "\f129";
+    content: '\f129';
     background: #5bc0de;
     line-height: 12px;
     color: #fff;
@@ -2260,7 +2258,7 @@ select {
 .important-tip:before {
   top: -10px;
   background: $red;
-  content: "Important!";
+  content: 'Important!';
 }
 
 .ignored_row td {
@@ -2988,7 +2986,7 @@ tags-input .tags .tag-item .remove-button {
   border-top: 1px solid #d4d4d4;
   border-bottom: 1px solid #d4d4d4;
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     cursor: pointer;
     margin: 0 6px 2px 0;
 
@@ -3153,15 +3151,11 @@ tags-input .tags .tag-item .remove-button {
   background-color: #f3f3f3;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(odd)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(odd) > [ui-grid-row] > .ui-grid-cell {
   background-color: #fdfdfd;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(even)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(even) > [ui-grid-row] > .ui-grid-cell {
   background-color: #f3f3f3;
 }
 
@@ -3224,7 +3218,7 @@ tags-input .tags .tag-item .remove-button {
   position: relative;
 
   &:before {
-    content: "";
+    content: '';
     display: block;
     position: absolute;
     left: 0;
@@ -3462,7 +3456,7 @@ div.table_list_container.matching_detail {
         border-bottom: 1px solid darken($gray_lighter, 10%);
         border-right: 1px solid darken($gray_lighter, 10%);
         bottom: -1px;
-        content: "";
+        content: '';
         height: 100%;
         left: 0;
         pointer-events: none;
@@ -3497,7 +3491,7 @@ div.table_list_container.matching_detail {
       border-bottom: 1px solid darken($gray_lighter, 10%);
       border-right: 1px solid darken($gray_lighter, 10%);
       bottom: -1px;
-      content: "";
+      content: '';
       height: 100%;
       left: 0;
       pointer-events: none;
@@ -4256,7 +4250,7 @@ FAQ page
     }
   }
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     cursor: pointer;
   }
 
@@ -4332,7 +4326,7 @@ iframe.analysis-results {
 // Used in the inventory list to identify derived columns
 .derived-column-display-name::before {
   font-family: FontAwesome;
-  content: "\f0c1";
+  content: '\f0c1';
   margin: 0.5em 0 0 0.5em;
   float: left;
 }
@@ -4476,7 +4470,7 @@ iframe.analysis-results {
     align-items: center;
   }
 
-  > input[type="checkbox"] {
+  > input[type='checkbox'] {
     margin: 0;
   }
 
@@ -4519,7 +4513,7 @@ ul.r-list {
     padding: 5px;
 
     &.r-row {
-      > input[type="checkbox"] {
+      > input[type='checkbox'] {
         padding: 0;
         margin: 0;
       }
@@ -4677,7 +4671,7 @@ ul.r-list {
   }
 
   .lbl-toggle::before {
-    content: " ";
+    content: ' ';
     display: inline-block;
 
     border-top: 5px solid transparent;
@@ -4754,22 +4748,22 @@ ul.r-list {
 }
 
 .accordion-header {
-  .accordion-button[aria-expanded="true"] .accordion-indicator-default-closed {
+  .accordion-button[aria-expanded='true'] .accordion-indicator-default-closed {
     transform: rotate(90deg);
     transition: transform 0.5s;
   }
 
-  .accordion-button[aria-expanded="false"] .accordion-indicator-default-closed {
+  .accordion-button[aria-expanded='false'] .accordion-indicator-default-closed {
     transform: rotate(0);
     transition: transform 0.5s;
   }
 
-  .accordion-button[aria-expanded="true"] .accordion-indicator-default-open {
+  .accordion-button[aria-expanded='true'] .accordion-indicator-default-open {
     transform: rotate(0);
     transition: transform 0.5s;
   }
 
-  .accordion-button[aria-expanded="false"] .accordion-indicator-default-open {
+  .accordion-button[aria-expanded='false'] .accordion-indicator-default-open {
     transform: rotate(-90deg);
     transition: transform 0.5s;
   }
@@ -4830,12 +4824,12 @@ ul.r-list {
   }
 }
 
-.accordion-header[aria-expanded="true"] i {
+.accordion-header[aria-expanded='true'] i {
   transform: rotate(90deg);
   transition: transform 0.5s;
 }
 
-.accordion-header[aria-expanded="false"] i {
+.accordion-header[aria-expanded='false'] i {
   transform: rotate(0deg);
   transition: transform 0.5s;
 }

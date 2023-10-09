@@ -48,9 +48,9 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.showPaired = 'Show All';
     $scope.showPairedOptions = [
-      {value: 'Show All', label: $translate.instant('Show All') },
-      {value: 'Show Paired', label: $translate.instant('Show Paired') },
-      {value: 'Show Unpaired', label: $translate.instant('Show Unpaired') }
+      { value: 'Show All', label: $translate.instant('Show All') },
+      { value: 'Show Paired', label: $translate.instant('Show Paired') },
+      { value: 'Show Unpaired', label: $translate.instant('Show Unpaired') }
     ];
 
     $scope.propertyData = propertyInventory.results;
@@ -70,7 +70,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     var lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
-      selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
+      selected_cycle: _.find(cycles.cycles, { id: lastCycleId }) || _.first(cycles.cycles),
       cycles: cycles.cycles
     };
 
@@ -215,7 +215,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-
     $scope.leftPaired = function (row) {
       if ($scope.inventory_type !== 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id] ? $scope.taxlotToProp[row.taxlot_view_id].length : false;
@@ -328,7 +327,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return true;
     };
 
-
     // Sort by Columns Ascending and Descending
     var savedPropertySort = pairing_service.loadSort(localStorageKey + '.properties.sort');
     if (savedPropertySort) {
@@ -369,7 +367,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     }
 
-
     $scope.leftSortData = function (column) {
       var inventory_type = $scope.inventory_type;
       if ($scope.leftSortColumn === column && $scope.leftReverseSort) {
@@ -387,7 +384,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.getLeftSortColumn = function () {
-      return '\'' + $scope.leftSortColumn + '\'';
+      return "'" + $scope.leftSortColumn + "'";
     };
 
     $scope.leftGetSortClass = function (column) {
@@ -413,7 +410,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.getRightSortColumn = function () {
-      return '\'' + $scope.rightSortColumn + '\'';
+      return "'" + $scope.rightSortColumn + "'";
     };
 
     $scope.rightGetSortClass = function (column) {
@@ -456,7 +453,6 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
           fromClick: true
         });
       }
-
     };
 
     //Dragula stuff:
@@ -465,7 +461,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       copySortSource: false,
       moves: function (el, container) {
         // restrict dragging to designated handles
-        return (container.className.indexOf('cant-move') === -1);
+        return container.className.indexOf('cant-move') === -1;
       },
       accepts: function (el, target) {
         //don't allow dropping in left column
@@ -532,12 +528,12 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         }
       });
 
-      if (!fromClick)
-        el.remove();
+      if (!fromClick) el.remove();
     });
 
     // get data and Set left right data initially
     createMap();
     $scope.updateLeftRight();
     spinner_utility.hide();
-  }]);
+  }
+]);

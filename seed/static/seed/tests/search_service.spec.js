@@ -3,9 +3,7 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-var searchTestApp = angular.module(
-  'searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']
-);
+var searchTestApp = angular.module('searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']);
 
 describe('The search_service service', function () {
   var saas, httpBackend;
@@ -20,17 +18,14 @@ describe('The search_service service', function () {
       httpBackend.when('POST', test_url).respond('ok');
       mock_spinner_utility = spinner_utility;
 
-      spyOn(mock_spinner_utility, 'show')
-        .andCallFake(function () {
-          // Do nothing
-        });
-      spyOn(mock_spinner_utility, 'hide')
-        .andCallFake(function () {
-          // Do nothing
-        });
+      spyOn(mock_spinner_utility, 'show').andCallFake(function () {
+        // Do nothing
+      });
+      spyOn(mock_spinner_utility, 'hide').andCallFake(function () {
+        // Do nothing
+      });
     });
   });
-
 
   /**
    * sanitize_params tests
@@ -47,7 +42,7 @@ describe('The search_service service', function () {
     saas.sanitize_params();
 
     // assert
-    expect(saas.filter_params).toEqual({'National Median Site Energy Use__gte': 4});
+    expect(saas.filter_params).toEqual({ 'National Median Site Energy Use__gte': 4 });
   });
 
   /**
@@ -94,9 +89,7 @@ describe('The search_service service', function () {
     expect(saas.search_buildings).toHaveBeenCalled();
   });
 
-
-  it('search_buildings function will default to its query if' +
-    ' no query is passed as an argument', function () {
+  it('search_buildings function will default to its query if' + ' no query is passed as an argument', function () {
     saas.query = 'hotels';
     saas.search_buildings();
 
@@ -127,16 +120,18 @@ describe('The search_service service', function () {
     saas.search_buildings();
 
     // assert
-    httpBackend.expectPOST(test_url, {
-      q: 'hotel chains',
-      number_per_page: 25,
-      order_by: 'gross_floor_area',
-      sort_reverse: true,
-      filter_params: {
-        project: '2012 data'
-      },
-      page: 1
-    }).respond(201, '');
+    httpBackend
+      .expectPOST(test_url, {
+        q: 'hotel chains',
+        number_per_page: 25,
+        order_by: 'gross_floor_area',
+        sort_reverse: true,
+        filter_params: {
+          project: '2012 data'
+        },
+        page: 1
+      })
+      .respond(201, '');
     // httpBackend.flush();
   });
   it('search_buildings updates its `buildings` model', function () {
@@ -155,37 +150,45 @@ describe('The search_service service', function () {
     saas.search_buildings();
 
     // assert
-    httpBackend.expectPOST(test_url, {
-      q: 'hotel chains',
-      number_per_page: 25,
-      order_by: 'gross_floor_area',
-      sort_reverse: true,
-      filter_params: {
-        project: '2012 data'
-      },
-      page: 1
-    }).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }]
-    });
+    httpBackend
+      .expectPOST(test_url, {
+        q: 'hotel chains',
+        number_per_page: 25,
+        order_by: 'gross_floor_area',
+        sort_reverse: true,
+        filter_params: {
+          project: '2012 data'
+        },
+        page: 1
+      })
+      .respond(201, {
+        buildings: [
+          {
+            name: 'one',
+            id: 1
+          },
+          {
+            name: 'two',
+            id: 2
+          }
+        ]
+      });
     // httpBackend.flush();
 
     // Needs to wait will search is finished
     setTimeout(function () {
-      expect(saas.buildings).toEqual([{
-        name: 'one',
-        id: 1,
-        checked: false
-      }, {
-        name: 'two',
-        id: 2,
-        checked: false
-      }]);
+      expect(saas.buildings).toEqual([
+        {
+          name: 'one',
+          id: 1,
+          checked: false
+        },
+        {
+          name: 'two',
+          id: 2,
+          checked: false
+        }
+      ]);
     }, 1000);
   });
   it('should clear the error and alert after a successful search', function () {
@@ -198,13 +201,16 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }],
+      buildings: [
+        {
+          name: 'one',
+          id: 1
+        },
+        {
+          name: 'two',
+          id: 2
+        }
+      ],
       number_matching_search: 101
     });
     httpBackend.flush();
@@ -230,7 +236,6 @@ describe('The search_service service', function () {
     expect(saas.current_page).toEqual(101);
     expect(saas.search_buildings).toHaveBeenCalled();
     expect(saas.search_buildings.callCount).toEqual(1);
-
   });
   it('doesn"t increment past the last page when the `next` button is clicked', function () {
     // arrange
@@ -245,7 +250,6 @@ describe('The search_service service', function () {
     expect(saas.current_page).toEqual(2);
     expect(saas.search_buildings).toHaveBeenCalled();
     expect(saas.search_buildings.callCount).toEqual(1);
-
   });
   it('decrements the page when the `previous` button is clicked', function () {
     // arrange
@@ -324,13 +328,16 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }]
+      buildings: [
+        {
+          name: 'one',
+          id: 1
+        },
+        {
+          name: 'two',
+          id: 2
+        }
+      ]
     });
     httpBackend.flush();
 
@@ -346,13 +353,16 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }]
+      buildings: [
+        {
+          name: 'one',
+          id: 1
+        },
+        {
+          name: 'two',
+          id: 2
+        }
+      ]
     });
     httpBackend.flush();
 
@@ -393,13 +403,16 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }],
+      buildings: [
+        {
+          name: 'one',
+          id: 1
+        },
+        {
+          name: 'two',
+          id: 2
+        }
+      ],
       number_matching_search: 101
     });
     httpBackend.flush();
@@ -416,11 +429,14 @@ describe('The search_service service', function () {
     // arrange
     saas.selected_buildings = [1, 2, 3];
     saas.select_all_checkbox = true;
-    saas.buildings = [{
-      checked: false
-    }, {
-      checked: true
-    }];
+    saas.buildings = [
+      {
+        checked: false
+      },
+      {
+        checked: true
+      }
+    ];
     spyOn(saas, 'select_or_deselect_all_buildings').andCallThrough();
 
     // act
@@ -428,11 +444,14 @@ describe('The search_service service', function () {
 
     // assert
     expect(saas.selected_buildings).toEqual([]);
-    expect(saas.buildings).toEqual([{
-      checked: true
-    }, {
-      checked: true
-    }]);
+    expect(saas.buildings).toEqual([
+      {
+        checked: true
+      },
+      {
+        checked: true
+      }
+    ]);
     expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
   });
   it('should call select_or_deselect_all_buildings after a search', function () {
@@ -444,13 +463,16 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1
-      }, {
-        name: 'two',
-        id: 2
-      }]
+      buildings: [
+        {
+          name: 'one',
+          id: 1
+        },
+        {
+          name: 'two',
+          id: 2
+        }
+      ]
     });
     httpBackend.flush();
 
@@ -523,15 +545,18 @@ describe('The search_service service', function () {
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1,
-        checked: false
-      }, {
-        name: 'two',
-        id: 2,
-        checked: false
-      }]
+      buildings: [
+        {
+          name: 'one',
+          id: 1,
+          checked: false
+        },
+        {
+          name: 'two',
+          id: 2,
+          checked: false
+        }
+      ]
     });
     httpBackend.flush();
 
@@ -540,38 +565,37 @@ describe('The search_service service', function () {
   });
   it('should call update_results after a successful search', function () {
     // arrange
-    var select_or_deselect_all_buildings_time,
-      load_state_from_selected_buildings_time;
+    var select_or_deselect_all_buildings_time, load_state_from_selected_buildings_time;
     spyOn(saas, 'update_results').andCallThrough();
-    spyOn(saas, 'select_or_deselect_all_buildings')
-      .andCallFake(function () {
-        select_or_deselect_all_buildings_time = new Date();
-      });
-    spyOn(saas, 'load_state_from_selected_buildings')
-      .andCallFake(function () {
-          // wait for a sec, otherwise both have the same timestamp
-        for (var y = 0; y < 100000; y++) {
-          var x = new Date();
-          x = x + y;
-        }
-        load_state_from_selected_buildings_time = new Date();
+    spyOn(saas, 'select_or_deselect_all_buildings').andCallFake(function () {
+      select_or_deselect_all_buildings_time = new Date();
+    });
+    spyOn(saas, 'load_state_from_selected_buildings').andCallFake(function () {
+      // wait for a sec, otherwise both have the same timestamp
+      for (var y = 0; y < 100000; y++) {
+        var x = new Date();
+        x = x + y;
       }
-      );
+      load_state_from_selected_buildings_time = new Date();
+    });
     test_url = 'https://mytest.com';
     saas.url = test_url;
 
     // act
     saas.search_buildings();
     httpBackend.expectPOST(test_url).respond(201, {
-      buildings: [{
-        name: 'one',
-        id: 1,
-        checked: false
-      }, {
-        name: 'two',
-        id: 2,
-        checked: false
-      }]
+      buildings: [
+        {
+          name: 'one',
+          id: 1,
+          checked: false
+        },
+        {
+          name: 'two',
+          id: 2,
+          checked: false
+        }
+      ]
     });
     httpBackend.flush();
 
@@ -582,13 +606,16 @@ describe('The search_service service', function () {
   it('check selected buildings successful', function () {
     // arrange
     saas.selected_buildings = [2];
-    saas.buildings = [{
-      name: 'one',
-      id: 1
-    }, {
-      name: 'two',
-      id: 2
-    }];
+    saas.buildings = [
+      {
+        name: 'one',
+        id: 1
+      },
+      {
+        name: 'two',
+        id: 2
+      }
+    ];
 
     // act
     saas.load_state_from_selected_buildings();
@@ -603,18 +630,19 @@ describe('The search_service service', function () {
   it('should generate columns', function () {
     // arrange
     var all_columns, column_headers, columns;
-    all_columns = [{
-      sort_column: 'name'
-    }, {
-      sort_column: 'id'
-    }];
+    all_columns = [
+      {
+        sort_column: 'name'
+      },
+      {
+        sort_column: 'id'
+      }
+    ];
     column_headers = ['id'];
     saas.sort_column = 'something else';
     saas.update_results({});
     // act
-    columns = saas.generate_columns(
-      all_columns, column_headers, saas.column_prototype
-    );
+    columns = saas.generate_columns(all_columns, column_headers, saas.column_prototype);
 
     // assert that columns are extended off the prototype and only have
     // "id"

@@ -14,7 +14,8 @@ describe('The sdUploader directive', function () {
   var $rootScope;
   var $scope;
   var sdUploaderFineUploader = window.sdUploaderFineUploader;
-  var uploader_html = '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
+  var uploader_html =
+    '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
   beforeEach(function () {
     module('mySDUploaderDirectiveApp');
     inject(function (_$compile_, _$rootScope_) {
@@ -23,7 +24,7 @@ describe('The sdUploader directive', function () {
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       // Set up parent with cycle information
-      $rootScope.selectedCycle = {id: 1};
+      $rootScope.selectedCycle = { id: 1 };
       $scope.eventfunc = function (fine_object) {
         // console.log({fin: fine_object});
         g_message = fine_object.message;
@@ -67,7 +68,6 @@ describe('The sdUploader directive', function () {
     $scope.$digest();
     func._options.callbacks.onSubmitted(1, filename);
 
-
     // assert
     expect(g_message).toBe('upload_submitted');
     expect(g_file.filename).toBe(filename);
@@ -85,7 +85,6 @@ describe('The sdUploader directive', function () {
     $scope.$digest();
     func._options.callbacks.onProgress(1, filename, loaded, total);
 
-
     // assert
     expect(g_message).toBe('upload_in_progress');
     expect(g_file.filename).toBe(filename);
@@ -99,15 +98,12 @@ describe('The sdUploader directive', function () {
     var func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
     var filename = 'test_file.csv';
 
-
     // act
     $scope.$digest();
-    func._options.callbacks.onComplete(1, filename, {success: true});
-
+    func._options.callbacks.onComplete(1, filename, { success: true });
 
     // assert
     expect(g_message).toBe('upload_complete');
     expect(g_file.filename).toBe(filename);
   });
-
 });

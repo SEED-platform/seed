@@ -8,7 +8,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
   '$timeout',
   'user_service',
   function ($http, $q, $timeout, user_service) {
-
     var uploader_factory = {};
 
     /**
@@ -27,15 +26,21 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      */
     uploader_factory.create_dataset = function (dataset_name) {
       // timeout here for testing
-      return $http.post('/api/v3/datasets/', {
-        name: dataset_name
-      }, {
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post(
+          '/api/v3/datasets/',
+          {
+            name: dataset_name
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /**
@@ -45,9 +50,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
     uploader_factory.validate_use_cases = function (file_id) {
-
       var org_id = user_service.get_organization().id;
-      return $http.post('/api/v3/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
+      return $http
+        .post('/api/v3/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
         .then(function (response) {
           return response.data;
         })
@@ -69,14 +74,20 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
      */
     uploader_factory.save_raw_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
-      return $http.post('/api/v3/import_files/' + file_id + '/start_save_data/', {
-        cycle_id,
-        multiple_cycle_upload
-      }, {
-        params: { organization_id: user_service.get_organization().id }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post(
+          '/api/v3/import_files/' + file_id + '/start_save_data/',
+          {
+            cycle_id,
+            multiple_cycle_upload
+          },
+          {
+            params: { organization_id: user_service.get_organization().id }
+          }
+        )
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     /**
@@ -90,11 +101,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
     };
 
-    function update_progress_bar_obj (data, { multiplier, offset, progress_bar_obj }) {
+    function update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj }) {
       const right_now = Date.now();
       progress_bar_obj.progress_last_checked = right_now;
 
-      const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+      const new_progress_value = _.clamp(data.progress * multiplier + offset, 0, 100);
       const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
       if (updating_progress) {
         progress_bar_obj.progress_last_updated = right_now;
@@ -135,7 +146,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     };
 
     uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument = null) {
-      const {progress_key} = progress_argument;
+      const { progress_key } = progress_argument;
       const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null;
 
       let progress_list = [uploader_factory.check_progress(progress_key)];
@@ -145,58 +156,44 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         check_and_update_progress(values);
       });
 
-      function check_and_update_progress (data) {
+      function check_and_update_progress(data) {
         $timeout(function () {
           update_progress_bar_obj(data[0], progress_argument);
           if (data[0].progress < 100) {
-            data.length > 1 ? (
-              update_progress_bar_obj(data[1], sub_progress_argument),
-              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument)
-            ) :
-              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn);
+            data.length > 1
+              ? (update_progress_bar_obj(data[1], sub_progress_argument), uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument))
+              : uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn);
           } else {
             success_fn(data[0]);
           }
-
         }, 750);
       }
     };
 
     uploader_factory.pm_meters_preview = function (file_id, org_id) {
-      return $http.get(
-        '/api/v3/import_files/' + file_id + '/pm_meters_preview/',
-        { params: { organization_id: org_id } }
-      ).then(function (response) {
+      return $http.get('/api/v3/import_files/' + file_id + '/pm_meters_preview/', { params: { organization_id: org_id } }).then(function (response) {
         return response.data;
       });
     };
 
     uploader_factory.greenbutton_meters_preview = function (file_id, org_id, view_id) {
-      return $http.get(
-        '/api/v3/import_files/' + file_id + '/greenbutton_meters_preview/',
-        { params: { organization_id: org_id, view_id } }
-      ).then(function (response) {
+      return $http.get('/api/v3/import_files/' + file_id + '/greenbutton_meters_preview/', { params: { organization_id: org_id, view_id } }).then(function (response) {
         return response.data;
       });
     };
 
     uploader_factory.sensors_preview = function (file_id, org_id, view_id, data_logger_id) {
-      return $http.get(
-        '/api/v3/import_files/' + file_id + '/sensors_preview/',
-        { params: { organization_id: org_id, view_id, data_logger_id } }
-      ).then(function (response) {
+      return $http.get('/api/v3/import_files/' + file_id + '/sensors_preview/', { params: { organization_id: org_id, view_id, data_logger_id } }).then(function (response) {
         return response.data;
       });
     };
 
     uploader_factory.sensor_readings_preview = function (file_id, org_id, view_id, data_logger_id) {
-      return $http.get(
-        '/api/v3/import_files/' + file_id + '/sensor_readings_preview/',
-        { params: { organization_id: org_id, view_id, data_logger_id} }
-      ).then(function (response) {
+      return $http.get('/api/v3/import_files/' + file_id + '/sensor_readings_preview/', { params: { organization_id: org_id, view_id, data_logger_id } }).then(function (response) {
         return response.data;
       });
     };
 
     return uploader_factory;
-  }]);
+  }
+]);

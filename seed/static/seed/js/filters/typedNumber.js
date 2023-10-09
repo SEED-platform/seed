@@ -20,6 +20,6 @@ angular.module('typedNumber', []).filter('typedNumber', [
       }
 
       return $filter('number')(input, fixed_digits);
-
     };
-  }]);
+  }
+]);

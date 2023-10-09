@@ -11,14 +11,16 @@ describe('controller: data_upload_modal_controller', function () {
   var global_dataset = {};
 
   var cycles = {
-    cycles: [{
-      end: '2015-01-01',
-      id: 2017,
-      name: '2014 Calendar Year',
-      num_properties: 1496,
-      num_taxlots: 1519,
-      start: '2014-01-01'
-    }],
+    cycles: [
+      {
+        end: '2015-01-01',
+        id: 2017,
+        name: '2014 Calendar Year',
+        num_properties: 1496,
+        num_taxlots: 1519,
+        start: '2014-01-01'
+      }
+    ],
     status: 'success'
   };
 
@@ -43,84 +45,75 @@ describe('controller: data_upload_modal_controller', function () {
       mock_uploader_service = uploader_service;
       mock_mapping_service = mapping_service;
       mock_matching_service = matching_service;
-      spyOn(mock_uploader_service, 'check_progress')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
+      spyOn(mock_uploader_service, 'check_progress').andCallFake(function () {
+        // return $q.reject for error scenario
+        return $q.resolve({
+          status: 'success',
+          progress: '25.0'
+        });
+      });
+      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake(function (progress, num, num2, cb) {
+        // return $q.reject for error scenario
+        cb();
+        return $q.resolve({
+          status: 'success',
+          progress: '100.0'
+        });
+      });
+      spyOn(mock_uploader_service, 'create_dataset').andCallFake(function (dataset_name) {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
-            progress: '25.0'
+            id: 3,
+            name: dataset_name
           });
-        });
-      spyOn(mock_uploader_service, 'check_progress_loop')
-        .andCallFake(function (progress, num, num2, cb) {
-          // return $q.reject for error scenario
-          cb();
+        } else {
+          return $q.reject({
+            status: 'error',
+            message: 'name already in use'
+          });
+        }
+      });
+      spyOn(mock_uploader_service, 'save_raw_data').andCallFake(function (dataset_name) {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
-            progress: '100.0'
+            file_id: 3,
+            progress_key: ':1:SEED:save_raw_data:PROG:51'
           });
-        });
-      spyOn(mock_uploader_service, 'create_dataset')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              id: 3,
-              name: dataset_name
-
-            });
-          } else {
-            return $q.reject({
-              status: 'error',
-              message: 'name already in use'
-            });
-          }
-        });
-      spyOn(mock_uploader_service, 'save_raw_data')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              file_id: 3,
-              progress_key: ':1:SEED:save_raw_data:PROG:51'
-            });
-          } else {
-            return $q.reject({
-              status: 'error'
-            });
-          }
-        });
-      spyOn(mock_mapping_service, 'start_mapping')
-        .andCallFake(function (dataset_name) {
-          // return $q.reject for error scenario
-          if (dataset_name !== 'fail') {
-            return $q.resolve({
-              status: 'success',
-              file_id: 3
-            });
-          } else {
-            return $q.reject({
-              status: 'error'
-            });
-          }
-        });
-      spyOn(mock_matching_service, 'start_system_matching')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
+        } else {
+          return $q.reject({
+            status: 'error'
+          });
+        }
+      });
+      spyOn(mock_mapping_service, 'start_mapping').andCallFake(function (dataset_name) {
+        // return $q.reject for error scenario
+        if (dataset_name !== 'fail') {
           return $q.resolve({
-            status: 'warning',
+            status: 'success',
             file_id: 3
           });
+        } else {
+          return $q.reject({
+            status: 'error'
+          });
+        }
+      });
+      spyOn(mock_matching_service, 'start_system_matching').andCallFake(function () {
+        // return $q.reject for error scenario
+        return $q.resolve({
+          status: 'warning',
+          file_id: 3
         });
-
-    }
-    );
+      });
+    });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_data_upload_modal_controller () {
+  function create_data_upload_modal_controller() {
     controller('data_upload_modal_controller', {
       $scope: data_upload_controller_scope,
       $uibModalInstance: {
@@ -402,6 +395,5 @@ describe('controller: data_upload_modal_controller', function () {
     expect(data_upload_controller_scope.dataset.filename).toBe('seed_data.csv');
     expect(data_upload_controller_scope.dataset.id).toBe(100);
     expect(data_upload_controller_scope.dataset.alert).toBe(false);
-
   });
 });

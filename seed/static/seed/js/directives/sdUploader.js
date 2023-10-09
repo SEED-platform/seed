@@ -88,7 +88,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
             file: {
               filename: fileName,
               file_id: responseJSON.import_file_id,
-              cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
+              cycle_id: scope.sourceprog === 'PortfolioManager' && scope.$parent.useField ? 'year_ending' : scope.$parent.selectedCycle.id,
               source_type: scope.sourcetype,
               source_program: scope.sourceprog,
               source_program_version: scope.sourcever
@@ -228,7 +228,6 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
-
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -269,7 +268,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_xml_extension'});
+          scope.eventfunc({ message: 'invalid_xml_extension' });
           return;
         }
 
@@ -308,15 +307,15 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId + '&mapping_profile_id=' + scope.mappingProfileId,
+      endpoint:
+        '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId + '&mapping_profile_id=' + scope.mappingProfileId,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
         'X-CSRFToken': BE.csrftoken
       },
-      params: {
-      }
+      params: {}
     },
     validation: {
       allowedExtensions: allowed_extensions
@@ -370,7 +369,6 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
-
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -411,7 +409,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({ message: 'invalid_extension' });
           return;
         }
 
@@ -447,7 +445,6 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
 
 /* Inventory Document Uploader for files to attach to a property */
 var makeDocumentUploader = function (scope, element, allowed_extensions) {
-
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
@@ -555,7 +552,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({ message: 'invalid_extension' });
           return;
         }
 
@@ -589,7 +586,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
+var sdUploaderFineUploader = function (scope, element /*, attrs, filename*/) {
   var uploader;
   if (scope.sourcetype === 'BuildingSyncUpdate') {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);

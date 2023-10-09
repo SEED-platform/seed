@@ -7,5 +7,4 @@ angular.module('ignoremap', []).filter('ignoremap', function () {
     if (_.isEmpty(input)) return '------ Ignore Row ------';
     return input;
   };
-
 });

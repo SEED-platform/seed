@@ -8,15 +8,14 @@
  */
 angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
   function () {
-
-    function serializeValue (v) {
+    function serializeValue(v) {
       if (angular.isObject(v)) {
         return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
       }
       return v;
     }
 
-    function forEachSorted (obj, iterator, context) {
+    function forEachSorted(obj, iterator, context) {
       var keys = Object.keys(obj).sort();
       for (var i = 0; i < keys.length; i++) {
         iterator.call(context, obj[keys[i]], keys[i]);
@@ -24,13 +23,13 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
       return keys;
     }
 
-    function encodeUriQuerySeed (val, pctEncodeSpaces) {
-      return encodeURIComponent(val).
-        replace(/%40/gi, '@').
-        replace(/%3A/gi, ':').
-        replace(/%24/g, '$').
-        replace(/%2C/gi, ',').
-        replace(/%20/g, (pctEncodeSpaces ? '%20' : '+'));
+    function encodeUriQuerySeed(val, pctEncodeSpaces) {
+      return encodeURIComponent(val)
+        .replace(/%40/gi, '@')
+        .replace(/%3A/gi, ':')
+        .replace(/%24/g, '$')
+        .replace(/%2C/gi, ',')
+        .replace(/%20/g, pctEncodeSpaces ? '%20' : '+');
     }
 
     return function (params) {
@@ -49,4 +48,5 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
 
       return parts.join('&');
     };
-  }]);
+  }
+]);

@@ -16,23 +16,25 @@ describe('controller: data_quality_admin_controller', function () {
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
       $httpBackend.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
     });
-    inject(function ($controller, $rootScope/*, $q*/) {
+    inject(function ($controller, $rootScope /*, $q*/) {
       controller = $controller;
       data_quality_admin_controller_scope = $rootScope.$new();
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_data_quality_admin_controller () {
-    var col_payload = [{
-      data_type: 'string',
-      displayName: 'Address Line 1',
-      column_name: 'address_line_1',
-      is_extra_data: false,
-      name: 'address_line_1',
-      related: false,
-      table_name: 'PropertyState'
-    }];
+  function create_data_quality_admin_controller() {
+    var col_payload = [
+      {
+        data_type: 'string',
+        displayName: 'Address Line 1',
+        column_name: 'address_line_1',
+        is_extra_data: false,
+        name: 'address_line_1',
+        related: false,
+        table_name: 'PropertyState'
+      }
+    ];
     var derived_columns_payload = { derived_columns: [] };
     controller('data_quality_admin_controller', {
       $scope: data_quality_admin_controller_scope,
@@ -55,35 +57,38 @@ describe('controller: data_quality_admin_controller', function () {
     create_data_quality_admin_controller();
     var ruleGroups = {
       properties: {
-        address_line_1: [{
-          autofocus: true,
-          data_type: 'date',
-          enabled: true,
-          field: 'address_line_1',
-          label: 1234,
-          max: null,
-          min: null,
-          not_null: true,
-          required: false,
-          rule_type: 1,
-          severity: 'error',
-          text_match: null,
-          units: ''
-        }, {
-          autofocus: true,
-          data_type: 'number',
-          enabled: true,
-          field: 'address_line_1',
-          label: null,
-          max: null,
-          min: null,
-          not_null: true,
-          required: false,
-          rule_type: 1,
-          severity: 'error',
-          text_match: null,
-          units: ''
-        }]
+        address_line_1: [
+          {
+            autofocus: true,
+            data_type: 'date',
+            enabled: true,
+            field: 'address_line_1',
+            label: 1234,
+            max: null,
+            min: null,
+            not_null: true,
+            required: false,
+            rule_type: 1,
+            severity: 'error',
+            text_match: null,
+            units: ''
+          },
+          {
+            autofocus: true,
+            data_type: 'number',
+            enabled: true,
+            field: 'address_line_1',
+            label: null,
+            max: null,
+            min: null,
+            not_null: true,
+            required: false,
+            rule_type: 1,
+            severity: 'error',
+            text_match: null,
+            units: ''
+          }
+        ]
       }
     };
     data_quality_admin_controller_scope.ruleGroups = ruleGroups;

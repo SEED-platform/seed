@@ -6,7 +6,6 @@
 
 var EC = protractor.ExpectedConditions;
 
-
 // Admin page last:
 describe('When I go to admin page', function () {
   // manually
@@ -16,12 +15,15 @@ describe('When I go to admin page', function () {
 
   it('should delete new test org inventory', function () {
     browser.get('/app/#/profile/admin');
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+    var myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter(function (rows) {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then(function (label) {
+          return label.includes(browser.params.testOrg.parent);
+        });
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]').click();
@@ -34,12 +36,15 @@ describe('When I go to admin page', function () {
 
   it('should delete new test sub org', function () {
     // browser.get("/app/#/profile/admin");
-    var myNewSubOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.childRename);
-      });
-    }).first();
+    var myNewSubOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter(function (rows) {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then(function (label) {
+          return label.includes(browser.params.testOrg.childRename);
+        });
+      })
+      .first();
     expect(myNewSubOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewSubOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
@@ -56,12 +61,15 @@ describe('When I go to admin page', function () {
   }, 30000);
 
   it('should remove column mappings', function () {
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+    var myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter(function (rows) {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then(function (label) {
+          return label.includes(browser.params.testOrg.parent);
+        });
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);
@@ -72,12 +80,15 @@ describe('When I go to admin page', function () {
 
   it('should delete new test org', function () {
     // browser.get("/app/#/profile/admin");
-    var myNewOrg = element.all(by.repeater('org in org_user.organizations')).filter(function (rows) {
-      expect(rows.length).not.toBeLessThan(1);
-      return rows.getText().then(function (label) {
-        return label.includes(browser.params.testOrg.parent);
-      });
-    }).first();
+    var myNewOrg = element
+      .all(by.repeater('org in org_user.organizations'))
+      .filter(function (rows) {
+        expect(rows.length).not.toBeLessThan(1);
+        return rows.getText().then(function (label) {
+          return label.includes(browser.params.testOrg.parent);
+        });
+      })
+      .first();
     expect(myNewOrg.isPresent()).toBe(true);
 
     browser.wait(EC.presenceOf(myNewOrg.$('[ng-click="confirm_inventory_delete(org)"]')), 120000);

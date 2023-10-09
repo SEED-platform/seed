@@ -6,13 +6,11 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
   '$http',
   'user_service',
   function ($http, user_service) {
-
     var cycle_factory = {};
     /** Cycle Service:
      --------------------------------------------------
      Provides methods to add/edit cycles on the server.
      */
-
 
     /** Returns an array of cycles.
 
@@ -31,15 +29,16 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.get_cycles_for_org = function (org_id) {
-      return $http.get('/api/v3/cycles/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .get('/api/v3/cycles/', {
+          params: {
+            organization_id: org_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
-
 
     /*  Add a cycle to an organization's list of cycles
 
@@ -56,15 +55,16 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.create_cycle_for_org = function (cycle, org_id) {
-      return $http.post('/api/v3/cycles/', cycle, {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .post('/api/v3/cycles/', cycle, {
+          params: {
+            organization_id: org_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
-
 
     /*  Update an existing a cycle in an organization
 
@@ -80,25 +80,29 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.update_cycle_for_org = function (cycle, org_id) {
-      return $http.put('/api/v3/cycles/' + cycle.id + '/', cycle, {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .put('/api/v3/cycles/' + cycle.id + '/', cycle, {
+          params: {
+            organization_id: org_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     cycle_factory.delete_cycle = function (cycle_id, org_id) {
-      return $http.delete('/api/v3/cycles/' + cycle_id + '/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
+      return $http
+        .delete('/api/v3/cycles/' + cycle_id + '/', {
+          params: {
+            organization_id: org_id
+          }
+        })
+        .then(function (response) {
+          return response.data;
+        });
     };
 
     return cycle_factory;
-
-  }]);
+  }
+]);

@@ -1,9 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help improve SEED
-title: ""
-labels: "Bug"
-assignees: ""
+title: ''
+labels: 'Bug'
+assignees: ''
 ---
 
 <!--Fill in the following information detailing the issue. Make sure to not disclose protected data (e.g., passwords). Screenshots are helpful.-->

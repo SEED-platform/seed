@@ -9,7 +9,6 @@ describe('Controller: menu_controller', function () {
   var mock_spinner_utility;
   // var mock_dataset_service;
 
-
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(function () {
@@ -38,19 +37,17 @@ describe('Controller: menu_controller', function () {
       //   });
 
       mock_spinner_utility = spinner_utility;
-      spyOn(mock_spinner_utility, 'show')
-        .andCallFake(function () {
-          // Do nothing
-        });
-      spyOn(mock_spinner_utility, 'hide')
-        .andCallFake(function () {
-          // Do nothing
-        });
+      spyOn(mock_spinner_utility, 'show').andCallFake(function () {
+        // Do nothing
+      });
+      spyOn(mock_spinner_utility, 'hide').andCallFake(function () {
+        // Do nothing
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_menu_controller () {
+  function create_menu_controller() {
     controller('menu_controller', {
       $scope: menu_controller_scope,
       $stateParams: {
@@ -61,7 +58,6 @@ describe('Controller: menu_controller', function () {
       }
     });
   }
-
 
   /**
    * Test scenarios

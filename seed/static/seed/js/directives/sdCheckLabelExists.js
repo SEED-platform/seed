@@ -9,10 +9,8 @@ angular.module('sdCheckLabelExists', []).directive('sdCheckLabelExists', functio
       existingLabels: '=sdCheckLabelExists'
     },
     link: function (scope, elm, attrs, ctrl) {
-
       ctrl.$validators.sdCheckLabelExists = function (modelValue) {
-
-        if(!modelValue) return true;
+        if (!modelValue) return true;
 
         var labels = scope.existingLabels;
         if (!labels) return true;
@@ -26,7 +24,6 @@ angular.module('sdCheckLabelExists', []).directive('sdCheckLabelExists', functio
         }
 
         return true;
-
       };
     }
   };
