@@ -17,7 +17,7 @@ angular.module('BE.seed.controller.organization', []).controller('organization_c
 
     $scope.new_member_modal = function () {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/new_member_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/new_member_modal.html`,
         controller: 'new_member_modal_controller'
       });
     };
@@ -26,22 +26,20 @@ angular.module('BE.seed.controller.organization', []).controller('organization_c
      * open the create a sub org modal
      */
     $scope.create_sub_organization_modal = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/create_sub_organization_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/create_sub_organization_modal.html`,
         controller: 'create_sub_organization_modal_controller',
         resolve: {
-          organization: function () {
-            return $scope.org;
-          }
+          organization: () => $scope.org
         }
       });
       modalInstance.result.then(
-        function () {
-          organization_service.get_organization($scope.org.id).then(function (data) {
+        () => {
+          organization_service.get_organization($scope.org.id).then((data) => {
             $scope.org = data.organization;
           });
         },
-        function () {
+        () => {
           // dismiss
         }
       );

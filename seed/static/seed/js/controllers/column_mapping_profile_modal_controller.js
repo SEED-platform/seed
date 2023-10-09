@@ -16,16 +16,16 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
 
     $scope.rename_profile = function () {
       if (!$scope.disabled()) {
-        var profile_id = $scope.data.id;
-        var updated_data = { name: $scope.newName };
-        column_mappings_service.update_column_mapping_profile($scope.org_id, profile_id, updated_data).then(function (result) {
+        const profile_id = $scope.data.id;
+        const updated_data = { name: $scope.newName };
+        column_mappings_service.update_column_mapping_profile($scope.org_id, profile_id, updated_data).then((result) => {
           $uibModalInstance.close(result.data.name);
         });
       }
     };
 
     $scope.remove_profile = function () {
-      column_mappings_service.delete_column_mapping_profile($scope.org_id, $scope.data.id).then(function () {
+      column_mappings_service.delete_column_mapping_profile($scope.org_id, $scope.data.id).then(() => {
         $uibModalInstance.close();
       });
     };
@@ -38,7 +38,7 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
             mappings: $scope.data.mappings,
             profile_type: $scope.data.profile_type
           })
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result.data);
           });
       }
@@ -47,7 +47,8 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', []).controller
     $scope.disabled = function () {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-      } else if ($scope.action === 'new') {
+      }
+      if ($scope.action === 'new') {
         return _.isEmpty($scope.newName);
       }
     };

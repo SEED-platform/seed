@@ -17,17 +17,17 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
     $scope.delete_inventory = function () {
       $scope.delete_state = 'prepare';
 
-      var promises = [];
+      const promises = [];
 
       if ($scope.property_view_ids.length) promises.push(inventory_service.delete_property_states($scope.property_view_ids));
       if ($scope.taxlot_view_ids.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_view_ids));
 
       return $q
         .all(promises)
-        .then(function (results) {
+        .then((results) => {
           $scope.deletedProperties = 0;
           $scope.deletedTaxlots = 0;
-          _.forEach(results, function (result, index) {
+          _.forEach(results, (result, index) => {
             if (!result.data) return;
             if (result.data.status === 'success') {
               if (index === 0 && $scope.property_view_ids.length) $scope.deletedProperties = result.data.properties;
@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
           }
           $scope.delete_state = 'success';
         })
-        .catch(function (resp) {
+        .catch((resp) => {
           console.log('resp', resp);
           $scope.delete_state = 'fail';
           if (resp.status === 422) {

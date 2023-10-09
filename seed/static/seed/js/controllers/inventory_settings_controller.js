@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     $scope.profiles = profiles;
     $scope.currentProfile = current_profile;
 
-    const derived_columns = derived_columns_payload.derived_columns;
+    const { derived_columns } = derived_columns_payload;
 
     $scope.gridOptions = {
       enableColumnMenus: false,
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
           enableHiding: false
         }
       ],
-      onRegisterApi: function (gridApi) {
+      onRegisterApi(gridApi) {
         $scope.gridApi = gridApi;
         initializeRowSelections();
 
@@ -98,9 +98,9 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
         gridApi.draggableRows.on.rowDropped($scope, modified_service.setModified);
 
         _.delay($scope.updateHeight, 150);
-        var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+        const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
         angular.element($window).on('resize', debouncedHeightUpdate);
-        $scope.$on('$destroy', function () {
+        $scope.$on('$destroy', () => {
           angular.element($window).off('resize', debouncedHeightUpdate);
         });
       }
@@ -108,27 +108,25 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
 
     var initializeRowSelections = function () {
       $scope.gridApi.grid.modifyRows($scope.gridOptions.data);
-      _.forEach($scope.gridApi.grid.rows, function (row) {
+      _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.entity.visible !== false) {
           row.setSelected(true);
         }
       });
     };
 
-    var setColumnsForCurrentProfile = function () {
-      var deselected_columns = angular.copy(all_columns);
+    const setColumnsForCurrentProfile = function () {
+      const deselected_columns = angular.copy(all_columns);
       if ($scope.currentProfile) {
-        var profileColumns = _.filter($scope.currentProfile.columns, function (col) {
-          return _.find(angular.copy(all_columns), { id: col.id });
-        });
+        const profileColumns = _.filter($scope.currentProfile.columns, (col) => _.find(angular.copy(all_columns), { id: col.id }));
 
-        $scope.gridOptions.data = _.map(profileColumns, function (col) {
-          var c = _.remove(deselected_columns, { id: col.id })[0];
+        $scope.gridOptions.data = _.map(profileColumns, (col) => {
+          const c = _.remove(deselected_columns, { id: col.id })[0];
           c.pinnedLeft = col.pinned;
           c.visible = true;
           return c;
         }).concat(
-          _.map(deselected_columns, function (col) {
+          _.map(deselected_columns, (col) => {
             col.pinnedLeft = false;
             col.visible = false;
             return col;
@@ -138,7 +136,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
         $scope.gridOptions.data = inventory_service.reorderSettings($scope.gridOptions.data);
       } else {
         // No profiles exist
-        var data = _.map(deselected_columns, function (col) {
+        const data = _.map(deselected_columns, (col) => {
           col.visible = !col.is_extra_data;
           return col;
         });
@@ -147,8 +145,8 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     };
     setColumnsForCurrentProfile();
 
-    var ignoreNextChange = true;
-    $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+    let ignoreNextChange = true;
+    $scope.$watch('currentProfile', (newProfile, oldProfile) => {
       if (ignoreNextChange) {
         ignoreNextChange = false;
         return;
@@ -162,11 +160,11 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
             template:
               '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Profiles</button></div>'
           })
-          .result.then(function () {
+          .result.then(() => {
             modified_service.resetModified();
             switchProfile(newProfile);
           })
-          .catch(function () {
+          .catch(() => {
             ignoreNextChange = true;
             $scope.currentProfile = oldProfile;
           });
@@ -191,15 +189,13 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     // let angular-translate be in charge ... need
     // to feed the language-only part of its $translate setting into
     // ui-grid's i18nService
-    var stripRegion = function (languageTag) {
-      return _.first(languageTag.split('_'));
-    };
+    const stripRegion = (languageTag) => _.first(languageTag.split('_'));
     i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
     $scope.showSharedBuildings = shared_fields_payload.show_shared_buildings;
 
     var rowSelectionChanged = function () {
-      _.forEach($scope.gridApi.grid.rows, function (row) {
+      _.forEach($scope.gridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
         if (!row.isSelected && row.entity.pinnedLeft) row.entity.pinnedLeft = false;
       });
@@ -208,13 +204,13 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     };
 
     $scope.updateHeight = function () {
-      var height = 0;
-      _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], function (selector) {
-        var element = angular.element(selector)[0];
+      let height = 0;
+      _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], (selector) => {
+        const element = angular.element(selector)[0];
         if (element) height += element.offsetHeight;
       });
-      angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
-      angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+      angular.element('#grid-container').css('height', `calc(100vh - ${height + 2}px)`);
+      angular.element('#grid-container > div').css('height', `calc(100vh - ${height + 4}px)`);
       $scope.gridApi.core.handleWindowResize();
     };
 
@@ -222,9 +218,9 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       user_service.set_default_columns([], $scope.showSharedBuildings);
     };
 
-    var currentColumns = function () {
-      var columns = [];
-      _.forEach($scope.gridApi.grid.rows, function (row) {
+    const currentColumns = function () {
+      const columns = [];
+      _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.isSelected) {
           columns.push({
             column_name: row.entity.column_name,
@@ -240,77 +236,73 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     };
 
     $scope.saveProfile = function () {
-      var id = $scope.currentProfile.id;
-      var profile = _.omit($scope.currentProfile, 'id');
+      const { id } = $scope.currentProfile;
+      const profile = _.omit($scope.currentProfile, 'id');
       const columns = currentColumns();
       profile.columns = columns;
-      inventory_service.update_column_list_profile(id, profile).then(function (updatedProfile) {
-        var index = _.findIndex($scope.profiles, { id: updatedProfile.id });
+      inventory_service.update_column_list_profile(id, profile).then((updatedProfile) => {
+        const index = _.findIndex($scope.profiles, { id: updatedProfile.id });
         $scope.profiles[index] = updatedProfile;
         modified_service.resetModified();
-        Notification.primary('Saved ' + $scope.currentProfile.name);
+        Notification.primary(`Saved ${$scope.currentProfile.name}`);
       });
     };
 
     $scope.renameProfile = function () {
-      var oldProfile = angular.copy($scope.currentProfile);
+      const oldProfile = angular.copy($scope.currentProfile);
 
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
           action: _.constant('rename'),
           data: _.constant($scope.currentProfile),
           profile_location: _.constant('List View Profile'),
-          inventory_type: function () {
-            return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-          }
+          inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
 
-      modalInstance.result.then(function (newName) {
+      modalInstance.result.then((newName) => {
         $scope.currentProfile.name = newName;
         _.find($scope.profiles, { id: $scope.currentProfile.id }).name = newName;
-        Notification.primary('Renamed ' + oldProfile.name + ' to ' + newName);
+        Notification.primary(`Renamed ${oldProfile.name} to ${newName}`);
       });
     };
 
     $scope.removeProfile = function () {
-      var oldProfile = angular.copy($scope.currentProfile);
+      const oldProfile = angular.copy($scope.currentProfile);
 
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
           action: _.constant('remove'),
           data: _.constant($scope.currentProfile),
           profile_location: _.constant('List View Profile'),
-          inventory_type: function () {
-            return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-          }
+          inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
 
-      modalInstance.result.then(function () {
+      modalInstance.result.then(() => {
         _.remove($scope.profiles, oldProfile);
         modified_service.resetModified();
         $scope.currentProfile = _.first($scope.profiles);
-        Notification.primary('Removed ' + oldProfile.name);
+        Notification.primary(`Removed ${oldProfile.name}`);
       });
     };
 
     $scope.newProfile = function () {
-      let columns = [];
-      let derived_columns = [];
-      for (let column in currentColumns) {
+      const columns = [];
+      const derived_columns = [];
+      for (const column in currentColumns) {
         if (column.derived_column) {
           derived_columns.push(column);
         } else {
           columns.push(column);
         }
       }
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
           action: _.constant('new'),
@@ -319,23 +311,19 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
             derived_columns
           },
           profile_location: _.constant('List View Profile'),
-          inventory_type: function () {
-            return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-          }
+          inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
 
-      modalInstance.result.then(function (newProfile) {
+      modalInstance.result.then((newProfile) => {
         $scope.profiles.push(newProfile);
         modified_service.resetModified();
         $scope.currentProfile = _.last($scope.profiles);
-        Notification.primary('Created ' + newProfile.name);
+        Notification.primary(`Created ${newProfile.name}`);
       });
     };
 
-    $scope.isModified = function () {
-      return modified_service.isModified();
-    };
+    $scope.isModified = () => modified_service.isModified();
 
     $scope.togglePinned = function (row) {
       row.entity.pinnedLeft = !row.entity.pinnedLeft;

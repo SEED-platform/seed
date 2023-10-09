@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
 
     $scope.inventory_name = note_service.inventory_display_name(inventory_type === 'properties' ? 'property' : 'taxlot', organization_payload.organization, inventory_payload.state);
 
-    $scope.inventory = { view_id: view_id };
+    $scope.inventory = { view_id };
 
     $scope.close = function () {
       if ($uibModalInstance) {
@@ -29,19 +29,19 @@ angular.module('BE.seed.controller.notes', []).controller('notes_controller', [
     };
 
     $scope.open_create_note_modal = function () {
-      note_service.open_create_note_modal($scope.inventory_type, $scope.org_id, view_id).then(function (notes) {
+      note_service.open_create_note_modal($scope.inventory_type, $scope.org_id, view_id).then((notes) => {
         $scope.notes = notes;
       });
     };
 
     $scope.open_edit_note_modal = function (note) {
-      note_service.open_edit_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then(function (notes) {
+      note_service.open_edit_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });
     };
 
     $scope.open_delete_note_modal = function (note) {
-      note_service.open_delete_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then(function (notes) {
+      note_service.open_delete_note_modal($scope.inventory_type, $scope.org_id, view_id, note).then((notes) => {
         $scope.notes = notes;
       });
     };

@@ -6,7 +6,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
   '$http',
   'user_service',
   function ($http, user_service) {
-    var cycle_factory = {};
+    const cycle_factory = {};
     /** Cycle Service:
      --------------------------------------------------
      Provides methods to add/edit cycles on the server.
@@ -24,21 +24,16 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
 
      */
 
-    cycle_factory.get_cycles = function () {
-      return cycle_factory.get_cycles_for_org(user_service.get_organization().id);
-    };
+    cycle_factory.get_cycles = () => cycle_factory.get_cycles_for_org(user_service.get_organization().id);
 
-    cycle_factory.get_cycles_for_org = function (org_id) {
-      return $http
+    cycle_factory.get_cycles_for_org = (org_id) =>
+      $http
         .get('/api/v3/cycles/', {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /*  Add a cycle to an organization's list of cycles
 
@@ -50,21 +45,16 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
      created on the server.
 
      */
-    cycle_factory.create_cycle = function (cycle) {
-      return cycle_factory.create_cycle_for_org(cycle, user_service.get_organization().id);
-    };
+    cycle_factory.create_cycle = (cycle) => cycle_factory.create_cycle_for_org(cycle, user_service.get_organization().id);
 
-    cycle_factory.create_cycle_for_org = function (cycle, org_id) {
-      return $http
+    cycle_factory.create_cycle_for_org = (cycle, org_id) =>
+      $http
         .post('/api/v3/cycles/', cycle, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /*  Update an existing a cycle in an organization
 
@@ -75,33 +65,25 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
      with either a success if the cycle was updated,
      or an error if not.
      */
-    cycle_factory.update_cycle = function (cycle) {
-      return cycle_factory.update_cycle_for_org(cycle, user_service.get_organization().id);
-    };
+    cycle_factory.update_cycle = (cycle) => cycle_factory.update_cycle_for_org(cycle, user_service.get_organization().id);
 
-    cycle_factory.update_cycle_for_org = function (cycle, org_id) {
-      return $http
-        .put('/api/v3/cycles/' + cycle.id + '/', cycle, {
+    cycle_factory.update_cycle_for_org = (cycle, org_id) =>
+      $http
+        .put(`/api/v3/cycles/${cycle.id}/`, cycle, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    cycle_factory.delete_cycle = function (cycle_id, org_id) {
-      return $http
-        .delete('/api/v3/cycles/' + cycle_id + '/', {
+    cycle_factory.delete_cycle = (cycle_id, org_id) =>
+      $http
+        .delete(`/api/v3/cycles/${cycle_id}/`, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     return cycle_factory;
   }

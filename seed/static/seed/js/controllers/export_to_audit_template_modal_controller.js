@@ -37,11 +37,11 @@ angular.module('BE.seed.controller.export_to_audit_template_modal', []).controll
           progress_key,
           0,
           1,
-          function (summary) {
+          (summary) => {
             $scope.upload_summary = summary.message;
             $scope.step.number = 2;
           },
-          function () {
+          () => {
             // do nothing
           },
           $scope.uploader

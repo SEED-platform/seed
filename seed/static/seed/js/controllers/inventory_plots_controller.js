@@ -62,7 +62,7 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
     gridUtil
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
-    var lastCycleId = inventory_service.get_last_cycle();
+    const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
       selected_cycle: _.find(cycles.cycles, { id: lastCycleId }) || _.first(cycles.cycles),
       cycles: cycles.cycles
@@ -90,24 +90,24 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
       }
     ];
 
-    const property_name_column = all_columns.find((c) => c['column_name'] == 'property_name');
-    neededColumns = new Set([property_name_column['id']]);
+    const property_name_column = all_columns.find((c) => c.column_name == 'property_name');
+    neededColumns = new Set([property_name_column.id]);
 
     $scope.chartsInfo.forEach((chartInfo) => {
-      x_column = all_columns.find((c) => c['displayName'] == chartInfo['xDisplayName']);
-      y_column = all_columns.find((c) => c['displayName'] == chartInfo['yDisplayName']);
+      x_column = all_columns.find((c) => c.displayName == chartInfo.xDisplayName);
+      y_column = all_columns.find((c) => c.displayName == chartInfo.yDisplayName);
 
-      if (!!x_column) neededColumns.add(x_column['id']);
-      if (!!y_column) neededColumns.add(y_column['id']);
+      if (x_column) neededColumns.add(x_column.id);
+      if (y_column) neededColumns.add(y_column.id);
 
-      chartInfo['xName'] = x_column ? x_column['name'] : null;
-      chartInfo['yName'] = y_column ? y_column['name'] : null;
-      chartInfo['populated'] = Boolean(!!x_column & !!y_column);
+      chartInfo.xName = x_column ? x_column.name : null;
+      chartInfo.yName = y_column ? y_column.name : null;
+      chartInfo.populated = Boolean(!!x_column & !!y_column);
     });
 
-    var createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
-      var canvas = document.getElementById(elementId);
-      var ctx = canvas.getContext('2d');
+    const createChart = function (elementId, xAxisKey, xDisplayName, yAxisKey, yDisplayName, onHover) {
+      const canvas = document.getElementById(elementId);
+      const ctx = canvas.getContext('2d');
 
       return new Chart(ctx, {
         type: 'scatter',
@@ -164,28 +164,28 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
             },
             tooltip: {
               callbacks: {
-                label: function (ctx) {
+                label(ctx) {
                   let label = ctx.dataset.labels[ctx.dataIndex];
-                  label += ' (' + ctx.parsed.x + ', ' + ctx.parsed.y + ')';
+                  label += ` (${ctx.parsed.x}, ${ctx.parsed.y})`;
                   return label;
                 }
               }
             }
           },
           parsing: {
-            xAxisKey: xAxisKey,
-            yAxisKey: yAxisKey
+            xAxisKey,
+            yAxisKey
           },
           onClick: (evt) => {
-            var activePoints = evt.chart.getActiveElements(evt);
+            const activePoints = evt.chart.getActiveElements(evt);
 
             if (activePoints[0]) {
-              activePoint = $scope.data[activePoints[0]['index']];
-              window.location.href = '/app/#/' + $scope.inventory_type + '/' + activePoint['id'];
+              activePoint = $scope.data[activePoints[0].index];
+              window.location.href = `/app/#/${$scope.inventory_type}/${activePoint.id}`;
             }
           },
           onHover: (evt) => {
-            var activePoints = evt.chart.getActiveElements(evt);
+            const activePoints = evt.chart.getActiveElements(evt);
             onHover(activePoints);
           }
         }
@@ -194,12 +194,12 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
 
     function hoverOnAllCharts(activePoints) {
       if (activePoints[0]) {
-        var index = activePoints[0]['index'];
+        const { index } = activePoints[0];
         for (const chart of charts) {
           chart.setActiveElements([
             {
               datasetIndex: 0,
-              index: index
+              index
             }
           ]);
           chart.update();
@@ -213,23 +213,23 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
     }
 
     charts = $scope.chartsInfo
-      .filter((chartInfo) => chartInfo['populated'])
-      .map((chartInfo) => {
-        return createChart(
-          (elementId = chartInfo['chartName']),
-          (xAxisKey = chartInfo['xName']),
-          (xAxisName = chartInfo['xDisplayName']),
-          (yAxisKey = chartInfo['yName']),
-          (yAxisName = chartInfo['yDisplayName']),
+      .filter((chartInfo) => chartInfo.populated)
+      .map((chartInfo) =>
+        createChart(
+          (elementId = chartInfo.chartName),
+          (xAxisKey = chartInfo.xName),
+          (xAxisName = chartInfo.xDisplayName),
+          (yAxisKey = chartInfo.yName),
+          (yAxisName = chartInfo.yDisplayName),
           (onHover = hoverOnAllCharts)
-        );
-      });
+        )
+      );
 
     $scope.update_charts = function () {
       spinner_utility.show();
-      fetch().then(function (data) {
+      fetch().then((data) => {
         if (data.status === 'error') {
-          let message = data.message;
+          const { message } = data;
           Notification.error({ message, delay: 15000 });
           spinner_utility.hide();
           return;
@@ -242,7 +242,7 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
     };
 
     var populate_charts = function (data) {
-      labels = data.map((property) => property[property_name_column['name']]);
+      labels = data.map((property) => property[property_name_column.name]);
 
       for (const chart of charts) {
         chart.data.datasets[0].data = data;
@@ -252,7 +252,7 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
     };
 
     var fetch = function () {
-      var fn;
+      let fn;
       if ($scope.inventory_type === 'properties') {
         fn = inventory_service.get_properties;
       } else if ($scope.inventory_type === 'taxlots') {
@@ -273,9 +273,7 @@ angular.module('BE.seed.controller.inventory_plots', []).controller('inventory_p
         (column_sorts = null),
         (ids_only = null),
         (shown_column_ids = Array.from(neededColumns).join()) // makes set string, ie {1, 2} -> "1,2"
-      ).then(function (data) {
-        return data;
-      });
+      ).then((data) => data);
     };
 
     $scope.update_cycle = function (cycle) {

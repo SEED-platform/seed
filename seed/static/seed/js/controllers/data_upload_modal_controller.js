@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
   ) {
     $scope.urls = urls;
     $scope.cycles = cycles.cycles;
-    var cached_cycle = inventory_service.get_last_cycle();
+    const cached_cycle = inventory_service.get_last_cycle();
     $scope.selectedCycle = _.find(cycles.cycles, { id: cached_cycle }) || _.first(cycles.cycles);
     $scope.multipleCycleUpload = false;
     $scope.show_help = false;
@@ -93,8 +93,8 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     $scope.organization = organization;
     $scope.dataset = {
       name: '',
-      disabled: function () {
-        var name = $scope.dataset.name || '';
+      disabled() {
+        const name = $scope.dataset.name || '';
         return name.length === 0;
       },
       alert: false,
@@ -142,7 +142,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       // API request to tell backend that it is finished with the mappings
       $http
         .post(
-          '/api/v3/import_files/' + $scope.dataset.import_file_id + '/mapping_done/',
+          `/api/v3/import_files/${$scope.dataset.import_file_id}/mapping_done/`,
           {},
           {
             params: {
@@ -150,7 +150,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
             }
           }
         )
-        .then(function () {
+        .then(() => {
           $scope.goto_step(7);
           $scope.find_matches();
         });
@@ -198,7 +198,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     $scope.cancel = function () {
       // If step 15, PM Meter Usage import confirmation was not accepted by user, so delete file
       if ($scope.step.number == 15 && $scope.file_id) {
-        dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
+        dataset_service.delete_file($scope.file_id).then((/* results */) => {
           $uibModalInstance.dismiss('cancel');
         });
       } else {
@@ -212,14 +212,14 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      */
     $scope.create_dataset = function (dataset_name) {
       uploader_service.create_dataset(dataset_name).then(
-        function (data) {
+        (data) => {
           $scope.goto_step(2);
           $scope.dataset.id = data.id;
           $scope.dataset.name = data.name;
           $scope.uploader.status_message = 'uploading file';
         },
-        function (status) {
-          var message = status.message || '';
+        (status) => {
+          const message = status.message || '';
           if (message === 'name already in use') {
             $scope.dataset.alert = true;
           }
@@ -227,11 +227,9 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       );
     };
 
-    var grid_rows_to_display = function (data) {
-      return Math.min(data.length, 5);
-    };
+    const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var present_parsed_meters_confirmation = function (result) {
+    const present_parsed_meters_confirmation = function (result) {
       $scope.proposed_meters_count = result.proposed_imports.length;
       $scope.proposed_meters_count_string = $scope.proposed_meters_count > 1 ? `${$scope.proposed_meters_count} Meters` : `${$scope.proposed_meters_count} Meter`;
       $scope.proposed_properties_count = new Set(result.proposed_imports.map((meter) => meter.pm_property_id)).size;
@@ -309,13 +307,13 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       $scope.uploader.in_progress = false;
       $scope.uploader.progress = 0;
 
-      var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
+      const modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
       modal_element.addClass('modal-lg');
 
       $scope.step.number = 15;
     };
 
-    var present_meter_import_error = function (message) {
+    const present_meter_import_error = function (message) {
       $scope.pm_meter_import_error = message;
       $scope.uploader.in_progress = false;
       $scope.uploader.progress = 0;
@@ -415,7 +413,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       // $apply() or $digest() needed maybe because of this:
       // https://github.com/angular-ui/bootstrap/issues/1798
       // otherwise alert doesn't show unless modal is interacted with
-      _.defer(function () {
+      _.defer(() => {
         $scope.$apply();
       });
     };
@@ -438,7 +436,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     var save_map_match_PM_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
       $scope.uploader.status_message = 'saving energy data';
       $scope.uploader.progress = 25;
-      uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then(function (data) {
+      uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then((data) => {
         // resolve save_raw_data promise
         monitor_save_raw_data(data.progress_key, file_id);
       });
@@ -456,13 +454,13 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
         progress_key,
         25,
         0.25,
-        function () {
+        () => {
           $scope.uploader.status_message = 'auto-mapping energy data';
-          mapping_service.start_mapping(file_id).then(function (data) {
+          mapping_service.start_mapping(file_id).then((data) => {
             monitor_mapping(data.progress_key, file_id);
           });
         },
-        function () {
+        () => {
           // Do nothing
         },
         $scope.uploader
@@ -481,13 +479,13 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
         progress_key,
         50,
         0.25,
-        function () {
+        () => {
           $scope.uploader.status_message = 'auto-matching energy data';
-          matching_service.start_system_matching(file_id).then(function (data) {
+          matching_service.start_system_matching(file_id).then((data) => {
             monitor_matching(data.progress_key, file_id);
           });
         },
-        function () {
+        () => {
           // Do nothing
         },
         $scope.uploader
@@ -505,21 +503,21 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
         progress_key,
         75,
         0.25,
-        function () {
+        () => {
           $scope.uploader.complete = true;
           $scope.uploader.in_progress = false;
           $scope.uploader.progress = 1;
           $scope.step.number = 5;
         },
-        function () {
+        () => {
           // Do nothing
         },
         $scope.uploader
       );
     };
 
-    var meter_import_results = function (results) {
-      var column_defs = [
+    const meter_import_results = function (results) {
+      const column_defs = [
         {
           field: 'pm_property_id',
           displayName: 'PM Property ID',
@@ -579,19 +577,19 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       $scope.uploader.status_message = 'validating data';
       $scope.uploader.progress = 0;
 
-      var successHandler = function (progress_data) {
+      const successHandler = function (progress_data) {
         $scope.uploader.complete = false;
         $scope.uploader.in_progress = true;
         $scope.uploader.status_message = 'validation complete; starting to save data';
         $scope.uploader.progress = 100;
 
-        var result = JSON.parse(progress_data.message);
+        const result = JSON.parse(progress_data.message);
         $scope.buildingsync_valid = result.valid;
         $scope.buildingsync_issues = result.issues;
         for (const file in $scope.buildingsync_issues) {
-          let schema_errors = [];
+          const schema_errors = [];
           for (const i in $scope.buildingsync_issues[file].schema_errors) {
-            let error = $scope.buildingsync_issues[file].schema_errors[i];
+            const error = $scope.buildingsync_issues[file].schema_errors[i];
             schema_errors.push([error.message, error.path].join(' - '));
           }
           $scope.buildingsync_issues[file].schema_errors = schema_errors;
@@ -608,29 +606,29 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
         }
       };
 
-      var errorHandler = function (data) {
+      const errorHandler = function (data) {
         $log.error(data.message);
         if (data.stacktrace) $log.error(data.stacktrace);
         $scope.step_12_error_message = data.data ? data.data.message : data.message;
         $scope.step.number = 12;
       };
 
-      uploader_service.validate_use_cases(file_id).then(function (data) {
-        var progress = _.clamp(data.progress, 0, 100);
+      uploader_service.validate_use_cases(file_id).then((data) => {
+        const progress = _.clamp(data.progress, 0, 100);
         uploader_service.check_progress_loop(data.progress_key, progress, 1 - progress / 100, successHandler, errorHandler, $scope.uploader);
       });
     };
 
     $scope.reuse_import_file_to_import_meters = function () {
       $scope.preparing_pm_meters_preview = true;
-      dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
+      dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then((data) => {
         $scope.dataset.import_file_id = data.import_file_id;
         $scope.uploader.progress = 50;
         $scope.uploader.status_message = 'analyzing file';
         uploader_service
           .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
           .then(present_parsed_meters_confirmation)
-          .then(function () {
+          .then(() => {
             $scope.preparing_pm_meters_preview = false;
           })
           .catch((err) => present_meter_import_error(err));
@@ -648,13 +646,13 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     var save_raw_assessed_data = function (file_id, cycle_id, is_meter_data, multiple_cycle_upload = false) {
       $scope.uploader.status_message = 'saving data';
       $scope.uploader.progress = 0;
-      uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then(function (data) {
-        var progress = _.clamp(data.progress, 0, 100);
+      uploader_service.save_raw_data(file_id, cycle_id, multiple_cycle_upload).then((data) => {
+        const progress = _.clamp(data.progress, 0, 100);
         uploader_service.check_progress_loop(
           data.progress_key,
           progress,
           1 - progress / 100,
-          function (progress_data) {
+          (progress_data) => {
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
@@ -668,7 +666,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
               $scope.step.number = 3;
             }
           },
-          function (data) {
+          (data) => {
             $log.error(data.message);
             if (_.has(data, 'stacktrace')) $log.error(data.stacktrace);
             $scope.step_12_error_message = data.data ? data.data.message : data.message;
@@ -683,7 +681,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      * find_matches: finds matches for buildings within an import file
      */
     $scope.find_matches = function () {
-      matching_service.start_system_matching($scope.dataset.import_file_id).then(function (data) {
+      matching_service.start_system_matching($scope.dataset.import_file_id).then((data) => {
         $scope.step_10_mapquest_api_error = false;
 
         // helper function to set scope parameters for when the task fails
@@ -714,8 +712,8 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           };
           uploader_service.check_progress_loop_main_sub(
             progress_argument,
-            function (progress_data) {
-              inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
+            (progress_data) => {
+              inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then((result_data) => {
                 $scope.import_file_records = result_data.import_file_records;
                 $scope.multipleCycleUpload = result_data.multiple_cycle_upload;
 
@@ -755,7 +753,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
                   $scope.step_10_style = 'danger';
                   $scope.step_10_file_message = 'Warnings and/or errors occurred while processing the file(s).';
                   $scope.match_issues = [];
-                  for (let file_name in progress_data.file_info) {
+                  for (const file_name in progress_data.file_info) {
                     $scope.match_issues.push({
                       file: file_name,
                       errors: progress_data.file_info[file_name].errors,
@@ -765,7 +763,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
                 }
 
                 // Toggle a meter import button if the imported file also has a meters tab
-                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function (result) {
+                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then((result) => {
                   $scope.import_file_reusable_for_meters = result.data || false;
                 });
 
@@ -778,7 +776,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
                 $state.go('dataset_list');
               });
             },
-            function (response) {
+            (response) => {
               handleSystemMatchingError(response.data);
               if ($scope.step_10_error_message.includes('MapQuest')) {
                 $scope.step_10_mapquest_api_error = true;
@@ -798,16 +796,16 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           username: pm_username,
           password: pm_password
         })
-        .then(function (response) {
+        .then((response) => {
           $scope.pm_error_alert = false;
           $scope.pm_templates = response.data.templates;
           if ($scope.pm_templates.length) $scope.pm_template = _.first($scope.pm_templates);
           return response.data;
         })
-        .catch(function (error) {
-          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        .catch((error) => {
+          $scope.pm_error_alert = `Error: ${error.data.message}`;
         })
-        .finally(function () {
+        .finally(() => {
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
         });
@@ -822,7 +820,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           password: pm_password,
           template: pm_template
         })
-        .then(function (response) {
+        .then((response) => {
           response = $http.post('/api/v3/upload/create_from_pm_import/', {
             properties: response.data.properties,
             import_record_id: $scope.dataset.id,
@@ -830,7 +828,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           });
           return response;
         })
-        .then(function (response) {
+        .then((response) => {
           $scope.pm_error_alert = false;
           $scope.uploaderfunc('upload_complete', {
             filename: 'PortfolioManagerImport',
@@ -839,18 +837,18 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
             cycle_id: $scope.selectedCycle.id
           });
         })
-        .catch(function (error) {
-          $scope.pm_error_alert = 'Error: ' + error.data.message;
+        .catch((error) => {
+          $scope.pm_error_alert = `Error: ${error.data.message}`;
         })
-        .finally(function () {
+        .finally(() => {
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
         });
     };
 
     $scope.export_issues = function (issues) {
-      let data = ['File Name,Severity,Message'];
-      let allowed_severities = {
+      const data = ['File Name,Severity,Message'];
+      const allowed_severities = {
         warnings: 'Warning',
         use_case_warnings: 'Use Case Warning',
         errors: 'Error',
@@ -860,7 +858,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       for (const i in issues) {
         for (const severity in allowed_severities) {
           for (const issue in issues[i][severity]) {
-            data.push(['"' + issues[i].file + '"', allowed_severities[severity], '"' + issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ') + '"'].join(','));
+            data.push([`"${issues[i].file}"`, allowed_severities[severity], `"${issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ')}"`].join(','));
           }
         }
       }
@@ -868,10 +866,10 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     };
 
     $scope.export_meter_data = function (results, new_file_name) {
-      let data = [results.columnDefs.map((c) => c.displayName || c.name).join(',')];
-      let keys = results.columnDefs.map((c) => c.name);
+      const data = [results.columnDefs.map((c) => c.displayName || c.name).join(',')];
+      const keys = results.columnDefs.map((c) => c.name);
       results.data.forEach((r) => {
-        let row = [];
+        const row = [];
         keys.forEach((k) => row.push(r[k]));
         data.push(row.join(','));
       });
@@ -880,7 +878,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
 
     $scope.import_audit_template_buildings = function () {
       $scope.show_loading = true;
-      audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then(function (response) {
+      audit_template_service.get_buildings($scope.organization.id, $scope.selectedCycle.id).then((response) => {
         $scope.show_error = !response.success;
 
         if ($scope.show_error) {
@@ -935,7 +933,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       $scope.show_loading = true;
       const selected_property_views = $scope.gridApiAtPropertySelection.selection
         .getSelectedRows()
-        .map((row) => row['property_view'])
+        .map((row) => row.property_view)
         .sort();
       const selected_data = $scope.at_building_data.filter((building) => selected_property_views.includes(building.property_view));
       audit_template_service.batch_get_building_xml_and_update($scope.organization.id, $scope.selectedCycle.id, selected_data).then((response) => {
@@ -944,12 +942,12 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
           progress_key,
           0,
           1,
-          function (summary) {
+          (summary) => {
             $scope.show_loading = false;
             $scope.at_upload_summary = summary.message;
             $scope.step.number = 19;
           },
-          function () {
+          () => {
             // do nothing
           },
           $scope.uploader
@@ -962,7 +960,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     /**
      * init: ran upon the controller load
      */
-    var init = function () {
+    const init = function () {
       angular.extend($scope.dataset, dataset);
       // set the `Data Set Name` input textbox to have key focus.
       $scope.step = {
@@ -973,11 +971,11 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
       if ($scope.step.number === 7) {
         $scope.find_matches();
       }
-      $timeout(function () {
+      $timeout(() => {
         angular.element('#inputDataUploadName').focus();
 
-        //suppress the dismissing of the data upload modal when the background is clicked
-        //the default dismiss leads to confusion about whether the upload was canceled - megha 1/22
+        // suppress the dismissing of the data upload modal when the background is clicked
+        // the default dismiss leads to confusion about whether the upload was canceled - megha 1/22
         angular.element('.modal').off('click');
       }, 50);
     };

@@ -26,9 +26,9 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
 
     $scope.toggle_name_order_sort = function () {
       $scope.column_sorting = ($scope.column_sorting + 1) % 3;
-      if (0 == $scope.column_sorting) {
+      if ($scope.column_sorting == 0) {
         $scope.derived_columns.sort((a, b) => (a.id > b.id ? 1 : -1));
-      } else if (1 == $scope.column_sorting) {
+      } else if ($scope.column_sorting == 1) {
         $scope.derived_columns.sort((a, b) => (a.name > b.name ? 1 : -1));
       } else {
         $scope.derived_columns.sort((a, b) => (a.name < b.name ? 1 : -1));
@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
       };
       simple_modal_service.showModal(modalOptions).then(
         () => {
-          //user confirmed, delete it
+          // user confirmed, delete it
           derived_columns_service
             .delete_derived_column($scope.org.id, derived_column_id)
             .then(() => {
@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.derived_columns_admin', []).controller('deriv
             });
         },
         () => {
-          //user doesn't want to
+          // user doesn't want to
         }
       );
     };

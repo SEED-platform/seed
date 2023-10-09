@@ -14,7 +14,7 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
 
     $scope.total_selected_count = $scope.property_view_ids.length + $scope.taxlot_view_ids.length;
 
-    ubid_service.decode_results($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
+    ubid_service.decode_results($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
       $scope.pre_decode_ubid_not_decoded = result.ubid_not_decoded;
       $scope.pre_decode_ubid_successfully_decoded = result.ubid_successfully_decoded;
       $scope.pre_decode_ubid_unpopulated = result.ubid_unpopulated;
@@ -24,10 +24,10 @@ angular.module('BE.seed.controller.ubid_decode_modal', []).controller('ubid_deco
 
     $scope.decode_ubids = function () {
       if ($scope.property_view_ids) {
-        ubid_service.decode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function () {
+        ubid_service.decode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(() => {
           $scope.decode_ubid_state = 'decoding';
 
-          ubid_service.decode_results($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
+          ubid_service.decode_results($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
             $scope.post_decode_ubid_not_decoded = result.ubid_not_decoded;
             $scope.post_decode_ubid_successfully_decoded = result.ubid_successfully_decoded;
             $scope.post_decode_ubid_unpopulated = result.ubid_unpopulated;

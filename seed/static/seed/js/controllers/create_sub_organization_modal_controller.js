@@ -17,11 +17,11 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
      */
     $scope.submit_form = function () {
       organization_service.create_sub_org(organization, $scope.sub_org).then(
-        function () {
+        () => {
           $rootScope.$broadcast('organization_list_updated');
           $uibModalInstance.close();
         },
-        function (data) {
+        (data) => {
           // error data are in the data object
           $scope.error_message = data.data.message;
         }
@@ -39,14 +39,14 @@ angular.module('BE.seed.controller.create_sub_organization_modal', []).controlle
     /**
      * set the focus on the first input box
      */
-    _.delay(function () {
+    _.delay(() => {
       angular.element('#createOrganizationName').focus();
     }, 50);
 
     /**
      * clear the error message when the user starts typing
      */
-    $scope.$watch('sub_org.email', function () {
+    $scope.$watch('sub_org.email', () => {
       $scope.error_message = '';
     });
   }

@@ -38,19 +38,19 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
     // TODO:    Create more configurations for different types of modals, e.g., standard, error
     //          Adding each new type to the validModalTypes array
     // TODO :   turn vars into const when we move to ES6
-    var TYPE_DEFAULT = 'default';
-    var TYPE_ERROR = 'error';
-    var validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
+    const TYPE_DEFAULT = 'default';
+    const TYPE_ERROR = 'error';
+    const validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
 
-    var modalDefaults = {
-      type: TYPE_DEFAULT, //can be "default" or "error"
-      backdrop: 'static', //user cannot click anywhere on screen to close modal, only buttons
-      keyboard: true, //user can use ESC key to close
+    const modalDefaults = {
+      type: TYPE_DEFAULT, // can be "default" or "error"
+      backdrop: 'static', // user cannot click anywhere on screen to close modal, only buttons
+      keyboard: true, // user can use ESC key to close
       modalFade: true,
-      templateUrl: urls.static_url + 'seed/partials/simple_modal.html'
+      templateUrl: `${urls.static_url}seed/partials/simple_modal.html`
     };
 
-    var modalOptions = {
+    const modalOptions = {
       okButtonText: 'Ok',
       cancelButtonText: 'Cancel',
       headerText: 'Proceed?',
@@ -79,19 +79,19 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
 
     /* Private method. Show Angular UI modal based on config options */
     var show = function (customModalOptions, customModalDefaults) {
-      //Create temp objects to work with since we're in a singleton service
-      var tempModalDefaults = {};
-      var tempModalOptions = {};
+      // Create temp objects to work with since we're in a singleton service
+      const tempModalDefaults = {};
+      const tempModalOptions = {};
 
-      //Do styling and modifications specific to "errors"
+      // Do styling and modifications specific to "errors"
       if (customModalOptions.type === TYPE_ERROR) {
-        customModalOptions.headerText = 'Error: ' + customModalOptions.headerText;
+        customModalOptions.headerText = `Error: ${customModalOptions.headerText}`;
       }
 
-      //Map angular-ui modal custom defaults to modal defaults defined in service
+      // Map angular-ui modal custom defaults to modal defaults defined in service
       angular.extend(tempModalDefaults, modalDefaults, customModalDefaults);
 
-      //Map modal.html $scope custom properties to defaults defined in service
+      // Map modal.html $scope custom properties to defaults defined in service
       angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
       tempModalDefaults.controller = function ($scope, $uibModalInstance) {
@@ -111,12 +111,12 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
     /* Public API */
     /* ~~~~~~~~~~ */
 
-    var simple_modal_factory = {
-      //properties
-      //(none)
+    const simple_modal_factory = {
+      // properties
+      // (none)
 
-      //functions
-      showModal: showModal
+      // functions
+      showModal
     };
 
     return simple_modal_factory;

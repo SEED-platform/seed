@@ -13,55 +13,55 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
     $scope.import_file = import_file_payload.import_file;
     $scope.inventory_type = $stateParams.inventory_type;
 
-    var localStorageKey = 'grid.pairing';
+    const localStorageKey = 'grid.pairing';
     $scope.propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, propertyColumns);
     $scope.taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, taxlotColumns);
 
-    var restorePropertyDefaults = function () {
-      pairing_service.removeSettings(localStorageKey + '.properties');
+    const restorePropertyDefaults = function () {
+      pairing_service.removeSettings(`${localStorageKey}.properties`);
       $scope.propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, propertyColumns);
-      _.defer(function () {
+      _.defer(() => {
         // Set row selection
         $scope.propertyGridApi.selection.clearSelectedRows();
-        _.forEach($scope.propertyGridApi.grid.rows, function (row) {
+        _.forEach($scope.propertyGridApi.grid.rows, (row) => {
           if (row.entity.visible === false) row.setSelected(false);
           else row.setSelected(true);
         });
       });
     };
 
-    var restoreTaxlotDefaults = function () {
-      pairing_service.removeSettings(localStorageKey + '.taxlots');
+    const restoreTaxlotDefaults = function () {
+      pairing_service.removeSettings(`${localStorageKey}.taxlots`);
       $scope.taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, taxlotColumns);
-      _.defer(function () {
+      _.defer(() => {
         // Set row selection
         $scope.taxlotGridApi.selection.clearSelectedRows();
-        _.forEach($scope.taxlotGridApi.grid.rows, function (row) {
+        _.forEach($scope.taxlotGridApi.grid.rows, (row) => {
           if (row.entity.visible === false) row.setSelected(false);
           else row.setSelected(true);
         });
       });
     };
 
-    var savePropertySettings = function () {
+    const savePropertySettings = function () {
       $scope.propertyColumns = pairing_service.reorderSettings($scope.propertyColumns);
       pairing_service.savePropertyColumns(localStorageKey, $scope.propertyColumns);
     };
 
-    var saveTaxlotSettings = function () {
+    const saveTaxlotSettings = function () {
       $scope.taxlotColumns = pairing_service.reorderSettings($scope.taxlotColumns);
       pairing_service.saveTaxlotColumns(localStorageKey, $scope.taxlotColumns);
     };
 
-    var propertyRowSelectionChanged = function () {
-      _.forEach($scope.propertyGridApi.grid.rows, function (row) {
+    const propertyRowSelectionChanged = function () {
+      _.forEach($scope.propertyGridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
       });
       savePropertySettings();
     };
 
-    var taxlotRowSelectionChanged = function () {
-      _.forEach($scope.taxlotGridApi.grid.rows, function (row) {
+    const taxlotRowSelectionChanged = function () {
+      _.forEach($scope.taxlotGridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
       });
       saveTaxlotSettings();
@@ -90,11 +90,11 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
           enableHiding: false
         }
       ],
-      onRegisterApi: function (gridApi) {
+      onRegisterApi(gridApi) {
         $scope.propertyGridApi = gridApi;
-        _.defer(function () {
+        _.defer(() => {
           // Set row selection
-          _.forEach($scope.propertyGridApi.grid.rows, function (row) {
+          _.forEach($scope.propertyGridApi.grid.rows, (row) => {
             if (row.entity.visible === false) row.setSelected(false);
             else row.setSelected(true);
           });
@@ -129,11 +129,11 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
           enableHiding: false
         }
       ],
-      onRegisterApi: function (gridApi) {
+      onRegisterApi(gridApi) {
         $scope.taxlotGridApi = gridApi;
-        _.defer(function () {
+        _.defer(() => {
           // Set row selection
-          _.forEach($scope.taxlotGridApi.grid.rows, function (row) {
+          _.forEach($scope.taxlotGridApi.grid.rows, (row) => {
             if (row.entity.visible === false) row.setSelected(false);
             else row.setSelected(true);
           });

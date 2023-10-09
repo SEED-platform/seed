@@ -78,7 +78,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
 
       const buildingSources = () => {
         const features = [buildingBoundingBox()];
-        return new ol.source.Vector({ features: features });
+        return new ol.source.Vector({ features });
       };
 
       // Define building UBID bounding box
@@ -107,12 +107,12 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
 
       const buildingBBSources = () => {
         const features = [buildingBB()];
-        return new ol.source.Vector({ features: features });
+        return new ol.source.Vector({ features });
       };
 
       const buildingCentroidSources = () => {
         const features = [buildingCentroid()];
-        return new ol.source.Vector({ features: features });
+        return new ol.source.Vector({ features });
       };
 
       // Define taxlot UBID bounding box
@@ -141,12 +141,12 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
 
       const taxlotBBSources = () => {
         const features = [taxlotBB()];
-        return new ol.source.Vector({ features: features });
+        return new ol.source.Vector({ features });
       };
 
       const taxlotCentroidSources = () => {
         const features = [taxlotCentroid()];
-        return new ol.source.Vector({ features: features });
+        return new ol.source.Vector({ features });
       };
 
       const clusterSource = () =>
@@ -156,7 +156,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         });
 
       // style for building ubid bounding and centroid boxes
-      const buildingStyle = (/*feature*/) =>
+      const buildingStyle = (/* feature */) =>
         new ol.style.Style({
           stroke: new ol.style.Stroke({
             color: '#185189',
@@ -165,7 +165,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         });
 
       // style for taxlot ubid bounding and centroid boxes
-      const taxlotStyle = (/*feature*/) =>
+      const taxlotStyle = (/* feature */) =>
         new ol.style.Style({
           stroke: new ol.style.Stroke({
             color: '#10A0A0',
@@ -206,7 +206,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
       }
       $scope.map = new ol.Map({
         target: 'map',
-        layers: layers
+        layers
       });
 
       // Zoom and center based on provided points (none, all, or a subset)
@@ -222,13 +222,11 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         } else {
           const extent = bounding_box_source.getExtent();
 
-          const view_options = Object.assign(
-            {
-              size: $scope.map.getSize(),
-              padding: [1, 1, 1, 1]
-            },
-            extra_view_options
-          );
+          const view_options = {
+            size: $scope.map.getSize(),
+            padding: [1, 1, 1, 1],
+            ...extra_view_options
+          };
           $scope.map.getView().fit(extent, view_options);
         }
       };

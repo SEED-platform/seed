@@ -8,7 +8,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
   '$timeout',
   'user_service',
   function ($http, $q, $timeout, user_service) {
-    var uploader_factory = {};
+    const uploader_factory = {};
 
     /**
      * create_dataset: AJAX request to create a new dataset/import record
@@ -24,9 +24,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *        "message": "name already in use"
      *  }
      */
-    uploader_factory.create_dataset = function (dataset_name) {
-      // timeout here for testing
-      return $http
+    uploader_factory.create_dataset = (
+      dataset_name // timeout here for testing
+    ) =>
+      $http
         .post(
           '/api/v3/datasets/',
           {
@@ -38,10 +39,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /**
      * validate_use_cases
@@ -50,13 +48,11 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
     uploader_factory.validate_use_cases = function (file_id) {
-      var org_id = user_service.get_organization().id;
+      const org_id = user_service.get_organization().id;
       return $http
-        .post('/api/v3/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (err) {
+        .post(`/api/v3/import_files/${file_id}/validate_use_cases/?organization_id=${org_id.toString()}`)
+        .then((response) => response.data)
+        .catch((err) => {
           if (err.data.status === 'error') {
             return err.data;
           }
@@ -73,10 +69,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param {string} cycle_id: the id of the cycle
      * @param {boolean} multiple_cycle_upload: whether records can be imported into multiple cycles
      */
-    uploader_factory.save_raw_data = function (file_id, cycle_id, multiple_cycle_upload = false) {
-      return $http
+    uploader_factory.save_raw_data = (file_id, cycle_id, multiple_cycle_upload = false) =>
+      $http
         .post(
-          '/api/v3/import_files/' + file_id + '/start_save_data/',
+          `/api/v3/import_files/${file_id}/start_save_data/`,
           {
             cycle_id,
             multiple_cycle_upload
@@ -85,21 +81,17 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
             params: { organization_id: user_service.get_organization().id }
           }
         )
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /**
      * check_progress: gets the progress for saves, maps, and matches
      * @param progress_key: progress_key to grab the progress
      */
-    uploader_factory.check_progress = function (progress_key) {
-      return $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
+    uploader_factory.check_progress = (progress_key) =>
+      $http.get(`/api/v3/progress/${progress_key}/`).then((response) => {
         if (response.data.status === 'error') return $q.reject(response);
-        else return response.data;
+        return response.data;
       });
-    };
 
     function update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj }) {
       const right_now = Date.now();
@@ -133,8 +125,8 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
-      uploader_factory.check_progress(progress_key).then(function (data) {
-        $timeout(function () {
+      uploader_factory.check_progress(progress_key).then((data) => {
+        $timeout(() => {
           update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj });
           if (data.progress < 100) {
             uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj);
@@ -149,7 +141,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       const { progress_key } = progress_argument;
       const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null;
 
-      let progress_list = [uploader_factory.check_progress(progress_key)];
+      const progress_list = [uploader_factory.check_progress(progress_key)];
       sub_progress_argument && progress_list.push(uploader_factory.check_progress(sub_progress_key));
 
       Promise.all(progress_list).then((values) => {
@@ -157,7 +149,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
 
       function check_and_update_progress(data) {
-        $timeout(function () {
+        $timeout(() => {
           update_progress_bar_obj(data[0], progress_argument);
           if (data[0].progress < 100) {
             data.length > 1
@@ -170,29 +162,17 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       }
     };
 
-    uploader_factory.pm_meters_preview = function (file_id, org_id) {
-      return $http.get('/api/v3/import_files/' + file_id + '/pm_meters_preview/', { params: { organization_id: org_id } }).then(function (response) {
-        return response.data;
-      });
-    };
+    uploader_factory.pm_meters_preview = (file_id, org_id) =>
+      $http.get(`/api/v3/import_files/${file_id}/pm_meters_preview/`, { params: { organization_id: org_id } }).then((response) => response.data);
 
-    uploader_factory.greenbutton_meters_preview = function (file_id, org_id, view_id) {
-      return $http.get('/api/v3/import_files/' + file_id + '/greenbutton_meters_preview/', { params: { organization_id: org_id, view_id } }).then(function (response) {
-        return response.data;
-      });
-    };
+    uploader_factory.greenbutton_meters_preview = (file_id, org_id, view_id) =>
+      $http.get(`/api/v3/import_files/${file_id}/greenbutton_meters_preview/`, { params: { organization_id: org_id, view_id } }).then((response) => response.data);
 
-    uploader_factory.sensors_preview = function (file_id, org_id, view_id, data_logger_id) {
-      return $http.get('/api/v3/import_files/' + file_id + '/sensors_preview/', { params: { organization_id: org_id, view_id, data_logger_id } }).then(function (response) {
-        return response.data;
-      });
-    };
+    uploader_factory.sensors_preview = (file_id, org_id, view_id, data_logger_id) =>
+      $http.get(`/api/v3/import_files/${file_id}/sensors_preview/`, { params: { organization_id: org_id, view_id, data_logger_id } }).then((response) => response.data);
 
-    uploader_factory.sensor_readings_preview = function (file_id, org_id, view_id, data_logger_id) {
-      return $http.get('/api/v3/import_files/' + file_id + '/sensor_readings_preview/', { params: { organization_id: org_id, view_id, data_logger_id } }).then(function (response) {
-        return response.data;
-      });
-    };
+    uploader_factory.sensor_readings_preview = (file_id, org_id, view_id, data_logger_id) =>
+      $http.get(`/api/v3/import_files/${file_id}/sensor_readings_preview/`, { params: { organization_id: org_id, view_id, data_logger_id } }).then((response) => response.data);
 
     return uploader_factory;
   }

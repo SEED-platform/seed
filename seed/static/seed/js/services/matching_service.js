@@ -7,7 +7,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
   'user_service',
   'spinner_utility',
   function ($http, user_service, spinner_utility) {
-    var matching_service = {};
+    const matching_service = {};
 
     /**
      *Start system matching. For now, geocoding is also kicked off here.
@@ -15,22 +15,17 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
      *@param import_file_id: int, the database id of the import file
      * we wish to match against other buildings for an organization.
      */
-    matching_service.start_system_matching = function (import_file_id) {
-      return $http
+    matching_service.start_system_matching = (import_file_id) =>
+      $http
         .post(
-          '/api/v3/import_files/' + import_file_id + '/start_system_matching_and_geocoding/',
+          `/api/v3/import_files/${import_file_id}/start_system_matching_and_geocoding/`,
           {},
           {
             params: { organization_id: user_service.get_organization().id }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (e) {
-          return e.data;
-        });
-    };
+        .then((response) => response.data)
+        .catch((e) => e.data);
 
     matching_service.mergeProperties = function (property_view_ids) {
       spinner_utility.show();
@@ -46,10 +41,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -58,7 +51,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       spinner_utility.show();
       return $http
         .put(
-          '/api/v3/properties/' + view_id + '/unmerge/',
+          `/api/v3/properties/${view_id}/unmerge/`,
           {},
           {
             params: {
@@ -66,10 +59,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -88,10 +79,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -100,7 +89,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       spinner_utility.show();
       return $http
         .post(
-          '/api/v3/taxlots/' + view_id + '/unmerge/',
+          `/api/v3/taxlots/${view_id}/unmerge/`,
           {},
           {
             params: {
@@ -108,10 +97,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };

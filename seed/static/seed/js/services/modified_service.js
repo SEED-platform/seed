@@ -7,8 +7,8 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
   '$uibModal',
   'urls',
   function ($window, $uibModal, urls) {
-    var modified_service = {};
-    var modified = false;
+    const modified_service = {};
+    let modified = false;
 
     modified_service.setModified = function () {
       if (!modified) {
@@ -24,13 +24,11 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
       }
     };
 
-    modified_service.isModified = function () {
-      return modified;
-    };
+    modified_service.isModified = () => modified;
 
     modified_service.showModifiedDialog = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/modified_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/modified_modal.html`,
         controller: 'modified_modal_controller'
       });
 
@@ -38,8 +36,8 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
     };
 
     modified_service.showResetDialog = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/reset_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/reset_modal.html`,
         controller: 'reset_modal_controller'
       });
 

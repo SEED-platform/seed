@@ -15,19 +15,19 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
   'Notification',
   'org_id',
   function ($scope, $uibModalInstance, label_service, notification, org_id) {
-    //keep track of status of service call
+    // keep track of status of service call
     $scope.loading = false;
 
-    //An array of all available labels in the system.
-    //These label objects should have the is_applied property set so
-    //the modal can show the Remove button if necessary. (Populated
-    //during init function below.)
+    // An array of all available labels in the system.
+    // These label objects should have the is_applied property set so
+    // the modal can show the Remove button if necessary. (Populated
+    // during init function below.)
     $scope.labels = [];
 
-    //new_label serves as model for the "Create a new label" UI
+    // new_label serves as model for the "Create a new label" UI
     $scope.new_label = {};
 
-    //list of colors for the create label UI
+    // list of colors for the create label UI
     $scope.available_colors = label_service.get_available_colors();
 
     /* Initialize the label props for a 'new' label */
@@ -45,14 +45,14 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
       $scope.createdLabel = null;
       if (form.$invalid) return;
       label_service.create_label_for_org(org_id, $scope.new_label).then(
-        function (data) {
-          var createdLabel = data;
+        (data) => {
+          const createdLabel = data;
 
           $scope.newLabelForm.$setPristine();
           $scope.labels.unshift(createdLabel);
           $scope.initialize_new_label();
         },
-        function (data) {
+        (data) => {
           // label name already exists
           if (data.message === 'label already exists') {
             alert('label already exists');
@@ -71,16 +71,16 @@ angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('d
 
     /* User has cancelled dialog */
     $scope.cancel = function () {
-      //don't do anything, just close modal.
+      // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
 
     /* init: Gets the list of labels. Sets up new label object. */
-    var init = function () {
+    const init = function () {
       $scope.initialize_new_label();
-      //get labels with 'is_applied' property by passing in current search state
+      // get labels with 'is_applied' property by passing in current search state
       $scope.loading = true;
-      label_service.get_labels_for_org(org_id).then(function (labels) {
+      label_service.get_labels_for_org(org_id).then((labels) => {
         $scope.labels = labels;
         $scope.loading = false;
       });

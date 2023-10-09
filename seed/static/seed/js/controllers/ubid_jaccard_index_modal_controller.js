@@ -11,9 +11,7 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', []).controller('ub
     $scope.ubid1 = ubids[0];
     $scope.ubid2 = ubids[1];
 
-    $scope.valid_ubids = () => {
-      return ubid_service.validate_ubid_js($scope.ubid1) && ubid_service.validate_ubid_js($scope.ubid2);
-    };
+    $scope.valid_ubids = () => ubid_service.validate_ubid_js($scope.ubid1) && ubid_service.validate_ubid_js($scope.ubid2);
 
     $scope.edit = () => {
       $scope.editing = true;
@@ -36,9 +34,7 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', []).controller('ub
     $scope.editing = !$scope.valid_ubids();
     if (!$scope.editing) $scope.compare_ubids();
 
-    $scope.jaccard_quality = (jaccard) => {
-      return jaccard <= 0 ? 'No Match' : jaccard < 0.5 ? 'Poor' : jaccard < 1 ? 'Good' : 'Perfect';
-    };
+    $scope.jaccard_quality = (jaccard) => (jaccard <= 0 ? 'No Match' : jaccard < 0.5 ? 'Poor' : jaccard < 1 ? 'Good' : 'Perfect');
 
     $scope.close = () => {
       $uibModalInstance.close();

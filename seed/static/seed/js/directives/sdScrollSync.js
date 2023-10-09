@@ -4,11 +4,11 @@
  *
  * Directive sd-scroll-sync used for keeping the horizontal scrollbar in sync across multiple scrolling areas
  */
-angular.module('sdScrollSync', []).directive('sdScrollSync', function () {
-  var scrollLeft = 0;
+angular.module('sdScrollSync', []).directive('sdScrollSync', () => {
+  let scrollLeft = 0;
 
   function combine(elements) {
-    elements.on('scroll', function (e) {
+    elements.on('scroll', (e) => {
       if (e.isTrigger) {
         e.target.scrollLeft = scrollLeft;
       } else {
@@ -25,8 +25,8 @@ angular.module('sdScrollSync', []).directive('sdScrollSync', function () {
   return {
     restrict: 'A',
     replace: false,
-    compile: function (element, attrs) {
-      combine(element.find('.' + attrs.sdScrollSync));
+    compile(element, attrs) {
+      combine(element.find(`.${attrs.sdScrollSync}`));
     }
   };
 });

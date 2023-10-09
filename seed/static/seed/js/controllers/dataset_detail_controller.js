@@ -13,20 +13,20 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
   function ($scope, dataset_payload, $log, dataset_service, cycles, $uibModal, urls) {
     $scope.dataset = dataset_payload.dataset;
 
-    _.forOwn($scope.dataset.importfiles, function (value) {
+    _.forOwn($scope.dataset.importfiles, (value) => {
       value.created = new Date(value.created);
     });
 
     $scope.confirm_delete = function (file) {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/delete_file_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/delete_file_modal.html`,
         controller: 'delete_file_modal_controller',
         resolve: {
-          file: file
+          file
         }
       });
 
-      modalInstance.result.finally(function () {
+      modalInstance.result.finally(() => {
         init();
       });
     };
@@ -35,33 +35,24 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
      * open_data_upload_modal: opens the data upload modal to step 4, add energy files
      */
     $scope.open_data_upload_modal = function () {
-      var dataModalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
+      const dataModalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
         controller: 'data_upload_modal_controller',
         resolve: {
-          cycles: [
-            'cycle_service',
-            function (cycle_service) {
-              return cycle_service.get_cycles();
-            }
-          ],
+          cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
           step: _.constant(2),
-          dataset: function () {
-            return $scope.dataset;
-          },
-          organization: function () {
-            return $scope.menu.user.organization;
-          }
+          dataset: () => $scope.dataset,
+          organization: () => $scope.menu.user.organization
         }
       });
 
-      dataModalInstance.result.finally(function () {
+      dataModalInstance.result.finally(() => {
         init();
       });
     };
 
     $scope.getCycleName = function (id) {
-      var cycle = _.find(cycles.cycles, { id: id });
+      const cycle = _.find(cycles.cycles, { id });
       return cycle ? cycle.name : undefined;
     };
 
@@ -71,7 +62,7 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
     };
 
     var init = function () {
-      dataset_service.get_dataset($scope.dataset.id).then(function (data) {
+      dataset_service.get_dataset($scope.dataset.id).then((data) => {
         $scope.dataset = data.dataset;
       });
     };

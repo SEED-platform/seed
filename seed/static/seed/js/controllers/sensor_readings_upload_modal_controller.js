@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
     $scope.cancel = function () {
       // If step 2, GB import confirmation was not accepted by user, so delete file
       if ($scope.step.number === 2) {
-        dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
+        dataset_service.delete_file($scope.file_id).then((/* results */) => {
           $uibModalInstance.dismiss('cancel');
         });
       } else {
@@ -50,10 +50,10 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       }
     };
 
-    $scope.uploaderfunc = function (event_message, file /*, progress*/) {
+    $scope.uploaderfunc = function (event_message, file /* , progress */) {
       switch (event_message) {
         case 'invalid_extension':
-          $scope.$apply(function () {
+          $scope.$apply(() => {
             $scope.uploader.invalid_csv_extension_alert = true;
             $scope.uploader.invalid_file_contents = false;
           });
@@ -100,15 +100,13 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       enableHiding: false
     };
 
-    const grid_rows_to_display = function (data) {
-      return Math.min(data.length, 5);
-    };
+    const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
     var show_confirmation_info = function () {
       uploader_service
         .sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger_id)
-        .then(function (result) {
-          var additional_columnDefs = [
+        .then((result) => {
+          const additional_columnDefs = [
             {
               field: 'exists',
               enableHiding: false
@@ -134,7 +132,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
 
     const saveSuccess = function (progress_data) {
       // recheck progress in order to ensure message has been appended to progress_data
-      uploader_service.check_progress(progress_data.progress_key).then(function (data) {
+      uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
         $scope.uploader.progress = 100;
         buildImportResults(data.message);
@@ -162,7 +160,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
     };
 
     $scope.accept_sensor_readings = function () {
-      uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function (data) {
+      uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then((data) => {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
         $scope.step.number = 3;

@@ -16,33 +16,32 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
     }
 
     function forEachSorted(obj, iterator, context) {
-      var keys = Object.keys(obj).sort();
-      for (var i = 0; i < keys.length; i++) {
+      const keys = Object.keys(obj).sort();
+      for (let i = 0; i < keys.length; i++) {
         iterator.call(context, obj[keys[i]], keys[i]);
       }
       return keys;
     }
 
-    function encodeUriQuerySeed(val, pctEncodeSpaces) {
-      return encodeURIComponent(val)
+    const encodeUriQuerySeed = (val, pctEncodeSpaces) =>
+      encodeURIComponent(val)
         .replace(/%40/gi, '@')
         .replace(/%3A/gi, ':')
         .replace(/%24/g, '$')
         .replace(/%2C/gi, ',')
         .replace(/%20/g, pctEncodeSpaces ? '%20' : '+');
-    }
 
     return function (params) {
       if (!params) return '';
-      var parts = [];
-      forEachSorted(params, function (value, key) {
+      const parts = [];
+      forEachSorted(params, (value, key) => {
         if (value === null || angular.isUndefined(value)) return;
         if (angular.isArray(value)) {
-          angular.forEach(value, function (v) {
-            parts.push(encodeUriQuerySeed(key) + '=' + encodeUriQuerySeed(serializeValue(v)));
+          angular.forEach(value, (v) => {
+            parts.push(`${encodeUriQuerySeed(key)}=${encodeUriQuerySeed(serializeValue(v))}`);
           });
         } else {
-          parts.push(encodeUriQuerySeed(key) + '=' + encodeUriQuerySeed(serializeValue(value)));
+          parts.push(`${encodeUriQuerySeed(key)}=${encodeUriQuerySeed(serializeValue(value))}`);
         }
       });
 

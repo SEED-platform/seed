@@ -7,17 +7,14 @@ angular.module('BE.seed.service.event', []).factory('event_service', [
   function ($http) {
     const event_factory = {};
 
-    event_factory.get_events = function (org_id, inventory_type, property_pk) {
-      return $http
-        .get('/api/v3/' + inventory_type + '/' + property_pk + '/events/', {
+    event_factory.get_events = (org_id, inventory_type, property_pk) =>
+      $http
+        .get(`/api/v3/${inventory_type}/${property_pk}/events/`, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     return event_factory;
   }

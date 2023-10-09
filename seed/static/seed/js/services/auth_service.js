@@ -7,8 +7,8 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
   'user_service',
   'generated_urls',
   function ($http, user_service, generated_urls) {
-    var auth_factory = {};
-    var urls = generated_urls;
+    const auth_factory = {};
+    const urls = generated_urls;
 
     /**
      * checks against the auth backend to determine if the requesting user is
@@ -25,35 +25,28 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      * @return {promise} then a an object with keys as the actions, and bool
      * values
      */
-    auth_factory.is_authorized = function (organization_id, actions) {
-      return user_service.get_user_id().then(function (user_id) {
-        return $http
+    auth_factory.is_authorized = (organization_id, actions) =>
+      user_service.get_user_id().then((user_id) =>
+        $http
           .post(
-            '/api/v3/users/' + user_id + '/is_authorized/',
+            `/api/v3/users/${user_id}/is_authorized/`,
             {
-              actions: actions
+              actions
             },
             {
               params: {
-                organization_id: organization_id
+                organization_id
               }
             }
           )
-          .then(function (response) {
-            return response.data;
-          });
-      });
-    };
+          .then((response) => response.data)
+      );
 
     /**
      * gets all available actions
      * @return {promise} then an array of actions
      */
-    auth_factory.get_actions = function () {
-      return $http.get(urls.accounts.get_actions).then(function (response) {
-        return response.data;
-      });
-    };
+    auth_factory.get_actions = () => $http.get(urls.accounts.get_actions).then((response) => response.data);
 
     return auth_factory;
   }

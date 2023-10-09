@@ -16,15 +16,15 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
 
     $scope.rename_template = function () {
       if (!$scope.disabled()) {
-        var id = $scope.data.id;
-        var template = _.omit($scope.data, 'id');
+        const { id } = $scope.data;
+        const template = _.omit($scope.data, 'id');
         template.name = $scope.newName;
         postoffice_service
           .update_template(id, template, $scope.org_id)
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result.name);
           })
-          .catch(function () {
+          .catch(() => {
             $uibModalInstance.dismiss();
           });
       }
@@ -33,10 +33,10 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
     $scope.remove_template = function () {
       postoffice_service
         .remove_template($scope.data.id, $scope.org_id)
-        .then(function () {
+        .then(() => {
           $uibModalInstance.close();
         })
-        .catch(function () {
+        .catch(() => {
           $uibModalInstance.dismiss();
         });
     };
@@ -48,7 +48,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
             name: $scope.newName,
             organization_id: $scope.org_id
           })
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result);
           });
       }
@@ -57,7 +57,8 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
     $scope.disabled = function () {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-      } else if ($scope.action === 'new') {
+      }
+      if ($scope.action === 'new') {
         return _.isEmpty($scope.newName);
       }
     };

@@ -49,9 +49,9 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
       },
       css: 'alert-success'
     };
-    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+    $scope.username = `${user_profile_payload.first_name} ${user_profile_payload.last_name}`;
 
-    var update_alert = function (is_ok, message) {
+    const update_alert = function (is_ok, message) {
       $scope.alert.show = true;
       $scope.alert.css = is_ok ? $scope.alert.bootstrap_class.ok : $scope.alert.bootstrap_class.error;
       $scope.alert.message = message;
@@ -65,20 +65,20 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
     $scope.org_form.add = function (org) {
       organization_service
         .add(org)
-        .then(function () {
-          get_organizations().then(function () {
+        .then(() => {
+          get_organizations().then(() => {
             $scope.$emit('organization_list_updated');
           });
           update_alert(true, `Organization ${org.name} created`);
         })
-        .catch(function (response) {
-          update_alert(false, 'error creating organization: ' + response.data.message);
+        .catch((response) => {
+          update_alert(false, `error creating organization: ${response.data.message}`);
         });
     };
     $scope.user_form.add = function (user) {
       user_service
         .add(user)
-        .then(function (data) {
+        .then((data) => {
           let alert_message = `User ${user.email} created and added`;
           if (data.org_created) {
             alert_message = `${alert_message} as head of new org ${data.org}`;
@@ -88,29 +88,23 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
 
           update_alert(true, alert_message);
           get_users();
-          get_organizations().then(function () {
+          get_organizations().then(() => {
             $scope.$emit('organization_list_updated');
           });
           $scope.user_form.reset();
         })
-        .catch(function (response) {
-          update_alert(false, 'error creating user: ' + response.data.message);
+        .catch((response) => {
+          update_alert(false, `error creating user: ${response.data.message}`);
         });
     };
-    $scope.org_form.not_ready = function () {
-      return _.isUndefined($scope.org.email) || organization_exists($scope.org.name);
-    };
+    $scope.org_form.not_ready = () => _.isUndefined($scope.org.email) || organization_exists($scope.org.name);
 
     var organization_exists = function (name) {
-      var orgs = _.map($scope.org_user.organizations, function (org) {
-        return org.name.toLowerCase();
-      });
+      const orgs = _.map($scope.org_user.organizations, (org) => org.name.toLowerCase());
       return _.includes(orgs, name.toLowerCase());
     };
 
-    $scope.user_form.not_ready = function () {
-      return !$scope.user.organization && !$scope.user.org_name;
-    };
+    $scope.user_form.not_ready = () => !$scope.user.organization && !$scope.user.org_name;
 
     $scope.user_form.reset = function () {
       $scope.user = {};
@@ -121,41 +115,34 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
     $scope.user_form.reset();
 
     var get_users = function () {
-      user_service.get_users().then(function (data) {
+      user_service.get_users().then((data) => {
         $scope.org.users = data.users;
       });
     };
 
-    var process_organizations = function (data) {
+    const process_organizations = function (data) {
       $scope.org_user.organizations = data.organizations;
-      _.forEach($scope.org_user.organizations, function (org) {
-        org.total_inventory = _.reduce(
-          org.cycles,
-          function (sum, cycle) {
-            return sum + cycle.num_properties + cycle.num_taxlots;
-          },
-          0
-        );
+      _.forEach($scope.org_user.organizations, (org) => {
+        org.total_inventory = _.reduce(org.cycles, (sum, cycle) => sum + cycle.num_properties + cycle.num_taxlots, 0);
       });
     };
 
-    var get_organizations = function () {
-      return organization_service.get_organizations().then(process_organizations, function (response) {
+    var get_organizations = () =>
+      organization_service.get_organizations().then(process_organizations, (response) => {
         $log.log({ message: 'error from data call', status: response.status, data: response.data });
-        update_alert(false, 'error getting organizations: ' + response.data.message);
+        update_alert(false, `error getting organizations: ${response.data.message}`);
       });
-    };
 
     $scope.get_organizations_users = function (org) {
       if (org) {
         organization_service
           .get_organization_users(org)
-          .then(function (data) {
+          .then((data) => {
             $scope.org_user.users = data.users;
           })
-          .catch(function (response) {
+          .catch((response) => {
             $log.log({ message: 'error from data call', status: response.status, data: response.data });
-            update_alert(false, 'error getting organizations: ' + response.data.message);
+            update_alert(false, `error getting organizations: ${response.data.message}`);
           });
       } else {
         $scope.org_user.users = [];
@@ -165,48 +152,48 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
     $scope.org_user.add = function () {
       organization_service
         .add_user_to_org($scope.org_user)
-        .then(function () {
-          get_organizations().then(function () {
+        .then(() => {
+          get_organizations().then(() => {
             $scope.$emit('organization_list_updated');
           });
           $scope.get_organizations_users($scope.org_user.organization);
-          update_alert(true, 'user ' + $scope.org_user.user.email + ' added to organization ' + $scope.org_user.organization.name);
+          update_alert(true, `user ${$scope.org_user.user.email} added to organization ${$scope.org_user.organization.name}`);
         })
-        .catch(function (response) {
+        .catch((response) => {
           $log.log({ message: 'error from data call', status: response.status, data: response.data });
-          update_alert(false, 'error adding user to organization: ' + response.data.message);
+          update_alert(false, `error adding user to organization: ${response.data.message}`);
         });
     };
 
     $scope.confirm_remove_user = function (user, org_id) {
       organization_service
         .remove_user(user.user_id, org_id)
-        .then(function () {
+        .then(() => {
           $scope.get_organizations_users($scope.org_user.organization);
           get_users();
           update_alert(true, `user ${user.email} removed from organization ${$scope.org_user.organization.name}`);
         })
-        .catch(function (response) {
+        .catch((response) => {
           $log.log({ message: 'error from data call', status: response.status, data: response.data });
-          update_alert(false, 'error removing user from organization: ' + response.data.message);
+          update_alert(false, `error removing user from organization: ${response.data.message}`);
         });
     };
 
     $scope.confirm_column_mappings_delete = function (org) {
-      var yes = confirm("Are you sure you want to delete the '" + org.name + "' column mappings?  This will invalidate preexisting mapping review data");
+      const yes = confirm(`Are you sure you want to delete the '${org.name}' column mappings?  This will invalidate preexisting mapping review data`);
       if (yes) {
         $scope.delete_org_column_mappings(org);
       }
     };
 
     $scope.delete_org_column_mappings = function (org) {
-      column_mappings_service.delete_all_column_mappings_for_org(org.org_id).then(function (data) {
+      column_mappings_service.delete_all_column_mappings_for_org(org.org_id).then((data) => {
         if (data.delete_count === 0) {
           Notification.info('No column mappings exist.');
         } else if (data.delete_count === 1) {
-          Notification.success(data.delete_count + ' column mapping deleted.');
+          Notification.success(`${data.delete_count} column mapping deleted.`);
         } else {
-          Notification.success(data.delete_count + ' column mappings deleted.');
+          Notification.success(`${data.delete_count} column mappings deleted.`);
         }
       });
     };
@@ -216,7 +203,7 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
      * for an org's inventory.
      */
     $scope.confirm_inventory_delete = function (org) {
-      var yes = confirm("Are you sure you want to PERMANENTLY delete '" + org.name + "'s properties and tax lots?");
+      const yes = confirm(`Are you sure you want to PERMANENTLY delete '${org.name}'s properties and tax lots?`);
       if (yes) {
         $scope.delete_org_inventory(org);
       }
@@ -227,17 +214,17 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
      */
     $scope.delete_org_inventory = function (org) {
       org.progress = 0;
-      organization_service.delete_organization_inventory(org.org_id).then(function (data) {
+      organization_service.delete_organization_inventory(org.org_id).then((data) => {
         // resolve promise
         uploader_service.check_progress_loop(
           data.progress_key,
           0,
           1,
-          function () {
+          () => {
             org.remove_message = 'success';
             get_organizations();
           },
-          function () {
+          () => {
             // Do nothing
           },
           org
@@ -246,9 +233,9 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
     };
 
     $scope.confirm_org_delete = function (org) {
-      var yes = confirm("Are you sure you want to PERMANENTLY delete the entire '" + org.name + "' organization?");
+      const yes = confirm(`Are you sure you want to PERMANENTLY delete the entire '${org.name}' organization?`);
       if (yes) {
-        var again = confirm("Deleting an organization is permanent. Confirm again to delete '" + org.name + "'");
+        const again = confirm(`Deleting an organization is permanent. Confirm again to delete '${org.name}'`);
         if (again) {
           $scope.delete_org(org);
         }
@@ -257,23 +244,23 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
 
     $scope.delete_org = function (org) {
       org.progress = 0;
-      organization_service.delete_organization(org.org_id).then(function (data) {
+      organization_service.delete_organization(org.org_id).then((data) => {
         uploader_service.check_progress_loop(
           data.progress_key,
           0,
           1,
-          function () {
+          () => {
             org.remove_message = 'success';
             if (parseInt(org.id) === parseInt(user_service.get_organization().id)) {
               // Reload page if deleting current org.
               $window.location.reload();
             } else {
-              get_organizations().then(function () {
+              get_organizations().then(() => {
                 $scope.$emit('organization_list_updated');
               });
             }
           },
-          function () {
+          () => {
             // Do nothing
           },
           org

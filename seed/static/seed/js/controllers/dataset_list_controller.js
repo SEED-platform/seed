@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
     };
     $scope.save_dataset_name = function (dataset) {
       if (dataset.name !== dataset.old_name) {
-        dataset_service.update_dataset(dataset).then(function () {
+        dataset_service.update_dataset(dataset).then(() => {
           refresh_datasets();
         });
         dataset.edit_form_showing = false;
@@ -52,50 +52,39 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
      * open_data_upload_modal: opens the data upload modal to step 4, add energy files
      */
     $scope.open_data_upload_modal = function (dataset) {
-      var step = 2;
+      let step = 2;
       if (_.isUndefined(dataset)) {
         step = 1;
         dataset = {};
       } else if ($scope.missing_assessor_files(dataset)) {
         step = 2;
       }
-      var dataModalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
+      const dataModalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
         controller: 'data_upload_modal_controller',
         resolve: {
-          cycles: [
-            'cycle_service',
-            function (cycle_service) {
-              return cycle_service.get_cycles();
-            }
-          ],
-          step: function () {
-            return step;
-          },
-          dataset: function () {
-            return dataset;
-          },
-          organization: function () {
-            return $scope.menu.user.organization;
-          }
+          cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+          step: () => step,
+          dataset: () => dataset,
+          organization: () => $scope.menu.user.organization
         }
       });
 
-      dataModalInstance.result.finally(function () {
+      dataModalInstance.result.finally(() => {
         refresh_datasets();
       });
     };
 
     $scope.confirm_delete = function (dataset) {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/delete_dataset_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/delete_dataset_modal.html`,
         controller: 'delete_dataset_modal_controller',
         resolve: {
-          dataset: dataset
+          dataset
         }
       });
 
-      modalInstance.result.finally(function () {
+      modalInstance.result.finally(() => {
         refresh_datasets();
       });
     };
@@ -104,8 +93,8 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
      * missing_assessor_files: true if the dataset has no assessed files
      */
     $scope.missing_assessor_files = function (dataset) {
-      for (var i = 0; i < dataset.importfiles.length; i++) {
-        var importfile = dataset.importfiles[i];
+      for (let i = 0; i < dataset.importfiles.length; i++) {
+        const importfile = dataset.importfiles[i];
         if (importfile.source_type === 'Assessed Raw') {
           return false;
         }
@@ -117,8 +106,8 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
      * missing_pm_files: true if the dataset has no Portfolio Manager files
      */
     $scope.missing_pm_files = function (dataset) {
-      for (var i = 0; i < dataset.importfiles.length; i++) {
-        var importfile = dataset.importfiles[i];
+      for (let i = 0; i < dataset.importfiles.length; i++) {
+        const importfile = dataset.importfiles[i];
         if (importfile.source_type === 'Portfolio Raw') {
           return false;
         }
@@ -130,7 +119,7 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
      * refresh_datasets: refreshes dataset list
      */
     var refresh_datasets = function () {
-      dataset_service.get_datasets().then(function (data) {
+      dataset_service.get_datasets().then((data) => {
         $scope.datasets = data.datasets;
       });
     };

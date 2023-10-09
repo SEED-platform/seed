@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
       }
     };
 
-    var promises = [organization_service.matching_criteria_columns(organization_id)];
+    const promises = [organization_service.matching_criteria_columns(organization_id)];
 
     if (inventory_type === 'properties') {
       promises.unshift(inventory_service.get_property_columns());
@@ -41,14 +41,12 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
 
     $scope.matching_criteria_columns = ['Loading...'];
 
-    $q.all(promises).then(function (results) {
-      var inventory_columns = _.filter(results[0], { table_name: $scope.table_name });
-      var raw_column_names = results[1][$scope.table_name];
+    $q.all(promises).then((results) => {
+      const inventory_columns = _.filter(results[0], { table_name: $scope.table_name });
+      const raw_column_names = results[1][$scope.table_name];
 
       // Use display names to identify matching criteria columns.
-      $scope.matching_criteria_columns = _.map(raw_column_names, function (col_name) {
-        return _.find(inventory_columns, { column_name: col_name }).displayName;
-      });
+      $scope.matching_criteria_columns = _.map(raw_column_names, (col_name) => _.find(inventory_columns, { column_name: col_name }).displayName);
     });
 
     $scope.close = function () {

@@ -43,19 +43,19 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
 
       const organization_id = user_service.get_organization().id;
       return $http
-        .get('/api/v3/organizations/' + organization_id + '/report/', {
+        .get(`/api/v3/organizations/${organization_id}/report/`, {
           params: {
             x_var: xVar,
             y_var: yVar,
-            start: start,
-            end: end
+            start,
+            end
           }
         })
-        .then(function (response) {
+        .then((response) => {
           building_reports_factory.report_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
           return response.data;
         })
-        .catch(function () {
+        .catch(() => {
           building_reports_factory.reports_data = [];
         });
     }
@@ -97,28 +97,28 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
 
       const organization_id = user_service.get_organization().id;
       return $http
-        .get('/api/v3/organizations/' + organization_id + '/report_aggregated/', {
+        .get(`/api/v3/organizations/${organization_id}/report_aggregated/`, {
           params: {
             x_var: xVar,
             y_var: yVar,
-            start: start,
-            end: end
+            start,
+            end
           }
         })
-        .then(function (response) {
+        .then((response) => {
           building_reports_factory.aggregated_reports_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
           return response.data;
         })
-        .catch(function () {
+        .catch(() => {
           building_reports_factory.aggregated_reports_data = [];
         });
     }
 
     function export_reports_data(axes_data, start, end) {
-      var xVar = axes_data.xVar;
-      var xLabel = axes_data.xLabel;
-      var yVar = axes_data.yVar;
-      var yLabel = axes_data.yLabel;
+      const { xVar } = axes_data;
+      const { xLabel } = axes_data;
+      const { yVar } = axes_data;
+      const { yLabel } = axes_data;
       // Error checks
       if (_.some([xVar, xLabel, yVar, yLabel, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
@@ -127,35 +127,33 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
 
       const organization_id = user_service.get_organization().id;
       return $http
-        .get('/api/v3/organizations/' + organization_id + '/report_export/', {
+        .get(`/api/v3/organizations/${organization_id}/report_export/`, {
           params: {
             x_var: xVar,
             x_label: xLabel,
             y_var: yVar,
             y_label: yLabel,
-            start: start,
-            end: end
+            start,
+            end
           },
           responseType: 'arraybuffer'
         })
-        .then(function (response) {
-          return response;
-        });
+        .then((response) => response);
     }
 
     /* Public API */
 
     var building_reports_factory = {
-      //properties
+      // properties
       reports_data: [],
       aggregated_reports_data: [],
       summary_data: [],
 
-      //functions
-      //get_summary_data : get_summary_data,
-      get_report_data: get_report_data,
-      get_aggregated_report_data: get_aggregated_report_data,
-      export_reports_data: export_reports_data
+      // functions
+      // get_summary_data : get_summary_data,
+      get_report_data,
+      get_aggregated_report_data,
+      export_reports_data
     };
 
     return building_reports_factory;

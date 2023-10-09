@@ -16,7 +16,7 @@ angular.module('BE.seed.controller.create_column_modal', []).controller('create_
   function ($scope, $state, $uibModalInstance, uiGridConstants, spinner_utility, Notification, columns_service, org_id, table_name, black_listed_names) {
     $scope.column = {
       column_name: '',
-      table_name: table_name
+      table_name
     };
 
     $scope.create_column = () => {
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.create_column_modal', []).controller('create_
           $state.reload();
         })
         .catch((err) => {
-          Notification.error('error: ' + err);
+          Notification.error(`error: ${err}`);
         })
         .finally(() => {
           spinner_utility.hide();

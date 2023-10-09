@@ -5,13 +5,9 @@
 angular.module('BE.seed.service.main', []).factory('main_service', [
   '$http',
   function ($http) {
-    var main_factory = {};
+    const main_factory = {};
 
-    main_factory.version = function () {
-      return $http.get('/api/version/').then(function (response) {
-        return response.data;
-      });
-    };
+    main_factory.version = () => $http.get('/api/version/').then((response) => response.data);
 
     return main_factory;
   }

@@ -13,7 +13,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'naturalSort',
   'Notification',
   function ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) {
-    var inventory_service = {
+    const inventory_service = {
       total_properties_for_user: 0,
       total_taxlots_for_user: 0
     };
@@ -66,11 +66,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     ) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
-      var params = {
-        organization_id: organization_id,
-        include_related: include_related,
-        ids_only: ids_only,
-        shown_column_ids: shown_column_ids,
+      const params = {
+        organization_id,
+        include_related,
+        ids_only,
+        shown_column_ids,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters)
       };
@@ -84,10 +84,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       return cycle_service
         .get_cycles()
-        .then(function (cycles) {
-          var validCycleIds = _.map(cycles.cycles, 'id');
+        .then((cycles) => {
+          const validCycleIds = _.map(cycles.cycles, 'id');
 
-          var lastCycleId = inventory_service.get_last_cycle();
+          const lastCycleId = inventory_service.get_last_cycle();
           if (_.has(cycle, 'id')) {
             params.cycle = cycle.id;
             if (save_last_cycle === true) {
@@ -102,20 +102,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               '/api/v3/properties/filter/',
               {
                 // Pass the specific ids if they exist
-                include_view_ids: include_view_ids,
-                exclude_view_ids: exclude_view_ids,
+                include_view_ids,
+                exclude_view_ids,
                 // Pass the current profile (if one exists) to limit the column data that is returned
-                profile_id: profile_id
+                profile_id
               },
               {
-                params: params
+                params
               }
             )
-            .then(function (response) {
-              return response.data;
-            });
+            .then((response) => response.data);
         })
-        .catch(function (response) {
+        .catch((response) => {
           if (response.data.message) {
             return response.data;
           }
@@ -123,17 +121,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
     };
 
-    inventory_service.properties_cycle = function (profile_id, cycle_ids) {
-      return $http
+    inventory_service.properties_cycle = (profile_id, cycle_ids) =>
+      $http
         .post('/api/v3/properties/filter_by_cycle/', {
           organization_id: user_service.get_organization().id,
-          profile_id: profile_id,
-          cycle_ids: cycle_ids
+          profile_id,
+          cycle_ids
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /** Get Property information from server for a specified Property and Cycle and Organization.
      *
@@ -202,8 +197,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
-    inventory_service.properties_meters_exist = function (property_view_ids) {
-      return $http
+    inventory_service.properties_meters_exist = (property_view_ids) =>
+      $http
         .post(
           '/api/v3/properties/meters_exist/',
           {
@@ -213,27 +208,19 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             params: { organization_id: user_service.get_organization().id }
           }
         )
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.get_canonical_properties = function (view_ids) {
-      return $http
+    inventory_service.get_canonical_properties = (view_ids) =>
+      $http
         .post(
           '/api/v3/properties/get_canonical_properties/',
-          { view_ids: view_ids },
+          { view_ids },
           {
             params: { organization_id: user_service.get_organization().id }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data)
+        .catch((response) => response.data);
 
     inventory_service.get_property = function (view_id) {
       // Error checks
@@ -244,60 +231,49 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http
-        .get('/api/v3/properties/' + view_id + '/', {
+        .get(`/api/v3/properties/${view_id}/`, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
 
-    inventory_service.get_property_views = function (organization_id, property_id) {
-      return $http
+    inventory_service.get_property_views = (organization_id, property_id) =>
+      $http
         .get('/api/v3/property_views/', {
           params: {
-            organization_id: organization_id,
+            organization_id,
             property: property_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.get_taxlot_views = function (organization_id, taxlot_id) {
-      return $http
+    inventory_service.get_taxlot_views = (organization_id, taxlot_id) =>
+      $http
         .get('/api/v3/taxlot_views/', {
           params: {
-            organization_id: organization_id,
+            organization_id,
             taxlot: taxlot_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.delete_inventory_document = function (view_id, file_id) {
-      return $http
-        .delete('/api/v3/properties/' + view_id + '/delete_inventory_document/', {
+    inventory_service.delete_inventory_document = (view_id, file_id) =>
+      $http
+        .delete(`/api/v3/properties/${view_id}/delete_inventory_document/`, {
           headers: {
             'Content-Type': 'application/json;charset=utf-8'
           },
           params: {
             organization_id: user_service.get_organization().id,
-            file_id: file_id
+            file_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     inventory_service.get_property_links = function (view_id) {
       // Error checks
@@ -308,13 +284,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http
-        .get('/api/v3/properties/' + view_id + '/links/', {
+        .get(`/api/v3/properties/${view_id}/links/`, {
           params: { organization_id: user_service.get_organization().id }
         })
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -329,16 +303,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       spinner_utility.show();
       return $http
         .post(
-          '/api/v3/properties/' + view_id + '/match_merge_link/',
+          `/api/v3/properties/${view_id}/match_merge_link/`,
           {},
           {
             params: { organization_id: user_service.get_organization().id }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -366,9 +338,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       return $http
         .put(
-          '/api/v3/properties/' + view_id + '/',
+          `/api/v3/properties/${view_id}/`,
           {
-            state: state
+            state
           },
           {
             params: {
@@ -376,10 +348,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -404,33 +374,29 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
 
-    inventory_service.delete_property_states = function (property_view_ids) {
-      return $http.delete('/api/v3/properties/batch_delete/', {
+    inventory_service.delete_property_states = (property_view_ids) =>
+      $http.delete('/api/v3/properties/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
         data: { property_view_ids },
         params: { organization_id: user_service.get_organization().id }
       });
-    };
 
-    inventory_service.delete_taxlot_states = function (taxlot_view_ids) {
-      return $http.delete('/api/v3/taxlots/batch_delete/', {
+    inventory_service.delete_taxlot_states = (taxlot_view_ids) =>
+      $http.delete('/api/v3/taxlots/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
         data: { taxlot_view_ids },
         params: { organization_id: user_service.get_organization().id }
       });
-    };
 
     inventory_service.get_taxlots = function (
       page,
@@ -449,11 +415,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     ) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
-      var params = {
-        organization_id: organization_id,
-        include_related: include_related,
-        ids_only: ids_only,
-        shown_column_ids: shown_column_ids,
+      const params = {
+        organization_id,
+        include_related,
+        ids_only,
+        shown_column_ids,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters)
       };
@@ -467,10 +433,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       return cycle_service
         .get_cycles()
-        .then(function (cycles) {
-          var validCycleIds = _.map(cycles.cycles, 'id');
+        .then((cycles) => {
+          const validCycleIds = _.map(cycles.cycles, 'id');
 
-          var lastCycleId = inventory_service.get_last_cycle();
+          const lastCycleId = inventory_service.get_last_cycle();
           if (cycle) {
             params.cycle = cycle.id;
             if (save_last_cycle === true) {
@@ -485,20 +451,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               '/api/v3/taxlots/filter/',
               {
                 // Pass the specific ids if they exist
-                include_view_ids: include_view_ids,
-                exclude_view_ids: exclude_view_ids,
+                include_view_ids,
+                exclude_view_ids,
                 // Pass the current profile (if one exists) to limit the column data that is returned
-                profile_id: profile_id
+                profile_id
               },
               {
-                params: params
+                params
               }
             )
-            .then(function (response) {
-              return response.data;
-            });
+            .then((response) => response.data);
         })
-        .catch(function (response) {
+        .catch((response) => {
           if (response.data.message) {
             return response.data;
           }
@@ -506,17 +470,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
     };
 
-    inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
-      return $http
+    inventory_service.taxlots_cycle = (profile_id, cycle_ids) =>
+      $http
         .post('/api/v3/taxlots/filter_by_cycle/', {
           organization_id: user_service.get_organization().id,
-          profile_id: profile_id,
-          cycle_ids: cycle_ids
+          profile_id,
+          cycle_ids
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
     /** Get TaxLot information from server for a specified TaxLot and Cycle and Organization.
      *
@@ -596,15 +557,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http
-        .get('/api/v3/taxlots/' + view_id + '/', {
+        .get(`/api/v3/taxlots/${view_id}/`, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -618,15 +577,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http
-        .get('/api/v3/taxlots/' + view_id + '/links/', {
+        .get(`/api/v3/taxlots/${view_id}/links/`, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -641,7 +598,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       spinner_utility.show();
       return $http
         .post(
-          '/api/v3/taxlots/' + view_id + '/match_merge_link/',
+          `/api/v3/taxlots/${view_id}/match_merge_link/`,
           {},
           {
             params: {
@@ -649,10 +606,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
@@ -679,9 +634,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       spinner_utility.show();
       return $http
         .put(
-          '/api/v3/taxlots/' + view_id + '/',
+          `/api/v3/taxlots/${view_id}/`,
           {
-            state: state
+            state
           },
           {
             params: {
@@ -689,64 +644,62 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        })
-        .finally(function () {
+        .then((response) => response.data)
+        .finally(() => {
           spinner_utility.hide();
         });
     };
 
     inventory_service.get_last_cycle = function () {
-      var organization_id = user_service.get_organization().id;
+      const organization_id = user_service.get_organization().id;
       return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_cycle = function (pk, organization_id = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
-      var cycles = JSON.parse(localStorage.getItem('cycles')) || {};
+      const cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
     inventory_service.get_last_selected_cycles = function () {
-      var organization_id = user_service.get_organization().id;
+      const organization_id = user_service.get_organization().id;
       return (JSON.parse(localStorage.getItem('selected_cycles')) || {})[organization_id];
     };
 
     inventory_service.save_last_selected_cycles = function (ids) {
-      var organization_id = user_service.get_organization().id;
-      var selected_cycles = JSON.parse(localStorage.getItem('selected_cycles')) || {};
+      const organization_id = user_service.get_organization().id;
+      const selected_cycles = JSON.parse(localStorage.getItem('selected_cycles')) || {};
       selected_cycles[organization_id] = ids;
       localStorage.setItem('selected_cycles', JSON.stringify(selected_cycles));
     };
 
     inventory_service.get_last_profile = function (key) {
-      var organization_id = user_service.get_organization().id;
-      return (JSON.parse(localStorage.getItem('profiles.' + key)) || {})[organization_id];
+      const organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem(`profiles.${key}`)) || {})[organization_id];
     };
 
     inventory_service.save_last_profile = function (pk, key) {
-      var organization_id = user_service.get_organization().id,
-        profiles = JSON.parse(localStorage.getItem('profiles.' + key)) || {};
+      const organization_id = user_service.get_organization().id;
+      const profiles = JSON.parse(localStorage.getItem(`profiles.${key}`)) || {};
       profiles[organization_id] = _.toInteger(pk);
-      localStorage.setItem('profiles.' + key, JSON.stringify(profiles));
+      localStorage.setItem(`profiles.${key}`, JSON.stringify(profiles));
     };
 
     inventory_service.get_last_detail_profile = function (key) {
-      var organization_id = user_service.get_organization().id;
-      return (JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {})[organization_id];
+      const organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem(`detailProfiles.${key}`)) || {})[organization_id];
     };
 
     inventory_service.save_last_detail_profile = function (pk, key) {
-      var organization_id = user_service.get_organization().id,
-        profiles = JSON.parse(localStorage.getItem('detailProfiles.' + key)) || {};
+      const organization_id = user_service.get_organization().id;
+      const profiles = JSON.parse(localStorage.getItem(`detailProfiles.${key}`)) || {};
       profiles[organization_id] = _.toInteger(pk);
-      localStorage.setItem('detailProfiles.' + key, JSON.stringify(profiles));
+      localStorage.setItem(`detailProfiles.${key}`, JSON.stringify(profiles));
     };
 
-    inventory_service.get_property_column_names_for_org = function (org_id) {
-      return $http
+    inventory_service.get_property_column_names_for_org = (org_id) =>
+      $http
         .get('/api/v3/columns/', {
           params: {
             inventory_type: 'property',
@@ -755,16 +708,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             display_units: true
           }
         })
-        .then(function (response) {
-          let property_columns = response.data.columns.filter((column) => column.table_name == 'PropertyState');
-          return property_columns.map((a) => {
-            return { column_name: a.column_name, display_name: a.display_name };
-          });
+        .then((response) => {
+          const property_columns = response.data.columns.filter((column) => column.table_name == 'PropertyState');
+          return property_columns.map((a) => ({ column_name: a.column_name, display_name: a.display_name }));
         });
-    };
 
-    inventory_service.get_property_column_names_and_ids_for_org = function (org_id) {
-      return $http
+    inventory_service.get_property_column_names_and_ids_for_org = (org_id) =>
+      $http
         .get('/api/v3/columns/', {
           params: {
             inventory_type: 'property',
@@ -773,16 +723,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             display_units: true
           }
         })
-        .then(function (response) {
-          let property_columns = response.data.columns.filter((column) => column.table_name == 'PropertyState');
-          return property_columns.map((a) => {
-            return { column_name: a.column_name, display_name: a.display_name, id: a.id };
-          });
+        .then((response) => {
+          const property_columns = response.data.columns.filter((column) => column.table_name == 'PropertyState');
+          return property_columns.map((a) => ({ column_name: a.column_name, display_name: a.display_name, id: a.id }));
         });
-    };
 
-    inventory_service.get_taxlot_column_names_for_org = function (org_id) {
-      return $http
+    inventory_service.get_taxlot_column_names_for_org = (org_id) =>
+      $http
         .get('/api/v3/columns/', {
           params: {
             inventory_type: 'taxlot',
@@ -791,17 +738,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             display_units: true
           }
         })
-        .then(function (response) {
-          let taxlot_columns = response.data.columns.filter((column) => column.table_name == 'TaxLotState');
-          return taxlot_columns.map((a) => {
-            return { column_name: a.column_name, display_name: taxlot_columns.find((x) => x.column_name == a.column_name).display_name };
-          });
+        .then((response) => {
+          const taxlot_columns = response.data.columns.filter((column) => column.table_name == 'TaxLotState');
+          return taxlot_columns.map((a) => ({ column_name: a.column_name, display_name: taxlot_columns.find((x) => x.column_name == a.column_name).display_name }));
         });
-    };
 
-    inventory_service.get_property_columns = function () {
-      return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
-    };
+    inventory_service.get_property_columns = () => inventory_service.get_property_columns_for_org(user_service.get_organization().id);
 
     inventory_service.get_property_columns_for_org = function (org_id, only_used, display_units = true) {
       if (only_used === undefined) only_used = false;
@@ -810,22 +752,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params: {
             inventory_type: 'property',
             organization_id: org_id,
-            only_used: only_used,
-            display_units: display_units
+            only_used,
+            display_units
           }
         })
-        .then(function (response) {
+        .then((response) => {
           // Remove empty columns
-          var columns = _.filter(response.data.columns, function (col) {
-            return !_.isEmpty(col.name);
-          });
+          let columns = _.filter(response.data.columns, (col) => !_.isEmpty(col.name));
 
           // Rename display_name to displayName (ui-grid compatibility)
-          columns = _.map(columns, function (col) {
-            return _.mapKeys(col, function (value, key) {
-              return key === 'display_name' ? 'displayName' : key;
-            });
-          });
+          columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
           // Remove _orig columns
           // if (flippers.is_active('release:orig_columns')) {
@@ -835,9 +771,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // }
 
           // Check for problems
-          var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
-            return _.includes(iteratee, value, index + 1);
-          });
+          const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
             $log.error('Duplicate property column names detected:', duplicates);
           }
@@ -846,26 +780,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
     };
 
-    inventory_service.get_mappable_property_columns = function () {
-      return $http
+    inventory_service.get_mappable_property_columns = () =>
+      $http
         .get('/api/v3/columns/mappable/', {
           params: {
             organization_id: user_service.get_organization().id,
             inventory_type: 'property'
           }
         })
-        .then(function (response) {
+        .then((response) => {
           // Remove empty columns
-          var columns = _.filter(response.data.columns, function (col) {
-            return !_.isEmpty(col.name);
-          });
+          let columns = _.filter(response.data.columns, (col) => !_.isEmpty(col.name));
 
           // Rename display_name to displayName (ui-grid compatibility)
-          columns = _.map(columns, function (col) {
-            return _.mapKeys(col, function (value, key) {
-              return key === 'display_name' ? 'displayName' : key;
-            });
-          });
+          columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
           // Remove _orig columns
           // if (flippers.is_active('release:orig_columns')) {
@@ -875,20 +803,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // }
 
           // Check for problems
-          var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
-            return _.includes(iteratee, value, index + 1);
-          });
+          const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
             $log.error('Duplicate property column names detected:', duplicates);
           }
 
           return columns;
         });
-    };
 
-    inventory_service.get_taxlot_columns = function () {
-      return inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
-    };
+    inventory_service.get_taxlot_columns = () => inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
 
     inventory_service.get_taxlot_columns_for_org = function (org_id, only_used, display_units = true) {
       if (only_used === undefined) only_used = false;
@@ -897,22 +820,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params: {
             inventory_type: 'taxlot',
             organization_id: org_id,
-            only_used: only_used,
-            display_units: display_units
+            only_used,
+            display_units
           }
         })
-        .then(function (response) {
+        .then((response) => {
           // Remove empty columns
-          var columns = _.filter(response.data.columns, function (col) {
-            return !_.isEmpty(col.name);
-          });
+          let columns = _.filter(response.data.columns, (col) => !_.isEmpty(col.name));
 
           // Rename display_name to displayName (ui-grid compatibility)
-          columns = _.map(columns, function (col) {
-            return _.mapKeys(col, function (value, key) {
-              return key === 'display_name' ? 'displayName' : key;
-            });
-          });
+          columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
           // Remove _orig columns
           // if (flippers.is_active('release:orig_columns')) {
@@ -922,9 +839,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // }
 
           // Check for problems
-          var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
-            return _.includes(iteratee, value, index + 1);
-          });
+          const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
             $log.error('Duplicate tax lot column names detected:', duplicates);
           }
@@ -933,26 +848,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
     };
 
-    inventory_service.get_mappable_taxlot_columns = function () {
-      return $http
+    inventory_service.get_mappable_taxlot_columns = () =>
+      $http
         .get('/api/v3/columns/mappable/', {
           params: {
             organization_id: user_service.get_organization().id,
             inventory_type: 'taxlot'
           }
         })
-        .then(function (response) {
+        .then((response) => {
           // Remove empty columns
-          var columns = _.filter(response.data.columns, function (col) {
-            return !_.isEmpty(col.name);
-          });
+          let columns = _.filter(response.data.columns, (col) => !_.isEmpty(col.name));
 
           // Rename display_name to displayName (ui-grid compatibility)
-          columns = _.map(columns, function (col) {
-            return _.mapKeys(col, function (value, key) {
-              return key === 'display_name' ? 'displayName' : key;
-            });
-          });
+          columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
           // Remove _orig columns
           // if (flippers.is_active('release:orig_columns')) {
@@ -962,266 +871,261 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // }
 
           // Check for problems
-          var duplicates = _.filter(_.map(columns, 'name'), function (value, index, iteratee) {
-            return _.includes(iteratee, value, index + 1);
-          });
+          const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
             $log.error('Duplicate tax lot column names detected:', duplicates);
           }
 
           return columns;
         });
-    };
 
     // https://regexr.com/3j1tq
-    var combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+(?:\\\.\d+)?)$/;
-    inventory_service.combinedFilter = function () {
-      return {
-        condition: function (searchTerm, cellValue) {
-          // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
-          // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
-          if (_.isNil(cellValue)) cellValue = '';
-          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
-          var match = true;
-          var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
-          // Loop over multiple comma-separated filters
-          _.forEach(searchTerms, function (search) {
-            var operator, regex, value;
-            var filterData = search.match(combinedRegex);
-            if (filterData) {
-              if (!_.isUndefined(filterData[2])) {
-                // Numeric Equality
-                operator = filterData[1];
-                value = Number(filterData[2].replace('\\.', '.'));
-                if (operator === '!') {
-                  // Not equal
-                  match = cellValue != value;
-                } else {
-                  // Equal
-                  match = cellValue == value;
-                }
-                return match;
-              } else if (!_.isUndefined(filterData[4])) {
-                // Text Equality
-                operator = filterData[3];
-                value = filterData[4];
-                regex = new RegExp('^' + value + '$');
-                if (operator === '!') {
-                  // Not equal
-                  match = !regex.test(cellValue);
-                } else {
-                  // Equal
-                  match = regex.test(cellValue);
-                }
-                return match;
+    const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+(?:\\\.\d+)?)$/;
+    inventory_service.combinedFilter = () => ({
+      condition(searchTerm, cellValue) {
+        // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
+        // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
+        if (_.isNil(cellValue)) cellValue = '';
+        if (_.isString(cellValue)) cellValue = _.trim(cellValue);
+        let match = true;
+        const searchTerms = _.map(_.split(searchTerm, ','), _.trim);
+        // Loop over multiple comma-separated filters
+        _.forEach(searchTerms, (search) => {
+          let operator;
+          let regex;
+          let value;
+          const filterData = search.match(combinedRegex);
+          if (filterData) {
+            if (!_.isUndefined(filterData[2])) {
+              // Numeric Equality
+              operator = filterData[1];
+              value = Number(filterData[2].replace('\\.', '.'));
+              if (operator === '!') {
+                // Not equal
+                match = cellValue != value;
               } else {
-                // Numeric Comparison
-                if (cellValue === '') {
-                  match = false;
-                  return match;
-                }
-                operator = filterData[5];
-                value = Number(filterData[6].replace('\\.', '.'));
-                switch (operator) {
-                  case '<':
-                    match = cellValue < value;
-                    break;
-                  case '<=':
-                    match = cellValue <= value;
-                    break;
-                  case '>':
-                    match = cellValue > value;
-                    break;
-                  case '>=':
-                    match = cellValue >= value;
-                    break;
-                }
-                return match;
+                // Equal
+                match = cellValue == value;
               }
-            } else {
-              // Case-insensitive Contains
-              regex = new RegExp(search, 'i');
-              match = regex.test(cellValue);
               return match;
             }
-          });
+            if (!_.isUndefined(filterData[4])) {
+              // Text Equality
+              operator = filterData[3];
+              value = filterData[4];
+              regex = new RegExp(`^${value}$`);
+              if (operator === '!') {
+                // Not equal
+                match = !regex.test(cellValue);
+              } else {
+                // Equal
+                match = regex.test(cellValue);
+              }
+              return match;
+            }
+            // Numeric Comparison
+            if (cellValue === '') {
+              match = false;
+              return match;
+            }
+            operator = filterData[5];
+            value = Number(filterData[6].replace('\\.', '.'));
+            switch (operator) {
+              case '<':
+                match = cellValue < value;
+                break;
+              case '<=':
+                match = cellValue <= value;
+                break;
+              case '>':
+                match = cellValue > value;
+                break;
+              case '>=':
+                match = cellValue >= value;
+                break;
+            }
+            return match;
+          }
+          // Case-insensitive Contains
+          regex = new RegExp(search, 'i');
+          match = regex.test(cellValue);
           return match;
-        }
-      };
-    };
+        });
+        return match;
+      }
+    });
 
     // https://regexr.com/50ok6
-    var dateRegex = /^(!?=?)\s*(""|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
-    inventory_service.dateFilter = function () {
-      return {
-        condition: function (searchTerm, cellValue) {
-          // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
-          // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
-          if (_.isNil(cellValue)) cellValue = '';
-          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
-          var match = true;
-          var d = moment.utc(cellValue);
-          var cellDate = d.valueOf();
-          var cellYMD = {
-            y: d.year(),
-            m: d.month() + 1,
-            d: d.date()
-          };
-          var searchTerms = _.map(_.split(_.replace(searchTerm, /\\-/g, '-'), ','), _.trim);
-          // Loop over multiple comma-separated filters
-          _.forEach(searchTerms, function (search) {
-            var filterData = search.match(dateRegex);
-            if (filterData) {
-              var operator, value, v, ymd;
-              if (!_.isUndefined(filterData[2])) {
-                // Equality condition
-                operator = filterData[1];
-                value = filterData[2];
+    const dateRegex = /^(!?=?)\s*(""|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
+    inventory_service.dateFilter = () => ({
+      condition(searchTerm, cellValue) {
+        // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
+        // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
+        if (_.isNil(cellValue)) cellValue = '';
+        if (_.isString(cellValue)) cellValue = _.trim(cellValue);
+        let match = true;
+        let d = moment.utc(cellValue);
+        const cellDate = d.valueOf();
+        const cellYMD = {
+          y: d.year(),
+          m: d.month() + 1,
+          d: d.date()
+        };
+        const searchTerms = _.map(_.split(_.replace(searchTerm, /\\-/g, '-'), ','), _.trim);
+        // Loop over multiple comma-separated filters
+        _.forEach(searchTerms, (search) => {
+          const filterData = search.match(dateRegex);
+          if (filterData) {
+            let operator;
+            let value;
+            let v;
+            let ymd;
+            if (!_.isUndefined(filterData[2])) {
+              // Equality condition
+              operator = filterData[1];
+              value = filterData[2];
 
-                if (value === '""') {
-                  match = _.startsWith(operator, '!') ? !_.isEmpty(cellValue) : _.isEmpty(cellValue);
-                  return match;
-                }
+              if (value === '""') {
+                match = _.startsWith(operator, '!') ? !_.isEmpty(cellValue) : _.isEmpty(cellValue);
+                return match;
+              }
 
+              v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+              ymd = {
+                y: _.parseInt(v[1]),
+                m: _.parseInt(v[2]),
+                d: _.parseInt(v[3])
+              };
+              if (_.startsWith(operator, '!')) {
+                // Not equal
+                match =
+                  cellYMD.y !== ymd.y ||
+                  (!_.isNaN(ymd.m) && cellYMD.y === ymd.y && cellYMD.m !== ymd.m) ||
+                  (!_.isNaN(ymd.m) && !_.isNaN(ymd.d) && cellYMD.y === ymd.y && cellYMD.m === ymd.m && cellYMD.d !== ymd.d);
+                return match;
+              }
+              // Equal
+              match = cellYMD.y === ymd.y && (_.isNaN(ymd.m) || cellYMD.m === ymd.m) && (_.isNaN(ymd.d) || cellYMD.d === ymd.d);
+              return match;
+            }
+            // Range condition
+            if (_.isNil(cellValue)) {
+              match = false;
+              return match;
+            }
+
+            operator = filterData[3];
+            switch (operator) {
+              case '<':
+                value = Date.parse(`${filterData[4]} 00:00:00 GMT`);
+                match = cellDate < value;
+                return match;
+              case '<=':
+                value = filterData[4];
                 v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
                 ymd = {
                   y: _.parseInt(v[1]),
                   m: _.parseInt(v[2]),
                   d: _.parseInt(v[3])
                 };
-                if (_.startsWith(operator, '!')) {
-                  // Not equal
-                  match =
-                    cellYMD.y !== ymd.y ||
-                    (!_.isNaN(ymd.m) && cellYMD.y === ymd.y && cellYMD.m !== ymd.m) ||
-                    (!_.isNaN(ymd.m) && !_.isNaN(ymd.d) && cellYMD.y === ymd.y && cellYMD.m === ymd.m && cellYMD.d !== ymd.d);
-                  return match;
-                } else {
-                  // Equal
-                  match = cellYMD.y === ymd.y && (_.isNaN(ymd.m) || cellYMD.m === ymd.m) && (_.isNaN(ymd.d) || cellYMD.d === ymd.d);
-                  return match;
-                }
-              } else {
-                // Range condition
-                if (_.isNil(cellValue)) {
-                  match = false;
-                  return match;
+
+                if (filterData[4].length === 10) {
+                  // Add a day, subtract a millisecond
+                  value = Date.parse(`${filterData[4]} 00:00:00 GMT`) + 86399999;
+                } else if (filterData[4].length === 7) {
+                  // Add a month, subtract a millisecond
+                  if (ymd.m === 12) {
+                    d = `${ymd.y + 1}-01`;
+                  } else {
+                    d = `${ymd.y}-${_.padStart(ymd.m + 1, 2, '0')}`;
+                  }
+                  value = Date.parse(`${d} 00:00:00 GMT`) - 1;
+                } else if (filterData[4].length === 4) {
+                  // Add a year, subtract a millisecond
+                  value = Date.parse(`${ymd.y + 1} 00:00:00 GMT`) - 1;
                 }
 
-                operator = filterData[3];
-                switch (operator) {
-                  case '<':
-                    value = Date.parse(filterData[4] + ' 00:00:00 GMT');
-                    match = cellDate < value;
-                    return match;
-                  case '<=':
-                    value = filterData[4];
-                    v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
-                    ymd = {
-                      y: _.parseInt(v[1]),
-                      m: _.parseInt(v[2]),
-                      d: _.parseInt(v[3])
-                    };
+                match = cellDate <= value;
+                return match;
+              case '>':
+                value = filterData[4];
+                v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
+                ymd = {
+                  y: _.parseInt(v[1]),
+                  m: _.parseInt(v[2]),
+                  d: _.parseInt(v[3])
+                };
 
-                    if (filterData[4].length === 10) {
-                      // Add a day, subtract a millisecond
-                      value = Date.parse(filterData[4] + ' 00:00:00 GMT') + 86399999;
-                    } else if (filterData[4].length === 7) {
-                      // Add a month, subtract a millisecond
-                      if (ymd.m === 12) {
-                        d = ymd.y + 1 + '-01';
-                      } else {
-                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
-                      }
-                      value = Date.parse(d + ' 00:00:00 GMT') - 1;
-                    } else if (filterData[4].length === 4) {
-                      // Add a year, subtract a millisecond
-                      value = Date.parse(ymd.y + 1 + ' 00:00:00 GMT') - 1;
-                    }
-
-                    match = cellDate <= value;
-                    return match;
-                  case '>':
-                    value = filterData[4];
-                    v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
-                    ymd = {
-                      y: _.parseInt(v[1]),
-                      m: _.parseInt(v[2]),
-                      d: _.parseInt(v[3])
-                    };
-
-                    if (filterData[4].length === 10) {
-                      // Add a day, subtract a millisecond
-                      value = Date.parse(filterData[4] + ' 00:00:00 GMT') + 86399999;
-                    } else if (filterData[4].length === 7) {
-                      // Add a month, subtract a millisecond
-                      if (ymd.m === 12) {
-                        d = ymd.y + 1 + '-01';
-                      } else {
-                        d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
-                      }
-                      value = Date.parse(d + ' 00:00:00 GMT') - 1;
-                    } else if (filterData[4].length === 4) {
-                      // Add a year, subtract a millisecond
-                      value = Date.parse(ymd.y + 1 + ' 00:00:00 GMT') - 1;
-                    }
-
-                    match = cellDate > value;
-                    return match;
-                  case '>=':
-                    value = Date.parse(filterData[4] + ' 00:00:00 GMT');
-                    match = cellDate >= value;
-                    return match;
+                if (filterData[4].length === 10) {
+                  // Add a day, subtract a millisecond
+                  value = Date.parse(`${filterData[4]} 00:00:00 GMT`) + 86399999;
+                } else if (filterData[4].length === 7) {
+                  // Add a month, subtract a millisecond
+                  if (ymd.m === 12) {
+                    d = `${ymd.y + 1}-01`;
+                  } else {
+                    d = `${ymd.y}-${_.padStart(ymd.m + 1, 2, '0')}`;
+                  }
+                  value = Date.parse(`${d} 00:00:00 GMT`) - 1;
+                } else if (filterData[4].length === 4) {
+                  // Add a year, subtract a millisecond
+                  value = Date.parse(`${ymd.y + 1} 00:00:00 GMT`) - 1;
                 }
-              }
-            } else {
-              match = false;
-              return match;
+
+                match = cellDate > value;
+                return match;
+              case '>=':
+                value = Date.parse(`${filterData[4]} 00:00:00 GMT`);
+                match = cellDate >= value;
+                return match;
             }
-          });
-          return match;
-        }
-      };
-    };
+          } else {
+            match = false;
+            return match;
+          }
+        });
+        return match;
+      }
+    });
 
     inventory_service.saveSelectedLabels = function (key, ids) {
-      key += '.' + user_service.get_organization().id;
+      key += `.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
     inventory_service.loadSelectedLabels = function (key) {
-      key += '.' + user_service.get_organization().id;
+      key += `.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };
 
     // Save non-empty sort/filter states
     inventory_service.saveGridSettings = function (key, settings) {
-      key += '.' + user_service.get_organization().id;
+      key += `.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(settings));
     };
 
     inventory_service.loadGridSettings = function (key) {
-      key += '.' + user_service.get_organization().id;
+      key += `.${user_service.get_organization().id}`;
       return localStorage.getItem(key);
     };
 
     inventory_service.saveMatchesPerPage = function (matchesPerPage) {
-      var key = 'matchesPerPage.' + user_service.get_organization().id;
+      const key = `matchesPerPage.${user_service.get_organization().id}`;
       localStorage.setItem(key, matchesPerPage);
     };
 
     inventory_service.loadMatchesPerPage = function () {
-      var key = 'matchesPerPage.' + user_service.get_organization().id;
+      const key = `matchesPerPage.${user_service.get_organization().id}`;
       return _.parseInt(localStorage.getItem(key)) || 25;
     };
 
     inventory_service.saveDetailMatchesPerPage = function (matchesPerPage) {
-      var key = 'detailMatchesPerPage.' + user_service.get_organization().id;
+      const key = `detailMatchesPerPage.${user_service.get_organization().id}`;
       localStorage.setItem(key, matchesPerPage);
     };
 
     inventory_service.loadDetailMatchesPerPage = function () {
-      var key = 'detailMatchesPerPage.' + user_service.get_organization().id;
+      const key = `detailMatchesPerPage.${user_service.get_organization().id}`;
       return _.parseInt(localStorage.getItem(key)) || 25;
     };
 
@@ -1236,76 +1140,62 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.taxlot_state_date_columns = ['generation_date', 'release_date', 'recent_sale_date', 'year_ending', 'record_created', 'record_modified', 'record_year_ending'];
 
     inventory_service.reorderSettings = function (columns) {
-      var pinned = _.remove(columns, 'pinnedLeft');
-      var selected = _.remove(columns, 'visible');
+      const pinned = _.remove(columns, 'pinnedLeft');
+      const selected = _.remove(columns, 'visible');
       return pinned.concat(selected).concat(columns);
     };
 
-    inventory_service.search_matching_inventory = function (import_file_id) {
-      return $http
-        .post('/api/v3/import_files/' + import_file_id + '/mapping_results/', undefined, {
+    inventory_service.search_matching_inventory = (import_file_id) =>
+      $http
+        .post(`/api/v3/import_files/${import_file_id}/mapping_results/`, undefined, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.get_used_columns = function (org_id) {
-      return $http
+    inventory_service.get_used_columns = (org_id) =>
+      $http
         .get('/api/v3/columns/', {
           params: {
             organization_id: org_id,
             only_used: true
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.get_matching_and_geocoding_results = function (import_file_id) {
-      return $http
-        .get('/api/v3/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
+    inventory_service.get_matching_and_geocoding_results = (import_file_id) =>
+      $http
+        .get(`/api/v3/import_files/${import_file_id}/matching_and_geocoding_results/`, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    };
+        .then((response) => response.data);
 
-    inventory_service.get_column_list_profile = function (id) {
-      return $http
-        .get('/api/v3/column_list_profiles/' + id + '/', {
+    inventory_service.get_column_list_profile = (id) =>
+      $http
+        .get(`/api/v3/column_list_profiles/${id}/`, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data.data;
-        });
-    };
+        .then((response) => response.data.data);
 
-    inventory_service.get_column_list_profiles = function (profile_location, inventory_type, brief = false) {
-      return $http
+    inventory_service.get_column_list_profiles = (profile_location, inventory_type, brief = false) =>
+      $http
         .get('/api/v3/column_list_profiles/', {
           params: {
             organization_id: user_service.get_organization().id,
-            inventory_type: inventory_type,
-            profile_location: profile_location,
-            brief: brief
+            inventory_type,
+            profile_location,
+            brief
           }
         })
-        .then(function (response) {
-          var profiles = response.data.data.sort(function (a, b) {
-            return naturalSort(a.name, b.name);
-          });
+        .then((response) => {
+          const profiles = response.data.data.sort((a, b) => naturalSort(a.name, b.name));
 
-          _.forEach(profiles, function (profile) {
+          _.forEach(profiles, (profile) => {
             // Remove exact duplicates - this shouldn't be necessary, but it has occurred and will avoid errors and cleanup the database at the same time
             profile.columns = _.uniqWith(profile.columns, _.isEqual);
 
@@ -1314,19 +1204,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
           return profiles;
         });
-    };
 
-    inventory_service.new_column_list_profile = function (data) {
-      return $http
+    inventory_service.new_column_list_profile = (data) =>
+      $http
         .post('/api/v3/column_list_profiles/', data, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data.data;
-        });
-    };
+        .then((response) => response.data.data);
 
     inventory_service.update_column_list_profile = function (id, data) {
       if (id === null) {
@@ -1334,14 +1220,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         return $q.reject();
       }
       return $http
-        .put('/api/v3/column_list_profiles/' + id + '/', data, {
+        .put(`/api/v3/column_list_profiles/${id}/`, data, {
           params: {
             organization_id: user_service.get_organization().id
           }
         })
-        .then(function (response) {
-          return response.data.data;
-        });
+        .then((response) => response.data.data);
     };
 
     inventory_service.remove_column_list_profile = function (id) {
@@ -1349,29 +1233,27 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
       }
-      return $http.delete('/api/v3/column_list_profiles/' + id + '/', {
+      return $http.delete(`/api/v3/column_list_profiles/${id}/`, {
         params: {
           organization_id: user_service.get_organization().id
         }
       });
     };
 
-    inventory_service.set_update_to_now = function (property_views, taxlot_views, progress_key) {
-      return $http.post(`/api/v3/tax_lot_properties/set_update_to_now/`, {
-        property_views: property_views,
-        taxlot_views: taxlot_views,
-        progress_key: progress_key,
+    inventory_service.set_update_to_now = (property_views, taxlot_views, progress_key) =>
+      $http.post('/api/v3/tax_lot_properties/set_update_to_now/', {
+        property_views,
+        taxlot_views,
+        progress_key,
         organization_id: user_service.get_organization().id
       });
-    };
 
-    inventory_service.start_set_update_to_now = function () {
-      return $http.get('/api/v3/tax_lot_properties/start_set_update_to_now/', {
+    inventory_service.start_set_update_to_now = () =>
+      $http.get('/api/v3/tax_lot_properties/start_set_update_to_now/', {
         params: {
           organization_id: user_service.get_organization().id
         }
       });
-    };
 
     return inventory_service;
   }

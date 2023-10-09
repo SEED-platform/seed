@@ -26,18 +26,17 @@ angular.module('BE.seed.controller.analysis', []).controller('analysis_controlle
     $scope.original_views = views_payload.original_views;
 
     $scope.has_children = function (value) {
-      if (typeof value == 'object') {
+      if (typeof value === 'object') {
         return true;
       }
     };
 
-    $scope.get_display_name = function (inventory_state) {
-      return organization_service.get_inventory_display_value(
+    $scope.get_display_name = (inventory_state) =>
+      organization_service.get_inventory_display_value(
         $scope.org,
         // NOTE: hardcoding 'property' b/c you can only run analyses on properties
         'property',
         inventory_state
       );
-    };
   }
 ]);

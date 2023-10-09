@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.inventory_detail_ubid', []).controller('inven
       let error = '';
       let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
       if (!(field in $scope.item_state)) {
-        error = field + ' does not exist';
+        error = `${field} does not exist`;
         field = 'address_line_1';
       }
       if (!$scope.item_state[field]) {

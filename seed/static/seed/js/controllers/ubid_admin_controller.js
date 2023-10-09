@@ -26,20 +26,19 @@ angular.module('BE.seed.controller.ubid_admin', []).controller('ubid_admin_contr
 
     const inventory_key = $scope.inventory_type === 'properties' ? 'property' : 'taxlot';
 
-    const refresh_ubids = () => {
-      return ubid_service.get_ubid_models_by_state(view_id, inventory_key).then((results) => {
+    const refresh_ubids = () =>
+      ubid_service.get_ubid_models_by_state(view_id, inventory_key).then((results) => {
         if ('data' in results) {
           $scope.ubids = results.data.sort(({ preferred }) => (preferred ? -1 : 1));
         } else {
           $scope.message = results.message;
         }
       });
-    };
 
     $scope.edit_or_create = (ubid = false) => {
       const ubid_editor_modal = $uibModal.open({
         backdrop: 'static',
-        templateUrl: urls.static_url + 'seed/partials/ubid_editor_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/ubid_editor_modal.html`,
         controller: 'ubid_editor_modal_controller',
         resolve: {
           ubid: () => ubid,

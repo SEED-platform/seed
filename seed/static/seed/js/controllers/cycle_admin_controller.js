@@ -32,10 +32,10 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
       $scope.new_cycle = { start: null, end: null, name: '' };
     }
 
-    function translateMessage(msg, params) {
-      // TODO XSS, discuss with Nick and Alex
-      return $sce.getTrustedHtml($translate.instant(msg, params));
-    }
+    const translateMessage = (
+      msg,
+      params // TODO XSS, discuss with Nick and Alex
+    ) => $sce.getTrustedHtml($translate.instant(msg, params));
 
     // Take user input from New Cycle form and submit to service to create a new cycle.
     $scope.submitNewCycleForm = (form) => {
@@ -84,9 +84,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
       }
     };
 
-    function isCycleNameUsed(newCycleName) {
-      return $scope.cycles.some(({ name }) => name === newCycleName);
-    }
+    const isCycleNameUsed = (newCycleName) => $scope.cycles.some(({ name }) => name === newCycleName);
 
     /* Submit edit when 'enter' is pressed */
     $scope.onEditCycleNameKeypress = (e, form) => {
@@ -96,7 +94,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
     };
 
     $scope.saveCycle = (cycle, id) => {
-      //Don't update $scope.cycle until a 'success' from server
+      // Don't update $scope.cycle until a 'success' from server
       cycle = {
         id,
         name: cycle.name,
@@ -166,17 +164,13 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
 
     $scope.showDeleteCycleModal = (cycle_id) => {
       const delete_cycle_modal = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/delete_cycle_modal.html`,
         controller: 'delete_cycle_modal_controller',
         backdrop: 'static',
         keyboard: false,
         resolve: {
           // use cycle data from organization endpoint b/c it includes inventory counts
-          cycle: (organization_service) => {
-            return organization_service.get_organization($scope.org.id).then((res) => {
-              return res.organization.cycles.find((cycle) => cycle.cycle_id === cycle_id);
-            });
-          },
+          cycle: (organization_service) => organization_service.get_organization($scope.org.id).then((res) => res.organization.cycles.find((cycle) => cycle.cycle_id === cycle_id)),
           organization_id: () => $scope.org.id
         }
       });

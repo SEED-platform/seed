@@ -4,7 +4,7 @@
  */
 angular.module('sdUbid', []).directive('ubid', () => ({
   require: 'ngModel',
-  link: function (scope, elm, attrs, ctrl) {
+  link(scope, elm, attrs, ctrl) {
     ctrl.$validators.ubid = (modelValue) => UniqueBuildingIdentification.v3.isValid(modelValue);
   }
 }));

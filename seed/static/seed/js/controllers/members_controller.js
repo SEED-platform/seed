@@ -29,13 +29,13 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     $scope.remove_member = function (user) {
       organization_service
         .remove_user(user.user_id, $scope.org.id)
-        .then(function () {
-          organization_service.get_organization_users({ org_id: $scope.org.id }).then(function (data) {
+        .then(() => {
+          organization_service.get_organization_users({ org_id: $scope.org.id }).then((data) => {
             $scope.users = data.users;
             init();
           });
         })
-        .catch(function (response) {
+        .catch((response) => {
           $scope.$emit('app_error', response);
         });
     };
@@ -47,10 +47,10 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     $scope.update_role = function (user) {
       organization_service
         .update_role(user.user_id, $scope.org.id, user.role)
-        .then(function (data) {
+        .then((data) => {
           refreshRoleStatus();
         })
-        .catch(function (data) {
+        .catch((data) => {
           $scope.$emit('app_error', data);
         });
     };
@@ -59,23 +59,21 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      * new_member_modal open an AngularUI modal to add/invite a new member
      */
     $scope.new_member_modal = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/new_member_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/new_member_modal.html`,
         controller: 'new_member_modal_controller',
         resolve: {
-          organization: function () {
-            return $scope.org;
-          }
+          organization: () => $scope.org
         }
       });
       modalInstance.result.then(
-        function () {
-          organization_service.get_organization_users({ org_id: $scope.org.id }).then(function (data) {
+        () => {
+          organization_service.get_organization_users({ org_id: $scope.org.id }).then((data) => {
             $scope.users = data.users;
             init();
           });
         },
-        function () {
+        () => {
           // Do nothing
         }
       );
@@ -87,7 +85,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     $scope.reset_all_passwords = function (confirm_message = 'Really reset all passwords?  This will sign you out of SEED.') {
       if (confirm(confirm_message)) {
         organization_service.reset_all_passwords($scope.org.id);
-        window.location.href = '/accounts/login/?next=' + window.location.pathname + window.location.hash;
+        window.location.href = `/accounts/login/?next=${window.location.pathname}${window.location.hash}`;
       }
     };
 
@@ -111,7 +109,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
       $scope.only_one_owner = _.chain($scope.users).filter(['role', 'owner']).size().value() === 1;
 
       if (auth_refresh) {
-        auth_service.is_authorized($scope.org.id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member', 'requires_superuser']).then(function (data) {
+        auth_service.is_authorized($scope.org.id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member', 'requires_superuser']).then((data) => {
           $scope.auth = data.auth;
         });
       }
@@ -122,10 +120,10 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      *  - creates a name field for each user from first_name and last_name
      */
     var init = function () {
-      $scope.user = $scope.users.map(function (u) {
+      $scope.user = $scope.users.map((u) => {
         u.first_name = u.first_name || '';
         u.last_name = u.last_name || '';
-        u.name = '' + u.first_name + ' ' + u.last_name;
+        u.name = `${u.first_name} ${u.last_name}`;
         return u;
       });
 

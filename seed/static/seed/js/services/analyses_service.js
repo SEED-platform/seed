@@ -9,109 +9,69 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
   'user_service',
   'uploader_service',
   function ($http, $log, $timeout, user_service, uploader_service) {
-    const get_analyses_for_org = function (org_id) {
-      return $http.get('/api/v3/analyses/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analyses_for_org = (org_id) => $http.get(`/api/v3/analyses/?organization_id=${org_id}`).then((response) => response.data);
 
     const get_analyses_for_canonical_property = function (property_id) {
       const org = user_service.get_organization().id;
-      return $http.get('/api/v3/properties/' + property_id + '/analyses/?organization_id=' + org).then(function (response) {
-        return response.data;
-      });
+      return $http.get(`/api/v3/properties/${property_id}/analyses/?organization_id=${org}`).then((response) => response.data);
     };
 
-    const get_analysis_for_org = function (analysis_id, org_id) {
-      return $http.get('/api/v3/analyses/' + analysis_id + '/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analysis_for_org = (analysis_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/?organization_id=${org_id}`).then((response) => response.data);
 
-    const get_analysis_messages_for_org = function (analysis_id, org_id) {
-      return $http.get('/api/v3/analyses/' + analysis_id + '/messages/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analysis_messages_for_org = (analysis_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/messages/?organization_id=${org_id}`).then((response) => response.data);
 
-    const get_analyses_messages_for_org = function (org_id) {
-      return $http.get('/api/v3/analyses/0/messages/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analyses_messages_for_org = (org_id) => $http.get(`/api/v3/analyses/0/messages/?organization_id=${org_id}`).then((response) => response.data);
 
-    const get_analysis_views_for_org = function (analysis_id, org_id) {
-      return $http.get('/api/v3/analyses/' + analysis_id + '/views/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analysis_views_for_org = (analysis_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/views/?organization_id=${org_id}`).then((response) => response.data);
 
-    const get_analysis_view_for_org = function (analysis_id, view_id, org_id) {
-      return $http.get('/api/v3/analyses/' + analysis_id + '/views/' + view_id + '/?organization_id=' + org_id).then(function (response) {
-        return response.data;
-      });
-    };
+    const get_analysis_view_for_org = (analysis_id, view_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/views/${view_id}/?organization_id=${org_id}`).then((response) => response.data);
 
     const create_analysis = function (name, service, configuration, property_view_ids) {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: '/api/v3/analyses/',
         method: 'POST',
-        params: { organization_id: organization_id, start_analysis: true },
+        params: { organization_id, start_analysis: true },
         data: {
-          name: name,
-          service: service,
-          configuration: configuration,
-          property_view_ids: property_view_ids
+          name,
+          service,
+          configuration,
+          property_view_ids
         }
-      }).then(function (response) {
-        return response.data;
-      });
+      }).then((response) => response.data);
     };
 
     const start_analysis = function (analysis_id) {
       const organization_id = user_service.get_organization().id;
       return $http({
-        url: '/api/v3/analyses/' + analysis_id + '/start/',
+        url: `/api/v3/analyses/${analysis_id}/start/`,
         method: 'POST',
-        params: { organization_id: organization_id }
+        params: { organization_id }
       })
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
+        .then((response) => response.data)
+        .catch((response) => response.data);
     };
 
     const stop_analysis = function (analysis_id) {
       const organization_id = user_service.get_organization().id;
       return $http({
-        url: '/api/v3/analyses/' + analysis_id + '/stop/',
+        url: `/api/v3/analyses/${analysis_id}/stop/`,
         method: 'POST',
-        params: { organization_id: organization_id }
+        params: { organization_id }
       })
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
+        .then((response) => response.data)
+        .catch((response) => response.data);
     };
 
     const delete_analysis = function (analysis_id) {
       const organization_id = user_service.get_organization().id;
       return $http({
-        url: '/api/v3/analyses/' + analysis_id + '/',
+        url: `/api/v3/analyses/${analysis_id}/`,
         method: 'DELETE',
-        params: { organization_id: organization_id }
+        params: { organization_id }
       })
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
+        .then((response) => response.data)
+        .catch((response) => response.data);
     };
 
     const get_summary = function (cycle_id) {
@@ -119,43 +79,30 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       return $http({
         url: '/api/v3/analyses/stats',
         method: 'GET',
-        params: { organization_id: organization_id, cycle_id: cycle_id }
+        params: { organization_id, cycle_id }
       })
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
+        .then((response) => response.data)
+        .catch((response) => response.data);
     };
 
-    const verify_token = (organization_id) => {
-      return $http({
+    const verify_token = (organization_id) =>
+      $http({
         url: '/api/v3/analyses/verify_better_token/',
         method: 'GET',
         params: { organization_id }
       })
-        .then((response) => {
-          return response.data;
-        })
-        .catch((response) => {
-          return response.data;
-        });
-    };
+        .then((response) => response.data)
+        .catch((response) => response.data);
 
     const get_progress_key = function (analysis_id) {
       const organization_id = user_service.get_organization().id;
       return $http({
-        url: '/api/v3/analyses/' + analysis_id + '/progress_key/',
+        url: `/api/v3/analyses/${analysis_id}/progress_key/`,
         method: 'GET',
         params: { organization_id }
       })
-        .then(function (response) {
-          return response.data;
-        })
-        .catch(function (response) {
-          return response.data;
-        });
+        .then((response) => response.data)
+        .catch((response) => response.data);
     };
 
     /**
@@ -188,7 +135,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       // returned by the get_progress_key service)
       const get_key_and_check_progress = () => {
         get_progress_key(id).then((data) => {
-          const progress_key = data.progress_key;
+          const { progress_key } = data;
           if (!progress_key) {
             // analysis isn't in a trackable state/status, stop checking
             no_current_task_callback(id);
@@ -235,21 +182,21 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
     };
 
     const analyses_factory = {
-      get_analyses_for_org: get_analyses_for_org,
-      get_analyses_for_canonical_property: get_analyses_for_canonical_property,
-      get_analysis_for_org: get_analysis_for_org,
-      get_analysis_messages_for_org: get_analysis_messages_for_org,
-      get_analyses_messages_for_org: get_analyses_messages_for_org,
-      get_analysis_views_for_org: get_analysis_views_for_org,
-      get_analysis_view_for_org: get_analysis_view_for_org,
-      create_analysis: create_analysis,
-      start_analysis: start_analysis,
-      stop_analysis: stop_analysis,
-      delete_analysis: delete_analysis,
-      get_summary: get_summary,
-      get_progress_key: get_progress_key,
-      check_progress_loop: check_progress_loop,
-      verify_token: verify_token
+      get_analyses_for_org,
+      get_analyses_for_canonical_property,
+      get_analysis_for_org,
+      get_analysis_messages_for_org,
+      get_analyses_messages_for_org,
+      get_analysis_views_for_org,
+      get_analysis_view_for_org,
+      create_analysis,
+      start_analysis,
+      stop_analysis,
+      delete_analysis,
+      get_summary,
+      get_progress_key,
+      check_progress_loop,
+      verify_token
     };
 
     return analyses_factory;

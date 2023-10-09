@@ -21,10 +21,10 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
     $scope.error = '';
     $scope.busy = false;
     $scope.mapping_profiles = column_mapping_profiles;
-    let profile = $scope.mapping_profiles.length ? $scope.mapping_profiles[0].id : null;
+    const profile = $scope.mapping_profiles.length ? $scope.mapping_profiles[0].id : null;
 
     $scope.fields = {
-      pm_property_id: pm_property_id,
+      pm_property_id,
       espm_username: '',
       espm_password: '',
       mapping_profile: profile
@@ -55,13 +55,13 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
       spinner_utility.show();
       return espm_service.get_espm_building_xlsx($scope.organization.id, $scope.fields.pm_property_id, $scope.fields.espm_username, $scope.fields.espm_password).then((file_result) => {
         spinner_utility.hide();
-        if (typeof result == 'object' && !result.success) {
-          $scope.error = 'Error: ' + result.message;
+        if (typeof result === 'object' && !result.success) {
+          $scope.error = `Error: ${result.message}`;
           $scope.busy = false;
         } else {
           return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.mapping_profile, file_result).then((result) => {
-            if (typeof result == 'object' && !result.success) {
-              $scope.error = 'Error: ' + result.message;
+            if (typeof result === 'object' && !result.success) {
+              $scope.error = `Error: ${result.message}`;
               $scope.busy = false;
             } else {
               $scope.close();

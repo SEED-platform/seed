@@ -22,11 +22,11 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   '$translate',
   '$uibModal',
   function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, flippers, urls, $sce, $translate, $uibModal) {
-    var org_id = organization_payload.organization.id;
-    var base_storage_key = 'report.' + org_id;
+    const org_id = organization_payload.organization.id;
+    const base_storage_key = `report.${org_id}`;
 
-    var pretty_unit = function (pint_spec) {
-      var mappings = {
+    const pretty_unit = function (pint_spec) {
+      const mappings = {
         'ft**2': 'ft²',
         'm**2': 'm²',
         'kBtu/ft**2/year': 'kBtu/sq. ft./year',
@@ -38,13 +38,13 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       return mappings[pint_spec] || pint_spec;
     };
 
-    var eui_units = function () {
-      var unit = organization_payload.organization.display_units_eui;
+    const eui_units = function () {
+      const unit = organization_payload.organization.display_units_eui;
       return pretty_unit(unit);
     };
 
-    var area_units = function () {
-      var unit = organization_payload.organization.display_units_area;
+    const area_units = function () {
+      const unit = organization_payload.organization.display_units_area;
       return pretty_unit(unit);
     };
 
@@ -58,23 +58,23 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     $scope.fromCycle = {};
     $scope.toCycle = {};
 
-    var translateAxisLabel = function (label, units) {
-      var str = '';
+    const translateAxisLabel = function (label, units) {
+      let str = '';
       str += $translate.instant(label);
       if (units) {
-        str += ' (' + $translate.instant(units) + ')';
+        str += ` (${$translate.instant(units)})`;
       }
       return str;
     };
 
-    var parse_axis_label = function (column) {
+    const parse_axis_label = function (column) {
       if (column.column_name.includes('eui')) {
         return translateAxisLabel(column.displayName, eui_units());
-      } else if (column.column_name.includes('area')) {
-        return translateAxisLabel(column.displayName, area_units());
-      } else {
-        return $translate.instant(column.displayName);
       }
+      if (column.column_name.includes('area')) {
+        return translateAxisLabel(column.displayName, area_units());
+      }
+      return $translate.instant(column.displayName);
     };
 
     /* SCOPE VARS */
@@ -94,45 +94,37 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
        */
 
-    var acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
+    const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
 
-    var filtered_columns = _.filter(columns, function (column) {
-      return _.includes(acceptable_column_types, column.data_type);
-    });
+    const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars = _.map(filtered_columns, function (column) {
-      return {
-        name: $translate.instant(column.displayName), //short name for variable, used in pulldown
-        label: $translate.instant(column.displayName), //full name for variable
-        varName: column.column_name, //name of variable, to be sent to server
-        axisLabel: parse_axis_label(column) //label to be used in charts, should include units
-        // axisType: 'Measure', //DimpleJS property for axis type
-        // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
-      };
-    });
+    $scope.xAxisVars = _.map(filtered_columns, (column) => ({
+      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
+      label: $translate.instant(column.displayName), // full name for variable
+      varName: column.column_name, // name of variable, to be sent to server
+      axisLabel: parse_axis_label(column) // label to be used in charts, should include units
+      // axisType: 'Measure', //DimpleJS property for axis type
+      // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+    }));
 
-    var acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
-    var filtered_y_columns = _.filter(columns, function (column) {
-      return _.includes(acceptable_y_column_names, column.column_name);
-    });
+    const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
+    const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
 
-    $scope.yAxisVars = _.map(filtered_y_columns, function (column) {
-      return {
-        name: $translate.instant(column.displayName), //short name for variable, used in pulldown
-        label: $translate.instant(column.displayName), //full name for variable
-        varName: column.column_name, //name of variable, to be sent to server
-        axisLabel: parse_axis_label(column) //label to be used in charts, should include units
-        // axisType: 'Measure', //DimpleJS property for axis type
-        // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
-      };
-    });
+    $scope.yAxisVars = _.map(filtered_y_columns, (column) => ({
+      name: $translate.instant(column.displayName), // short name for variable, used in pulldown
+      label: $translate.instant(column.displayName), // full name for variable
+      varName: column.column_name, // name of variable, to be sent to server
+      axisLabel: parse_axis_label(column) // label to be used in charts, should include units
+      // axisType: 'Measure', //DimpleJS property for axis type
+      // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+    }));
 
     // Chart titles
     $scope.chart1Title = '';
     $scope.chart2Title = '';
 
     // Datepickers
-    var initStartDate = new Date();
+    const initStartDate = new Date();
     initStartDate.setYear(initStartDate.getFullYear() - 1);
     $scope.startDate = initStartDate;
     $scope.startDatePickerOpen = false;
@@ -147,35 +139,35 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     $scope.chartSeries = ['id', 'yr_e'];
     $scope.aggChartSeries = ['property_type', 'yr_e'];
 
-    var localStorageXAxisKey = base_storage_key + '.xaxis';
-    var localStorageYAxisKey = base_storage_key + '.yaxis';
+    const localStorageXAxisKey = `${base_storage_key}.xaxis`;
+    const localStorageYAxisKey = `${base_storage_key}.yaxis`;
 
-    //Currently selected x and y variables - check local storage first, otherwise initialize to first choice
+    // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
     $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
     $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
 
-    //Chart data
+    // Chart data
     $scope.chartData = [];
     $scope.aggChartData = [];
     $scope.pointBackgroundColors = [];
     $scope.aggPointBackgroundColors = [];
 
-    //Chart status
+    // Chart status
     $scope.chartIsLoading = false;
     $scope.aggChartIsLoading = false;
 
-    //Setting the status messages will cause the small white status box to show above the chart
-    //Setting these to empty string will remove that box
+    // Setting the status messages will cause the small white status box to show above the chart
+    // Setting these to empty string will remove that box
     $scope.chartStatusMessage = 'No Data';
     $scope.aggChartStatusMessage = 'No Data';
 
     /* NEW CHART STUFF */
-    var createChart = function (elementId, type, indexAxis, pointColors) {
-      var canvas = document.getElementById(elementId);
-      var ctx = canvas.getContext('2d');
+    const createChart = function (elementId, type, indexAxis, pointColors) {
+      const canvas = document.getElementById(elementId);
+      const ctx = canvas.getContext('2d');
 
       return new Chart(ctx, {
-        type: type,
+        type,
         data: {
           datasets: [
             {
@@ -191,7 +183,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
           layout: {
             padding: 20
           },
-          indexAxis: indexAxis,
+          indexAxis,
           scales: {
             x: {
               display: true,
@@ -206,7 +198,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               },
               ticks: {
                 // round values
-                callback: function (value, index, values) {
+                callback(value, index, values) {
                   return this.getLabelForValue(value);
                 }
               }
@@ -230,16 +222,14 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               displayColors: false,
               mode: 'index',
               callbacks: {
-                label: function (ctx) {
-                  let label = [];
-                  let labeltmp = $scope.chartData.chartData.filter(function (entry) {
-                    return entry.id === ctx.raw.id;
-                  });
+                label(ctx) {
+                  const label = [];
+                  const labeltmp = $scope.chartData.chartData.filter((entry) => entry.id === ctx.raw.id);
                   if (labeltmp.length > 0) {
-                    label.push($scope.yAxisSelectedItem.label + ': ' + ctx.formattedValue);
+                    label.push(`${$scope.yAxisSelectedItem.label}: ${ctx.formattedValue}`);
                     // The x axis data is generated more programmatically than the y, so only
                     // grab the `label` since the `axisLabel` has redundant unit information.
-                    label.push($scope.xAxisSelectedItem.label + ': ' + ctx.parsed.x);
+                    label.push(`${$scope.xAxisSelectedItem.label}: ${ctx.parsed.x}`);
                   }
                   return label;
                 }
@@ -279,11 +269,11 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.endDatePickerOpen = !$scope.endDatePickerOpen;
     };
 
-    $scope.$watch('startDate', function () {
+    $scope.$watch('startDate', () => {
       $scope.checkInvalidDate();
     });
 
-    $scope.$watch('endDate', function () {
+    $scope.$watch('endDate', () => {
       $scope.checkInvalidDate();
     });
 
@@ -291,7 +281,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.invalidDates = $scope.endDate < $scope.startDate;
     };
 
-    /* Update data used by the chart. This will force the charts to re-render*/
+    /* Update data used by the chart. This will force the charts to re-render */
     $scope.updateChartData = function () {
       // TODO Form check, although at the moment it's just four selects so user shouldn't be able to get form into an invalid state. */
 
@@ -338,7 +328,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
     /* PRIVATE FUNCTIONS (so to speak) */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-    /* Clear the data used by the chart*/
+    /* Clear the data used by the chart */
     function clearChartData() {
       $scope.chartData = [];
       $scope.aggChartData = [];
@@ -348,9 +338,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       $scope.aggPointBackgroundColors.length = 0;
     }
 
-    /* Update the titles above each chart*/
+    /* Update the titles above each chart */
     function updateChartTitlesAndAxes() {
-      var interpolationParams;
+      let interpolationParams;
       try {
         interpolationParams = {
           x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
@@ -375,23 +365,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     $scope.open_export_modal = function () {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/export_report_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/export_report_modal.html`,
         controller: 'export_report_modal_controller',
         resolve: {
-          axes_data: function () {
-            return {
-              xVar: $scope.chartData.xAxisVarName,
-              xLabel: $scope.chartData.xAxisTitle,
-              yVar: $scope.chartData.yAxisVarName,
-              yLabel: $scope.chartData.yAxisTitle
-            };
-          },
-          cycle_start: function () {
-            return $scope.fromCycle.selected_cycle.start;
-          },
-          cycle_end: function () {
-            return $scope.toCycle.selected_cycle.end;
-          }
+          axes_data: () => ({
+            xVar: $scope.chartData.xAxisVarName,
+            xLabel: $scope.chartData.xAxisTitle,
+            yVar: $scope.chartData.yAxisVarName,
+            yLabel: $scope.chartData.yAxisTitle
+          }),
+          cycle_start: () => $scope.fromCycle.selected_cycle.start,
+          cycle_end: () => $scope.toCycle.selected_cycle.end
         }
       });
     };
@@ -409,17 +393,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        The chart will update automatically as it's watching the chartData property on the scope.
        */
     function getChartData() {
-      var xVar = $scope.xAxisSelectedItem.varName;
-      var yVar = $scope.yAxisSelectedItem.varName;
+      const xVar = $scope.xAxisSelectedItem.varName;
+      const yVar = $scope.yAxisSelectedItem.varName;
       $scope.chartIsLoading = true;
 
       inventory_reports_service
         .get_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
         .then(
-          function (data) {
+          (data) => {
             data = data.data;
-            var propertyCounts = data.property_counts;
-            var colorsArr = mapColors(propertyCounts);
+            const propertyCounts = data.property_counts;
+            const colorsArr = mapColors(propertyCounts);
             $scope.propertyCounts = propertyCounts;
             $scope.chartData = {
               series: $scope.chartSeries,
@@ -439,11 +423,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
-            const colorMap = new Map(
-              colorsArr.map((object) => {
-                return [object.seriesName, object.color];
-              })
-            );
+            const colorMap = new Map(colorsArr.map((object) => [object.seriesName, object.color]));
             for (i = 0; i < $scope.scatterChart.data.datasets[0].data.length; i++) {
               $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
             }
@@ -455,12 +435,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               $scope.chartStatusMessage = 'No Data';
             }
           },
-          function (data, status) {
+          (data, status) => {
             $scope.chartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading chart data : ' + status);
+            $log.error(`#InventoryReportsController: Error loading chart data : ${status}`);
           }
         )
-        .finally(function () {
+        .finally(() => {
           $scope.chartIsLoading = false;
         });
     }
@@ -476,19 +456,19 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        In the future, if we want the chart to look or behave differently depending on the data,
        we can pass in different configuration options.
 
-       **/
+       * */
     function getAggChartData() {
-      var xVar = $scope.xAxisSelectedItem.varName;
-      var yVar = $scope.yAxisSelectedItem.varName;
+      const xVar = $scope.xAxisSelectedItem.varName;
+      const yVar = $scope.yAxisSelectedItem.varName;
       $scope.aggChartIsLoading = true;
       inventory_reports_service
         .get_aggregated_report_data(xVar, yVar, $scope.fromCycle.selected_cycle.start, $scope.toCycle.selected_cycle.end)
         .then(
-          function (data) {
+          (data) => {
             data = data.aggregated_data;
             $scope.aggPropertyCounts = data.property_counts;
-            var propertyCounts = data.property_counts;
-            var colorsArr = mapColors(propertyCounts);
+            const propertyCounts = data.property_counts;
+            const colorsArr = mapColors(propertyCounts);
             $scope.aggPropertyCounts = propertyCounts;
             $scope.aggChartData = {
               series: $scope.aggChartSeries,
@@ -496,15 +476,11 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             };
 
             // new agg chart
-            let the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
+            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['desc']);
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first
-            const colorMap = new Map(
-              colorsArr.map((object) => {
-                return [object.seriesName, object.color];
-              })
-            );
+            const colorMap = new Map(colorsArr.map((object) => [object.seriesName, object.color]));
             for (i = 0; i < the_data.length; i++) {
               $scope.aggPointBackgroundColors.push(colorMap.get(the_data[i].yr_e));
             }
@@ -516,12 +492,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               $scope.aggChartStatusMessage = 'No Data';
             }
           },
-          function (data, status) {
+          (data, status) => {
             $scope.aggChartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+            $log.error(`#InventoryReportsController: Error loading agg chart data : ${status}`);
           }
         )
-        .finally(function () {
+        .finally(() => {
           $scope.aggChartIsLoading = false;
         });
     }
@@ -546,22 +522,22 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
        */
     function mapColors(propertyCounts) {
       if (!propertyCounts) return [];
-      var colorsArr = [];
-      var numPropertyGroups = propertyCounts.length;
-      for (var groupIndex = 0; groupIndex < numPropertyGroups; groupIndex++) {
-        var obj = {
+      const colorsArr = [];
+      const numPropertyGroups = propertyCounts.length;
+      for (let groupIndex = 0; groupIndex < numPropertyGroups; groupIndex++) {
+        const obj = {
           color: $scope.defaultColors[groupIndex],
           seriesName: propertyCounts[groupIndex].yr_e
         };
         propertyCounts[groupIndex].color = obj.color;
         colorsArr.push(obj);
       }
-      //propertyCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
+      // propertyCounts.reverse(); //so the table/legend order matches the order Dimple will build the groups
       return colorsArr;
     }
 
-    var localStorageFromCycleKey = base_storage_key + '.fromcycle';
-    var localStorageToCycleKey = base_storage_key + '.tocycle';
+    var localStorageFromCycleKey = `${base_storage_key}.fromcycle`;
+    var localStorageToCycleKey = `${base_storage_key}.tocycle`;
 
     /* Call the update method so the page initializes
        with the values set in the scope */

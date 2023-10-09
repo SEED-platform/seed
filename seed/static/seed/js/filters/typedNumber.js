@@ -7,8 +7,8 @@
  */
 angular.module('typedNumber', []).filter('typedNumber', [
   '$filter',
-  function ($filter) {
-    return function (input, column_type, column_name, fixed_digits) {
+  ($filter) =>
+    function (input, column_type, column_name, fixed_digits) {
       if (input === 0 || isNaN(input)) {
         return input;
       }
@@ -20,6 +20,5 @@ angular.module('typedNumber', []).filter('typedNumber', [
       }
 
       return $filter('number')(input, fixed_digits);
-    };
-  }
+    }
 ]);

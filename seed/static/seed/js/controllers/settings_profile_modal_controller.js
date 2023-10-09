@@ -18,15 +18,15 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
 
     $scope.rename_profile = function () {
       if (!$scope.disabled()) {
-        var id = $scope.data.id;
-        var profile = _.omit($scope.data, 'id');
+        const { id } = $scope.data;
+        const profile = _.omit($scope.data, 'id');
         profile.name = $scope.newName;
         inventory_service
           .update_column_list_profile(id, profile)
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result.name);
           })
-          .catch(function () {
+          .catch(() => {
             $uibModalInstance.dismiss();
           });
       }
@@ -35,10 +35,10 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
     $scope.remove_profile = function () {
       inventory_service
         .remove_column_list_profile($scope.data.id)
-        .then(function () {
+        .then(() => {
           $uibModalInstance.close();
         })
-        .catch(function () {
+        .catch(() => {
           $uibModalInstance.dismiss();
         });
     };
@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
             columns: $scope.data.columns,
             derived_columns: $scope.data.derived_columns
           })
-          .then(function (result) {
+          .then((result) => {
             result.columns = _.sortBy(result.columns, ['order', 'column_name']);
             result.derived_columns = _.sortBy(result.derived_columns, ['column_name']);
             $uibModalInstance.close(result);
@@ -64,7 +64,8 @@ angular.module('BE.seed.controller.settings_profile_modal', []).controller('sett
     $scope.disabled = function () {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-      } else if ($scope.action === 'new') {
+      }
+      if ($scope.action === 'new') {
         return _.isEmpty($scope.newName);
       }
     };

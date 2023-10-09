@@ -49,14 +49,14 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
     $scope.goToInventoryList = function (inventory_type) {
       user_service
         .set_organization({ id: organization_id })
-        .then(function (response) {
+        .then((response) => {
           inventory_service.save_last_cycle($scope.cycle_id);
-          const inventory_url = $state.href('inventory_list', { inventory_type: inventory_type });
+          const inventory_url = $state.href('inventory_list', { inventory_type });
           $window.open(inventory_url, '_blank');
           // refresh the current page b/c we have modified the default organization
           location.reload();
         })
-        .catch(function (response) {
+        .catch((response) => {
           // console.error('Failed to set default org: ');
           // console.error(response);
           $scope.error_occurred = true;
@@ -73,7 +73,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
       $scope.uploader.in_progress = true;
       cycle_service
         .delete_cycle($scope.cycle_id, $scope.organization_id)
-        .then(function (data) {
+        .then((data) => {
           function successHandler() {
             $scope.delete_cycle_status = 'success';
             $scope.uploader.in_progress = false;
@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
           }
           uploader_service.check_progress_loop(data.progress_key, 0, 1, successHandler, errorHandler, $scope.uploader);
         })
-        .catch(function (res) {
+        .catch((res) => {
           // console.error('Failed to delete cycle: ');
           // console.error(res);
           $scope.delete_cycle_status = 'failed';

@@ -55,12 +55,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
 
     views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views : views_payload.taxlot_views;
     $scope.views = views_payload
-      .map(({ id, cycle }) => {
-        return {
-          view_id: id,
-          cycle_name: cycle.name
-        };
-      })
+      .map(({ id, cycle }) => ({
+        view_id: id,
+        cycle_name: cycle.name
+      }))
       .sort((a, b) => a.cycle_name.localeCompare(b.cycle_name));
     $scope.selected_view = $scope.views.find(({ view_id }) => view_id === $scope.inventory.view_id);
     $scope.changeView = () => {
@@ -68,10 +66,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     };
 
     const refresh_analyses = function () {
-      analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id).then(function (data) {
+      analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id).then((data) => {
         $scope.analyses = analyses_payload.analyses.filter((analysis) => analysis.cycles.includes($scope.cycle.id));
         $scope.analyses_by_type = {};
-        for (let analysis in $scope.analyses) {
+        for (const analysis in $scope.analyses) {
           if (!$scope.analyses_by_type[$scope.analyses[analysis].service]) {
             $scope.analyses_by_type[$scope.analyses[analysis].service] = [];
           }
@@ -82,12 +80,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     refresh_analyses();
 
     $scope.start_analysis = function (analysis_id) {
-      const analysis = $scope.analyses.find(function (a) {
-        return a.id === analysis_id;
-      });
+      const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Starting...';
 
-      analyses_service.start_analysis(analysis_id).then(function (result) {
+      analyses_service.start_analysis(analysis_id).then((result) => {
         if (result.status === 'success') {
           Notification.primary('Analysis started');
           refresh_analyses();
@@ -95,48 +91,44 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
             result.progress_key,
             0,
             1,
-            function () {
+            () => {
               refresh_analyses();
             },
-            function () {
+            () => {
               refresh_analyses();
             },
             {}
           );
         } else {
-          Notification.error('Failed to start analysis: ' + result.message);
+          Notification.error(`Failed to start analysis: ${result.message}`);
         }
       });
     };
 
     $scope.stop_analysis = function (analysis_id) {
-      const analysis = $scope.analyses.find(function (a) {
-        return a.id === analysis_id;
-      });
+      const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Stopping...';
 
-      analyses_service.stop_analysis(analysis_id).then(function (result) {
+      analyses_service.stop_analysis(analysis_id).then((result) => {
         if (result.status === 'success') {
           Notification.primary('Analysis stopped');
           refresh_analyses();
         } else {
-          Notification.error('Failed to stop analysis: ' + result.message);
+          Notification.error(`Failed to stop analysis: ${result.message}`);
         }
       });
     };
 
     $scope.delete_analysis = function (analysis_id) {
-      const analysis = $scope.analyses.find(function (a) {
-        return a.id === analysis_id;
-      });
+      const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Deleting...';
 
-      analyses_service.delete_analysis(analysis_id).then(function (result) {
+      analyses_service.delete_analysis(analysis_id).then((result) => {
         if (result.status === 'success') {
           Notification.primary('Analysis deleted');
           refresh_analyses();
         } else {
-          Notification.error('Failed to delete analysis: ' + result.message);
+          Notification.error(`Failed to delete analysis: ${result.message}`);
         }
       });
     };
@@ -145,45 +137,39 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       let error = '';
       let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
       if (!(field in $scope.item_state)) {
-        error = field + ' does not exist';
+        error = `${field} does not exist`;
         field = 'address_line_1';
       }
       if (!$scope.item_state[field]) {
-        error += (error === '' ? '' : ' and default ') + field + ' is blank';
+        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
       }
       $scope.inventory_name = $scope.item_state[field]
         ? $scope.item_state[field]
-        : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+        : `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
     $scope.open_analysis_modal = function () {
       $uibModal
         .open({
-          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
+          templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
-            inventory_ids: function () {
-              return [$scope.inventory.view_id];
-            },
-            cycles: function () {
-              return cycle_service.get_cycles().then(function (result) {
-                return result.cycles;
-              });
-            },
+            inventory_ids: () => [$scope.inventory.view_id],
+            cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
             current_cycle: () => $scope.cycle
           }
         })
-        .result.then(function (data) {
+        .result.then((data) => {
           if (data) {
             refresh_analyses();
             uploader_service.check_progress_loop(
               data.progress_key,
               0,
               1,
-              function () {
+              () => {
                 refresh_analyses();
               },
-              function () {
+              () => {
                 refresh_analyses();
               },
               {}
@@ -192,7 +178,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
         });
     };
     $scope.has_children = function (value) {
-      if (typeof value == 'object') {
+      if (typeof value === 'object') {
         return true;
       }
     };

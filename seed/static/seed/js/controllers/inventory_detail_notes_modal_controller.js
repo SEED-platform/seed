@@ -23,29 +23,29 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', []).controller
     };
 
     $scope.create = function () {
-      var data = {
+      const data = {
         name: 'Manually Created',
         note_type: 'Note',
         text: $scope.note.text
       };
-      note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(function () {
+      note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(() => {
         $uibModalInstance.close();
       });
     };
 
     $scope.update = function () {
-      var data = {
+      const data = {
         name: $scope.note.name,
         note_type: $scope.note.note_type,
         text: $scope.note.text
       };
-      note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, $scope.note.id, data).then(function () {
+      note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, $scope.note.id, data).then(() => {
         $uibModalInstance.close();
       });
     };
 
     $scope.delete = function () {
-      note_service.delete_note($scope.inventoryType, $scope.viewId, $scope.note.id).then(function () {
+      note_service.delete_note($scope.inventoryType, $scope.viewId, $scope.note.id).then(() => {
         $uibModalInstance.close();
       });
     };

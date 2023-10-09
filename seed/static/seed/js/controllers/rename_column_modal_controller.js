@@ -32,14 +32,12 @@ angular.module('BE.seed.controller.rename_column_modal', []).controller('rename_
     };
 
     $scope.check_name_exists = function () {
-      $scope.column.exists = _.find($scope.all_column_names, function (col_name) {
-        return col_name === $scope.column.name;
-      });
+      $scope.column.exists = _.find($scope.all_column_names, (col_name) => col_name === $scope.column.name);
     };
 
     $scope.accept_rename = function () {
       spinner_utility.show();
-      columns_service.rename_column_for_org(org_id, $scope.column.id, $scope.column.name, $scope.settings.overwrite_preference).then(function (response) {
+      columns_service.rename_column_for_org(org_id, $scope.column.id, $scope.column.name, $scope.settings.overwrite_preference).then((response) => {
         $scope.results = {
           success: response.data.success,
           message: response.data.message
@@ -63,9 +61,8 @@ angular.module('BE.seed.controller.rename_column_modal', []).controller('rename_
 
       if ($scope.column.exists) {
         return $scope.settings.user_acknowledgement && $scope.settings.overwrite_preference;
-      } else {
-        return $scope.settings.user_acknowledgement;
       }
+      return $scope.settings.user_acknowledgement;
     };
   }
 ]);

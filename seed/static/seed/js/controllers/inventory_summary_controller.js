@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       if (!charts_loaded) {
         charts_loaded = true;
         $scope.charts.forEach((config) => {
-          const svg = dimple.newSvg('#chart-' + config.name, '100%', 500);
+          const svg = dimple.newSvg(`#chart-${config.name}`, '100%', 500);
           const chart = new dimple.chart(svg, []);
           const xaxis = chart.addCategoryAxis('x', config.x);
           xaxis.title = config.xLabel;
@@ -88,13 +88,13 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
     const refresh_data = function () {
       $scope.progress = {};
       const modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/inventory_loading_modal.html`,
         backdrop: 'static',
         windowClass: 'inventory-progress-modal',
         scope: $scope
       });
 
-      analyses_service.get_summary($scope.cycle.selected_cycle.id).then(function (data) {
+      analyses_service.get_summary($scope.cycle.selected_cycle.id).then((data) => {
         $scope.summary_data = data;
         $scope.table_data = [
           {
@@ -108,12 +108,10 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
         ];
 
         const column_settings_count = data['column_settings fields and counts'];
-        $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => {
-          return {
-            column_settings: key,
-            count: value
-          };
-        });
+        $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => ({
+          column_settings: key,
+          count: value
+        }));
 
         load_charts();
         modalInstance.close();

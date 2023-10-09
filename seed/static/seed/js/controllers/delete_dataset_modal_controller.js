@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.delete_dataset_modal', []).controller('delete
   function ($scope, $uibModalInstance, dataset_service, dataset) {
     $scope.dataset = dataset;
     $scope.delete_dataset = function () {
-      dataset_service.delete_dataset($scope.dataset.id).then(function () {
+      dataset_service.delete_dataset($scope.dataset.id).then(() => {
         $uibModalInstance.close();
       });
     };

@@ -31,52 +31,46 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
     // Columns
     $scope.columns = columns;
     $scope.protectedColumns = _.map(_.filter(columns, { merge_protection: 'Favor Existing' }), 'name');
-    var defaults = {
+    const defaults = {
       headerCellFilter: 'translate',
       headerCellTemplate: 'ui-grid/seedMergeHeader',
       minWidth: 75,
       width: 150
     };
-    _.map($scope.columns, function (col) {
-      return _.defaults(col, defaults);
-    });
+    _.map($scope.columns, (col) => _.defaults(col, defaults));
 
-    var notEmpty = function (value, key) {
-      return !_.isNil(value) && value !== '' && !_.includes(['$$hashKey', '$$treeLevel'], key);
-    };
+    const notEmpty = (value, key) => !_.isNil(value) && value !== '' && !_.includes(['$$hashKey', '$$treeLevel'], key);
 
-    var updateResult = function () {
-      var cleanedData = _.map($scope.data, function (datum) {
-        return _.pickBy(datum, notEmpty);
-      });
+    const updateResult = function () {
+      const cleanedData = _.map($scope.data, (datum) => _.pickBy(datum, notEmpty));
       $scope.result[0] = _.defaults.apply(null, cleanedData);
 
       // Handle Merge Protection columns
-      _.forEach($scope.protectedColumns, function (col) {
+      _.forEach($scope.protectedColumns, (col) => {
         $scope.result[0][col] = _.last($scope.data)[col];
       });
 
       // Concatenate Jurisdiction Tax Lot IDs if inventory_type is property
       if ($scope.inventory_type === 'properties') {
-        var jurisdiction_tax_lot_col = _.find($scope.columns, {
+        const jurisdiction_tax_lot_col = _.find($scope.columns, {
           column_name: 'jurisdiction_tax_lot_id',
           table_name: 'TaxLotState'
         });
         if (jurisdiction_tax_lot_col) {
-          var values = [];
-          _.forEach(cleanedData, function (datum) {
+          let values = [];
+          _.forEach(cleanedData, (datum) => {
             values = values.concat(_.split(datum[jurisdiction_tax_lot_col.name], '; '));
           });
-          var cleanedValues = _.uniq(_.without(values, undefined, null, ''));
+          const cleanedValues = _.uniq(_.without(values, undefined, null, ''));
           $scope.result[0][jurisdiction_tax_lot_col.name] = _.join(cleanedValues.sort(naturalSort), '; ');
         }
       }
     };
     updateResult();
 
-    var determineHiddenColumns = function () {
-      var visibleColumns = _.keys($scope.result[0]);
-      _.forEach($scope.columns, function (col) {
+    const determineHiddenColumns = function () {
+      const visibleColumns = _.keys($scope.result[0]);
+      _.forEach($scope.columns, (col) => {
         if (!_.includes(visibleColumns, col.name)) {
           col.visible = false;
         }
@@ -84,49 +78,43 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
     };
     determineHiddenColumns();
 
-    var reverseOrder = function () {
+    const reverseOrder = function () {
       $scope.data.reverse();
       updateResult();
     };
 
-    var notify_merges_and_links = function (result) {
-      var singular = $scope.inventory_type === 'properties' ? ' property' : ' tax lot';
-      var plural = $scope.inventory_type === 'properties' ? ' properties' : ' tax lots';
+    const notify_merges_and_links = function (result) {
+      const singular = $scope.inventory_type === 'properties' ? ' property' : ' tax lot';
+      const plural = $scope.inventory_type === 'properties' ? ' properties' : ' tax lots';
       // The term "subsequent" below implies not including itself
-      var merged_count = Math.max(result.match_merged_count - 1, 0);
-      var link_count = result.match_link_count;
+      const merged_count = Math.max(result.match_merged_count - 1, 0);
+      const link_count = result.match_link_count;
 
       Notification.info({
-        message: merged_count + ' subsequent ' + (merged_count === 1 ? singular : plural) + ' merged',
+        message: `${merged_count} subsequent ${merged_count === 1 ? singular : plural} merged`,
         delay: 10000
       });
       Notification.info({
-        message: 'Resulting ' + singular + ' has ' + link_count + ' cross-cycle link' + (link_count === 1 ? '' : 's'),
+        message: `Resulting ${singular} has ${link_count} cross-cycle link${link_count === 1 ? '' : 's'}`,
         delay: 10000
       });
     };
 
     $scope.open_match_merge_link_warning_modal = function () {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/record_match_merge_link_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/record_match_merge_link_modal.html`,
         controller: 'record_match_merge_link_modal_controller',
         resolve: {
-          inventory_type: function () {
-            return $scope.inventory_type;
-          },
-          organization_id: function () {
-            return $scope.org_id;
-          },
-          headers: function () {
-            return {
-              properties: 'The resulting property will be further merged & linked with any matching properties.',
-              taxlots: 'The resulting tax lot will be further merged & linked with any matching tax lots.'
-            };
-          }
+          inventory_type: () => $scope.inventory_type,
+          organization_id: () => $scope.org_id,
+          headers: () => ({
+            properties: 'The resulting property will be further merged & linked with any matching properties.',
+            taxlots: 'The resulting tax lot will be further merged & linked with any matching tax lots.'
+          })
         }
       });
 
-      modalInstance.result.then($scope.merge, function () {
+      modalInstance.result.then($scope.merge, () => {
         // Do nothing if cancelled
       });
     };
@@ -138,38 +126,37 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
         return matching_service
           .mergeProperties(property_view_ids)
           .then(
-            function (data) {
-              Notification.success('Successfully merged ' + property_view_ids.length + ' properties');
+            (data) => {
+              Notification.success(`Successfully merged ${property_view_ids.length} properties`);
               notify_merges_and_links(data);
               $scope.close();
             },
-            function (err) {
+            (err) => {
               $log.error(err);
               Notification.error('Failed to merge properties');
             }
           )
-          .finally(function () {
-            $scope.processing = false;
-          });
-      } else {
-        const view_ids = _.map($scope.data, 'taxlot_view_id').reverse();
-        return matching_service
-          .mergeTaxlots(view_ids)
-          .then(
-            function (data) {
-              Notification.success('Successfully merged ' + view_ids.length + ' tax lots');
-              notify_merges_and_links(data);
-              $scope.close();
-            },
-            function (err) {
-              $log.error(err);
-              Notification.error('Failed to merge tax lots');
-            }
-          )
-          .finally(function () {
+          .finally(() => {
             $scope.processing = false;
           });
       }
+      const view_ids = _.map($scope.data, 'taxlot_view_id').reverse();
+      return matching_service
+        .mergeTaxlots(view_ids)
+        .then(
+          (data) => {
+            Notification.success(`Successfully merged ${view_ids.length} tax lots`);
+            notify_merges_and_links(data);
+            $scope.close();
+          },
+          (err) => {
+            $log.error(err);
+            Notification.error('Failed to merge tax lots');
+          }
+        )
+        .finally(() => {
+          $scope.processing = false;
+        });
     };
 
     $scope.resultingGridOptions = {
@@ -199,7 +186,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
       rowTemplate:
         '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
       columnDefs: $scope.columns,
-      onRegisterApi: function (gridApi) {
+      onRegisterApi(gridApi) {
         $scope.gridApi = gridApi;
 
         gridApi.draggableRows.on.rowDropped($scope, updateResult);

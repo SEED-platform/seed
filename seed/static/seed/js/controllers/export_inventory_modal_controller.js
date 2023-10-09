@@ -27,8 +27,8 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
     };
 
     $scope.export_selected = function (export_type) {
-      var filename = $scope.export_name;
-      var ext = '.' + export_type;
+      let filename = $scope.export_name;
+      const ext = `.${export_type}`;
       if (!_.endsWith(filename, ext)) filename += ext;
       $scope.exporting = true;
       $http
@@ -42,17 +42,17 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
             data.data.progress_key,
             0,
             1,
-            function () {},
-            function () {},
+            () => {},
+            () => {},
             $scope.exporter_progress
           );
           return $http.post(
             '/api/v3/tax_lot_properties/export/',
             {
-              ids: ids,
-              filename: filename,
-              profile_id: profile_id,
-              export_type: export_type,
+              ids,
+              filename,
+              profile_id,
+              export_type,
               include_notes: $scope.include_notes,
               include_meter_readings: $scope.include_meter_readings,
               progress_key: data.data.progress_key
@@ -60,15 +60,15 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
             {
               params: {
                 organization_id: user_service.get_organization().id,
-                inventory_type: inventory_type
+                inventory_type
               },
               responseType: export_type === 'xlsx' ? 'arraybuffer' : undefined
             }
           );
         })
-        .then(function (response) {
-          var blob_type = response.headers()['content-type'];
-          var data;
+        .then((response) => {
+          const blob_type = response.headers()['content-type'];
+          let data;
           if (export_type === 'xlsx') {
             data = response.data;
           } else if (blob_type === 'application/json') {
@@ -81,7 +81,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
             }
           }
 
-          var blob = new Blob([data], { type: blob_type });
+          const blob = new Blob([data], { type: blob_type });
 
           saveAs(blob, filename);
 

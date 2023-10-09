@@ -16,9 +16,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
   function ($scope, $stateParams, $timeout, uiGridConstants, cycles, events, inventory_payload, urls, users_payload, organization_payload) {
     $scope.organization = organization_payload.organization;
     $scope.static_url = urls.static_url;
-    $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => {
-      return { ...acc, [curr.id]: curr.name };
-    }, {});
+    $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.name }), {});
     $scope.events = events;
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.inventory = {
@@ -36,15 +34,15 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     const formatTimeline = (events) => {
-      let eventsByCycle = [];
+      const eventsByCycle = [];
       events.sort((a, b) => ($scope.orderDesc ? new Date(a.modified) - new Date(b.modified) : new Date(b.modified) - new Date(a.modified)));
       events.forEach((event) => {
         const index = eventsByCycle.findIndex((e) => e.cycle == event.cycle);
         if (index == -1) {
-          let entry = { cycle: event.cycle, cycle_end_date: event.cycle_end_date, events: [event] };
+          const entry = { cycle: event.cycle, cycle_end_date: event.cycle_end_date, events: [event] };
           eventsByCycle.push(entry);
         } else {
-          let element = eventsByCycle[index];
+          const element = eventsByCycle[index];
           element.events.push(event);
         }
       });
@@ -70,16 +68,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       const days = Math.floor(hours / 24);
 
       if (days) {
-        return days + ' days';
-      } else if (hours) {
-        return hours + ' hours';
-      } else if (minutes) {
-        return minutes + ' minutes';
-      } else if (seconds) {
-        return seconds + ' seconds';
-      } else {
-        return milliseconds + ' ms';
+        return `${days} days`;
       }
+      if (hours) {
+        return `${hours} hours`;
+      }
+      if (minutes) {
+        return `${minutes} minutes`;
+      }
+      if (seconds) {
+        return `${seconds} seconds`;
+      }
+      return `${milliseconds} ms`;
     };
 
     $scope.formatUser = (user_id) => {
@@ -98,32 +98,28 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
 
     const setMeasureGridOptions = () => {
       const atEvents = $scope.events.data.filter((e) => e.event_type == 'ATEvent');
-      const scenarios = atEvents.reduce((acc, curr) => {
-        return [...acc, ...curr.scenarios];
-      }, []);
+      const scenarios = atEvents.reduce((acc, curr) => [...acc, ...curr.scenarios], []);
 
       $scope.measureGridOptionsByScenarioId = {};
       $scope.gridApiByScenarioId = {};
       scenarios.forEach((scenario) => {
         const measureGridOptions = {
-          data: scenario.measures.map((measure) => {
-            return {
-              category: measure.category_display_name,
-              name: measure.display_name,
-              recommended: measure.recommended,
-              status: measure.implementation_status,
-              category_affected: measure.category_affected,
-              cost_installation: measure.cost_installation,
-              cost_material: measure.cost_material,
-              cost_residual_value: measure.cost_residual_value,
-              cost_total_first: measure.cost_total_first,
-              cost_capital_replacement: measure.cost_capital_replacement,
-              description: measure.description,
-              useful_life: measure.useful_life
-            };
-          }),
+          data: scenario.measures.map((measure) => ({
+            category: measure.category_display_name,
+            name: measure.display_name,
+            recommended: measure.recommended,
+            status: measure.implementation_status,
+            category_affected: measure.category_affected,
+            cost_installation: measure.cost_installation,
+            cost_material: measure.cost_material,
+            cost_residual_value: measure.cost_residual_value,
+            cost_total_first: measure.cost_total_first,
+            cost_capital_replacement: measure.cost_capital_replacement,
+            description: measure.description,
+            useful_life: measure.useful_life
+          })),
           minRowsToShow: Math.min(scenario.measures.length, 10),
-          onRegisterApi: function (gridApi) {
+          onRegisterApi(gridApi) {
             $scope.gridApiByScenarioId[scenario.id] = gridApi;
           }
         };
@@ -149,7 +145,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
           enableSorting: false,
           enableVerticalScrollbar: uiGridConstants.scrollbars.NEVER,
           minRowsToShow: 1,
-          onRegisterApi: function (gridApi) {
+          onRegisterApi(gridApi) {
             $scope.gridApiByNoteId[note.id] = gridApi;
           }
         };
@@ -184,7 +180,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
         };
         $scope.analysisGridOptionsById[analysis.id] = analysisGridOptions;
         if (!_.isEmpty(analysis.configuration)) {
-          $scope.analysisGridOptionsById[analysis.id]['Configuration'] = analysis.configuration;
+          $scope.analysisGridOptionsById[analysis.id].Configuration = analysis.configuration;
         }
       });
     };
@@ -215,7 +211,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
         $scope.gridApiEventSelection.selection.on.rowSelectionChangedBatch($scope, $scope.eventSelect);
 
         init = true;
-        $scope.gridApiEventSelection.core.on.rowsRendered($scope, function () {
+        $scope.gridApiEventSelection.core.on.rowsRendered($scope, () => {
           if (init) {
             $scope.gridApiEventSelection.selection.selectAllRows();
             init = false;
@@ -244,8 +240,8 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     $scope.formatDate = (date) => moment(date).format('YYYY-MM-DD');
 
     $scope.groupByEventType = (events) => {
-      let eventTypeCount = events.reduce((acc, cur) => {
-        let event_type = pluralize($scope.eventTypeLookup[cur.event_type]);
+      const eventTypeCount = events.reduce((acc, cur) => {
+        const event_type = pluralize($scope.eventTypeLookup[cur.event_type]);
         if (!acc[event_type]) {
           acc[event_type] = 0;
         }

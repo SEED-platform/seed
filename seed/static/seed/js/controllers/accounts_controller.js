@@ -10,24 +10,22 @@ angular.module('BE.seed.controller.accounts', []).controller('accounts_controlle
   'organization_service',
   function ($scope, $uibModal, organization_payload, urls, organization_service) {
     $scope.create_sub_organization_modal = function (org) {
-      var modalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/create_sub_organization_modal.html',
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/create_sub_organization_modal.html`,
         controller: 'create_sub_organization_modal_controller',
         resolve: {
-          organization: function () {
-            return org;
-          }
+          organization: () => org
         }
       });
       modalInstance.result.then(
-        function () {
-          organization_service.get_organizations().then(function (data) {
+        () => {
+          organization_service.get_organizations().then((data) => {
             organization_payload = data;
             $scope.$emit('organization_list_updated');
             init();
           });
         },
-        function () {
+        () => {
           // Do nothing
         }
       );
@@ -35,9 +33,7 @@ angular.module('BE.seed.controller.accounts', []).controller('accounts_controlle
 
     var init = function () {
       $scope.orgs = organization_payload.organizations;
-      $scope.orgs_I_own = organization_payload.organizations.filter(function (o) {
-        return o.user_is_owner;
-      });
+      $scope.orgs_I_own = organization_payload.organizations.filter((o) => o.user_is_owner);
     };
     init();
   }

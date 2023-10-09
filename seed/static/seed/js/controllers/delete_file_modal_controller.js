@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.delete_file_modal', []).controller('delete_fi
   function ($scope, $uibModalInstance, dataset_service, file) {
     $scope.file = file;
     $scope.delete_file = function () {
-      dataset_service.delete_file($scope.file.id).then(function () {
+      dataset_service.delete_file($scope.file.id).then(() => {
         $uibModalInstance.close();
       });
     };

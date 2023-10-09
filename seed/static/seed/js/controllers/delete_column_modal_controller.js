@@ -24,9 +24,9 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
       $scope.state = 'pending';
       columns_service
         .delete_column_for_org(organization_id, column.id)
-        .then(function (result) {
+        .then((result) => {
           $scope.state = 'evaluating';
-          $scope.interval = $interval(function () {
+          $scope.interval = $interval(() => {
             $scope.state == 'running' ? $scope.updateTime() : $scope.setRunningState();
           }, 1000);
           $scope.updateTime();
@@ -34,18 +34,18 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
             result.data.progress_key,
             0,
             1,
-            function (response) {
-              $scope.result = response.message + ' in ' + $scope.elapsed;
+            (response) => {
+              $scope.result = `${response.message} in ${$scope.elapsed}`;
               $scope.state = 'done';
               $interval.cancel($scope.interval);
             },
-            function () {
+            () => {
               // Do nothing
             },
             $scope.progressBar
           );
         })
-        .catch(function (err) {
+        .catch((err) => {
           $log.error(err);
           $scope.result = 'Failed to delete column';
           $scope.state = 'done';
@@ -54,7 +54,7 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
     };
 
     $scope.elapsedFn = function () {
-      var diff = moment().diff(this.startTime);
+      const diff = moment().diff(this.startTime);
       return $scope.formatTime(moment.duration(diff));
     };
 
@@ -63,8 +63,8 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
         if (!$scope.initialCompleted) {
           $scope.initialCompleted = $scope.progressBar.completed_records;
         }
-        var diff = moment().diff(this.startTime);
-        var progress = ($scope.progressBar.completed_records - $scope.initialCompleted) / ($scope.progressBar.total_records - $scope.initialCompleted);
+        const diff = moment().diff(this.startTime);
+        const progress = ($scope.progressBar.completed_records - $scope.initialCompleted) / ($scope.progressBar.total_records - $scope.initialCompleted);
         if (progress) {
           return $scope.formatTime(moment.duration(diff / progress - diff));
         }
@@ -82,15 +82,16 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
     };
 
     $scope.formatTime = function (duration) {
-      var h = Math.floor(duration.asHours());
-      var m = duration.minutes();
-      var s = duration.seconds();
+      const h = Math.floor(duration.asHours());
+      const m = duration.minutes();
+      const s = duration.seconds();
 
       if (h > 0) {
-        var mPadded = m.toString().padStart(2, '0');
-        var sPadded = s.toString().padStart(2, '0');
+        const mPadded = m.toString().padStart(2, '0');
+        const sPadded = s.toString().padStart(2, '0');
         return `${h}:${mPadded}:${sPadded}`;
-      } else if (m > 0) {
+      }
+      if (m > 0) {
         const sPadded = s.toString().padStart(2, '0');
         return `${m}:${sPadded}`;
       }

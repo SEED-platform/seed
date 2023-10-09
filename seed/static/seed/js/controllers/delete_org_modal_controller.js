@@ -18,16 +18,16 @@ angular.module('BE.seed.controller.delete_org_modal', []).controller('delete_org
     $scope.delete_org = function () {
       $scope.status.in_progress = true;
 
-      organization_service.delete_organization($scope.org.id).then(function (data) {
+      organization_service.delete_organization($scope.org.id).then((data) => {
         uploader_service.check_progress_loop(
           data.progress_key,
           0,
           1,
-          function () {
+          () => {
             // Reload and go to home page
             window.location.href = '/app';
           },
-          function () {
+          () => {
             console.error('Deleting org failed');
             $scope.status.in_progress = false;
           },
@@ -40,8 +40,6 @@ angular.module('BE.seed.controller.delete_org_modal', []).controller('delete_org
       $uibModalInstance.dismiss();
     };
 
-    $scope.valid = function () {
-      return $scope.confirmOrgName && $scope.confirmOrgName.toLowerCase() === org.name.toLowerCase();
-    };
+    $scope.valid = () => $scope.confirmOrgName && $scope.confirmOrgName.toLowerCase() === org.name.toLowerCase();
   }
 ]);

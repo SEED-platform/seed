@@ -18,7 +18,7 @@ angular.module('BE.docs.controller.faq', []).controller('faq_controller', [
         angular.element('.collapse.faq-category-content').collapse('hide');
       } else {
         // Timeout to allow ng-if to evaluate first
-        $timeout(function () {
+        $timeout(() => {
           angular.element('.collapse.faq-category-content').collapse('show');
         }, 0);
       }

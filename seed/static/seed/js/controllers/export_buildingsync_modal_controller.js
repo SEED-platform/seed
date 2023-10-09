@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', []).controller('e
     $scope.current_column_mapping_profile = column_mapping_profiles[0];
 
     $scope.download_file = function () {
-      var the_url = '/api/v3/properties/' + property_view_id + '/building_sync/';
+      const the_url = `/api/v3/properties/${property_view_id}/building_sync/`;
       $http
         .get(the_url, {
           params: {
@@ -24,16 +24,16 @@ angular.module('BE.seed.controller.export_buildingsync_modal', []).controller('e
           }
         })
         .then(
-          function (response) {
-            var blob = new Blob([response.data], { type: 'application/xml;charset=utf-8;' });
-            var downloadLink = angular.element('<a></a>');
-            var filename = 'buildingsync_property_' + property_view_id + '.xml';
+          (response) => {
+            const blob = new Blob([response.data], { type: 'application/xml;charset=utf-8;' });
+            const downloadLink = angular.element('<a></a>');
+            const filename = `buildingsync_property_${property_view_id}.xml`;
             downloadLink.attr('href', $window.URL.createObjectURL(blob));
             downloadLink.attr('download', filename);
             downloadLink[0].click();
             $uibModalInstance.close();
           },
-          function (err) {
+          (err) => {
             $scope.download_error_message = err.data ? err.data : err.toString();
           }
         );

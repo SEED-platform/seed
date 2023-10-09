@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
 
     $scope.cycles = _.reduce(
       cycles.cycles,
-      function (cycles_by_id, cycle) {
+      (cycles_by_id, cycle) => {
         cycles_by_id[cycle.id] = cycle;
         return cycles_by_id;
       },
@@ -36,13 +36,11 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
     $scope.organization = organization_payload.organization;
 
     // Flag columns whose values have changed between cycles.
-    var changes_check = function (column) {
-      var uniq_column_values;
+    const changes_check = function (column) {
+      let uniq_column_values;
 
       if (column.is_extra_data) {
-        uniq_column_values = _.uniqBy($scope.states, function (state) {
-          return state.extra_data[column.column_name];
-        });
+        uniq_column_values = _.uniqBy($scope.states, (state) => state.extra_data[column.column_name]);
       } else {
         uniq_column_values = _.uniqBy($scope.states, column.column_name);
       }
@@ -57,19 +55,17 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
 
     if ($scope.currentProfile) {
       $scope.columns = [];
-      _.forEach($scope.currentProfile.columns, function (col) {
-        var foundCol = _.find(columns, { id: col.id });
+      _.forEach($scope.currentProfile.columns, (col) => {
+        const foundCol = _.find(columns, { id: col.id });
         if (foundCol) $scope.columns.push(changes_check(foundCol));
       });
     } else {
       // No profiles exist
-      $scope.columns = _.map(_.reject(columns, 'is_extra_data'), function (col) {
-        return changes_check(col);
-      });
+      $scope.columns = _.map(_.reject(columns, 'is_extra_data'), (col) => changes_check(col));
     }
 
-    var ignoreNextChange = true;
-    $scope.$watch('currentProfile', function (newProfile) {
+    let ignoreNextChange = true;
+    $scope.$watch('currentProfile', (newProfile) => {
       if (ignoreNextChange) {
         ignoreNextChange = false;
         return;
@@ -81,9 +77,9 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
     });
 
     // Horizontal scroll for "2 tables" that scroll together for fixed header effect.
-    var table_container = $('.table-xscroll-fixed-header-container');
+    const table_container = $('.table-xscroll-fixed-header-container');
 
-    table_container.scroll(function () {
+    table_container.scroll(() => {
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
@@ -91,21 +87,22 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
       let error = '';
       let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
       if (!(field in $scope.base_state)) {
-        error = field + ' does not exist';
+        error = `${field} does not exist`;
         field = 'address_line_1';
       }
       if (!$scope.base_state[field]) {
-        error += (error == '' ? '' : ' and default ') + field + ' is blank';
+        error += `${(error == '' ? '' : ' and default ') + field} is blank`;
       }
       $scope.inventory_name = $scope.base_state[field]
         ? $scope.base_state[field]
-        : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+        : `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
     $scope.displayValue = function (dataType, value) {
       if (dataType === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
-      } else if (['area', 'eui', 'float', 'number'].includes(dataType)) {
+      }
+      if (['area', 'eui', 'float', 'number'].includes(dataType)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;

@@ -26,10 +26,10 @@ angular.module('BE.seed.controller.set_update_to_now_modal', []).controller('set
           data.data.progress_key,
           0,
           1,
-          function () {
+          () => {
             $scope.refresh_page();
           },
-          function () {},
+          () => {},
           $scope.refresh_progress
         );
         return inventory_service.set_update_to_now(property_views, taxlot_views, data.data.progress_key);

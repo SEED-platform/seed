@@ -54,12 +54,10 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
     // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
     // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
     // Passing cycle_id will restrict is_applied ids to only those in the specified cycle
-    function get_labels(inventory_type, filter_ids, cycle_id) {
-      return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids, cycle_id);
-    }
+    const get_labels = (inventory_type, filter_ids, cycle_id) => get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids, cycle_id);
 
     function get_labels_for_org(org_id, inventory_type, filter_ids, cycle_id) {
-      var params = {
+      const params = {
         organization_id: org_id
       };
 
@@ -68,7 +66,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       }
 
       let endpoint = null;
-      var body = { selected: filter_ids };
+      const body = { selected: filter_ids };
       if (inventory_type === 'properties') {
         endpoint = 'properties/labels';
       } else if (inventory_type === 'taxlots') {
@@ -99,21 +97,16 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        Return object should also have a 'label' property assigned
        to the newly created label object.
        */
-    function create_label(label) {
-      return create_label_for_org(user_service.get_organization().id, label);
-    }
+    const create_label = (label) => create_label_for_org(user_service.get_organization().id, label);
 
-    function create_label_for_org(org_id, label) {
-      return $http
+    const create_label_for_org = (org_id, label) =>
+      $http
         .post('/api/v3/labels/', label, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return map_label(response.data);
-        });
-    }
+        .then((response) => map_label(response.data));
 
     /*  Update an existing a label in an organization
 
@@ -126,21 +119,16 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        Return object will have a 'label' property assigned
        to the updated label object.
        */
-    function update_label(label) {
-      return update_label_for_org(user_service.get_organization().id, label);
-    }
+    const update_label = (label) => update_label_for_org(user_service.get_organization().id, label);
 
-    function update_label_for_org(org_id, label) {
-      return $http
-        .put('/api/v3/labels/' + label.id + '/', label, {
+    const update_label_for_org = (org_id, label) =>
+      $http
+        .put(`/api/v3/labels/${label.id}/`, label, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return map_label(response.data);
-        });
-    }
+        .then((response) => map_label(response.data));
 
     /*  Delete a label from the set of labels for an organization.
 
@@ -151,30 +139,24 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        with either a success if the label was deleted,
        or an error if not.
        */
-    function delete_label(label) {
-      return delete_label_for_org(user_service.get_organization().id, label);
-    }
+    const delete_label = (label) => delete_label_for_org(user_service.get_organization().id, label);
 
-    function delete_label_for_org(org_id, label) {
-      return $http
-        .delete('/api/v3/labels/' + label.id + '/', {
+    const delete_label_for_org = (org_id, label) =>
+      $http
+        .delete(`/api/v3/labels/${label.id}/`, {
           params: {
             organization_id: org_id
           }
         })
-        .then(function (response) {
-          return response.data;
-        });
-    }
+        .then((response) => response.data);
 
     /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /**
 
        This method updates selected Properties with a group
        of "add" labels and a group of "remove" labels.
-
 
        @param {array} add_label_ids            An array of label ids to apply to selected properties.
        @param {array} remove_label_ids         An array of label ids to remove from selected properties.
@@ -184,14 +166,14 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        (success or error).
 
        */
-    function update_property_labels(add_label_ids, remove_label_ids, selected) {
-      return $http
+    const update_property_labels = (add_label_ids, remove_label_ids, selected) =>
+      $http
         .put(
           '/api/v3/labels_property/',
           {
             inventory_ids: selected,
-            add_label_ids: add_label_ids,
-            remove_label_ids: remove_label_ids
+            add_label_ids,
+            remove_label_ids
           },
           {
             params: {
@@ -199,15 +181,11 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        });
-    }
+        .then((response) => response.data);
 
     /**
        This method updates selected Tax Lots with a group
        of "add" labels and a group of "remove" labels.
-
 
        @param {array} add_label_ids            An array of label ids to apply to selected properties.
        @param {array} remove_label_ids         An array of label ids to remove from selected properties.
@@ -217,14 +195,14 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        (success or error).
 
        */
-    function update_taxlot_labels(add_label_ids, remove_label_ids, selected) {
-      return $http
+    const update_taxlot_labels = (add_label_ids, remove_label_ids, selected) =>
+      $http
         .put(
           '/api/v3/labels_taxlot/',
           {
             inventory_ids: selected,
-            add_label_ids: add_label_ids,
-            remove_label_ids: remove_label_ids
+            add_label_ids,
+            remove_label_ids
           },
           {
             params: {
@@ -232,10 +210,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
             }
           }
         )
-        .then(function (response) {
-          return response.data;
-        });
-    }
+        .then((response) => response.data);
 
     /*  Gets the list of supported colors for labels, based on default bootstrap
        styles for labels. These are defined locally.
@@ -254,37 +229,35 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        'color-description' (rather than 'label') to make them more clear.
 
        */
-    function get_available_colors() {
-      return [
-        {
-          label: 'success',
-          color: 'green'
-        },
-        {
-          label: 'danger',
-          color: 'red'
-        },
-        {
-          label: 'default',
-          color: 'gray'
-        },
-        {
-          label: 'warning',
-          color: 'orange'
-        },
-        {
-          label: 'info',
-          color: 'light blue'
-        },
-        {
-          label: 'primary',
-          color: 'blue'
-        }
-      ];
-    }
+    const get_available_colors = () => [
+      {
+        label: 'success',
+        color: 'green'
+      },
+      {
+        label: 'danger',
+        color: 'red'
+      },
+      {
+        label: 'default',
+        color: 'gray'
+      },
+      {
+        label: 'warning',
+        color: 'orange'
+      },
+      {
+        label: 'info',
+        color: 'light blue'
+      },
+      {
+        label: 'primary',
+        color: 'blue'
+      }
+    ];
 
     function lookup_label(color) {
-      var lookup_colors = {
+      const lookup_colors = {
         red: 'danger',
         gray: 'default',
         orange: 'warning',
@@ -306,9 +279,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
     /*  Add a few properties to the label object so that it
        works well with UI components.
        */
-    function map_labels(response) {
-      return _.map(response.data, map_label);
-    }
+    const map_labels = (response) => _.map(response.data, map_label);
 
     function map_label(label) {
       // add bootstrap label class names
@@ -320,20 +291,20 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
 
     /* Public API */
 
-    var label_factory = {
-      //functions
-      get_labels: get_labels,
-      get_labels_for_org: get_labels_for_org,
-      create_label: create_label,
-      create_label_for_org: create_label_for_org,
-      update_label: update_label,
-      update_label_for_org: update_label_for_org,
-      delete_label: delete_label,
-      delete_label_for_org: delete_label_for_org,
-      update_property_labels: update_property_labels,
-      update_taxlot_labels: update_taxlot_labels,
-      get_available_colors: get_available_colors,
-      lookup_label: lookup_label
+    const label_factory = {
+      // functions
+      get_labels,
+      get_labels_for_org,
+      create_label,
+      create_label_for_org,
+      update_label,
+      update_label_for_org,
+      delete_label,
+      delete_label_for_org,
+      update_property_labels,
+      update_taxlot_labels,
+      get_available_colors,
+      lookup_label
     };
 
     return label_factory;

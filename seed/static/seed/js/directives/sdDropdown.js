@@ -4,32 +4,30 @@
  */
 angular.module('sdDropdown', []).directive('sdDropdown', [
   'urls',
-  function (urls) {
-    return {
-      restrict: 'E',
-      require: '^ngModel',
-      scope: {
-        ngModel: '=', // selection
-        items: '=', // items to select from
-        callback: '&' // callback
-      },
-      link: function (scope, element, attrs) {
-        element.on('click', function (event) {
-          event.preventDefault();
-        });
+  (urls) => ({
+    restrict: 'E',
+    require: '^ngModel',
+    scope: {
+      ngModel: '=', // selection
+      items: '=', // items to select from
+      callback: '&' // callback
+    },
+    link(scope, element, attrs) {
+      element.on('click', (event) => {
+        event.preventDefault();
+      });
 
-        scope.default = 'Please select item';
-        scope.isButton = 'isButton' in attrs;
+      scope.default = 'Please select item';
+      scope.isButton = 'isButton' in attrs;
 
-        // selection changed handler
-        scope.select = function (item) {
-          scope.ngModel = item;
-          if (scope.callback) {
-            scope.callback({ item: item });
-          }
-        };
-      },
-      templateUrl: urls.static_url + 'seed/js/directives/sd-dropdown-template.html'
-    };
-  }
+      // selection changed handler
+      scope.select = function (item) {
+        scope.ngModel = item;
+        if (scope.callback) {
+          scope.callback({ item });
+        }
+      };
+    },
+    templateUrl: `${urls.static_url}seed/js/directives/sd-dropdown-template.html`
+  })
 ]);

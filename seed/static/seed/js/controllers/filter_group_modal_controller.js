@@ -14,15 +14,15 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
 
     $scope.rename_filter_group = function () {
       if (!$scope.disabled()) {
-        var id = $scope.data.id;
-        var filter_group = _.omit($scope.data, 'id');
+        const { id } = $scope.data;
+        const filter_group = _.omit($scope.data, 'id');
         filter_group.name = $scope.newName;
         filter_groups_service
           .update_filter_group(id, filter_group)
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result.name);
           })
-          .catch(function () {
+          .catch(() => {
             $uibModalInstance.dismiss();
           });
       }
@@ -31,10 +31,10 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
     $scope.remove_filter_group = function () {
       filter_groups_service
         .remove_filter_group($scope.data.id)
-        .then(function () {
+        .then(() => {
           $uibModalInstance.close();
         })
-        .catch(function () {
+        .catch(() => {
           $uibModalInstance.dismiss();
         });
     };
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
             labels: $scope.data.labels,
             label_logic: $scope.data.label_logic
           })
-          .then(function (result) {
+          .then((result) => {
             $uibModalInstance.close(result);
           });
       }
@@ -58,7 +58,8 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
     $scope.disabled = function () {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-      } else if ($scope.action === 'new') {
+      }
+      if ($scope.action === 'new') {
         return _.isEmpty($scope.newName);
       }
     };

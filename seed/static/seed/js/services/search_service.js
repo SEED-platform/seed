@@ -36,10 +36,10 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
   '$http',
   'spinner_utility',
   function ($http, spinner_utility) {
-    /************
+    /** **********
      * variables
      */
-    var search_service = {
+    const search_service = {
       url: '',
       buildings: [],
       alert: false,
@@ -68,9 +68,9 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       start: 1,
       end: search_service.number_matching_search > 10 ? 10 : search_service.number_matching_search
     };
-    var saas; // set to the local instance of the extended search_service this
+    let saas; // set to the local instance of the extended search_service this
 
-    /************
+    /** **********
      * functions
      */
 
@@ -124,16 +124,16 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
      * sanitize_params: removes filter params with null or undefined values
      */
     search_service.sanitize_params = function () {
-      var params = this.filter_params;
-      var to_remove = [];
-      for (var prop in params) {
+      const params = this.filter_params;
+      const to_remove = [];
+      for (const prop in params) {
         if (_.isNil(params[prop])) {
           to_remove.push(prop);
         }
       }
 
-      for (var i = 0; i < to_remove.length; ++i) {
-        var prop_to_delete = to_remove[i];
+      for (let i = 0; i < to_remove.length; ++i) {
+        const prop_to_delete = to_remove[i];
         delete params[prop_to_delete];
       }
     };
@@ -164,18 +164,18 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
     search_service.search_buildings = function (query) {
       this.sanitize_params();
       this.query = query || this.query;
-      var that = this;
-      var data = _.defaults({ number_per_page: 999999999 }, this.construct_search_query(query));
+      const that = this;
+      const data = _.defaults({ number_per_page: 999999999 }, this.construct_search_query(query));
       spinner_utility.show();
       return $http
         .post(that.url, data)
-        .then(function (response) {
+        .then((response) => {
           spinner_utility.hide();
           that.update_results(response.data);
           return response.data;
         })
-        .catch(function () {
-          that.error_message = 'error: ' + status + ' ' + data;
+        .catch(() => {
+          that.error_message = `error: ${status} ${data}`;
           that.alert = true;
         });
     };
@@ -210,7 +210,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       this.current_page = 1;
       this.search_buildings();
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
       }
     };
 
@@ -229,7 +229,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       this.current_page = 1;
       this.search_buildings();
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(this.prefix + ':' + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
+        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
       }
     };
 
@@ -294,7 +294,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
         this.current_page = this.num_pages();
       }
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingPageNumber', this.current_page);
       }
       this.search_buildings();
     };
@@ -309,7 +309,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
         this.current_page = 1;
       }
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(this.prefix + ':' + 'seedBuildingPageNumber', this.current_page);
+        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingPageNumber', this.current_page);
       }
       this.search_buildings();
     };
@@ -351,7 +351,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
      *   should **always** be called before load_state_from_selected_buildings.
      */
     search_service.select_or_deselect_all_buildings = function () {
-      for (var i = 0; i < this.buildings.length; i++) {
+      for (let i = 0; i < this.buildings.length; i++) {
         this.buildings[i].checked = this.select_all_checkbox;
       }
     };
@@ -371,7 +371,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
      *   after select_or_deselect_all_buildings.
      */
     search_service.load_state_from_selected_buildings = function () {
-      for (var i = 0; i < this.buildings.length; i++) {
+      for (let i = 0; i < this.buildings.length; i++) {
         if (_.includes(this.selected_buildings, this.buildings[i].id)) {
           this.buildings[i].checked = !this.select_all_checkbox;
         }
@@ -423,7 +423,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       //   saas.current_page = 1;
       //   saas.search_buildings();
       // },
-      is_sorted_on_this_column: function () {
+      is_sorted_on_this_column() {
         return this.sort_column === saas.sort_column;
       },
       // unused 6.15.17 commented out for code cov dbressan
@@ -433,7 +433,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       // is_sorted_up: function () {
       //   return this.is_sorted_on_this_column() && !saas.sort_reverse;
       // },
-      is_unsorted: function () {
+      is_unsorted() {
         return !this.is_sorted_on_this_column();
       }
       // unused 6.15.17 commented out for code cov dbressan
@@ -458,32 +458,32 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
      *   prototype by filtering the list of all possible columns
      */
     search_service.generate_columns = function (all_columns, column_headers, column_prototype) {
-      var columns = all_columns.filter(function (c) {
-        return _.includes(column_headers, c.sort_column) || c.checked;
-      });
+      const columns = all_columns.filter((c) => _.includes(column_headers, c.sort_column) || c.checked);
       // also apply the user sort order
-      columns.sort(function (a, b) {
+      columns.sort((a, b) => {
         // when viewing the list of projects, there is an extra "Status" column that is always first
         if (a.sort_column === 'project_building_snapshots__status_label__name') {
           return -1;
-        } else if (b.sort_column === 'project_building_snapshots__status_label__name') {
+        }
+        if (b.sort_column === 'project_building_snapshots__status_label__name') {
           return 1;
         }
         // if no status, sort according to user's selected order
         if (_.includes(column_headers, a.sort_column) && _.includes(column_headers, b.sort_column)) {
           return column_headers.indexOf(a.sort_column) - column_headers.indexOf(b.sort_column);
-        } else if (_.includes(column_headers, a.sort_column)) {
-          return -1;
-        } else if (_.includes(column_headers, b.sort_column)) {
-          return 1;
-        } else {
-          // preserve previous order
-          return all_columns.indexOf(a) - all_columns.indexOf(b);
         }
+        if (_.includes(column_headers, a.sort_column)) {
+          return -1;
+        }
+        if (_.includes(column_headers, b.sort_column)) {
+          return 1;
+        }
+        // preserve previous order
+        return all_columns.indexOf(a) - all_columns.indexOf(b);
       });
 
       if (!_.isUndefined(column_prototype)) {
-        for (var i = 0; i < columns.length; i++) {
+        for (let i = 0; i < columns.length; i++) {
           angular.extend(columns[i], column_prototype);
         }
       }

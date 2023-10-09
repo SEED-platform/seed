@@ -62,33 +62,33 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       $scope.show_config = !$scope.show_config;
     };
 
-    let _collect_array_as_object = function (array, key = 'id') {
+    const _collect_array_as_object = function (array, key = 'id') {
       ret = {};
-      for (let i in array) {
+      for (const i in array) {
         ret[array[i][key]] = array[i];
       }
       return ret;
     };
 
-    let _collect_array_as_object_sorted = function (array, key = 'start') {
+    const _collect_array_as_object_sorted = function (array, key = 'start') {
       ret = {};
-      for (let i in array) {
+      for (const i in array) {
         ret[array[i][key]] = array[i];
       }
       return ret;
     };
 
-    let _init_fields = function () {
-      for (let i in $scope.filter_groups) {
+    const _init_fields = function () {
+      for (const i in $scope.filter_groups) {
         $scope.fields.filter_group_checkboxes[$scope.filter_groups[i].id] = false;
       }
-      for (let i in $scope.cycles) {
+      for (const i in $scope.cycles) {
         $scope.fields.cycle_checkboxes[$scope.cycles[i].id] = false;
       }
       $scope.source_column_by_location = { first_axis: null, second_axis: null };
     };
 
-    let _init_data = function () {
+    const _init_data = function () {
       // load data views
       $scope.data_views = data_views;
       if (data_views.status == 'error') {
@@ -100,7 +100,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         $scope.selected_data_view.first_axis_aggregations = [];
         $scope.selected_data_view.second_axis_aggregations = [];
       } else if ($scope.id) {
-        $scope.data_views_error = 'Could not find Data View with id #' + $scope.id + '!';
+        $scope.data_views_error = `Could not find Data View with id #${$scope.id}!`;
       }
 
       // load cycles
@@ -108,7 +108,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       if ($scope.selected_data_view) {
         $scope.used_cycles = _collect_array_as_object_sorted($scope.cycles.filter((item) => $scope.selected_data_view.cycles.includes(item.id)));
       }
-      $scope.selected_cycles = Object.assign({}, $scope.used_cycles);
+      $scope.selected_cycles = { ...$scope.used_cycles };
       $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
 
       // load source columns
@@ -120,20 +120,20 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
       // load both axis
       if ($scope.selected_data_view) {
-        let first_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'first_axis');
+        const first_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'first_axis');
         if (first_axis_aggregations) {
           $scope.selected_table_location = 'first_axis';
-          $scope.selected_table_aggregation = first_axis_aggregations['aggregations'][0];
+          $scope.selected_table_aggregation = first_axis_aggregations.aggregations[0];
           $scope.select_source_column('first_axis', first_axis_aggregations.column, false);
-          for (let i in first_axis_aggregations['aggregations']) {
-            $scope.toggle_aggregation('first_axis', first_axis_aggregations['aggregations'][i]);
+          for (const i in first_axis_aggregations.aggregations) {
+            $scope.toggle_aggregation('first_axis', first_axis_aggregations.aggregations[i]);
           }
         }
-        let second_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'second_axis');
+        const second_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'second_axis');
         if (second_axis_aggregations) {
           $scope.select_source_column('second_axis', second_axis_aggregations.column, false);
-          for (let i in second_axis_aggregations['aggregations']) {
-            $scope.toggle_aggregation('second_axis', second_axis_aggregations['aggregations'][i]);
+          for (const i in second_axis_aggregations.aggregations) {
+            $scope.toggle_aggregation('second_axis', second_axis_aggregations.aggregations[i]);
           }
         }
       }
@@ -147,15 +147,15 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
             acc[curr.name] = curr;
             return acc;
           }, {});
-        for (let i in $scope.selected_data_view.filter_groups) {
+        for (const i in $scope.selected_data_view.filter_groups) {
           $scope.show_properties_for_filter_group[$scope.selected_data_view.filter_groups[i]] = false;
         }
       }
-      $scope.selected_filter_groups = Object.assign({}, $scope.used_filter_groups);
+      $scope.selected_filter_groups = { ...$scope.used_filter_groups };
     };
 
     $scope.data = {};
-    let _load_data = function () {
+    const _load_data = function () {
       if (!$scope.selected_data_view) {
         spinner_utility.hide();
         return;
@@ -177,19 +177,15 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         });
     };
 
-    $scope.object_has_key = function (a, b) {
-      return Object.keys(a).includes(String(b));
-    };
-    $scope.object_has_any_key = function (a) {
-      return Object.keys(a).length > 0;
-    };
+    $scope.object_has_key = (a, b) => Object.keys(a).includes(String(b));
+    $scope.object_has_any_key = (a) => Object.keys(a).length > 0;
 
     $scope.toggle_filter_group = function (filter_group_id) {
       filter_group = $scope.filter_groups.find((fg) => fg.id == filter_group_id);
       if (filter_group.name in $scope.selected_filter_groups) {
         delete $scope.selected_filter_groups[filter_group.name];
       } else {
-        $scope.selected_filter_groups[filter_group.name] = Object.assign({}, $scope.used_filter_groups[filter_group.name]);
+        $scope.selected_filter_groups[filter_group.name] = { ...$scope.used_filter_groups[filter_group.name] };
       }
       $scope.click_edit();
       _assign_datasets();
@@ -199,7 +195,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       if (cycle_id in $scope.selected_cycles) {
         delete $scope.selected_cycles[cycle_id];
       } else {
-        $scope.selected_cycles[cycle_id] = Object.assign({}, $scope.used_cycles[cycle_id]);
+        $scope.selected_cycles[cycle_id] = { ...$scope.used_cycles[cycle_id] };
       }
       $scope.selected_cycles_length = Object.keys($scope.selected_cycles).length;
       $scope.click_edit();
@@ -235,7 +231,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
     $scope.select_source_column = function (location, source_column_id, reload_data = true) {
       if (source_column_id) {
-        $scope.source_column_by_location[location] = Object.assign({}, $scope.source_columns.by_id[source_column_id]);
+        $scope.source_column_by_location[location] = { ...$scope.source_columns.by_id[source_column_id] };
       } else {
         $scope.source_column_by_location[location] = null;
       }
@@ -281,8 +277,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
 
       // validate filter groups
-      let checked_filter_groups = [];
-      for (let i in $scope.fields.filter_group_checkboxes) {
+      const checked_filter_groups = [];
+      for (const i in $scope.fields.filter_group_checkboxes) {
         if ($scope.fields.filter_group_checkboxes[i]) {
           checked_filter_groups.push(parseInt(i));
         }
@@ -292,8 +288,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
 
       // validate cycles
-      let checked_cycles = [];
-      for (let i in $scope.fields.cycle_checkboxes) {
+      const checked_cycles = [];
+      for (const i in $scope.fields.cycle_checkboxes) {
         if ($scope.fields.cycle_checkboxes[i]) {
           checked_cycles.push(parseInt(i));
         }
@@ -303,13 +299,13 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
 
       // validate column
-      if (!$scope.source_column_by_location['first_axis']) {
+      if (!$scope.source_column_by_location.first_axis) {
         $scope.create_errors.push('The first axis must have a source column.');
       }
       if ($scope.selected_data_view.first_axis_aggregations.length < 1) {
         $scope.create_errors.push('The first axis needs at least one selected aggregation.');
       }
-      if ($scope.source_column_by_location['second_axis'] && $scope.selected_data_view.second_axis_aggregations.length < 1) {
+      if ($scope.source_column_by_location.second_axis && $scope.selected_data_view.second_axis_aggregations.length < 1) {
         $scope.create_errors.push('The second axis needs at least one selected aggregation.');
       }
 
@@ -320,43 +316,43 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
 
       // create/update data view
-      let aggregations = [];
-      if ($scope.source_column_by_location['first_axis']) {
+      const aggregations = [];
+      if ($scope.source_column_by_location.first_axis) {
         aggregations.push({
-          column: $scope.source_column_by_location['first_axis']['id'],
+          column: $scope.source_column_by_location.first_axis.id,
           location: 'first_axis',
           aggregations: $scope.selected_data_view.first_axis_aggregations
         });
       }
-      if ($scope.source_column_by_location['second_axis']) {
+      if ($scope.source_column_by_location.second_axis) {
         aggregations.push({
-          column: $scope.source_column_by_location['second_axis']['id'],
+          column: $scope.source_column_by_location.second_axis.id,
           location: 'second_axis',
           aggregations: $scope.selected_data_view.second_axis_aggregations
         });
       }
 
-      let _done = function (data) {
+      const _done = function (data) {
         if (data.status == 'success') {
           if (!$scope.selected_data_view.id) {
-            window.location = '#/insights/custom/' + data.data_view.id;
+            window.location = `#/insights/custom/${data.data_view.id}`;
             spinner_utility.hide();
             return;
           }
           data_views = data_views.map((data_view) => {
             if (data_view.id == data.data_view.id) {
-              return Object.assign({}, data.data_view);
+              return { ...data.data_view };
             }
             return data_view;
           });
-          $scope.selected_data_view = Object.assign({}, data.data_view);
+          $scope.selected_data_view = { ...data.data_view };
           _init_data();
           _load_data();
           $scope.editing = false;
           return;
         }
         $scope.create_errors.push(data.message);
-        for (let i in data.errors) {
+        for (const i in data.errors) {
           $scope.create_errors.push(data.errors[i]);
         }
       };
@@ -387,7 +383,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         return;
       }
 
-      if (confirm('Are you sure to delete the data view "' + data_view.name + '"?')) {
+      if (confirm(`Are you sure to delete the data view "${data_view.name}"?`)) {
         delete_id = data_view.id;
         data_view_service.delete_data_view(delete_id).then((data) => {
           if (data.status == 'success') {
@@ -404,18 +400,18 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     $scope.click_edit = function () {
       spinner_utility.show();
       $scope.fields.name = $scope.selected_data_view.name;
-      for (let i in $scope.selected_data_view.cycles) {
+      for (const i in $scope.selected_data_view.cycles) {
         $scope.fields.cycle_checkboxes[$scope.selected_data_view.cycles[i]] = true;
       }
 
-      for (let i in $scope.selected_data_view.filter_groups) {
+      for (const i in $scope.selected_data_view.filter_groups) {
         $scope.fields.filter_group_checkboxes[$scope.selected_data_view.filter_groups[i]] = true;
       }
       $scope.editing = true;
       spinner_utility.hide();
     };
     // CHARTS
-    var colors = [
+    const colors = [
       '#4477AA',
       '#DDDD77',
       '#77CCCC',
@@ -440,8 +436,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     ];
     colorsByLabelPrefix = {};
     const colorIter = colors[Symbol.iterator]();
-    for (let agg of $scope.aggregations) {
-      for (let fg of $scope.filter_groups) {
+    for (const agg of $scope.aggregations) {
+      for (const fg of $scope.filter_groups) {
         colorsByLabelPrefix[`${fg.name} - ${agg.name}`] = colorIter.next().value;
       }
     }
@@ -454,8 +450,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       const canvas = document.getElementById('data-view-chart');
       const ctx = canvas.getContext('2d');
 
-      let first_axis_name = $scope.source_column_by_location.first_axis ? $scope.source_column_by_location.first_axis.displayName : 'y1';
-      let second_axis_name = $scope.source_column_by_location.second_axis ? $scope.source_column_by_location.second_axis.displayName : 'y2';
+      const first_axis_name = $scope.source_column_by_location.first_axis ? $scope.source_column_by_location.first_axis.displayName : 'y1';
+      const second_axis_name = $scope.source_column_by_location.second_axis ? $scope.source_column_by_location.second_axis.displayName : 'y2';
 
       $scope.dataViewChart = new Chart(ctx, {
         type: 'line',
@@ -506,7 +502,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     };
 
     $scope.downloadChart = () => {
-      var a = document.createElement('a');
+      const a = document.createElement('a');
       a.href = $scope.dataViewChart.toBase64Image();
       a.download = 'Custom Report.png';
       a.click();
@@ -534,8 +530,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
       axis1_column = $scope.source_column_by_location.first_axis.displayName;
       let i = 0;
-      for (let aggregation of axis1_aggregations) {
-        for (let dataset of $scope.data.graph_data.datasets) {
+      for (const aggregation of axis1_aggregations) {
+        for (const dataset of $scope.data.graph_data.datasets) {
           const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
           if (aggregation == dataset.aggregation && columnWithUnits.test(axis1_column) && dataset.filter_group in $scope.selected_filter_groups) {
             dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;
@@ -554,14 +550,14 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       if ($scope.source_column_by_location.second_axis) {
         i = 0;
         axis2_column = $scope.source_column_by_location.second_axis.displayName;
-        let second_axis_name = $scope.source_column_by_location.second_axis.displayName;
+        const second_axis_name = $scope.source_column_by_location.second_axis.displayName;
 
         $scope.dataViewChart.options.scales.y2.display = true;
         $scope.dataViewChart.options.scales.y2.title.text = second_axis_name;
         $scope.dataViewChart.options.scales.y2.title.display = true;
 
-        for (let aggregation of axis2_aggregations) {
-          for (let dataset of $scope.data.graph_data.datasets) {
+        for (const aggregation of axis2_aggregations) {
+          for (const dataset of $scope.data.graph_data.datasets) {
             const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
             if (aggregation == dataset.aggregation && columnWithUnits.test(axis2_column) && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;

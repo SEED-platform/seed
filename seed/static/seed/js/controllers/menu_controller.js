@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     $scope.hide_load_error = function () {
       $rootScope.route_load_error = false;
     };
-    $scope.$on('app_error', function (event, data) {
+    $scope.$on('app_error', (event, data) => {
       // Keep the first error
       if (!$rootScope.route_load_error) {
         $rootScope.route_load_error = true;
@@ -45,37 +45,36 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
         $rootScope.load_error_message = data.data.message;
       }
     });
-    $scope.$on('app_success', function () {
+    $scope.$on('app_success', () => {
       $rootScope.route_load_error = false;
     });
-    $scope.$on('organization_list_updated', function () {
+    $scope.$on('organization_list_updated', () => {
       init();
     });
     $scope.is_active = function (menu_item, use_pathname) {
-      var current_path = $location.path();
+      let current_path = $location.path();
       if (use_pathname) {
         current_path = $window.location.pathname;
       }
 
       if (menu_item === current_path) {
         return true;
-      } else {
-        return menu_item !== '/' && _.startsWith(current_path, menu_item);
       }
+      return menu_item !== '/' && _.startsWith(current_path, menu_item);
     };
 
     $scope.href = function (url) {
       window.location = url;
     };
 
-    //Sets initial expanded/collapse state of sidebar menu
+    // Sets initial expanded/collapse state of sidebar menu
     const STORAGE_KEY = 'seed_nav_is_expanded';
 
     function init_menu() {
       if ($window.localStorage.getItem(STORAGE_KEY) === null) {
         $window.localStorage.setItem(STORAGE_KEY, 'true');
       }
-      var isNavExpanded = $window.localStorage.getItem(STORAGE_KEY) === 'true';
+      const isNavExpanded = $window.localStorage.getItem(STORAGE_KEY) === 'true';
       $scope.expanded_controller = isNavExpanded;
       $scope.collapsed_controller = !isNavExpanded;
       $scope.narrow_controller = isNavExpanded;
@@ -83,26 +82,22 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     }
 
     // returns true if menu toggle has never been clicked, i.e., first run, else returns false
-    $scope.menu_toggle_has_never_been_clicked = function () {
-      return $scope.expanded_controller === $scope.collapsed_controller;
-    };
+    $scope.menu_toggle_has_never_been_clicked = () => $scope.expanded_controller === $scope.collapsed_controller;
 
-    $scope.is_initial_state = function () {
-      return $scope.menu_toggle_has_never_been_clicked();
-    };
+    $scope.is_initial_state = () => $scope.menu_toggle_has_never_been_clicked();
 
     // expands and collapses the sidebar menu
     $scope.toggle_menu = function () {
-      $scope.is_initial_state = false; //we can now turn on animations
+      $scope.is_initial_state = false; // we can now turn on animations
       $scope.expanded_controller = !$scope.expanded_controller;
       $scope.collapsed_controller = !$scope.collapsed_controller;
       $scope.narrow_controller = !$scope.narrow_controller;
       $scope.wide_controller = !$scope.wide_controller;
       try {
-        //TODO : refactor to put() when we move to Angular 1.3 or greater
+        // TODO : refactor to put() when we move to Angular 1.3 or greater
         $window.localStorage.setItem(STORAGE_KEY, $scope.expanded_controller.toString());
       } catch (err) {
-        //it's ok if the cookie can't be written, so just report in the log and move along.
+        // it's ok if the cookie can't be written, so just report in the log and move along.
         $log.error("Couldn't write cookie for nav state. Error: ", err);
       }
     };
@@ -112,27 +107,18 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      *  data_upload_modal_controller controller.
      */
     $scope.open_data_upload_modal = function () {
-      var dataModalInstance = $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/data_upload_modal.html',
+      const dataModalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
         controller: 'data_upload_modal_controller',
         resolve: {
-          cycles: [
-            'cycle_service',
-            function (cycle_service) {
-              return cycle_service.get_cycles();
-            }
-          ],
+          cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
           step: _.constant(1),
-          dataset: function () {
-            return {};
-          },
-          organization: function () {
-            return $scope.menu.user.organization;
-          }
+          dataset: () => ({}),
+          organization: () => $scope.menu.user.organization
         }
       });
 
-      dataModalInstance.result.finally(function () {
+      dataModalInstance.result.finally(() => {
         $scope.$broadcast('datasets_updated');
         init();
       });
@@ -143,23 +129,21 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      */
     $scope.open_sample_data_modal = function () {
       $uibModal.open({
-        templateUrl: urls.static_url + 'seed/partials/sample_data_modal.html',
+        templateUrl: `${urls.static_url}seed/partials/sample_data_modal.html`,
         controller: 'sample_data_modal_controller',
         size: 'md',
         resolve: {
-          organization: () => {
-            return $scope.menu.user.organization;
-          },
+          organization: () => $scope.menu.user.organization,
           cycle: [
             'Notification',
             'organization_service',
-            function (Notification, organization_service) {
-              return organization_service.get_organization($scope.menu.user.organization.org_id).then((response) => {
+            (Notification, organization_service) =>
+              organization_service.get_organization($scope.menu.user.organization.org_id).then((response) => {
                 if (!response.organization.cycles.length) {
                   Notification.error('Error: please create a cycle before Auto-Populating data');
                   return;
                 }
-                let lastCycleId = inventory_service.get_last_cycle();
+                const lastCycleId = inventory_service.get_last_cycle();
                 let lastCycle;
                 if (typeof lastCycleId === 'number') {
                   lastCycle = response.organization.cycles.find((cycle) => cycle.cycle_id === lastCycleId);
@@ -168,15 +152,9 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
                   lastCycle = response.organization.cycles[0];
                 }
                 return lastCycle;
-              });
-            }
+              })
           ],
-          profiles: [
-            'inventory_service',
-            function (inventory_service) {
-              return inventory_service.get_column_list_profiles('List View Profile', 'Property');
-            }
-          ]
+          profiles: ['inventory_service', (inventory_service) => inventory_service.get_column_list_profiles('List View Profile', 'Property')]
         }
       });
     };
@@ -196,10 +174,10 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     // set authorization and organization data to $scope
     const set_auth = function (org_id) {
       auth_service.is_authorized(org_id, ['requires_owner']).then(
-        function (data) {
+        (data) => {
           $scope.auth = data.auth.requires_owner ? data.auth : 'not authorized';
         },
-        function (data) {
+        (data) => {
           $scope.auth = data.message;
         }
       );
@@ -212,33 +190,29 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       $scope.show_org_id = false;
     };
     $scope.track_mouse = function (e) {
-      let xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
-      let ypos = `${e.clientY - 25}px`;
+      const xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
+      const ypos = `${e.clientY - 25}px`;
       $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
     };
 
-    //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
+    // DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
     //      This isn't the best solution but most expedient. This approach should be refactored later by
     //      a proper strategy of binding views straight to model properties.
     //      See my comments here: https://github.com/SEED-platform/seed/issues/44
 
-    //watch datasets
+    // watch datasets
     $scope.$watch(
-      function () {
-        return dataset_service.total_datasets_for_user;
-      },
-      function (data) {
+      () => dataset_service.total_datasets_for_user,
+      (data) => {
         $scope.datasets_count = data;
       },
       true
     );
 
-    //watch organizations
+    // watch organizations
     $scope.$watch(
-      function () {
-        return organization_service.total_organizations_for_user;
-      },
-      function (data) {
+      () => organization_service.total_organizations_for_user,
+      (data) => {
         $scope.organizations_count = data;
       },
       true
@@ -252,7 +226,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
         $uibModal.open({
           backdrop: 'static',
           keyboard: false,
-          templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
+          templateUrl: `${urls.static_url}seed/partials/create_organization_modal.html`,
           controller: 'create_organization_modal_controller',
           resolve: {
             user_id: user_service.get_user_id()
@@ -261,19 +235,19 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       } else {
         organization_service
           .get_organizations_brief()
-          .then(function (data) {
+          .then((data) => {
             $scope.organizations_count = data.organizations.length;
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, { id: _.toInteger(user_service.get_organization().id) });
             set_auth($scope.menu.user.organization.id);
           })
-          .catch(function (error) {
+          .catch((error) => {
             // user does not have an org
             $rootScope.route_load_error = true;
             $rootScope.load_error_message = error.data.message;
           });
-        dataset_service.get_datasets_count().then(function (data) {
+        dataset_service.get_datasets_count().then((data) => {
           $scope.datasets_count = data.datasets_count;
         });
       }

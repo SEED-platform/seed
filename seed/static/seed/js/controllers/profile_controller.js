@@ -12,17 +12,17 @@ angular.module('BE.seed.controller.profile', []).controller('profile_controller'
     $scope.is_superuser = auth_payload.auth.requires_superuser;
     $scope.user = user_profile_payload;
     $scope.user_updated = false;
-    var user_copy = angular.copy($scope.user);
-    $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+    let user_copy = angular.copy($scope.user);
+    $scope.username = `${user_profile_payload.first_name} ${user_profile_payload.last_name}`;
 
     /**
      * updates the user's PI
      */
     $scope.submit_form = function () {
-      user_service.update_user($scope.user).then(function () {
+      user_service.update_user($scope.user).then(() => {
         $scope.user_updated = true;
         user_copy = angular.copy($scope.user);
-        $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+        $scope.username = `${user_profile_payload.first_name} ${user_profile_payload.last_name}`;
       });
     };
 

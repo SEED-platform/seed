@@ -20,14 +20,12 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
       stop_func();
     });
 
-    const refresh_analysis = (analysis_id) => {
+    const refresh_analysis = (analysis_id) =>
       // update analysis in scope
-      return analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+      analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
         $scope.analysis = data.analysis;
         return data.analysis;
       });
-    };
-
     $scope.cycle_name = null;
     cycle_service.get_cycles().then((cycles) => {
       const cycle = cycles.cycles.find((cycle) => $scope.analysis.cycles.includes(cycle.id));
@@ -36,7 +34,7 @@ angular.module('BE.seed.controller.analysis_details', []).controller('analysis_d
 
     // add flag to the analysis indicating it has no currently running tasks
     // Used to determine if we should indicate on UI if an analysis's status is being polled
-    const mark_analysis_not_active = (/*analysis_id*/) => {
+    const mark_analysis_not_active = (/* analysis_id */) => {
       $scope.analysis._finished_with_tasks = true;
 
       // if the status of the analysis has changed since we first loaded the page, refresh everything

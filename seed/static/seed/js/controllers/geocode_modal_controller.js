@@ -17,15 +17,15 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
     $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
     $scope.geocode_state = 'verify';
 
-    geocode_service.check_org_has_api_key(org_id).then(function (result) {
+    geocode_service.check_org_has_api_key(org_id).then((result) => {
       $scope.has_api_key = result;
     });
 
-    geocode_service.check_org_has_geocoding_enabled(org_id).then(function (result) {
+    geocode_service.check_org_has_geocoding_enabled(org_id).then((result) => {
       $scope.geocoding_enabled = result;
     });
 
-    organization_service.geocoding_columns(org_id).then(function (data) {
+    organization_service.geocoding_columns(org_id).then((data) => {
       if ($scope.inventory_type === 'properties') {
         $scope.has_enough_geocoding_columns = data.PropertyState.length > 0;
       } else if ($scope.inventory_type === 'taxlots') {
@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
       }
     });
 
-    geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
+    geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
       if (result.properties) {
         $scope.pre_properties_not_geocoded = result.properties.not_geocoded;
 
@@ -58,8 +58,8 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
 
       geocode_service
         .geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids)
-        .then(function () {
-          geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
+        .then(() => {
+          geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then((result) => {
             if (result.properties) {
               $scope.properties_geocoded_high_confidence = result.properties.high_confidence;
               $scope.properties_geocoded_low_confidence = result.properties.low_confidence;
@@ -77,7 +77,7 @@ angular.module('BE.seed.controller.geocode_modal', []).controller('geocode_modal
             $scope.geocode_state = 'result';
           });
         })
-        .catch(function (e) {
+        .catch((e) => {
           $scope.geocode_state = 'fail';
           if (e.message == 'MapQuestAPIKeyError') $scope.error_message = 'MapQuest API key may be invalid or at its limit.';
           else $scope.error_message = e.statusText;

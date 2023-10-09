@@ -7,14 +7,11 @@ angular.module('BE.seed.service.scenario', []).factory('scenario_service', [
   function ($http) {
     const scenario_service = {};
 
-    scenario_service.delete_scenario = function (organization_id, property_view_id, scenario_id) {
-      return $http({
+    scenario_service.delete_scenario = (organization_id, property_view_id, scenario_id) =>
+      $http({
         url: `/api/v3/properties/${property_view_id}/scenarios/${scenario_id}/`,
         method: 'DELETE'
-      }).then((response) => {
-        return response.data;
-      });
-    };
+      }).then((response) => response.data);
 
     return scenario_service;
   }

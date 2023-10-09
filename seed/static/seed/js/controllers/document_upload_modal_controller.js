@@ -65,12 +65,12 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
           break;
       }
 
-      _.defer(function () {
+      _.defer(() => {
         $scope.$apply();
       });
     };
 
-    var saveFailure = function (error) {
+    const saveFailure = function (error) {
       // present error message
 
       $scope.uploader.invalid_file_extension_alert = false;
@@ -80,9 +80,9 @@ angular.module('BE.seed.controller.document_upload_modal', []).controller('docum
       $scope.step.number = 1;
     };
 
-    var saveSuccess = function (progress_data) {
+    const saveSuccess = function (progress_data) {
       // recheck progress in order to ensure message has been appended to progress_data
-      uploader_service.check_progress(progress_data.progress_key).then(function (data) {
+      uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
         $scope.uploader.progress = 100;
         $scope.step.number = 3;

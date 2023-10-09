@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.delete_document_modal', []).controller('delet
     $scope.file = file;
     $scope.view_id = view_id;
     $scope.delete_document = function () {
-      inventory_service.delete_inventory_document($scope.view_id, $scope.file.id).then(function () {
+      inventory_service.delete_inventory_document($scope.view_id, $scope.file.id).then(() => {
         $state.reload();
         $uibModalInstance.close();
       });

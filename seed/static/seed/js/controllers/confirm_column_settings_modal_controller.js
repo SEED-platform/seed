@@ -41,17 +41,17 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       $scope.step.number = step;
     };
 
-    cycle_service.get_cycles_for_org($scope.org_id).then(function (cycles) {
+    cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
       $scope.cycles = cycles.cycles;
     });
 
     // parse proposed changes to create change summary to be presented to user
-    var all_changed_settings = ['column_name']; // add column_name to describe each row
+    let all_changed_settings = ['column_name']; // add column_name to describe each row
     $scope.change_summary_data = _.reduce(
       proposed_changes,
-      function (summary, value, key) {
-        var column = _.find($scope.columns, { id: parseInt(key) });
-        var change = _.pick(_.cloneDeep(column), ['column_name']);
+      (summary, value, key) => {
+        const column = _.find($scope.columns, { id: parseInt(key) });
+        const change = _.pick(_.cloneDeep(column), ['column_name']);
 
         // capture changed setting values
         summary.push(_.merge(change, value));
@@ -64,19 +64,19 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
     );
 
     // If a preexisting ComStock mapping exists on the other table add it to the diff list for removal
-    _.forEach($scope.change_summary_data, function (diff) {
+    _.forEach($scope.change_summary_data, (diff) => {
       if (!_.isNil(diff.comstock_mapping)) {
-        var found = _.find(all_columns, { related: true, comstock_mapping: diff.comstock_mapping });
+        const found = _.find(all_columns, { related: true, comstock_mapping: diff.comstock_mapping });
         if (found) {
           $scope.change_summary_data.push({
-            column_name: found.column_name + ' (' + found.table_name + ')',
+            column_name: `${found.column_name} (${found.table_name})`,
             comstock_mapping: null
           });
         }
       }
     });
 
-    var base_summary_column_defs = [
+    const base_summary_column_defs = [
       {
         field: 'column_name'
       },
@@ -133,10 +133,8 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       }
     ];
 
-    var unique_summary_columns = _.uniq(all_changed_settings);
-    $scope.change_summary_column_defs = _.filter(base_summary_column_defs, function (column_def) {
-      return _.includes(unique_summary_columns, column_def.field);
-    });
+    const unique_summary_columns = _.uniq(all_changed_settings);
+    $scope.change_summary_column_defs = _.filter(base_summary_column_defs, (column_def) => _.includes(unique_summary_columns, column_def.field));
 
     $scope.change_summary = {
       data: $scope.change_summary_data,

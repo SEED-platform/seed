@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
       $scope.inProgress = true;
 
       // Create column list profile if it doesn't exist
-      let foundProfile = profiles.find(({ name, profile_location }) => name === 'Auto-Populate' && profile_location === 'List View Profile');
+      const foundProfile = profiles.find(({ name, profile_location }) => name === 'Auto-Populate' && profile_location === 'List View Profile');
       let profilePromise;
       if (foundProfile) {
         profilePromise = new Promise((resolve) => resolve(foundProfile));
@@ -45,17 +45,17 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
 
           return organization_service
             .insert_sample_data(organization.org_id)
-            .then(() => {
-              return inventory_service.get_property_columns().then((columns) => {
-                return inventory_service.get_properties(1, undefined, cycle, -1).then((inventory) => {
+            .then(() =>
+              inventory_service.get_property_columns().then((columns) =>
+                inventory_service.get_properties(1, undefined, cycle, -1).then((inventory) => {
                   const visibleColumns = findPopulatedColumns(columns, inventory.results);
                   const profileId = profile.id;
                   profile = _.omit(profile, 'id');
                   profile.columns = visibleColumns;
                   return inventory_service.update_column_list_profile(profileId, profile);
-                });
-              });
-            })
+                })
+              )
+            )
             .catch((response) => {
               let msg = 'Error: Failed to insert sample data';
               if (response.data.message) {
@@ -78,23 +78,21 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
       $uibModalInstance.dismiss();
     };
 
-    function notEmpty(value) {
-      return !_.isNil(value) && value !== '';
-    }
+    const notEmpty = (value) => !_.isNil(value) && value !== '';
 
     function findPopulatedColumns(allColumns, inventory) {
       const cols = _.reject(allColumns, 'related');
       const relatedCols = _.filter(allColumns, 'related');
 
-      _.forEach(inventory, function (record) {
-        _.forEachRight(cols, function (col, colIndex) {
+      _.forEach(inventory, (record) => {
+        _.forEachRight(cols, (col, colIndex) => {
           if (notEmpty(record[col.name])) {
             cols.splice(colIndex, 1);
           }
         });
 
-        _.forEach(record.related, function (relatedRecord) {
-          _.forEachRight(relatedCols, function (col, colIndex) {
+        _.forEach(record.related, (relatedRecord) => {
+          _.forEachRight(relatedCols, (col, colIndex) => {
             if (notEmpty(relatedRecord[col.name])) {
               relatedCols.splice(colIndex, 1);
             }
@@ -103,23 +101,21 @@ angular.module('BE.seed.controller.sample_data_modal', []).controller('sample_da
       });
 
       // determine hidden columns
-      const visible = _.reject(allColumns, function (col) {
+      const visible = _.reject(allColumns, (col) => {
         if (!col.related) {
           return _.find(cols, { id: col.id });
         }
         return _.find(relatedCols, { id: col.id });
       });
 
-      const hidden = _.reject(allColumns, function (col) {
-        return _.find(visible, { id: col.id });
-      });
+      const hidden = _.reject(allColumns, (col) => _.find(visible, { id: col.id }));
 
-      _.forEach(hidden, function (col) {
+      _.forEach(hidden, (col) => {
         col.visible = false;
       });
 
       const columns = [];
-      _.forEach(visible, function (col) {
+      _.forEach(visible, (col) => {
         columns.push({
           column_name: col.column_name,
           id: col.id,

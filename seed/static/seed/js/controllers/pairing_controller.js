@@ -56,10 +56,10 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.propertyData = propertyInventory.results;
     $scope.taxlotData = taxlotInventory.results;
 
-    var localStorageKey = 'grid.pairing';
-    var propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, allPropertyColumns);
+    const localStorageKey = 'grid.pairing';
+    const propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, allPropertyColumns);
     $scope.propertyColumns = _.filter(propertyColumns, 'visible');
-    var taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, allTaxlotColumns);
+    const taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, allTaxlotColumns);
     $scope.taxlotColumns = _.filter(taxlotColumns, 'visible');
 
     // Data Maps to fill with 'createMap'
@@ -68,21 +68,21 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.taxlotMap = {};
     $scope.taxlotToProp = {};
 
-    var lastCycleId = inventory_service.get_last_cycle();
+    const lastCycleId = inventory_service.get_last_cycle();
     $scope.cycle = {
       selected_cycle: _.find(cycles.cycles, { id: lastCycleId }) || _.first(cycles.cycles),
       cycles: cycles.cycles
     };
 
-    var refreshObjects = function () {
+    const refreshObjects = function () {
       // var propertyColumnNames = _.map($scope.propertyColumns, 'name');
       // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
-      var promises = [];
+      const promises = [];
       promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined));
       promises.push(inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined));
 
-      return $q.all(promises).then(function (results) {
+      return $q.all(promises).then((results) => {
         $scope.propertyData = results[0].results;
         $scope.taxlotData = results[1].results;
         createMap();
@@ -107,26 +107,24 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.whichChildren = function (row) {
       if ($scope.inventory_type === 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id];
-      } else {
-        // console.log('which row: ', row, $scope.propToTaxlot)
-        return $scope.propToTaxlot[row.property_view_id];
       }
+      // console.log('which row: ', row, $scope.propToTaxlot)
+      return $scope.propToTaxlot[row.property_view_id];
     };
 
     $scope.whichChildData = function (propId, col) {
       if ($scope.inventory_type === 'properties') {
         return $scope.propertyMap[propId][col];
-      } else {
-        // console.log('child: ', propId, $scope.taxlotMap)
-        return $scope.taxlotMap[propId][col];
       }
+      // console.log('child: ', propId, $scope.taxlotMap)
+      return $scope.taxlotMap[propId][col];
     };
 
     $scope.unpairChild = function ($event) {
       $event.stopPropagation();
-      var promise;
-      var taxlotId;
-      var propertyId;
+      let promise;
+      let taxlotId;
+      let propertyId;
 
       // console.log('target: ', $event.target)
 
@@ -141,8 +139,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         promise = pairing_service.unpair_property_from_taxlot(taxlotId, propertyId);
       }
 
-      promise.then(function (data) {
-        //if success remove from maps
+      promise.then((data) => {
+        // if success remove from maps
         // console.log('data: ', data);
         if (data.status === 'success') {
           // console.log('tl: ', taxlotId);
@@ -165,7 +163,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-    var addTtoP = function (taxlotId, propertyId) {
+    const addTtoP = function (taxlotId, propertyId) {
       if (!$scope.taxlotToProp[+taxlotId]) {
         $scope.taxlotToProp[+taxlotId] = [];
       }
@@ -173,7 +171,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.taxlotToProp[+taxlotId].push(+propertyId);
       }
     };
-    var addPtoT = function (taxlotId, propertyId) {
+    const addPtoT = function (taxlotId, propertyId) {
       if (!$scope.propToTaxlot[+propertyId]) {
         $scope.propToTaxlot[+propertyId] = [];
       }
@@ -182,24 +180,24 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     };
     var createMap = function () {
-      _.forEach(_.keys($scope.propertyMap), function (key) {
+      _.forEach(_.keys($scope.propertyMap), (key) => {
         delete $scope.propertyMap[key];
       });
-      _.forEach(_.keys($scope.taxlotMap), function (key) {
+      _.forEach(_.keys($scope.taxlotMap), (key) => {
         delete $scope.taxlotMap[key];
       });
-      _.forEach(_.keys($scope.propToTaxlot), function (key) {
+      _.forEach(_.keys($scope.propToTaxlot), (key) => {
         delete $scope.propToTaxlot[key];
       });
-      _.forEach(_.keys($scope.taxlotToProp), function (key) {
+      _.forEach(_.keys($scope.taxlotToProp), (key) => {
         delete $scope.taxlotToProp[key];
       });
-      $scope.propertyData.forEach(function (property) {
+      $scope.propertyData.forEach((property) => {
         // console.log('prop: ', property);
         // Create map of property IDs to objects
         $scope.propertyMap[property.property_view_id] = property;
 
-        property.related.forEach(function (taxlot) {
+        property.related.forEach((taxlot) => {
           // Create array of all properties with id of their taxlots
           addTtoP(taxlot.taxlot_view_id, property.property_view_id);
 
@@ -209,7 +207,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
 
       // Create map of taxlot IDs to objects
-      $scope.taxlotData.forEach(function (taxlot) {
+      $scope.taxlotData.forEach((taxlot) => {
         // console.log('tl: ', taxlot.taxlot_view_id);
         $scope.taxlotMap[taxlot.taxlot_view_id] = taxlot;
       });
@@ -218,19 +216,18 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     $scope.leftPaired = function (row) {
       if ($scope.inventory_type !== 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id] ? $scope.taxlotToProp[row.taxlot_view_id].length : false;
-      } else {
-        return $scope.propToTaxlot[row.property_view_id] ? $scope.propToTaxlot[row.property_view_id].length : false;
       }
+      return $scope.propToTaxlot[row.property_view_id] ? $scope.propToTaxlot[row.property_view_id].length : false;
     };
 
     $scope.leftNumUnpaired = function () {
-      var count = 0;
+      let count = 0;
       if ($scope.inventory_type === 'properties') {
-        _.forEach($scope.leftData, function (datum) {
+        _.forEach($scope.leftData, (datum) => {
           if (!_.get($scope.propToTaxlot[datum.property_view_id], 'length')) count++;
         });
       } else {
-        _.forEach($scope.leftData, function (datum) {
+        _.forEach($scope.leftData, (datum) => {
           if (!_.get($scope.taxlotToProp[datum.taxlot_view_id], 'length')) count++;
         });
       }
@@ -238,13 +235,13 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.rightNumUnpaired = function () {
-      var count = 0;
+      let count = 0;
       if ($scope.inventory_type !== 'properties') {
-        _.forEach($scope.rightData, function (datum) {
+        _.forEach($scope.rightData, (datum) => {
           if (!_.get($scope.propToTaxlot[datum.property_view_id], 'length')) count++;
         });
       } else {
-        _.forEach($scope.rightData, function (datum) {
+        _.forEach($scope.rightData, (datum) => {
           if (!_.get($scope.taxlotToProp[datum.taxlot_view_id], 'length')) count++;
         });
       }
@@ -252,20 +249,20 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.getLeftData = function () {
-      var newLeftData = [];
-      var leftMap = $scope.inventory_type === 'properties' ? $scope.propToTaxlot : $scope.taxlotToProp;
-      var leftId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
+      let newLeftData = [];
+      const leftMap = $scope.inventory_type === 'properties' ? $scope.propToTaxlot : $scope.taxlotToProp;
+      const leftId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
       if ($scope.showPaired === 'Show All') {
         newLeftData = $scope.leftData;
       } else if ($scope.showPaired === 'Show Paired') {
-        $scope.leftData.forEach(function (data) {
+        $scope.leftData.forEach((data) => {
           // console.log('left: ', leftMap[data[leftId]])
           if (_.get(leftMap[data[leftId]], 'length')) {
             newLeftData.push(data);
           }
         });
       } else {
-        $scope.leftData.forEach(function (data) {
+        $scope.leftData.forEach((data) => {
           if (!_.get(leftMap[data[leftId]], 'length')) {
             newLeftData.push(data);
           }
@@ -279,27 +276,25 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       if ($scope.inventory_type === 'properties') {
         // console.log('here: ', row.taxlot_view_id)
         return row.taxlot_view_id;
-      } else {
-        return row.property_view_id;
       }
+      return row.property_view_id;
     };
 
     $scope.getLeftParentId = function (row) {
       if ($scope.inventory_type !== 'properties') {
         return row.taxlot_view_id;
-      } else {
-        // console.log('here: ', row.property_view_id)
-        return row.property_view_id;
       }
+      // console.log('here: ', row.property_view_id)
+      return row.property_view_id;
     };
 
     $scope.leftSearch = function (value) {
-      //left and right filters, works with table flip
-      for (var i = 0; i < $scope.leftColumns.length; i++) {
+      // left and right filters, works with table flip
+      for (let i = 0; i < $scope.leftColumns.length; i++) {
         if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) {
-          var searchTextLower = $scope.leftColumns[i].searchText.toLowerCase();
-          var leftColLower = (value[$scope.leftColumns[i].name] + '').toLowerCase();
-          var isMatch = leftColLower.indexOf(searchTextLower) > -1;
+          const searchTextLower = $scope.leftColumns[i].searchText.toLowerCase();
+          const leftColLower = `${value[$scope.leftColumns[i].name]}`.toLowerCase();
+          const isMatch = leftColLower.indexOf(searchTextLower) > -1;
           if (!isMatch) {
             return false;
           }
@@ -311,12 +306,12 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.rightSearch = function (value) {
-      for (var i = 0; i < $scope.rightColumns.length; i++) {
+      for (let i = 0; i < $scope.rightColumns.length; i++) {
         // console.log("RC V: " + value[$scope.rightColumns[i].name]);
         if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) {
-          var searchTextLower = $scope.rightColumns[i].searchText.toLowerCase();
-          var rightColLower = (value[$scope.rightColumns[i].name] + '').toLowerCase();
-          var isMatch = rightColLower.indexOf(searchTextLower) > -1;
+          const searchTextLower = $scope.rightColumns[i].searchText.toLowerCase();
+          const rightColLower = `${value[$scope.rightColumns[i].name]}`.toLowerCase();
+          const isMatch = rightColLower.indexOf(searchTextLower) > -1;
           if (!isMatch) {
             return false;
           }
@@ -328,7 +323,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     // Sort by Columns Ascending and Descending
-    var savedPropertySort = pairing_service.loadSort(localStorageKey + '.properties.sort');
+    let savedPropertySort = pairing_service.loadSort(`${localStorageKey}.properties.sort`);
     if (savedPropertySort) {
       savedPropertySort = JSON.parse(savedPropertySort);
       if ($scope.inventory_type === 'properties') {
@@ -338,16 +333,14 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.rightSortColumn = savedPropertySort.sortColumn;
         $scope.rightReverseSort = savedPropertySort.reverseSort;
       }
+    } else if ($scope.inventory_type === 'properties') {
+      $scope.leftReverseSort = false;
+      $scope.leftSortColumn = 'name';
     } else {
-      if ($scope.inventory_type === 'properties') {
-        $scope.leftReverseSort = false;
-        $scope.leftSortColumn = 'name';
-      } else {
-        $scope.rightReverseSort = false;
-        $scope.rightSortColumn = 'name';
-      }
+      $scope.rightReverseSort = false;
+      $scope.rightSortColumn = 'name';
     }
-    var savedTaxlotSort = pairing_service.loadSort(localStorageKey + '.taxlots.sort');
+    let savedTaxlotSort = pairing_service.loadSort(`${localStorageKey}.taxlots.sort`);
     if (savedTaxlotSort) {
       savedTaxlotSort = JSON.parse(savedTaxlotSort);
       if ($scope.inventory_type === 'taxlots') {
@@ -357,35 +350,31 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.rightSortColumn = savedTaxlotSort.sortColumn;
         $scope.rightReverseSort = savedTaxlotSort.reverseSort;
       }
+    } else if ($scope.inventory_type === 'taxlots') {
+      $scope.leftReverseSort = false;
+      $scope.leftSortColumn = 'name';
     } else {
-      if ($scope.inventory_type === 'taxlots') {
-        $scope.leftReverseSort = false;
-        $scope.leftSortColumn = 'name';
-      } else {
-        $scope.rightReverseSort = false;
-        $scope.rightSortColumn = 'name';
-      }
+      $scope.rightReverseSort = false;
+      $scope.rightSortColumn = 'name';
     }
 
     $scope.leftSortData = function (column) {
-      var inventory_type = $scope.inventory_type;
+      const { inventory_type } = $scope;
       if ($scope.leftSortColumn === column && $scope.leftReverseSort) {
         $scope.leftReverseSort = false;
         $scope.leftSortColumn = 'name';
-        pairing_service.removeSettings(localStorageKey + '.' + inventory_type + '.sort');
+        pairing_service.removeSettings(`${localStorageKey}.${inventory_type}.sort`);
       } else {
         $scope.leftReverseSort = $scope.leftSortColumn === column ? !$scope.leftReverseSort : false;
         $scope.leftSortColumn = column;
-        pairing_service.saveSort(localStorageKey + '.' + inventory_type + '.sort', {
+        pairing_service.saveSort(`${localStorageKey}.${inventory_type}.sort`, {
           sortColumn: $scope.leftSortColumn,
           reverseSort: $scope.leftReverseSort
         });
       }
     };
 
-    $scope.getLeftSortColumn = function () {
-      return "'" + $scope.leftSortColumn + "'";
-    };
+    $scope.getLeftSortColumn = () => `'${$scope.leftSortColumn}'`;
 
     $scope.leftGetSortClass = function (column) {
       if ($scope.leftSortColumn === column) {
@@ -394,24 +383,22 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     $scope.rightSortData = function (column) {
-      var inventory_type = $scope.inventory_type === 'properties' ? 'taxlots' : 'properties';
+      const inventory_type = $scope.inventory_type === 'properties' ? 'taxlots' : 'properties';
       if ($scope.rightSortColumn === column && $scope.rightReverseSort) {
         $scope.rightReverseSort = false;
         $scope.rightSortColumn = 'name';
-        pairing_service.removeSettings(localStorageKey + '.' + inventory_type + '.sort');
+        pairing_service.removeSettings(`${localStorageKey}.${inventory_type}.sort`);
       } else {
         $scope.rightReverseSort = $scope.rightSortColumn === column ? !$scope.rightReverseSort : false;
         $scope.rightSortColumn = column;
-        pairing_service.saveSort(localStorageKey + '.' + inventory_type + '.sort', {
+        pairing_service.saveSort(`${localStorageKey}.${inventory_type}.sort`, {
           sortColumn: $scope.rightSortColumn,
           reverseSort: $scope.rightReverseSort
         });
       }
     };
 
-    $scope.getRightSortColumn = function () {
-      return "'" + $scope.rightSortColumn + "'";
-    };
+    $scope.getRightSortColumn = () => `'${$scope.rightSortColumn}'`;
 
     $scope.rightGetSortClass = function (column) {
       if ($scope.rightSortColumn === column) {
@@ -419,9 +406,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     };
 
-    $scope.naturalSortComparator = function (a, b) {
-      return naturalSort(a.value, b.value);
-    };
+    $scope.naturalSortComparator = (a, b) => naturalSort(a.value, b.value);
 
     $scope.updateLeftRight = function () {
       if ($scope.inventory_type === 'properties') {
@@ -455,30 +440,30 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
     };
 
-    //Dragula stuff:
+    // Dragula stuff:
     dragulaService.options($scope, 'drag-pairing-row', {
       copy: true,
       copySortSource: false,
-      moves: function (el, container) {
-        // restrict dragging to designated handles
-        return container.className.indexOf('cant-move') === -1;
-      },
-      accepts: function (el, target) {
-        //don't allow dropping in left column
-        return !_.includes(target.className, 'pairing-data-left') && !_.includes(target.className, 'pairing-body');
-      }
+      moves: (
+        el,
+        container // restrict dragging to designated handles
+      ) => container.className.indexOf('cant-move') === -1,
+      accepts: (
+        el,
+        target // don't allow dropping in left column
+      ) => !_.includes(target.className, 'pairing-data-left') && !_.includes(target.className, 'pairing-body')
     });
 
-    $scope.$on('drag-pairing-row.drag', function (e, el) {
+    $scope.$on('drag-pairing-row.drag', (e, el) => {
       // console.log('picked up e: ', e);
       // console.log('picked up el: ', el);
       // alert('you picked it up!');
       $scope.pickedUpEle = +el.children()[0].getAttribute('leftParentId');
     });
 
-    $scope.$on('drag-pairing-row.drop', function (e, el, tempContainer) {
-      var container;
-      var fromClick;
+    $scope.$on('drag-pairing-row.drop', (e, el, tempContainer) => {
+      let container;
+      let fromClick;
       if (tempContainer.fromClick) {
         container = tempContainer.container;
         fromClick = tempContainer.fromClick;
@@ -488,7 +473,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       }
       // alert('you dropped it!');
       if (!el || !container) {
-        return; //dropped in left side
+        return; // dropped in left side
       }
       if (!fromClick) {
         el.removeClass('grab-pairing-left');
@@ -502,9 +487,9 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       // console.log('container: ', container);
       // console.log('ids: ', container[0].getAttribute('rightParentId'));
       // call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
-      var promise;
-      var taxlotId;
-      var propertyId;
+      let promise;
+      let taxlotId;
+      let propertyId;
       if ($scope.inventory_type === 'properties') {
         taxlotId = +container[0].getAttribute('rightParentId');
         propertyId = $scope.pickedUpEle;
@@ -515,7 +500,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         promise = pairing_service.pair_property_to_taxlot($scope.pickedUpEle, +container[0].getAttribute('rightParentId'));
       }
 
-      promise.then(function (data) {
+      promise.then((data) => {
         if (data.status === 'success') {
           addTtoP(taxlotId, propertyId);
           addPtoT(taxlotId, propertyId);

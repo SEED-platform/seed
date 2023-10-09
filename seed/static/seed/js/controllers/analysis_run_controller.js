@@ -33,7 +33,7 @@ angular.module('BE.seed.controller.analysis_run', []).controller('analysis_run_c
     $scope.original_views[view_payload.view.id] = view_payload.original_view;
 
     $scope.has_children = function (value) {
-      if (typeof value == 'object') {
+      if (typeof value === 'object') {
         return true;
       }
     };

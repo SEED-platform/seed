@@ -16,14 +16,14 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
   function ($scope, $uibModalInstance, search_service, data_quality_service, naturalSort, dataQualityResults, name, uploaded, run_id, orgId) {
     $scope.name = name;
     $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
-    var originalDataQualityResults = dataQualityResults || [];
+    const originalDataQualityResults = dataQualityResults || [];
     $scope.dataQualityResults = originalDataQualityResults;
     $scope.run_id = run_id;
     $scope.orgId = orgId;
 
     $scope.download_results_csv = function () {
-      data_quality_service.get_data_quality_results_csv($scope.orgId, $scope.run_id).then(function (data) {
-        var blob = new Blob([data], { type: 'text/csv' });
+      data_quality_service.get_data_quality_results_csv($scope.orgId, $scope.run_id).then((data) => {
+        const blob = new Blob([data], { type: 'text/csv' });
         saveAs(blob, 'Data Quality Check Results.csv');
       });
     };
@@ -32,7 +32,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
       $uibModalInstance.close();
     };
 
-    var fields = [
+    const fields = [
       {
         sort_column: 'table_name',
         sortable: false,
@@ -74,8 +74,8 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         title: 'Error Message'
       }
     ];
-    var columns = _.map(fields, 'sort_column');
-    _.forEach(fields, function (field) {
+    const columns = _.map(fields, 'sort_column');
+    _.forEach(fields, (field) => {
       field.checked = false;
       field.class = 'is_aligned_right';
       field.field_type = null;
@@ -85,9 +85,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
     });
 
     $scope.sortData = function () {
-      var result = originalDataQualityResults.slice().sort(function (a, b) {
-        return naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]);
-      });
+      const result = originalDataQualityResults.slice().sort((a, b) => naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]));
       if ($scope.search.sort_reverse) result.reverse();
       $scope.dataQualityResults = result;
     };
@@ -101,19 +99,19 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         $scope.search.prefix = prefix;
 
         // order_by & sort_column
-        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy') !== null) {
-          $scope.search.order_by = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
-          $scope.search.sort_column = sessionStorage.getItem(prefix + ':' + 'seedBuildingOrderBy');
+        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy') !== null) {
+          $scope.search.order_by = sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy');
+          $scope.search.sort_column = sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy');
         }
 
         // sort_reverse
-        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse') !== null) {
-          $scope.search.sort_reverse = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingSortReverse'));
+        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingSortReverse') !== null) {
+          $scope.search.sort_reverse = JSON.parse(sessionStorage.getItem(`${prefix}:` + 'seedBuildingSortReverse'));
         }
 
         // filter_params
-        if (sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams') !== null) {
-          $scope.search.filter_params = JSON.parse(sessionStorage.getItem(prefix + ':' + 'seedBuildingFilterParams'));
+        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingFilterParams') !== null) {
+          $scope.search.filter_params = JSON.parse(sessionStorage.getItem(`${prefix}:` + 'seedBuildingFilterParams'));
         }
       }
     };
@@ -127,8 +125,8 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         }
 
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem($scope.search.prefix + ':' + 'seedBuildingOrderBy', $scope.search.sort_column);
-          sessionStorage.setItem($scope.search.prefix + ':' + 'seedBuildingSortReverse', $scope.search.sort_reverse);
+          sessionStorage.setItem(`${$scope.search.prefix}:` + 'seedBuildingOrderBy', $scope.search.sort_column);
+          sessionStorage.setItem(`${$scope.search.prefix}:` + 'seedBuildingSortReverse', $scope.search.sort_reverse);
         }
 
         $scope.search.order_by = this.sort_column;
@@ -139,37 +137,33 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
       if ($scope.search.sort_column === this.sort_column) {
         if ($scope.search.sort_reverse) {
           return 'sorted sort_asc';
-        } else {
-          return 'sorted sort_desc';
         }
-      } else {
-        return '';
+        return 'sorted sort_desc';
       }
+      return '';
     };
     $scope.search.filter_search = function () {
       $scope.search.sanitize_params();
-      _.forEach($scope.dataQualityResults, function (result) {
+      _.forEach($scope.dataQualityResults, (result) => {
         if (!result.visible) result.visible = true;
-        _.forEach(result.data_quality_results, function (row) {
+        _.forEach(result.data_quality_results, (row) => {
           if (!row.visible) row.visible = true;
         });
       });
-      _.forEach(this.filter_params, function (value, column) {
+      _.forEach(this.filter_params, (value, column) => {
         value = value.toLowerCase();
-        _.forEach($scope.dataQualityResults, function (result) {
+        _.forEach($scope.dataQualityResults, (result) => {
           if (result.visible) {
             if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
-              _.forEach(result.data_quality_results, function (row) {
+              _.forEach(result.data_quality_results, (row) => {
                 if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
               });
-            } else {
-              if (_.isNull(result[column]) || !_.includes(result[column].toLowerCase(), value)) result.visible = false;
-            }
+            } else if (_.isNull(result[column]) || !_.includes(result[column].toLowerCase(), value)) result.visible = false;
           }
         });
       });
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(this.prefix + ':' + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
       }
     };
 
