@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
+    '$translate',
     function (
       $scope,
       $log,
@@ -30,7 +31,8 @@ angular.module('BE.seed.controller.admin', [])
       user_profile_payload,
       users_payload,
       Notification,
-      $window
+      $window,
+      $translate,
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
@@ -51,6 +53,34 @@ angular.module('BE.seed.controller.admin', [])
         css: 'alert-success'
       };
       $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
+      $scope.level_names = []
+      $scope.level_name_index = null;
+      $scope.roles = [{
+        name: $translate.instant('Owner'),
+        value: 'owner'
+      }, {
+        name: $translate.instant('Member'),
+        value: 'member'
+      }, {
+        name: $translate.instant('Viewer'),
+        value: 'viewer'
+      }];
+
+      /* Build out access_level_instances_by_depth recurrsively */
+      let access_level_instances_by_depth = {};
+      const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
+        if (tree == undefined) return;
+        if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
+        tree.forEach(ali => {
+          access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name })
+          calculate_access_level_instances_by_depth(ali.children, depth + 1);
+        })
+      }
+
+      $scope.change_selected_level_index = function () {
+        new_level_instance_depth = parseInt($scope.level_name_index) + 1
+        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
+      }
 
       var update_alert = function (is_ok, message) {
         $scope.alert.show = true;
@@ -59,6 +89,22 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.update_alert = update_alert;
 
+      $scope.org_form.new_org = () => {
+        $scope.user.organization = undefined
+        $scope.user.access_level_instance_id = undefined
+        $scope.level_name_index = undefined
+      };
+      $scope.org_form.existing_org = () => {
+        $scope.user.org_name = undefined
+        $scope.user.access_level_instance_id = undefined
+        $scope.level_name_index = undefined
+
+        organization_service.get_organization_access_level_tree($scope.user.organization.id).then(access_level_tree => {
+          $scope.level_names = access_level_tree.access_level_names
+          access_level_instances_by_depth = {}
+          calculate_access_level_instances_by_depth(access_level_tree.access_level_tree, 1)
+        })
+      };
       $scope.org_form.reset = function () {
         $scope.org.user_email = '';
         $scope.org.name = '';
@@ -111,7 +157,8 @@ angular.module('BE.seed.controller.admin', [])
       };
 
       $scope.user_form.reset = function () {
-        $scope.user = {};
+        $scope.user = {role: $scope.roles[1].value};
+        $scope.level_names = [];
       };
 
       $scope.org_form.reset();

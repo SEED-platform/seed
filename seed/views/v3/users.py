@@ -174,6 +174,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         email = body['email']
         username = body['email']
         access_level_instance_id = body.get("access_level_instance_id")
+        role = body.get('role', 'owner')
         user, created = User.objects.get_or_create(username=username.lower())
 
         if org_id:
@@ -183,7 +184,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 return JsonResponse({
                     'status': 'error',
                     'message': 'if using an existing org, you must provide a `access_level_instance_id`'
-                }, status=status._BAD_REQUEST)
+                }, status=status.HTTP_400_BAD_REQUEST)
         else:
             org, _, _ = create_organization(user, org_name)
             access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
@@ -192,30 +193,22 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         # Add the user to the org.  If this is the org's first user,
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
+
+        try:
+            role = get_role_from_js(role)
+        except Exception:
+            return JsonResponse({
+                'status': 'error', 'message': 'valid arguments for role are [viewer, member, owner]'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if not org.is_member(user):
             try:
-                org.add_member(user, access_level_instance_id)
+                org.add_member(user, access_level_instance_id, role)
             except IntegrityError as e:
                 return JsonResponse({
                     'status': 'error',
                     'message': str(e)
                 }, status=status.HTTP_400_BAD_REQUEST)
-
-        if body.get('role'):
-            # check if this is a dict, if so, grab the value out of 'value'
-            role = body['role']
-            try:
-                get_role_from_js(role)
-            except Exception:
-                return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, '
-                                                                   'owner]'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
-            OrganizationUser.objects.filter(
-                organization_id=org.pk,
-                user_id=user.pk,
-                access_level_instance_id=access_level_instance_id,
-            ).update(role_level=get_role_from_js(role))
 
         if created:
             user.set_unusable_password()

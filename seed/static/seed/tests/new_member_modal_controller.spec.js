@@ -63,7 +63,7 @@ describe('controller: new_member_modal_controller', function () {
     ctrl_scope.$digest();
 
     // assertions
-    expect(ctrl_scope.user.role.value).toEqual('member');
+    expect(ctrl_scope.user.role).toEqual('member');
   });
 
   it('should call the user service to add a new user to the org',
