@@ -34,13 +34,13 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       status_message: ''
     };
 
-    $scope.datasetChanged = function (dataset) {
+    $scope.datasetChanged = (dataset) => {
       // set selectedDataset to null to rerender button
       $scope.selectedDataset = null;
       $scope.selectedDataset = dataset;
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // If step 2, GB import confirmation was not accepted by user, so delete file
       if ($scope.step.number === 2) {
         dataset_service.delete_file($scope.file_id).then((/* results */) => {
@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       }
     };
 
-    $scope.uploaderfunc = function (event_message, file /* , progress */) {
+    $scope.uploaderfunc = (event_message, file /* , progress */) => {
       switch (event_message) {
         case 'invalid_extension':
           $scope.$apply(() => {
@@ -68,7 +68,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       }
     };
 
-    const saveFailure = function (error) {
+    const saveFailure = (error) => {
       // Delete file and present error message
 
       // file_id source varies depending on which step the error occurs
@@ -103,7 +103,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
 
     const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var show_confirmation_info = function () {
+    var show_confirmation_info = () => {
       uploader_service
         .sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger_id)
         .then((result) => {
@@ -131,7 +131,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
         .catch(saveFailure);
     };
 
-    const saveSuccess = function (progress_data) {
+    const saveSuccess = (progress_data) => {
       // recheck progress in order to ensure message has been appended to progress_data
       uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
@@ -141,7 +141,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       });
     };
 
-    const buildImportResults = function (message) {
+    const buildImportResults = (message) => {
       const additional_columnDefs = [
         {
           field: 'errors',
@@ -160,7 +160,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       };
     };
 
-    $scope.accept_sensor_readings = function () {
+    $scope.accept_sensor_readings = () => {
       uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then((data) => {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
@@ -179,7 +179,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', []).controller
       });
     };
 
-    $scope.refresh_page = function () {
+    $scope.refresh_page = () => {
       $state.reload();
       $uibModalInstance.dismiss('cancel');
     };

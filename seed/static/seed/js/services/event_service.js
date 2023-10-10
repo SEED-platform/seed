@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.event', []).factory('event_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const event_factory = {};
 
     event_factory.get_events = (org_id, inventory_type, property_pk) => $http

@@ -7,8 +7,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
   '$q',
   '$timeout',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, $q, $timeout, user_service) {
+  ($http, $q, $timeout, user_service) => {
     const data_quality_factory = {};
 
     /**

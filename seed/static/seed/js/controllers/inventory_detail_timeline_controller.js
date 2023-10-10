@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       events.sort((a, b) => ($scope.orderDesc ? new Date(a.modified) - new Date(b.modified) : new Date(b.modified) - new Date(a.modified)));
       events.forEach((event) => {
         const index = eventsByCycle.findIndex((e) => e.cycle == event.cycle);
-        if (index == -1) {
+        if (index === -1) {
           const entry = { cycle: event.cycle, cycle_end_date: event.cycle_end_date, events: [event] };
           eventsByCycle.push(entry);
         } else {
@@ -58,6 +58,11 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       $scope.timeline = eventsByCycle;
     };
 
+    /**
+     * @param {string} start
+     * @param {string} end
+     * @returns {string|undefined}
+     */
     const formatDuration = (start, end) => {
       if (!start || !end) {
         return;
@@ -87,7 +92,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       if (!user_id) {
         return;
       }
-      const user = $scope.orgUsers.find((u) => u.user_id == user_id);
+      const user = $scope.orgUsers.find((u) => u.user_id === user_id);
       let userName = '';
       if (user.first_name && user.last_name) {
         userName = `${user.first_name} ${user.last_name}`;
@@ -98,7 +103,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     const setMeasureGridOptions = () => {
-      const atEvents = $scope.events.data.filter((e) => e.event_type == 'ATEvent');
+      const atEvents = $scope.events.data.filter((e) => e.event_type === 'ATEvent');
       const scenarios = atEvents.reduce((acc, curr) => [...acc, ...curr.scenarios], []);
 
       $scope.measureGridOptionsByScenarioId = {};
@@ -129,7 +134,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     const setNoteGridOptions = () => {
-      const noteEvents = $scope.events.data.filter((e) => e.event_type == 'NoteEvent');
+      const noteEvents = $scope.events.data.filter((e) => e.event_type === 'NoteEvent');
       const notes = noteEvents.map((e) => e.note);
       $scope.noteGridOptionsById = {};
       $scope.gridApiByNoteId = {};
@@ -155,7 +160,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     const setAnalysisGridOptions = () => {
-      const analysisEvents = $scope.events.data.filter((e) => e.event_type == 'AnalysisEvent');
+      const analysisEvents = $scope.events.data.filter((e) => e.event_type === 'AnalysisEvent');
       const analyses = analysisEvents.map((e) => e.analysis);
       $scope.analysisGridOptionsById = {};
       $scope.gridApiByAnalysisId = {};
@@ -265,13 +270,13 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     $scope.resizeGridByEventType = (event, resizeMeasures = false) => {
-      if (event.event_type == 'NoteEvent') {
+      if (event.event_type === 'NoteEvent') {
         const gridApi = $scope.gridApiByNoteId[event.note.id];
         if (gridApi) setTimeout(gridApi.core.handleWindowResize, 50);
-      } else if (event.event_type == 'AnalysisEvent') {
+      } else if (event.event_type === 'AnalysisEvent') {
         const gridApi = $scope.gridApiByAnalysisId[event.analysis.id];
         if (gridApi) setTimeout(gridApi.core.handleWindowResize, 50);
-      } else if (resizeMeasures && event.event_type == 'ATEvent') {
+      } else if (resizeMeasures && event.event_type === 'ATEvent') {
         event.scenarios.forEach((scenario) => {
           $scope.resizeGridByScenarioId(scenario.id);
         });
@@ -301,7 +306,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       $('.scenario-collapse').collapse(action);
 
       // Without resizing ui-grids will appear empty
-      if (action == 'show') {
+      if (action === 'show') {
         $scope.selectedEvents.forEach((event) => $scope.resizeGridByEventType(event, (resizeMeasures = true)));
       }
     };

@@ -26,11 +26,7 @@ angular.module('BE.seed.controller.analysis', []).controller('analysis_controlle
     $scope.view_id = $stateParams.view_id;
     $scope.original_views = views_payload.original_views;
 
-    $scope.has_children = (value) => {
-      if (typeof value === 'object') {
-        return true;
-      }
-    };
+    $scope.has_children = (value) => typeof value === 'object';
 
     $scope.get_display_name = (inventory_state) => organization_service.get_inventory_display_value(
       $scope.org,

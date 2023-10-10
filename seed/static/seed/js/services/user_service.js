@@ -6,8 +6,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
   '$http',
   '$q',
   'generated_urls',
-  // eslint-disable-next-line func-names
-  function ($http, $q, generated_urls) {
+  ($http, $q, generated_urls) => {
     const user_factory = {};
     const urls = generated_urls;
 
@@ -16,24 +15,25 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     /**
      * returns the current organization, set initially by a controller
+     *
+     * yes this is a global, but otherwise we'll have to use a promise in
+     * front of every request that needs this. window.config.initial_org_id is
+     * set in base.html via the seed.views.main home view
+     *
      * @return {obj} organization
      */
-    user_factory.get_organization = () =>
-      // yes this is a global, but otherwise we'll have to use a promise in
-      // front of every request that needs this. window.config.initial_org_id is
-      // set in base.html via the seed.views.main home view
-      organization || {
-        id: window.BE.initial_org_id,
-        name: window.BE.initial_org_name,
-        user_role: window.BE.initial_org_user_role
-      };
+    user_factory.get_organization = () => organization ?? {
+      id: window.BE.initial_org_id,
+      name: window.BE.initial_org_name,
+      user_role: window.BE.initial_org_user_role
+    };
 
     /**
      * sets the current organization
      * @param {obj} org
      * @return {promise}
      */
-    user_factory.set_organization = function (org) {
+    user_factory.set_organization = (org) => {
       organization = org;
       return user_factory.get_user_id().then((this_user_id) => $http
         .put(
@@ -48,7 +48,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     user_factory.get_users = () => $http.get('/api/v3/users/').then((response) => response.data);
 
-    user_factory.add = function (user) {
+    user_factory.add = (user) => {
       const new_user_details = {
         first_name: user.first_name,
         last_name: user.last_name,
@@ -126,7 +126,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     /**
      * gets the current user's id
      */
-    user_factory.get_user_id = function () {
+    user_factory.get_user_id = () => {
       if (_.isUndefined(user_id)) {
         user_id = $http.get('/api/v3/users/current/').then((response) => response.data.pk);
       }

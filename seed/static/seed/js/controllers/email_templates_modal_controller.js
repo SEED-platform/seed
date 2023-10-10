@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
     $scope.data = data;
     $scope.org_id = org_id;
 
-    $scope.rename_template = function () {
+    $scope.rename_template = () => {
       if (!$scope.disabled()) {
         const { id } = $scope.data;
         const template = _.omit($scope.data, 'id');
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
       }
     };
 
-    $scope.remove_template = function () {
+    $scope.remove_template = () => {
       postoffice_service
         .remove_template($scope.data.id, $scope.org_id)
         .then(() => {
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
         });
     };
 
-    $scope.new_template = function () {
+    $scope.new_template = () => {
       if (!$scope.disabled()) {
         postoffice_service
           .new_template({
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
       }
     };
 
-    $scope.disabled = function () {
+    $scope.disabled = () => {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
       }
@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.email_templates_modal', []).controller('email
       }
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

@@ -6,16 +6,13 @@
  */
 angular.module('sdWhenScrolled', []).directive(
   'sdWhenScrolled',
-  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-  function () {
-    return (scope, elm, attr) => {
-      const raw = elm[0];
+  () => (scope, elm, attr) => {
+    const raw = elm[0];
 
-      elm.bind('scroll', () => {
-        if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
-          scope.$apply(attr.sdWhenScrolled);
-        }
-      });
-    };
+    elm.bind('scroll', () => {
+      if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
+        scope.$apply(attr.sdWhenScrolled);
+      }
+    });
   }
 );

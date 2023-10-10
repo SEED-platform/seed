@@ -1,6 +1,7 @@
 angular.module('BE.docs.controller.faq', []).controller('faq_controller', [
   '$scope',
   '$timeout',
+  // eslint-disable-next-line func-names
   function ($scope, $timeout) {
     // faq-data must be a script JSON element templated into the page
     const faqScript = angular.element('#faq-data')[0];

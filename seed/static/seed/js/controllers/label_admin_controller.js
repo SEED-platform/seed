@@ -19,9 +19,8 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
-    $scope.available_colors = _.map(label_service.get_available_colors(), (color) =>
-      // label is already used for danger, success, etc.
-      _.extend(color, { uiLabel: $translate.instant(color.color) }));
+    // label is already used for danger, success, etc.
+    $scope.available_colors = _.map(label_service.get_available_colors(), (color) => _.extend(color, { uiLabel: $translate.instant(color.color) }));
     $scope.labels = labels_payload;
 
     function initialize_new_label() {
@@ -33,7 +32,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
       };
     }
 
-    $scope.showColor = function (label) {
+    $scope.showColor = (label) => {
       let selected = [];
       if (label.color) {
         selected = $filter('filter')($scope.available_colors, { value: label.color });
@@ -43,7 +42,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
 
     /*  Take user input from New Label form and submit
         to service to create a new label. */
-    $scope.submitNewLabelForm = function (form) {
+    $scope.submitNewLabelForm = (form) => {
       if (form.$invalid) {
         return;
       }
@@ -65,7 +64,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
 
     /* Checks for existing label name for inline edit form.
         Form assumes function will return a string if there's an existing label */
-    $scope.checkEditLabelBeforeSave = function (data, currentLabelName) {
+    $scope.checkEditLabelBeforeSave = (data, currentLabelName) => {
       if (data === currentLabelName) {
         return;
       }
@@ -89,7 +88,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
     }
 
     /* Submit edit when 'enter' is pressed */
-    $scope.onEditLabelNameKeypress = function (e, form) {
+    $scope.onEditLabelNameKeypress = (e, form) => {
       if (e.which === 13) {
         form.$submit();
       }
@@ -100,7 +99,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
       params // TODO XSS, discuss with Nick and Alex
     ) => $sce.getTrustedHtml($translate.instant(msg, params));
 
-    $scope.saveLabel = function (label, id, index) {
+    $scope.saveLabel = (label, id, index) => {
       // Don't update $scope.label until a 'success' from server
       angular.extend(label, { id });
       label_service.update_label_for_org($scope.org.id, label).then(
@@ -116,7 +115,7 @@ angular.module('BE.seed.controller.label_admin', []).controller('label_admin_con
       );
     };
 
-    $scope.deleteLabel = function (label, index) {
+    $scope.deleteLabel = (label, index) => {
       const modalOptions = {
         type: 'default',
         okButtonText: $translate.instant('OK'),

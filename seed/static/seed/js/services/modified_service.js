@@ -6,14 +6,13 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
   '$window',
   '$uibModal',
   'urls',
-  // eslint-disable-next-line func-names
-  function ($window, $uibModal, urls) {
+  ($window, $uibModal, urls) => {
     const modified_service = {};
     let modified = false;
 
     modified_service.setModified = () => {
       if (!modified) {
-        $window.onbeforeunload = _.constant('You have unsaved changes.');
+        $window.onbeforeunload = () => 'You have unsaved changes.';
         modified = true;
       }
     };

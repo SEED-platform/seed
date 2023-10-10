@@ -8,12 +8,11 @@
  */
 angular.module('BE.seed.service.flippers', []).factory('flippers', [
   '$log',
-  // eslint-disable-next-line func-names
-  function ($log) {
+  ($log) => {
     const registry = {};
-    const flippers = new Object();
+    const flippers = {};
 
-    flippers.make_flipper = function (owner, expires, label, kind, initial_value) {
+    flippers.make_flipper = (owner, expires, label, kind, initial_value) => {
       const flipper = {};
       flipper.label = label;
       flipper[kind] = initial_value;
@@ -23,18 +22,18 @@ angular.module('BE.seed.service.flippers', []).factory('flippers', [
       registry[label] = flipper;
     };
 
-    const is_stale = function (flipper, now) {
+    const is_stale = (flipper, now) => {
       if (!flipper.expires) return false;
       const expires = Date.parse(flipper.expires);
       return now > expires;
     };
 
-    const log_stale_flipper = function (flipper) {
+    const log_stale_flipper = (flipper) => {
       // TODO throw someplace more useful; sentry?
       $log.warn(`Flipper '${flipper.label}' is stale; tell ${flipper.owner} to tidy up.`);
     };
 
-    flippers.is_active = function (s) {
+    flippers.is_active = (s) => {
       const flipper = registry[s] || { boolean: false };
       if (is_stale(flipper, new Date())) log_stale_flipper(flipper);
       return flipper.boolean;

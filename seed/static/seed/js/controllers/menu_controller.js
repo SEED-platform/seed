@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     };
     $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
-    $scope.hide_load_error = function () {
+    $scope.hide_load_error = () => {
       $rootScope.route_load_error = false;
     };
     $scope.$on('app_error', (event, data) => {
@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     $scope.$on('organization_list_updated', () => {
       init();
     });
-    $scope.is_active = function (menu_item, use_pathname) {
+    $scope.is_active = (menu_item, use_pathname) => {
       let current_path = $location.path();
       if (use_pathname) {
         current_path = $window.location.pathname;
@@ -61,10 +61,10 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       if (menu_item === current_path) {
         return true;
       }
-      return menu_item !== '/' && _.startsWith(current_path, menu_item);
+      return menu_item !== '/' && current_path.startsWith(menu_item);
     };
 
-    $scope.href = function (url) {
+    $scope.href = (url) => {
       window.location = url;
     };
 
@@ -88,7 +88,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     $scope.is_initial_state = () => $scope.menu_toggle_has_never_been_clicked();
 
     // expands and collapses the sidebar menu
-    $scope.toggle_menu = function () {
+    $scope.toggle_menu = () => {
       $scope.is_initial_state = false; // we can now turn on animations
       $scope.expanded_controller = !$scope.expanded_controller;
       $scope.collapsed_controller = !$scope.collapsed_controller;
@@ -107,13 +107,13 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      * open_data_upload_modal: opens the data upload modal, passes in the
      *  data_upload_modal_controller controller.
      */
-    $scope.open_data_upload_modal = function () {
+    $scope.open_data_upload_modal = () => {
       const dataModalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
         controller: 'data_upload_modal_controller',
         resolve: {
           cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
-          step: _.constant(1),
+          step: () => 1,
           dataset: () => ({}),
           organization: () => $scope.menu.user.organization
         }
@@ -128,7 +128,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
     /**
      * open_sample_data_modal: opens the auto-populate sample data modal
      */
-    $scope.open_sample_data_modal = function () {
+    $scope.open_sample_data_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/sample_data_modal.html`,
         controller: 'sample_data_modal_controller',
@@ -163,7 +163,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
      * sets the users primary organization, reloads/refreshed the page
      * @param {obj} org
      */
-    $scope.set_user_org = function (org) {
+    $scope.set_user_org = (org) => {
       $scope.mouseout_org();
       user_service.set_organization(org);
       $scope.menu.user.organization = org;
@@ -172,7 +172,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       init();
     };
     // set authorization and organization data to $scope
-    const set_auth = function (org_id) {
+    const set_auth = (org_id) => {
       auth_service.is_authorized(org_id, ['requires_owner']).then(
         (data) => {
           $scope.auth = data.auth.requires_owner ? data.auth : 'not authorized';
@@ -182,14 +182,14 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
         }
       );
     };
-    $scope.mouseover_org = function (org_id) {
+    $scope.mouseover_org = (org_id) => {
       $scope.show_org_id = true;
       $scope.hover_org_id = org_id;
     };
-    $scope.mouseout_org = function () {
+    $scope.mouseout_org = () => {
       $scope.show_org_id = false;
     };
-    $scope.track_mouse = function (e) {
+    $scope.track_mouse = (e) => {
       const xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
       const ypos = `${e.clientY - 25}px`;
       $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
@@ -218,7 +218,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       true
     );
 
-    var init = function () {
+    var init = () => {
       if (!$scope.logged_in) {
         return;
       }
@@ -257,7 +257,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
       $scope.http_error = $location.search().http_error;
     }
 
-    $scope.closeAlert = function () {
+    $scope.closeAlert = () => {
       $scope.http_error = false;
     };
 

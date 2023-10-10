@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.map', []).factory('map_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     // Save disadvantaged tract results to avoid unnecessary requests
     /** @type {Object.<string, boolean>} */
     const disadvantaged = {};
@@ -33,6 +32,7 @@ angular.module('BE.seed.service.map', []).factory('map_service', [
     const isDisadvantaged = (tractId) => {
       if (tractId in disadvantaged) return disadvantaged[tractId];
       console.error(`Tract ${tractId} hasn't previously been fetched, run checkDisadvantagedStatus first`);
+      return false;
     };
 
     return {

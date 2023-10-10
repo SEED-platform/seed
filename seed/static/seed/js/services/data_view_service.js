@@ -6,8 +6,7 @@ angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
   '$http',
   '$log',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, $log, user_service) {
+  ($http, $log, user_service) => {
     const get_data_view = (data_view_id) => {
       if (_.isNil(data_view_id)) {
         $log.error('#data_view_service.get_data_view(): data_view_id is undefined');

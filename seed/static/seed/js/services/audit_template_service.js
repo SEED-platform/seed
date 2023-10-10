@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.audit_template', []).factory('audit_template_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const get_building_xml = (org_id, audit_template_building_id) => $http
       .get(['/api/v3/audit_template/', audit_template_building_id, '/get_building_xml/?organization_id=', org_id].join(''))
       .then((response) => response.data)
@@ -21,7 +20,7 @@ angular.module('BE.seed.service.audit_template', []).factory('audit_template_ser
       .then((response) => response.data)
       .catch((response) => response.data);
 
-    const update_building_with_xml = function (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) {
+    const update_building_with_xml = (org_id, cycle_id, property_view_id, audit_template_building_id, xml_string) => {
       const body = new FormData();
       const blob = new Blob([xml_string], { type: 'text/xml' });
       const title = `at_${audit_template_building_id}_${moment().format('YYYYMMDD_HHmmss')}.xml`;

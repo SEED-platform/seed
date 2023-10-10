@@ -35,8 +35,7 @@
 angular.module('BE.seed.service.search', []).factory('search_service', [
   '$http',
   'spinner_utility',
-  // eslint-disable-next-line func-names
-  function ($http, spinner_utility) {
+  ($http, spinner_utility) => {
     /** **********
      * variables
      */
@@ -71,7 +70,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
     };
     let saas; // set to the local instance of the extended search_service this
 
-    /** **********
+    /**
      * functions
      */
 
@@ -211,7 +210,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       this.current_page = 1;
       this.search_buildings();
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        sessionStorage.setItem(`${this.prefix}:seedBuildingFilterParams`, JSON.stringify(this.filter_params));
       }
     };
 
@@ -230,7 +229,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
       this.current_page = 1;
       this.search_buildings();
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingNumberPerPage', JSON.stringify(this.number_per_page));
+        sessionStorage.setItem(`${this.prefix}:seedBuildingNumberPerPage`, JSON.stringify(this.number_per_page));
       }
     };
 
@@ -295,7 +294,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
         this.current_page = this.num_pages();
       }
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingPageNumber', this.current_page);
+        sessionStorage.setItem(`${this.prefix}:seedBuildingPageNumber`, this.current_page);
       }
       this.search_buildings();
     };
@@ -310,7 +309,7 @@ angular.module('BE.seed.service.search', []).factory('search_service', [
         this.current_page = 1;
       }
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingPageNumber', this.current_page);
+        sessionStorage.setItem(`${this.prefix}:seedBuildingPageNumber`, this.current_page);
       }
       this.search_buildings();
     };

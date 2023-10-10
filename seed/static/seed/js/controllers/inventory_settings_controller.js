@@ -18,7 +18,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
   'profiles',
   'current_profile',
   'shared_fields_payload',
-  'flippers',
   '$translate',
   'i18nService',
   // eslint-disable-next-line func-names
@@ -38,7 +37,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     profiles,
     current_profile,
     shared_fields_payload,
-    flippers,
     $translate,
     i18nService
   ) {
@@ -107,7 +105,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       }
     };
 
-    var initializeRowSelections = function () {
+    var initializeRowSelections = () => {
       $scope.gridApi.grid.modifyRows($scope.gridOptions.data);
       _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.entity.visible !== false) {
@@ -116,7 +114,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       });
     };
 
-    const setColumnsForCurrentProfile = function () {
+    const setColumnsForCurrentProfile = () => {
       const deselected_columns = angular.copy(all_columns);
       if ($scope.currentProfile) {
         const profileColumns = _.filter($scope.currentProfile.columns, (col) => _.find(angular.copy(all_columns), { id: col.id }));
@@ -195,7 +193,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
 
     $scope.showSharedBuildings = shared_fields_payload.show_shared_buildings;
 
-    var rowSelectionChanged = function () {
+    var rowSelectionChanged = () => {
       _.forEach($scope.gridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
         if (!row.isSelected && row.entity.pinnedLeft) row.entity.pinnedLeft = false;
@@ -204,7 +202,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       modified_service.setModified();
     };
 
-    $scope.updateHeight = function () {
+    $scope.updateHeight = () => {
       let height = 0;
       _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], (selector) => {
         const element = angular.element(selector)[0];
@@ -215,11 +213,11 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       $scope.gridApi.core.handleWindowResize();
     };
 
-    $scope.saveShowSharedBuildings = function () {
+    $scope.saveShowSharedBuildings = () => {
       user_service.set_default_columns([], $scope.showSharedBuildings);
     };
 
-    const currentColumns = function () {
+    const currentColumns = () => {
       const columns = [];
       _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.isSelected) {
@@ -236,7 +234,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       return columns;
     };
 
-    $scope.saveProfile = function () {
+    $scope.saveProfile = () => {
       const { id } = $scope.currentProfile;
       const profile = _.omit($scope.currentProfile, 'id');
       const columns = currentColumns();
@@ -249,16 +247,16 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       });
     };
 
-    $scope.renameProfile = function () {
+    $scope.renameProfile = () => {
       const oldProfile = angular.copy($scope.currentProfile);
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('rename'),
-          data: _.constant($scope.currentProfile),
-          profile_location: _.constant('List View Profile'),
+          action: () => 'rename',
+          data: () => $scope.currentProfile,
+          profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -270,16 +268,16 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       });
     };
 
-    $scope.removeProfile = function () {
+    $scope.removeProfile = () => {
       const oldProfile = angular.copy($scope.currentProfile);
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('remove'),
-          data: _.constant($scope.currentProfile),
-          profile_location: _.constant('List View Profile'),
+          action: () => 'remove',
+          data: () => $scope.currentProfile,
+          profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -292,7 +290,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
       });
     };
 
-    $scope.newProfile = function () {
+    $scope.newProfile = () => {
       const columns = [];
       const derived_columns = [];
       for (const column in currentColumns) {
@@ -306,12 +304,12 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
+          action: () => 'new',
           data: {
             columns,
             derived_columns
           },
-          profile_location: _.constant('List View Profile'),
+          profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -326,7 +324,7 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
 
     $scope.isModified = () => modified_service.isModified();
 
-    $scope.togglePinned = function (row) {
+    $scope.togglePinned = (row) => {
       row.entity.pinnedLeft = !row.entity.pinnedLeft;
       if (row.entity.pinnedLeft) {
         row.entity.visible = true;

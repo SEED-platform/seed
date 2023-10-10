@@ -30,6 +30,7 @@ badpass
 basestring
 bashrc
 bedes
+BEPS
 biffh
 Bool
 boolean
@@ -240,6 +241,7 @@ postgis
 postgres
 postgresql
 PostgreSQL
+postoffice
 pre
 Pre
 precommit

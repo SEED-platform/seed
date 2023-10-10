@@ -55,15 +55,15 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       };
     }
 
-    $scope.saveTemplate = function () {
+    $scope.saveTemplate = () => {
       if (!$scope.selected_template) {
         // if no template exists, asks user to create one first
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/email_templates_modal.html`,
           controller: 'email_templates_modal_controller',
           resolve: {
-            action: _.constant('new'),
-            data: _.constant($scope.selected_template),
+            action: () => 'new',
+            data: () => $scope.selected_template,
             org_id: $scope.org.id
           }
         });
@@ -86,8 +86,10 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       } else {
         const { id } = $scope.selected_template;
         const newTemplate = _.omit($scope.selected_template, 'id');
-        newTemplate.subject = $scope.selected_template.subject = $scope.temp.subject;
-        newTemplate.html_content = $scope.selected_template.html_content = $scope.temp.html_content;
+        newTemplate.subject = $scope.temp.subject;
+        $scope.selected_template.subject = newTemplate.subject;
+        newTemplate.html_content = $scope.temp.html_content;
+        $scope.selected_template.html_content = newTemplate.html_content;
         newTemplate.content = $filter('htmlToPlainText')(newTemplate.html_content);
         postoffice_service.update_template(id, newTemplate, $scope.org.id);
 
@@ -96,14 +98,14 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       }
     };
 
-    $scope.renameTemplate = function () {
+    $scope.renameTemplate = () => {
       const oldTemplate = angular.copy($scope.selected_template);
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/email_templates_modal.html`,
         controller: 'email_templates_modal_controller',
         resolve: {
-          action: _.constant('rename'),
-          data: _.constant($scope.selected_template),
+          action: () => 'rename',
+          data: () => $scope.selected_template,
           org_id: $scope.org.id
         }
       });
@@ -120,14 +122,14 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       });
     };
 
-    $scope.removeTemplate = function () {
+    $scope.removeTemplate = () => {
       const oldTemplate = angular.copy($scope.selected_template);
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/email_templates_modal.html`,
         controller: 'email_templates_modal_controller',
         resolve: {
-          action: _.constant('remove'),
-          data: _.constant($scope.selected_template),
+          action: () => 'remove',
+          data: () => $scope.selected_template,
           org_id: $scope.org.id
         }
       });
@@ -143,13 +145,13 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       });
     };
 
-    $scope.newTemplate = function () {
+    $scope.newTemplate = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/email_templates_modal.html`,
         controller: 'email_templates_modal_controller',
         resolve: {
-          action: _.constant('new'),
-          data: _.constant($scope.selected_template),
+          action: () => 'new',
+          data: () => $scope.selected_template,
           org_id: $scope.org.id
         }
       });
@@ -164,7 +166,7 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
     };
 
     $scope.$watch('selected_template', (newTemplate, oldTemplate) => {
-      if (!newTemplate || !oldTemplate || newTemplate.id == oldTemplate.id) {
+      if (!newTemplate || !oldTemplate || newTemplate.id === oldTemplate.id) {
         return;
       }
       if (!modified_service.isModified() && !$scope.canceled) {
@@ -190,7 +192,6 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
           })
           .catch(() => {
             // Switch
-            const old = _.findIndex($scope.available_templates, { id: oldTemplate.id });
             $scope.temp.html_content = newTemplate.html_content;
             $scope.temp.subject = newTemplate.subject;
             postoffice_service.save_last_template(newTemplate.id, $scope.org.id);
@@ -200,7 +201,7 @@ angular.module('BE.seed.controller.email_templates', []).controller('email_templ
       }
     });
 
-    $scope.set_modified = function () {
+    $scope.set_modified = () => {
       modified_service.setModified();
     };
 

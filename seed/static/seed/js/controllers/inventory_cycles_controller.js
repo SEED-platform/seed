@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     });
 
     // Checks for cycle selection changes and refreshes inventory if necessary
-    $scope.cycle_selection_toggled = function (is_open) {
+    $scope.cycle_selection_toggled = (is_open) => {
       if (!is_open) {
         const updated_selections = _.map(_.filter($scope.cycle_options, ['selected', true]), 'value');
         if (!_.isEqual($scope.included_cycle_ids, updated_selections)) {
@@ -101,10 +101,10 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     $scope.data = $scope.format_records(inventory);
 
     // Refreshes inventory by making API call
-    $scope.refresh_objects = function () {
+    $scope.refresh_objects = () => {
       spinner_utility.show();
       const profile_id = _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined;
-      if ($scope.inventory_type == 'properties') {
+      if ($scope.inventory_type === 'properties') {
         inventory_service.properties_cycle(profile_id, $scope.included_cycle_ids).then((refreshed_inventory) => {
           $scope.data = $scope.format_records(refreshed_inventory);
           spinner_utility.hide();
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     };
 
     // On profile change, refreshes objects and rebuild columns
-    $scope.profile_change = function () {
+    $scope.profile_change = () => {
       inventory_service.save_last_profile($scope.currentProfile.id, $scope.inventory_type);
       $scope.refresh_objects();
 
@@ -133,19 +133,19 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
     };
 
     // Agg function returning last value of matching criteria field (all should be the same if they match)
-    $scope.matching_field_value = function (aggregation, fieldValue) {
+    $scope.matching_field_value = (aggregation, fieldValue) => {
       aggregation.value = fieldValue;
     };
 
     // matching_criteria_columns identified here to pin left on table
-    if ($scope.inventory_type == 'properties') {
+    if ($scope.inventory_type === 'properties') {
       $scope.matching_criteria_columns = matching_criteria_columns.PropertyState;
     } else {
       $scope.matching_criteria_columns = matching_criteria_columns.TaxLotState;
     }
 
     // Builds columns with profile, default, and grouping settings
-    $scope.build_columns = function () {
+    $scope.build_columns = () => {
       $scope.columns = [];
 
       // Profile Settings
@@ -256,7 +256,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
 
     $scope.build_columns();
 
-    const prioritize_sort = function (grid, sortColumns) {
+    const prioritize_sort = (grid, sortColumns) => {
       // To maintain grouping while giving users the ability to have some sorting,
       // matching columns are given top priority followed by the hidden linking ID column.
       // Lastly, non-matching columns are given next priority so that users can sort within a grouped set.
@@ -300,7 +300,7 @@ angular.module('BE.seed.controller.inventory_cycles', []).controller('inventory_
       }
     };
 
-    $scope.updateHeight = function () {
+    $scope.updateHeight = () => {
       let height = -6;
       _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls', '.inventory-list-tab-container'], (selector) => {
         height += angular.element(selector)[0]?.offsetHeight ?? 0;

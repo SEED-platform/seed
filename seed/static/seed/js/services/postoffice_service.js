@@ -9,8 +9,7 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
   '$q',
   'user_service',
   'naturalSort',
-  // eslint-disable-next-line func-names
-  function ($http, $q, user_service, naturalSort) {
+  ($http, $q, user_service, naturalSort) => {
     const template_factory = {};
 
     template_factory.sort_templates = (response) => response.data.data.sort((a, b) => naturalSort(a.name, b.name));
@@ -93,7 +92,7 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
           }
         })
         .then((response) => response.data)
-        .catch(_.constant('Error fetching templates'));
+        .catch(() => 'Error fetching templates');
     };
 
     template_factory.get_last_template = (organization_id) => (JSON.parse(localStorage.getItem('template')) || {})[organization_id];

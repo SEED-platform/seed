@@ -16,7 +16,7 @@
  */
 
 const makeFileSystemUploader = (scope, element, allowed_extensions) => {
-  var uploader = new qq.FineUploaderBasic({
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       endpoint: `/api/v3/upload/?organization_id=${scope.organizationId}`,
@@ -160,8 +160,8 @@ const makeFileSystemUploader = (scope, element, allowed_extensions) => {
   return uploader;
 };
 
-const makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeBuildingSyncUpdater = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
@@ -302,8 +302,8 @@ const makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-const makeESPMUpdater = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeESPMUpdater = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
@@ -444,7 +444,7 @@ const makeESPMUpdater = function (scope, element, allowed_extensions) {
 
 /* Inventory Document Uploader for files to attach to a property */
 const makeDocumentUploader = (scope, element, allowed_extensions) => {
-  var uploader = new qq.FineUploaderBasic({
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
@@ -607,22 +607,22 @@ const sdUploaderFineUploader = (scope, element /* , attrs, filename */) => {
   return uploader;
 };
 
-// eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-angular.module('sdUploader', []).directive('sdUploader', function () {
-  return {
-    scope: {
-      cycleId: '=',
-      eventfunc: '&',
-      importrecord: '=',
-      organizationId: '=',
-      mappingProfileId: '=?',
-      sourceprog: '@',
-      sourcetype: '@',
-      sourcever: '='
-    },
-    restrict: 'A',
-    link(scope, element, attrs) {
-      $(sdUploaderFineUploader(scope, element, attrs));
-    }
-  };
-});
+// Test support
+window.sdUploaderFineUploader = sdUploaderFineUploader;
+
+angular.module('sdUploader', []).directive('sdUploader', () => ({
+  scope: {
+    cycleId: '=',
+    eventfunc: '&',
+    importrecord: '=',
+    organizationId: '=',
+    mappingProfileId: '=?',
+    sourceprog: '@',
+    sourcetype: '@',
+    sourcever: '='
+  },
+  restrict: 'A',
+  link: (scope, element, attrs) => {
+    $(sdUploaderFineUploader(scope, element, attrs));
+  }
+}));

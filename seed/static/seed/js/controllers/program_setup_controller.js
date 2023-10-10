@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.cycles = cycles_payload.cycles;
     $scope.compliance_metrics_error = [];
     $scope.program_settings_not_changed = true;
-    $scope.program_settings_changed = function () {
+    $scope.program_settings_changed = () => {
       $scope.program_settings_not_changed = false;
     };
     $scope.compliance_metrics = compliance_metrics;
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.property_columns = property_columns;
     $scope.x_axis_columns = x_axis_columns;
 
-    $scope.get_column_display = function (id) {
+    $scope.get_column_display = (id) => {
       const record = _.find($scope.property_columns, { id });
       if (record) {
         return record.displayName;
@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     // cycles
     $scope.cycle_selection = '';
-    $scope.get_cycle_display = function (id) {
+    $scope.get_cycle_display = (id) => {
       const record = _.find($scope.cycles, { id });
       if (record) {
         return record.name;
@@ -67,7 +67,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     $scope.available_cycles = () => $scope.cycles.filter(({ id }) => !$scope.selected_compliance_metric?.cycles.includes(id));
 
-    $scope.select_cycle = function () {
+    $scope.select_cycle = () => {
       $scope.program_settings_changed();
       const selection = $scope.cycle_selection;
       $scope.cycle_selection = '';
@@ -77,13 +77,13 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.selected_compliance_metric.cycles.push(selection);
     };
 
-    $scope.click_remove_cycle = function (id) {
+    $scope.click_remove_cycle = (id) => {
       $scope.program_settings_changed();
-      $scope.selected_compliance_metric.cycles = $scope.selected_compliance_metric.cycles.filter((item) => item != id);
+      $scope.selected_compliance_metric.cycles = $scope.selected_compliance_metric.cycles.filter((item) => item !== id);
     };
 
     // x-axes
-    $scope.get_x_axis_display = function (id) {
+    $scope.get_x_axis_display = (id) => {
       const record = _.find($scope.x_axis_columns, { id });
       if (record) {
         return record.displayName;
@@ -94,7 +94,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     $scope.x_axis_selection = '';
 
-    $scope.select_x_axis = function () {
+    $scope.select_x_axis = () => {
       $scope.program_settings_changed();
       const selection = $scope.x_axis_selection;
       $scope.x_axis_selection = '';
@@ -104,14 +104,14 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       $scope.selected_compliance_metric.x_axis_columns.push(selection);
     };
 
-    $scope.click_remove_x_axis = function (id) {
+    $scope.click_remove_x_axis = (id) => {
       $scope.program_settings_changed();
       $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter((item) => item != id);
     };
 
     // Filter Groups
     $scope.filter_groups = filter_groups;
-    $scope.get_filter_group_display = function (id) {
+    $scope.get_filter_group_display = (id) => {
       const record = _.find($scope.filter_groups, { id });
       if (record) {
         return record.name;
@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     /**
      * saves the updates settings
      */
-    $scope.save_settings = function () {
+    $scope.save_settings = () => {
       spinner_utility.show();
       $scope.compliance_metrics_error = [];
       if (!$scope.selected_compliance_metric.name) {
@@ -139,11 +139,11 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       const actual_energy_column_not_boolean =
         $scope.selected_compliance_metric.actual_energy_column &&
         !$scope.selected_compliance_metric.target_energy_column &&
-        _.find($scope.property_columns, { id: $scope.selected_compliance_metric.actual_energy_column }).data_type != 'boolean';
+        _.find($scope.property_columns, { id: $scope.selected_compliance_metric.actual_energy_column }).data_type !== 'boolean';
       const actual_emission_column_not_boolean =
         $scope.selected_compliance_metric.actual_emission_column &&
         !$scope.selected_compliance_metric.target_emission_column &&
-        _.find($scope.property_columns, { id: $scope.selected_compliance_metric.actual_emission_column }).data_type != 'boolean';
+        _.find($scope.property_columns, { id: $scope.selected_compliance_metric.actual_emission_column }).data_type !== 'boolean';
 
       if ((!has_energy_metric && !has_emission_metric) || no_energy_metric || no_emission_metric) {
         $scope.compliance_metrics_error.push('A completed energy or emission metric is required!');
@@ -171,7 +171,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       // update the compliance metric
       console.log('about to update the metric');
       compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then((data) => {
-        if ('status' in data && data.status == 'error') {
+        if ('status' in data && data.status === 'error') {
           for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
             $scope.compliance_metrics_error.push(`${key}: ${error}`);
           }
@@ -198,7 +198,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       spinner_utility.hide();
     };
 
-    $scope.click_new_compliance_metric = function () {
+    $scope.click_new_compliance_metric = () => {
       spinner_utility.show();
 
       // create a new metric using api and then assign it to selected_compliance_metric that
@@ -224,7 +224,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       spinner_utility.hide();
     };
 
-    $scope.click_delete = function (compliance_metric = null) {
+    $scope.click_delete = (compliance_metric = null) => {
       spinner_utility.show();
       if (!compliance_metric) {
         compliance_metric = $scope.selected_compliance_metric;
@@ -232,9 +232,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       if (confirm(`Are you sure you want to delete the Program Metric "${compliance_metric.name}"?`)) {
         const delete_id = compliance_metric.id;
         compliance_metric_service.delete_compliance_metric(delete_id, $scope.org.id).then((data) => {
-          if (data.status == 'success') {
-            $scope.compliance_metrics = $scope.compliance_metrics.filter((compliance_metric) => compliance_metric.id != delete_id);
-            if ($scope.selected_compliance_metric.id == delete_id) {
+          if (data.status === 'success') {
+            $scope.compliance_metrics = $scope.compliance_metrics.filter((compliance_metric) => compliance_metric.id !== delete_id);
+            if ($scope.selected_compliance_metric.id === delete_id) {
               window.location = `#/accounts/${$scope.org.id}/program_setup`;
             }
           }

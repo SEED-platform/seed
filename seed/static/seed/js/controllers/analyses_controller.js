@@ -48,8 +48,7 @@ angular
           const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
           $scope.analyses[analysis_index] = data.analysis;
           return data.analysis;
-        })
-      ;
+        });
 
       // add flag to the analysis indicating it has no currently running tasks
       // Used to determine if we should indicate on UI if an analysis's status is being polled

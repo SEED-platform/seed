@@ -18,7 +18,6 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
   'spinner_utility',
   'urls',
   'naturalSort',
-  'flippers',
   '$translate',
   // eslint-disable-next-line func-names
   function (
@@ -37,7 +36,6 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
     spinner_utility,
     urls,
     naturalSort,
-    flippers,
     $translate
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
@@ -94,14 +92,14 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       { id: 'climate_zone', label: $translate.instant('comstock.climate_zone') }
     ];
 
-    $scope.changeText = function (btnText) {
+    $scope.changeText = (btnText) => {
       if (btnText === 'Collapse Help') {
         $scope.btnText = 'Expand Help';
       } else {
         $scope.btnText = 'Collapse Help';
       }
     };
-    $scope.change_merge_protection = function (column) {
+    $scope.change_merge_protection = (column) => {
       // Keep geocoding results columns aligned in merge protection settings
       const change_to = column.merge_protection === 'Favor New' ? 'Favor Existing' : 'Favor New';
 
@@ -117,18 +115,18 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       $scope.setModified();
     };
 
-    $scope.change_is_matching_criteria = function (column) {
+    $scope.change_is_matching_criteria = (column) => {
       column.is_matching_criteria = !column.is_matching_criteria;
       $scope.setModified();
     };
 
-    $scope.matching_status = function (column) {
+    $scope.matching_status = (column) => {
       if (column.is_extra_data) return 'ineligible';
       if ($scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
       return 'eligible';
     };
 
-    $scope.change_recognize_empty = function (column) {
+    $scope.change_recognize_empty = (column) => {
       column.recognize_empty = !column.recognize_empty;
       $scope.setModified();
     };
@@ -143,25 +141,25 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     $scope.geocoding_columns_position_options = _.range(1, $scope.geocoding_columns.length + 1, 1);
 
-    const update_geocoding_order_values = function () {
+    const update_geocoding_order_values = () => {
       // Since array order represents geocoding order, use indices to update geocoding_order values
       _.each($scope.geocoding_columns, (geocode_active_col, index) => {
         geocode_active_col.geocoding_order = index + 1;
       });
     };
 
-    const remove_geocoding_col_by_name = function (column) {
+    const remove_geocoding_col_by_name = (column) => {
       _.remove($scope.geocoding_columns, (included_col) => included_col.name === column.name);
     };
 
-    const set_modified_and_check_sort = function () {
+    const set_modified_and_check_sort = () => {
       $scope.setModified();
-      if ($scope.column_sort == 'geocoding_order') {
+      if ($scope.column_sort === 'geocoding_order') {
         geocoding_order_sort();
       }
     };
 
-    $scope.geocoding_toggle = function (column) {
+    $scope.geocoding_toggle = (column) => {
       if (column.geocoding_order > 0) {
         // If currently activated, deactivate it and remove from geocoding_columns
         column.geocoding_order = 0;
@@ -177,14 +175,14 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       set_modified_and_check_sort();
     };
 
-    $scope.reinsert_geocoding_column = function (column) {
+    $scope.reinsert_geocoding_column = (column) => {
       remove_geocoding_col_by_name(column);
       $scope.geocoding_columns.splice(column.geocoding_order - 1, 0, column);
       update_geocoding_order_values();
       set_modified_and_check_sort();
     };
 
-    $scope.comstockModified = function (column) {
+    $scope.comstockModified = (column) => {
       // Remove any potential duplicates
       if (column.comstock_mapping !== null) {
         _.forEach($scope.columns, (col) => {
@@ -197,7 +195,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       $scope.setModified();
     };
 
-    $scope.setModified = function () {
+    $scope.setModified = () => {
       $scope.columns_updated = false;
       updateDiff();
       if (_.isEmpty(diff)) {
@@ -209,7 +207,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     $scope.isModified = () => modified_service.isModified();
 
-    var updateDiff = function () {
+    var updateDiff = () => {
       diff = {};
 
       const cleanColumns = angular.copy(columns);
@@ -222,18 +220,18 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
     };
 
     // Table Sorting
-    const default_sort_toggle = function () {
+    const default_sort_toggle = () => {
       $scope.column_sort = 'default';
       $scope.columns = _.sortBy($scope.columns, 'id');
     };
 
     default_sort_toggle();
 
-    const display_name_order_sort = function () {
+    const display_name_order_sort = () => {
       $scope.columns = _.sortBy($scope.columns, 'displayName');
     };
 
-    $scope.toggle_display_name_order_sort = function () {
+    $scope.toggle_display_name_order_sort = () => {
       if ($scope.column_sort !== 'display_name_order') {
         display_name_order_sort();
         $scope.column_sort = 'display_name_order';
@@ -242,11 +240,11 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
-    const column_name_order_sort = function () {
+    const column_name_order_sort = () => {
       $scope.columns = _.sortBy($scope.columns, 'name');
     };
 
-    $scope.toggle_column_name_order_sort = function () {
+    $scope.toggle_column_name_order_sort = () => {
       if ($scope.column_sort !== 'column_name_order') {
         column_name_order_sort();
         $scope.column_sort = 'column_name_order';
@@ -255,7 +253,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
-    var geocoding_order_sort = function () {
+    var geocoding_order_sort = () => {
       $scope.columns = _.sortBy(
         $scope.columns,
         (col) =>
@@ -264,7 +262,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       );
     };
 
-    $scope.toggle_geocoding_order_sort = function () {
+    $scope.toggle_geocoding_order_sort = () => {
       if ($scope.column_sort !== 'geocoding_order') {
         geocoding_order_sort();
         $scope.column_sort = 'geocoding_order';
@@ -273,7 +271,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
-    $scope.toggle_recognize_empty_sort = function () {
+    $scope.toggle_recognize_empty_sort = () => {
       if ($scope.column_sort !== 'recognize_empty') {
         $scope.columns = _.orderBy($scope.columns, 'recognize_empty', 'desc');
 
@@ -283,7 +281,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
-    $scope.toggle_matching_criteria_sort = function () {
+    $scope.toggle_matching_criteria_sort = () => {
       if ($scope.column_sort !== 'is_matching_criteria') {
         $scope.columns = _.sortBy($scope.columns, (col) => {
           if (col.is_matching_criteria) {
@@ -300,7 +298,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
-    const column_update_complete = function (match_link_summary) {
+    const column_update_complete = (match_link_summary) => {
       $scope.columns_updated = true;
       const diff_count = _.keys(diff).length;
       Notification.success(`Successfully updated ${diff_count} column${diff_count === 1 ? '' : 's'}`);
@@ -337,7 +335,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
     };
 
     // Saves the modified columns
-    $scope.save_settings = function () {
+    $scope.save_settings = () => {
       $scope.columns_updated = false;
 
       if (_.filter($scope.columns, 'is_matching_criteria').length === 0) {
@@ -380,7 +378,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       // size: 'lg',
       resolve: {
         org_id: $scope.org.id,
-        table_name: () => ($scope.inventory_type == 'properties' ? 'PropertyState' : 'TaxlotState'),
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxlotState'),
         black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
       }
     });
@@ -398,7 +396,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     });
 
-    $scope.open_rename_column_modal = function (column_id, column_name) {
+    $scope.open_rename_column_modal = (column_id, column_name) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/rename_column_modal.html`,
         controller: 'rename_column_modal_controller',
@@ -411,7 +409,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       });
     };
 
-    $scope.delete_column = function (column) {
+    $scope.delete_column = (column) => {
       $uibModal.open({
         backdrop: 'static',
         keyboard: false,

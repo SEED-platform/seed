@@ -96,7 +96,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     // Energy type option executed within this method in order to repeat on organization update
-    const get_energy_type_options = function () {
+    const get_energy_type_options = () => {
       $scope.energy_type_options = _.map($scope.org.display_meter_units, (unit, type) => ({
         label: `${type} | ${unit}`,
         value: type
@@ -108,7 +108,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.energy_unit_options = results;
     });
 
-    $scope.get_valid_units_for_type = function () {
+    $scope.get_valid_units_for_type = () => {
       const options = $scope.energy_unit_options[$scope.chosen_type_unit.type];
       const previous_unit = $scope.org.display_meter_units[$scope.chosen_type_unit.type];
       if (_.includes(options, previous_unit)) {
@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     // Called when save_settings is called to update the scoped org before org save request is sent.
-    const update_display_unit_for_scoped_org = function () {
+    const update_display_unit_for_scoped_org = () => {
       const { type } = $scope.chosen_type_unit;
       const { unit } = $scope.chosen_type_unit;
 
@@ -174,7 +174,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       }
     ];
 
-    $scope.confirm_delete = function (org) {
+    $scope.confirm_delete = (org) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/delete_org_modal.html`,
         controller: 'delete_org_modal_controller',
@@ -186,7 +186,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       });
     };
 
-    $scope.resize_textarea = function () {
+    $scope.resize_textarea = () => {
       const input = document.getElementById('new-user-email-content');
       input.style.height = '34px';
       input.style.height = `${input.scrollHeight}px`;
@@ -201,7 +201,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     /**
      * saves the updates settings
      */
-    $scope.save_settings = function () {
+    $scope.save_settings = () => {
       $scope.settings_updated = false;
       $scope.token_validity = { message: 'Verify Token' };
       $scope.form_errors = null;
@@ -214,7 +214,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           $scope.$emit('organization_list_updated');
         })
         .catch((response) => {
-          if (response.data && response.data.status == 'error') {
+          if (response.data && response.data.status === 'error') {
             $scope.form_errors = response.data.message;
           } else {
             $scope.form_errors = 'An unknown error has occurred';
@@ -228,7 +228,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           salesforce_config_service
             .update_salesforce_config($scope.org.id, $scope.conf.id, $scope.conf, $scope.timezone)
             .then((response) => {
-              if (response.status == 'error') {
+              if (response.status === 'error') {
                 $scope.config_errors = response.errors;
               } else {
                 salesforce_config_service.get_salesforce_configs($scope.org.id).then((data) => {
@@ -237,7 +237,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
               }
             })
             .catch((response) => {
-              if (response.data && response.data.status == 'error') {
+              if (response.data && response.data.status === 'error') {
                 $scope.config_errors = response.data.message;
               } else {
                 $scope.config_errors = 'An unknown error has occurred';
@@ -255,7 +255,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
               });
             })
             .catch((response) => {
-              if (response.data && response.data.status == 'error') {
+              if (response.data && response.data.status === 'error') {
                 $scope.config_errors = response.data.message;
               } else {
                 $scope.config_errors = 'An unknown error has occurred';
@@ -323,12 +323,12 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     // flag unsaved changes in mappings table
-    $scope.flag_change = function () {
+    $scope.flag_change = () => {
       $scope.changes_possible = true;
     };
 
     // Add and remove column methods
-    $scope.add_new_column = function () {
+    $scope.add_new_column = () => {
       const empty_row = {
         id: null, salesforce_fieldname: '', column: null, organization: $scope.org.id
       };
@@ -342,7 +342,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     };
 
     // TODO: add a 'are you sure?' modal before deletion
-    $scope.remove_column = function (index) {
+    $scope.remove_column = (index) => {
       if ($scope.salesforce_mappings[index].id) {
         // remove from db
         salesforce_mapping_service
@@ -351,7 +351,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
             $scope.salesforce_mappings.splice(index, 1);
           })
           .catch((response) => {
-            if (response.data && response.data.status == 'error') {
+            if (response.data && response.data.status === 'error') {
               $scope.table_errors = response.data.message;
             } else {
               $scope.table_errors = 'An unknown error has occurred';
@@ -367,14 +367,14 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     /**
      * toggle secret fields
      */
-    $scope.toggle_secret = function (field) {
-      $scope.secrets[field] = $scope.secrets[field] == 'password' ? 'text' : 'password';
+    $scope.toggle_secret = (field) => {
+      $scope.secrets[field] = $scope.secrets[field] === 'password' ? 'text' : 'password';
     };
 
     /**
      * run the sync salesforce process
      */
-    $scope.sync_salesforce = function () {
+    $scope.sync_salesforce = () => {
       $scope.sync_sf = null;
       $scope.sync_sf_msg = null;
       salesforce_config_service
@@ -401,7 +401,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
         });
     };
 
-    $scope.ubid_threshold_change = function () {
+    $scope.ubid_threshold_change = () => {
       if (_.isNil($scope.org.ubid_threshold)) {
         $scope.invalid_ubid_threshold = true;
       } else {
@@ -412,7 +412,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     /**
      * reset the last update date (to null)
      */
-    $scope.reset_date = function () {
+    $scope.reset_date = () => {
       $scope.conf.last_update_date = null;
       $scope.save_settings();
       Notification.success({
@@ -424,7 +424,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     /**
      * tests the salesforce connection
      */
-    $scope.test_connection = function () {
+    $scope.test_connection = () => {
       $scope.test_sf = null;
       $scope.test_sf_msg = null;
 

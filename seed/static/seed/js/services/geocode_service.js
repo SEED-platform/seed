@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const geocode_factory = {};
 
     geocode_factory.geocode_by_ids = (property_view_ids, taxlot_view_ids) => $http
@@ -43,7 +42,7 @@ angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
       )
       .then((response) => response.data);
 
-    geocode_factory.check_org_has_api_key = function (org_id) {
+    geocode_factory.check_org_has_api_key = (org_id) => {
       const params = { organization_id: org_id };
       return $http
         .get(`/api/v3/organizations/${org_id}/geocode_api_key_exists/`, {
@@ -52,7 +51,7 @@ angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
         .then((response) => response.data);
     };
 
-    geocode_factory.check_org_has_geocoding_enabled = function (org_id) {
+    geocode_factory.check_org_has_geocoding_enabled = (org_id) => {
       const params = { organization_id: org_id };
       return $http
         .get(`/api/v3/organizations/${org_id}/geocoding_enabled/`, {

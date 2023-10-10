@@ -32,13 +32,13 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       status_message: ''
     };
 
-    $scope.datasetChanged = function (dataset) {
+    $scope.datasetChanged = (dataset) => {
       // set selectedDataset to null to rerender button
       $scope.selectedDataset = null;
       $scope.selectedDataset = dataset;
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // If step 2, GB import confirmation was not accepted by user, so delete file
       if ($scope.step.number === 2) {
         dataset_service.delete_file($scope.file_id).then((/* results */) => {
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       }
     };
 
-    $scope.uploaderfunc = function (event_message, file /* , progress */) {
+    $scope.uploaderfunc = (event_message, file /* , progress */) => {
       switch (event_message) {
         case 'invalid_extension':
           $scope.$apply(() => {
@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       }
     };
 
-    const saveFailure = function (error) {
+    const saveFailure = (error) => {
       // Delete file and present error message
 
       // file_id source varies depending on which step the error occurs
@@ -104,7 +104,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
 
     const grid_rows_to_display = (data) => Math.min(data.length, 5);
 
-    var show_confirmation_info = function () {
+    var show_confirmation_info = () => {
       uploader_service
         .greenbutton_meters_preview($scope.file_id, $scope.organization_id, $scope.view_id)
         .then((result) => {
@@ -145,7 +145,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
         .catch(saveFailure);
     };
 
-    const saveSuccess = function (progress_data) {
+    const saveSuccess = (progress_data) => {
       // recheck progress in order to ensure message has been appended to progress_data
       uploader_service.check_progress(progress_data.progress_key).then((data) => {
         $scope.uploader.status_message = 'saving complete';
@@ -155,7 +155,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       });
     };
 
-    var buildImportResults = function (message) {
+    var buildImportResults = (message) => {
       const col_defs = base_green_button_col_defs;
 
       col_defs.push(successfully_imported_col_def);
@@ -179,7 +179,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       $scope.import_meters_count_string = $scope.import_meters_count > 1 ? `${$scope.import_meters_count} Meters` : `${$scope.import_meters_count} Meter`;
     };
 
-    $scope.accept_greenbutton_meters = function () {
+    $scope.accept_greenbutton_meters = () => {
       uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then((data) => {
         $scope.uploader.status_message = 'saving data';
         $scope.uploader.progress = 0;
@@ -198,7 +198,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', []).controller('g
       });
     };
 
-    $scope.refresh_page = function () {
+    $scope.refresh_page = () => {
       $state.reload();
       $uibModalInstance.dismiss('cancel');
     };

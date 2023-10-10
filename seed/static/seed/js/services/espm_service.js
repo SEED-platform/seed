@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.espm', []).factory('espm_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const get_espm_building_xlsx = (org_id, pm_property_id, espm_username, espm_password) => $http
       .post(
         ['/api/v3/portfolio_manager/', pm_property_id, '/download/?organization_id=', org_id].join(''),

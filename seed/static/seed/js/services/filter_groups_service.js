@@ -7,8 +7,7 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
   '$q',
   'user_service',
   'naturalSort',
-  // eslint-disable-next-line func-names
-  function ($http, $q, user_service, naturalSort) {
+  ($http, $q, user_service, naturalSort) => {
     const filter_groups_factory = {};
 
     filter_groups_factory.get_filter_groups = (inventory_type, organization_id = user_service.get_organization().id) => $http
@@ -24,12 +23,12 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
         return filter_groups;
       });
 
-    filter_groups_factory.get_last_filter_group = function (inventory_type) {
+    filter_groups_factory.get_last_filter_group = (inventory_type) => {
       const organization_id = user_service.get_organization().id;
       return (JSON.parse(localStorage.getItem(`filter_groups.${inventory_type}`)) || {})[organization_id];
     };
 
-    filter_groups_factory.save_last_filter_group = function (id, inventory_type) {
+    filter_groups_factory.save_last_filter_group = (id, inventory_type) => {
       const organization_id = user_service.get_organization().id;
       const filter_groups = JSON.parse(localStorage.getItem(`filter_groups.${inventory_type}`)) || {};
       if (id === -1) {
@@ -56,7 +55,7 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
       })
       .then((response) => response.data.data);
 
-    filter_groups_factory.update_filter_group = function (id, data) {
+    filter_groups_factory.update_filter_group = (id, data) => {
       if (id === null) {
         Notification.error('This filter group is protected from modifications');
         return $q.reject();
@@ -70,7 +69,7 @@ angular.module('BE.seed.service.filter_groups', []).factory('filter_groups_servi
         .then((response) => response.data.data);
     };
 
-    filter_groups_factory.remove_filter_group = function (id) {
+    filter_groups_factory.remove_filter_group = (id) => {
       if (id === null) {
         Notification.error('This filter group is protected from modifications');
         return $q.reject();

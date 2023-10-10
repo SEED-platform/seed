@@ -35,7 +35,11 @@ angular.module('BE.seed.controller.ubid_jaccard_index_modal', []).controller('ub
     $scope.editing = !$scope.valid_ubids();
     if (!$scope.editing) $scope.compare_ubids();
 
-    $scope.jaccard_quality = (jaccard) => (jaccard <= 0 ? 'No Match' : jaccard < 0.5 ? 'Poor' : jaccard < 1 ? 'Good' : 'Perfect');
+    $scope.jaccard_quality = (jaccard) => {
+      if (jaccard <= 0) return 'No Match';
+      if (jaccard < 0.5) return 'Poor';
+      return jaccard < 1 ? 'Good' : 'Perfect';
+    };
 
     $scope.close = () => {
       $uibModalInstance.close();

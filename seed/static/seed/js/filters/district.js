@@ -7,16 +7,13 @@
  */
 angular.module('district', []).filter(
   'district',
-  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-  function () {
-    return (input) => {
-      if (_.isNil(input)) {
-        return input;
-      }
-      if (input.toUpperCase() === 'DISTRICT') {
-        return 'County/District/Ward/Borough';
-      }
+  () => (input) => {
+    if (_.isNil(input)) {
       return input;
-    };
+    }
+    if (input.toUpperCase() === 'DISTRICT') {
+      return 'County/District/Ward/Borough';
+    }
+    return input;
   }
 );

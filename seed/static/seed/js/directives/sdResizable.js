@@ -4,8 +4,7 @@
  *
  * angular directive to wrap jQuery's resizable functionality
  */
-// eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-angular.module('sdResizable', []).directive('sdResizable', function () {
+angular.module('sdResizable', []).directive('sdResizable', () => {
   const resizableConfig = {
     handles: 'e',
     alsoResize: 'table.resizable'
@@ -16,7 +15,7 @@ angular.module('sdResizable', []).directive('sdResizable', function () {
     scope: {
       callback: '&onResize'
     },
-    link: function postLink(scope, elem) {
+    link: (scope, elem) => {
       elem.resizable(resizableConfig);
       elem.css('position', 'relative');
       elem.on('resizestop', () => {

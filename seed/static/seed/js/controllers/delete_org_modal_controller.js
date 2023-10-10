@@ -16,7 +16,7 @@ angular.module('BE.seed.controller.delete_org_modal', []).controller('delete_org
       progress: 0
     };
 
-    $scope.delete_org = function () {
+    $scope.delete_org = () => {
       $scope.status.in_progress = true;
 
       organization_service.delete_organization($scope.org.id).then((data) => {
@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.delete_org_modal', []).controller('delete_org
       });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
 

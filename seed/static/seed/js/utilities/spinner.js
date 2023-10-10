@@ -7,8 +7,7 @@
  * instantiates new objects (spinners). - nicholasserra
  */
 angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
-  // eslint-disable-next-line func-names
-  function () {
+  () => {
     const spinner_utility = {};
     let _spinner;
 

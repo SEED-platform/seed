@@ -27,10 +27,10 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       status_message: ''
     };
 
-    $scope.export_selected = function (export_type) {
+    $scope.export_selected = (export_type) => {
       let filename = $scope.export_name;
       const ext = `.${export_type}`;
-      if (!_.endsWith(filename, ext)) filename += ext;
+      if (!filename.endsWith(ext)) filename += ext;
       $scope.exporting = true;
       $http
         .get('/api/v3/tax_lot_properties/start_export/', {
@@ -91,11 +91,11 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
   }

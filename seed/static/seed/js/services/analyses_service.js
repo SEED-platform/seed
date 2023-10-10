@@ -8,8 +8,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
   '$timeout',
   'user_service',
   'uploader_service',
-  // eslint-disable-next-line func-names
-  function ($http, $log, $timeout, user_service, uploader_service) {
+  ($http, $log, $timeout, user_service, uploader_service) => {
     const get_analyses_for_org = (org_id) => $http.get(`/api/v3/analyses/?organization_id=${org_id}`).then((response) => response.data);
 
     const get_analyses_for_canonical_property = (property_id) => {

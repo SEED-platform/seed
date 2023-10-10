@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.sensor', []).factory('sensor_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const sensor_factory = {};
 
     sensor_factory.get_data_loggers = (property_view_id, organization_id) => $http.get('/api/v3/data_loggers/', { params: { property_view_id, organization_id } }).then((response) => response.data);

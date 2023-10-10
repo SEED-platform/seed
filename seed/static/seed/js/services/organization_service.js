@@ -7,8 +7,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
   '$q',
   '$timeout',
   'naturalSort',
-  // eslint-disable-next-line func-names
-  function ($http, $q, $timeout, naturalSort) {
+  ($http, $q, $timeout, naturalSort) => {
     const organization_factory = { total_organizations_for_user: 0 };
 
     organization_factory.get_organizations = () => $http.get('/api/v3/organizations/').then((response) => {

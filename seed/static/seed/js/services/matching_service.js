@@ -6,8 +6,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
   '$http',
   'user_service',
   'spinner_utility',
-  // eslint-disable-next-line func-names
-  function ($http, user_service, spinner_utility) {
+  ($http, user_service, spinner_utility) => {
     const matching_service = {};
 
     /**

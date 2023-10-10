@@ -29,6 +29,16 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
         title: 'Actions'
       }
     ];
+
+    /**
+     * refresh_datasets: refreshes dataset list
+     */
+    const refresh_datasets = () => {
+      dataset_service.get_datasets().then((data) => {
+        $scope.datasets = data.datasets;
+      });
+    };
+
     /**
      * Functions for dealing with editing a dataset's name
      */
@@ -114,15 +124,6 @@ angular.module('BE.seed.controller.dataset', []).controller('dataset_list_contro
         }
       }
       return true;
-    };
-
-    /**
-     * refresh_datasets: refreshes dataset list
-     */
-    var refresh_datasets = () => {
-      dataset_service.get_datasets().then((data) => {
-        $scope.datasets = data.datasets;
-      });
     };
 
     /**

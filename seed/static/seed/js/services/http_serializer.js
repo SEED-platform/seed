@@ -7,8 +7,7 @@
  * Temporary until a fix is landed in angular.
  */
 angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
-  // eslint-disable-next-line func-names
-  function () {
+  () => {
     function serializeValue(v) {
       if (angular.isObject(v)) {
         return angular.isDate(v) ? v.toISOString() : angular.toJson(v);
@@ -31,7 +30,7 @@ angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParam
       .replace(/%2C/gi, ',')
       .replace(/%20/g, pctEncodeSpaces ? '%20' : '+');
 
-    return function (params) {
+    return (params) => {
       if (!params) return '';
       const parts = [];
       forEachSorted(params, (value, key) => {

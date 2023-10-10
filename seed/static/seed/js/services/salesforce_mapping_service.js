@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.salesforce_mapping', []).factory('salesforce_mapping_service', [
   '$http',
   '$log',
-  // eslint-disable-next-line func-names
-  function ($http, $log) {
+  ($http, $log) => {
     // get all salesforce_mappings defined
     const get_salesforce_mappings = (organization_id) => $http
       .get('/api/v3/salesforce_mappings/', {

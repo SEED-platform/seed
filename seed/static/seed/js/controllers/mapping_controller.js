@@ -76,21 +76,22 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
   ) {
     $scope.profiles = [{ id: 0, mappings: [], name: '<None selected>' }].concat(column_mapping_profiles_payload);
 
-    $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
+    $scope.current_profile = $scope.profiles[0] ?? {};
+    $scope.dropdown_selected_profile = $scope.current_profile;
     $scope.organization = organization_payload.organization;
 
     // Track changes to help prevent losing changes when data could be lost
     $scope.profile_change_possible = false;
 
-    $scope.flag_profile_change = function () {
+    $scope.flag_profile_change = () => {
       $scope.profile_change_possible = true;
     };
 
-    $scope.flag_mappings_change = function () {
+    $scope.flag_mappings_change = () => {
       $scope.mappings_change_possible = true;
     };
 
-    $scope.is_buildingsync_and_profile_not_ok = function () {
+    $scope.is_buildingsync_and_profile_not_ok = () => {
       if (!$scope.mappingBuildingSync) {
         return false;
       }
@@ -98,7 +99,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       return $scope.current_profile.id === 0 || $scope.profile_change_possible || $scope.mappings_change_possible;
     };
 
-    $scope.apply_profile = function () {
+    $scope.apply_profile = () => {
       if ($scope.mappings_change_possible) {
         $uibModal
           .open({
@@ -152,7 +153,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         []
       );
 
-    $scope.new_profile = function () {
+    $scope.new_profile = () => {
       let profile_mapping_data = profile_mappings_from_working_mappings();
 
       let profileType;
@@ -183,9 +184,9 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
         controller: 'column_mapping_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
-          data: _.constant({ mappings: profile_mapping_data, profile_type: profileType }),
-          org_id: _.constant($scope.organization.id)
+          action: () => 'new',
+          data: () => ({ mappings: profile_mapping_data, profile_type: profileType }),
+          org_id: () => $scope.organization.id
         }
       });
 
@@ -199,7 +200,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       });
     };
 
-    $scope.save_profile = function () {
+    $scope.save_profile = () => {
       const profile_id = $scope.current_profile.id;
       const profile_index = _.findIndex($scope.profiles, ['id', profile_id]);
 
@@ -219,13 +220,6 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     // ui-grid's i18nService
     const stripRegion = (languageTag) => _.first(languageTag.split('_'));
     i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
-
-    // if (flippers.is_active('release:orig_columns')) {
-    //   var is_archived_pre_pint_column = function (s) {
-    //     return /\s+Orig$/.test(s);
-    //   };
-    //   _.remove($scope.typeahead_columns, is_archived_pre_pint_column);
-    // }
 
     $scope.tabs = {
       one_active: true,
@@ -294,12 +288,12 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(area_columns, { column_name: col.suggestion_column_name }));
 
     const ghg_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg' });
-    $scope.is_ghg_column = (col) => col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, { column_name: col.suggestion_column_name }));
+    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_columns, { column_name: col.suggestion_column_name }));
 
     const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
-    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { column_name: col.suggestion_column_name }));
+    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { column_name: col.suggestion_column_name }));
 
-    const get_default_quantity_units = function (col) {
+    const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
       if ($scope.is_eui_column(col)) {
         return 'kBtu/ft**2/year';
@@ -316,7 +310,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       return null;
     };
 
-    $scope.setAllInventoryTypes = function () {
+    $scope.setAllInventoryTypes = () => {
       _.forEach($scope.mappings, (col) => {
         if (col.suggestion_table_name !== $scope.setAllFields.value) {
           col.suggestion_table_name = $scope.setAllFields.value;
@@ -326,7 +320,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       $scope.updateColDuplicateStatus();
       $scope.updateDerivedColumnMatchStatus();
     };
-    $scope.updateInventoryTypeDropdown = function () {
+    $scope.updateInventoryTypeDropdown = () => {
       const chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
       if (chosenTypes.length === 1) $scope.setAllFields = _.find($scope.setAllFieldsOptions, { value: chosenTypes[0] });
       else $scope.setAllFields = '';
@@ -343,7 +337,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * @param col: table column mapping object. Represents the database fields <-> raw
      *  relationship.
      */
-    $scope.change = function (col, checkingMultiple) {
+    $scope.change = (col, checkingMultiple) => {
       // Validate that the example data will convert.
       if (!_.isEmpty(col.suggestion)) {
         let match;
@@ -377,7 +371,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       }
     };
 
-    $scope.updateColDuplicateStatus = function () {
+    $scope.updateColDuplicateStatus = () => {
       // Build suggestions with counts
       const suggestions = {};
       _.forEach($scope.mappings, (col) => {
@@ -404,13 +398,13 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     // Verify there are not any suggested Column names that match an existing Derived Column name
-    $scope.updateDerivedColumnMatchStatus = function () {
+    $scope.updateDerivedColumnMatchStatus = () => {
       const suggestions = $scope.mappings.map((col) => col.suggestion);
       const derived_col_names = derived_columns_payload.derived_columns.map((col) => col.name);
       $scope.derived_column_match = !!suggestions.some((name) => derived_col_names.includes(name));
     };
 
-    const get_col_from_suggestion = function (name) {
+    const get_col_from_suggestion = (name) => {
       const suggestion = _.find($scope.current_profile.mappings, { from_field: name }) || {};
 
       return {
@@ -429,7 +423,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * initialize_mappings: prototypical inheritance for all the raw columns
      * called by init()
      */
-    $scope.initialize_mappings = function () {
+    $scope.initialize_mappings = () => {
       $scope.mappings = [];
       _.forEach($scope.raw_columns, (name) => {
         const col = get_col_from_suggestion(name);
@@ -458,7 +452,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * reset_mappings
      * Ignore suggestions and set all seed data headers to the headers from the original import file on PropertyState
      */
-    $scope.reset_mappings = function () {
+    $scope.reset_mappings = () => {
       _.forEach($scope.mappings, (col) => {
         let changed = false;
         if (col.suggestion !== col.name) {
@@ -499,7 +493,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      *              ...
      *          }
      */
-    $scope.get_mappings = function () {
+    $scope.get_mappings = () => {
       const mappings = [];
       _.forEach(
         $scope.mappings.filter((m) => !m.isOmitted),
@@ -516,7 +510,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       return mappings;
     };
 
-    const get_geocoding_columns = function () {
+    const get_geocoding_columns = () => {
       geocode_service.check_org_has_geocoding_enabled(org_id).then((result) => {
         if (result === true) {
           organization_service.geocoding_columns(org_id).then((geocoding_columns) => {
@@ -540,7 +534,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
     const suggested_address_fields = [{ column_name: 'address_line_1' }, { column_name: 'city' }, { column_name: 'state' }, { column_name: 'postal_code' }];
 
-    $scope.suggested_fields_present = function () {
+    $scope.suggested_fields_present = () => {
       if (!$scope.mappings) return true;
 
       const intersections = _.intersectionWith(suggested_address_fields, $scope.mappings, (required_field, raw_col) => required_field.column_name === raw_col.suggestion_column_name).length;
@@ -555,7 +549,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /*
      * required_property_fields_present: check for presence of at least one Property field used by SEED to match records
      */
-    $scope.required_property_fields_present = function () {
+    $scope.required_property_fields_present = () => {
       const property_mappings_found = _.find($scope.mappings, { suggestion_table_name: 'PropertyState' });
       if (!property_mappings_found) return true;
 
@@ -578,7 +572,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /*
      * required_taxlot_fields_present: check for presence of at least one Tax Lot field used by SEED to match records
      */
-    $scope.required_taxlot_fields_present = function () {
+    $scope.required_taxlot_fields_present = () => {
       const taxlot_mappings_found = _.find($scope.mappings, { suggestion_table_name: 'TaxLotState' });
       if (!taxlot_mappings_found) return true;
 
@@ -610,7 +604,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * empty_fields_present: used to disable or enable the 'show & review
      *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
      */
-    const suggestions_not_provided_yet = function () {
+    const suggestions_not_provided_yet = () => {
       const no_suggestion_value = Boolean(_.find($scope.mappings, { suggestion: undefined }));
       const no_suggestion_table_name = Boolean(_.find($scope.mappings, { suggestion_table_name: undefined }));
       return no_suggestion_value || no_suggestion_table_name;
@@ -630,7 +624,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * check_mapping: mapping progress loop
      */
-    const check_mapping = function (progress_key) {
+    const check_mapping = (progress_key) => {
       uploader_service.check_progress_loop(
         progress_key, // key
         0, // starting prog bar percentage
@@ -649,7 +643,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * remap_buildings: shows the progress bar and kicks off the re-mapping,
      *   after saving column mappings, deletes unmatched buildings
      */
-    $scope.remap_buildings = function () {
+    $scope.remap_buildings = () => {
       $scope.import_file.progress = 0;
       $scope.save_mappings = true;
       $scope.review_mappings = true;
@@ -670,7 +664,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * get_mapped_buildings: gets mapped buildings for the preview table
      */
-    $scope.get_mapped_buildings = function () {
+    $scope.get_mapped_buildings = () => {
       $scope.import_file.progress = 0;
       $scope.save_mappings = true;
       $scope.review_mappings = true;
@@ -770,7 +764,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         });
     };
 
-    $scope.backToMapping = function () {
+    $scope.backToMapping = () => {
       $scope.review_mappings = false;
       $scope.show_mapped_buildings = false;
     };
@@ -778,7 +772,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * open_data_quality_modal: modal to present data data_quality warnings and errors
      */
-    $scope.open_data_quality_modal = function () {
+    $scope.open_data_quality_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_quality_modal.html`,
         controller: 'data_quality_modal_controller',
@@ -788,12 +782,12 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
           name: () => $scope.import_file.uploaded_filename,
           uploaded: () => $scope.import_file.created,
           run_id: () => $scope.import_file.id,
-          orgId: _.constant($scope.organization.id)
+          orgId: () => $scope.organization.id
         }
       });
     };
 
-    const display_cached_column_mappings = function () {
+    const display_cached_column_mappings = () => {
       const cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
       _.forEach($scope.mappings, (col) => {
         const cached_col = _.find(cached_mappings, { from_field: col.name });
@@ -842,7 +836,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       );
     }
 
-    const init = function () {
+    const init = () => {
       $scope.initialize_mappings();
 
       if ($scope.import_file.matching_done) {
@@ -864,7 +858,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      *   modal to display the file name and match buildings that were created
      *   from the file.
      */
-    $scope.open_data_upload_modal = function (dataset) {
+    $scope.open_data_upload_modal = (dataset) => {
       const step = 11;
       const ds = angular.copy(dataset);
       ds.filename = $scope.import_file.uploaded_filename;

@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
               if (activePoints[0]) {
                 const activePoint = activePoints[0];
                 cycle_name = $scope.data.graph_data.labels[activePoint.index];
-                cycle = $scope.cycles.find((c) => c.name == cycle_name);
+                cycle = $scope.cycles.find((c) => c.name === cycle_name);
                 shown_dataset_index = activePoint.datasetIndex;
 
                 // update locally stored insights_property configs
@@ -129,7 +129,7 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
                 property_configs.chart_cycle = cycle.id;
                 property_configs.dataset_visibility = [false, false, false];
                 property_configs.dataset_visibility[shown_dataset_index] = true;
-                property_configs.annotation_visibility = shown_dataset_index == 1;
+                property_configs.annotation_visibility = shown_dataset_index === 1;
                 localStorage.setItem(`insights.property.configs.${$scope.organization.id}`, JSON.stringify(property_configs));
 
                 $state.go('insights_property');

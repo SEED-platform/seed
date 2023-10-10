@@ -24,7 +24,7 @@
       <div class="card-highlight-score">{$:: highlight.value $}</div>
       <div class="card-highlight-title">{$:: highlight.name $}</div>
     </div>
-    <div class="card-highlight" ng-if="(analysis.configuration | json) != '{}' && analysis.configuration.select_meters">
+    <div class="card-highlight" ng-if="analysis.configuration.select_meters">
       <div class="card-stats-highlight-score">Meter Selection: {$:: analysis.configuration.select_meters | titleCase $}</div>
       <div ng-if="analysis.configuration.meter" class="card-stats-highlight-title">
         {$:: analysis.configuration.meter.start_date | date : 'MM/dd/yyyy' $} - {$:: analysis.configuration.meter.end_date | date : 'MM/dd/yyyy' $}

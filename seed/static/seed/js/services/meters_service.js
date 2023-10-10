@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.meters', []).factory('meters_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const meters_factory = {};
 
     meters_factory.valid_energy_types_units = () => $http.get('/api/v3/properties/valid_meter_types_and_units/').then((response) => response.data);

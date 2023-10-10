@@ -208,12 +208,12 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
+          action: () => 'new',
           data: () => ({
             columns: currentColumns(),
             derived_columns: []
           }),
-          profile_location: _.constant('List View Profile'),
+          profile_location: () => 'List View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -247,7 +247,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
           currentProfile: () => $scope.currentProfile,
           cycle: () => $scope.cycle.selected_cycle,
           inventory_type: () => $stateParams.inventory_type,
-          provided_inventory: _.constant(null)
+          provided_inventory: () => null
         }
       });
     }
@@ -515,10 +515,10 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
                 size: 'lg',
                 resolve: {
                   dataQualityResults: () => dq_result,
-                  name: _.constant(null),
-                  uploaded: _.constant(null),
-                  run_id: _.constant(result.unique_id),
-                  orgId: _.constant($scope.organization.id)
+                  name: () => null,
+                  uploaded: () => null,
+                  run_id: () => result.unique_id,
+                  orgId: () => $scope.organization.id
                 }
               });
               modalInstance.result.then(() => {
@@ -582,7 +582,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
       else if (col.related || col.is_extra_data) options.treeAggregationType = 'uniqueList';
       return _.defaults(col, options, defaults);
     });
-    if ($stateParams.inventory_type == 'properties') {
+    if ($stateParams.inventory_type === 'properties') {
       $scope.columns.unshift(
         {
           name: 'merged_indicator',
@@ -939,8 +939,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
         // finally, update the data to include the calculated values
         $scope.data.forEach((row) => {
           Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-            const derived_column = attached_derived_columns.find((col) => col.id == derived_column_id);
-            const result = results.find((res) => res.id == row.id) || {};
+            const derived_column = attached_derived_columns.find((col) => col.id === derived_column_id);
+            const result = results.find((res) => res.id === row.id) || {};
             row[column_name_lookup[derived_column.name]] = result.value;
           });
         });
@@ -1153,7 +1153,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
 
     $scope.open_set_update_to_now_modal = function () {
       rows = $scope.gridApi.selection.getSelectedRows();
-      primary_rows = rows.filter((r) => r.$$treeLevel == 0);
+      primary_rows = rows.filter((r) => r.$$treeLevel === 0);
       secondary_rows = rows.filter((r) => r.$$treeLevel == undefined);
 
       if ($scope.inventory_type === 'properties') {
@@ -1187,8 +1187,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
             }),
             'property_view_id'
           ),
-          cycles: _.constant(cycles.cycles),
-          current_cycle: _.constant($scope.cycle.selected_cycle)
+          cycles: () => cycles.cycles,
+          current_cycle: () => $scope.cycle.selected_cycle
         }
       });
       modalInstance.result.then(
@@ -1210,15 +1210,15 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
           controller: 'notes_controller',
           size: 'lg',
           resolve: {
-            inventory_type: _.constant(record.inventory_type),
-            view_id: _.constant(record.view_id),
+            inventory_type: () => record.inventory_type,
+            view_id: () => record.view_id,
             inventory_payload: [
               '$state',
               '$stateParams',
               'inventory_service',
               ($state, $stateParams, inventory_service) => (record.inventory_type === 'properties' ? inventory_service.get_property(record.view_id) : inventory_service.get_taxlot(record.view_id))
             ],
-            organization_payload: _.constant(organization_payload),
+            organization_payload: () => organization_payload,
             notes: ['note_service', (note_service) => note_service.get_notes($scope.organization.id, record.inventory_type, record.view_id)]
           }
         })
@@ -1370,7 +1370,7 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
             $scope.gridApi.core.addToGridMenu($scope.gridApi.grid, [
               {
                 id: 'dynamic-export',
-                title: $scope.selectedCount == 0 ? 'Export All' : 'Export Selected',
+                title: $scope.selectedCount === 0 ? 'Export All' : 'Export Selected',
                 order: 100,
                 action($event) {
                   $scope.open_export_modal();

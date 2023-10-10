@@ -43,6 +43,7 @@ module.exports = {
       'error',
       'never'
     ],
+    'consistent-return': 'warn',
     'func-style': [
       'error',
       'declaration',
@@ -64,6 +65,17 @@ module.exports = {
       }
     ],
     'no-plusplus': 'off',
+    'no-restricted-syntax': [
+      'error',
+      'ForInStatement',
+      'LabeledStatement',
+      'WithStatement'
+    ],
+    'no-shadow': 'warn',
+    'object-shorthand': [
+      'error',
+      'properties'
+    ],
     'operator-linebreak': [
       'error',
       'after'
@@ -78,32 +90,9 @@ module.exports = {
     ],
     // FIX LATER
     camelcase: 'off',
+    'default-case': 'off',
     'no-console': 'off',
-    'no-param-reassign': 'off'
+    'no-param-reassign': 'off',
+    'prefer-destructuring': 'off'
   }
-  //  "rules": {
-  //    "angular/log": "off",
-  //    "angular/no-service-method": "off",
-  //    "array-bracket-spacing": "warn",
-  //    "block-scoped-var": "warn",
-  //    "brace-style": "warn",
-  /// /    "camelcase": "warn",
-  //    "comma-dangle": ["error", "never"],
-  //    "comma-spacing": "warn",
-  //    "dot-notation": "warn",
-  //    "eol-last": "error",
-  //    "indent": ["error", 2, {"SwitchCase": 1}],
-  //    "key-spacing": "warn",
-  //    "no-console": "warn",
-  //    "no-mixed-spaces-and-tabs": "warn",
-  //    "no-multi-spaces": "warn",
-  //    "no-trailing-spaces": "warn",
-  //    "no-unused-vars": "warn",
-  //    "quote-props": ["error", "as-needed", {"keywords": true}],
-  //    "quotes": ["warn", "single", {"avoidEscape": true}],
-  //    "semi": ["error", "always"],
-  //    "space-before-blocks": "warn",
-  //    "space-before-function-paren": "warn",
-  //    "space-infix-ops": "warn"
-  //  }
 };

@@ -7,8 +7,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
   '$q',
   '$timeout',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, $q, $timeout, user_service) {
+  ($http, $q, $timeout, user_service) => {
     const uploader_factory = {};
 
     /**
@@ -47,7 +46,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * BuildingSync files with use cases
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
-    uploader_factory.validate_use_cases = function (file_id) {
+    uploader_factory.validate_use_cases = (file_id) => {
       const org_id = user_service.get_organization().id;
       return $http
         .post(`/api/v3/import_files/${file_id}/validate_use_cases/?organization_id=${org_id.toString()}`)

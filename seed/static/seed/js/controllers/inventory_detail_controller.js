@@ -104,9 +104,9 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         cycle_name: cycle.name
       }))
       .sort((a, b) => a.cycle_name.localeCompare(b.cycle_name));
-    $scope.selected_view = $scope.views.find(({ view_id }) => view_id == $scope.inventory.view_id);
+    $scope.selected_view = $scope.views.find(({ view_id }) => view_id === $scope.inventory.view_id);
 
-    $scope.changeView = function () {
+    $scope.changeView = () => {
       window.location.href = `/app/#/${$scope.inventory_type}/${$scope.selected_view.view_id}`;
     };
 
@@ -117,7 +117,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /** See service for structure of returned payload */
     $scope.historical_items = inventory_payload.history;
     $scope.item_state = inventory_payload.state;
-    $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
+    $scope.inventory_docs = $scope.inventory_type === 'properties' ? inventory_payload.property.inventory_documents : null;
 
     $scope.order_historical_items_with_scenarios = () => {
       $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)) : [];
@@ -162,7 +162,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     // Flag columns whose values have changed between imports and edits.
     const historical_states = _.map($scope.historical_items, 'state');
 
-    const historical_changes_check = function (column) {
+    const historical_changes_check = (column) => {
       let uniq_column_values;
       const states = historical_states.concat($scope.item_state);
 
@@ -201,17 +201,17 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       table_name: col.table_name
     }));
 
-    $scope.newProfile = function () {
+    $scope.newProfile = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
+          action: () => 'new',
           data: () => ({
             columns: profile_formatted_columns(),
             derived_columns: []
           }),
-          profile_location: _.constant('Detail View Profile'),
+          profile_location: () => 'Detail View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -224,7 +224,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
-    $scope.open_show_populated_columns_modal = function () {
+    $scope.open_show_populated_columns_modal = () => {
       if (!profiles.length) {
         // Create a profile first
         $scope.newProfile().then(() => {
@@ -243,7 +243,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         resolve: {
           columns: () => columns,
           currentProfile: () => $scope.currentProfile,
-          cycle: _.constant(null),
+          cycle: () => null,
           inventory_type: () => $stateParams.inventory_type,
           provided_inventory() {
             const provided_inventory = [];
@@ -265,7 +265,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     }
 
-    $scope.open_doc_upload_modal = function () {
+    $scope.open_doc_upload_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/document_upload_modal.html`,
         controller: 'document_upload_modal_controller',
@@ -276,7 +276,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
-    $scope.confirm_delete = function (file) {
+    $scope.confirm_delete = (file) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/delete_document_modal.html`,
         controller: 'delete_document_modal_controller',
@@ -327,7 +327,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $window.location.reload();
     });
 
-    $scope.gotoMeasureAnchor = function (x) {
+    $scope.gotoMeasureAnchor = (x) => {
       $location.hash(`measureAnchor${x}`);
       $anchorScroll();
     };
@@ -338,13 +338,13 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     });
 
     /* User clicked 'cancel' button */
-    $scope.on_cancel = function () {
+    $scope.on_cancel = () => {
       $scope.restore_copy();
       $scope.edit_form_showing = false;
     };
 
     /* User clicked 'edit' link */
-    $scope.on_edit = function () {
+    $scope.on_edit = () => {
       $scope.make_copy_before_edit();
       $scope.edit_form_showing = true;
     };
@@ -352,14 +352,14 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /**
      * save_property_state: saves the property state in case cancel gets clicked
      */
-    $scope.make_copy_before_edit = function () {
+    $scope.make_copy_before_edit = () => {
       $scope.item_copy = angular.copy($scope.item_state);
     };
 
     /**
      * restore_property: restores the property state from its copy
      */
-    $scope.restore_copy = function () {
+    $scope.restore_copy = () => {
       $scope.item_state = $scope.item_copy;
     };
 
@@ -369,7 +369,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      *
      *    TODO Update these for v2...I've removed keys that were obviously old (e.g., canonical)
      */
-    $scope.is_valid_data_column_key = function (key) {
+    $scope.is_valid_data_column_key = (key) => {
       const known_invalid_keys = [
         'children',
         'confidence',
@@ -398,7 +398,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /**
      * returns a number
      */
-    $scope.get_number = function (num) {
+    $scope.get_number = (num) => {
       if (!angular.isNumber(num) && !_.isNil(num)) {
         return +num.replace(/,/g, '');
       }
@@ -410,7 +410,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * those we recognize as a 'date' value
      */
 
-    $scope.format_date_values = function (state_obj, date_columns) {
+    $scope.format_date_values = (state_obj, date_columns) => {
       if (!state_obj || !state_obj.length) return;
       if (!date_columns || !date_columns.length) return;
 
@@ -426,7 +426,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /**
      * Compare edits with original
      */
-    $scope.diff = function () {
+    $scope.diff = () => {
       if (_.isEmpty($scope.item_copy)) return {};
       // $scope.item_state, $scope.item_copy
       const ignored_root_keys = ['extra_data', 'files', 'measures', 'scenarios'];
@@ -458,11 +458,11 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /**
      * User clicked 'save' button
      */
-    $scope.on_save = function () {
+    $scope.on_save = () => {
       $scope.open_match_merge_link_warning_modal($scope.save_item, 'edit');
     };
 
-    const notify_merges_and_links = function (result) {
+    const notify_merges_and_links = (result) => {
       const singular = $scope.inventory_type === 'properties' ? ' property' : ' tax lot';
       const plural = $scope.inventory_type === 'properties' ? ' properties' : ' tax lots';
       const merged_count = result.match_merged_count;
@@ -481,7 +481,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     /**
      * save_item: saves the user's changes to the Property/TaxLot State object.
      */
-    const save_item_resolve = function (data) {
+    const save_item_resolve = (data) => {
       $scope.$emit('finished_saving');
       notify_merges_and_links(data);
       if (data.view_id) {
@@ -494,15 +494,15 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       }
     };
 
-    const save_item_reject = function () {
+    const save_item_reject = () => {
       $scope.$emit('finished_saving');
     };
 
-    const save_item_catch = function (data) {
+    const save_item_catch = (data) => {
       $log.error(String(data));
     };
 
-    $scope.save_item = function () {
+    $scope.save_item = () => {
       if ($scope.inventory_type === 'properties') {
         inventory_service.update_property($scope.inventory.view_id, $scope.diff()).then(save_item_resolve, save_item_reject).catch(save_item_catch);
       } else if ($scope.inventory_type === 'taxlots') {
@@ -512,7 +512,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     /** Open a model to edit labels for the current detail item. */
 
-    $scope.open_update_labels_modal = function () {
+    $scope.open_update_labels_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/update_item_labels_modal.html`,
         controller: 'update_item_labels_modal_controller',
@@ -532,7 +532,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         }
       );
     };
-    $scope.open_ubid_admin_modal = function () {
+    $scope.open_ubid_admin_modal = () => {
       $uibModal.open({
         backdrop: 'static',
         templateUrl: `${urls.static_url}seed/partials/ubid_admin_modal.html`,
@@ -550,19 +550,19 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
-    $scope.open_analyses_modal = function () {
+    $scope.open_analyses_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
-          current_cycle: _.constant($scope.cycle),
+          current_cycle: () => $scope.cycle,
           cycles: () => cycle_service.get_cycles().then((result) => result.cycles)
         }
       });
     };
 
-    $scope.unmerge = function () {
+    $scope.unmerge = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/unmerge_modal.html`,
         controller: 'unmerge_modal_controller',
@@ -586,7 +586,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         });
     };
 
-    $scope.open_data_upload_audit_template_modal = function () {
+    $scope.open_data_upload_audit_template_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_upload_audit_template_modal.html`,
         controller: 'data_upload_audit_template_modal_controller',
@@ -601,7 +601,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
-    $scope.open_data_upload_espm_modal = function () {
+    $scope.open_data_upload_espm_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_upload_espm_modal.html`,
         controller: 'data_upload_espm_modal_controller',
@@ -620,7 +620,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       modalInstance.result.then(() => {});
     };
 
-    $scope.open_export_to_audit_template_modal = function () {
+    $scope.open_export_to_audit_template_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_to_audit_template_modal.html`,
         controller: 'export_to_audit_template_modal_controller',
@@ -631,7 +631,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
-    $scope.export_building_sync = function () {
+    $scope.export_building_sync = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/export_buildingsync_modal.html`,
         controller: 'export_buildingsync_modal_controller',
@@ -641,7 +641,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
             'column_mappings_service',
             'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
             'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
-            function (column_mappings_service, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM) {
+            (column_mappings_service, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM) => {
               const filter_profile_types = [COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM];
               return column_mappings_service.get_column_mapping_profiles_for_org($scope.organization.id, filter_profile_types).then((response) => response.data);
             }
@@ -651,7 +651,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       modalInstance.result.then(() => {});
     };
 
-    $scope.export_building_sync_xlsx = function () {
+    $scope.export_building_sync_xlsx = () => {
       const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
       // var profileId = null;
       // if ($scope.currentProfile) {
@@ -683,24 +683,24 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         });
     };
 
-    $scope.unpair_property_from_taxlot = function (property_id) {
+    $scope.unpair_property_from_taxlot = (property_id) => {
       pairing_service.unpair_property_from_taxlot($scope.inventory.view_id, property_id);
       $state.reload();
     };
 
-    $scope.unpair_taxlot_from_property = function (taxlot_id) {
+    $scope.unpair_taxlot_from_property = (taxlot_id) => {
       pairing_service.unpair_taxlot_from_property($scope.inventory.view_id, taxlot_id);
       $state.reload();
     };
 
-    var reload_with_view_id = function (view_id) {
+    var reload_with_view_id = (view_id) => {
       $state.go('inventory_detail', {
         inventory_type: $scope.inventory_type,
         view_id
       });
     };
 
-    $scope.update_salesforce = function () {
+    $scope.update_salesforce = () => {
       inventory_service
         .update_salesforce([$scope.inventory.view_id])
         .then((result) => {
@@ -712,7 +712,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         });
     };
 
-    $scope.match_merge_link_record = function () {
+    $scope.match_merge_link_record = () => {
       let new_view_id;
       if ($scope.inventory_type === 'properties') {
         inventory_service.property_match_merge_link($scope.inventory.view_id).then((result) => {
@@ -729,7 +729,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       }
     };
 
-    $scope.open_match_merge_link_warning_modal = function (accept_action, trigger) {
+    $scope.open_match_merge_link_warning_modal = (accept_action, trigger) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/record_match_merge_link_modal.html`,
         controller: 'record_match_merge_link_modal_controller',
@@ -767,7 +767,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       status_message: ''
     };
 
-    $scope.uploaderfunc = function (event_message, file, progress) {
+    $scope.uploaderfunc = (event_message, file, progress) => {
       switch (event_message) {
         case 'invalid_xml_extension':
           $scope.uploader.invalid_xml_extension_alert = true;
@@ -819,7 +819,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.displayValue = function (dataType, value) {
+    $scope.displayValue = (dataType, value) => {
       if (dataType === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }
@@ -830,7 +830,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     // evaluate all derived columns and store the results
-    const evaluate_derived_columns = function () {
+    const evaluate_derived_columns = () => {
       const visible_columns_with_derived_columns = $scope.columns.filter((col) => col.derived_column);
       const derived_column_ids = visible_columns_with_derived_columns.map((col) => col.derived_column);
       const attatched_derived_columns = derived_columns_payload.derived_columns.filter((col) => derived_column_ids.includes(col.id));
@@ -979,7 +979,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $('.scenario-collapse').collapse(action);
 
       // Without resizing ui-grids will appear empty
-      if (action == 'show') {
+      if (action === 'show') {
         const scenarios = $scope.historical_items_with_scenarios.map((item) => item.state.scenarios).flat();
         scenarios.forEach((scenario) => $scope.resizeGridByScenarioId(scenario.id));
       }
@@ -992,7 +992,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      *   and gets all the extra_data fields
      *
      */
-    var init = function () {
+    var init = () => {
       if ($scope.inventory_type === 'properties') {
         $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
       } else if ($scope.inventory_type === 'taxlots') {
@@ -1005,7 +1005,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     init();
 
-    $scope.toggle_freeze = function () {
+    $scope.toggle_freeze = () => {
       const table_div = document.getElementById('pin');
       if (table_div.className === 'section_content_container table-xscroll-unfrozen') {
         table_div.className = 'section_content_container table-xscroll-frozen';

@@ -4,11 +4,8 @@
  */
 angular.module('ignoremap', []).filter(
   'ignoremap',
-  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-  function () {
-    return (input) => {
-      if (_.isEmpty(input)) return '------ Ignore Row ------';
-      return input;
-    };
+  () => (input) => {
+    if (_.isEmpty(input)) return '------ Ignore Row ------';
+    return input;
   }
 );

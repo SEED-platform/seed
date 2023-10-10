@@ -13,8 +13,6 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
   'org_id',
   'organization_service',
   'proposed_changes',
-  'spinner_utility',
-  'uiGridGroupingConstants',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -26,9 +24,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
     inventory_type,
     org_id,
     organization_service,
-    proposed_changes,
-    spinner_utility,
-    uiGridGroupingConstants
+    proposed_changes
   ) {
     $scope.inventory_type = inventory_type;
     $scope.org_id = org_id;
@@ -38,7 +34,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       number: 1
     };
 
-    $scope.goto_step = function (step) {
+    $scope.goto_step = (step) => {
       $scope.step.number = step;
     };
 
@@ -51,7 +47,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
     $scope.change_summary_data = _.reduce(
       proposed_changes,
       (summary, value, key) => {
-        const column = _.find($scope.columns, { id: parseInt(key) });
+        const column = _.find($scope.columns, { id: parseInt(key, 10) });
         const change = _.pick(_.cloneDeep(column), ['column_name']);
 
         // capture changed setting values
@@ -162,11 +158,11 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       organization_service.matching_criteria_columns($scope.org_id);
     }
 
-    $scope.confirm = function () {
+    $scope.confirm = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

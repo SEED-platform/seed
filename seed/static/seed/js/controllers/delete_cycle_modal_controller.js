@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
     };
 
     // open an inventory list page in a new tab
-    $scope.goToInventoryList = function (inventory_type) {
+    $scope.goToInventoryList = (inventory_type) => {
       user_service
         .set_organization({ id: organization_id })
         .then((response) => {
@@ -64,12 +64,12 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
         });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
 
     // user confirmed deletion of cycle
-    $scope.confirmDelete = function () {
+    $scope.confirmDelete = () => {
       $scope.delete_cycle_status = 'pending';
       $scope.uploader.in_progress = true;
       cycle_service

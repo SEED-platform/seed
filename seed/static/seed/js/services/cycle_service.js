@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const cycle_factory = {};
     /** Cycle Service:
      --------------------------------------------------

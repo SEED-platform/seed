@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       $state.go('inventory_detail_analyses', { inventory_type: $scope.inventory_type, view_id: $scope.selected_view.view_id });
     };
 
-    const refresh_analyses = function () {
+    const refresh_analyses = () => {
       analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id).then((data) => {
         $scope.analyses = analyses_payload.analyses.filter((analysis) => analysis.cycles.includes($scope.cycle.id));
         $scope.analyses_by_type = {};
@@ -80,7 +80,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
     };
     refresh_analyses();
 
-    $scope.start_analysis = function (analysis_id) {
+    $scope.start_analysis = (analysis_id) => {
       const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Starting...';
 
@@ -106,7 +106,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       });
     };
 
-    $scope.stop_analysis = function (analysis_id) {
+    $scope.stop_analysis = (analysis_id) => {
       const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Stopping...';
 
@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       });
     };
 
-    $scope.delete_analysis = function (analysis_id) {
+    $scope.delete_analysis = (analysis_id) => {
       const analysis = $scope.analyses.find((a) => a.id === analysis_id);
       analysis.status = 'Deleting...';
 
@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
       });
     };
 
-    $scope.inventory_display_name = function (property_type) {
+    $scope.inventory_display_name = (property_type) => {
       let error = '';
       let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
       if (!(field in $scope.item_state)) {
@@ -149,7 +149,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
         `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
-    $scope.open_analysis_modal = function () {
+    $scope.open_analysis_modal = () => {
       $uibModal
         .open({
           templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
@@ -178,10 +178,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses', []).controller('i
           }
         });
     };
-    $scope.has_children = function (value) {
-      if (typeof value === 'object') {
-        return true;
-      }
-    };
+    $scope.has_children = (value) => typeof value === 'object';
   }
 ]);

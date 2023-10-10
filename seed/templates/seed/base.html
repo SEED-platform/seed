@@ -94,7 +94,7 @@
       <script src="/static/node_modules/moment/locale/fr.js"></script>
 
       {% if not debug %}
-        <script src="/static/node_modules/angular/angular.js"></script>
+        <script src="/static/node_modules/angular/angular.min.js"></script>
       {% else %}
         <script src="/static/node_modules/angular/angular.js"></script>
       {% endif %}
@@ -163,7 +163,7 @@
 
 {% block body %}
   <body>
-  <div class="app" ng-app="BE.seed">
+  <div class="app" ng-app="BE.seed" ng-strict-di>
     {% block content %}
     {% endblock %}
   </div>

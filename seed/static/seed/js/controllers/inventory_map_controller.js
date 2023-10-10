@@ -2,6 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
+/* eslint-disable no-underscore-dangle */
 angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map_controller', [
   '$scope',
   '$stateParams',
@@ -376,7 +377,9 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         }
       };
 
-      $scope.toggleDACHighlight = () => ($scope.highlightDACs = !$scope.highlightDACs);
+      $scope.toggleDACHighlight = () => {
+        $scope.highlightDACs = !$scope.highlightDACs;
+      };
 
       // Define overlay attaching html element
       const popupOverlay = new ol.Overlay({

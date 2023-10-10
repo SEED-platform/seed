@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
     modified_service.setModified();
 
     // creates a new parameter object with a unique name
-    const make_param = function () {
+    const make_param = () => {
       // search for a parameter name that's not taken
       let char = 'a'.charCodeAt(0);
       let parameter_name = `param_${String.fromCharCode(char)}`;
@@ -60,7 +60,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
 
     // creates an initial derived column object
     // used when user is creating a new derived column rather than editing an existing one
-    const make_derived_column = function () {
+    const make_derived_column = () => {
       const param = make_param();
       return {
         name: null,
@@ -110,7 +110,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
     });
 
     // updates parameter errors according to name validity
-    const validate_parameter_name = function (parameter_index) {
+    const validate_parameter_name = (parameter_index) => {
       const this_param = $scope.parameters[parameter_index];
       // name is invalid if it doesn't follow Python variable naming conventions
       // or if it has the same name as another parameter
@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
     };
 
     // updates parameter errors according to source column validity and check for duplicate
-    const validate_parameter_source_column = function (parameter_index) {
+    const validate_parameter_source_column = (parameter_index) => {
       $scope.recursive_definition = false;
       const this_param = $scope.parameters[parameter_index];
       this_param.errors.invalid_source_column = !this_param.source_column;
@@ -139,26 +139,26 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
     // Recursion exists when the source column (the definition) contains a reference to itself
     // a = b
     // b = a ----> b = b
-    const check_for_circular_definition = function (source_column) {
+    const check_for_circular_definition = (source_column) => {
       if (!source_column.derived_column) {
         return false;
       }
-      if (source_column.derived_column == $scope.derived_column.id) {
+      if (source_column.derived_column === $scope.derived_column.id) {
         return true;
       }
-      const source_derived_column = $scope.derived_columns.find((dc) => dc.id == source_column.derived_column);
+      const source_derived_column = $scope.derived_columns.find((dc) => dc.id === source_column.derived_column);
       const nested_derived_columns = check_parameters_for_nested_derived_columns(source_derived_column.parameters);
 
-      const current_column = property_columns_payload.find((col) => col.derived_column == $scope.derived_column.id);
+      const current_column = property_columns_payload.find((col) => col.derived_column === $scope.derived_column.id);
       // if the current column has been found in the definition of any of the source_column's nested derived columns, recursion has occurred.
       return nested_derived_columns.includes(current_column.id);
     };
-    const check_parameters_for_nested_derived_columns = function (params, nested_derived_column_ids = []) {
+    const check_parameters_for_nested_derived_columns = (params, nested_derived_column_ids = []) => {
       params.forEach((param) => {
         if (!param.source_column) {
           return;
         }
-        const source_col = property_columns_payload.find((col) => col.id == param.source_column);
+        const source_col = property_columns_payload.find((col) => col.id === param.source_column);
         // is source col a derived col?
         if (source_col.derived_column) {
           if (nested_derived_column_ids.includes(source_col.id)) {
@@ -167,7 +167,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
 
           nested_derived_column_ids.push(source_col.id);
 
-          const child_derived_col = $scope.derived_columns.find((dc) => dc.id == source_col.derived_column);
+          const child_derived_col = $scope.derived_columns.find((dc) => dc.id === source_col.derived_column);
           // use recursion to find all nested (related) derived columns
           check_parameters_for_nested_derived_columns(child_derived_col.parameters, nested_derived_column_ids);
         }
@@ -175,7 +175,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       return nested_derived_column_ids;
     };
 
-    const validate_parameter_in_expression = function (parameter_index) {
+    const validate_parameter_in_expression = (parameter_index) => {
       const this_param = $scope.parameters[parameter_index];
       if (this_param.errors.invalid_parameter_name) {
         this_param.errors.expression_missing_parameter = false;
@@ -185,7 +185,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       }
     };
 
-    $scope.update_parameter_errors = function () {
+    $scope.update_parameter_errors = () => {
       $scope.parameters.forEach((_, idx) => {
         validate_parameter_name(idx);
         validate_parameter_source_column(idx);
@@ -193,7 +193,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       });
     };
 
-    $scope.update_expression_errors = function () {
+    $scope.update_expression_errors = () => {
       if (!$scope.derived_column.expression.trim()) {
         $scope.expression_error_message = 'Expression cannot be empty';
         return;
@@ -213,7 +213,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       }
     };
 
-    $scope.update_column_name_error = function () {
+    $scope.update_column_name_error = () => {
       $scope.duplicate_column_name = false;
       let applicableColumns = $scope.derived_column.inventory_type === 'Property' ? $scope.property_columns : $scope.taxlot_columns;
       if ($scope.derived_column.id) {
@@ -228,12 +228,12 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       $scope.invalid_column_name = !$scope.derived_column.name;
     };
 
-    $scope.updated_parameter_or_expression = function () {
+    $scope.updated_parameter_or_expression = () => {
       $scope.update_parameter_errors();
       $scope.update_expression_errors();
     };
 
-    $scope.updated_inventory_type = function () {
+    $scope.updated_inventory_type = () => {
       const modalOptions = {
         type: 'default',
         okButtonText: 'Yes',
@@ -255,27 +255,27 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
       );
     };
 
-    $scope.add_parameter = function () {
+    $scope.add_parameter = () => {
       $scope.parameters.push(make_param());
       $scope.updated_parameter_or_expression();
     };
 
-    $scope.delete_parameter = function (parameter_index) {
+    $scope.delete_parameter = (parameter_index) => {
       $scope.parameters.splice(parameter_index, 1);
       $scope.updated_parameter_or_expression();
     };
 
-    $scope.any_errors = function () {
+    $scope.any_errors = () => {
       const any_param_errors = $scope.parameters.some((param) => Object.values(param.errors).some((v) => v));
       return any_param_errors || !!$scope.expression_error_message || !!$scope.duplicate_column_name;
     };
 
-    const update_all_errors = function () {
+    const update_all_errors = () => {
       $scope.updated_parameter_or_expression();
       $scope.update_column_name_error();
     };
 
-    $scope.create_or_update_derived_column = function () {
+    $scope.create_or_update_derived_column = () => {
       $scope.errors_from_server = null;
 
       update_all_errors();

@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     $scope.mappable_taxlot_columns = mappable_taxlot_columns_payload;
 
     // Helpers to convert to and from DB column names and column display names
-    const mapping_db_to_display = function (mapping) {
+    const mapping_db_to_display = (mapping) => {
       let mappable_column;
 
       if (mapping.to_table_name === 'PropertyState') {
@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       }
     };
 
-    const mapping_display_to_db = function (mapping) {
+    const mapping_display_to_db = (mapping) => {
       // Also, clear from_units if mapping is not for units col
       if (!$scope.is_area_column(mapping) && !$scope.is_eui_column(mapping) && !$scope.is_ghg_column(mapping) && !$scope.is_ghg_intensity_column(mapping)) {
         mapping.from_units = null;
@@ -86,7 +86,8 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     $scope.profiles = column_mapping_profiles_payload;
 
-    $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
+    $scope.current_profile = $scope.profiles[0] ?? {};
+    $scope.dropdown_selected_profile = $scope.current_profile;
 
     // Inventory Types
     $scope.setAllFields = '';
@@ -101,7 +102,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       }
     ];
 
-    const analyze_chosen_inventory_types = function () {
+    const analyze_chosen_inventory_types = () => {
       const chosenTypes = _.uniq(_.map($scope.current_profile.mappings, 'to_table_name'));
 
       if (chosenTypes.length === 1) {
@@ -115,14 +116,14 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     analyze_chosen_inventory_types();
 
     // change the sorting icon based on the state
-    $scope.get_sort_icon = function (which) {
-      if (which === 'seed' && $scope.column_sort == 'seed') {
-        return `glyphicon-sort-by-attributes${$scope.column_sort_direction === 'desc' ? '-alt' : ''}`;
+    $scope.get_sort_icon = (which) => {
+      if (which === $scope.column_sort) {
+        if ($scope.column_sort_direction === 'desc') {
+          return 'fa-arrow-down-z-a';
+        }
+        return 'fa-arrow-down-a-z';
       }
-      if (which === 'file' && $scope.column_sort == 'file') {
-        return `glyphicon-sort-by-attributes${$scope.column_sort_direction === 'desc' ? '-alt' : ''}`;
-      }
-      return 'glyphicon-sort text-muted';
+      return 'fa-sort text-muted';
     };
 
     // which columns are sortable and which fields are they sorted on?
@@ -132,7 +133,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // sorts by a column
-    $scope.sort_by = function (column) {
+    $scope.sort_by = (column) => {
       // initialize column if necessary
       if (!$scope.column_sort) $scope.column_sort = 'seed';
 
@@ -156,13 +157,13 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     // run once to initialize sorting
     $scope.sort_by('seed');
 
-    $scope.updateSingleInventoryTypeDropdown = function () {
+    $scope.updateSingleInventoryTypeDropdown = () => {
       analyze_chosen_inventory_types();
 
       $scope.flag_change();
     };
 
-    $scope.setAllInventoryTypes = function () {
+    $scope.setAllInventoryTypes = () => {
       _.forEach($scope.current_profile.mappings, (mapping) => {
         if (mapping.to_table_name !== $scope.setAllFields.value) {
           mapping.to_table_name = $scope.setAllFields.value;
@@ -172,8 +173,8 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // Profile-level CRUD modal-rending actions
-    $scope.new_profile = function () {
-      const profileData = JSON.parse(JSON.stringify($scope.current_profile));
+    $scope.new_profile = () => {
+      const profileData = angular.copy($scope.current_profile);
       // change the profile type to custom if we've edited a default profile
       if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) {
         profileData.profile_type = COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM;
@@ -183,31 +184,32 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
         templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
         controller: 'column_mapping_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
-          data: _.constant(profileData),
-          org_id: _.constant($scope.org.id)
+          action: () => 'new',
+          data: () => profileData,
+          org_id: () => $scope.org.id
         }
       });
 
       modalInstance.result.then((new_profile) => {
         $scope.profiles.push(new_profile);
-        $scope.dropdown_selected_profile = $scope.current_profile = _.last($scope.profiles);
+        $scope.current_profile = _.last($scope.profiles);
+        $scope.dropdown_selected_profile = $scope.current_profile;
 
         $scope.changes_possible = false;
         Notification.primary(`Saved ${$scope.current_profile.name}`);
       });
     };
 
-    $scope.rename_profile = function () {
+    $scope.rename_profile = () => {
       const old_name = $scope.current_profile.name;
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
         controller: 'column_mapping_profile_modal_controller',
         resolve: {
-          action: _.constant('rename'),
-          data: _.constant($scope.current_profile),
-          org_id: _.constant($scope.org.id)
+          action: () => 'rename',
+          data: () => $scope.current_profile,
+          org_id: () => $scope.org.id
         }
       });
 
@@ -219,27 +221,28 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       });
     };
 
-    $scope.remove_profile = function () {
+    $scope.remove_profile = () => {
       const old_profile = angular.copy($scope.current_profile);
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
         controller: 'column_mapping_profile_modal_controller',
         resolve: {
-          action: _.constant('remove'),
-          data: _.constant($scope.current_profile),
-          org_id: _.constant($scope.org.id)
+          action: () => 'remove',
+          data: () => $scope.current_profile,
+          org_id: () => $scope.org.id
         }
       });
 
       modalInstance.result.then(() => {
         _.remove($scope.profiles, old_profile);
-        $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
+        $scope.current_profile = $scope.profiles[0] ?? {};
+        $scope.dropdown_selected_profile = $scope.current_profile;
         $scope.changes_possible = false;
       });
     };
 
-    $scope.save_profile = function () {
+    $scope.save_profile = () => {
       // If applicable, convert display names to db names for saving
       _.forEach($scope.current_profile.mappings, mapping_display_to_db);
       const updated_data = { mappings: $scope.current_profile.mappings };
@@ -267,6 +270,23 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     // Track changes to warn users about losing changes when data could be lost
     $scope.changes_possible = false;
+
+    const get_default_quantity_units = (col) => {
+      // TODO - hook up to org preferences / last mapping in DB
+      if ($scope.is_eui_column(col)) {
+        return 'kBtu/ft**2/year';
+      }
+      if ($scope.is_area_column(col)) {
+        return 'ft**2';
+      }
+      if ($scope.is_ghg_column(col)) {
+        return 'MtCO2e/year';
+      }
+      if ($scope.is_ghg_intensity_column(col)) {
+        return 'MtCO2e/ft**2/year';
+      }
+      return null;
+    };
 
     $scope.flag_change = (col) => {
       if (col) {
@@ -316,23 +336,6 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     $scope.is_ghg_intensity_column = (
       mapping // All of these are on the PropertyState table
     ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { displayName: mapping.to_field }));
-
-    var get_default_quantity_units = (col) => {
-      // TODO - hook up to org preferences / last mapping in DB
-      if ($scope.is_eui_column(col)) {
-        return 'kBtu/ft**2/year';
-      }
-      if ($scope.is_area_column(col)) {
-        return 'ft**2';
-      }
-      if ($scope.is_ghg_column(col)) {
-        return 'MtCO2e/year';
-      }
-      if ($scope.is_ghg_intensity_column(col)) {
-        return 'MtCO2e/ft**2/year';
-      }
-      return null;
-    };
 
     // Add and remove column methods
     $scope.add_new_column = () => {
@@ -401,9 +404,9 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
       column_mappings_service.get_header_suggestions(raw_headers).then((results) => {
         _.forEach($scope.current_profile.mappings, (mapping) => {
-          const suggestion = results.data[mapping.from_field];
-          mapping.to_table_name = suggestion[0];
-          mapping.to_field = suggestion[1];
+          const [to_table_name, to_field] = results.data[mapping.from_field];
+          mapping.to_table_name = to_table_name;
+          mapping.to_field = to_field;
 
           mapping_db_to_display(mapping);
         });

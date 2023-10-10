@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const pairing_service = {};
 
     pairing_service.pair_property_to_taxlot = (taxlot_id, property_id) => $http

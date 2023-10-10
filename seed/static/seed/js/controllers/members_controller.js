@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      *
      * @param {obj} user The user to be removed
      */
-    $scope.remove_member = function (user) {
+    $scope.remove_member = (user) => {
       organization_service
         .remove_user(user.user_id, $scope.org.id)
         .then(() => {
@@ -45,7 +45,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      * saves the changed role for the user
      * @param  {obj} user
      */
-    $scope.update_role = function (user) {
+    $scope.update_role = (user) => {
       organization_service
         .update_role(user.user_id, $scope.org.id, user.role)
         .then((data) => {
@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     /**
      * new_member_modal open an AngularUI modal to add/invite a new member
      */
-    $scope.new_member_modal = function () {
+    $scope.new_member_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/new_member_modal.html`,
         controller: 'new_member_modal_controller',
@@ -83,14 +83,14 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
     /**
      * reset_all_passwords triggers a reset password email for all users
      */
-    $scope.reset_all_passwords = function (confirm_message = 'Really reset all passwords?  This will sign you out of SEED.') {
+    $scope.reset_all_passwords = (confirm_message = 'Really reset all passwords?  This will sign you out of SEED.') => {
       if (confirm(confirm_message)) {
         organization_service.reset_all_passwords($scope.org.id);
         window.location.href = `/accounts/login/?next=${window.location.pathname}${window.location.hash}`;
       }
     };
 
-    $scope.can_edit = function (user) {
+    $scope.can_edit = (user) => {
       // Superusers can edit any user's role except for the org owner if there is only one
       if ($scope.auth.requires_superuser && !($scope.only_one_owner && user.role === 'owner')) {
         return 'owner';
@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.members', []).controller('members_controller'
      * called on controller load and when users are refreshed
      *  - creates a name field for each user from first_name and last_name
      */
-    var init = function () {
+    var init = () => {
       $scope.user = $scope.users.map((u) => {
         u.first_name = u.first_name || '';
         u.last_name = u.last_name || '';

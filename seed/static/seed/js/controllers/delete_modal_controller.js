@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
     $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
     $scope.delete_state = 'delete';
 
-    $scope.delete_inventory = function () {
+    $scope.delete_inventory = () => {
       $scope.delete_state = 'prepare';
 
       const promises = [];
@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
     /**
      * cancel: dismisses the modal
      */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss({
         delete_state: $scope.delete_state,
         property_view_ids: $scope.property_view_ids,
@@ -67,7 +67,7 @@ angular.module('BE.seed.controller.delete_modal', []).controller('delete_modal_c
     /**
      * close: closes the modal
      */
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close({
         delete_state: $scope.delete_state,
         property_view_ids: $scope.property_view_ids,

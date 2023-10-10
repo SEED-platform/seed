@@ -6,8 +6,7 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
   '$http',
   '$log',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, $log, user_service) {
+  ($http, $log, user_service) => {
     // get all compliance metrics defined
     const get_compliance_metrics = (organization_id = user_service.get_organization().id) => $http
       .get('/api/v3/compliance_metrics/', {
@@ -29,7 +28,7 @@ angular.module('BE.seed.service.compliance_metric', []).factory('compliance_metr
       .catch((response) => response.data);
 
     // delete
-    const delete_compliance_metric = function (metric_id, organization_id = user_service.get_organization().id) {
+    const delete_compliance_metric = (metric_id, organization_id = user_service.get_organization().id) => {
       if (_.isNil(metric_id)) {
         $log.error('#compliance_metric_service.get_compliance_metric(): metric_id is undefined');
         throw new Error('Invalid Parameter');

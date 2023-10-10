@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.columns', []).factory('columns_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const columns_service = {};
 
     columns_service.update_column = (column_id, data) => columns_service.update_column_for_org(user_service.get_organization().id, column_id, data);

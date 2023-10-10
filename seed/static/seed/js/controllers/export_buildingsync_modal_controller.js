@@ -15,7 +15,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', []).controller('e
     $scope.column_mapping_profiles = column_mapping_profiles;
     $scope.current_column_mapping_profile = column_mapping_profiles[0];
 
-    $scope.download_file = function () {
+    $scope.download_file = () => {
       const the_url = `/api/v3/properties/${property_view_id}/building_sync/`;
       $http
         .get(the_url, {
@@ -40,11 +40,11 @@ angular.module('BE.seed.controller.export_buildingsync_modal', []).controller('e
         );
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

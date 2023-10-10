@@ -720,6 +720,10 @@ a:not([href]) {
       padding-right: 8px;
     }
 
+    .btn i {
+      padding: 0;
+    }
+
     .active {
       background-color: $blue;
     }
@@ -3087,7 +3091,7 @@ tags-input .tags .tag-item .remove-button {
 }
 
 #swagger-ui {
-  height: calc(100vh - 60px);
+  height: calc(100vh - #{$headerHeight});
   width: 100%;
 }
 
@@ -3848,8 +3852,10 @@ $pairedCellWidth: 60px;
   }
 
   button {
+    height: 30px;
     margin-top: -5px;
-    padding: 4px 7px;
+    padding: 0;
+    width: 30px;
 
     &[disabled] {
       opacity: 0.25;

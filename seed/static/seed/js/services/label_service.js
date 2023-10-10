@@ -6,8 +6,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
   '$http',
   '$log',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, $log, user_service) {
+  ($http, $log, user_service) => {
     /** Label Service:
        --------------------------------------------------
        Provides methods to CRUD labels on the server
@@ -51,11 +50,35 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        }]
        */
 
-    // Passing no arguments will return all labels, but no information about what properties/taxlots they're applied to
-    // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
-    // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
-    // Passing cycle_id will restrict is_applied ids to only those in the specified cycle
-    const get_labels = (inventory_type, filter_ids, cycle_id) => get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids, cycle_id);
+    const lookup_colors = {
+      red: 'danger',
+      gray: 'default',
+      orange: 'warning',
+      green: 'success',
+      blue: 'primary',
+      'light blue': 'info'
+    };
+
+    /**
+     * Convert color names to bootstrap labels
+     * @param {'red' | 'gray' | 'orange' | 'green' | 'blue' | 'light blue'} color
+     * @returns {'danger' | 'default' | 'warning' | 'success' | 'primary' | 'info'}
+     */
+    const lookup_label = (color) => lookup_colors[color] ?? lookup_colors.gray;
+
+    /**
+     * Add a few properties to the label object so that it works well with UI components.
+     * @param {object} label
+     */
+    const map_label = (label) => ({
+      ...label,
+      // add bootstrap label class names
+      label: lookup_label(label.color),
+      // create 'text' property needed for ngTagsInput control
+      text: label.name
+    });
+
+    const map_labels = (response) => response.data.map(map_label);
 
     function get_labels_for_org(org_id, inventory_type, filter_ids, cycle_id) {
       const params = {
@@ -86,6 +109,12 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
         .then(map_labels);
     }
 
+    // Passing no arguments will return all labels, but no information about what properties/taxlots they're applied to
+    // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
+    // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
+    // Passing cycle_id will restrict is_applied ids to only those in the specified cycle
+    const get_labels = (inventory_type, filter_ids, cycle_id) => get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids, cycle_id);
+
     /*  Add a label to an organization's list of labels
 
        @param {object} label       Label object to use for creating label on server.
@@ -98,8 +127,6 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        Return object should also have a 'label' property assigned
        to the newly created label object.
        */
-    const create_label = (label) => create_label_for_org(user_service.get_organization().id, label);
-
     const create_label_for_org = (org_id, label) => $http
       .post('/api/v3/labels/', label, {
         params: {
@@ -107,6 +134,8 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
         }
       })
       .then((response) => map_label(response.data));
+
+    const create_label = (label) => create_label_for_org(user_service.get_organization().id, label);
 
     /*  Update an existing a label in an organization
 
@@ -119,8 +148,6 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        Return object will have a 'label' property assigned
        to the updated label object.
        */
-    const update_label = (label) => update_label_for_org(user_service.get_organization().id, label);
-
     const update_label_for_org = (org_id, label) => $http
       .put(`/api/v3/labels/${label.id}/`, label, {
         params: {
@@ -128,6 +155,8 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
         }
       })
       .then((response) => map_label(response.data));
+
+    const update_label = (label) => update_label_for_org(user_service.get_organization().id, label);
 
     /*  Delete a label from the set of labels for an organization.
 
@@ -138,8 +167,6 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
        with either a success if the label was deleted,
        or an error if not.
        */
-    const delete_label = (label) => delete_label_for_org(user_service.get_organization().id, label);
-
     const delete_label_for_org = (org_id, label) => $http
       .delete(`/api/v3/labels/${label.id}/`, {
         params: {
@@ -147,6 +174,8 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
         }
       })
       .then((response) => response.data);
+
+    const delete_label = (label) => delete_label_for_org(user_service.get_organization().id, label);
 
     /* FUNCTIONS FOR LABELS WITHIN PROPERTIES  */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -252,43 +281,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       }
     ];
 
-    function lookup_label(color) {
-      const lookup_colors = {
-        red: 'danger',
-        gray: 'default',
-        orange: 'warning',
-        green: 'success',
-        blue: 'primary',
-        'light blue': 'info'
-      };
-      try {
-        return lookup_colors[color];
-      } catch (err) {
-        $log.error(err);
-        return lookup_colors.gray;
-      }
-    }
-
-    /* "PRIVATE" METHODS */
-    /* ~~~~~~~~~~~~~~~~~ */
-
-    /*  Add a few properties to the label object so that it
-       works well with UI components.
-       */
-    const map_labels = (response) => _.map(response.data, map_label);
-
-    function map_label(label) {
-      // add bootstrap label class names
-      label.label = lookup_label(label.color);
-      // create 'text' property needed for ngTagsInput control
-      label.text = label.name;
-      return label;
-    }
-
-    /* Public API */
-
-    const label_factory = {
-      // functions
+    return {
       get_labels,
       get_labels_for_org,
       create_label,
@@ -302,7 +295,5 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       get_available_colors,
       lookup_label
     };
-
-    return label_factory;
   }
 ]);

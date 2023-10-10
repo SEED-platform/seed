@@ -23,7 +23,6 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
   '$uibModal',
   'urls',
   'naturalSort',
-  'flippers',
   '$translate',
   // eslint-disable-next-line func-names
   function (
@@ -47,7 +46,6 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     $uibModal,
     urls,
     naturalSort,
-    flippers,
     $translate
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
@@ -144,17 +142,9 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       }))
     );
 
-    // if (flippers.is_active('release:orig_columns')) {
-    //   // db may return _orig columns; don't suggest them in the select
-    //   var is_retired_pre_pint_column = function (o) {
-    //     return /_orig$/.test(o.name);
-    //   };
-    //   _.remove($scope.columns, is_retired_pre_pint_column);
-    // }
-
     $scope.all_labels = labels_payload;
 
-    const loadRules = function (rules_payload) {
+    const loadRules = (rules_payload) => {
       const ruleGroups = {
         properties: {},
         taxlots: {}
@@ -198,7 +188,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
 
     $scope.isModified = () => modified_service.isModified();
 
-    $scope.rules_changed = function (rule) {
+    $scope.rules_changed = (rule) => {
       if (rule) rule.rule_type = 1;
 
       $scope.rules_reset = false;
@@ -230,7 +220,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     });
 
     // In order to save rules, the configured rules need to be reformatted.
-    const get_configured_rules = function () {
+    const get_configured_rules = () => {
       const rules = [];
       const misconfigured_rules = [];
       $scope.duplicate_rule_keys = [];
@@ -321,7 +311,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     // Capture misconfigured rule fields for UI indicators
-    const init_misconfigured_fields_ref = function () {
+    const init_misconfigured_fields_ref = () => {
       $scope.misconfigured_fields_ref = {
         condition: [],
         text_match: [],
@@ -331,7 +321,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
     init_misconfigured_fields_ref();
 
-    const show_configuration_errors = function (misconfigured_rules) {
+    const show_configuration_errors = (misconfigured_rules) => {
       let include_or_exclude_without_text_count = 0;
       let valid_severity_without_label_count = 0;
 
@@ -365,7 +355,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       }
     };
 
-    $scope.save_settings = function () {
+    $scope.save_settings = () => {
       // Clear notifications and misconfigured indicators in case there were any from previous save attempts.
       Notification.clearAll();
       init_misconfigured_fields_ref();
@@ -431,7 +421,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     // check that contradictory conditions aren't being used in any Rule Group
     $scope.invalid_conditions = [];
 
-    $scope.validate_conditions = function (group, group_name) {
+    $scope.validate_conditions = (group, group_name) => {
       const conditions = _.map(group, 'condition');
       if (conditions.includes('range') && (conditions.includes('include') || conditions.includes('exclude'))) {
         $scope.invalid_conditions = _.union($scope.invalid_conditions, [group_name]);
@@ -443,7 +433,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     // check that data_types are aligned in any Rule Group
     $scope.invalid_data_types = [];
 
-    $scope.validate_data_types = function (group, group_name) {
+    $scope.validate_data_types = (group, group_name) => {
       const data_types = _.uniq(_.map(group, 'data_type'));
       const conditions = _.map(group, 'condition');
 
@@ -466,7 +456,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       $scope.validate_conditions(group, group_name);
     });
 
-    $scope.change_condition = function (rule) {
+    $scope.change_condition = (rule) => {
       $scope.rules_updated = false;
       $scope.rules_reset = false;
       if (rule.condition === 'include' || (rule.condition === 'exclude' && rule.data_type !== $scope.data_type_keys.string)) rule.data_type = $scope.data_type_keys.string;
@@ -491,13 +481,13 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     $scope.check_null = false;
-    $scope.filter_null = function (rule) {
+    $scope.filter_null = (rule) => {
       $scope.check_null = rule.condition === 'not_null' || rule.condition === 'required';
       return $scope.check_null;
     };
 
     // capture rule field dropdown change.
-    $scope.change_field = function (rule, oldField, index) {
+    $scope.change_field = (rule, oldField, index) => {
       if (oldField === '') oldField = null;
       const original = rule.data_type;
       const newDataTypeString = _.find($scope.columns, { column_name: rule.field }).data_type;
@@ -543,7 +533,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       $scope.validate_conditions($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
     };
     // Keep field types consistent for identical fields
-    $scope.change_data_type = function (rule, oldValue) {
+    $scope.change_data_type = (rule, oldValue) => {
       const { data_type } = rule;
       const rule_group = $scope.ruleGroups[$scope.inventory_type][rule.field];
 
@@ -561,12 +551,12 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       $scope.validate_data_types(rule_group, rule.field);
     };
 
-    $scope.remove_label = function (rule) {
+    $scope.remove_label = (rule) => {
       rule.label = null;
     };
 
     // create a new rule.
-    $scope.create_new_rule = function () {
+    $scope.create_new_rule = () => {
       const field = null;
       if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
         $scope.ruleGroups[$scope.inventory_type][field] = [];
@@ -596,7 +586,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     // create label and assign to that rule
-    $scope.create_label = function (rule) {
+    $scope.create_label = (rule) => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_quality_labels_modal.html`,
         controller: 'data_quality_labels_modal_controller',
@@ -617,7 +607,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
     };
 
     // set rule as deleted.
-    $scope.delete_rule = function (rule, index) {
+    $scope.delete_rule = (rule, index) => {
       if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
         delete $scope.ruleGroups[$scope.inventory_type][rule.field];
       } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
@@ -632,7 +622,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       displayNames[column.column_name] = column.displayName;
     });
 
-    $scope.sortedRuleGroups = function () {
+    $scope.sortedRuleGroups = () => {
       const sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort((a, b) => naturalSort(displayNames[a], displayNames[b]));
       const nullKey = _.remove(sortedKeys, (key) => key === 'null');
 
@@ -640,7 +630,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       return nullKey.concat(sortedKeys);
     };
 
-    $scope.selectAll = function () {
+    $scope.selectAll = () => {
       $scope.rules_changed();
 
       const allEnabled = $scope.allEnabled();
@@ -651,7 +641,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
       });
     };
 
-    $scope.allEnabled = function () {
+    $scope.allEnabled = () => {
       let total = 0;
       const enabled = _.reduce(
         $scope.ruleGroups[$scope.inventory_type],

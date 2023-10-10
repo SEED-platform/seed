@@ -63,23 +63,23 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       $scope.show_config = !$scope.show_config;
     };
 
-    const _collect_array_as_object = function (array, key = 'id') {
-      ret = {};
+    const _collect_array_as_object = (array, key = 'id') => {
+      const ret = {};
       for (const i in array) {
         ret[array[i][key]] = array[i];
       }
       return ret;
     };
 
-    const _collect_array_as_object_sorted = function (array, key = 'start') {
-      ret = {};
+    const _collect_array_as_object_sorted = (array, key = 'start') => {
+      const ret = {};
       for (const i in array) {
         ret[array[i][key]] = array[i];
       }
       return ret;
     };
 
-    const _init_fields = function () {
+    const _init_fields = () => {
       for (const i in $scope.filter_groups) {
         $scope.fields.filter_group_checkboxes[$scope.filter_groups[i].id] = false;
       }
@@ -89,10 +89,10 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       $scope.source_column_by_location = { first_axis: null, second_axis: null };
     };
 
-    const _init_data = function () {
+    const _init_data = () => {
       // load data views
       $scope.data_views = data_views;
-      if (data_views.status == 'error') {
+      if (data_views.status === 'error') {
         $scope.data_views_error = data_views.message;
       }
       $scope.has_data_views = $scope.data_views.length > 0;
@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
       // load both axis
       if ($scope.selected_data_view) {
-        const first_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'first_axis');
+        const first_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location === 'first_axis');
         if (first_axis_aggregations) {
           $scope.selected_table_location = 'first_axis';
           $scope.selected_table_aggregation = first_axis_aggregations.aggregations[0];
@@ -130,7 +130,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
             $scope.toggle_aggregation('first_axis', first_axis_aggregations.aggregations[i]);
           }
         }
-        const second_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location == 'second_axis');
+        const second_axis_aggregations = $scope.selected_data_view.parameters.find((item) => item.location === 'second_axis');
         if (second_axis_aggregations) {
           $scope.select_source_column('second_axis', second_axis_aggregations.column, false);
           for (const i in second_axis_aggregations.aggregations) {
@@ -156,7 +156,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     };
 
     $scope.data = {};
-    const _load_data = function () {
+    const _load_data = () => {
       if (!$scope.selected_data_view) {
         spinner_utility.hide();
         return;
@@ -181,7 +181,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     $scope.object_has_key = (a, b) => Object.keys(a).includes(String(b));
     $scope.object_has_any_key = (a) => Object.keys(a).length > 0;
 
-    $scope.toggle_filter_group = function (filter_group_id) {
+    $scope.toggle_filter_group = (filter_group_id) => {
       filter_group = $scope.filter_groups.find((fg) => fg.id == filter_group_id);
       if (filter_group.name in $scope.selected_filter_groups) {
         delete $scope.selected_filter_groups[filter_group.name];
@@ -192,7 +192,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       _assign_datasets();
     };
 
-    $scope.toggle_cycle = function (cycle_id) {
+    $scope.toggle_cycle = (cycle_id) => {
       if (cycle_id in $scope.selected_cycles) {
         delete $scope.selected_cycles[cycle_id];
       } else {
@@ -203,7 +203,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       _assign_datasets();
     };
 
-    $scope.toggle_aggregation = function (location, aggregation_id) {
+    $scope.toggle_aggregation = (location, aggregation_id) => {
       if (!$scope.source_column_by_location[location]) {
         return;
       }
@@ -230,7 +230,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
     };
 
-    $scope.select_source_column = function (location, source_column_id, reload_data = true) {
+    $scope.select_source_column = (location, source_column_id, reload_data = true) => {
       if (source_column_id) {
         $scope.source_column_by_location[location] = { ...$scope.source_columns.by_id[source_column_id] };
       } else {
@@ -257,7 +257,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       _assign_datasets();
     };
 
-    $scope.click_new_data_view = function () {
+    $scope.click_new_data_view = () => {
       spinner_utility.show();
       $scope.selected_data_view = {
         name: 'New Custom Report',
@@ -268,7 +268,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       spinner_utility.hide();
     };
 
-    $scope.click_save_changes = function () {
+    $scope.click_save_changes = () => {
       spinner_utility.show();
       $scope.create_errors = [];
 
@@ -281,7 +281,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       const checked_filter_groups = [];
       for (const i in $scope.fields.filter_group_checkboxes) {
         if ($scope.fields.filter_group_checkboxes[i]) {
-          checked_filter_groups.push(parseInt(i));
+          checked_filter_groups.push(parseInt(i, 10));
         }
       }
       if (checked_filter_groups.length < 1) {
@@ -292,7 +292,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       const checked_cycles = [];
       for (const i in $scope.fields.cycle_checkboxes) {
         if ($scope.fields.cycle_checkboxes[i]) {
-          checked_cycles.push(parseInt(i));
+          checked_cycles.push(parseInt(i, 10));
         }
       }
       if (checked_cycles.length < 1) {
@@ -333,15 +333,15 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         });
       }
 
-      const _done = function (data) {
-        if (data.status == 'success') {
+      const _done = (data) => {
+        if (data.status === 'success') {
           if (!$scope.selected_data_view.id) {
             window.location = `#/insights/custom/${data.data_view.id}`;
             spinner_utility.hide();
             return;
           }
           data_views = data_views.map((data_view) => {
-            if (data_view.id == data.data_view.id) {
+            if (data_view.id === data.data_view.id) {
               return { ...data.data_view };
             }
             return data_view;
@@ -365,7 +365,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
     };
 
-    $scope.click_cancel = function () {
+    $scope.click_cancel = () => {
       spinner_utility.show();
       $scope.selected_data_view = null;
       $scope.create_errors = [];
@@ -375,7 +375,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       spinner_utility.hide();
     };
 
-    $scope.click_delete = function (data_view) {
+    $scope.click_delete = (data_view) => {
       spinner_utility.show();
 
       // if new data_view, just click cancel
@@ -385,11 +385,11 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       }
 
       if (confirm(`Are you sure to delete the data view "${data_view.name}"?`)) {
-        delete_id = data_view.id;
+        const delete_id = data_view.id;
         data_view_service.delete_data_view(delete_id).then((data) => {
-          if (data.status == 'success') {
+          if (data.status === 'success') {
             $scope.data_views = $scope.data_views.filter((data_view) => data_view.id != delete_id);
-            if ($scope.selected_data_view.id == data_view.id) {
+            if ($scope.selected_data_view.id === data_view.id) {
               window.location = '#/insights/custom';
             }
           }
@@ -398,7 +398,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       spinner_utility.hide();
     };
 
-    $scope.click_edit = function () {
+    $scope.click_edit = () => {
       spinner_utility.show();
       $scope.fields.name = $scope.selected_data_view.name;
       for (const i in $scope.selected_data_view.cycles) {
@@ -435,7 +435,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       '#88CCAA',
       '#774411'
     ];
-    colorsByLabelPrefix = {};
+    const colorsByLabelPrefix = {};
     const colorIter = colors[Symbol.iterator]();
     for (const agg of $scope.aggregations) {
       for (const fg of $scope.filter_groups) {

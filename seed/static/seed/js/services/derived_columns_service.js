@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const derived_columns_factory = {};
 
     derived_columns_factory.get_derived_columns = (organization_id, inventory_type) => $http({

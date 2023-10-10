@@ -6,8 +6,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
   '$http',
   'user_service',
   'generated_urls',
-  // eslint-disable-next-line func-names
-  function ($http, user_service, generated_urls) {
+  ($http, user_service, generated_urls) => {
     const auth_factory = {};
     const urls = generated_urls;
 

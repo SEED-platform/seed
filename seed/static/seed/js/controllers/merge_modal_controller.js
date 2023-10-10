@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
 
     const notEmpty = (value, key) => !_.isNil(value) && value !== '' && !_.includes(['$$hashKey', '$$treeLevel'], key);
 
-    const updateResult = function () {
+    const updateResult = () => {
       const cleanedData = _.map($scope.data, (datum) => _.pickBy(datum, notEmpty));
       $scope.result[0] = _.defaults.apply(null, cleanedData);
 
@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
     };
     updateResult();
 
-    const determineHiddenColumns = function () {
+    const determineHiddenColumns = () => {
       const visibleColumns = _.keys($scope.result[0]);
       _.forEach($scope.columns, (col) => {
         if (!_.includes(visibleColumns, col.name)) {
@@ -79,12 +79,12 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
     };
     determineHiddenColumns();
 
-    const reverseOrder = function () {
+    const reverseOrder = () => {
       $scope.data.reverse();
       updateResult();
     };
 
-    const notify_merges_and_links = function (result) {
+    const notify_merges_and_links = (result) => {
       const singular = $scope.inventory_type === 'properties' ? ' property' : ' tax lot';
       const plural = $scope.inventory_type === 'properties' ? ' properties' : ' tax lots';
       // The term "subsequent" below implies not including itself
@@ -101,7 +101,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
       });
     };
 
-    $scope.open_match_merge_link_warning_modal = function () {
+    $scope.open_match_merge_link_warning_modal = () => {
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/record_match_merge_link_modal.html`,
         controller: 'record_match_merge_link_modal_controller',
@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
       });
     };
 
-    $scope.merge = function () {
+    $scope.merge = () => {
       $scope.processing = true;
       if ($scope.inventory_type === 'properties') {
         const property_view_ids = _.map($scope.data, 'property_view_id').reverse();
@@ -195,11 +195,11 @@ angular.module('BE.seed.controller.merge_modal', []).controller('merge_modal_con
     };
     if (data.length < 10) $scope.gridOptions.minRowsToShow = data.length;
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

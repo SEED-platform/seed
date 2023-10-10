@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.dataset_detail', []).controller('dataset_deta
         controller: 'data_upload_modal_controller',
         resolve: {
           cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
-          step: _.constant(2),
+          step: () => 2,
           dataset: () => $scope.dataset,
           organization: () => $scope.menu.user.organization
         }

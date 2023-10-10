@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
 
     const { derived_columns } = derived_columns_payload;
 
-    const initializeRowSelections = function () {
+    const initializeRowSelections = () => {
       if ($scope.gridApi) {
         _.delay(() => {
           $scope.$apply(() => {
@@ -62,7 +62,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       }
     };
 
-    const setColumnsForCurrentProfile = function () {
+    const setColumnsForCurrentProfile = () => {
       const deselected_columns = columns.slice();
       if ($scope.currentProfile) {
         const profileColumns = _.filter($scope.currentProfile.columns, (col) => _.find(columns, { id: col.id }));
@@ -136,7 +136,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
     const stripRegion = (languageTag) => _.first(languageTag.split('_'));
     i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
-    const rowSelectionChanged = function () {
+    const rowSelectionChanged = () => {
       _.forEach($scope.gridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
       });
@@ -144,7 +144,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       modified_service.setModified();
     };
 
-    $scope.updateHeight = function () {
+    $scope.updateHeight = () => {
       let height = 0;
       _.forEach(['.header', '.page_header_container', '.section_nav_container', '.section_header_container', '.section_content.with_padding'], (selector) => {
         const element = angular.element(selector)[0];
@@ -155,7 +155,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       $scope.gridApi.core.handleWindowResize();
     };
 
-    const currentColumns = function () {
+    const currentColumns = () => {
       const columns = [];
       _.forEach($scope.gridApi.grid.rows, (row) => {
         if (row.isSelected) {
@@ -171,7 +171,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       return columns;
     };
 
-    $scope.saveProfile = function () {
+    $scope.saveProfile = () => {
       const { id } = $scope.currentProfile;
       const profile = _.omit($scope.currentProfile, 'id');
       const columns = currentColumns();
@@ -184,16 +184,16 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       });
     };
 
-    $scope.renameProfile = function () {
+    $scope.renameProfile = () => {
       const oldProfile = angular.copy($scope.currentProfile);
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('rename'),
-          data: _.constant($scope.currentProfile),
-          profile_location: _.constant('Detail View Profile'),
+          action: () => 'rename',
+          data: () => $scope.currentProfile,
+          profile_location: () => 'Detail View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -205,16 +205,16 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       });
     };
 
-    $scope.removeProfile = function () {
+    $scope.removeProfile = () => {
       const oldProfile = angular.copy($scope.currentProfile);
 
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('remove'),
-          data: _.constant($scope.currentProfile),
-          profile_location: _.constant('Detail View Profile'),
+          action: () => 'remove',
+          data: () => $scope.currentProfile,
+          profile_location: () => 'Detail View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });
@@ -227,7 +227,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
       });
     };
 
-    $scope.newProfile = function () {
+    $scope.newProfile = () => {
       const columns = [];
       const derived_columns = [];
       for (const column in currentColumns) {
@@ -241,12 +241,12 @@ angular.module('BE.seed.controller.inventory_detail_settings', []).controller('i
         templateUrl: `${urls.static_url}seed/partials/settings_profile_modal.html`,
         controller: 'settings_profile_modal_controller',
         resolve: {
-          action: _.constant('new'),
+          action: () => 'new',
           data: {
             columns,
             derived_columns
           },
-          profile_location: _.constant('Detail View Profile'),
+          profile_location: () => 'Detail View Profile',
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot')
         }
       });

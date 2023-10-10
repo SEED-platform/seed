@@ -7,10 +7,8 @@
  */
 angular.module('stripImportPrefix', []).filter(
   'stripImportPrefix',
-  // eslint-disable-next-line func-names, prefer-arrow/prefer-arrow-functions, prefer-arrow-callback
-  function () {
-    return (input) => {
-      /** ids are sometime prefixed by the Import Record id.
+  () => (input) => {
+    /** ids are sometime prefixed by the Import Record id.
        * e.g., import 28 would prefix all assessor data ids with 'IMP28-' and
        *      stripImportPrefix would strip out the 'IMP28-'s from the html and only
        *      display the ids.
@@ -21,17 +19,16 @@ angular.module('stripImportPrefix', []).filter(
        *        JS  : stripImportPrefix(building.id)
        *         returns: "007"
        */
-      if (_.isNil(input)) {
-        return input;
-      }
-      input = input.toString();
-      const matches = input.match(/IMP\d+-(.+)/);
-      if (matches) {
-        // matches would be ["IMPxxx-yyyy", "yyyy"]
-        return matches[1];
-      }
-
+    if (_.isNil(input)) {
       return input;
-    };
+    }
+    input = input.toString();
+    const matches = input.match(/IMP\d+-(.+)/);
+    if (matches) {
+      // matches would be ["IMPxxx-yyyy", "yyyy"]
+      return matches[1];
+    }
+
+    return input;
   }
 );

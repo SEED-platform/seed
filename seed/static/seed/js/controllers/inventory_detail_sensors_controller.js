@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     const getSensorLabel = (sensor) => `${sensor.display_name} (${sensor.data_logger})`;
 
-    const resetSelections = function () {
+    const resetSelections = () => {
       $scope.data_logger_selections = _.map(sorted_data_loggers, (data_logger) => ({
         selected: true,
         label: data_logger.display_name,
@@ -77,13 +77,13 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
     var sorted_sensors = _.sortBy(sensors, ['id']);
     resetSelections();
 
-    $scope.data_logger_selection_toggled = function (is_open) {
+    $scope.data_logger_selection_toggled = (is_open) => {
       if (!is_open) {
         $scope.applyFilters();
       }
     };
 
-    $scope.sensor_type_selection_toggled = function (is_open) {
+    $scope.sensor_type_selection_toggled = (is_open) => {
       if (!is_open) {
         $scope.applyFilters();
       }
@@ -205,7 +205,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       data: $scope.property_sensor_usage.readings,
       columnDefs: $scope.property_sensor_usage.column_defs,
       enableColumnResizing: true,
-      enableFiltering: true,
       flatEntityAccess: true,
       fastWatch: true,
       exporterCsvFilename: `${window.BE.initial_org_name + ($scope.inventory_type === 'taxlots' ? ' Tax Lot ' : ' Property ')}sensor readings.csv`,
@@ -216,7 +215,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       minRowsToShow: Math.min($scope.property_sensor_usage.readings.length, 10)
     };
 
-    $scope.apply_column_settings = function () {
+    $scope.apply_column_settings = () => {
       _.forEach($scope.usageGridOptions.columnDefs, (column) => {
         column.enableHiding = false;
         column.enableColumnResizing = true;
@@ -242,7 +241,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       selected: 'Exact'
     };
 
-    $scope.toggled_show_only_occupied_reading = function (b) {
+    $scope.toggled_show_only_occupied_reading = (b) => {
       $scope.showOnlyOccupiedReadings = b;
       $scope.refresh_readings(1, $scope.usage_pagination.per_page);
     };
@@ -271,7 +270,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
     };
 
     // given the sensor selections, it returns the filtered readings and column defs
-    const filterBySensorSelections = function (readings, columnDefs, dataLoggerSelections, sensor_type_selections) {
+    const filterBySensorSelections = (readings, columnDefs, dataLoggerSelections, sensor_type_selections) => {
       const selectedDataLoggerDisplayNames = dataLoggerSelections.filter((dl) => dl.selected).map((dl) => dl.label);
       const selectedSensorType = sensor_type_selections.filter((t) => t.selected).map((t) => t.label);
 
@@ -284,7 +283,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
     };
 
     // filters the sensor readings by selected sensors and updates the table
-    $scope.applyFilters = function () {
+    $scope.applyFilters = () => {
       const results = filterBySensorSelections($scope.property_sensor_usage.readings, $scope.property_sensor_usage.column_defs, $scope.data_logger_selections, $scope.sensor_type_selections);
       const { readings } = results;
       const { columnDefs } = results;
@@ -297,7 +296,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
 
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
-    $scope.refresh_readings = function (page, per_page) {
+    $scope.refresh_readings = (page, per_page) => {
       spinner_utility.show();
       sensor_service
         .property_sensor_usage(
@@ -319,7 +318,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
         });
     };
 
-    $scope.open_data_logger_upload_modal = function (data_logger) {
+    $scope.open_data_logger_upload_modal = (/* data_logger */) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/data_logger_upload_modal.html`,
         controller: 'data_logger_upload_modal_controller',
@@ -332,7 +331,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       });
     };
 
-    $scope.open_sensors_upload_modal = function (data_logger) {
+    $scope.open_sensors_upload_modal = (data_logger) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/sensors_upload_modal.html`,
         controller: 'sensors_upload_modal_controller',
@@ -353,7 +352,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       });
     };
 
-    $scope.open_sensor_readings_upload_modal = function (data_logger) {
+    $scope.open_sensor_readings_upload_modal = (data_logger) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/sensor_readings_upload_modal.html`,
         controller: 'sensor_readings_upload_modal_controller',
@@ -367,15 +366,15 @@ angular.module('BE.seed.controller.inventory_detail_sensors', []).controller('in
       });
     };
 
-    $scope.inventory_display_name = function (property_type) {
+    $scope.inventory_display_name = (property_type) => {
       let error = '';
-      let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
       if (!(field in $scope.item_state)) {
         error = `${field} does not exist`;
         field = 'address_line_1';
       }
       if (!$scope.item_state[field]) {
-        error += `${(error == '' ? '' : ' and default ') + field} is blank`;
+        error += `${(error === '' ? '' : ' and default ') + field} is blank`;
       }
       $scope.inventory_name = $scope.item_state[field] ?
         $scope.item_state[field] :

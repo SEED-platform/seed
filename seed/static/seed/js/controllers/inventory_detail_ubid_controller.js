@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.inventory_detail_ubid', []).controller('inven
     // for nav
     $scope.inventory = { view_id: $stateParams.view_id };
 
-    $scope.inventory_display_name = function (property_type) {
+    $scope.inventory_display_name = (property_type) => {
       let error = '';
       let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
       if (!(field in $scope.item_state)) {

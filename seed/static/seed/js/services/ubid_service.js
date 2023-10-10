@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.ubid', []).factory('ubid_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const ubid_factory = {};
 
     ubid_factory.decode_by_ids = (property_view_ids, taxlot_view_ids) => $http

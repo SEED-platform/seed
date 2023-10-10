@@ -12,8 +12,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'spinner_utility',
   'naturalSort',
   'Notification',
-  // eslint-disable-next-line func-names
-  function ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) {
+  ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) => {
     const inventory_service = {
       total_properties_for_user: 0,
       total_taxlots_for_user: 0
@@ -752,13 +751,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // Rename display_name to displayName (ui-grid compatibility)
           columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
-          // Remove _orig columns
-          // if (flippers.is_active('release:orig_columns')) {
-          //   _.remove(columns, function (col) {
-          //     return /_orig/.test(col.name);
-          //   });
-          // }
-
           // Check for problems
           const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
@@ -782,13 +774,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
-
-        // Remove _orig columns
-        // if (flippers.is_active('release:orig_columns')) {
-        //   _.remove(columns, function (col) {
-        //     return /_orig/.test(col.name);
-        //   });
-        // }
 
         // Check for problems
         const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
@@ -819,13 +804,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // Rename display_name to displayName (ui-grid compatibility)
           columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
 
-          // Remove _orig columns
-          // if (flippers.is_active('release:orig_columns')) {
-          //   _.remove(columns, function (col) {
-          //     return /_orig/.test(col.name);
-          //   });
-          // }
-
           // Check for problems
           const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
           if (duplicates.length) {
@@ -849,13 +827,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, (col) => _.mapKeys(col, (value, key) => (key === 'display_name' ? 'displayName' : key)));
-
-        // Remove _orig columns
-        // if (flippers.is_active('release:orig_columns')) {
-        //   _.remove(columns, function (col) {
-        //     return /_orig/.test(col.name);
-        //   });
-        // }
 
         // Check for problems
         const duplicates = _.filter(_.map(columns, 'name'), (value, index, iteratee) => _.includes(iteratee, value, index + 1));
@@ -949,7 +920,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
         // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
         if (_.isNil(cellValue)) cellValue = '';
-        if (_.isString(cellValue)) cellValue = _.trim(cellValue);
+        if (typeof cellValue === 'string') cellValue = _.trim(cellValue);
         let match = true;
         let d = moment.utc(cellValue);
         const cellDate = d.valueOf();
@@ -973,7 +944,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               value = filterData[2];
 
               if (value === '""') {
-                match = _.startsWith(operator, '!') ? !_.isEmpty(cellValue) : _.isEmpty(cellValue);
+                match = operator.startsWith('!') ? !_.isEmpty(cellValue) : _.isEmpty(cellValue);
                 return match;
               }
 
@@ -983,7 +954,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 m: _.parseInt(v[2]),
                 d: _.parseInt(v[3])
               };
-              if (_.startsWith(operator, '!')) {
+              if (operator.startsWith('!')) {
                 // Not equal
                 match =
                   cellYMD.y !== ymd.y ||
@@ -1075,43 +1046,43 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = function (key, ids) {
+    inventory_service.saveSelectedLabels = (key, ids) => {
       key += `.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = function (key) {
+    inventory_service.loadSelectedLabels = (key) => {
       key += `.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };
 
     // Save non-empty sort/filter states
-    inventory_service.saveGridSettings = function (key, settings) {
+    inventory_service.saveGridSettings = (key, settings) => {
       key += `.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(settings));
     };
 
-    inventory_service.loadGridSettings = function (key) {
+    inventory_service.loadGridSettings = (key) => {
       key += `.${user_service.get_organization().id}`;
       return localStorage.getItem(key);
     };
 
-    inventory_service.saveMatchesPerPage = function (matchesPerPage) {
+    inventory_service.saveMatchesPerPage = (matchesPerPage) => {
       const key = `matchesPerPage.${user_service.get_organization().id}`;
       localStorage.setItem(key, matchesPerPage);
     };
 
-    inventory_service.loadMatchesPerPage = function () {
+    inventory_service.loadMatchesPerPage = () => {
       const key = `matchesPerPage.${user_service.get_organization().id}`;
       return _.parseInt(localStorage.getItem(key)) || 25;
     };
 
-    inventory_service.saveDetailMatchesPerPage = function (matchesPerPage) {
+    inventory_service.saveDetailMatchesPerPage = (matchesPerPage) => {
       const key = `detailMatchesPerPage.${user_service.get_organization().id}`;
       localStorage.setItem(key, matchesPerPage);
     };
 
-    inventory_service.loadDetailMatchesPerPage = function () {
+    inventory_service.loadDetailMatchesPerPage = () => {
       const key = `detailMatchesPerPage.${user_service.get_organization().id}`;
       return _.parseInt(localStorage.getItem(key)) || 25;
     };
@@ -1126,7 +1097,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     // TODO: Identify Tax Lot specific values that have dates.
     inventory_service.taxlot_state_date_columns = ['generation_date', 'release_date', 'recent_sale_date', 'year_ending', 'record_created', 'record_modified', 'record_year_ending'];
 
-    inventory_service.reorderSettings = function (columns) {
+    inventory_service.reorderSettings = (columns) => {
       const pinned = _.remove(columns, 'pinnedLeft');
       const selected = _.remove(columns, 'visible');
       return pinned.concat(selected).concat(columns);
@@ -1195,7 +1166,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       })
       .then((response) => response.data.data);
 
-    inventory_service.update_column_list_profile = function (id, data) {
+    inventory_service.update_column_list_profile = (id, data) => {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
@@ -1209,7 +1180,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         .then((response) => response.data.data);
     };
 
-    inventory_service.remove_column_list_profile = function (id) {
+    inventory_service.remove_column_list_profile = (id) => {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();

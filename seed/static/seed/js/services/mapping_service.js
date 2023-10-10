@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const mapping_factory = {};
 
     /**

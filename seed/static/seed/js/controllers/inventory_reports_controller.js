@@ -16,13 +16,12 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
   'columns',
   'cycles',
   'organization_payload',
-  'flippers',
   'urls',
   '$sce',
   '$translate',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, flippers, urls, $sce, $translate, $uibModal) {
+  function ($scope, $log, $stateParams, inventory_reports_service, simple_modal_service, columns, cycles, organization_payload, urls, $sce, $translate, $uibModal) {
     const org_id = organization_payload.organization.id;
     const base_storage_key = `report.${org_id}`;
 
@@ -199,7 +198,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               },
               ticks: {
                 // round values
-                callback(value, index, values) {
+                callback(value) {
                   return this.getLabelForValue(value);
                 }
               }
@@ -241,9 +240,9 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       });
     };
 
-    $scope.scatterChart = createChart((elementId = 'chartNew'), (type = 'scatter'), (indexAxis = 'x'), $scope.pointBackgroundColors);
+    $scope.scatterChart = createChart('chartNew', 'scatter', 'x', $scope.pointBackgroundColors);
 
-    $scope.barChart = createChart((elementId = 'aggChartNew'), (type = 'bar'), (indexAxis = 'y'), $scope.aggPointBackgroundColors);
+    $scope.barChart = createChart('aggChartNew', 'bar', 'y', $scope.aggPointBackgroundColors);
 
     // specific styling for bar chart
     $scope.barChart.options.scales.x.ticks = { precision: 0 };
@@ -425,7 +424,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             $scope.scatterChart.data.datasets[0].data = $scope.chartData.chartData;
             // add the colors to the datapoints, need to create a hash map first
             const colorMap = new Map(colorsArr.map((object) => [object.seriesName, object.color]));
-            for (i = 0; i < $scope.scatterChart.data.datasets[0].data.length; i++) {
+            for (let i = 0; i < $scope.scatterChart.data.datasets[0].data.length; i++) {
               $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
             }
             $scope.scatterChart.update();

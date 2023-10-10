@@ -33,8 +33,7 @@
 angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service', [
   '$uibModal',
   'urls',
-  // eslint-disable-next-line func-names
-  function ($uibModal, urls) {
+  ($uibModal, urls) => {
     // Define types of modals allowed.
     // TODO:    Create more configurations for different types of modals, e.g., standard, error
     //          Adding each new type to the validModalTypes array
@@ -59,27 +58,8 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
       okResult: 'Ok'
     };
 
-    /**
-       Show a simple modal dialog. Customize the dialog text and behavior by passing in config objects.
-
-       @param {object} [modalOptions={}]       Optional, but caller really should provide specific button labels and text.
-       @param {object} [modalDefaults={}]      Optional, and can have one or more of the properties defined above in this class
-       */
-    function showModal(customModalOptions, customModalDefaults) {
-      if (customModalOptions && customModalOptions.type !== null) {
-        if (!_.includes(validModalTypes, customModalOptions.type)) {
-          throw 'Invalid modal type';
-        }
-      }
-
-      if (!customModalDefaults) customModalDefaults = {};
-      if (!customModalOptions) customModalOptions = {};
-
-      return show(customModalOptions, customModalDefaults);
-    }
-
     /* Private method. Show Angular UI modal based on config options */
-    var show = (customModalOptions, customModalDefaults) => {
+    const show = (customModalOptions, customModalDefaults) => {
       // Create temp objects to work with since we're in a singleton service
       const tempModalDefaults = {};
       const tempModalOptions = {};
@@ -107,6 +87,25 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
 
       return $uibModal.open(tempModalDefaults).result;
     };
+
+    /**
+       Show a simple modal dialog. Customize the dialog text and behavior by passing in config objects.
+
+       @param {object} [modalOptions={}]       Optional, but caller really should provide specific button labels and text.
+       @param {object} [modalDefaults={}]      Optional, and can have one or more of the properties defined above in this class
+       */
+    function showModal(customModalOptions, customModalDefaults) {
+      if (customModalOptions && customModalOptions.type !== null) {
+        if (!_.includes(validModalTypes, customModalOptions.type)) {
+          throw new Error('Invalid modal type');
+        }
+      }
+
+      if (!customModalDefaults) customModalDefaults = {};
+      if (!customModalOptions) customModalOptions = {};
+
+      return show(customModalOptions, customModalDefaults);
+    }
 
     /* ~~~~~~~~~~ */
     /* Public API */

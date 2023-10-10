@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.meter', []).factory('meter_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const meter_factory = {};
 
     meter_factory.get_meters = (property_view_id, organization_id) => $http.get(`/api/v3/properties/${property_view_id}/meters/`, { params: { organization_id } }).then((response) => response.data);

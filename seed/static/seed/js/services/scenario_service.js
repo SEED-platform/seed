@@ -4,8 +4,7 @@
  */
 angular.module('BE.seed.service.scenario', []).factory('scenario_service', [
   '$http',
-  // eslint-disable-next-line func-names
-  function ($http) {
+  ($http) => {
     const scenario_service = {};
 
     scenario_service.delete_scenario = (organization_id, property_view_id, scenario_id) => $http({

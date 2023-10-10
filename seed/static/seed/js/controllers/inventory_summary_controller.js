@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
     ];
     let charts_loaded = false;
 
-    const load_charts = function () {
+    const load_charts = () => {
       if (!charts_loaded) {
         charts_loaded = true;
         $scope.charts.forEach((config) => {
@@ -77,7 +77,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       });
     };
 
-    $scope.draw_chart = function (chart_name, no_data_change = true) {
+    $scope.draw_chart = (chart_name, no_data_change = true) => {
       if ($scope.summary_data[chart_name].length < 1) {
         return;
       }
@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       }, 50);
     };
 
-    const refresh_data = function () {
+    const refresh_data = () => {
       $scope.progress = {};
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/inventory_loading_modal.html`,
@@ -119,7 +119,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       });
     };
 
-    $scope.update_cycle = function (cycle) {
+    $scope.update_cycle = (cycle) => {
       inventory_service.save_last_cycle(cycle.id);
       $scope.cycle.selected_cycle = cycle;
       refresh_data();

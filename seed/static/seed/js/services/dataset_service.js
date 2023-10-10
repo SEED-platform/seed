@@ -5,8 +5,7 @@
 angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
   '$http',
   'user_service',
-  // eslint-disable-next-line func-names
-  function ($http, user_service) {
+  ($http, user_service) => {
     const dataset_service = { total_datasets_for_user: 0 };
 
     dataset_service.get_datasets_count = () => $http

@@ -1,8 +1,7 @@
 angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_config_service', [
   '$http',
   '$log',
-  // eslint-disable-next-line func-names
-  function ($http, $log) {
+  ($http, $log) => {
     // get all salesforce_configs defined
     const get_salesforce_configs = (organization_id) => $http
       .get('/api/v3/salesforce_configs/', {

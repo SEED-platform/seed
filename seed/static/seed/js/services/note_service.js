@@ -6,8 +6,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
   '$http',
   '$uibModal',
   'urls',
-  // eslint-disable-next-line func-names
-  function ($http, $uibModal, urls) {
+  ($http, $uibModal, urls) => {
     const note_factory = {};
 
     /*
@@ -79,11 +78,11 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
         controller: 'inventory_detail_notes_modal_controller',
         size: 'lg',
         resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant({ text: '' }),
-          action: _.constant('new')
+          inventoryType: () => inventory_type,
+          viewId: () => view_id,
+          orgId: () => org_id,
+          note: () => ({ text: '' }),
+          action: () => 'new'
         }
       })
       .result.then(() => note_factory.get_notes(org_id, inventory_type, view_id));
@@ -94,11 +93,11 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
         controller: 'inventory_detail_notes_modal_controller',
         size: 'lg',
         resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant(note),
-          action: _.constant('update')
+          inventoryType: () => inventory_type,
+          viewId: () => view_id,
+          orgId: () => org_id,
+          note: () => note,
+          action: () => 'update'
         }
       })
       .result.then(() => note_factory.get_notes(org_id, inventory_type, view_id));
@@ -109,11 +108,11 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
         controller: 'inventory_detail_notes_modal_controller',
         size: 'lg',
         resolve: {
-          inventoryType: _.constant(inventory_type),
-          viewId: _.constant(view_id),
-          orgId: _.constant(org_id),
-          note: _.constant(note),
-          action: _.constant('delete')
+          inventoryType: () => inventory_type,
+          viewId: () => view_id,
+          orgId: () => org_id,
+          note: () => note,
+          action: () => 'delete'
         }
       })
       .result.then(() => note_factory.get_notes(org_id, inventory_type, view_id));

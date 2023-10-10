@@ -37,7 +37,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.analysis',
   'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
-  'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
@@ -196,7 +195,7 @@ const SEED_app = angular.module(
   [
     '$interpolateProvider',
     '$qProvider',
-    function ($interpolateProvider, $qProvider) {
+    ($interpolateProvider, $qProvider) => {
       $interpolateProvider.startSymbol('{$');
       $interpolateProvider.endSymbol('$}');
       $qProvider.errorOnUnhandledRejections(false);
@@ -219,7 +218,7 @@ SEED_app.run([
   'editableOptions',
   'modified_service',
   'spinner_utility',
-  function ($rootScope, $cookies, $http, $log, $q, $state, $transitions, $translate, editableOptions, modified_service, spinner_utility) {
+  ($rootScope, $cookies, $http, $log, $q, $state, $transitions, $translate, editableOptions, modified_service, spinner_utility) => {
     const csrftoken = $cookies.get('csrftoken');
     BE.csrftoken = csrftoken;
     $http.defaults.headers.common['X-CSRFToken'] = csrftoken;
@@ -298,30 +297,11 @@ SEED_app.run([
 ]);
 
 /**
- * Initialize release flippers
- */
-// SEED_app.run([
-//   'flippers',
-//   function (flippers) {
-//     // wraps some minor UI that we'll need until we migrate to delete the old
-//     // PropertyState columns for EUI and area. This flipper should be removed
-//     // for 2.4 when we remove the archived "_orig" area and EUI columns.
-//     //
-//     //
-//     // flippers.make_flipper('ryan@ryanmccuaig.net', '2018-05-31T00:00:00Z',
-//     //   'release:orig_columns', 'boolean', true);
-//     //
-//     // var make2 = _.partial(flippers.make_flipper, 'nicholas.long@nrel.gov', '2018-01-01T00:00:00Z');
-//     // make2('release:bricr', 'boolean', true);
-//   }
-// ]);
-
-/**
  * Create custom UI-Grid templates
  */
 SEED_app.run([
   '$templateCache',
-  function ($templateCache) {
+  ($templateCache) => {
     $templateCache.put(
       'ui-grid/seedMergeHeader',
       '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : (!col.sort.direction ? \'none\' : \'other\'))}}"><div role="button" tabindex="0" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex" title="TOOLTIP"><span class="ui-grid-header-cell-label" ui-grid-one-bind-id-grid="col.uid + \'-header-text\'">{{ col.displayName CUSTOM_FILTERS }}</span> <span title="Merge Protection: Favor Existing" ui-grid-visible="col.colDef.merge_protection === \'Favor Existing\'" class="glyphicon glyphicon-lock lock"></span> <span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" ui-grid-visible="col.sort.direction" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-blank\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 )  : null}}" aria-hidden="true"></i> <sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div><div role="button" tabindex="0" ui-grid-one-bind-id-grid="col.uid + \'-menu-button\'" class="ui-grid-column-menu-button" ng-if="grid.options.enableColumnMenus && !col.isRowHeader  && col.colDef.enableColumnMenu !== false" ng-click="toggleMenu($event)" ng-class="{\'ui-grid-column-menu-button-last-col\': isLastCol}" ui-grid-one-bind-aria-label="i18n.headerCell.aria.columnMenuButtonLabel" aria-haspopup="true"><i class="ui-grid-icon-angle-down" aria-hidden="true">&nbsp;</i></div><div ui-grid-filter></div></div>'
@@ -336,7 +316,7 @@ SEED_app.config([
   'stateHelperProvider',
   '$urlRouterProvider',
   '$locationProvider',
-  function (stateHelperProvider, $urlRouterProvider, $locationProvider) {
+  (stateHelperProvider, $urlRouterProvider, $locationProvider) => {
     const static_url = BE.urls.STATIC_URL;
 
     $locationProvider.hashPrefix('');
@@ -358,7 +338,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_superuser']);
             }
@@ -379,7 +359,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_superuser']);
             }
@@ -400,7 +380,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_superuser']);
             }
@@ -421,7 +401,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_superuser']).then(
                 (data) => {
@@ -616,7 +596,7 @@ SEED_app.config([
             'user_service',
             'inventory_service',
             'naturalSort',
-            function ($stateParams, user_service, inventory_service, naturalSort) {
+            ($stateParams, user_service, inventory_service, naturalSort) => {
               const organization_id = user_service.get_organization().id;
               return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                 columns = _.reject(columns, 'related');
@@ -633,7 +613,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             'user_service',
-            function (organization_service, user_service) {
+            (organization_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               const organization = organization_service.get_organization(organization_id);
               return organization;
@@ -653,7 +633,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
               } if ($stateParams.inventory_type === 'taxlots') {
@@ -665,7 +645,7 @@ SEED_app.config([
             'derived_columns_service',
             '$stateParams',
             'user_service',
-            function (derived_columns_service, $stateParams, user_service) {
+            (derived_columns_service, $stateParams, user_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -673,7 +653,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
             }
@@ -682,7 +662,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -708,7 +688,7 @@ SEED_app.config([
           columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns().then((columns) => {
                   _.remove(columns, 'related');
@@ -727,7 +707,7 @@ SEED_app.config([
             'derived_columns_service',
             '$stateParams',
             'user_service',
-            function (derived_columns_service, $stateParams, user_service) {
+            (derived_columns_service, $stateParams, user_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -735,7 +715,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
@@ -744,7 +724,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -767,7 +747,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               let promise;
@@ -799,12 +779,12 @@ SEED_app.config([
             '$stateParams',
             'note_service',
             'user_service',
-            function ($stateParams, note_service, user_service) {
+            ($stateParams, note_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
             }
           ],
-          $uibModalInstance: _.constant(undefined)
+          $uibModalInstance: () => undefined
         }
       })
       .state({
@@ -817,7 +797,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               let promise;
@@ -852,14 +832,14 @@ SEED_app.config([
             'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
             'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
             'import_file_payload',
-            function (
+            (
               column_mappings_service,
               user_service,
               COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
               import_file_payload
-            ) {
+            ) => {
               let filter_profile_types;
               if (import_file_payload.import_file.source_type === 'BuildingSync Raw') {
                 filter_profile_types = [COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM];
@@ -873,7 +853,7 @@ SEED_app.config([
           import_file_payload: [
             'dataset_service',
             '$stateParams',
-            function (dataset_service, $stateParams) {
+            (dataset_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return dataset_service.get_import_file(importfile_id);
             }
@@ -881,7 +861,7 @@ SEED_app.config([
           suggested_mappings_payload: [
             'mapping_service',
             '$stateParams',
-            function (mapping_service, $stateParams) {
+            (mapping_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return mapping_service.get_column_mapping_suggestions(importfile_id);
             }
@@ -889,7 +869,7 @@ SEED_app.config([
           raw_columns_payload: [
             'mapping_service',
             '$stateParams',
-            function (mapping_service, $stateParams) {
+            (mapping_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return mapping_service.get_raw_columns(importfile_id);
             }
@@ -897,7 +877,7 @@ SEED_app.config([
           first_five_rows_payload: [
             'mapping_service',
             '$stateParams',
-            function (mapping_service, $stateParams) {
+            (mapping_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return mapping_service.get_first_five_rows(importfile_id);
             }
@@ -915,7 +895,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']).then(
                 (data) => {
@@ -937,7 +917,7 @@ SEED_app.config([
             'derived_columns_service',
             '$stateParams',
             'user_service',
-            function (derived_columns_service, $stateParams, user_service) {
+            (derived_columns_service, $stateParams, user_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -953,7 +933,7 @@ SEED_app.config([
           import_file_payload: [
             'dataset_service',
             '$stateParams',
-            function (dataset_service, $stateParams) {
+            (dataset_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return dataset_service.get_import_file(importfile_id);
             }
@@ -997,7 +977,7 @@ SEED_app.config([
           import_file_payload: [
             'dataset_service',
             '$stateParams',
-            function (dataset_service, $stateParams) {
+            (dataset_service, $stateParams) => {
               const { importfile_id } = $stateParams;
               return dataset_service.get_import_file(importfile_id);
             }
@@ -1034,7 +1014,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']).then(
                 (data) => {
@@ -1085,7 +1065,7 @@ SEED_app.config([
             'auth_service',
             '$q',
             'user_service',
-            function (auth_service, $q, user_service) {
+            (auth_service, $q, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']).then(
                 (data) => {
@@ -1108,8 +1088,7 @@ SEED_app.config([
       .state({
         name: 'api_docs',
         url: '/api/swagger',
-        templateUrl: `${static_url}seed/partials/api_docs.html`,
-        controller: 'api_controller'
+        templateUrl: `${static_url}seed/partials/api_docs.html`
       })
       .state({
         name: 'about',
@@ -1144,7 +1123,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1152,7 +1131,7 @@ SEED_app.config([
           property_column_names: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const { organization_id } = $stateParams;
               return inventory_service.get_property_column_names_and_ids_for_org(organization_id);
             }
@@ -1160,7 +1139,7 @@ SEED_app.config([
           taxlot_column_names: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const { organization_id } = $stateParams;
               return inventory_service.get_taxlot_column_names_for_org(organization_id);
             }
@@ -1168,7 +1147,7 @@ SEED_app.config([
           labels_payload: [
             'label_service',
             '$stateParams',
-            function (label_service, $stateParams) {
+            (label_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return label_service.get_labels_for_org(organization_id);
             }
@@ -1176,7 +1155,7 @@ SEED_app.config([
           salesforce_mappings_payload: [
             'salesforce_mapping_service',
             '$stateParams',
-            function (salesforce_mapping_service, $stateParams) {
+            (salesforce_mapping_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return salesforce_mapping_service.get_salesforce_mappings(organization_id);
             }
@@ -1184,7 +1163,7 @@ SEED_app.config([
           salesforce_configs_payload: [
             'salesforce_config_service',
             '$stateParams',
-            function (salesforce_config_service, $stateParams) {
+            (salesforce_config_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return salesforce_config_service.get_salesforce_configs(organization_id);
             }
@@ -1193,7 +1172,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1217,7 +1196,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const { organization_id } = $stateParams;
               return inventory_service.get_used_columns(organization_id);
             }
@@ -1225,7 +1204,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1233,7 +1212,7 @@ SEED_app.config([
           query_threshold_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_query_threshold(organization_id);
             }
@@ -1241,7 +1220,7 @@ SEED_app.config([
           shared_fields_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_shared_fields(organization_id);
             }
@@ -1250,7 +1229,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1315,7 +1294,7 @@ SEED_app.config([
           filter_groups: [
             '$stateParams',
             'filter_groups_service',
-            function ($stateParams, filter_groups_service) {
+            ($stateParams, filter_groups_service) => {
               const inventory_type = 'Property'; // just properties for now
               return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
             }
@@ -1386,7 +1365,7 @@ SEED_app.config([
           filter_groups: [
             '$stateParams',
             'filter_groups_service',
-            function ($stateParams, filter_groups_service) {
+            ($stateParams, filter_groups_service) => {
               const inventory_type = 'Property'; // just properties for now
               return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
             }
@@ -1416,7 +1395,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const { organization_id } = $stateParams;
 
               if ($stateParams.inventory_type === 'properties') {
@@ -1429,7 +1408,7 @@ SEED_app.config([
           columns: [
             'all_columns',
             'naturalSort',
-            function (all_columns, naturalSort) {
+            (all_columns, naturalSort) => {
               let columns = _.reject(all_columns, 'related');
               columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
               columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
@@ -1439,7 +1418,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1448,7 +1427,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner']).then(
                 (data) => {
@@ -1480,7 +1459,7 @@ SEED_app.config([
           column_mapping_profiles_payload: [
             'column_mappings_service',
             '$stateParams',
-            function (column_mappings_service, $stateParams) {
+            (column_mappings_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return column_mappings_service.get_column_mapping_profiles_for_org(organization_id).then((response) => response.data);
             }
@@ -1488,7 +1467,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1497,7 +1476,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner']).then(
                 (data) => {
@@ -1522,7 +1501,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'naturalSort',
-            function ($stateParams, inventory_service, naturalSort) {
+            ($stateParams, inventory_service, naturalSort) => {
               const { organization_id } = $stateParams;
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
@@ -1544,7 +1523,7 @@ SEED_app.config([
           used_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const { organization_id } = $stateParams;
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns_for_org(organization_id, true).then((columns) => {
@@ -1569,7 +1548,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1577,7 +1556,7 @@ SEED_app.config([
           data_quality_rules_payload: [
             'data_quality_service',
             '$stateParams',
-            function (data_quality_service, $stateParams) {
+            (data_quality_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return data_quality_service.data_quality_rules(organization_id);
             }
@@ -1585,7 +1564,7 @@ SEED_app.config([
           labels_payload: [
             'label_service',
             '$stateParams',
-            function (label_service, $stateParams) {
+            (label_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return label_service.get_labels_for_org(organization_id);
             }
@@ -1594,7 +1573,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1629,7 +1608,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1653,7 +1632,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1661,7 +1640,7 @@ SEED_app.config([
           labels_payload: [
             'label_service',
             '$stateParams',
-            function (label_service, $stateParams) {
+            (label_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return label_service.get_labels_for_org(organization_id);
             }
@@ -1670,7 +1649,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1694,7 +1673,7 @@ SEED_app.config([
           users_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization_users({ org_id: organization_id });
             }
@@ -1703,7 +1682,7 @@ SEED_app.config([
             'organization_service',
             '$stateParams',
             '$q',
-            function (organization_service, $stateParams, $q) {
+            (organization_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id).then((data) => {
                 if (data.organization.is_parent) {
@@ -1717,7 +1696,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1741,7 +1720,7 @@ SEED_app.config([
           users_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization_users({ org_id: organization_id });
             }
@@ -1749,7 +1728,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1758,7 +1737,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['can_invite_member', 'can_remove_member', 'requires_owner', 'requires_member', 'requires_superuser']).then(
                 (data) => {
@@ -1792,7 +1771,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1814,7 +1793,7 @@ SEED_app.config([
             'postoffice_service',
             'templates_payload',
             '$stateParams',
-            function (postoffice_service, templates_payload, $stateParams) {
+            (postoffice_service, templates_payload, $stateParams) => {
               const validTemplateIds = _.map(templates_payload, 'id');
               const lastTemplateId = postoffice_service.get_last_template($stateParams.organization_id);
               if (_.includes(validTemplateIds, lastTemplateId)) {
@@ -1836,7 +1815,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1850,7 +1829,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1877,7 +1856,7 @@ SEED_app.config([
           organization_payload: [
             'organization_service',
             '$stateParams',
-            function (organization_service, $stateParams) {
+            (organization_service, $stateParams) => {
               const { organization_id } = $stateParams;
               return organization_service.get_organization(organization_id);
             }
@@ -1885,7 +1864,7 @@ SEED_app.config([
           derived_column_payload: [
             'derived_columns_service',
             '$stateParams',
-            function (derived_columns_service, $stateParams) {
+            (derived_columns_service, $stateParams) => {
               if ($stateParams.derived_column_id === undefined) {
                 return {};
               }
@@ -1897,7 +1876,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'derived_columns_service',
-            function ($stateParams, user_service, derived_columns_service) {
+            ($stateParams, user_service, derived_columns_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -1916,7 +1895,7 @@ SEED_app.config([
             'auth_service',
             '$stateParams',
             '$q',
-            function (auth_service, $stateParams, $q) {
+            (auth_service, $stateParams, $q) => {
               const { organization_id } = $stateParams;
               return auth_service.is_authorized(organization_id, ['requires_owner']).then(
                 (data) => {
@@ -1944,7 +1923,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
             }
@@ -1953,7 +1932,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -1972,7 +1951,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
               } if ($stateParams.inventory_type === 'taxlots') {
@@ -1984,7 +1963,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'derived_columns_service',
-            function ($stateParams, user_service, derived_columns_service) {
+            ($stateParams, user_service, derived_columns_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -2009,7 +1988,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('List View Profile', inventory_type, true);
             }
@@ -2018,7 +1997,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -2035,7 +2014,7 @@ SEED_app.config([
           filter_groups: [
             '$stateParams',
             'filter_groups_service',
-            function ($stateParams, filter_groups_service) {
+            ($stateParams, filter_groups_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return filter_groups_service.get_filter_groups(inventory_type);
             }
@@ -2044,7 +2023,7 @@ SEED_app.config([
             '$stateParams',
             'filter_groups_service',
             'filter_groups',
-            function ($stateParams, filter_groups_service, filter_groups) {
+            ($stateParams, filter_groups_service, filter_groups) => {
               const validFilterGroupIds = _.map(filter_groups, 'id');
               const lastFilterGroupId = filter_groups_service.get_last_filter_group($stateParams.inventory_type);
               if (_.includes(validFilterGroupIds, lastFilterGroupId)) {
@@ -2056,7 +2035,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
               } if ($stateParams.inventory_type === 'taxlots') {
@@ -2119,7 +2098,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('List View Profile', inventory_type, true);
             }
@@ -2128,7 +2107,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -2145,7 +2124,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
               } if ($stateParams.inventory_type === 'taxlots') {
@@ -2176,7 +2155,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'current_profile',
-            function ($stateParams, inventory_service, current_profile) {
+            ($stateParams, inventory_service, current_profile) => {
               const last_selected_cycle_ids = inventory_service.get_last_selected_cycles() || [];
               const profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
               if ($stateParams.inventory_type === 'properties') {
@@ -2189,7 +2168,7 @@ SEED_app.config([
           matching_criteria_columns: [
             'user_service',
             'organization_service',
-            function (user_service, organization_service) {
+            (user_service, organization_service) => {
               const org_id = user_service.get_organization().id;
               return organization_service.matching_criteria_columns(org_id);
             }
@@ -2201,7 +2180,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
             }
@@ -2210,7 +2189,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -2224,7 +2203,7 @@ SEED_app.config([
           all_columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns();
               } if ($stateParams.inventory_type === 'taxlots') {
@@ -2249,7 +2228,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               let promise;
@@ -2269,7 +2248,7 @@ SEED_app.config([
             'user_service',
             'inventory_service',
             'inventory_payload',
-            function ($stateParams, user_service, inventory_service, inventory_payload) {
+            ($stateParams, user_service, inventory_service, inventory_payload) => {
               const organization_id = user_service.get_organization().id;
               let promise;
               if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property_views(organization_id, inventory_payload.property.id);
@@ -2283,7 +2262,7 @@ SEED_app.config([
             'analyses_service',
             '$stateParams',
             'inventory_payload',
-            function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            (inventory_service, analyses_service, $stateParams, inventory_payload) => {
               if ($stateParams.inventory_type !== 'properties') return [];
               return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
             }
@@ -2291,7 +2270,7 @@ SEED_app.config([
           columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns().then((columns) => {
                   _.remove(columns, 'related');
@@ -2310,7 +2289,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'derived_columns_service',
-            function ($stateParams, user_service, derived_columns_service) {
+            ($stateParams, user_service, derived_columns_service) => {
               const organization_id = user_service.get_organization().id;
               return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
@@ -2318,7 +2297,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
@@ -2332,7 +2311,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -2366,7 +2345,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               let promise;
@@ -2384,7 +2363,7 @@ SEED_app.config([
           columns: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               if ($stateParams.inventory_type === 'properties') {
                 return inventory_service.get_property_columns().then((columns) => {
                   _.remove(columns, 'related');
@@ -2406,7 +2385,7 @@ SEED_app.config([
           profiles: [
             '$stateParams',
             'inventory_service',
-            function ($stateParams, inventory_service) {
+            ($stateParams, inventory_service) => {
               const inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
               return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
             }
@@ -2415,7 +2394,7 @@ SEED_app.config([
             '$stateParams',
             'inventory_service',
             'profiles',
-            function ($stateParams, inventory_service, profiles) {
+            ($stateParams, inventory_service, profiles) => {
               const validProfileIds = _.map(profiles, 'id');
               const lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
               if (_.includes(validProfileIds, lastProfileId)) {
@@ -2443,7 +2422,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               let promise;
@@ -2480,7 +2459,7 @@ SEED_app.config([
             'user_service',
             'inventory_service',
             'inventory_payload',
-            function ($stateParams, user_service, inventory_service, inventory_payload) {
+            ($stateParams, user_service, inventory_service, inventory_payload) => {
               const organization_id = user_service.get_organization().id;
               let promise;
               if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property_views(organization_id, inventory_payload.property.id);
@@ -2501,7 +2480,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               const promise = inventory_service.get_property(view_id);
@@ -2518,7 +2497,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'meter_service',
-            function ($stateParams, user_service, meter_service) {
+            ($stateParams, user_service, meter_service) => {
               const organization_id = user_service.get_organization().id;
               return meter_service.property_meter_usage($stateParams.view_id, organization_id, 'Exact');
             }
@@ -2527,7 +2506,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'meter_service',
-            function ($stateParams, user_service, meter_service) {
+            ($stateParams, user_service, meter_service) => {
               const organization_id = user_service.get_organization().id;
               return meter_service.get_meters($stateParams.view_id, organization_id);
             }
@@ -2553,7 +2532,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               const promise = inventory_service.get_property(view_id);
@@ -2570,7 +2549,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'sensor_service',
-            function ($stateParams, user_service, sensor_service) {
+            ($stateParams, user_service, sensor_service) => {
               const organization_id = user_service.get_organization().id;
               return sensor_service.property_sensor_usage($stateParams.view_id, organization_id, 'Exact');
             }
@@ -2579,7 +2558,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'sensor_service',
-            function ($stateParams, user_service, sensor_service) {
+            ($stateParams, user_service, sensor_service) => {
               const organization_id = user_service.get_organization().id;
               return sensor_service.get_sensors($stateParams.view_id, organization_id);
             }
@@ -2588,7 +2567,7 @@ SEED_app.config([
             '$stateParams',
             'user_service',
             'sensor_service',
-            function ($stateParams, user_service, sensor_service) {
+            ($stateParams, user_service, sensor_service) => {
               const organization_id = user_service.get_organization().id;
               return sensor_service.get_data_loggers($stateParams.view_id, organization_id);
             }
@@ -2614,7 +2593,7 @@ SEED_app.config([
             '$state',
             '$stateParams',
             'inventory_service',
-            function ($state, $stateParams, inventory_service) {
+            ($state, $stateParams, inventory_service) => {
               // load `get_building` before page is loaded to avoid page flicker.
               const { view_id } = $stateParams;
               const promise = inventory_service.get_property(view_id);
@@ -2632,7 +2611,7 @@ SEED_app.config([
             'event_service',
             'user_service',
             'inventory_payload',
-            function ($stateParams, event_service, user_service, inventory_payload) {
+            ($stateParams, event_service, user_service, inventory_payload) => {
               const organization_id = user_service.get_organization().id;
               const property_id = inventory_payload.property.id;
               return event_service.get_events(organization_id, $stateParams.inventory_type, property_id);
@@ -2663,7 +2642,7 @@ SEED_app.config([
           auth_payload: [
             'auth_service',
             'user_service',
-            function (auth_service, user_service) {
+            (auth_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']);
             }
@@ -2692,7 +2671,7 @@ SEED_app.config([
           auth_payload: [
             'auth_service',
             'user_service',
-            function (auth_service, user_service) {
+            (auth_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']);
             }
@@ -2717,7 +2696,7 @@ SEED_app.config([
           auth_payload: [
             'auth_service',
             'user_service',
-            function (auth_service, user_service) {
+            (auth_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']);
             }
@@ -2755,7 +2734,7 @@ SEED_app.config([
           ],
           filter_groups: [
             'filter_groups_service',
-            function (filter_groups_service) {
+            (filter_groups_service) => {
               const inventory_type = 'Property'; // just properties for now
               return filter_groups_service.get_filter_groups(inventory_type);
             }
@@ -2771,7 +2750,7 @@ SEED_app.config([
           auth_payload: [
             'auth_service',
             'user_service',
-            function (auth_service, user_service) {
+            (auth_service, user_service) => {
               const organization_id = user_service.get_organization().id;
               return auth_service.is_authorized(organization_id, ['requires_member']);
             }
@@ -2809,7 +2788,7 @@ SEED_app.config([
           ],
           filter_groups: [
             'filter_groups_service',
-            function (filter_groups_service) {
+            (filter_groups_service) => {
               const inventory_type = 'Property'; // just properties for now
               return filter_groups_service.get_filter_groups(inventory_type);
             }
@@ -2821,7 +2800,7 @@ SEED_app.config([
 
 SEED_app.config([
   '$httpProvider',
-  function ($httpProvider) {
+  ($httpProvider) => {
     $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
     $httpProvider.defaults.paramSerializer = 'httpParamSerializerSeed';
   }
@@ -2832,7 +2811,7 @@ SEED_app.config([
  */
 SEED_app.config([
   '$compileProvider',
-  function ($compileProvider) {
+  ($compileProvider) => {
     $compileProvider.debugInfoEnabled(window.BE.debug);
     $compileProvider.commentDirectivesEnabled(false);
     // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
@@ -2841,7 +2820,7 @@ SEED_app.config([
 
 SEED_app.config([
   '$translateProvider',
-  function ($translateProvider) {
+  ($translateProvider) => {
     // Log un-translated strings when running in debug mode
     // if (window.BE.debug) {
     //   $translateProvider.useMissingTranslationHandlerLog();
@@ -2900,7 +2879,7 @@ SEED_app.constant('naturalSort', (a, b) => {
   const xD = xN.length !== 1 && Date.parse(x);
   const yD = (xD && y.match(dre) && Date.parse(y)) || null;
   const normChunk = (s, l) => // normalize spaces; find floats not starting with '0', string or 0 if not defined (Clint Priest)
-    ((!s.match(ore) || l == 1) && parseFloat(s)) || s.replace(snre, ' ').replace(sre, '') || 0;
+    ((!s.match(ore) || l === 1) && parseFloat(s)) || s.replace(snre, ' ').replace(sre, '') || 0;
   let oFxNcL;
   let oFyNcL;
   // first try and sort Dates
@@ -2913,8 +2892,8 @@ SEED_app.constant('naturalSort', (a, b) => {
     oFxNcL = normChunk(xN[cLoc] || '', xNl);
     oFyNcL = normChunk(yN[cLoc] || '', yNl);
     // handle numeric vs string comparison - number < string - (Kyle Adams)
-    if (isNaN(oFxNcL) !== isNaN(oFyNcL)) {
-      return isNaN(oFxNcL) ? 1 : -1;
+    if (Number.isNaN(oFxNcL) !== Number.isNaN(oFyNcL)) {
+      return Number.isNaN(oFxNcL) ? 1 : -1;
     }
     // if unicode use locale comparison
     if (/[^\x00-\x80]/.test(oFxNcL + oFyNcL) && oFxNcL.localeCompare) {

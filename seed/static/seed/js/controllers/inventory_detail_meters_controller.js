@@ -50,7 +50,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
 
-    const resetSelections = function () {
+    const resetSelections = () => {
       $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
     };
 
@@ -139,7 +139,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       }
     };
 
-    $scope.open_meter_deletion_modal = function (meter) {
+    $scope.open_meter_deletion_modal = (meter) => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
         controller: 'meter_deletion_modal_controller',
@@ -151,7 +151,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       });
     };
 
-    $scope.apply_column_settings = function () {
+    $scope.apply_column_settings = () => {
       _.forEach($scope.meterReadGridOptions.columnDefs, (column) => {
         column.enableHiding = false;
         column.enableColumnResizing = true;
@@ -191,7 +191,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     };
 
     // given the meter selections, it returns the filtered readings and column defs
-    const filterByMeterSelections = function (readings, columnDefs) {
+    const filterByMeterSelections = (readings, columnDefs) => {
       // filter according to meter selections
       const selected_meters = $scope.meterGridApi.selection.getSelectedGridRows();
       const selectedMeterLabels = selected_meters.map((row) => getMeterLabel(row.entity));
@@ -200,8 +200,8 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     };
 
     // filters the meter readings by selected meters and updates the table
-    $scope.applyFilters = function () {
-      results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
+    $scope.applyFilters = () => {
+      const results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
       $scope.data = results.readings;
       $scope.meterReadGridOptions.columnDefs = results.columnDefs;
       $scope.has_meters = meters.length > 0;
@@ -211,10 +211,10 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
-    $scope.refresh_meters_and_readings = function () {
+    $scope.refresh_meters_and_readings = () => {
       spinner_utility.show();
-      get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-      get_readings_Promise = meter_service.property_meter_usage(
+      const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
+      const get_readings_Promise = meter_service.property_meter_usage(
         $scope.inventory.view_id,
         $scope.organization.id,
         $scope.interval.selected,
@@ -232,7 +232,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
-    $scope.refresh_readings = function () {
+    $scope.refresh_readings = () => {
       spinner_utility.show();
       meter_service
         .property_meter_usage(
@@ -251,7 +251,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         });
     };
 
-    $scope.open_green_button_upload_modal = function () {
+    $scope.open_green_button_upload_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/green_button_upload_modal.html`,
         controller: 'green_button_upload_modal_controller',
@@ -264,7 +264,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       });
     };
 
-    const get_inventory_display_name = function (property_type) {
+    const get_inventory_display_name = (property_type) => {
       let error = '';
       let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
       if (!(field in $scope.item_state)) {
@@ -278,7 +278,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
     };
 
-    $scope.updateHeight = function () {
+    $scope.updateHeight = () => {
       let height = 0;
       _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], (selector) => {
         const element = angular.element(selector)[0];

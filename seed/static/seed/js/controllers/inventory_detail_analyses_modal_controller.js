@@ -44,12 +44,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
     $scope.invalidDates = false; // set this to true when startDate >= endDate;
 
     // Handle datepicker open/close events
-    $scope.openStartDatePicker = function ($event) {
+    $scope.openStartDatePicker = ($event) => {
       $event.preventDefault();
       $event.stopPropagation();
       $scope.datePickersOpen.start = true;
     };
-    $scope.openEndDatePicker = function ($event) {
+    $scope.openEndDatePicker = ($event) => {
       $event.preventDefault();
       $event.stopPropagation();
       $scope.datePickersOpen.end = true;
@@ -111,7 +111,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
     };
 
     /* Create a new analysis based on user input */
-    $scope.submitNewAnalysisForm = function (form) {
+    $scope.submitNewAnalysisForm = (form) => {
       if (form.$invalid) {
         return;
       }
@@ -134,7 +134,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
     };
 
     /* User has cancelled dialog */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
@@ -147,13 +147,13 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
       $scope.checkInvalidDate();
     });
 
-    $scope.checkInvalidDate = function () {
+    $scope.checkInvalidDate = () => {
       const { start_date, end_date } = $scope.new_analysis.configuration.meter ?? {};
       $scope.invalidDates = end_date < start_date;
     };
 
     $scope.changeCycle = (cycle_id) => {
-      const selected_cycle = $scope.cycles.find((c) => c.id == cycle_id);
+      const selected_cycle = $scope.cycles.find((c) => c.id === cycle_id);
       $scope.new_analysis.configuration.cycle_name = selected_cycle.name;
     };
   }

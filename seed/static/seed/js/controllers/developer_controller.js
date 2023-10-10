@@ -4,12 +4,13 @@
  */
 angular.module('BE.seed.controller.developer', []).controller('developer_controller', [
   '$scope',
+  '$location',
   'urls',
   'auth_payload',
   'user_profile_payload',
   'user_service',
   // eslint-disable-next-line func-names
-  function ($scope, urls, auth_payload, user_profile_payload, user_service) {
+  function ($scope, $location, urls, auth_payload, user_profile_payload, user_service) {
     $scope.is_superuser = auth_payload.auth.requires_superuser;
     $scope.user = user_profile_payload;
     $scope.new_key_generated = false;
@@ -25,6 +26,12 @@ angular.module('BE.seed.controller.developer', []).controller('developer_control
       });
     };
 
-    $scope.getHost = () => `${location.protocol}//${location.host}`;
+    const protocol = $location.protocol();
+    const host = $location.host();
+    const port = $location.port();
+    let showPort = false;
+    if ((protocol === 'http' && port !== 80) || (protocol === 'https' && port !== 443)) showPort = true;
+
+    $scope.getHost = () => `${protocol}://${host}${showPort ? `:${port}` : ''}`;
   }
 ]);
