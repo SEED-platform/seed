@@ -56,7 +56,7 @@ autodoc_mock_imports = [
 templates_path = ['_templates']
 
 # Location of word list.
-spelling_word_list_filename = '../../.cspell/custom-dictionary-workspace.txt'
+spelling_word_list_filename = '../../.cspell.json'
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
