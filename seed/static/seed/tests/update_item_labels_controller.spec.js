@@ -142,6 +142,7 @@ describe('controller: update_item_labels_modal_controller', function () {
       label_service: mock_label_service,
       inventory_ids: [],
       inventory_type: 'properties',
+      is_ali_root: true,
       notification: mock_notification
     });
 
