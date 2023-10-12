@@ -28,12 +28,15 @@
     "lodash": "^4.17.21",
     "postcss-cli": "^10.1.0",
     "protractor": "^7.0.0",
+    "stylelint": "^15.10.3",
+    "stylelint-config-standard-scss": "^11.0.0",
     "webdriver-manager": "^12.1.9"
   },
   "scripts": {
     "lint": "npx eslint \"seed/{docs,static}/**/*.js\"",
     "lint:fix": "npm run lint -- --fix",
     "postinstall": "cd vendors && npm install",
+    "stylelint:fix": "stylelint seed/static/seed/scss/style.scss --fix",
     "test": "npx protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   },
   "browserslist": [
