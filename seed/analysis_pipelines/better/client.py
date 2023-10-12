@@ -402,8 +402,8 @@ class BETTERClient:
             response = polling.poll(
                 lambda: requests.request("GET", url, headers=headers),
                 check_success=is_ready,
-                timeout=60,
-                step=1)
+                timeout=300,
+                step=5)
         except TimeoutError:
             return None, ['BETTER analysis timed out']
 
