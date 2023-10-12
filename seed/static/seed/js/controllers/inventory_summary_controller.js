@@ -57,6 +57,7 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
         charts_loaded = true;
         $scope.charts.forEach((config) => {
           const svg = dimple.newSvg(`#chart-${config.name}`, '100%', 500);
+          // eslint-disable-next-line new-cap
           const chart = new dimple.chart(svg, []);
           const xaxis = chart.addCategoryAxis('x', config.x);
           xaxis.title = config.xLabel;

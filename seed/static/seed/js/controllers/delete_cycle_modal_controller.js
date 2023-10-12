@@ -75,17 +75,17 @@ angular.module('BE.seed.controller.delete_cycle_modal', []).controller('delete_c
       cycle_service
         .delete_cycle($scope.cycle_id, $scope.organization_id)
         .then((data) => {
-          function successHandler() {
+          const successHandler = () => {
             $scope.delete_cycle_status = 'success';
             $scope.uploader.in_progress = false;
-          }
-          function errorHandler(err) {
+          };
+          const errorHandler = (err) => {
             // console.error('Failed to delete cycle: ');
             // console.error(err);
             $scope.delete_cycle_status = 'failed';
             $scope.error_occurred = true;
             $scope.uploader.in_progress = false;
-          }
+          };
           uploader_service.check_progress_loop(data.progress_key, 0, 1, successHandler, errorHandler, $scope.uploader);
         })
         .catch((res) => {

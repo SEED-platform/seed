@@ -70,13 +70,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       })
       .then((response) => response.data);
 
-    data_quality_factory.data_quality_checks_status = function (progress_key) {
-      const deferred = $q.defer();
-      checkStatusLoop(deferred, progress_key);
-      return deferred.promise;
-    };
-
-    var checkStatusLoop = function (deferred, progress_key) {
+    const checkStatusLoop = (deferred, progress_key) => {
       $http.get(`/api/v3/progress/${progress_key}/`).then(
         (response) => {
           $timeout(() => {
@@ -91,6 +85,12 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
           deferred.reject(error);
         }
       );
+    };
+
+    data_quality_factory.data_quality_checks_status = (progress_key) => {
+      const deferred = $q.defer();
+      checkStatusLoop(deferred, progress_key);
+      return deferred.promise;
     };
 
     return data_quality_factory;

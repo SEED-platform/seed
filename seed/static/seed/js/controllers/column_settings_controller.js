@@ -104,7 +104,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       const change_to = column.merge_protection === 'Favor New' ? 'Favor Existing' : 'Favor New';
 
       const geocoding_results_columns = ['geocoding_confidence', 'longitude', 'latitude'];
-      if (_.includes(geocoding_results_columns, column.column_name)) {
+      if (geocoding_results_columns.includes(column.column_name)) {
         geocoding_results_columns.forEach((geo_col) => {
           _.find($scope.columns, { column_name: geo_col }).merge_protection = change_to;
         });

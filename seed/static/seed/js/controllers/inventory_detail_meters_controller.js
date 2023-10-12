@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     resetSelections();
 
-    deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    const deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',
@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         $scope.meterGridApi.selection.on.rowSelectionChangedBatch($scope, $scope.applyFilters);
 
         // only run once, once data is ready, TODO: find a better way to do this.
-        init = true;
+        let init = true;
         $scope.meterGridApi.core.on.rowsRendered($scope, () => {
           if (init) {
             $scope.meterGridApi.selection.selectAllRows();
@@ -179,7 +179,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     // given a list of meter labels, it returns the filtered readings and column defs
     // This is used by the primary filterBy... functions
-    const filterByMeterLabels = function filterByMeterLabels(readings, columnDefs, meterLabels) {
+    const filterByMeterLabels = (readings, columnDefs, meterLabels) => {
       const timeColumns = ['start_time', 'end_time', 'month', 'year'];
       const selectedColumns = meterLabels.concat(timeColumns);
       const filteredReadings = readings.filter((reading) => meterLabels.some((label) => Object.keys(reading).includes(label)));

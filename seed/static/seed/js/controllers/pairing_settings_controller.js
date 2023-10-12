@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
     $scope.propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, propertyColumns);
     $scope.taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, taxlotColumns);
 
-    const restorePropertyDefaults = function () {
+    const restorePropertyDefaults = () => {
       pairing_service.removeSettings(`${localStorageKey}.properties`);
       $scope.propertyColumns = pairing_service.loadPropertyColumns(localStorageKey, propertyColumns);
       _.defer(() => {
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
       });
     };
 
-    const restoreTaxlotDefaults = function () {
+    const restoreTaxlotDefaults = () => {
       pairing_service.removeSettings(`${localStorageKey}.taxlots`);
       $scope.taxlotColumns = pairing_service.loadTaxlotColumns(localStorageKey, taxlotColumns);
       _.defer(() => {
@@ -44,24 +44,24 @@ angular.module('BE.seed.controller.pairing_settings', []).controller('pairing_se
       });
     };
 
-    const savePropertySettings = function () {
+    const savePropertySettings = () => {
       $scope.propertyColumns = pairing_service.reorderSettings($scope.propertyColumns);
       pairing_service.savePropertyColumns(localStorageKey, $scope.propertyColumns);
     };
 
-    const saveTaxlotSettings = function () {
+    const saveTaxlotSettings = () => {
       $scope.taxlotColumns = pairing_service.reorderSettings($scope.taxlotColumns);
       pairing_service.saveTaxlotColumns(localStorageKey, $scope.taxlotColumns);
     };
 
-    const propertyRowSelectionChanged = function () {
+    const propertyRowSelectionChanged = () => {
       _.forEach($scope.propertyGridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
       });
       savePropertySettings();
     };
 
-    const taxlotRowSelectionChanged = function () {
+    const taxlotRowSelectionChanged = () => {
       _.forEach($scope.taxlotGridApi.grid.rows, (row) => {
         row.entity.visible = row.isSelected;
       });

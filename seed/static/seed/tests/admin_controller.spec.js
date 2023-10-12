@@ -2,54 +2,50 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: admin_controller', function () {
-  var mock_organization_service;
-  var mock_uploader_service;
-  var controller, admin_controller_scope;
+describe('controller: admin_controller', () => {
+  let mock_organization_service;
+  let mock_uploader_service;
+  let controller; let
+    admin_controller_scope;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, user_service, organization_service, uploader_service, $q) {
+    inject(($controller, $rootScope, user_service, organization_service, uploader_service, $q) => {
       admin_controller_scope = $rootScope.$new();
       controller = $controller;
       mock_organization_service = organization_service;
       mock_uploader_service = uploader_service;
 
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(function () {
+      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.reject({
+        $q.reject({
           status: 'fail'
-        });
-      });
-      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(function () {
+        }));
+      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.reject({
+        $q.reject({
           status: 'fail'
-        });
-      });
-      spyOn(mock_organization_service, 'remove_user').andCallFake(function () {
+        }));
+      spyOn(mock_organization_service, 'remove_user').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.reject({
+        $q.reject({
           status: 'fail'
-        });
-      });
-      spyOn(mock_organization_service, 'get_organizations').andCallFake(function () {
+        }));
+      spyOn(mock_organization_service, 'get_organizations').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.reject({
+        $q.reject({
           status: 'fail'
-        });
-      });
-      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(function () {
+        }));
+      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve({
+        $q.resolve({
           status: 'success'
-        });
-      });
-      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake(function (progress, num, num2, cb) {
+        }));
+      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
         // return $q.reject for error scenario
         cb();
         return $q.resolve({
@@ -76,7 +72,9 @@ describe('controller: admin_controller', function () {
             sub_orgs: [],
             number_of_users: 1,
             id: 1,
-            owners: [{ first_name: 'Seed', last_name: 'User', email: 'demo@example.com', id: 1 }],
+            owners: [{
+              first_name: 'Seed', last_name: 'User', email: 'demo@example.com', id: 1
+            }],
             name: 'SEED',
             created: '2017-01-01',
             org_id: 1,
@@ -114,8 +112,8 @@ describe('controller: admin_controller', function () {
     });
   }
 
-  describe('update_alert', function () {
-    it('should set the show state to true', function () {
+  describe('update_alert', () => {
+    it('should set the show state to true', () => {
       // arrange
       create_admin_controller();
 
@@ -127,10 +125,10 @@ describe('controller: admin_controller', function () {
       expect(admin_controller_scope.alert.message).toBe('test message');
     });
 
-    it('should raise a confirm window when the delete buildings button is clicked', function () {
+    it('should raise a confirm window when the delete buildings button is clicked', () => {
       // arrange
       create_admin_controller();
-      var oldConfirm = confirm;
+      const oldConfirm = confirm;
       confirm = jasmine.createSpy();
 
       // act
@@ -143,7 +141,7 @@ describe('controller: admin_controller', function () {
       confirm = oldConfirm;
     });
 
-    it('should error get orgs', function () {
+    it('should error get orgs', () => {
       // arrange
       create_admin_controller();
 
@@ -159,7 +157,7 @@ describe('controller: admin_controller', function () {
       expect(mock_organization_service.get_organization_users).toHaveBeenCalled();
     });
 
-    it('should delete orgs', function () {
+    it('should delete orgs', () => {
       // arrange
       create_admin_controller();
 

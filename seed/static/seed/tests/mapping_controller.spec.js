@@ -2,21 +2,23 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: mapping_controller', function () {
+describe('controller: mapping_controller', () => {
   // globals set up and used in each test scenario
-  var mock_inventory_service, controller;
-  var mapping_controller_scope;
-  var timeout, mock_geocode_service, mock_user_service, mock_organization_service;
+  let mock_inventory_service; let
+    controller;
+  let mapping_controller_scope;
+  let timeout; let mock_geocode_service; let mock_user_service; let
+    mock_organization_service;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, organization_service, user_service) {
+    inject(($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, organization_service, user_service) => {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
       timeout = $timeout;
@@ -24,31 +26,23 @@ describe('controller: mapping_controller', function () {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_user_service, 'set_default_columns').andCallFake(function () {
-        return undefined;
-      });
+      spyOn(mock_user_service, 'set_default_columns').andCallFake(() => undefined);
 
-      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(function () {
-        return $q.resolve({
-          status: 'success'
-        });
-      });
+      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({
+        status: 'success'
+      }));
 
-      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(function () {
-        return $q.resolve(true);
-      });
+      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(() => $q.resolve(true));
 
-      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(function () {
-        return $q.resolve({
-          status: 'success'
-        });
-      });
+      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(() => $q.resolve({
+        status: 'success'
+      }));
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_mapping_controller() {
-    var mock_datasets = [
+    const mock_datasets = [
       {
         name: 'DC 2013 data',
         last_modified: new Date().getTime(),
@@ -64,7 +58,7 @@ describe('controller: mapping_controller', function () {
         id: 2
       }
     ];
-    var fake_import_file_payload = {
+    const fake_import_file_payload = {
       status: 'success',
       import_file: {
         file_name: 'assessor_fun.csv',
@@ -77,7 +71,7 @@ describe('controller: mapping_controller', function () {
       }
     };
 
-    var fake_property_columns = [
+    const fake_property_columns = [
       {
         column_name: 'pm_property_id',
         data_type: 'string',
@@ -147,7 +141,7 @@ describe('controller: mapping_controller', function () {
       }
     ];
 
-    var fake_taxlot_columns = [
+    const fake_taxlot_columns = [
       {
         column_name: 'address_line_1',
         data_type: 'string',
@@ -193,7 +187,7 @@ describe('controller: mapping_controller', function () {
       }
     ];
 
-    var mock_mapping_suggestions_payload = {
+    const mock_mapping_suggestions_payload = {
       status: 'success',
       suggested_column_mappings: {
         'property id': ['PropertyState', 'pm_property_id', 90],
@@ -206,18 +200,18 @@ describe('controller: mapping_controller', function () {
       taxlot_columns: fake_taxlot_columns
     };
 
-    var mock_matching_criteria_columns_payload = {
+    const mock_matching_criteria_columns_payload = {
       PropertyState: ['address_line_1', 'custom_id_1', 'pm_property_id', 'ubid'],
       TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ubid']
     };
 
-    var mock_raw_column_names = ['property id', 'property_name', 'property_notes', 'lot number', 'lot size'];
+    const mock_raw_column_names = ['property id', 'property_name', 'property_notes', 'lot number', 'lot size'];
 
-    var mock_first_five_rows = [];
-    for (var i = 0; i < 4; i++) {
+    const mock_first_five_rows = [];
+    for (let i = 0; i < 4; i++) {
       mock_first_five_rows.push({
         'property id': i,
-        property_name: 'Property ' + i,
+        property_name: `Property ${i}`,
         property_notes: 'Nup.',
         'lot number': i * 2,
         'lot size': 454 * i
@@ -232,7 +226,7 @@ describe('controller: mapping_controller', function () {
       'lot size': 45
     });
 
-    var mock_cycles = {
+    const mock_cycles = {
       cycles: []
     };
 
@@ -241,15 +235,15 @@ describe('controller: mapping_controller', function () {
       name: 'my fake cycle'
     });
 
-    var raw_columns_payload = {
+    const raw_columns_payload = {
       status: 'success',
       raw_columns: mock_raw_column_names
     };
-    var first_five_rows_payload = {
+    const first_five_rows_payload = {
       status: 'success',
       first_five_rows: mock_first_five_rows
     };
-    var fake_derived_columns_payload = {
+    const fake_derived_columns_payload = {
       derived_columns: []
     };
 
@@ -265,8 +259,8 @@ describe('controller: mapping_controller', function () {
       $scope: mapping_controller_scope,
       import_file_payload: fake_import_file_payload,
       suggested_mappings_payload: mock_mapping_suggestions_payload,
-      raw_columns_payload: raw_columns_payload,
-      first_five_rows_payload: first_five_rows_payload,
+      raw_columns_payload,
+      first_five_rows_payload,
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
       column_mapping_profiles_payload: [],
       cycles: mock_cycles,
@@ -280,7 +274,7 @@ describe('controller: mapping_controller', function () {
    * Test scenarios
    */
 
-  it('should have an import_file_payload', function () {
+  it('should have an import_file_payload', () => {
     // arrange
     create_mapping_controller();
 
@@ -294,7 +288,7 @@ describe('controller: mapping_controller', function () {
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  it('should detect duplicates', function () {
+  it('should detect duplicates', () => {
     create_mapping_controller();
     mapping_controller_scope.$digest();
     mapping_controller_scope.mappings[0].suggestion = 'PM Property ID';
@@ -336,16 +330,16 @@ describe('controller: mapping_controller', function () {
   //     expect(mock_user_service.set_default_columns).toHaveBeenCalled();
   // });
 
-  it('should enable the "show & review buildings" button if duplicates are not present', function () {
+  it('should enable the "show & review buildings" button if duplicates are not present', () => {
     // arrange
     create_mapping_controller();
 
     // act
     mapping_controller_scope.$digest();
-    for (var i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
+    for (let i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    var duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicates_present;
 
     // assertions
     expect(duplicates_found).toBe(false);
@@ -353,17 +347,17 @@ describe('controller: mapping_controller', function () {
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  it('should disable the "show & review buildings" button if duplicates are present', function () {
+  it('should disable the "show & review buildings" button if duplicates are present', () => {
     // arrange
     create_mapping_controller();
 
     // act
     mapping_controller_scope.$digest();
-    for (var i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
+    for (let i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
       mapping_controller_scope.mappings[i].suggestion = 'PM Property ID';
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    var duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicates_present;
 
     // assertions
     expect(duplicates_found).toBe(true);

@@ -92,7 +92,7 @@ angular.module('sdBasicPropertyInfoChart', []).directive('sdBasicPropertyInfoCha
         /* Create the <div> that holds the svg and the svg itself.
            This method should only be called once. */
         this.createChartSVG = () => {
-          const id = (Math.random() * 1e9).toString(36).replace('.', '_');
+          id = (Math.random() * 1e9).toString(36).replace('.', '_');
           $element.append(`<div class='dimple-graph' id='dng-${id}'></div>`);
 
           // create an svg element
@@ -149,12 +149,20 @@ angular.module('sdBasicPropertyInfoChart', []).directive('sdBasicPropertyInfoCha
            This method can be called each time we need a complete refresh.  */
         this.createChart = () => {
           // create the dimple chart using the d3 selection of our <svg> element
+          // eslint-disable-next-line new-cap
           chart = new dimple.chart(svg, []);
           chart.defaultColors = defaultColors;
           chart.setMargins(120, 20, 60, 40);
 
           chart.noFormats = false; // use autostyle
           chart.draw(0);
+        };
+
+        const my_custom_format = (value) => {
+          if (value && value.length > truncateLength) {
+            return `${value.substring(0, truncateLength)}...`;
+          }
+          return value;
         };
 
         /* Create the axes for the chart, using value passed in from external controller. */
@@ -178,13 +186,6 @@ angular.module('sdBasicPropertyInfoChart', []).directive('sdBasicPropertyInfoCha
             yAxis._getFormat = () => my_custom_format;
           }
         };
-
-        function my_custom_format(value) {
-          if (value && value.length > truncateLength) {
-            return `${value.substring(0, truncateLength)}...`;
-          }
-          return value;
-        }
 
         this.createChartLegend = () => {
           chart.addLegend(200, 10, 360, 20, 'right bottom');

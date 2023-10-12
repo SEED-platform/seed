@@ -3,49 +3,45 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // test Data Quality, labels, delete function and other misc items after data is loaded
-var EC = protractor.ExpectedConditions;
+const EC = protractor.ExpectedConditions;
 
-describe('When I do miscellaneous things', function () {
-  it('should reset sync', function () {
+describe('When I do miscellaneous things', () => {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  //Data Quality
-  it('should see my organizations', function () {
+  // Data Quality
+  it('should see my organizations', () => {
     browser.get('/app/#/accounts');
-    var rows = element.all(by.repeater('org in orgs_I_own'));
+    const rows = element.all(by.repeater('org in orgs_I_own'));
     expect(rows.count()).not.toBeLessThan(1);
   });
 
-  it('should go to parent organization', function () {
-    var myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent)).element(by.xpath('..')).$('.account_org.right');
+  it('should go to parent organization', () => {
+    const myNewOrg = element(by.cssContainingText('.account_org.parent_org', browser.params.testOrg.parent)).element(by.xpath('..')).$('.account_org.right');
     expect(myNewOrg.isPresent()).toBe(true);
     browser.actions().mouseMove(myNewOrg).perform();
     myNewOrg.$$('a').first().click();
   });
 
-  it('should select Data Quality tab', function () {
-    var myOptions = element
+  it('should select Data Quality tab', () => {
+    const myOptions = element
       .all(by.css('a'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          return label === 'Data Quality';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) => label === 'Data Quality'))
       .first();
     myOptions.click();
     expect($('.table_list_container').isPresent()).toBe(true);
   });
 
-  it('should select and edit one rule, click save settings', function () {
-    var rowCount = element.all(by.repeater('rule in ruleGroup'));
+  it('should select and edit one rule, click save settings', () => {
+    const rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-model="rule.min"]')
       .first()
       .click()
       .clear()
-      .then(function () {
+      .then(() => {
         $$('[ng-model="rule.min"]').first().sendKeys('0');
       });
     $$('[ng-click="create_new_rule()"]').first().click();
@@ -56,8 +52,8 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should refresh and change a rule', function () {
-    var rowCount = element.all(by.repeater('rule in ruleGroup'));
+  it('should refresh and change a rule', () => {
+    const rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(1);
 
     $$('[ng-click="selectAll()"]').first().click();
@@ -81,11 +77,11 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should create new label and associate with rule', function () {
-    //no rule should have a label
+  it('should create new label and associate with rule', () => {
+    // no rule should have a label
     expect($('.form-control.label.label-primary').isPresent()).toBe(false);
 
-    //create label but select not created one
+    // create label but select not created one
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $('[ng-click="cancel()"]').click();
     $$('[ng-click="create_label(rule, $index)"]').first().click();
@@ -100,20 +96,20 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="new_label.label = label.label; new_label.color = label.color"]').get(1).click();
     $$('.btn-default.action_link').get(2).click();
 
-    //check label was attached after save and refresh
+    // check label was attached after save and refresh
     $$('[ng-click="save_settings()"]').first().click();
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should reset all rules and add labels', function () {
+  it('should reset all rules and add labels', () => {
     $$('[ng-click="restore_defaults()"]').first().click();
-    var rowCount = element.all(by.repeater('rule in ruleGroup'));
+    const rowCount = element.all(by.repeater('rule in ruleGroup'));
     expect(rowCount.count()).toBe(21);
     $$('[ng-click="reset_all_rules()"]').first().click();
     expect(rowCount.count()).toBe(20);
   });
 
-  it('should add labels to previous rules', function () {
+  it('should add labels to previous rules', () => {
     $('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $$('.btn.btn-sm.btn-default.action_link').get(2).click();
@@ -127,7 +123,7 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should refresh and rules are correctly saved', function () {
+  it('should refresh and rules are correctly saved', () => {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
     $$('[ng-click="remove_label(rule)"]').first().click();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
@@ -135,43 +131,36 @@ describe('When I do miscellaneous things', function () {
     browser.driver.navigate().refresh();
   }, 60000);
 
-  it('should refresh again and check rules', function () {
+  it('should refresh again and check rules', () => {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $$('.btn.btn-sm.btn-default.action_link').get(2).click();
     $$('[ng-click="save_settings()"]').first().click();
   });
 
-  it('should go to labels page and check that new label was created with new rule', function () {
-    var myOptions2 = element
+  it('should go to labels page and check that new label was created with new rule', () => {
+    const myOptions2 = element
       .all(by.css('a'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          return label === 'Labels';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) => label === 'Labels'))
       .first();
     myOptions2.click();
     expect($('b').getText()).toContain('Existing Labels');
 
-    var labelRowCount = element.all(by.repeater('label in labels'));
+    const labelRowCount = element.all(by.repeater('label in labels'));
     expect(labelRowCount.count()).toBe(15);
   });
 
   // Check data quality on inventory page
-  it('should select first item and test data quality modal and presence of rows', function () {
+  it('should select first item and test data quality modal and presence of rows', () => {
     $('#sidebar-inventory').click();
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     $$('.ui-grid-menu-button').first().click();
-    var myOptions = element
+    const myOptions = element
       .all(by.repeater('item in menuItems'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          // expect(label).toBe('fake');
-          return label === '  Clear all filters';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) =>
+      // expect(label).toBe('fake');
+        label === '  Clear all filters'))
       .first();
     myOptions.click();
 
@@ -182,14 +171,14 @@ describe('When I do miscellaneous things', function () {
     $('#btnInventoryActions').click();
     $$('[ng-click="run_data_quality_check()"]').click();
     expect($('.modal-title').getText()).toContain('Data Quality Results');
-    var rowCount = element.all(by.repeater('result in row.data_quality_results'));
+    const rowCount = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount.count()).toBe(0);
     $$('[ng-click="close()"]').click();
   });
 
-  it('should go to taxlots and and test the same', function () {
-    //run on taxlots
+  it('should go to taxlots and and test the same', () => {
+    // run on taxlots
     $('[ui-sref="inventory_list({inventory_type: \'taxlots\'})"]').click();
 
     $$('[ng-click="toggleMenu($event)"]').first().click();
@@ -201,7 +190,7 @@ describe('When I do miscellaneous things', function () {
     $('#btnInventoryActions').click();
     $$('[ng-click="run_data_quality_check()"]').click();
     expect($('.modal-title').getText()).toContain('Data Quality Results');
-    var rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
+    const rowCount3 = element.all(by.repeater('result in row.data_quality_results'));
 
     expect(rowCount3.count()).toBe(5);
     $$('[ng-click="c.toggle_sort()"]').first().click();
@@ -223,10 +212,10 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-click="close()"]').click();
   }, 60000);
 
-  it('should test labels were applied correctly', function () {
-    var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+  it('should test labels were applied correctly', () => {
+    const rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
-    //check labels -
+    // check labels -
     $('[ng-click="clear_labels()"]').click();
     $('#tags-input').click();
     $$('.suggestion-item.selected').first().click();
@@ -243,8 +232,8 @@ describe('When I do miscellaneous things', function () {
     expect(rows.count()).toBe(11);
   });
 
-  it('should test delete and export modals', function () {
-    //select rows and delete
+  it('should test delete and export modals', () => {
+    // select rows and delete
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
     $$('[ng-click="cancel()"]').first().click();
@@ -269,7 +258,7 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="export_selected()"]').click();
   });
 
-  it('should test pin and move', function () {
+  it('should test pin and move', () => {
     $('[ui-sref="inventory_list({inventory_type: \'properties\'})"]').click();
     $$('.ui-grid-icon-angle-down').get(4).click();
     $$('.ui-grid-icon-left-open').first().click();
@@ -279,29 +268,23 @@ describe('When I do miscellaneous things', function () {
     $$('.ui-grid-icon-angle-down').first().click();
     var myOptions = element
       .all(by.repeater('item in menuItems'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          // expect(label).toBe('fake');
-          return label === '  Unpin';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) =>
+      // expect(label).toBe('fake');
+        label === '  Unpin'))
       .first();
     myOptions.click();
 
     $$('.ui-grid-icon-angle-down').first().click();
     var myOptions = element
       .all(by.repeater('item in menuItems'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          // expect(label).toBe('fake');
-          return label === '  Hide Column';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) =>
+      // expect(label).toBe('fake');
+        label === '  Hide Column'))
       .first();
     myOptions.click();
   }, 45000);
 
-  it('should test export modals properties', function () {
+  it('should test export modals properties', () => {
     // reselect rows and export
     $$('[ng-click="selectButtonClick(row, $event)"]').first().click();
     $$('[ng-click="selectButtonClick(row, $event)"]').get(1).click();
@@ -313,7 +296,7 @@ describe('When I do miscellaneous things', function () {
     $('#fileName').sendKeys('someFileName');
     $('[ng-click="export_selected()"]').click();
 
-    //select rows and delete
+    // select rows and delete
     $$('[ng-click="headerButtonClick($event)"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
@@ -324,8 +307,8 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="close()"]').click();
   });
 
-  it('should test delete TL and properties', function () {
-    //select rows and delete
+  it('should test delete TL and properties', () => {
+    // select rows and delete
     $$('[ng-if="grid.options.enableSelectAll"]').first().click();
     $('#btnInventoryActions').click();
     $('[ng-click="open_delete_modal()"]').click();
@@ -347,27 +330,27 @@ describe('When I do miscellaneous things', function () {
     $('[ng-click="close()"]').click();
   }, 45000);
 
-  //Delete
-  it('should check edit and delete stuff for files', function () {
+  // Delete
+  it('should check edit and delete stuff for files', () => {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
-    var rows = element.all(by.repeater('f in dataset.importfiles'));
-    //click and cancel
+    const rows = element.all(by.repeater('f in dataset.importfiles'));
+    // click and cancel
     $$('.delete_link').get(1).click();
     $$('[ng-click="cancel()"]').first().click();
     expect(rows.count()).toBe(2);
-    //click and delete
+    // click and delete
     $$('.delete_link').get(1).click();
     $$('[ng-click="delete_file()"]').first().click();
     expect(rows.count()).toBe(1);
-    //open upload modal
+    // open upload modal
     $$('[ng-click="open_data_upload_modal()"]').get(1).click();
     $('[ng-click="cancel()"].btn-default').click();
 
     $$('[ui-sref="dataset_list"]').first().click();
   });
 
-  it('should check edit and delete stuff for datasets', function () {
+  it('should check edit and delete stuff for datasets', () => {
     $$('[ng-click="open_data_upload_modal()"]').get(1).click();
     $('[ng-click="cancel()"].btn-default').click();
     browser.sleep(1000);

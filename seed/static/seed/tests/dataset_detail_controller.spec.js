@@ -2,20 +2,22 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: dataset_detail_controller', function () {
+describe('controller: dataset_detail_controller', () => {
   // globals set up and used in each test scenario
-  var controller, delete_called;
-  var mock_dataset_service, dataset_detail_controller_scope;
+  let controller; let
+    delete_called;
+  let mock_dataset_service; let
+    dataset_detail_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, dataset_service) {
+    inject(($controller, $rootScope, $uibModal, urls, $q, dataset_service) => {
       controller = $controller;
       dataset_detail_controller_scope = $rootScope.$new();
       delete_called = false;
@@ -23,9 +25,9 @@ describe('controller: dataset_detail_controller', function () {
       // mock the dataset_service factory methods used in the controller
       // and return their promises
       mock_dataset_service = dataset_service;
-      spyOn(mock_dataset_service, 'get_dataset').andCallFake(function () {
+      spyOn(mock_dataset_service, 'get_dataset').andCallFake(() => {
         // return $q.reject for error scenario
-        var fake_importfiles = [
+        const fake_importfiles = [
           {
             name: 'DC_CoveredBuildings_50k.csv',
             number_of_buildings: 511,
@@ -41,7 +43,7 @@ describe('controller: dataset_detail_controller', function () {
             source_type: 'Portfolio Raw'
           }
         ];
-        var fake_dataset = {
+        const fake_dataset = {
           name: 'DC 2013 data',
           last_modified: new Date().getTime(),
           last_modified_by: 'demo@seed-platform.org',
@@ -49,7 +51,7 @@ describe('controller: dataset_detail_controller', function () {
           id: 1,
           importfiles: fake_importfiles
         };
-        var fake_payload = {
+        const fake_payload = {
           status: 'success',
           dataset: fake_dataset
         };
@@ -60,7 +62,7 @@ describe('controller: dataset_detail_controller', function () {
         return $q.resolve(fake_payload);
       });
 
-      spyOn(mock_dataset_service, 'delete_file').andCallFake(function () {
+      spyOn(mock_dataset_service, 'delete_file').andCallFake(() => {
         delete_called = true;
         // console.log({d: 'delete_called'});
         return $q.resolve({
@@ -72,7 +74,7 @@ describe('controller: dataset_detail_controller', function () {
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_dataset_detail_controller() {
-    var fake_importfiles = [
+    const fake_importfiles = [
       {
         name: 'DC_CoveredBuildings_50k.csv',
         number_of_buildings: 511,
@@ -88,7 +90,7 @@ describe('controller: dataset_detail_controller', function () {
         source_type: 'Portfolio Raw'
       }
     ];
-    var fake_dataset = {
+    const fake_dataset = {
       name: 'DC 2013 data',
       last_modified: new Date().getTime(),
       last_modified_by: 'demo@seed-platform.org',
@@ -96,11 +98,11 @@ describe('controller: dataset_detail_controller', function () {
       id: 1,
       importfiles: fake_importfiles
     };
-    var fake_payload = {
+    const fake_payload = {
       status: 'success',
       dataset: fake_dataset
     };
-    var fake_cycles = {
+    const fake_cycles = {
       cycles: [
         {
           end: '2015-01-01',
@@ -123,7 +125,7 @@ describe('controller: dataset_detail_controller', function () {
   /**
    * Test scenarios
    */
-  it('should have an data set payload with import files', function () {
+  it('should have an data set payload with import files', () => {
     // arrange
     create_dataset_detail_controller();
 

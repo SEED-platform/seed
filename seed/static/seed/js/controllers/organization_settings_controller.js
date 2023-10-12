@@ -195,7 +195,9 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $scope.verify_token = () => {
       analyses_service
         .verify_token($scope.org.id)
-        .then((response) => ($scope.token_validity = response.validity ? { message: 'Valid Token', status: 'valid' } : { message: 'Invalid Token', status: 'invalid' }));
+        .then((response) => {
+          $scope.token_validity = response.validity ? { message: 'Valid Token', status: 'valid' } : { message: 'Invalid Token', status: 'invalid' };
+        });
     };
 
     /**
@@ -294,7 +296,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
           }
           promises.push(promise);
         });
-        return Promise.all(promises).then((results) => {
+        return Promise.all(promises).then((/* results */) => {
           $scope.changes_possible = false;
           // retrieve mappings again
           salesforce_mapping_service.get_salesforce_mappings($scope.org.id).then((response) => {
@@ -379,7 +381,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       $scope.sync_sf_msg = null;
       salesforce_config_service
         .sync_salesforce($scope.org.id)
-        .then((response) => {
+        .then((/* response */) => {
           $scope.sync_sf = 'success';
           // reload configs to grab new update date
           salesforce_config_service.get_salesforce_configs($scope.org.id).then((data) => {
@@ -431,7 +433,7 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       // test connection: if works, set to success, if fails set to error.
       salesforce_config_service
         .salesforce_connection($scope.org.id, $scope.conf)
-        .then((response) => {
+        .then((/* response */) => {
           $scope.test_sf = 'success';
         })
         .catch((response) => {

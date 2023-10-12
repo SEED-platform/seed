@@ -2,26 +2,27 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: create_sub_organization_modal_controller', function () {
+describe('controller: create_sub_organization_modal_controller', () => {
   // globals set up and used in each test scenario
-  var mock_organization_service, modal_state;
-  var controller, ctrl_scope;
-  beforeEach(function () {
+  let mock_organization_service; let
+    modal_state;
+  let controller; let
+    ctrl_scope;
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
+    inject(($controller, $rootScope, $uibModal, $q, organization_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
       modal_state = '';
 
       mock_organization_service = organization_service;
-      spyOn(mock_organization_service, 'create_sub_org').andCallFake(function () {
+      spyOn(mock_organization_service, 'create_sub_org').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve({ status: 'success' });
-      });
+        $q.resolve({ status: 'success' }));
     });
   });
 
@@ -45,7 +46,7 @@ describe('controller: create_sub_organization_modal_controller', function () {
    * Test scenarios
    */
 
-  it('should call the organization service to add a new sub_org', function () {
+  it('should call the organization service to add a new sub_org', () => {
     // arrange
     create_sub_organization_modal_controller();
 

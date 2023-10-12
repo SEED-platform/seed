@@ -2,12 +2,13 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: update_item_labels_modal_controller', function () {
+describe('controller: update_item_labels_modal_controller', () => {
   // globals set up and used in each test scenario
-  var mock_label_service, scope, controller, modal_state, mock_notification, mock_new_label_form;
-  var update_controller_scope;
+  let mock_label_service; let scope; let controller; let modal_state; let mock_notification; let
+    mock_new_label_form;
+  let update_controller_scope;
 
-  var available_colors = [
+  const available_colors = [
     {
       label: 'success',
       color: 'green'
@@ -18,7 +19,7 @@ describe('controller: update_item_labels_modal_controller', function () {
     }
   ];
 
-  var all_available_labels = [
+  const all_available_labels = [
     {
       color: 'green',
       is_applied: false,
@@ -69,13 +70,13 @@ describe('controller: update_item_labels_modal_controller', function () {
     }
   ];
 
-  //A new label created by the user via the form
-  var new_label_by_user = {
+  // A new label created by the user via the form
+  const new_label_by_user = {
     color: 'green',
     name: 'user new label'
   };
 
-  var return_obj_for_create_label = {
+  const return_obj_for_create_label = {
     color: 'green',
     is_applied: true,
     id: 100,
@@ -86,13 +87,13 @@ describe('controller: update_item_labels_modal_controller', function () {
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, label_service, Notification) {
+    inject(($controller, $rootScope, $uibModal, $q, label_service, Notification) => {
       controller = $controller;
       scope = $rootScope;
       update_controller_scope = $rootScope.$new();
@@ -101,19 +102,15 @@ describe('controller: update_item_labels_modal_controller', function () {
       // and return their promises (if necessary).
       mock_label_service = label_service;
 
-      spyOn(mock_label_service, 'get_labels').andCallFake(function () {
+      spyOn(mock_label_service, 'get_labels').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve(all_available_labels);
-      });
-      spyOn(mock_label_service, 'create_label').andCallFake(function () {
+        $q.resolve(all_available_labels));
+      spyOn(mock_label_service, 'create_label').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve(return_obj_for_create_label);
-      });
-      spyOn(mock_label_service, 'get_available_colors').andCallFake(function () {
-        return available_colors;
-      });
+        $q.resolve(return_obj_for_create_label));
+      spyOn(mock_label_service, 'get_available_colors').andCallFake(() => available_colors);
 
-      //mock the notification service
+      // mock the notification service
       mock_notification = Notification;
       spyOn(mock_notification, 'primary').andCallFake(() => {
         // Do nothing
@@ -164,14 +161,14 @@ describe('controller: update_item_labels_modal_controller', function () {
     expect(update_controller_scope.new_label.label).toBe('default');
   });
 
-  it('should create a new label and add it to labels array', function () {
-    //arrange
+  it('should create a new label and add it to labels array', () => {
+    // arrange
     create_update_item_labels_modal_controller();
-    //assume user entered following value on form and bindings were updated
+    // assume user entered following value on form and bindings were updated
     update_controller_scope.new_label = new_label_by_user;
     update_controller_scope.newLabelForm = mock_new_label_form;
 
-    //act
+    // act
     update_controller_scope.$digest();
     update_controller_scope.labels = all_available_labels;
 

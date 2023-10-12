@@ -14,7 +14,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
   'user_service',
   'urls',
   'all_columns',
-  'derived_columns_payload',
   'profiles',
   'current_profile',
   'shared_fields_payload',
@@ -33,7 +32,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
     user_service,
     urls,
     all_columns,
-    derived_columns_payload,
     profiles,
     current_profile,
     shared_fields_payload,
@@ -50,8 +48,6 @@ angular.module('BE.seed.controller.inventory_settings', []).controller('inventor
 
     $scope.profiles = profiles;
     $scope.currentProfile = current_profile;
-
-    const { derived_columns } = derived_columns_payload;
 
     $scope.gridOptions = {
       enableColumnMenus: false,

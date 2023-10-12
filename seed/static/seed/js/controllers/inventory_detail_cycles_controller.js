@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
     $scope.organization = organization_payload.organization;
 
     // Flag columns whose values have changed between cycles.
-    const changes_check = function (column) {
+    const changes_check = (column) => {
       let uniq_column_values;
 
       if (column.is_extra_data) {
@@ -84,7 +84,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.inventory_display_name = function (property_type) {
+    $scope.inventory_display_name = (property_type) => {
       let error = '';
       let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
       if (!(field in $scope.base_state)) {
@@ -99,7 +99,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', []).controller('inv
         `(${error}) <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>`;
     };
 
-    $scope.displayValue = function (dataType, value) {
+    $scope.displayValue = (dataType, value) => {
       if (dataType === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }

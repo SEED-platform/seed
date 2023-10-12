@@ -24,7 +24,7 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
 
     $scope.helpBtnText = 'Expand Help';
 
-    $scope.changeHelpBtnText = function (helpBtnText) {
+    $scope.changeHelpBtnText = (helpBtnText) => {
       if (helpBtnText === 'Collapse Help') {
         $scope.helpBtnText = 'Expand Help';
       } else {

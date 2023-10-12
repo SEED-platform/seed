@@ -162,7 +162,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
                     });
                   }
                 })
-                .catch((data) => {
+                .catch(() => {
                   // yikes, something went wrong. Let the caller know the status
                   // probably changed and let's bail
                   status_update_callback(id).then(() => no_current_task_callback(id));

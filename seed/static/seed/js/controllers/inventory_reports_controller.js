@@ -481,7 +481,7 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first
             const colorMap = new Map(colorsArr.map((object) => [object.seriesName, object.color]));
-            for (i = 0; i < the_data.length; i++) {
+            for (let i = 0; i < the_data.length; i++) {
               $scope.aggPointBackgroundColors.push(colorMap.get(the_data[i].yr_e));
             }
             $scope.barChart.update();

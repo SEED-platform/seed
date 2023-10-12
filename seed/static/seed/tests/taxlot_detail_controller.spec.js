@@ -2,20 +2,23 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: inventory_detail_controller', function () {
+describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
-  var controller, ngFilter, ngLog, ngUrls;
-  var inventory_detail_controller_scope;
-  var mock_inventory_service, state;
-  var mock_uib_modal, mock_label_service, mock_label_payload;
+  let controller; let ngFilter; let ngLog; let
+    ngUrls;
+  let inventory_detail_controller_scope;
+  let mock_inventory_service; let
+    state;
+  let mock_uib_modal; let mock_label_service; let
+    mock_label_payload;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
+    inject(($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) => {
       controller = $controller;
       state = $state;
       ngFilter = $filter;
@@ -31,7 +34,7 @@ describe('controller: inventory_detail_controller', function () {
       // and return their promises
       mock_inventory_service = inventory_service;
 
-      spyOn(mock_inventory_service, 'update_taxlot').andCallFake(function (view_id, taxlot_state) {
+      spyOn(mock_inventory_service, 'update_taxlot').andCallFake((view_id, taxlot_state) => {
         inventory_detail_controller_scope.item_state = taxlot_state;
         return $q.resolve({
           status: 'success'
@@ -42,7 +45,7 @@ describe('controller: inventory_detail_controller', function () {
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_inventory_detail_controller() {
-    var fake_taxlot_payload = {
+    const fake_taxlot_payload = {
       taxlot: {
         id: 4,
         organization: 24
@@ -128,8 +131,8 @@ describe('controller: inventory_detail_controller', function () {
       status: 'success'
     };
 
-    //TODO need more example taxlot columns
-    var fake_all_columns = [
+    // TODO need more example taxlot columns
+    const fake_all_columns = [
       {
         title: 'Address Line 1',
         sort_column: 'property_name',
@@ -142,7 +145,7 @@ describe('controller: inventory_detail_controller', function () {
       }
     ];
 
-    var fake_derived_columns_payload = {
+    const fake_derived_columns_payload = {
       derived_columns: []
     };
     controller('inventory_detail_controller', {
@@ -191,7 +194,7 @@ describe('controller: inventory_detail_controller', function () {
    * Test scenarios
    */
 
-  it('should have a TaxLot payload with correct object properties', function () {
+  it('should have a TaxLot payload with correct object properties', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -203,7 +206,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
   });
 
-  it('should make a copy of TaxLot state while making edits', function () {
+  it('should make a copy of TaxLot state while making edits', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -216,7 +219,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.item_copy.address_line_1).toBe('123 Main St.');
   });
 
-  it('should restore enabled the edit fields if a user clicks edit', function () {
+  it('should restore enabled the edit fields if a user clicks edit', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -228,7 +231,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(true);
   });
 
-  it('should restore the copy of TaxLot state if a user clicks cancel', function () {
+  it('should restore the copy of TaxLot state if a user clicks cancel', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -243,7 +246,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
   });
 
-  it('should save the TaxLot state when a user clicks the save button', function () {
+  it('should save the TaxLot state when a user clicks the save button', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -258,7 +261,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.item_state.address_line_1).toEqual('ABC Main St.');
   });
 
-  it('should hide certain TaxLot properties, including ids and extra_data', function () {
+  it('should hide certain TaxLot properties, including ids and extra_data', () => {
     // arrange
     create_inventory_detail_controller();
 

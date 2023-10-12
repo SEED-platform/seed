@@ -13,7 +13,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
     $scope.action = action;
     $scope.data = data;
 
-    $scope.rename_filter_group = function () {
+    $scope.rename_filter_group = () => {
       if (!$scope.disabled()) {
         const { id } = $scope.data;
         const filter_group = _.omit($scope.data, 'id');
@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
       }
     };
 
-    $scope.remove_filter_group = function () {
+    $scope.remove_filter_group = () => {
       filter_groups_service
         .remove_filter_group($scope.data.id)
         .then(() => {
@@ -40,7 +40,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
         });
     };
 
-    $scope.new_filter_group = function () {
+    $scope.new_filter_group = () => {
       if (!$scope.disabled()) {
         filter_groups_service
           .new_filter_group({
@@ -56,7 +56,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
       }
     };
 
-    $scope.disabled = function () {
+    $scope.disabled = () => {
       if ($scope.action === 'rename') {
         return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
       }
@@ -65,7 +65,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
       }
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

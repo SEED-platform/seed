@@ -138,10 +138,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.new_filter_group = () => {
       const label_ids = [];
-      for (label in $scope.selected_labels) {
-        label_ids.push($scope.selected_labels[label].id);
+      for (const label of $scope.selected_labels) {
+        label_ids.push(label.id);
       }
-      filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+      const filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
       const query_dict = inventory_service.get_format_column_filters($scope.column_filters);
 
       const filterGroupData = {
@@ -215,10 +215,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.save_filter_group = () => {
       const label_ids = [];
-      for (label in $scope.selected_labels) {
-        label_ids.push($scope.selected_labels[label].id);
+      for (const label of $scope.selected_labels) {
+        label_ids.push(label.id);
       }
-      filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+      const filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
       const query_dict = inventory_service.get_format_column_filters($scope.column_filters);
       const filterGroupData = {
         name: $scope.currentFilterGroup.name,
@@ -241,24 +241,21 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       if ($scope.currentFilterGroup == null) return false;
 
       if ($scope.filterGroups.length > 0) {
-        current_filters = {};
-        current_filters = inventory_service.get_format_column_filters($scope.column_filters);
-        saved_filters = $scope.currentFilterGroup.query_dict;
-        current_labels = [];
-        for (label in $scope.selected_labels) {
-          current_labels.push($scope.selected_labels[label].id);
+        const current_filters = inventory_service.get_format_column_filters($scope.column_filters);
+        const saved_filters = $scope.currentFilterGroup.query_dict;
+        const current_labels = [];
+        for (const label of $scope.selected_labels) {
+          current_labels.push(label.id);
         }
-        saved_labels = $scope.currentFilterGroup.labels;
-        current_label_logic = $scope.labelLogic;
-        saved_label_logic = $scope.currentFilterGroup.label_logic;
+        const saved_labels = $scope.currentFilterGroup.labels;
+        const current_label_logic = $scope.labelLogic;
+        const saved_label_logic = $scope.currentFilterGroup.label_logic;
         if (!_.isEqual(current_filters, saved_filters)) {
           $scope.Modified = true;
         } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
           $scope.Modified = true;
-        } else if (current_label_logic !== saved_label_logic) {
-          $scope.Modified = true;
         } else {
-          $scope.Modified = false;
+          $scope.Modified = current_label_logic !== saved_label_logic;
         }
       }
 
@@ -1045,7 +1042,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         data[trueIndex].$$treeLevel = 0;
         const { related } = data[trueIndex];
         const relatedIndex = trueIndex;
-        var aggregations = {};
+        let aggregations = {};
         for (let j = 0; j < related.length; ++j) {
           const updated = _.reduce(
             related[j],
@@ -1141,14 +1138,16 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       const visible_columns_with_derived_columns = $scope.columns.filter((col) => col.derived_column);
       const derived_column_ids = visible_columns_with_derived_columns.map((col) => col.derived_column);
       const attached_derived_columns = derived_columns_payload.derived_columns.filter((col) => derived_column_ids.includes(col.id));
-      column_name_lookup = {};
-      visible_columns_with_derived_columns.forEach((col) => (column_name_lookup[col.column_name] = col.name));
+      const column_name_lookup = {};
+      visible_columns_with_derived_columns.forEach((col) => {
+        column_name_lookup[col.column_name] = col.name;
+      });
 
       const all_evaluation_results = [];
       for (const col of attached_derived_columns) {
         all_evaluation_results.push(
           ...batched_inventory_ids.map((ids) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids).then((res) => {
-            formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
+            const formatted_results = res.results.map((x) => (typeof x.value === 'number' ? { ...x, value: _.round(x.value, $scope.organization.display_decimal_places) } : x));
             return { derived_column_id: col.id, results: formatted_results };
           }))
         );
@@ -1198,13 +1197,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       });
     };
 
-    $scope.update_cycle = (cycle) => {
-      inventory_service.save_last_cycle(cycle.id);
-      $scope.cycle.selected_cycle = cycle;
-      get_labels();
-      $scope.load_inventory(1);
-    };
-
     $scope.filters_exist = () => !$scope.column_filters.length;
 
     $scope.sorts_exist = () => !$scope.column_sorts.length;
@@ -1215,7 +1207,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       $scope.gridApi.core.raise.sortChanged();
     };
 
-    var get_labels = () => {
+    const get_labels = () => {
       label_service.get_labels($scope.inventory_type, undefined, $scope.cycle.selected_cycle.id).then((current_labels) => {
         $scope.labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
@@ -1226,6 +1218,13 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         $scope.filterUsingLabels();
         $scope.build_labels();
       });
+    };
+
+    $scope.update_cycle = (cycle) => {
+      inventory_service.save_last_cycle(cycle.id);
+      $scope.cycle.selected_cycle = cycle;
+      get_labels();
+      $scope.load_inventory(1);
     };
 
     $scope.open_ubid_decode_modal = (selectedViewIds) => {
@@ -1425,11 +1424,11 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         selectedViewIds = [];
 
         if ($scope.inventory_type === 'properties') {
-          selectedViewIds = fetchRecords(undefined, undefined, (ids_only = true)).then((inventory_data) => {
+          selectedViewIds = fetchRecords(undefined, undefined, true).then((inventory_data) => {
             $scope.run_action(inventory_data.results);
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          selectedViewIds = fetchRecords(undefined, undefined, (ids_only = true)).then((inventory_data) => {
+          selectedViewIds = fetchRecords(undefined, undefined, true).then((inventory_data) => {
             $scope.run_action(inventory_data.results);
           });
         }

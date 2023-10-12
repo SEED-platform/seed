@@ -29,9 +29,9 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
     };
     processCycles(cycles_payload);
 
-    function initialize_new_cycle() {
+    const initialize_new_cycle = () => {
       $scope.new_cycle = { start: null, end: null, name: '' };
-    }
+    };
 
     const translateMessage = (
       msg,

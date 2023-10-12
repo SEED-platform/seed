@@ -56,8 +56,8 @@ angular.module('BE.seed.controller.data_upload_espm_modal', []).controller('data
       spinner_utility.show();
       return espm_service.get_espm_building_xlsx($scope.organization.id, $scope.fields.pm_property_id, $scope.fields.espm_username, $scope.fields.espm_password).then((file_result) => {
         spinner_utility.hide();
-        if (typeof result === 'object' && !result.success) {
-          $scope.error = `Error: ${result.message}`;
+        if (typeof file_result === 'object' && !file_result.success) {
+          $scope.error = `Error: ${file_result.message}`;
           $scope.busy = false;
         } else {
           return espm_service.update_building_with_espm_xlsx($scope.organization.id, $scope.cycle_id, $scope.view_id, $scope.fields.mapping_profile, file_result).then((result) => {

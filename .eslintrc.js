@@ -22,6 +22,7 @@ module.exports = {
     module: true,
     moment: true,
     ol: true,
+    pluralize: true,
     protractor: true,
     qq: true,
     saveAs: true,
@@ -71,6 +72,7 @@ module.exports = {
       'LabeledStatement',
       'WithStatement'
     ],
+    'no-sequences': 'error',
     'no-shadow': 'warn',
     'object-shorthand': [
       'error',
@@ -93,6 +95,7 @@ module.exports = {
     'default-case': 'off',
     'no-console': 'off',
     'no-param-reassign': 'off',
+    'no-underscore-dangle': 'off',
     'prefer-destructuring': 'off'
   }
 };

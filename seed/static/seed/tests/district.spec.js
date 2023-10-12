@@ -3,18 +3,18 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-var myDistrictApp = angular.module('myDistrictApp', ['district']);
+const myDistrictApp = angular.module('myDistrictApp', ['district']);
 
-describe('The district filter', function () {
-  var districtFilter;
+describe('The district filter', () => {
+  let districtFilter;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('myDistrictApp');
-    inject(function (_districtFilter_) {
+    inject((_districtFilter_) => {
       districtFilter = _districtFilter_;
     });
   });
-  it('replaces `district` with `County/District/Ward/Borough`', function () {
+  it('replaces `district` with `County/District/Ward/Borough`', () => {
     // normal cases
     expect(districtFilter('district')).toBe('County/District/Ward/Borough');
     expect(districtFilter('District')).toBe('County/District/Ward/Borough');

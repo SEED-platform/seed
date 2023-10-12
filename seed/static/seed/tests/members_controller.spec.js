@@ -2,40 +2,34 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: members_controller', function () {
+describe('controller: members_controller', () => {
   // globals set up and used in each test scenario
-  var controller;
-  var ctrl_scope;
-  var mock_organization_service;
+  let controller;
+  let ctrl_scope;
+  let mock_organization_service;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, organization_service) {
+    inject(($controller, $rootScope, $uibModal, $q, organization_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
 
-      spyOn(mock_organization_service, 'remove_user').andCallFake(function () {
-        return $q.resolve({
-          status: 'success'
-        });
-      });
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(function () {
-        return $q.resolve({
-          status: 'success',
-          users: [{ id: 1, first_name: 'Bob', last_name: 'D' }]
-        });
-      });
-      spyOn(mock_organization_service, 'update_role').andCallFake(function () {
-        return $q.resolve({
-          status: 'success'
-        });
-      });
+      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.resolve({
+        status: 'success'
+      }));
+      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() => $q.resolve({
+        status: 'success',
+        users: [{ id: 1, first_name: 'Bob', last_name: 'D' }]
+      }));
+      spyOn(mock_organization_service, 'update_role').andCallFake(() => $q.resolve({
+        status: 'success'
+      }));
     });
   });
 
@@ -60,9 +54,7 @@ describe('controller: members_controller', function () {
       },
       user_profile_payload: [
         'user_service',
-        function (user_service) {
-          return user_service.get_user_profile();
-        }
+        (user_service) => user_service.get_user_profile()
       ]
     });
   }
@@ -71,7 +63,7 @@ describe('controller: members_controller', function () {
    * Test scenarios
    */
 
-  it('should accepts its payload', function () {
+  it('should accepts its payload', () => {
     // arrange
     create_members_controller();
 
@@ -84,7 +76,7 @@ describe('controller: members_controller', function () {
     expect(ctrl_scope.users[1].name).toEqual(' ');
   });
 
-  it('clicking remove should remove a user', function () {
+  it('clicking remove should remove a user', () => {
     // arrange
     create_members_controller();
 
@@ -99,7 +91,7 @@ describe('controller: members_controller', function () {
     expect(mock_organization_service.get_organization_users).toHaveBeenCalledWith({ org_id: 4 });
   });
 
-  it("clicking a new role should update the user's role", function () {
+  it("clicking a new role should update the user's role", () => {
     // arrange
     create_members_controller();
 

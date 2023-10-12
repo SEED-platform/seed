@@ -2,39 +2,37 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: organization_settings_controller', function () {
+describe('controller: organization_settings_controller', () => {
   // globals set up and used in each test scenario
-  var controller;
-  var ctrl_scope;
-  var mock_organization_service;
-  var mock_meters_service;
+  let controller;
+  let ctrl_scope;
+  let mock_organization_service;
+  let mock_meters_service;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, organization_service, meters_service) {
+    inject(($controller, $rootScope, $uibModal, $q, organization_service, meters_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
       mock_meters_service = meters_service;
 
-      spyOn(mock_organization_service, 'save_org_settings').andCallFake(function () {
+      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve({
+        $q.resolve({
           status: 'success'
-        });
-      });
+        }));
 
-      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(function () {
+      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() =>
         // return $q.reject for error scenario
-        return $q.resolve({
+        $q.resolve({
           status: 'success'
-        });
-      });
+        }));
     });
   });
 
@@ -99,7 +97,7 @@ describe('controller: organization_settings_controller', function () {
    * Test scenarios
    */
 
-  it('should accepts its payload', function () {
+  it('should accepts its payload', () => {
     // arrange
     create_settings_controller();
 

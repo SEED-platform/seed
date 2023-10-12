@@ -34,7 +34,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
          ]
      }
      */
-    function get_report_data(xVar, yVar, start, end) {
+    const get_report_data = (xVar, yVar, start, end) => {
       // Error checks
       if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_report_data(): null parameter');
@@ -51,14 +51,9 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
             end
           }
         })
-        .then((response) => {
-          building_reports_factory.report_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
-          return response.data;
-        })
-        .catch(() => {
-          building_reports_factory.reports_data = [];
-        });
-    }
+        .then((response) => response.data)
+        .catch(() => {});
+    };
 
     /**
      Get aggregated property data given the provided parameters.
@@ -88,7 +83,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
        }
      }
      */
-    function get_aggregated_report_data(xVar, yVar, start, end) {
+    const get_aggregated_report_data = (xVar, yVar, start, end) => {
       // Error checks
       if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
@@ -105,16 +100,11 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
             end
           }
         })
-        .then((response) => {
-          building_reports_factory.aggregated_reports_data = _.has(response.data, 'report_data') ? response.data.report_data : [];
-          return response.data;
-        })
-        .catch(() => {
-          building_reports_factory.aggregated_reports_data = [];
-        });
-    }
+        .then((response) => response.data)
+        .catch(() => {});
+    };
 
-    function export_reports_data(axes_data, start, end) {
+    const export_reports_data = (axes_data, start, end) => {
       const { xVar } = axes_data;
       const { xLabel } = axes_data;
       const { yVar } = axes_data;
@@ -139,23 +129,12 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           responseType: 'arraybuffer'
         })
         .then((response) => response);
-    }
+    };
 
-    /* Public API */
-
-    var building_reports_factory = {
-      // properties
-      reports_data: [],
-      aggregated_reports_data: [],
-      summary_data: [],
-
-      // functions
-      // get_summary_data : get_summary_data,
+    return {
       get_report_data,
       get_aggregated_report_data,
       export_reports_data
     };
-
-    return building_reports_factory;
   }
 ]);

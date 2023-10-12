@@ -3,63 +3,61 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // check inventory pages after import and delete test dataset
-var EC = protractor.ExpectedConditions;
+const EC = protractor.ExpectedConditions;
 // Check inventory Page:
-describe('When I go to the prop page', function () {
+describe('When I go to the prop page', () => {
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should change to our test cycle', function () {
+  it('should change to our test cycle', () => {
     browser.get('/app/#/properties');
     $('[ng-change="update_cycle(cycle.selected_cycle)"]').element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
-    var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+    const rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
-    rows.count().then(function (count) {
+    rows.count().then((count) => {
       $('.item-count.ng-binding')
         .getText()
-        .then(function (label) {
+        .then((label) => {
           expect(label).toContain(count);
         });
     });
   });
 
-  it('should filter semi colon and expand', function () {
-    var jurisTL = $$('[role="columnheader"]')
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          return label.includes('Jurisdiction Tax Lot ID');
-        });
-      })
+  it('should filter semi colon and expand', () => {
+    const jurisTL = $$('[role="columnheader"]')
+      .filter((elm) => elm.getText().then((label) => label.includes('Jurisdiction Tax Lot ID')))
       .first();
     jurisTL.$$('[ng-model="colFilter.term"]').first().sendKeys(';');
   });
 
-  it('should filter', function () {
-    var rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
+  it('should filter', () => {
+    const rows = $('.left.ui-grid-render-container-left.ui-grid-render-container').all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows'));
 
     rows
       .first()
       .getText()
-      .then(function (label) {
+      .then((label) => {
         $$('[ng-model="colFilter.term"]').first().sendKeys(label);
       });
-    //after filter
+    // after filter
     expect(rows.count()).not.toBeLessThan(1);
 
-    //clear by clicking the 'x' -> child of sibling of text input
+    // clear by clicking the 'x' -> child of sibling of text input
     $$('[ng-model="colFilter.term"]').first().sendKeys('1');
-    $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
+    $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]')
+      .click();
     expect($$('[ng-model="colFilter.term"]').first().getAttribute('value')).toEqual('');
     $$('[ng-model="colFilter.term"]').first().sendKeys('this is something long and fake to get nothing to filter');
     expect(rows.count()).toBeLessThan(1);
-    $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]').click();
+    $$('[ng-model="colFilter.term"]').first().element(by.xpath('..')).$('[ui-grid-one-bind-aria-label="aria.removeFilter"]')
+      .click();
     $('[ng-if="grid.options.enableSelectAll"]').click().click();
   });
 
-  it('should go to info pages', function () {
+  it('should go to info pages', () => {
     $$('[ng-click="treeButtonClick(row, $event)"]').first().click();
     $$('.ui-grid-icon-info-circled').first().click();
     expect(browser.getCurrentUrl()).toContain('/app/#/properties');
@@ -71,9 +69,9 @@ describe('When I go to the prop page', function () {
     // commented out, not guaranteed:
     // expect(historicalItems.count()).toBeLessThan(1);
 
-    //make change
+    // make change
     $('[ng-click="on_edit()"]').click();
-    var firstInput = $$('#edit_attribute_id').first();
+    const firstInput = $$('#edit_attribute_id').first();
     firstInput.sendKeys('protractor unique stuff');
     $('[ng-click="on_save()"]').click();
 
@@ -81,36 +79,36 @@ describe('When I go to the prop page', function () {
     var historicalItems = element.all(by.repeater('historical_item in historical_items'));
     expect(historicalItems.count()).not.toBeLessThan(1);
 
-    var labels = element.all(by.repeater('label in labels'));
+    const labels = element.all(by.repeater('label in labels'));
     expect(labels.count()).toBeLessThan(1);
   });
 
-  it('should go to settings in info pages', function () {
+  it('should go to settings in info pages', () => {
     $('#settings').click();
     $('[ng-if="grid.options.enableSelectAll"]').click().click();
     $$('[ng-class="{\'ui-grid-row-selected\': row.isSelected}"]').first().click();
     $('#inventory-detail').click();
-    var rows = element.all(by.repeater('field in columns'));
+    const rows = element.all(by.repeater('field in columns'));
     expect(rows.count()).toBe(1);
   });
 
-  it('should go to settings reset', function () {
+  it('should go to settings reset', () => {
     $('#settings').click();
     $$('.ui-grid-menu-button').first().click();
     $$('[ng-click="itemAction($event, title)"]').first().click();
     $('#inventory-detail').click();
-    var rows = element.all(by.repeater('field in columns'));
+    const rows = element.all(by.repeater('field in columns'));
     expect(rows.count()).not.toBeLessThan(2);
   });
 
-  it('should go to labels', function () {
+  it('should go to labels', () => {
     // add label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $('[ng-click="cancel()"]').click();
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $('.modal-title')
       .getText()
-      .then(function (label) {
+      .then((label) => {
         expect(label).toContain('Labels');
       });
     $$('[ng-model="label.is_checked_add"]').first().click();
@@ -119,7 +117,7 @@ describe('When I go to the prop page', function () {
     var labels = element.all(by.repeater('label in labels'));
     expect(labels.count()).not.toBeLessThan(1);
 
-    //remove label
+    // remove label
     $('[ng-click="open_update_labels_modal(inventory.id, inventory_type)"]').click();
     $$('[ng-click="toggle_remove(label)"]').first().click();
     $('[ng-click="done()"]').click();
@@ -129,7 +127,7 @@ describe('When I go to the prop page', function () {
     $('a.page_action.ng-binding').click();
   });
 
-  it('should get taxlot info from linked properties', function () {
+  it('should get taxlot info from linked properties', () => {
     // re expand
     $$('[ng-click="treeButtonClick(row, $event)"]').first().click();
 
@@ -140,7 +138,7 @@ describe('When I go to the prop page', function () {
     expect(browser.getCurrentUrl()).toContain('/app/#/taxlots');
   });
 
-  it('should change columns', function () {
+  it('should change columns', () => {
     browser.get('/app/#/properties');
     $('#column-list-profiles').click();
     $('[ng-if="grid.options.enableSelectAll"]').click().click();
@@ -159,21 +157,17 @@ describe('When I go to the prop page', function () {
     expect(cols.count()).not.toBeLessThan(2);
   });
 
-  it('should export', function () {
+  it('should export', () => {
     $('.ui-grid-icon-menu').click();
-    var myOptions = element
+    const myOptions = element
       .all(by.repeater('item in menuItems'))
-      .filter(function (elm) {
-        return elm.getText().then(function (label) {
-          return label === '  Export all data as csv';
-        });
-      })
+      .filter((elm) => elm.getText().then((label) => label === '  Export all data as csv'))
       .first();
     myOptions.click();
   });
 
   // Reports page from Inventory
-  it('should see inventory page and select reports page', function () {
+  it('should see inventory page and select reports page', () => {
     $('[ng-click="toggle_menu()"]').click();
     $('#sidebar-inventory').click();
     $('[ng-click="toggle_menu()"]').click();
@@ -208,7 +202,9 @@ describe('When I go to the prop page', function () {
 
     browser.driver.manage().window().maximize();
     $('#yAxisSelector').$('.btn-group.dropdown').$('.btn.btn-default.dropdown-toggle').click();
-    $('#yAxisSelector').$('.btn-group.dropdown').$('.dropdown-menu').all(by.css('[ng-bind="item.name"]')).get(1).click();
+    $('#yAxisSelector').$('.btn-group.dropdown').$('.dropdown-menu').all(by.css('[ng-bind="item.name"]'))
+      .get(1)
+      .click();
     $('.btn.btn-primary').click();
   });
 });

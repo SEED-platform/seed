@@ -32,12 +32,12 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     /**
      * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
-    $scope.select_all_clicked = function (type) {
+    $scope.select_all_clicked = (type) => {
       let fields = $filter('filter')($scope.fields, $scope.filter_params);
       fields = fields.map((f) => f.name);
       if (type === 'public') {
         $scope.fields = $scope.fields.map((f) => {
-          if (_.includes(fields, f.name)) {
+          if (fields.includes(f.name)) {
             f.public_checked = $scope.controls.public_select_all;
           }
           return f;
@@ -48,7 +48,7 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     /**
      * saves the updates settings
      */
-    $scope.save_settings = function () {
+    $scope.save_settings = () => {
       $scope.org.public_fields = $scope.fields.filter((f) => f.public_checked);
       organization_service.save_org_settings($scope.org).then(
         () => {
@@ -64,10 +64,10 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
      * preforms from initial data processing:
      * - sets the checked shared fields
      */
-    const init = function () {
+    const init = () => {
       const public_columns = shared_fields_payload.public_fields.map((f) => f.name);
       $scope.fields = $scope.fields.map((f) => {
-        if (_.includes(public_columns, f.name)) {
+        if (public_columns.includes(f.name)) {
           f.public_checked = true;
         }
         return f;

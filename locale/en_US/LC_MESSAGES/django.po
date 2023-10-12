@@ -1348,8 +1348,8 @@ msgstr "Geocoding Confidence"
 msgid "Geocoding Order"
 msgstr "Geocoding Order"
 
-msgid "Geolocating has been disabled for this organization."
-msgstr "Geolocating has been disabled for this organization."
+msgid "Geocoding has been disabled for this organization."
+msgstr "Geocoding has been disabled for this organization."
 
 msgid "Geometry"
 msgstr "Geometry"

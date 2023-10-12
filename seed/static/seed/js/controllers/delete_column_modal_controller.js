@@ -28,7 +28,11 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
         .then((result) => {
           $scope.state = 'evaluating';
           $scope.interval = $interval(() => {
-            $scope.state === 'running' ? $scope.updateTime() : $scope.setRunningState();
+            if ($scope.state === 'running') {
+              $scope.updateTime();
+            } else {
+              $scope.setRunningState();
+            }
           }, 1000);
           $scope.updateTime();
           uploader_service.check_progress_loop(
@@ -54,17 +58,17 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
         });
     };
 
-    $scope.elapsedFn = function () {
-      const diff = moment().diff(this.startTime);
+    $scope.elapsedFn = () => {
+      const diff = moment().diff($scope.startTime);
       return $scope.formatTime(moment.duration(diff));
     };
 
-    $scope.etaFn = function () {
+    $scope.etaFn = () => {
       if ($scope.progressBar.completed_records) {
         if (!$scope.initialCompleted) {
           $scope.initialCompleted = $scope.progressBar.completed_records;
         }
-        const diff = moment().diff(this.startTime);
+        const diff = moment().diff($scope.startTime);
         const progress = ($scope.progressBar.completed_records - $scope.initialCompleted) / ($scope.progressBar.total_records - $scope.initialCompleted);
         if (progress) {
           return $scope.formatTime(moment.duration(diff / progress - diff));
@@ -72,17 +76,20 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
       }
     };
 
-    $scope.setRunningState = function () {
+    $scope.setRunningState = () => {
       $scope.eta = $scope.etaFn();
-      $scope.eta ? (($scope.state = 'running'), ($scope.startTime = moment())) : null;
+      if ($scope.eta) {
+        $scope.state = 'running';
+        $scope.startTime = moment();
+      }
     };
 
-    $scope.updateTime = function () {
+    $scope.updateTime = () => {
       $scope.elapsed = $scope.elapsedFn();
       $scope.eta = $scope.etaFn();
     };
 
-    $scope.formatTime = function (duration) {
+    $scope.formatTime = (duration) => {
       const h = Math.floor(duration.asHours());
       const m = duration.minutes();
       const s = duration.seconds();
@@ -99,12 +106,12 @@ angular.module('BE.seed.controller.delete_column_modal', []).controller('delete_
       return `${s}s`;
     };
 
-    $scope.refresh = function () {
+    $scope.refresh = () => {
       spinner_utility.show();
       $window.location.reload();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

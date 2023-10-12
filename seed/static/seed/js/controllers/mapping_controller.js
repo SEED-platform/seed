@@ -79,6 +79,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     $scope.current_profile = $scope.profiles[0] ?? {};
     $scope.dropdown_selected_profile = $scope.current_profile;
     $scope.organization = organization_payload.organization;
+    const org_id = $scope.organization.id;
 
     // Track changes to help prevent losing changes when data could be lost
     $scope.profile_change_possible = false;
@@ -524,7 +525,6 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       });
     };
 
-    var org_id = $scope.organization.id;
     geocode_service.check_org_has_api_key(org_id).then((result) => {
       $scope.org_has_api_key = result;
       if (result) {

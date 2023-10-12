@@ -2,13 +2,14 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: data_quality_modal_controller', function () {
+describe('controller: data_quality_modal_controller', () => {
   // globals set up and used in each test scenario
   // var mock_uploader_service;
-  var controller, modal_state;
-  var data_quality_controller_scope;
+  let controller; let
+    modal_state;
+  let data_quality_controller_scope;
 
-  var cycles = {
+  const cycles = {
     cycles: [
       {
         end: '2015-01-01',
@@ -22,18 +23,18 @@ describe('controller: data_quality_modal_controller', function () {
     status: 'success'
   };
 
-  var organization = {
+  const organization = {
     id: 1
   };
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope /*, $q, search_service*/) {
+    inject(($controller, $rootScope /* , $q, search_service */) => {
       controller = $controller;
       data_quality_controller_scope = $rootScope.$new();
       modal_state = '';
@@ -52,8 +53,8 @@ describe('controller: data_quality_modal_controller', function () {
           modal_state = 'dismiss';
         }
       },
-      cycles: cycles,
-      organization: organization
+      cycles,
+      organization
     });
   }
 
@@ -87,7 +88,7 @@ describe('controller: data_quality_modal_controller', function () {
     data_quality_controller_scope.search.column_prototype.toggle_sort();
     data_quality_controller_scope.search.column_prototype.sorted_class();
 
-    //what needs to be asserted here?
+    // what needs to be asserted here?
     expect(true).toBe(true);
   });
 });

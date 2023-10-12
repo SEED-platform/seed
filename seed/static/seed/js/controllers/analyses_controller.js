@@ -36,19 +36,18 @@ angular
         Object.values(analysis_polling_stoppers).forEach((stop_func) => stop_func());
       });
 
-      const refresh_analyses = () => {
-        analyses_service.get_analyses_for_org($scope.org.id).then((data) => {
-          $scope.analyses = data.analyses;
-        });
-      };
+      // const refresh_analyses = () => {
+      //   analyses_service.get_analyses_for_org($scope.org.id).then((data) => {
+      //     $scope.analyses = data.analyses;
+      //   });
+      // };
 
-      const refresh_analysis = (analysis_id) =>
-        // update analysis in scope
-        analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
-          const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
-          $scope.analyses[analysis_index] = data.analysis;
-          return data.analysis;
-        });
+      // update analysis in scope
+      const refresh_analysis = (analysis_id) => analyses_service.get_analysis_for_org(analysis_id, $scope.org.id).then((data) => {
+        const analysis_index = $scope.analyses.findIndex((analysis) => analysis.id === analysis_id);
+        $scope.analyses[analysis_index] = data.analysis;
+        return data.analysis;
+      });
 
       // add flag to the analysis indicating it has no currently running tasks
       // Used to determine if we should indicate on UI if an analysis's status is being polled

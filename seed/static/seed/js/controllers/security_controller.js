@@ -16,7 +16,7 @@ angular.module('BE.seed.controller.security', []).controller('security_controlle
     /**
      * sets the user's password
      */
-    $scope.change_password = function () {
+    $scope.change_password = () => {
       user_service.set_password($scope.current_password, $scope.password_1, $scope.password_2).then(
         () => {
           $scope.password_updated = true;

@@ -34,47 +34,6 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
 
     $scope.data = null;
 
-    $scope.updateSelectedMetric = () => {
-      $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id == $scope.selected_metric);
-
-      // reload data for selected metric
-      _load_data();
-
-      // refresh chart
-      if (!$scope.initialize_chart) {
-        $scope.insightsChart.update();
-      }
-    };
-
-    // chart data
-    let _load_data = function () {
-      if (_.isEmpty($scope.compliance_metric)) {
-        spinner_utility.hide();
-        return;
-      }
-      spinner_utility.show();
-      // console.log("get data for metric id: ", $scope.compliance_metric.id);
-      const data = compliance_metric_service
-        .evaluate_compliance_metric($scope.compliance_metric.id)
-        .then((data) => {
-          $scope.data = data;
-        })
-        .then(() => {
-          // console.log( "DATA: ", $scope.data)
-          _build_chart();
-
-          // build chart name
-          compliance_metric_cycles = $scope.cycles.filter((c) => $scope.compliance_metric.cycles.includes(c.id));
-          first_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.start < curr.start ? prev : curr));
-          last_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.end > curr.end ? prev : curr));
-          cycle_range = first_cycle == last_cycle ? first_cycle.name : `${first_cycle.name} - ${last_cycle.name}`;
-          $scope.chart_name = `${$scope.compliance_metric.name}: ${cycle_range}`;
-        })
-        .finally(() => {
-          spinner_utility.hide();
-        });
-    };
-
     $scope.downloadChart = () => {
       const a = document.createElement('a');
       a.href = $scope.insightsChart.toBase64Image();
@@ -97,7 +56,18 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
       $scope.insightsChart.update();
     };
 
-    let _build_chart = () => {
+    const tooltip_footer = (tooltipItems) => {
+      const tooltipItem = tooltipItems[0];
+      if (tooltipItem === undefined) return '';
+
+      const { dataIndex } = tooltipItem;
+      const barValues = $scope.insightsChart.data.datasets.map((ds) => ds.data[dataIndex]);
+      const barTotal = barValues.reduce((acc, curr) => acc + curr, 0);
+
+      return `${((tooltipItem.raw / barTotal) * 100).toPrecision(4)}%`;
+    };
+
+    const _build_chart = () => {
       if (!$scope.data.graph_data) {
         return;
       }
@@ -119,9 +89,9 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
 
               if (activePoints[0]) {
                 const activePoint = activePoints[0];
-                cycle_name = $scope.data.graph_data.labels[activePoint.index];
-                cycle = $scope.cycles.find((c) => c.name === cycle_name);
-                shown_dataset_index = activePoint.datasetIndex;
+                const cycle_name = $scope.data.graph_data.labels[activePoint.index];
+                const cycle = $scope.cycles.find((c) => c.name === cycle_name);
+                const shown_dataset_index = activePoint.datasetIndex;
 
                 // update locally stored insights_property configs
                 const property_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`)) ?? {};
@@ -173,15 +143,45 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
       _load_datasets();
     };
 
-    const tooltip_footer = (tooltipItems) => {
-      const tooltipItem = tooltipItems[0];
-      if (tooltipItem === undefined) return '';
+    // chart data
+    const _load_data = () => {
+      if (_.isEmpty($scope.compliance_metric)) {
+        spinner_utility.hide();
+        return;
+      }
+      spinner_utility.show();
+      // console.log("get data for metric id: ", $scope.compliance_metric.id);
+      compliance_metric_service
+        .evaluate_compliance_metric($scope.compliance_metric.id)
+        .then((data) => {
+          $scope.data = data;
+        })
+        .then(() => {
+          // console.log( "DATA: ", $scope.data)
+          _build_chart();
 
-      const { dataIndex } = tooltipItem;
-      const barValues = $scope.insightsChart.data.datasets.map((ds) => ds.data[dataIndex]);
-      const barTotal = barValues.reduce((acc, curr) => acc + curr, 0);
+          // build chart name
+          const compliance_metric_cycles = $scope.cycles.filter((c) => $scope.compliance_metric.cycles.includes(c.id));
+          const first_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.start < curr.start ? prev : curr));
+          const last_cycle = compliance_metric_cycles.reduce((prev, curr) => (prev.end > curr.end ? prev : curr));
+          const cycle_range = first_cycle === last_cycle ? first_cycle.name : `${first_cycle.name} - ${last_cycle.name}`;
+          $scope.chart_name = `${$scope.compliance_metric.name}: ${cycle_range}`;
+        })
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    };
 
-      return `${((tooltipItem.raw / barTotal) * 100).toPrecision(4)}%`;
+    $scope.updateSelectedMetric = () => {
+      $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+
+      // reload data for selected metric
+      _load_data();
+
+      // refresh chart
+      if (!$scope.initialize_chart) {
+        $scope.insightsChart.update();
+      }
     };
 
     setTimeout(_load_data, 0); // avoid race condition with route transition spinner.

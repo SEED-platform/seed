@@ -182,7 +182,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     $scope.object_has_any_key = (a) => Object.keys(a).length > 0;
 
     $scope.toggle_filter_group = (filter_group_id) => {
-      filter_group = $scope.filter_groups.find((fg) => fg.id == filter_group_id);
+      const filter_group = $scope.filter_groups.find((fg) => fg.id === filter_group_id);
       if (filter_group.name in $scope.selected_filter_groups) {
         delete $scope.selected_filter_groups[filter_group.name];
       } else {
@@ -353,8 +353,8 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
           return;
         }
         $scope.create_errors.push(data.message);
-        for (const i in data.errors) {
-          $scope.create_errors.push(data.errors[i]);
+        for (const error of data.errors) {
+          $scope.create_errors.push(error);
         }
       };
 
@@ -379,7 +379,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       spinner_utility.show();
 
       // if new data_view, just click cancel
-      if (data_view.id == undefined) {
+      if (data_view.id === undefined) {
         $scope.click_cancel();
         return;
       }
@@ -388,7 +388,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         const delete_id = data_view.id;
         data_view_service.delete_data_view(delete_id).then((data) => {
           if (data.status === 'success') {
-            $scope.data_views = $scope.data_views.filter((data_view) => data_view.id != delete_id);
+            $scope.data_views = $scope.data_views.filter((data_view) => data_view.id !== delete_id);
             if ($scope.selected_data_view.id === data_view.id) {
               window.location = '#/insights/custom';
             }
@@ -401,12 +401,12 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
     $scope.click_edit = () => {
       spinner_utility.show();
       $scope.fields.name = $scope.selected_data_view.name;
-      for (const i in $scope.selected_data_view.cycles) {
-        $scope.fields.cycle_checkboxes[$scope.selected_data_view.cycles[i]] = true;
+      for (const cycleId of $scope.selected_data_view.cycles) {
+        $scope.fields.cycle_checkboxes[cycleId] = true;
       }
 
-      for (const i in $scope.selected_data_view.filter_groups) {
-        $scope.fields.filter_group_checkboxes[$scope.selected_data_view.filter_groups[i]] = true;
+      for (const filterGroupId of $scope.selected_data_view.filter_groups) {
+        $scope.fields.filter_group_checkboxes[filterGroupId] = true;
       }
       $scope.editing = true;
       spinner_utility.hide();
@@ -515,28 +515,24 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         return;
       }
 
-      xAxisLabels = $scope.data.graph_data.labels;
-      selectedCycleNames = Object.values($scope.selected_cycles).map((c) => c.name);
-      xAxisLabelsSelected = xAxisLabels.map((l) => selectedCycleNames.includes(l));
-      xAxisLabelsSelectedMask = (_, i) => xAxisLabelsSelected[i];
+      const xAxisLabels = $scope.data.graph_data.labels;
+      const selectedCycleNames = Object.values($scope.selected_cycles).map((c) => c.name);
+      const xAxisLabelsSelected = xAxisLabels.map((l) => selectedCycleNames.includes(l));
+      const xAxisLabelsSelectedMask = (_, i) => xAxisLabelsSelected[i];
 
-      datasets = [];
-      axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
-      axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
-      if (axis1_aggregations.length > 0) {
-        $scope.dataViewChart.options.scales.y1.display = true;
-      } else {
-        $scope.dataViewChart.options.scales.y1.display = false;
-      }
+      const datasets = [];
+      const axis1_aggregations = $scope.selected_data_view.first_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
+      const axis2_aggregations = $scope.selected_data_view.second_axis_aggregations.map((agg1) => $scope.aggregations.find((agg2) => agg2.id == agg1).name);
+      $scope.dataViewChart.options.scales.y1.display = axis1_aggregations.length > 0;
 
-      axis1_column = $scope.source_column_by_location.first_axis.displayName;
+      const axis1_column = $scope.source_column_by_location.first_axis.displayName;
       let i = 0;
       for (const aggregation of axis1_aggregations) {
         for (const dataset of $scope.data.graph_data.datasets) {
           const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
-          if (aggregation == dataset.aggregation && columnWithUnits.test(axis1_column) && dataset.filter_group in $scope.selected_filter_groups) {
+          if (aggregation === dataset.aggregation && columnWithUnits.test(axis1_column) && dataset.filter_group in $scope.selected_filter_groups) {
             dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;
-            color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];
+            const color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];
             dataset.backgroundColor = color;
             dataset.borderColor = color;
             dataset.tension = 0.1;
@@ -550,7 +546,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
 
       if ($scope.source_column_by_location.second_axis) {
         i = 0;
-        axis2_column = $scope.source_column_by_location.second_axis.displayName;
+        const axis2_column = $scope.source_column_by_location.second_axis.displayName;
         const second_axis_name = $scope.source_column_by_location.second_axis.displayName;
 
         $scope.dataViewChart.options.scales.y2.display = true;
@@ -560,9 +556,9 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         for (const aggregation of axis2_aggregations) {
           for (const dataset of $scope.data.graph_data.datasets) {
             const columnWithUnits = new RegExp(`^${dataset.column}( \(.+?\))?$`);
-            if (aggregation == dataset.aggregation && columnWithUnits.test(axis2_column) && dataset.filter_group in $scope.selected_filter_groups) {
+            if (aggregation === dataset.aggregation && columnWithUnits.test(axis2_column) && dataset.filter_group in $scope.selected_filter_groups) {
               dataset.label = `${dataset.filter_group} - ${dataset.aggregation} - ${dataset.column}`;
-              color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];
+              const color = colorsByLabelPrefix[`${dataset.filter_group} - ${dataset.aggregation}`];
               dataset.backgroundColor = color;
               dataset.borderColor = color;
               dataset.tension = 0.1;
@@ -578,7 +574,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
         $scope.dataViewChart.options.scales.y2.title.display = false;
       }
 
-      yMax = Math.max(...datasets.map((d) => Math.max(...d.data)));
+      const yMax = Math.max(...datasets.map((d) => Math.max(...d.data)));
       $scope.dataViewChart.options.scales.y1.max = Math.trunc(1.1 * yMax);
       $scope.dataViewChart.options.scales.y2.max = Math.trunc(1.1 * yMax);
       $scope.dataViewChart.data.labels = xAxisLabels.filter(xAxisLabelsSelectedMask);

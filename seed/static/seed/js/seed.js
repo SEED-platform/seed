@@ -417,8 +417,8 @@ SEED_app.config([
           organizations_payload: [
             'auth_payload',
             'organization_service',
-            (auth_payload, organization_service) => // Require auth_payload to successfully complete before attempting
-              organization_service.get_organizations()
+            // Require auth_payload to successfully complete before attempting
+            (auth_payload, organization_service) => organization_service.get_organizations()
           ],
           user_profile_payload: [
             'user_service',
@@ -427,8 +427,8 @@ SEED_app.config([
           users_payload: [
             'auth_payload',
             'user_service',
-            (auth_payload, user_service) => // Require auth_payload to successfully complete before attempting
-              user_service.get_users()
+            // Require auth_payload to successfully complete before attempting
+            (auth_payload, user_service) => user_service.get_users()
           ]
         }
       })
@@ -639,15 +639,6 @@ SEED_app.config([
               } if ($stateParams.inventory_type === 'taxlots') {
                 return inventory_service.get_taxlot_columns();
               }
-            }
-          ],
-          derived_columns_payload: [
-            'derived_columns_service',
-            '$stateParams',
-            'user_service',
-            (derived_columns_service, $stateParams, user_service) => {
-              const organization_id = user_service.get_organization().id;
-              return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
             }
           ],
           profiles: [

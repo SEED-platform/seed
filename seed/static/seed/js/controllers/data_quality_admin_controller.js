@@ -499,7 +499,7 @@ angular.module('BE.seed.controller.data_quality_admin', []).controller('data_qua
         rule.text_match = null;
         rule.units = '';
 
-        if (!_.includes([null, $scope.data_type_keys.number], original) || !_.includes([null, $scope.data_type_keys.number], newDataType)) {
+        if (![null, $scope.data_type_keys.number].includes(original) || ![null, $scope.data_type_keys.number].includes(newDataType)) {
           // Reset min/max if the data type is something other than null <-> number
           rule.min = null;
           rule.max = null;

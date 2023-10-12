@@ -100,19 +100,19 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         $scope.search.prefix = prefix;
 
         // order_by & sort_column
-        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy') !== null) {
-          $scope.search.order_by = sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy');
-          $scope.search.sort_column = sessionStorage.getItem(`${prefix}:` + 'seedBuildingOrderBy');
+        if (sessionStorage.getItem(`${prefix}:seedBuildingOrderBy`) !== null) {
+          $scope.search.order_by = sessionStorage.getItem(`${prefix}:seedBuildingOrderBy`);
+          $scope.search.sort_column = sessionStorage.getItem(`${prefix}:seedBuildingOrderBy`);
         }
 
         // sort_reverse
-        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingSortReverse') !== null) {
-          $scope.search.sort_reverse = JSON.parse(sessionStorage.getItem(`${prefix}:` + 'seedBuildingSortReverse'));
+        if (sessionStorage.getItem(`${prefix}:seedBuildingSortReverse`) !== null) {
+          $scope.search.sort_reverse = JSON.parse(sessionStorage.getItem(`${prefix}:seedBuildingSortReverse`));
         }
 
         // filter_params
-        if (sessionStorage.getItem(`${prefix}:` + 'seedBuildingFilterParams') !== null) {
-          $scope.search.filter_params = JSON.parse(sessionStorage.getItem(`${prefix}:` + 'seedBuildingFilterParams'));
+        if (sessionStorage.getItem(`${prefix}:seedBuildingFilterParams`) !== null) {
+          $scope.search.filter_params = JSON.parse(sessionStorage.getItem(`${prefix}:seedBuildingFilterParams`));
         }
       }
     };
@@ -126,8 +126,8 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         }
 
         if (!_.isUndefined(Storage)) {
-          sessionStorage.setItem(`${$scope.search.prefix}:` + 'seedBuildingOrderBy', $scope.search.sort_column);
-          sessionStorage.setItem(`${$scope.search.prefix}:` + 'seedBuildingSortReverse', $scope.search.sort_reverse);
+          sessionStorage.setItem(`${$scope.search.prefix}:seedBuildingOrderBy`, $scope.search.sort_column);
+          sessionStorage.setItem(`${$scope.search.prefix}:seedBuildingSortReverse`, $scope.search.sort_reverse);
         }
 
         $scope.search.order_by = this.sort_column;
@@ -165,7 +165,7 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         });
       });
       if (!_.isUndefined(Storage)) {
-        sessionStorage.setItem(`${this.prefix}:` + 'seedBuildingFilterParams', JSON.stringify(this.filter_params));
+        sessionStorage.setItem(`${this.prefix}:seedBuildingFilterParams`, JSON.stringify(this.filter_params));
       }
     };
 

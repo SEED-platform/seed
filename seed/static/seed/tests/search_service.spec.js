@@ -3,25 +3,26 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-var searchTestApp = angular.module('searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']);
+const searchTestApp = angular.module('searchTestApp', ['BE.seed.service.search', 'BE.seed.utilities']);
 
-describe('The search_service service', function () {
-  var saas, httpBackend;
-  var test_url = '';
-  var mock_spinner_utility;
+describe('The search_service service', () => {
+  let saas; let
+    httpBackend;
+  let test_url = '';
+  let mock_spinner_utility;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('searchTestApp');
-    inject(function (search_service, $httpBackend, spinner_utility) {
+    inject((search_service, $httpBackend, spinner_utility) => {
       saas = search_service;
       httpBackend = $httpBackend;
       httpBackend.when('POST', test_url).respond('ok');
       mock_spinner_utility = spinner_utility;
 
-      spyOn(mock_spinner_utility, 'show').andCallFake(function () {
+      spyOn(mock_spinner_utility, 'show').andCallFake(() => {
         // Do nothing
       });
-      spyOn(mock_spinner_utility, 'hide').andCallFake(function () {
+      spyOn(mock_spinner_utility, 'hide').andCallFake(() => {
         // Do nothing
       });
     });
@@ -30,7 +31,7 @@ describe('The search_service service', function () {
   /**
    * sanitize_params tests
    */
-  it('removes null and undefined values from filter_params', function () {
+  it('removes null and undefined values from filter_params', () => {
     // arrange
     saas.filter_params = {
       'National Median Site Energy Use__gte': 4,
@@ -48,7 +49,7 @@ describe('The search_service service', function () {
   /**
    * search_buildings tests
    */
-  it('has sane defaults', function () {
+  it('has sane defaults', () => {
     expect(saas.url).toEqual('');
     expect(saas.error_message).toEqual('');
     expect(saas.alert).toEqual(false);
@@ -69,14 +70,14 @@ describe('The search_service service', function () {
     });
   });
 
-  it('search_buildings uses the argument `query`', function () {
+  it('search_buildings uses the argument `query`', () => {
     saas.query = 'hotels';
     saas.search_buildings('not hotels');
 
     expect(saas.query).toEqual('not hotels');
   });
 
-  it('filter search resets the current page', function () {
+  it('filter search resets the current page', () => {
     // arrange
     saas.current_page = 22;
     spyOn(saas, 'search_buildings');
@@ -89,14 +90,14 @@ describe('The search_service service', function () {
     expect(saas.search_buildings).toHaveBeenCalled();
   });
 
-  it('search_buildings function will default to its query if' + ' no query is passed as an argument', function () {
+  it('search_buildings function will default to its query if' + ' no query is passed as an argument', () => {
     saas.query = 'hotels';
     saas.search_buildings();
 
     expect(saas.query).toEqual('hotels');
   });
 
-  it('search_buildings hits the set url', function () {
+  it('search_buildings hits the set url', () => {
     test_url = '/my-search-url';
     saas.url = test_url;
     saas.search_buildings();
@@ -104,7 +105,7 @@ describe('The search_service service', function () {
     httpBackend.flush();
   });
 
-  it('search_buildings POSTs the query data as `q`', function () {
+  it('search_buildings POSTs the query data as `q`', () => {
     // arrange
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -134,7 +135,7 @@ describe('The search_service service', function () {
       .respond(201, '');
     // httpBackend.flush();
   });
-  it('search_buildings updates its `buildings` model', function () {
+  it('search_buildings updates its `buildings` model', () => {
     // arrange
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -176,7 +177,7 @@ describe('The search_service service', function () {
     // httpBackend.flush();
 
     // Needs to wait will search is finished
-    setTimeout(function () {
+    setTimeout(() => {
       expect(saas.buildings).toEqual([
         {
           name: 'one',
@@ -191,7 +192,7 @@ describe('The search_service service', function () {
       ]);
     }, 1000);
   });
-  it('should clear the error and alert after a successful search', function () {
+  it('should clear the error and alert after a successful search', () => {
     // arrange
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -223,7 +224,7 @@ describe('The search_service service', function () {
   /**
    * pagination tests
    */
-  it('increments the page when the `next` button is clicked', function () {
+  it('increments the page when the `next` button is clicked', () => {
     // arrange
     saas.number_matching_search = 10000;
     saas.number_per_page = 10;
@@ -237,7 +238,7 @@ describe('The search_service service', function () {
     expect(saas.search_buildings).toHaveBeenCalled();
     expect(saas.search_buildings.callCount).toEqual(1);
   });
-  it('doesn"t increment past the last page when the `next` button is clicked', function () {
+  it('doesn\'t increment past the last page when the `next` button is clicked', () => {
     // arrange
     saas.number_matching_search = 20;
     saas.number_per_page = 10;
@@ -251,7 +252,7 @@ describe('The search_service service', function () {
     expect(saas.search_buildings).toHaveBeenCalled();
     expect(saas.search_buildings.callCount).toEqual(1);
   });
-  it('decrements the page when the `previous` button is clicked', function () {
+  it('decrements the page when the `previous` button is clicked', () => {
     // arrange
     saas.number_matching_search = 10000;
     saas.number_per_page = 10;
@@ -264,7 +265,7 @@ describe('The search_service service', function () {
     expect(saas.current_page).toEqual(99);
     expect(saas.search_buildings).toHaveBeenCalled();
   });
-  it('does not decrement below the first page when the `previous` button is clicked', function () {
+  it('does not decrement below the first page when the `previous` button is clicked', () => {
     // arrange
     saas.num_pages = 1;
     saas.number_per_page = 10;
@@ -277,7 +278,7 @@ describe('The search_service service', function () {
     expect(saas.current_page).toEqual(1);
     expect(saas.search_buildings).toHaveBeenCalled();
   });
-  it('fetches more or less results per page when a user selects an option from the number per page select', function () {
+  it('fetches more or less results per page when a user selects an option from the number per page select', () => {
     // arrange
     saas.number_per_page_options_model = 50;
     spyOn(saas, 'search_buildings');
@@ -288,7 +289,7 @@ describe('The search_service service', function () {
     expect(saas.number_per_page).toEqual(50);
     expect(saas.search_buildings).toHaveBeenCalled();
   });
-  it('updates the number of results displayed text after a successful search', function () {
+  it('updates the number of results displayed text after a successful search', () => {
     // standard case
     // page 2 of 3 with 10/page, so should display 11 of 20
     // arrange
@@ -304,7 +305,7 @@ describe('The search_service service', function () {
     expect(saas.showing.end).toEqual(20);
     expect(saas.search_buildings).not.toHaveBeenCalled();
   });
-  it('displays the number matching the query if on the last page of results', function () {
+  it('displays the number matching the query if on the last page of results', () => {
     // standard case
     // page 4 of 4 with 10/page and 34 results, so should display 31 of 34
     // arrange
@@ -319,7 +320,7 @@ describe('The search_service service', function () {
     expect(saas.showing.start).toEqual(31);
     expect(saas.showing.end).toEqual(34);
   });
-  it('should call update_start_end_paging after a successful search', function () {
+  it('should call update_start_end_paging after a successful search', () => {
     // arrange
     spyOn(saas, 'update_start_end_paging');
     test_url = 'https://mytest.com';
@@ -344,7 +345,7 @@ describe('The search_service service', function () {
     // assert
     expect(saas.update_start_end_paging).toHaveBeenCalled();
   });
-  it('should call update_buttons after a successful search', function () {
+  it('should call update_buttons after a successful search', () => {
     // arrange
     spyOn(saas, 'update_buttons');
     test_url = 'https://mytest.com';
@@ -369,7 +370,7 @@ describe('The search_service service', function () {
     // assert
     expect(saas.update_buttons).toHaveBeenCalled();
   });
-  it('should disable prev paging buttons at the first page', function () {
+  it('should disable prev paging buttons at the first page', () => {
     // arrange
     saas.current_page = 1;
     saas.number_matching_search = 50;
@@ -382,7 +383,7 @@ describe('The search_service service', function () {
     expect(saas.prev_page_disabled).toEqual(true);
     expect(saas.next_page_disabled).toEqual(false);
   });
-  it('should disable next paging buttons at the last page', function () {
+  it('should disable next paging buttons at the last page', () => {
     // arrange
     saas.current_page = 5;
     saas.number_per_page = 10;
@@ -395,7 +396,7 @@ describe('The search_service service', function () {
     expect(saas.prev_page_disabled).toEqual(false);
     expect(saas.next_page_disabled).toEqual(true);
   });
-  it('should calculate the number of pages after a successful search', function () {
+  it('should calculate the number of pages after a successful search', () => {
     // arrange
     test_url = 'https://mytest.com';
     saas.url = test_url;
@@ -425,7 +426,7 @@ describe('The search_service service', function () {
   /**
    * checkbox logic tests
    */
-  it('should select or unselect all the viewed results when the select all checkbox is checked or unchecked', function () {
+  it('should select or unselect all the viewed results when the select all checkbox is checked or unchecked', () => {
     // arrange
     saas.selected_buildings = [1, 2, 3];
     saas.select_all_checkbox = true;
@@ -454,7 +455,7 @@ describe('The search_service service', function () {
     ]);
     expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
   });
-  it('should call select_or_deselect_all_buildings after a search', function () {
+  it('should call select_or_deselect_all_buildings after a search', () => {
     // arrange
     spyOn(saas, 'select_or_deselect_all_buildings');
     test_url = 'https://mytest.com';
@@ -479,9 +480,9 @@ describe('The search_service service', function () {
     // assert
     expect(saas.select_or_deselect_all_buildings).toHaveBeenCalled();
   });
-  it('should add a building to the selected list when checked', function () {
+  it('should add a building to the selected list when checked', () => {
     // arrange
-    var building = {
+    const building = {
       id: 5,
       checked: true
     };
@@ -492,9 +493,9 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([5]);
   });
-  it('should add a building to the selected list when unchecked and the select all checkbox is checked', function () {
+  it('should add a building to the selected list when unchecked and the select all checkbox is checked', () => {
     // arrange
-    var building = {
+    const building = {
       id: 5,
       checked: false
     };
@@ -506,9 +507,9 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([5]);
   });
-  it('should remove a building to the selected list when unchecked', function () {
+  it('should remove a building to the selected list when unchecked', () => {
     // arrange
-    var building = {
+    const building = {
       id: 5,
       checked: false
     };
@@ -521,9 +522,9 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([6, 7]);
   });
-  it('should remove a building to the selected list when checked if the select all checkbox is checked', function () {
+  it('should remove a building to the selected list when checked if the select all checkbox is checked', () => {
     // arrange
-    var building = {
+    const building = {
       id: 5,
       checked: true
     };
@@ -536,7 +537,7 @@ describe('The search_service service', function () {
     // assert
     expect(saas.selected_buildings).toEqual([6, 7]);
   });
-  it('should call load_state_from_selected_buildings after a successful search', function () {
+  it('should call load_state_from_selected_buildings after a successful search', () => {
     // arrange
     spyOn(saas, 'load_state_from_selected_buildings').andCallThrough();
     test_url = 'https://mytest.com';
@@ -563,18 +564,19 @@ describe('The search_service service', function () {
     // assert
     expect(saas.load_state_from_selected_buildings).toHaveBeenCalled();
   });
-  it('should call update_results after a successful search', function () {
+  it('should call update_results after a successful search', () => {
     // arrange
-    var select_or_deselect_all_buildings_time, load_state_from_selected_buildings_time;
+    let select_or_deselect_all_buildings_time; let
+      load_state_from_selected_buildings_time;
     spyOn(saas, 'update_results').andCallThrough();
-    spyOn(saas, 'select_or_deselect_all_buildings').andCallFake(function () {
+    spyOn(saas, 'select_or_deselect_all_buildings').andCallFake(() => {
       select_or_deselect_all_buildings_time = new Date();
     });
-    spyOn(saas, 'load_state_from_selected_buildings').andCallFake(function () {
+    spyOn(saas, 'load_state_from_selected_buildings').andCallFake(() => {
       // wait for a sec, otherwise both have the same timestamp
-      for (var y = 0; y < 100000; y++) {
-        var x = new Date();
-        x = x + y;
+      for (let y = 0; y < 100000; y++) {
+        let x = new Date();
+        x += y;
       }
       load_state_from_selected_buildings_time = new Date();
     });
@@ -603,7 +605,7 @@ describe('The search_service service', function () {
     expect(saas.update_results).toHaveBeenCalled();
     expect(select_or_deselect_all_buildings_time < load_state_from_selected_buildings_time).toBe(true);
   });
-  it('check selected buildings successful', function () {
+  it('check selected buildings successful', () => {
     // arrange
     saas.selected_buildings = [2];
     saas.buildings = [
@@ -627,9 +629,10 @@ describe('The search_service service', function () {
       checked: true
     });
   });
-  it('should generate columns', function () {
+  it('should generate columns', () => {
     // arrange
-    var all_columns, column_headers, columns;
+    let all_columns; let column_headers; let
+      columns;
     all_columns = [
       {
         sort_column: 'name'

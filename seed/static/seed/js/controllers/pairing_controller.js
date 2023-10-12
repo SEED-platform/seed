@@ -75,7 +75,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       cycles: cycles.cycles
     };
 
-    const refreshObjects = function () {
+    const refreshObjects = () => {
       // var propertyColumnNames = _.map($scope.propertyColumns, 'name');
       // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
@@ -92,20 +92,20 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-    $scope.cycleChanged = function () {
+    $scope.cycleChanged = () => {
       spinner_utility.show();
       inventory_service.save_last_cycle($scope.cycle.selected_cycle.id);
       refreshObjects();
     };
 
-    $scope.inventoryTypeChanged = function () {
+    $scope.inventoryTypeChanged = () => {
       $state.go('pairing', {
         importfile_id: $stateParams.importfile_id,
         inventory_type: $scope.inventory_type
       });
     };
 
-    $scope.whichChildren = function (row) {
+    $scope.whichChildren = (row) => {
       if ($scope.inventory_type === 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id];
       }
@@ -113,7 +113,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return $scope.propToTaxlot[row.property_view_id];
     };
 
-    $scope.whichChildData = function (propId, col) {
+    $scope.whichChildData = (propId, col) => {
       if ($scope.inventory_type === 'properties') {
         return $scope.propertyMap[propId][col];
       }
@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return $scope.taxlotMap[propId][col];
     };
 
-    $scope.unpairChild = function ($event) {
+    $scope.unpairChild = ($event) => {
       $event.stopPropagation();
       let promise;
       let taxlotId;
@@ -164,7 +164,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-    const addTtoP = function (taxlotId, propertyId) {
+    const addTtoP = (taxlotId, propertyId) => {
       if (!$scope.taxlotToProp[+taxlotId]) {
         $scope.taxlotToProp[+taxlotId] = [];
       }
@@ -172,7 +172,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.taxlotToProp[+taxlotId].push(+propertyId);
       }
     };
-    const addPtoT = function (taxlotId, propertyId) {
+    const addPtoT = (taxlotId, propertyId) => {
       if (!$scope.propToTaxlot[+propertyId]) {
         $scope.propToTaxlot[+propertyId] = [];
       }
@@ -180,7 +180,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
         $scope.propToTaxlot[+propertyId].push(+taxlotId);
       }
     };
-    var createMap = function () {
+    const createMap = () => {
       _.forEach(_.keys($scope.propertyMap), (key) => {
         delete $scope.propertyMap[key];
       });
@@ -214,14 +214,14 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       });
     };
 
-    $scope.leftPaired = function (row) {
+    $scope.leftPaired = (row) => {
       if ($scope.inventory_type !== 'properties') {
         return $scope.taxlotToProp[row.taxlot_view_id] ? $scope.taxlotToProp[row.taxlot_view_id].length : false;
       }
       return $scope.propToTaxlot[row.property_view_id] ? $scope.propToTaxlot[row.property_view_id].length : false;
     };
 
-    $scope.leftNumUnpaired = function () {
+    $scope.leftNumUnpaired = () => {
       let count = 0;
       if ($scope.inventory_type === 'properties') {
         _.forEach($scope.leftData, (datum) => {
@@ -235,7 +235,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return count;
     };
 
-    $scope.rightNumUnpaired = function () {
+    $scope.rightNumUnpaired = () => {
       let count = 0;
       if ($scope.inventory_type !== 'properties') {
         _.forEach($scope.rightData, (datum) => {
@@ -249,7 +249,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return count;
     };
 
-    $scope.getLeftData = function () {
+    $scope.getLeftData = () => {
       let newLeftData = [];
       const leftMap = $scope.inventory_type === 'properties' ? $scope.propToTaxlot : $scope.taxlotToProp;
       const leftId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
@@ -273,7 +273,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       $scope.newLeftData = newLeftData;
     };
 
-    $scope.getRightParentId = function (row) {
+    $scope.getRightParentId = (row) => {
       if ($scope.inventory_type === 'properties') {
         // console.log('here: ', row.taxlot_view_id)
         return row.taxlot_view_id;
@@ -281,7 +281,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return row.property_view_id;
     };
 
-    $scope.getLeftParentId = function (row) {
+    $scope.getLeftParentId = (row) => {
       if ($scope.inventory_type !== 'properties') {
         return row.taxlot_view_id;
       }
@@ -289,7 +289,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return row.property_view_id;
     };
 
-    $scope.leftSearch = function (value) {
+    $scope.leftSearch = (value) => {
       // left and right filters, works with table flip
       for (let i = 0; i < $scope.leftColumns.length; i++) {
         if ($scope.leftColumns[i].searchText && value[$scope.leftColumns[i].name]) {
@@ -306,7 +306,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       return true;
     };
 
-    $scope.rightSearch = function (value) {
+    $scope.rightSearch = (value) => {
       for (let i = 0; i < $scope.rightColumns.length; i++) {
         // console.log("RC V: " + value[$scope.rightColumns[i].name]);
         if ($scope.rightColumns[i].searchText && value[$scope.rightColumns[i].name]) {
@@ -359,7 +359,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       $scope.rightSortColumn = 'name';
     }
 
-    $scope.leftSortData = function (column) {
+    $scope.leftSortData = (column) => {
       const { inventory_type } = $scope;
       if ($scope.leftSortColumn === column && $scope.leftReverseSort) {
         $scope.leftReverseSort = false;
@@ -377,13 +377,13 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.getLeftSortColumn = () => `'${$scope.leftSortColumn}'`;
 
-    $scope.leftGetSortClass = function (column) {
+    $scope.leftGetSortClass = (column) => {
       if ($scope.leftSortColumn === column) {
         return $scope.leftReverseSort ? 'fa fa-caret-down' : 'fa fa-caret-up';
       }
     };
 
-    $scope.rightSortData = function (column) {
+    $scope.rightSortData = (column) => {
       const inventory_type = $scope.inventory_type === 'properties' ? 'taxlots' : 'properties';
       if ($scope.rightSortColumn === column && $scope.rightReverseSort) {
         $scope.rightReverseSort = false;
@@ -401,7 +401,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.getRightSortColumn = () => `'${$scope.rightSortColumn}'`;
 
-    $scope.rightGetSortClass = function (column) {
+    $scope.rightGetSortClass = (column) => {
       if ($scope.rightSortColumn === column) {
         return $scope.rightReverseSort ? 'fa fa-caret-down' : 'fa fa-caret-up';
       }
@@ -409,7 +409,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
 
     $scope.naturalSortComparator = (a, b) => naturalSort(a.value, b.value);
 
-    $scope.updateLeftRight = function () {
+    $scope.updateLeftRight = () => {
       if ($scope.inventory_type === 'properties') {
         $scope.rightData = $scope.taxlotData;
         $scope.leftData = $scope.propertyData;
@@ -428,7 +428,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       // console.log('tl map: ', $scope.taxlotToProp);
     };
 
-    $scope.doubleClick = function (side, event) {
+    $scope.doubleClick = (side, event) => {
       // console.log('side: ', side, angular.element(event.currentTarget))
       if (side === 'left') {
         $scope.newElement = angular.element(event.currentTarget);

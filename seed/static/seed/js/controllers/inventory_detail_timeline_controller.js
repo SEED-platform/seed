@@ -28,17 +28,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     $scope.orgUsers = users_payload.users;
     $scope.show_at_scenario_actions = false;
     $scope.orderDesc = false;
-    $scope.setDesc = (selection) => {
-      if (selection === $scope.orderDesc) return;
-      $scope.orderDesc = selection;
-      formatTimeline($scope.selectedEvents);
-    };
 
     const formatTimeline = (events) => {
       const eventsByCycle = [];
       events.sort((a, b) => ($scope.orderDesc ? new Date(a.modified) - new Date(b.modified) : new Date(b.modified) - new Date(a.modified)));
       events.forEach((event) => {
-        const index = eventsByCycle.findIndex((e) => e.cycle == event.cycle);
+        const index = eventsByCycle.findIndex((e) => e.cycle === event.cycle);
         if (index === -1) {
           const entry = { cycle: event.cycle, cycle_end_date: event.cycle_end_date, events: [event] };
           eventsByCycle.push(entry);
@@ -56,6 +51,12 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       }
 
       $scope.timeline = eventsByCycle;
+    };
+
+    $scope.setDesc = (selection) => {
+      if (selection === $scope.orderDesc) return;
+      $scope.orderDesc = selection;
+      formatTimeline($scope.selectedEvents);
     };
 
     /**
@@ -216,7 +217,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
         $scope.gridApiEventSelection.selection.on.rowSelectionChanged($scope, $scope.eventSelect);
         $scope.gridApiEventSelection.selection.on.rowSelectionChangedBatch($scope, $scope.eventSelect);
 
-        init = true;
+        let init = true;
         $scope.gridApiEventSelection.core.on.rowsRendered($scope, () => {
           if (init) {
             $scope.gridApiEventSelection.selection.selectAllRows();
@@ -227,7 +228,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     $scope.resizeGridEventSelection = () => {
-      gridApi = $scope.gridApiEventSelection;
+      const gridApi = $scope.gridApiEventSelection;
       setTimeout(gridApi.core.handleWindowResize, 1);
     };
 
@@ -265,7 +266,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     $scope.resizeGridByScenarioId = (scenarioId) => {
-      gridApi = $scope.gridApiByScenarioId[scenarioId];
+      const gridApi = $scope.gridApiByScenarioId[scenarioId];
       setTimeout(gridApi.core.handleWindowResize, 50);
     };
 
@@ -283,7 +284,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       }
     };
 
-    const getInventoryDisplayName = function (property_type) {
+    const getInventoryDisplayName = (property_type) => {
       let error = '';
       let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
       if (!(field in $scope.item_state)) {
@@ -307,12 +308,14 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
 
       // Without resizing ui-grids will appear empty
       if (action === 'show') {
-        $scope.selectedEvents.forEach((event) => $scope.resizeGridByEventType(event, (resizeMeasures = true)));
+        $scope.selectedEvents.forEach((event) => {
+          $scope.resizeGridByEventType(event, true);
+        });
       }
     };
 
     $scope.formatMeasureStatuses = (scenario) => {
-      statuses = scenario.measures.reduce((acc, measure) => {
+      const statuses = scenario.measures.reduce((acc, measure) => {
         const status = measure.implementation_status;
         if (!acc[status]) {
           acc[status] = 0;

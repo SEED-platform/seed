@@ -51,12 +51,6 @@ angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_edit
       $scope.ubid.preferred = !$scope.ubid.preferred;
     };
 
-    $scope.upsert_ubid = () => {
-      if (!$scope.is_valid()) return;
-
-      $scope.ubid.id ? update_ubid() : create_ubid();
-    };
-
     const create_ubid = async () => {
       await ubid_service.create_ubid(inventory_key, state_id, $scope.ubid);
       $uibModalInstance.close();
@@ -67,13 +61,25 @@ angular.module('BE.seed.controller.ubid_editor_modal', []).controller('ubid_edit
 
       if ($scope.ubid.preferred) {
         const preferred_ubids = ubids.filter((ubid) => ubid.preferred && ubid.id !== $scope.ubid.id);
-        preferred_ubids.forEach((ubid) => (ubid.preferred = false));
+        preferred_ubids.forEach((ubid) => {
+          ubid.preferred = false;
+        });
         ubidsToUpdate = [...ubidsToUpdate, ...preferred_ubids];
       }
 
       const promises = ubidsToUpdate.map((ubid) => ubid_service.update_ubid(ubid));
       await Promise.all(promises);
       $uibModalInstance.close();
+    };
+
+    $scope.upsert_ubid = () => {
+      if (!$scope.is_valid()) return;
+
+      if ($scope.ubid.id) {
+        update_ubid();
+      } else {
+        create_ubid();
+      }
     };
 
     $scope.dismiss = () => $uibModalInstance.dismiss();

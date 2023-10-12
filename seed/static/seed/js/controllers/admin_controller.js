@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
 
     var organization_exists = (name) => {
       const orgs = _.map($scope.org_user.organizations, (org) => org.name.toLowerCase());
-      return _.includes(orgs, name.toLowerCase());
+      return orgs.includes(name.toLowerCase());
     };
 
     $scope.user_form.not_ready = () => !$scope.user.organization && !$scope.user.org_name;

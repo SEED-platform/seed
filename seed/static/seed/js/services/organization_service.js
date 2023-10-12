@@ -119,23 +119,6 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
 
     organization_factory.insert_sample_data = (org_id) => $http.get(`/api/v3/organizations/${org_id}/insert_sample_data/`).then((response) => response.data);
 
-    const checkStatusLoop = (deferred, progress_key) => {
-      $http.get(`/api/v3/progress/${progress_key}/`).then(
-        (response) => {
-          $timeout(() => {
-            if (response.data.progress < 100) {
-              checkStatusLoop(deferred, progress_key);
-            } else {
-              deferred.resolve(response.data);
-            }
-          }, 750);
-        },
-        (error) => {
-          deferred.reject(error);
-        }
-      );
-    };
-
     /**
      * Returns the display value for an inventory
      * @param  {object} { property_display_field, taxlot_display_field }, organization object
