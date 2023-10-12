@@ -17,7 +17,6 @@
     "node": ">=16"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.16",
     "eslint": "^8.51.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-angular": "^4.1.0",
@@ -26,8 +25,8 @@
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-protractor": "^2.1.1",
     "lodash": "^4.17.21",
-    "postcss-cli": "^10.1.0",
     "protractor": "^7.0.0",
+    "sass": "^1.69.3",
     "stylelint": "^15.10.3",
     "stylelint-config-standard-scss": "^11.0.0",
     "webdriver-manager": "^12.1.9"
