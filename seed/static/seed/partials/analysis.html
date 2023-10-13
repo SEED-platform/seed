@@ -1,24 +1,21 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="analyses(::{organization_id: org.id})" class="page_action">
-                <i class="fa-solid fa-chevron-left"></i>{$:: 'Analyses' | translate $}
-            </a>
-        </div>
-        <div class="page_title"><h1>{$:: 'Analysis' | translate $}: {$:: analysis.name $}</h1></div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="analyses(::{organization_id: org.id})" class="page_action"> <i class="fa-solid fa-chevron-left"></i>{$:: 'Analyses' | translate $} </a>
     </div>
+    <div class="page_title"><h1>{$:: 'Analysis' | translate $}: {$:: analysis.name $}</h1></div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section">
-
-    <div class="section_content_container">
-        <div class="section_content">
-            <div class="analysis-description" translate="ANALYSIS_DESCRIPTION_{$ analysis.service $}"></div>
-            <div ng-controller="analysis_details_controller">
-                <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
-            </div>
-            <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
-        </div>
+  <div class="section_content_container">
+    <div class="section_content">
+      <div class="analysis-description" translate="ANALYSIS_DESCRIPTION_{$ analysis.service $}"></div>
+      <div ng-controller="analysis_details_controller">
+        <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+      </div>
+      <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
     </div>
+  </div>
 </div>

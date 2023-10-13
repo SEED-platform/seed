@@ -1,18 +1,11 @@
 <div class="modal-header">
-    <h3>{$ modalOptions.headerText | translate $}</h3>
+  <h3>{$ modalOptions.headerText | translate $}</h3>
 </div>
 <div class="modal-body">
-    <p>{$ modalOptions.bodyText | translate $}</p>
-    <pre ng-if="modalOptions.bodyJson" class="text-wrap pre-scrollable">{$ modalOptions.bodyJson | json $}</pre>
+  <p>{$ modalOptions.bodyText | translate $}</p>
+  <pre ng-if="modalOptions.bodyJson" class="text-wrap pre-scrollable">{$ modalOptions.bodyJson | json $}</pre>
 </div>
 <div class="modal-footer">
-    <button type="button"
-            class="btn btn-primary"
-            data-ng-click="modalOptions.ok();">{$ modalOptions.okButtonText | translate $}
-    </button>
-    <button type="button"
-            class="btn btn-default"
-            ng-hide="!modalOptions.cancelButtonText"
-            data-ng-click="modalOptions.cancel()">{$ modalOptions.cancelButtonText | translate $}
-    </button>
+  <button type="button" class="btn btn-primary" data-ng-click="modalOptions.ok();">{$ modalOptions.okButtonText | translate $}</button>
+  <button type="button" class="btn btn-default" ng-hide="!modalOptions.cancelButtonText" data-ng-click="modalOptions.cancel()">{$ modalOptions.cancelButtonText | translate $}</button>
 </div>

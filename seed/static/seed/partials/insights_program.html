@@ -1,81 +1,82 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container"></div>
-        <div class="page_title"><h1 translate>Insights</h1></div>
-        <div class="right page_action_container"></div>
-    </div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title"><h1 translate>Insights</h1></div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
-
 
 <div class="section_content_container">
   <div class="section_content container-fluid">
     <div class="content_block row less_pad">
-        <div ng-show="!data">
-            <div class="col-md-10">
-                <div class="title-row">
-                    <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
-                </div>
-                <div ng-if="auth.requires_member" class="compliance-setup">
-                    <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.
-                    </p>
-                </div>
-            </div>
+      <div ng-show="!data">
+        <div class="col-md-10">
+          <div class="title-row">
+            <h2 style="font-size: 18px">{$:: 'Program Overview' | translate $}</h2>
+          </div>
+          <div ng-if="auth.requires_member" class="compliance-setup">
+            <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.</p>
+          </div>
         </div>
+      </div>
 
-        <div ng-show="data">
-        	<div class="col-md-2">
-                <div class="title-row">
-                    <h2 style="font-size:18px;"> {$:: 'Program Overview' | translate $}</h2>
-                </div>
-    			<!-- compliance setup -->
-    			<div ng-if="auth.requires_member" class="compliance-setup">
-    				<p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.
-                    </p>
-    			</div>
-                <div class="form-group margin-top-20">
-                    <label for="program">Program</label>
-                    <select class="form-control" id="selected_metric" ng-model="selected_metric" ng-change="updateSelectedMetric()" ng-options="metric.id as metric.name for metric in compliance_metrics">
-                    </select>
-                </div>
-                <div class="margin-top-20">
-                    <button type="button" class="btn btn-primary" ng-click="downloadChart()">
-                        <i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span>
-                    </button>
-                </div>
-    			<div class="chart-legend">
-    				<div class="title">Chart Legend</div>
-    				<div class="legend-row row">
-    					<div class="col-md-3 box blue-box"></div>
-    					<div class="col-md-9 text">Compliant</div>
-    				</div>
-    				<div class="legend-row row"><div class="col-md-3 box red-box"></div><div class="col-md-9 text">Not Compliant</div></div>
-    				<div class="legend-row row"><div class="col-md-3 box gray-box"></div><div class="col-md-9 text">Unknown</div></div>
-    			</div>
-        	</div>
-        	<div class="col-md-10">
-                <div style="margin-left: 5vw; margin-right: 5vw">
-                    <h3 style="font-size:18px;">{$ chart_name $}</h3>
-                </div>
-                <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
-                   <canvas id="program-overview-chart"></canvas>
-                </div>
+      <div ng-show="data">
+        <div class="col-md-2">
+          <div class="title-row">
+            <h2 style="font-size: 18px">{$:: 'Program Overview' | translate $}</h2>
+          </div>
+          <!-- compliance setup -->
+          <div ng-if="auth.requires_member" class="compliance-setup">
+            <p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.</p>
+          </div>
+          <div class="form-group margin-top-20">
+            <label for="program">Program</label>
+            <select
+              class="form-control"
+              id="selected_metric"
+              ng-model="selected_metric"
+              ng-change="updateSelectedMetric()"
+              ng-options="metric.id as metric.name for metric in compliance_metrics"
+            ></select>
+          </div>
+          <div class="margin-top-20">
+            <button type="button" class="btn btn-primary" ng-click="downloadChart()"><i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span></button>
+          </div>
+          <div class="chart-legend">
+            <div class="title">Chart Legend</div>
+            <div class="legend-row row">
+              <div class="col-md-3 box blue-box"></div>
+              <div class="col-md-9 text">Compliant</div>
             </div>
+            <div class="legend-row row">
+              <div class="col-md-3 box red-box"></div>
+              <div class="col-md-9 text">Not Compliant</div>
+            </div>
+            <div class="legend-row row">
+              <div class="col-md-3 box gray-box"></div>
+              <div class="col-md-9 text">Unknown</div>
+            </div>
+          </div>
         </div>
+        <div class="col-md-10">
+          <div style="margin-left: 5vw; margin-right: 5vw">
+            <h3 style="font-size: 18px">{$ chart_name $}</h3>
+          </div>
+          <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
+            <canvas id="program-overview-chart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="section_content_container">
-    <div class="section_content r-columns" style="display:unset !important">
-
-
-
-        <div class="r-column r-shrink">
-        </div>
-
-    </div>
+  <div class="section_content r-columns" style="display: unset !important">
+    <div class="r-column r-shrink"></div>
+  </div>
 </div>

@@ -1,137 +1,152 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-
-        </div>
-        <div class="page_title">
-            <h1 translate>Default Reports</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1 translate>Default Reports</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
 <div class="section building-reports">
-    <div class="section_content_container">
-        <div class="section_content container-fluid">
-            <div class="content_block row" style="padding:20px 20px 10px 20px">
-                <div class="col-md-12">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <h2 style="font-size:18px;"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
-                        </div>
-                        <div class="col-md-10">
-                            <form class="form-inline pull-right chart-inputs" role="form">
-
-                                <div class="form-group">
-                                    <label for="fromCycleSelector">{$:: 'From first date of' | translate $}:</label>
-                                    <select id="fromCycleSelector" class="form-control" ng-model="fromCycle.selected_cycle" style="min-width:180px;" ng-change="updateFromCycle(fromCycle.selected_cycle)" ng-options="cycle.name for cycle in cycles track by cycle.id"> </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="toCycleSelector">{$:: 'Until last date of' | translate $}:</label>
-                                    <select id="toCycleSelector" class="form-control" style="min-width:180px;" ng-model="toCycle.selected_cycle" ng-change="updateToCycle(toCycle.selected_cycle)" ng-options="cycle.name for cycle in cycles track by cycle.id"> </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
-                                    <sd-dropdown is-button id="xAxisSelector" ng-model="xAxisSelectedItem" items="xAxisVars"></sd-dropdown>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
-                                    <sd-dropdown is-button id="yAxisSelector" ng-model="yAxisSelectedItem" items="yAxisVars"></sd-dropdown>
-                                </div>
-
-                                <div class="form-group">
-                                    <button type="submit" class="btn btn-primary" ng-click="updateChartData()" translate>Update Charts</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div> <!-- ./row -->
-
-                    <div class="row" style="padding: 20px;text-align: right;">
-                      <button type="submit" class="btn btn-primary" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Chart Data</button>
-                    </div> <!-- ./row -->
-                </div> <!-- ./container -->
+  <div class="section_content_container">
+    <div class="section_content container-fluid">
+      <div class="content_block row" style="padding: 20px 20px 10px 20px">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-2">
+              <h2 style="font-size: 18px"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
             </div>
+            <div class="col-md-10">
+              <form class="form-inline pull-right chart-inputs" role="form">
+                <div class="form-group">
+                  <label for="fromCycleSelector">{$:: 'From first date of' | translate $}:</label>
+                  <select
+                    id="fromCycleSelector"
+                    class="form-control"
+                    ng-model="fromCycle.selected_cycle"
+                    style="min-width: 180px"
+                    ng-change="updateFromCycle(fromCycle.selected_cycle)"
+                    ng-options="cycle.name for cycle in cycles track by cycle.id"
+                  ></select>
+                </div>
 
-            <!-- new chart library! -->
-            <div class="content_block row" style="padding:0 20px;">
+                <div class="form-group">
+                  <label for="toCycleSelector">{$:: 'Until last date of' | translate $}:</label>
+                  <select
+                    id="toCycleSelector"
+                    class="form-control"
+                    style="min-width: 180px"
+                    ng-model="toCycle.selected_cycle"
+                    ng-change="updateToCycle(toCycle.selected_cycle)"
+                    ng-options="cycle.name for cycle in cycles track by cycle.id"
+                  ></select>
+                </div>
 
-                <div class="col-sm-6">
-                    <h4 class="chartTitle">{$ chart1Title | translate $}&nbsp;</h4>
-                    <div class="chart-holder">
-                        <div style="height:400px">
-                            <canvas id="chartNew"></canvas>
-                        </div>
-                        <div ng-show="chartStatusMessage" class="status-message">
-                            {$ chartStatusMessage | translate $}
-                            <div class="progress progress-striped active" ng-show="chartIsLoading">
-                                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="reportingTableHolder">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th translate>Year Ending</th>
-                                    <th translate>Properties with Data</th>
-                                    <th translate>Total Properties</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="obj in propertyCounts">
-                                    <td>
-                                        <i class="fa-solid fa-circle" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
-                                    </td>
-                                    <td>{$ obj['num_properties_w-data'] $}</td>
-                                    <td>{$ obj.num_properties $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div><!-- ./ col-md-6 -->
+                <div class="form-group">
+                  <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
+                  <sd-dropdown is-button id="xAxisSelector" ng-model="xAxisSelectedItem" items="xAxisVars"></sd-dropdown>
+                </div>
 
-                <div class="col-sm-6">
-                    <h4 class="chartTitle">{$ chart2Title | translate $}&nbsp;</h4>
-                    <div class="chart-holder">
-                        <div style="height:400px">
-                            <canvas id="aggChartNew"></canvas>
-                        </div>
-                        <div ng-show="aggChartStatusMessage" class="status-message">
-                            <div>{$ aggChartStatusMessage | translate $}
-                                <div class="progress progress-striped active" ng-show="aggChartIsLoading">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group">
+                  <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
+                  <sd-dropdown is-button id="yAxisSelector" ng-model="yAxisSelectedItem" items="yAxisVars"></sd-dropdown>
+                </div>
 
-                    <div class="reportingTableHolder">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th translate>Year Ending</th>
-                                    <th translate>Properties with Data</th>
-                                    <th translate>Total Properties</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="obj in aggPropertyCounts">
-                                    <td>
-                                        <i class="fa-solid fa-square" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}
-                                    </td>
-                                    <td>{$ obj['num_properties_w-data'] $}</td>
-                                    <td>{$ obj.num_properties $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div><!-- ./ col-md-6 -->
-            </div> <!-- ./ content_block row -->
-        </div> <!-- ./section_content -->
-    </div>  <!-- ./section_content_container-->
+                <div class="form-group">
+                  <button type="submit" class="btn btn-primary" ng-click="updateChartData()" translate>Update Charts</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- ./row -->
+
+          <div class="row" style="padding: 20px; text-align: right">
+            <button type="submit" class="btn btn-primary" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Chart Data</button>
+          </div>
+          <!-- ./row -->
+        </div>
+        <!-- ./container -->
+      </div>
+
+      <!-- new chart library! -->
+      <div class="content_block row" style="padding: 0 20px">
+        <div class="col-sm-6">
+          <h4 class="chartTitle">{$ chart1Title | translate $}&nbsp;</h4>
+          <div class="chart-holder">
+            <div style="height: 400px">
+              <canvas id="chartNew"></canvas>
+            </div>
+            <div ng-show="chartStatusMessage" class="status-message">
+              {$ chartStatusMessage | translate $}
+              <div class="progress progress-striped active" ng-show="chartIsLoading">
+                <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="reportingTableHolder">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th translate>Year Ending</th>
+                  <th translate>Properties with Data</th>
+                  <th translate>Total Properties</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="obj in propertyCounts">
+                  <td><i class="fa-solid fa-circle" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                  <td>{$ obj['num_properties_w-data'] $}</td>
+                  <td>{$ obj.num_properties $}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ./ col-md-6 -->
+
+        <div class="col-sm-6">
+          <h4 class="chartTitle">{$ chart2Title | translate $}&nbsp;</h4>
+          <div class="chart-holder">
+            <div style="height: 400px">
+              <canvas id="aggChartNew"></canvas>
+            </div>
+            <div ng-show="aggChartStatusMessage" class="status-message">
+              <div>
+                {$ aggChartStatusMessage | translate $}
+                <div class="progress progress-striped active" ng-show="aggChartIsLoading">
+                  <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reportingTableHolder">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th translate>Year Ending</th>
+                  <th translate>Properties with Data</th>
+                  <th translate>Total Properties</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="obj in aggPropertyCounts">
+                  <td><i class="fa-solid fa-square" style="color:{$ obj.color $}"></i>&nbsp;&nbsp;{$ obj.yr_e $}</td>
+                  <td>{$ obj['num_properties_w-data'] $}</td>
+                  <td>{$ obj.num_properties $}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ./ col-md-6 -->
+      </div>
+      <!-- ./ content_block row -->
+    </div>
+    <!-- ./section_content -->
+  </div>
+  <!-- ./section_content_container-->
 </div>

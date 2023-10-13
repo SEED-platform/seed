@@ -1361,8 +1361,8 @@ msgstr "Géocodage de la confiance"
 msgid "Geocoding Order"
 msgstr "Ordre de géocodage"
 
-msgid "Geolocating has been disabled for this organization."
-msgstr "La géolocalisation a été désactivée pour cette organisation."
+msgid "Geocoding has been disabled for this organization."
+msgstr "Le géocodage a été désactivé pour cette organisation."
 
 msgid "Geometry"
 msgstr "Géométrie"

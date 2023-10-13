@@ -1,27 +1,28 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'delete'" translate >Delete your Inventory</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'prepare'" translate>Preparing your inventory for deletion</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'success'"translate>Success!</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'incomplete'" translate>Not all inventory items were successfully deleted</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'fail'" translate>Failed to delete inventory</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'delete'" translate>Delete your Inventory</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'prepare'" translate>Preparing your inventory for deletion</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'success'" translate>Success!</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'incomplete'" translate>Not all inventory items were successfully deleted</h4>
+  <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'fail'" translate>Failed to delete inventory</h4>
 </div>
-<div class="modal-body row" style="padding-bottom: 0;">
-    <div ng-show="delete_state === 'delete'">
-        <p class="col-sm-12" translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS" translate-values="{num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length}"></p>
-    </div>
-    <div class="col-sm-12" ng-show="delete_state === 'incomplete' || delete_state === 'success'">
-        <div ng-if="(deletedProperties + deletedTaxlots) > 0"
-            translate="NUM_PROPERTIES_AND_TAXLOTS_DELETED"
-            translate-values="{ num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length }">
-        </div>
-    </div>
-    <div ng-if="(deletedProperties + deletedTaxlots) == 0">
-        <span translate>No action was taken</span>
-    </div>
-    <div class="col-sm-12" ng-show="delete_state === 'fail'">{$ error | translate $}</div>
+<div class="modal-body row" style="padding-bottom: 0">
+  <div ng-show="delete_state === 'delete'">
+    <p class="col-sm-12" translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS" translate-values="{num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length}"></p>
+  </div>
+  <div class="col-sm-12" ng-show="delete_state === 'incomplete' || delete_state === 'success'">
+    <div
+      ng-if="(deletedProperties + deletedTaxlots) > 0"
+      translate="NUM_PROPERTIES_AND_TAXLOTS_DELETED"
+      translate-values="{ num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length }"
+    ></div>
+  </div>
+  <div ng-if="(deletedProperties + deletedTaxlots) == 0">
+    <span translate>No action was taken</span>
+  </div>
+  <div class="col-sm-12" ng-show="delete_state === 'fail'">{$ error | translate $}</div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-show="delete_state === 'delete'" ng-click="cancel()" translate>Cancel</button>
-    <button type="button" class="btn btn-default" ng-show="delete_state === 'success' || delete_state == 'incomplete' || delete_state == 'fail'" ng-click="close()" translate>Close</button>
-    <button type="button" class="btn btn-danger" ng-click="delete_inventory()" ng-show="delete_state === 'delete'" translate>Yes, Delete Inventory</button>
+  <button type="button" class="btn btn-default" ng-show="delete_state === 'delete'" ng-click="cancel()" translate>Cancel</button>
+  <button type="button" class="btn btn-default" ng-show="delete_state === 'success' || delete_state == 'incomplete' || delete_state == 'fail'" ng-click="close()" translate>Close</button>
+  <button type="button" class="btn btn-danger" ng-click="delete_inventory()" ng-show="delete_state === 'delete'" translate>Yes, Delete Inventory</button>
 </div>

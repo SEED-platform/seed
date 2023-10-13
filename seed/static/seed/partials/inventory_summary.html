@@ -1,74 +1,76 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="inventory-summary-controls">
-    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
-        <span>
-            <label>{$:: 'Cycle' | translate $}:</label>
-            <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
-                </select>
-            </div>
-        </span>
-    </div>
+  <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between">
+    <span>
+      <label>{$:: 'Cycle' | translate $}:</label>
+      <div style="display: inline-block">
+        <select
+          class="form-control input-sm"
+          ng-model="cycle.selected_cycle"
+          ng-change="update_cycle(cycle.selected_cycle)"
+          ng-options="option.name for option in ::cycle.cycles track by option.id"
+        ></select>
+      </div>
+    </span>
+  </div>
 </div>
 
 <div class="inventory-summary columns">
-    <div class="column">
-        <div class="row">
-            <table class="zebra grow">
-                <thead>
-                <tr>
-                    <th>Summary</th>
-                    <th>Count</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="item in table_data">
-                    <td>{$item.text$}</td>
-                    <td>{$item.count$}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <table class="zebra grow">
-                <thead>
-                <tr>
-                    <th>Field</th>
-                    <th>Count</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="item in column_settings_count">
-                    <td>{$item.column_settings$}</td>
-                    <td>{$item.count$}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="column">
+    <div class="row">
+      <table class="zebra grow">
+        <thead>
+          <tr>
+            <th>Summary</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in table_data">
+            <td>{$item.text$}</td>
+            <td>{$item.count$}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="column">
-        <div class="row">
-            <uib-tabset class="grow">
-                <uib-tab ng-repeat="chart in charts" index="$index" heading="{$:: chart.xLabel $}" ng-click="draw_chart(chart.name)">
-                    <div ng-hide="summary_data[chart.name].length < 1" id="chart-{$:: chart.name $}"></div>
-                    <div ng-hide="summary_data[chart.name].length > 0" style="padding: 10px;">Insufficient number of properties to summarize!</div>
-                </uib-tab>
-            </uib-tabset>
-        </div>
+    <div class="row">
+      <table class="zebra grow">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in column_settings_count">
+            <td>{$item.column_settings$}</td>
+            <td>{$item.count$}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+  </div>
+  <div class="column">
+    <div class="row">
+      <uib-tabset class="grow">
+        <uib-tab ng-repeat="chart in charts" index="$index" heading="{$:: chart.xLabel $}" ng-click="draw_chart(chart.name)">
+          <div ng-hide="summary_data[chart.name].length < 1" id="chart-{$:: chart.name $}"></div>
+          <div ng-hide="summary_data[chart.name].length > 0" style="padding: 10px">Insufficient number of properties to summarize!</div>
+        </uib-tab>
+      </uib-tabset>
+    </div>
+  </div>
 </div>

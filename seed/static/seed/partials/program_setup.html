@@ -1,196 +1,209 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: org.name $}</h1>
-        </div>
-        <div class="right page_action_container">
-        </div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left">
-                <h2><i class="fa-solid fa-gauge-high"></i> {$:: 'Program Setup' | translate $}</h2>
-            </div>
-            <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
-                <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
-                <button class="btn btn-primary" ng-disabled="program_settings_not_changed"  ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
-            </div>
-        </div>
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left">
+        <h2><i class="fa-solid fa-gauge-high"></i> {$:: 'Program Setup' | translate $}</h2>
+      </div>
+      <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
+        <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+        <button class="btn btn-primary" ng-disabled="program_settings_not_changed" ng-click="save_settings()">
+          {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+        </button>
+      </div>
     </div>
+  </div>
 
-    <div class="section_content_container rp-data-view">
-        <div class="section_content r-columns rp-data-view-config">
-            <div class="r-column r-shrink r-panel">
-                <ul class="r-list">
-                    <li class="r-list-header" translate>Program</li>
-                    <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
-                        <span class="r-grow">{$ selected_compliance_metric.name $}</span>
-                        <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+  <div class="section_content_container rp-data-view">
+    <div class="section_content r-columns rp-data-view-config">
+      <div class="r-column r-shrink r-panel">
+        <ul class="r-list">
+          <li class="r-list-header" translate>Program</li>
+          <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
+            <span class="r-grow">{$ selected_compliance_metric.name $}</span>
+            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+          </li>
+        </ul>
+        <ul class="r-list r-scrollable">
+          <li
+            ng-show="!selected_compliance_metric || compliance_metric.id != selected_compliance_metric.id"
+            ng-repeat-start="compliance_metric in compliance_metrics"
+            ng-repeat-end
+            class="r-row r-row-centered"
+          >
+            <a ui-sref="program_setup(::{organization_id: org.id, id: compliance_metric.id})" class="r-grow">{$:: compliance_metric.name $}</a>
+            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+          </li>
+        </ul>
+        <ul class="r-list">
+          <li>
+            <button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed">
+              <i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Program
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div ng-show="!selected_compliance_metric && program_settings_not_changed" class="r-panel r-column">
+        <div ng-show="compliance_metrics_error.length > 1" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
+        <b ng-show="!has_compliance_metrics" translate>No program created</b>
+        <p ng-show="!has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Create a Program to get started!</span></p>
+        <b ng-show="has_compliance_metrics" translate>No program selected</b>
+        <p ng-show="has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Select a Program to get started!</span></p>
+      </div>
+      <div ng-show="selected_compliance_metric || !program_settings_not_changed" class="r-panel r-columns r-no-margin" disabled>
+        <form class="section_content">
+          <fieldset>
+            <div class="r-columns">
+              <div class="r-column">
+                <div class="r-panel r-margin-bottom-10">
+                  <div class="r-small-header">
+                    <p class="r-small-header">General Settings</p>
+                  </div>
+                  <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                    Configure your program metric to enable visualizations on the
+                    <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.
+                  </div>
+                  <ul class="r-list">
+                    <li class="r-list-header" translate>Program Definition</li>
+                    <li class="r-row r-row-centered">
+                      <label for="input-metric-name" class="r-no-wrap r-margin-right-5" translate>Name</label>
+                      <input id="input-metric-name" type="text" class="form-control r-margin-bottom-10" ng-model="selected_compliance_metric.name" ng-change="program_settings_changed()" />
                     </li>
-                </ul>
-                <ul class="r-list r-scrollable">
-                    <li ng-show="!selected_compliance_metric || compliance_metric.id != selected_compliance_metric.id" ng-repeat-start="compliance_metric in compliance_metrics" ng-repeat-end class="r-row r-row-centered">
-                        <a ui-sref="program_setup(::{organization_id: org.id, id: compliance_metric.id})" class="r-grow">{$:: compliance_metric.name $}</a>
-                        <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                  </ul>
+                  <ul class="r-list">
+                    <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
+                    <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
+                      <span class="r-grow">{$:: get_cycle_display(item) $}</span>
+                      <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
                     </li>
-                </ul>
-                <ul class="r-list">
-                    <li><button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Program</button></li>
-                </ul>
+                    <li class="r-row r-row-centered">
+                      <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection">
+                        <option ng-repeat="cycle in available_cycles()" ng-value="cycle.id">{$:: cycle.name $}</option>
+                      </select>
+                    </li>
+                  </ul>
+                  <ul class="r-list">
+                    <li class="r-list-header" translate>Filter Group</li>
+                    <li class="r-row r-row-centered">
+                      <select class="form-control" ng-model="selected_compliance_metric.filter_group" ng-change="program_settings_changed()">
+                        <option value=""></option>
+                        <option ng-repeat="filter_group in filter_groups" ng-value="filter_group.id">{$:: filter_group.name $}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+                <div class="r-panel">
+                  <div class="r-small-header">
+                    <p class="r-small-header" translate>Visualization Settings</p>
+                  </div>
+                  <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
+                    Select at least one field which will serve as the x-axis for visualizations on the
+                    <b><a ui-sref="insights_property(::{organization_id: org.id})" ui-sref-active="active" translate>property insights</a></b> page. Multiple fields can be selected.
+                  </div>
+                  <ul class="r-list">
+                    <li class="r-list-header" translate>X-Axis Field Options</li>
+                    <li ng-repeat="item in selected_compliance_metric.x_axis_columns" class="r-row r-row-centered">
+                      <span class="r-grow">{$:: get_x_axis_display(item) $}</span>
+                      <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
+                    </li>
+                    <li class="r-row r-row-centered">
+                      <select id="select-x-axis" class="form-control" ng-change="select_x_axis()" ng-model="x_axis_selection">
+                        <option ng-repeat="x_axis_column in available_x_axis_columns()" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="r-column">
+                <div class="r-panel r-margin-bottom-10">
+                  <div class="r-small-header">
+                    <p class="r-small-header" translate>Metric Type Settings</p>
+                  </div>
+                  <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10" translate>
+                    The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met
+                    for compliance.
+                  </div>
+                  <div class="r-columns r-no-margin">
+                    <ul class="r-list">
+                      <li class="r-list-header" translate>Energy Metric</li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-energy-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
+                        <select id="select-energy-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_energy_column" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
+                      </li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-energy-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
+                        <select id="select-energy-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_energy_column" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
+                      </li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-energy-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
+                        <select id="select-energy-metric-type" class="form-control" ng-model="selected_compliance_metric.energy_metric_type" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
+                          <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
+                        </select>
+                      </li>
+                    </ul>
+                    <ul class="r-list">
+                      <li class="r-list-header" translate>Emission Metric</li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-emission-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
+                        <select id="select-emission-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_emission_column" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
+                      </li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-emission-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
+                        <select id="select-emission-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_emission_column" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+                        </select>
+                      </li>
+                      <li class="r-row r-row-centered">
+                        <label for="select-emission-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
+                        <select id="select-emission-metric-type" class="form-control" ng-model="selected_compliance_metric.emission_metric_type" ng-change="program_settings_changed()">
+                          <option value=""></option>
+                          <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
+                          <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
+                        </select>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div ng-show="compliance_metrics_error.length > 0" class="r-panel r-error r-margin-bottom-10">
+                  <ul class="r-list">
+                    <li ng-repeat="error in compliance_metrics_error">{$ error $}</li>
+                  </ul>
+                </div>
+              </div>
             </div>
-
-            <div ng-show="!selected_compliance_metric && program_settings_not_changed" class="r-panel r-column">
-                <div ng-show="compliance_metrics_error.length > 1" class="r-panel r-error r-margin-bottom-10">{$ compliance_metrics_error $}</div>
-                <b ng-show="!has_compliance_metrics" translate>No program created</b>
-                <p ng-show="!has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Create a Program to get started!</span></p>
-                <b ng-show="has_compliance_metrics" translate>No program selected</b>
-                <p ng-show="has_compliance_metrics"><i class="fa-solid fa-arrow-left r-pad-right-5"></i><span translate>Select a Program to get started!</span></p>
-            </div>
-            <div ng-show="selected_compliance_metric || !program_settings_not_changed" class="r-panel r-columns r-no-margin" disabled>
-                <form class="section_content">
-                    <fieldset>
-                        <div class="r-columns">
-                            <div class="r-column">
-                                <div class="r-panel r-margin-bottom-10">
-                                    <div class="r-small-header">
-                                        <p class="r-small-header">General Settings</p>
-                                    </div>
-                                    <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
-                                        Configure your program metric to enable visualizations on the <b><a ui-sref="insights_program(::{organization_id: org.id})" ui-sref-active="active" translate>program overview</a></b> page.
-                                    </div>
-                                    <ul class="r-list">
-                                        <li class="r-list-header" translate>Program Definition</li>
-                                        <li class="r-row r-row-centered">
-                                            <label for="input-metric-name" class="r-no-wrap r-margin-right-5" translate>Name</label>
-                                            <input id="input-metric-name" type="text" class="form-control r-margin-bottom-10" ng-model="selected_compliance_metric.name" ng-change="program_settings_changed()"/>
-                                        </li>
-                                    </ul>
-                                    <ul class="r-list">
-                                        <li class="r-list-header" translate>Cycles to Include in Compliance Period</li>
-                                        <li ng-repeat="item in selected_compliance_metric.cycles" class="r-row r-row-centered">
-                                            <span class="r-grow">{$:: get_cycle_display(item) $}</span>
-                                            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
-                                        </li>
-                                        <li class="r-row r-row-centered">
-                                            <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection">
-                                                <option ng-repeat="cycle in available_cycles()" ng-value="cycle.id">{$:: cycle.name $}</option>
-                                            </select>
-                                        </li>
-                                    </ul>
-                                    <ul class="r-list">
-                                        <li class="r-list-header" translate>Filter Group</li>
-                                        <li class="r-row r-row-centered">
-                                            <select class="form-control" ng-model="selected_compliance_metric.filter_group" ng-change="program_settings_changed()">
-                                                <option value=""></option>
-                                                <option ng-repeat="filter_group in filter_groups" ng-value="filter_group.id">{$:: filter_group.name $}</option>
-                                            </select>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="r-panel">
-                                    <div class="r-small-header">
-                                        <p class="r-small-header" translate>Visualization Settings</p>
-                                    </div>
-                                    <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10">
-                                        Select at least one field which will serve as the x-axis for visualizations on the <b><a ui-sref="insights_property(::{organization_id: org.id})" ui-sref-active="active" translate>property insights</a></b> page. Multiple fields can be selected.
-                                    </div>
-                                    <ul class="r-list">
-                                        <li class="r-list-header" translate>X-Axis Field Options</li>
-                                        <li ng-repeat="item in selected_compliance_metric.x_axis_columns" class="r-row r-row-centered">
-                                            <span class="r-grow">{$:: get_x_axis_display(item) $}</span>
-                                            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_x_axis(item)"></i>
-                                        </li>
-                                        <li class="r-row r-row-centered">
-                                            <select id="select-x-axis" class="form-control" ng-change="select_x_axis()" ng-model="x_axis_selection">
-                                                <option ng-repeat="x_axis_column in available_x_axis_columns()" ng-value="x_axis_column.id">{$:: x_axis_column.displayName $}</option>
-                                            </select>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="r-column">
-                                <div class="r-panel r-margin-bottom-10">
-                                    <div class="r-small-header">
-                                            <p class="r-small-header" translate>Metric Type Settings</p>
-                                        </div>
-                                        <div class="r-panel r-info r-margin-top-10 r-margin-bottom-10" translate>
-                                        The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance.
-                                        </div>
-                                    <div class="r-columns r-no-margin">
-                                        <ul class="r-list">
-                                            <li class="r-list-header" translate>Energy Metric</li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-energy-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
-                                                <select id="select-energy-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_energy_column" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
-                                                </select>
-                                            </li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-energy-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
-                                                <select id="select-energy-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_energy_column" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
-                                                </select>
-                                            </li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-energy-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
-                                                <select id="select-energy-metric-type" class="form-control" ng-model="selected_compliance_metric.energy_metric_type" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
-                                                    <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
-                                                </select>
-                                            </li>
-                                        </ul>
-                                        <ul class="r-list">
-                                            <li class="r-list-header" translate>Emission Metric</li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-emission-metric-actual-column" class="r-no-wrap r-margin-right-5" translate>Actual Field</label>
-                                                <select id="select-emission-metric-actual-column" class="form-control" ng-model="selected_compliance_metric.actual_emission_column" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
-                                                </select>
-                                            </li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-emission-metric-target-column" class="r-no-wrap r-margin-right-5" translate>Target Field</label>
-                                                <select id="select-emission-metric-target-column" class="form-control" ng-model="selected_compliance_metric.target_emission_column" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option ng-repeat="property_column in property_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
-                                                </select>
-                                            </li>
-                                            <li class="r-row r-row-centered">
-                                                <label for="select-emission-metric-type" class="r-no-wrap r-margin-right-5" translate>Type</label>
-                                                <select id="select-emission-metric-type" class="form-control" ng-model="selected_compliance_metric.emission_metric_type" ng-change="program_settings_changed()">
-                                                    <option value=""></option>
-                                                    <option value="Target > Actual for Compliance" translate>Target >= Actual for Compliance</option>
-                                                    <option value="Target < Actual for Compliance" translate>Target <= Actual for Compliance</option>
-                                                </select>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div ng-show="compliance_metrics_error.length > 0" class="r-panel r-error r-margin-bottom-10">
-                                    <ul class="r-list"><li ng-repeat="error in compliance_metrics_error">{$ error $}</li></ul>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
+          </fieldset>
+        </form>
+      </div>
     </div>
 
-    <div class="section_content_container">
-    </div>
-
-    </div>
+    <div class="section_content_container"></div>
+  </div>
 </div>

@@ -82,8 +82,8 @@ def _validate_better_config(analysis):
 
 class BETTERPipeline(AnalysisPipeline):
     """
-    BETTERPipeline is a class for preparing, running, and post
-    processing BETTER analysis by implementing the AnalysisPipeline's abstract
+    BETTERPipeline is a class for preparing, running, and post-processing
+    BETTER analysis by implementing the AnalysisPipeline's abstract
     methods.
     """
 
