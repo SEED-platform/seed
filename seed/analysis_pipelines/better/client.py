@@ -262,7 +262,6 @@ class BETTERClient:
             building to the portfolio
         :returns: tuple(int, list[str]), BETTER Building ID followed by list of errors
         """
-        url = ""
         if better_portfolio_id is None:
             url = f"{self.API_URL}/buildings/"
         else:
@@ -403,8 +402,8 @@ class BETTERClient:
             response = polling.poll(
                 lambda: requests.request("GET", url, headers=headers),
                 check_success=is_ready,
-                timeout=60,
-                step=1)
+                timeout=300,
+                step=5)
         except TimeoutError:
             return None, ['BETTER analysis timed out']
 

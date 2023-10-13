@@ -4,40 +4,39 @@
  */
 
 // Replaces building detail controller, will test later with both property and taxlot data too
-describe('controller: inventory_detail_controller', function () {
+describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
-  var controller;
-  var inventory_detail_controller_scope;
-  var mock_building_service, mock_building;
+  let controller;
+  let inventory_detail_controller_scope;
+  let mock_building_service; let
+    mock_building;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service) {
+    inject(($controller, $rootScope, $uibModal, urls, $q, inventory_service) => {
       controller = $controller;
       inventory_detail_controller_scope = $rootScope.$new();
-
 
       // mock the inventory_service factory methods used in the controller
       // and return their promises
       mock_building_service = inventory_service;
 
-      spyOn(mock_building_service, 'update_property')
-        .andCallFake(function (view_id, state) {
-          mock_building = state;
-          return $q.resolve({
-            status: 'success'
-          });
+      spyOn(mock_building_service, 'update_property').andCallFake((view_id, state) => {
+        mock_building = state;
+        return $q.resolve({
+          status: 'success'
         });
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
   function create_inventory_detail_controller() {
-    var fake_building = {
+    const fake_building = {
       id: 511,
       pk: 511,
       gross_floor_area: 123456,
@@ -104,7 +103,7 @@ describe('controller: inventory_detail_controller', function () {
     //         }
     //     }
     // ];
-    var fake_payload = {
+    const fake_payload = {
       status: 'success',
       // properties: fake_building,
       state: fake_building,
@@ -117,52 +116,57 @@ describe('controller: inventory_detail_controller', function () {
         inventory_documents: []
       }
     };
-    var fake_all_columns = [{
-      title: 'PM Property ID',
-      sort_column: 'pm_property_id',
-      'class': 'is_aligned_right',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Tax Lot ID',
-      sort_column: 'tax_lot_id',
-      'class': 'is_aligned_right',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Custom ID 1',
-      sort_column: 'custom_id_1',
-      'class': 'is_aligned_right whitespace',
-      title_class: '',
-      type: 'link',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false,
-      'static': false,
-      link: true
-    }, {
-      title: 'Property Name',
-      sort_column: 'property_name',
-      'class': '',
-      title_class: '',
-      type: 'string',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false
-    }];
+    const fake_all_columns = [
+      {
+        title: 'PM Property ID',
+        sort_column: 'pm_property_id',
+        class: 'is_aligned_right',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Tax Lot ID',
+        sort_column: 'tax_lot_id',
+        class: 'is_aligned_right',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Custom ID 1',
+        sort_column: 'custom_id_1',
+        class: 'is_aligned_right whitespace',
+        title_class: '',
+        type: 'link',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false,
+        static: false,
+        link: true
+      },
+      {
+        title: 'Property Name',
+        sort_column: 'property_name',
+        class: '',
+        title_class: '',
+        type: 'string',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false
+      }
+    ];
 
-    var fake_derived_columns_payload = {
-      derived_columns: [],
+    const fake_derived_columns_payload = {
+      derived_columns: []
     };
     controller('inventory_detail_controller', {
       $scope: inventory_detail_controller_scope,
@@ -183,8 +187,8 @@ describe('controller: inventory_detail_controller', function () {
           id: 1,
           display_decimal_places: 2,
           property_display_field: 'address_line_1',
-          taxlot_display_field: 'address_line_1',
-        },
+          taxlot_display_field: 'address_line_1'
+        }
       },
       analyses_payload: {
         analyses: []
@@ -193,8 +197,8 @@ describe('controller: inventory_detail_controller', function () {
         users: []
       },
       views_payload: {
-        status:	"success",
-        property_views: [],
+        status: 'success',
+        property_views: []
       }
     });
   }
@@ -203,7 +207,7 @@ describe('controller: inventory_detail_controller', function () {
    * Test scenarios
    */
 
-  it('should have an inventory payload', function () {
+  it('should have an inventory payload', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -216,7 +220,7 @@ describe('controller: inventory_detail_controller', function () {
     // expect(inventory_detail_controller_scope.imported_buildings[0].id).toBe(2);
   });
 
-  it('should make a copy of building while making edits', function () {
+  it('should make a copy of building while making edits', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -229,7 +233,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.item_copy.gross_floor_area).toBe(123456);
   });
 
-  it('should restore the copy of building if a user clicks cancel', function () {
+  it('should restore the copy of building if a user clicks cancel', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -244,7 +248,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
   });
 
-  it('should save a building when a user clicks the save button', function () {
+  it('should save a building when a user clicks the save button', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -256,11 +260,11 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
 
     // assertions
-    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, {gross_floor_area: 43214});
+    expect(mock_building_service.update_property).toHaveBeenCalledWith(1, { gross_floor_area: 43214 });
     expect(mock_building.gross_floor_area).toEqual(43214);
   });
 
-  it('should set only building attribute to master, not ids or children', function () {
+  it('should set only building attribute to master, not ids or children', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -275,7 +279,7 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.is_valid_data_column_key('gross_floor_area')).toEqual(true);
   });
 
-  it('should display Floor Areas with number', function () {
+  it('should display Floor Areas with number', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -310,7 +314,7 @@ describe('controller: inventory_detail_controller', function () {
   //     expect(keys.indexOf('make it four')).toEqual(4);
   // });
 
-  //FIXIT - do these have an equiv?
+  // FIXIT - do these have an equiv?
   // it('should set a field as source when clicked', function() {
   //     // arrange
   //     create_inventory_detail_controller();

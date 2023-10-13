@@ -3,36 +3,32 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // test Data Quality, Sharing, Reports, delete function and other misc items after data is loaded
-var EC = protractor.ExpectedConditions;
+const EC = protractor.ExpectedConditions;
 
-
-describe('When I go to the dataset options page', function () {
-
-  it('should reset sync', function () {
+describe('When I go to the dataset options page', () => {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  //Pairing
-  it('should change cycle and refresh', function () {
+  // Pairing
+  it('should change cycle and refresh', () => {
     browser.get('/app/#/data');
     $$('[ui-sref="dataset_detail({dataset_id: d.id})"]').first().click();
     $$('#data-pairing-0').first().click();
-    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', "2016 Calendar Year")).click();
+    element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', '2016 Calendar Year')).click();
   });
 
-  it('should edit pairing', function () {
+  it('should edit pairing', () => {
     element(by.cssContainingText('[ng-model="cycle.selected_cycle"] option', browser.params.testOrg.cycle)).click();
     expect($('.page_title').getText()).toContain('Pair Properties to Tax Lots');
 
-    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "Show Paired")).click();
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', 'Show Paired')).click();
     element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Tax Lot')).click();
 
-    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "Show Unpaired")).click();
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', 'Show Unpaired')).click();
     element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Property')).click();
 
-
-    $('[ng-model="showPaired"]').element(by.cssContainingText('option', "All")).click();
-
+    $('[ng-model="showPaired"]').element(by.cssContainingText('option', 'All')).click();
 
     expect($('.pairing-text-left').getText()).toContain('Showing 19 Properties');
     expect($('.pairing-text-right').getText()).toContain('Showing 11 Tax Lots');
@@ -41,10 +37,9 @@ describe('When I go to the dataset options page', function () {
     $$('[ng-click="rightSortData(col.name)"]').first().click().click();
   }, 60000);
 
-
-  it('should test filters and sort on left and right table', function () {
-    var leftRows = element.all(by.repeater('row in newLeftData'));
-    var rightRows = element.all(by.repeater('row in rightData'));
+  it('should test filters and sort on left and right table', () => {
+    const leftRows = element.all(by.repeater('row in newLeftData'));
+    const rightRows = element.all(by.repeater('row in rightData'));
     expect(leftRows.count()).toBe(19);
     $$('[ng-model="col.searchText"]').first().click().sendKeys('elm');
     expect(leftRows.count()).toBe(3);
@@ -54,11 +49,11 @@ describe('When I go to the dataset options page', function () {
     $$('[ng-model="col.searchText"]').get(4).clear();
   });
 
-  it('should edit drag pairs', function () {
+  it('should edit drag pairs', () => {
     // var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
-    var dragElement = element.all(by.repeater('row in newLeftData')).first();
-    var dropElement = $$('.pairing-data-row-indent').first();
-    var lastDropElement = $$('.pairing-data-row-indent').last();
+    const dragElement = element.all(by.repeater('row in newLeftData')).first();
+    const dropElement = $$('.pairing-data-row-indent').first();
+    const lastDropElement = $$('.pairing-data-row-indent').last();
     // console.log('drag: ', dragElement);
     // console.log('drop: ', dropElement);
 
@@ -71,20 +66,22 @@ describe('When I go to the dataset options page', function () {
     browser.sleep(200);
   });
 
-  it('should edit delete pairings', function () {
-    $$('.unpair-child').count().then( function (count) {
-      for (var index = 0; index < count; index++) {
-        // console.log('index: ', index, count)
-        var option = $$('.unpair-child').first();
-        option.click();
-        browser.sleep(200);
-      }
-    });
+  it('should edit delete pairings', () => {
+    $$('.unpair-child')
+      .count()
+      .then((count) => {
+        for (let index = 0; index < count; index++) {
+          // console.log('index: ', index, count)
+          const option = $$('.unpair-child').first();
+          option.click();
+          browser.sleep(200);
+        }
+      });
 
     expect($$('.unpair-child').count()).toBeLessThan(1);
   }, 60000);
 
-  it('should edit change pair view', function () {
+  it('should edit change pair view', () => {
     browser.sleep(2000);
     element(by.cssContainingText('[ng-change="inventoryTypeChanged()"] option', 'Tax Lot')).click();
     // browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')),30000);
@@ -94,11 +91,11 @@ describe('When I go to the dataset options page', function () {
     browser.sleep(2000);
   });
 
-  it('should edit drag pairs', function () {
+  it('should edit drag pairs', () => {
     // var dragElement = $$('.pairing-data-row.grab-pairing-left').first();
-    var dragElement = element.all(by.repeater('row in newLeftData')).first();
-    var dropElement = $$('.pairing-data-row-indent').first();
-    var lastDropElement = $$('.pairing-data-row-indent').last();
+    const dragElement = element.all(by.repeater('row in newLeftData')).first();
+    const dropElement = $$('.pairing-data-row-indent').first();
+    const lastDropElement = $$('.pairing-data-row-indent').last();
     // console.log('drag: ', dragElement);
     // console.log('drop: ', dropElement);
 
@@ -115,23 +112,25 @@ describe('When I go to the dataset options page', function () {
     browser.sleep(2000);
   });
 
-  it('should delete pairings the other way', function () {
-    $$('.unpair-child').count().then( function (count) {
-      for (var index = 0; index < count; index++) {
-        // console.log('index: ', index, count)
-        var option = $$('.unpair-child').first();
-        option.click();
-        browser.sleep(200);
-      }
-    });
+  it('should delete pairings the other way', () => {
+    $$('.unpair-child')
+      .count()
+      .then((count) => {
+        for (let index = 0; index < count; index++) {
+          // console.log('index: ', index, count)
+          const option = $$('.unpair-child').first();
+          option.click();
+          browser.sleep(200);
+        }
+      });
 
     expect($$('.unpair-child').count()).toBeLessThan(1);
   }, 60000);
 
-  it('should pair so we can delete pairs later in inventory page', function () {
-    var dragElement = element.all(by.repeater('row in newLeftData')).get(2);
-    var dropElement = $$('.pairing-data-row-indent').get(2);
-    var lastDropElement = $$('.pairing-data-row-indent').last();
+  it('should pair so we can delete pairs later in inventory page', () => {
+    const dragElement = element.all(by.repeater('row in newLeftData')).get(2);
+    const dropElement = $$('.pairing-data-row-indent').get(2);
+    const lastDropElement = $$('.pairing-data-row-indent').last();
 
     dragElement.click();
     browser.sleep(200);
@@ -140,5 +139,4 @@ describe('When I go to the dataset options page', function () {
     lastDropElement.click();
     browser.sleep(200);
   });
-
 });

@@ -1,169 +1,172 @@
 {% load compress %}
 {% load i18n %}
-<!DOCTYPE html>
+<!doctype html>
 <html>
-    <!-- SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors. See also https://github.com/seed-platform/seed/main/LICENSE.md. -->
-    <head>
-        <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <!--[if lt IE 8]>
-            <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+<!-- SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors. See also https://github.com/seed-platform/seed/main/LICENSE.md. -->
+<head>
+  <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!--[if lt IE 8]>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 
-            <style>
-             .chromeFrameInstallDefaultStyle {
-               border: 2px solid blue;
-               padding: 5px;
-               z-index: 999999;
-             }
-            </style>
+  <style>
+    .chromeFrameInstallDefaultStyle {
+      border: 2px solid blue;
+      padding: 5px;
+      z-index: 999999;
+    }
+  </style>
 
-            <script>
-             // The conditional ensures that this code will only execute in IE,
-             // Therefore we can use the IE-specific attachEvent without worry
-             window.attachEvent("onload", function() {
-               CFInstall.check({
-                 mode: "inline", // the default
-                 node: "prompt"
-               });
-             });
-            </script>
-        <![endif]-->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-        <link rel="shortcut icon" href="{{STATIC_URL}}seed/images/favicon.ico">
-        {% compress css %}
-        <link href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/ng-tags-input/build/ng-tags-input.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/angular-xeditable/dist/css/xeditable.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
-        <link href="/static/node_modules/ng-wig/dist/css/ng-wig.min.css" rel="stylesheet" type="text/css">
-        {% endcompress %}
+  <script>
+    // The conditional ensures that this code will only execute in IE,
+    // Therefore we can use the IE-specific attachEvent without worry
+    window.attachEvent('onload', function() {
+      CFInstall.check({
+        mode: 'inline', // the default
+        node: 'prompt',
+      });
+    });
+  </script>
+  <![endif]-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <link rel="shortcut icon" href="{{ STATIC_URL }}seed/images/favicon.ico" />
+  {% compress css %}
+    <link href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/angular-ui-grid/ui-grid.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/ng-tags-input/build/ng-tags-input.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/ng-tags-input/build/ng-tags-input.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/angular-xeditable/dist/css/xeditable.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/node_modules/ol/ol.css" rel="stylesheet" type="text/css" />
+  {% endcompress %}
 
-        {% block css %}{{block.super}}
-            {% compress css %}
-        <style type="text/css">
-          [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
-            display: none !important;
-          }
-        </style>
-        <link href="/static/seed/scss/style.scss" rel="stylesheet" type="text/x-scss">
-            {% endcompress %}
-        {% endblock %}
+  {% block css %}{{ block.super }}
+    {% compress css %}
+      <style>
+        [ng\:cloak],
+        [ng-cloak],
+        [data-ng-cloak],
+        [x-ng-cloak],
+        .ng-cloak,
+        .x-ng-cloak {
+          display: none !important;
+        }
+      </style>
+      <link href="/static/seed/scss/style.scss" rel="stylesheet" type="text/x-scss" />
+    {% endcompress %}
+  {% endblock %}
 
-        {% block js %}{{block.super}}
-        <script type="text/javascript">
-            window.BE = window.BE || {};
-            // username for sidebar
-            window.BE.username = "{{ username }}";
-            if (window.BE.username === "") {
-                window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name }}";
-            }
-            if (window.BE.username === " ") {
-                window.BE.username = "{{ request.user.email }}"
-            }
-            window.BE.initial_org_id = "{{ initial_org_id }}";
-            window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
-            window.BE.initial_org_name = "{{ initial_org_name }}";
+  {% block js %}{{ block.super }}
+    <script type="text/javascript">
+      window.BE = window.BE || {};
+      // username for sidebar
+      window.BE.username = "{{ username }}";
+      if (window.BE.username === '') {
+        window.BE.username = "{{ request.user.first_name }} {{ request.user.last_name }}";
+      }
+      if (window.BE.username === ' ') {
+        window.BE.username = "{{ request.user.email }}";
+      }
+      window.BE.initial_org_id = "{{ initial_org_id }}";
+      window.BE.initial_org_user_role = "{{ initial_org_user_role }}";
+      window.BE.initial_org_name = "{{ initial_org_name }}";
 
-            {# js CSRF config #}
-            window.BE.csrf_token = "{{ csrf_token }}";
+      {# js CSRF config #}
+      window.BE.csrf_token = "{{ csrf_token }}";
 
-            {# Django debug mode flag #}
-            window.BE.debug = {{ debug|yesno:"true,false" }};
-        </script>
+      {# Django debug mode flag #}
+      window.BE.debug = {{ debug|yesno:"true,false" }};
+    </script>
 
-        {# js urls config #}
-        {% include "seed/_js_urls.html" %}
+    {# js urls config #}
+    {% include "seed/_js_urls.html" %}
 
-        {% compress js %}
-        <script src="/static/node_modules/jquery/dist/jquery.min.js"></script>
-        <script src="/static/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
-        <script src="/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    {% compress js %}
+      <script src="/static/node_modules/jquery/dist/jquery.min.js"></script>
+      <script src="/static/node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+      <script src="/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
-        <script src="/static/node_modules/lodash/lodash.min.js"></script>
-        <script src="/static/node_modules/moment/min/moment.min.js"></script>
-        <script src="/static/node_modules/moment/locale/fr.js"></script>
+      <script src="/static/node_modules/lodash/lodash.min.js"></script>
+      <script src="/static/node_modules/moment/min/moment.min.js"></script>
+      <script src="/static/node_modules/moment/locale/fr.js"></script>
 
-            {% if not debug %}
+      {% if not debug %}
+        <script src="/static/node_modules/angular/angular.min.js"></script>
+      {% else %}
         <script src="/static/node_modules/angular/angular.js"></script>
-            {% else %}
-        <script src="/static/node_modules/angular/angular.js"></script>
-            {% endif %}
-        <script src="/static/node_modules/angular-animate/angular-animate.min.js"></script>
-        <script src="/static/node_modules/angular-aria/angular-aria.min.js"></script>
-        <script src="/static/node_modules/angular-cookies/angular-cookies.min.js"></script>
-        <script src="/static/node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
-        <script src="/static/node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
+      {% endif %}
+      <script src="/static/node_modules/angular-animate/angular-animate.min.js"></script>
+      <script src="/static/node_modules/angular-aria/angular-aria.min.js"></script>
+      <script src="/static/node_modules/angular-cookies/angular-cookies.min.js"></script>
+      <script src="/static/node_modules/angular-ui-router/release/angular-ui-router.min.js"></script>
+      <script src="/static/node_modules/angular-ui-router.statehelper/statehelper.min.js"></script>
 
-            {% comment %} {% if not debug and SENTRY_JS_DSN %}
-        <script src="/static/node_modules/raven-js/dist/raven.min.js"></script>
-        <script src="/static/node_modules/raven-js/dist/plugins/angular.min.js"></script>
-        <script>
-            Raven.config('{{ SENTRY_JS_DSN }}').addPlugin(Raven.Plugins.Angular).install();
-        </script>
-            {% endif %} {% endcomment %}
+      {% comment %} {% if not debug and SENTRY_JS_DSN %}
+    <script src="/static/node_modules/raven-js/dist/raven.min.js"></script>
+    <script src="/static/node_modules/raven-js/dist/plugins/angular.min.js"></script>
+    <script>
+      Raven.config('{{ SENTRY_JS_DSN }}').addPlugin(Raven.Plugins.Angular).install();
+    </script>
+    {% endif %} {% endcomment %}
 
-        <script src="/static/node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
-        <script src="/static/node_modules/angular-ui-grid/ui-grid.min.js"></script>
-        <script src="/static/node_modules/ui-grid-draggable-rows/js/draggable-rows.js"></script>
-        <script src="/static/node_modules/angular-ui-sortable/dist/sortable.min.js"></script>
-        <script src="/static/node_modules/angular-dragula/dist/angular-dragula.min.js"></script>
-        <script src="/static/node_modules/ng-focus-if/focusIf.min.js"></script>
-        <script src="/static/node_modules/file-saver/dist/FileSaver.min.js"></script>
-        <script src="/static/node_modules/terraformer/terraformer.js"></script>
-        <script src="/static/node_modules/terraformer-wkt-parser/terraformer-wkt-parser.min.js"></script>
-        <script src="/static/node_modules/pluralize/pluralize.js"></script>
+      <script src="/static/node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js"></script>
+      <script src="/static/node_modules/angular-ui-grid/ui-grid.min.js"></script>
+      <script src="/static/node_modules/ui-grid-draggable-rows/js/draggable-rows.js"></script>
+      <script src="/static/node_modules/angular-ui-sortable/dist/sortable.min.js"></script>
+      <script src="/static/node_modules/angular-dragula/dist/angular-dragula.min.js"></script>
+      <script src="/static/node_modules/ng-focus-if/focusIf.min.js"></script>
+      <script src="/static/node_modules/file-saver/dist/FileSaver.min.js"></script>
+      <script src="/static/node_modules/terraformer/terraformer.js"></script>
+      <script src="/static/node_modules/terraformer-wkt-parser/terraformer-wkt-parser.min.js"></script>
+      <script src="/static/node_modules/pluralize/pluralize.js"></script>
 
-        <!-- reports -->
-        <script src="/static/node_modules/d3/dist/d3.min.js"></script>
-        <script src="/static/node_modules/dimple/dist/dimple.latest.min.js"></script>
-        <script src="/static/node_modules/chart.js/dist/chart.js"></script>
-        <script src="/static/node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
-        <script src="/static/node_modules/hammerjs/hammer.min.js"></script>
-        <script src="/static/node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
-        <!-- / reports -->
+      <!-- reports -->
+      <script src="/static/node_modules/d3/dist/d3.min.js"></script>
+      <script src="/static/node_modules/dimple/dist/dimple.latest.min.js"></script>
+      <script src="/static/node_modules/chart.js/dist/chart.min.js"></script>
+      <script src="/static/node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
+      <script src="/static/node_modules/hammerjs/hammer.min.js"></script>
+      <script src="/static/node_modules/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
+      <!-- / reports -->
 
-        <script src="/static/node_modules/angular-xeditable/dist/js/xeditable.min.js"></script>
-        <script src="/static/node_modules/ng-tags-input/build/ng-tags-input.min.js"></script>
-        <script src="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
-        <script src="/static/node_modules/spin.js/spin.js"></script>
-        <script src="/static/node_modules/ol/ol.js"></script>
-        <script src="/static/node_modules/ol-ext/dist/ol-ext.js"></script>
-        <script src="/static/node_modules/open-location-code/js/src/openlocationcode.min.js"></script>
-        <script src="/static/node_modules/pnnl-buildingid/pnnl-buildingid.js"></script>
+      <script src="/static/node_modules/angular-xeditable/dist/js/xeditable.min.js"></script>
+      <script src="/static/node_modules/ng-tags-input/build/ng-tags-input.min.js"></script>
+      <script src="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
+      <script src="/static/node_modules/spin.js/spin.js"></script>
+      <script src="/static/node_modules/ol/ol.js"></script>
+      <script src="/static/node_modules/ol-ext/dist/ol-ext.js"></script>
+      <script src="/static/node_modules/open-location-code/js/src/openlocationcode.min.js"></script>
+      <script src="/static/node_modules/pnnl-buildingid/pnnl-buildingid.js"></script>
 
-        <!-- i18n -->
-        <script src="/static/node_modules/angular-translate/dist/angular-translate.min.js"></script>
-        <script src="/static/node_modules/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
-        <script src="/static/node_modules/angular-translate-handler-log/angular-translate-handler-log.min.js"></script>
-        <script src="/static/node_modules/messageformat/messageformat.min.js"></script>
-        <script src="/static/node_modules/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
-        <script src="/static/node_modules/angular-sanitize/angular-sanitize.min.js"></script>
+      <!-- i18n -->
+      <script src="/static/node_modules/angular-translate/dist/angular-translate.min.js"></script>
+      <script src="/static/node_modules/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
+      <script src="/static/node_modules/angular-translate-handler-log/angular-translate-handler-log.min.js"></script>
+      <script src="/static/node_modules/messageformat/messageformat.min.js"></script>
+      <script src="/static/node_modules/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.min.js"></script>
+      <script src="/static/node_modules/angular-sanitize/angular-sanitize.min.js"></script>
 
-        <script src="/static/node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
+      <script src="/static/node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
 
-        <!-- Text Editor -->
-        <script src='/static/node_modules/ng-wig/dist/ng-wig.min.js'></script>
-        {% endcompress %}
+      <!-- Text Editor -->
+      <script src="/static/node_modules/ng-wig/dist/ng-wig.min.js"></script>
+    {% endcompress %}
 
+    {# all seed js files #}
+    {% include "seed/_scripts.html" %}
 
-        {# all seed js files #}
-        {% include "seed/_scripts.html" %}
+  {% endblock js %}
+</head>
 
-        {% endblock js%}
-    </head>
-
-    {% block body %}
-    <body>
-        <div class="app" ng-app="BE.seed">
-        {% block content %}
-        {% endblock %}
-        </div>
-    </body>
-</html>
+{% block body %}
+  <body>
+  <div class="app" ng-app="BE.seed" ng-strict-di>
+    {% block content %}
+    {% endblock %}
+  </div>
+  </body>
+  </html>
 {% endblock %}

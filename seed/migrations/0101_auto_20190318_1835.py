@@ -34,7 +34,7 @@ def forwards(apps, schema_editor):
         }
     ]
 
-    # Go through all the organizatoins
+    # Go through all the organizations
     for org in Organization.objects.all():
         for new_db_field in new_db_fields:
             columns = Column.objects.filter(

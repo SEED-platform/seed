@@ -3,19 +3,19 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // create dummy angularJS app to attach filter(s)
-var myignoremapApp = angular.module('myignoremapApp', ['ignoremap']);
+const myignoremapApp = angular.module('myignoremapApp', ['ignoremap']);
 
-describe('The ignoremap filter', function () {
-  var ignoremapFilter;
+describe('The ignoremap filter', () => {
+  let ignoremapFilter;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('myignoremapApp');
-    inject(function (_ignoremapFilter_) {
+    inject((_ignoremapFilter_) => {
       ignoremapFilter = _ignoremapFilter_;
     });
   });
 
-  it('replaces `""` with `------ Ignore Row ------`', function () {
+  it('replaces `""` with `------ Ignore Row ------`', () => {
     // normal cases
     expect(ignoremapFilter('')).toBe('------ Ignore Row ------');
     expect(ignoremapFilter(' ')).toBe(' ');

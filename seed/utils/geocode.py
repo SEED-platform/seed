@@ -48,7 +48,7 @@ def create_geocoded_additional_columns(organization: Organization):
     """Create the additional columns that are needed for storing the extra
     geocoded data that will be returned by the MapQuest service."""
     new_columns = [
-        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},
+        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "Geocoded Address"},
         {"name": "geocoded_postal_code", "display_name": "Geocoded Postal Code", "description": "Geocoded Postal Code"},
         {"name": "geocoded_side_of_street", "display_name": "Geocoded Side of Street", "description": "Geocoded Side of Street"},
         {"name": "geocoded_country", "display_name": "Geocoded Country", "description": "Geocoded Country"},

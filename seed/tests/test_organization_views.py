@@ -33,13 +33,11 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         default_matching_criteria_display_names = {
             'PropertyState': [
-                'address_line_1',
                 'custom_id_1',
                 'pm_property_id',
                 'ubid',
             ],
             'TaxLotState': [
-                'address_line_1',
                 'custom_id_1',
                 'jurisdiction_tax_lot_id',
                 'ubid',

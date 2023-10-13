@@ -1,80 +1,95 @@
 <div class="modal-header">
-    <h4 class="modal-title" translate>Import from ESPM</h4>
+  <h4 class="modal-title" translate>Import from ESPM</h4>
 </div>
 
 <div ng-switch on="stage">
-    <div class="modal-body">
-        <div class="modal-content-section">
-            <div class="row" style="padding-bottom:10px">
-                <label class="control-label col-sm-4" for="selected-mapping-profile" translate>Column Mapping Profile</label>
-                <div class="col-sm-8">
-                    <select id="selected-column-profile" name="selected-mapping-profile" class="form-control input-sm" ng-model="fields.mapping_profile" ng-options="t.id as t.name for t in mapping_profiles" style="width:100%;"></select>
-                </div>
-            </div>
+  <div class="modal-body">
+    <div class="modal-content-section">
+      <div class="row" style="padding-bottom: 10px">
+        <label class="control-label col-sm-4" for="selected-mapping-profile" translate>Column Mapping Profile</label>
+        <div class="col-sm-8">
+          <select
+            id="selected-column-profile"
+            name="selected-mapping-profile"
+            class="form-control input-sm"
+            ng-model="fields.mapping_profile"
+            ng-options="t.id as t.name for t in mapping_profiles"
+            style="width: 100%"
+          ></select>
         </div>
-
-        <div class="alert alert-danger" ng-show="error" style="margin-bottom:10px;">
-            {$ error $}
-        </div>
-
-        <div class="grow">
-            <p style="padding: 10px;" translate>ESPM_IMPORT_TEXT</p>
-        </div>
-        <div class="modal-content-section">
-            <div class="row">
-                <div class="col-sm-4">
-                    <p translate>ESPM_FILE_UPLOAD</p>
-                </div>
-                <div class="col-sm-8" style="margin-bottom: 10px;">
-                    <div class="btn btn-primary upload-btn flex-centered" sd-uploader sourcetype="ESPMUpdate" sourceprog="" sourcever="" importrecord="view_id" organization-id="organization.id" cycle-id="cycle_id" mapping-profile-id="fields.mapping_profile" eventfunc="upload_from_file_and_close(message, file, progress)" ng-disabled="busy">
-                        <i class="fa fa-file-code-o fa-2x"></i>
-                        <span class="grow">{$:: 'Upload ESPM Property' | translate $}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-content-section">
-            <div class="row or-text">
-                <div class="col-sm-12">{$:: 'OR' | translate $}</div>
-            </div>
-        </div>
-        <div class="modal-content-section">
-            <div class="row" style="padding-bottom:10px">
-                <label class="control-label col-sm-4" for="input-pm-property-id" translate>ESPM Property ID</label>
-                <div class="col-sm-8">
-                    <input id="input-pm-property-id" type="text" class="form-control" ng-model="fields.pm_property_id" ng-disabled="busy"/>
-                </div>
-            </div>
-            <div class="row" style="padding-bottom:10px">
-                <label class="control-label col-sm-4" for="input-espm-username" translate>ESPM Username</label>
-                <div class="col-sm-8">
-                    <input id="input-espm-username" type="text" class="form-control" ng-model="fields.espm_username" ng-disabled="busy"/>
-                </div>
-            </div>
-            <div class="row" style="padding-bottom:10px">
-                <label class="control-label col-sm-4" for="input-espm-password">ESPM Password</label>
-                <div class="col-sm-8">
-                    <div class="input-group">
-                        <input type="{$ secret $}" class="form-control" id="input-espm-password" ng-model="fields.espm_password" autocomplete="new-password" ng-disabled="busy">
-                        <span class="input-group-btn">
-                            <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div class="row" style="padding-bottom:10px">
-                <div class="col-sm-8 col-sm-offset-4">
-                    <div class="btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
-                        <i class="fa fa-id-card-o fa-2x"></i>
-                        <span class="grow"> {$:: 'Import directly from ESPM' | translate $}</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
+      </div>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" ng-click="close()" ng-disabled="busy" translate>Close</button>
+
+    <div class="alert alert-danger" ng-show="error" style="margin-bottom: 10px">{$ error $}</div>
+
+    <div class="grow">
+      <p style="padding: 10px" translate>ESPM_IMPORT_TEXT</p>
     </div>
+    <div class="modal-content-section">
+      <div class="row">
+        <div class="col-sm-4">
+          <p translate>ESPM_FILE_UPLOAD</p>
+        </div>
+        <div class="col-sm-8" style="margin-bottom: 10px">
+          <div
+            class="btn btn-primary upload-btn flex-centered"
+            sd-uploader
+            sourcetype="ESPMUpdate"
+            sourceprog=""
+            sourcever=""
+            importrecord="view_id"
+            organization-id="organization.id"
+            cycle-id="cycle_id"
+            mapping-profile-id="fields.mapping_profile"
+            eventfunc="upload_from_file_and_close(message, file, progress)"
+            ng-disabled="busy"
+          >
+            <i class="fa-solid fa-file-code-o fa-2x"></i>
+            <span class="grow">{$:: 'Upload ESPM Property' | translate $}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-content-section">
+      <div class="row or-text">
+        <div class="col-sm-12">{$:: 'OR' | translate $}</div>
+      </div>
+    </div>
+    <div class="modal-content-section">
+      <div class="row" style="padding-bottom: 10px">
+        <label class="control-label col-sm-4" for="input-pm-property-id" translate>ESPM Property ID</label>
+        <div class="col-sm-8">
+          <input id="input-pm-property-id" type="text" class="form-control" ng-model="fields.pm_property_id" ng-disabled="busy" />
+        </div>
+      </div>
+      <div class="row" style="padding-bottom: 10px">
+        <label class="control-label col-sm-4" for="input-espm-username" translate>ESPM Username</label>
+        <div class="col-sm-8">
+          <input id="input-espm-username" type="text" class="form-control" ng-model="fields.espm_username" ng-disabled="busy" />
+        </div>
+      </div>
+      <div class="row" style="padding-bottom: 10px">
+        <label class="control-label col-sm-4" for="input-espm-password">ESPM Password</label>
+        <div class="col-sm-8">
+          <div class="input-group">
+            <input type="{$ secret $}" class="form-control" id="input-espm-password" ng-model="fields.espm_password" autocomplete="new-password" ng-disabled="busy" />
+            <span class="input-group-btn">
+              <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="padding-bottom: 10px">
+        <div class="col-sm-8 col-sm-offset-4">
+          <div class="btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
+            <i class="fa-solid fa-id-card-o fa-2x"></i>
+            <span class="grow"> {$:: 'Import directly from ESPM' | translate $}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="close()" ng-disabled="busy" translate>Close</button>
+  </div>
 </div>

@@ -1,40 +1,40 @@
 <div class="modal-header" ng-switch="state">
-    <h4 class="modal-title" ng-switch-default>Delete Column '{$ column_name $}'</h4>
-    <h4 class="modal-title" ng-switch-when="running">Deleting Column '{$ column_name $}'</h4>
-    <h4 class="modal-title" ng-switch-when="done" translate>Column Deleted</h4>
+  <h4 class="modal-title" ng-switch-default>Delete Column '{$ column_name $}'</h4>
+  <h4 class="modal-title" ng-switch-when="running">Deleting Column '{$ column_name $}'</h4>
+  <h4 class="modal-title" ng-switch-when="done" translate>Column Deleted</h4>
 </div>
 <div class="modal-body row delete-column" ng-switch="state">
-    <div class="col-sm-12">
-        <div ng-switch-default>
-            <p>This will delete the extra_data column '{$ column_name $}' and all associated data.</p>
-            <p>This operation may take a long time to complete, are you sure you want to continue?</p>
-        </div>
-        <div ng-switch-when="pending">
-            <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
-            <p>Please wait, scanning for affected records...</p>
-        </div>
-        <div ng-switch-when="evaluating">
-            <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
-            <p>Please wait, evaluating affected records. This may take several minutes...</p>
-        </div>
-        <div ng-switch-when="running">
-            <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
-            <table class="time-table">
-                <tr>
-                    <td>Elapsed:</td>
-                    <td>{$ elapsed $}</td>
-                </tr>
-                <tr>
-                    <td>ETA:</td>
-                    <td>{$ eta $}</td>
-                </tr>
-            </table>
-        </div>
-        <div ng-switch-when="done">{$ result $}</div>
+  <div class="col-sm-12">
+    <div ng-switch-default>
+      <p>This will delete the extra_data column '{$ column_name $}' and all associated data.</p>
+      <p>This operation may take a long time to complete, are you sure you want to continue?</p>
     </div>
+    <div ng-switch-when="pending">
+      <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+      <p>Please wait, scanning for affected records...</p>
+    </div>
+    <div ng-switch-when="evaluating">
+      <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+      <p>Please wait, evaluating affected records. This may take several minutes...</p>
+    </div>
+    <div ng-switch-when="running">
+      <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
+      <table class="time-table">
+        <tr>
+          <td>Elapsed:</td>
+          <td>{$ elapsed $}</td>
+        </tr>
+        <tr>
+          <td>ETA:</td>
+          <td>{$ eta $}</td>
+        </tr>
+      </table>
+    </div>
+    <div ng-switch-when="done">{$ result $}</div>
+  </div>
 </div>
 <div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
-    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
-    <button type="button" class="btn btn-info" ng-click="delete()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Delete</button>
-    <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
+  <button type="button" class="btn btn-info" ng-click="delete()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Delete</button>
+  <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
 </div>

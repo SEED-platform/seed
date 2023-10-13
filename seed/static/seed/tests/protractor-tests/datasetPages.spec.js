@@ -3,20 +3,19 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 // create and test new dataset with import
-var EC = protractor.ExpectedConditions;
+const EC = protractor.ExpectedConditions;
 
-var path = require('path');
-var remote = require('selenium-webdriver/remote');
+const path = require('path');
+const remote = require('selenium-webdriver/remote');
 
 // Data Set page
 // Select my new sub org
-describe('When I click the orgs button', function () {
-
-  it('should reset sync', function () {
+describe('When I click the orgs button', () => {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should be able to switch to my org', function () {
+  it('should be able to switch to my org', () => {
     browser.get('/app/#/data');
     $('#btnUserOrgs').click();
     element(by.cssContainingText('[ng-click="set_user_org(org)"]', browser.params.testOrg.parent)).click();
@@ -24,13 +23,12 @@ describe('When I click the orgs button', function () {
   });
 });
 
-describe('When I visit the data set page', function () {
-
-  it('should reset sync', function () {
+describe('When I visit the data set page', () => {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should be able to create a new data set', function () {
+  it('should be able to create a new data set', () => {
     $('[ui-sref="dataset_list"]').click();
     $$('input').first().sendKeys('my fake dataset');
     $('[ng-click="create_dataset(dataset.name)"]').click();
@@ -40,17 +38,16 @@ describe('When I visit the data set page', function () {
   });
 
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should be able to create a new data set async', function () {
-
+  it('should be able to create a new data set async', () => {
     // for remote ci to grab files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/data_importer/tests/data/example-data-properties.xlsx';
-    var absolutePath = path.resolve(fileToUpload);
+    const fileToUpload = 'seed/data_importer/tests/data/example-data-properties.xlsx';
+    const absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
     browser.wait(EC.presenceOf($('.alert.alert-success')), 120000);
@@ -58,49 +55,47 @@ describe('When I visit the data set page', function () {
     expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
   });
 
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should take me to the mapping page', function () {
+  it('should take me to the mapping page', () => {
     $('[ng-click="goto_data_mapping()"]').click();
     browser.wait(EC.presenceOf($('.table_list_container.mapping')), 5000);
     expect($('.page_title').getText()).toContain('Data Mapping & Validation');
   });
 
-  it('should have more than one mapped value', function () {
-    var rows = element.all(by.repeater('tcm in valids')).filter(function (elm) {
+  it('should have more than one mapped value', () => {
+    const rows = element.all(by.repeater('tcm in valids')).filter((elm) => {
       expect(elm.length).not.toBeLessThan(1);
       return elm;
     });
   });
 
-  it('should go to mapping Validation', function () {
+  it('should go to mapping Validation', () => {
     $$('[ng-click="remap_buildings()"]').first().click();
     browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')), 120000);
     expect($('[heading="View by Property"]').isPresent()).toBe(true);
     expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
   });
 
-
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should go to mapping Validation async', function () {
-    var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter(function (elm) {
+  it('should go to mapping Validation async', () => {
+    const rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter((elm) => {
       expect(elm.length).not.toBeLessThan(1);
       return elm;
     });
   });
 
-
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should save mappings', function () {
+  it('should save mappings', () => {
     $('#save-mapping').click();
     browser.sleep(500);
     $('#confirm-mapping').click();
@@ -110,45 +105,46 @@ describe('When I visit the data set page', function () {
   });
 
   // manually
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should be able to add tax lots file too', function () {
-
+  it('should be able to add tax lots file too', () => {
     element(by.cssContainingText('option', browser.params.testOrg.cycle)).click();
 
     // for remote ci to grab the files
     browser.setFileDetector(new remote.FileDetector());
 
-    var fileToUpload = 'seed/data_importer/tests/data/example-data-taxlots.xlsx';
-    var absolutePath = path.resolve(fileToUpload);
+    const fileToUpload = 'seed/data_importer/tests/data/example-data-taxlots.xlsx';
+    const absolutePath = path.resolve(fileToUpload);
 
     element.all(by.xpath('//input[@type="file"]')).first().sendKeys(absolutePath);
-    var passingBar = $('.alert.alert-success');
+    const passingBar = $('.alert.alert-success');
     browser.wait(EC.presenceOf(passingBar), 120000);
     expect($('.alert.alert-success').isPresent()).toBe(true);
     expect($('[ng-click="goto_data_mapping()"]').isPresent()).toBe(true);
   });
 
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should take me to the mapping page for taxlots', function () {
+  it('should take me to the mapping page for taxlots', () => {
     $('[ng-click="goto_data_mapping()"]').click();
     browser.wait(EC.presenceOf($('.table_list_container.mapping')), 5000);
     expect($('.page_title').getText()).toContain('Data Mapping & Validation');
   });
 
-  it('should have more than one mapped value and change all to taxlot', function () {
+  it('should have more than one mapped value and change all to taxlot', () => {
     $('[ng-change="setAllInventoryTypes()"]').element(by.cssContainingText('option', 'Property')).click();
-    var cusRow = element.all(by.repeater('tcm in valids')).filter(function (rows) {
+    const cusRow = element.all(by.repeater('tcm in valids')).filter((rows) => {
       expect(rows.length).not.toBeLessThan(1);
-      return rows.$('[ng-model="tcm.suggestion_table_name"]').getText().then(function (label) {
-        expect(label).toEqual('Property');
-        return;
-      });
+      return rows
+        .$('[ng-model="tcm.suggestion_table_name"]')
+        .getText()
+        .then((label) => {
+          expect(label).toEqual('Property');
+        });
     });
     $$('[ng-change="updateInventoryTypeDropdown(); change(tcm)"]').first().element(by.cssContainingText('option', 'Tax Lot')).click();
     $('#mapped-row-input-box-0').clear();
@@ -158,25 +154,25 @@ describe('When I visit the data set page', function () {
     $$('[ng-click="remap_buildings()"]').first().click();
   });
 
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = true;
   });
 
-  it('should go to mapping Validation for taxlots', function () {
+  it('should go to mapping Validation for taxlots', () => {
     browser.wait(EC.presenceOf($('.inventory-list-tab-container.ng-scope')), 120000);
     expect($('[heading="View by Property"]').isPresent()).toBe(true);
     expect($('[heading="View by Tax Lot"]').isPresent()).toBe(true);
-    var rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter(function (elm) {
+    const rows = element.all(by.repeater('(rowRenderIndex, row) in rowContainer.renderedRows')).filter((elm) => {
       expect(elm.length).not.toBeLessThan(1);
       return elm;
     });
   });
 
-  it('should reset sync', function () {
+  it('should reset sync', () => {
     browser.ignoreSynchronization = false;
   });
 
-  it('should save mappings for taxlots', function () {
+  it('should save mappings for taxlots', () => {
     $('#save-mapping').click();
     browser.sleep(500);
     $('#confirm-mapping').click();

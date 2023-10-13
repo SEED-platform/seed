@@ -1,202 +1,225 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container"></div>
-        <div class="page_title">
-            <h1>{$:: username $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: username $}</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="display">
+  <div class="section">
     <div class="section">
-        <div class="section">
-            <div class="alert {$ alert.css $}" ng-show="alert.show">
-                {$ alert.message $}
-            </div>
-            <div class="section_header_container has_btm_margin">
-                <div class="section_header">
-                    <h2><i class="fa fa-users"></i> {$:: 'Create an organization' | translate $}</h2>
-                </div>
-            </div>
-            <div class="section_content_container org_form container-fluid">
-                <div class="section_content">
-                    <form name="orgForm" novalidate class="form-horizontal css-form" role="form">
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="org_name" translate>Organization Name:</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="{$:: 'Organization Name' | translate $}" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="user_emails" translate>User Email:</label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org.email"></select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <button class="btn btn-default" type="reset" ng-click="org_form.reset()" translate>Reset</button>
-                                <button class="btn btn-primary" type="submit" ng-click="org_form.add(org)" ng-disabled="orgForm.$invalid || org_form.not_ready()" translate>Create</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="section_header_container has_btm_margin">
-                <div class="section_header">
-                    <h2><i class="fa fa-user"></i> {$:: 'Create a user' | translate $}</h2>
-                </div>
-            </div>
-            <div class="section_content_container user_admin container-fluid">
-                <div class="section_content">
-                    <form name="userForm" novalidate class="form-horizontal css-form" role="form">
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="first_name" translate>User First Name:</label>
-                            <div class="col-sm-4">
-                                <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="{$:: 'First Name' | translate $}" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="last_name" translate>User Last Name:</label>
-                            <div class="col-sm-4">
-                                <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="{$:: 'Last Name' | translate $}" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="user_email" translate>User Email:</label>
-                            <div class="col-sm-4">
-                                <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="{$:: 'User Email' | translate $}" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="new_user_org_select" translate>Choose Existing Organization:</label>
-                            <div class="col-sm-4">
-                                <select name="new_user_orgs" class="form-control" id="new_user_org_select" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization" ng-change="user.org_name = undefined"></select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-2 control-label" for="org_name_from_user" translate>Or Create New (With User as Head):</label>
-                            <div class="col-sm-4">
-                                <input type="text" class="form-control" id="org_name_from_user" ng-model="user.org_name" ng-change="user.organization = undefined" placeholder="{$:: 'Organization Name' | translate $}">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <button class="btn btn-default" type="reset" ng-click="user_form.reset()" translate>Reset</button>
-                                <button class="btn btn-primary" type="submit" ng-click="user_form.add(user)" ng-disabled="userForm.$invalid || user_form.not_ready()" translate>Create</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="section_header_container has_btm_margin">
-                <div class="section_header">
-                    <h2><i class="fa fa-plus-circle"></i> {$:: 'Add/Remove a user to an organization' | translate $}</h2>
-                </div>
-            </div>
-            <div class="section_content_container org_user_admin container-fluid">
-                <div class="section_content row">
-                    <div class="col-sm-6">
-                        <form name="addRemoveForm" novalidate class="form-horizontal css-form" role="form">
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
-                                <div class="col-sm-8">
-                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations track by o.org_id" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)" required></select>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
-                                <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org_user.user" required></select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-sm-offset-4 col-sm-8">
-                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()" ng-disabled="addRemoveForm.$invalid" translate>Add user</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="table_list_container col-sm-5">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th translate>User</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="user in org_user.users track by user.user_id">
-                                    <td>{$:: user.email $}</td>
-                                    <td>
-                                        <button class="btn btn-default" type="submit" ng-click="confirm_remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section_header_container has_btm_margin">
-                <div class="section_header">
-                    <h2><i class="fa fa-trash-o"></i> {$:: 'Remove inventory and organizations' | translate $}</h2>
-                </div>
-            </div>
-            <div class="section_content_container org_user_admin container-fluid">
-                <div class="section_content row">
-                    <div class="table_list_container remove_buildings_table col-sm-5">
-                        <table id="admin-organizations-table" class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th translate>Parent ID</th>
-                                    <th translate>ID</th>
-                                    <th translate>Organization</th>
-                                    <th translate>Created</th>
-                                    <th translate>User Count</th>
-                                    <th translate>Property Count</th>
-                                    <th translate>Tax Lot Count</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="org in org_user.organizations">
-                                    <td>{$:: org.parent_id !== org.org_id ? org.parent_id : '' $}</td>
-                                    <td>{$:: org.org_id $}</td>
-                                    <td>{$:: org.name $}</td>
-                                    <td>{$:: org.created $}</td>
-                                    <td>{$ org.number_of_users | number:0 $}</td>
-                                    <td>
-                                        <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_properties">
-                                            {$:: cycle.name $}: {$:: cycle.num_properties $}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_taxlots">
-                                            {$:: cycle.name $}: {$:: cycle.num_taxlots $}
-                                        </div>
-                                    </td>
-                                    <td style="width: 470px;">
-                                        <div>
-                                            <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
-                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="delete_org(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i>
-                                                <span ng-if="org.is_parent" translate>Delete Organization</span>
-                                                <span ng-if="!org.is_parent" translate>Delete Sub-Organization</span>
-                                            </button>
-                                            <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message | translate $}</uib-progressbar>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+      <div class="alert {$ alert.css $}" ng-show="alert.show">{$ alert.message $}</div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-users"></i> {$:: 'Create an organization' | translate $}</h2>
         </div>
+      </div>
+      <div class="section_content_container org_form container-fluid">
+        <div class="section_content">
+          <form name="orgForm" novalidate class="form-horizontal css-form" role="form">
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="org_name" translate>Organization Name:</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="org_name" ng-model="org.name" placeholder="{$:: 'Organization Name' | translate $}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="user_emails" translate>User Email:</label>
+              <div class="col-sm-4">
+                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org.email"></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button class="btn btn-default" type="reset" ng-click="org_form.reset()" translate>Reset</button>
+                <button class="btn btn-primary" type="submit" ng-click="org_form.add(org)" ng-disabled="orgForm.$invalid || org_form.not_ready()" translate>Create</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-user"></i> {$:: 'Create a user' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container user_admin container-fluid">
+        <div class="section_content">
+          <form name="userForm" novalidate class="form-horizontal css-form" role="form">
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="first_name" translate>User First Name:</label>
+              <div class="col-sm-4">
+                <input type="text" id="first_name" class="form-control" ng-model="user.first_name" placeholder="{$:: 'First Name' | translate $}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="last_name" translate>User Last Name:</label>
+              <div class="col-sm-4">
+                <input type="text" id="last_name" class="form-control" ng-model="user.last_name" placeholder="{$:: 'Last Name' | translate $}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="user_email" translate>User Email:</label>
+              <div class="col-sm-4">
+                <input type="email" id="user_email" class="form-control" ng-model="user.email" placeholder="{$:: 'User Email' | translate $}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="new_user_org_select" translate>Choose Existing Organization:</label>
+              <div class="col-sm-4">
+                <select
+                  name="new_user_orgs"
+                  class="form-control"
+                  id="new_user_org_select"
+                  ng-options="o as o.name for o in org_user.organizations"
+                  ng-model="user.organization"
+                  ng-change="user.org_name = undefined"
+                ></select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label" for="org_name_from_user" translate>Or Create New (With User as Head):</label>
+              <div class="col-sm-4">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="org_name_from_user"
+                  ng-model="user.org_name"
+                  ng-change="user.organization = undefined"
+                  placeholder="{$:: 'Organization Name' | translate $}"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button class="btn btn-default" type="reset" ng-click="user_form.reset()" translate>Reset</button>
+                <button class="btn btn-primary" type="submit" ng-click="user_form.add(user)" ng-disabled="userForm.$invalid || user_form.not_ready()" translate>Create</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-circle-plus"></i> {$:: 'Add/Remove a user to an organization' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container org_user_admin container-fluid">
+        <div class="section_content row">
+          <div class="col-sm-6">
+            <form name="addRemoveForm" novalidate class="form-horizontal css-form" role="form">
+              <div class="form-group">
+                <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
+                <div class="col-sm-8">
+                  <select
+                    name="orgs"
+                    class="form-control"
+                    id="orgs"
+                    ng-options="o as o.name for o in org_user.organizations track by o.org_id"
+                    ng-model="org_user.organization"
+                    ng-change="get_organizations_users(org_user.organization)"
+                    required
+                  ></select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
+                <div class="col-sm-8">
+                  <select
+                    name="user_emails"
+                    class="form-control"
+                    id="add_emails"
+                    ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id"
+                    ng-model="org_user.user"
+                    required
+                  ></select>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-offset-4 col-sm-8">
+                  <button class="btn btn-primary" type="submit" ng-click="org_user.add()" ng-disabled="addRemoveForm.$invalid" translate>Add user</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="table_list_container col-sm-5">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th translate>User</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="user in org_user.users track by user.user_id">
+                  <td>{$:: user.email $}</td>
+                  <td>
+                    <button class="btn btn-default" type="submit" ng-click="confirm_remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section_header_container has_btm_margin">
+        <div class="section_header">
+          <h2><i class="fa-solid fa-trash-can"></i> {$:: 'Remove inventory and organizations' | translate $}</h2>
+        </div>
+      </div>
+      <div class="section_content_container org_user_admin container-fluid">
+        <div class="section_content row">
+          <div class="table_list_container remove_buildings_table col-sm-5">
+            <table id="admin-organizations-table" class="table table-striped">
+              <thead>
+                <tr>
+                  <th translate>Parent ID</th>
+                  <th translate>ID</th>
+                  <th translate>Organization</th>
+                  <th translate>Created</th>
+                  <th translate>User Count</th>
+                  <th translate>Property Count</th>
+                  <th translate>Tax Lot Count</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="org in org_user.organizations">
+                  <td>{$:: org.parent_id !== org.org_id ? org.parent_id : '' $}</td>
+                  <td>{$:: org.org_id $}</td>
+                  <td>{$:: org.name $}</td>
+                  <td>{$:: org.created $}</td>
+                  <td>{$ org.number_of_users | number:0 $}</td>
+                  <td>
+                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_properties">{$:: cycle.name $}: {$:: cycle.num_properties $}</div>
+                  </td>
+                  <td>
+                    <div ng-repeat="cycle in ::org.cycles" ng-if="::cycle.num_taxlots">{$:: cycle.name $}: {$:: cycle.num_taxlots $}</div>
+                  </td>
+                  <td style="width: 470px">
+                    <div>
+                      <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
+                      <button class="btn btn-danger" type="button" style="margin-left: 10px" ng-click="delete_org(org)" ng-disabled="org.progress > -1">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span ng-if="org.is_parent" translate>Delete Organization</span>
+                        <span ng-if="!org.is_parent" translate>Delete Sub-Organization</span>
+                      </button>
+                      <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message | translate $}</uib-progressbar>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>

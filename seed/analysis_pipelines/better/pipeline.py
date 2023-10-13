@@ -82,8 +82,8 @@ def _validate_better_config(analysis):
 
 class BETTERPipeline(AnalysisPipeline):
     """
-    BETTERPipeline is a class for preparing, running, and post
-    processing BETTER analysis by implementing the AnalysisPipeline's abstract
+    BETTERPipeline is a class for preparing, running, and post-processing
+    BETTER analysis by implementing the AnalysisPipeline's abstract
     methods.
     """
 
@@ -544,7 +544,11 @@ def _process_results(self, analysis_id):
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
             if value is not None:
-                value = float(value) * data_path.unit_multiplier
+                # some of the ee_measures return an empty string, which should be falsey
+                if 'ee_measures' in data_path.json_path and value == '':
+                    value = 0.0 * data_path.unit_multiplier  # to be consistent
+                else:
+                    value = float(value) * data_path.unit_multiplier
             simplified_results[data_path.column_name] = value
 
         electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])

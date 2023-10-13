@@ -1,59 +1,59 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-        </div>
-        <div class="page_title">
-            <h1>{$:: username $}</h1>
-        </div>
-        <div class="right page_action_container">
-        </div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: username $}</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header">
-            <h2><i class="fa fa-code" style="font-weight: bold;"></i> {$:: 'API Key' | translate $}</h2>
-        </div>
+  <div class="section_header_container">
+    <div class="section_header">
+      <h2><i class="fa-solid fa-code" style="font-weight: bold"></i> {$:: 'API Key' | translate $}</h2>
     </div>
-    <div class="section_content_container">
-        <div class="section_content with_padding container-fluid">
-            <div class="row">
-                <div class="section_form_container col-sm-12">
-                    <p translate>Manage Your API Key</p>
-                    <div class="table_list_container">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th translate>API Key</th>
-                                    <th translate>Username</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <pre ng-if="user.api_key">{$ user.api_key $}</pre>
-                                        <span ng-if="!user.api_key" style="font-style: italic; opacity: 0.6;">&lt;generate a key&gt;</span>
-                                    </td>
-                                    <td>{$:: user.email $}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table_footer">
-                        <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa fa-check" ng-show="new_key_generated"></i></button>
-                    </div>
-                    <div ng-if="user.api_key" style="margin-top: 30px;">
-                        <p translate>Example Usage</p>
-                        <pre>curl -X GET \
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding container-fluid">
+      <div class="row">
+        <div class="section_form_container col-sm-12">
+          <p translate>Manage Your API Key</p>
+          <div class="table_list_container">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th translate>API Key</th>
+                  <th translate>Username</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <pre ng-if="user.api_key">{$ user.api_key $}</pre>
+                    <span ng-if="!user.api_key" style="font-style: italic; opacity: 0.6">&lt;generate a key&gt;</span>
+                  </td>
+                  <td>{$:: user.email $}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table_footer">
+            <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa-solid fa-check" ng-show="new_key_generated"></i></button>
+          </div>
+          <div ng-if="user.api_key" style="margin-top: 30px">
+            <p translate>Example Usage</p>
+            <pre>
+curl -X GET \
   '{$:: getHost() $}/api/version/' \
   -H 'Accept: application/json' \
-  -u {$ user.email.toLowerCase() + ':' + user.api_key $}</pre>
-                    </div>
-                </div>
-            </div>
+  -u {$ user.email.toLowerCase() + ':' + user.api_key $}</pre
+            >
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </div>

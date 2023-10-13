@@ -1,7 +1,5 @@
-$font-family-sans-serif: "PT Sans", "Helvetica Neue", Helvetica, Arial,
-  sans-serif;
-$font-family-sans-serif-narrow: "PT Sans Narrow", "Helvetica Neue", Helvetica,
-  Arial, sans-serif;
+$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -83,7 +81,7 @@ body {
 
 body {
   align-items: center;
-  background: #808080 url("../images/landing/landing-bg.png") no-repeat;
+  background: #808080 url('../images/landing/landing-bg.png') no-repeat;
   background-size: cover;
   display: flex;
   font-family: $font-family-base;
@@ -186,7 +184,7 @@ body {
       min-height: 430px;
       text-align: center;
       border-left: 1px solid $bdp-landing-md-gray;
-      background: url("../images/landing/bg-paper.png");
+      background: url('../images/landing/bg-paper.png');
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
 
@@ -261,24 +259,20 @@ body {
           }
 
           .chrome {
-            background: url("../images/landing/logo-chrome-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-chrome-64.png') top center no-repeat;
             margin-left: 63px;
           }
 
           .firefox {
-            background: url("../images/landing/logo-firefox-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-firefox-64.png') top center no-repeat;
           }
 
           .safari {
-            background: url("../images/landing/logo-safari-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-safari-64.png') top center no-repeat;
           }
 
           .ie {
-            background: url("../images/landing/logo-ie-64.png") top center
-              no-repeat;
+            background: url('../images/landing/logo-ie-64.png') top center no-repeat;
           }
         }
 
@@ -315,7 +309,7 @@ body {
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 2px;
-            font-family: "PT Sans Narrow", sans-serif;
+            font-family: 'PT Sans Narrow', sans-serif;
             font-size: 16px;
             line-height: 20px;
             color: $bdp-landing-lt-gray;
@@ -330,10 +324,7 @@ body {
           input:focus {
             border-color: rgba(82, 168, 236, 0.8);
             outline: thin dotted 9;
-            @include box-shadow(
-              inset 0 1px 1px rgba(0, 0, 0, 0.075)
-                /* , 0 0 8px rgba(82,168,236,.6) */
-            );
+            @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, 0.075) /* , 0 0 8px rgba(82,168,236,.6) */);
           }
 
           br {
@@ -353,7 +344,7 @@ body {
             width: 88%;
           }
 
-          input[type="checkbox"] {
+          input[type='checkbox'] {
             margin-top: 0;
             width: 20px;
           }
