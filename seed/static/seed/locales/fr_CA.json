@@ -436,7 +436,7 @@
     "Geocode Selected": "Géocode sélectionné",
     "Geocoding Confidence": "Géocodage de la confiance",
     "Geocoding Order": "Ordre de géocodage",
-    "Geolocating has been disabled for this organization.": "La géolocalisation a été désactivée pour cette organisation.",
+    "Geocoding has been disabled for this organization.": "Le géocodage a été désactivé pour cette organisation.",
     "Geometry": "Géométrie",
     "Get a New API Key": "Obtenir une nouvelle clé d'API",
     "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.": "Commencez à utiliser SEED Platform en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du EPA Portfolio Manager.",

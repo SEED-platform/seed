@@ -1,61 +1,53 @@
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
-                <i class="fa-solid fa-chevron-left"></i>
-                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
-            </a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+      </a>
     </div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
 </div>
 
 <div class="section_header_container">
-    <div class="section_header fixed_height_short has_no_padding">
-        <div class="section_action_container left" style="width: 50%;">
-            <span>
-                <h2>
-                    <span ng-if="::inventory_type==='properties'">
-                        <i class="fa-regular fa-building"></i><span translate>Property</span> :
-                    </span>
-                    <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> :
-                    </span>
-                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
-            </span>
-        </div>
+  <div class="section_header fixed_height_short has_no_padding">
+    <div class="section_action_container left" style="width: 50%">
+      <span>
+        <h2>
+          <span ng-if="::inventory_type==='properties'"> <i class="fa-regular fa-building"></i><span translate>Property</span> : </span>
+          <span ng-if="::inventory_type==='taxlots'"> <i class="fa-regular fa-map"></i><span translate>Tax Lot</span> : </span>
+          <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
+        </h2>
+      </span>
     </div>
+  </div>
 </div>
-<div class="ellipsis" style="margin: 10px;">
-    <span style="display:flex; align-items:baseline; gap:1rem">
-        <strong>{$:: 'Cycle' | translate $}:</strong>
-        <select class="form-control" ng-model="selected_view.view_id" ng-change="changeView()" style="width: auto">
-            <option ng-repeat="view in views" ng-value="view.view_id">{$ view.cycle_name $}</option>
-        </select>
-    </span>
+<div class="ellipsis" style="margin: 10px">
+  <span style="display: flex; align-items: baseline; gap: 1rem">
+    <strong>{$:: 'Cycle' | translate $}:</strong>
+    <select class="form-control" ng-model="selected_view.view_id" ng-change="changeView()" style="width: auto">
+      <option ng-repeat="view in views" ng-value="view.view_id">{$ view.cycle_name $}</option>
+    </select>
+  </span>
 </div>
 <div class="modal-body">
-    <uib-tabset class="modal-tabs">
-        <uib-tab ng-repeat="(type, analyses) in analyses_by_type" index="type">
-            <uib-tab-heading>
-                <b>{$:: type $}</b> <small>({$:: analyses.length $})</small>
-            </uib-tab-heading>
-            <div class="tab-content-cards">
-                <!-- NOTE: This is bad, using a controller created for someone else but it will work
+  <uib-tabset class="modal-tabs">
+    <uib-tab ng-repeat="(type, analyses) in analyses_by_type" index="type">
+      <uib-tab-heading> <b>{$:: type $}</b> <small>({$:: analyses.length $})</small> </uib-tab-heading>
+      <div class="tab-content-cards">
+        <!-- NOTE: This is bad, using a controller created for someone else but it will work
                      we should refactor this into a AnalysisCard component. -->
-                <div ng-repeat="analysis in analyses" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card">
-                </div>
-            </div>
-        </uib-tab>
-        <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="float: right;">
-            <i class="fa-solid fa-area-chart"></i> <span translate>New Analysis</span>
-        </button>
-    </uib-tabset>
+        <div ng-repeat="analysis in analyses" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card"></div>
+      </div>
+    </uib-tab>
+    <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="float: right"><i class="fa-solid fa-area-chart"></i> <span translate>New Analysis</span></button>
+  </uib-tabset>
 </div>

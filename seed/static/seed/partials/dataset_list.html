@@ -1,55 +1,58 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container"></div>
-        <div class="page_title">
-            <h1><i class="fa-solid fa-sitemap"></i>
-                <span translate translate-values="{ num: (datasets.length | number: 0) }">NUMBER_OF_DATASETS</span>
-            </h1>
-        </div>
-        <div class="right page_action_container">
-            <a ui-sref="dataset_list" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="::menu.user.organization.user_role !== 'viewer'" translate>Create new data set</a>
-        </div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>
+        <i class="fa-solid fa-sitemap"></i>
+        <span translate translate-values="{ num: (datasets.length | number: 0) }">NUMBER_OF_DATASETS</span>
+      </h1>
     </div>
+    <div class="right page_action_container">
+      <a ui-sref="dataset_list" data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" ng-show="::menu.user.organization.user_role !== 'viewer'" translate
+        >Create new data set</a
+      >
+    </div>
+  </div>
 </div>
 <div class="section">
-    <div class="section_content_container">
-        <div class="section_content">
-            <div class="table_list_container dataset_list" ng-cloak>
-                <table id="data-set-list-table" class="table table-striped sorted">
-                    <thead>
-                        <tr>
-                            <th ng-repeat="c in ::columns">{$:: c.title | translate $}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="d in datasets" class="import_row">
-                            <td class="name container-fluid">
-                                <span class="view" id="data-link-{$:: $index $}">
-                                    <a ui-sref="dataset_detail(::{dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$:: d.name $}</a>
-                                    <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class='fa-solid fa-trash-can'></i></a>
-                                    <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px;"><i class="fa-solid fa-pencil"></i></a>
-                                </span>
-                                <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
-                                    <div class="form-group col-sm-8">
-                                        <label class="sr-only" for="editDatasetName-{$ $index $}" translate>Edit Name</label>
-                                        <input class="form-control input-sm" id="editDatasetName-{$ $index $}" type="text" name="name" ng-model="d.name" style="width: 100%;">
-                                    </div>
-                                    <div class="form-group col-sm-4" style="text-align: right;">
-                                        <button type="button" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel" translate>Cancel</button>
-                                        <button type="button" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" ng-disabled="d.name === d.old_name" value="Save" translate>Save</button>
-                                    </div>
-                                </form>
-                            </td>
-                            <td class="status_change status is_aligned_right">{$:: d.importfiles.length | number:0 $}</td>
-                            <td class="last_change last_changed">{$:: d.updated_at | fromNow $}</td>
-                            <td class="last_change_user changed_by">{$:: d.last_modified_by $}</td>
-                            <td class="status_details percent_done">
-                                <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)" translate>Add Data Files</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <div class="section_content_container">
+    <div class="section_content">
+      <div class="table_list_container dataset_list" ng-cloak>
+        <table id="data-set-list-table" class="table table-striped sorted">
+          <thead>
+            <tr>
+              <th ng-repeat="c in ::columns">{$:: c.title | translate $}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="d in datasets" class="import_row">
+              <td class="name container-fluid">
+                <span class="view" id="data-link-{$:: $index $}">
+                  <a ui-sref="dataset_detail(::{dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$:: d.name $}</a>
+                  <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class="fa-solid fa-trash-can"></i></a>
+                  <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px"><i class="fa-solid fa-pencil"></i></a>
+                </span>
+                <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
+                  <div class="form-group col-sm-8">
+                    <label class="sr-only" for="editDatasetName-{$ $index $}" translate>Edit Name</label>
+                    <input class="form-control input-sm" id="editDatasetName-{$ $index $}" type="text" name="name" ng-model="d.name" style="width: 100%" />
+                  </div>
+                  <div class="form-group col-sm-4" style="text-align: right">
+                    <button type="button" class="cancel_button btn btn-sm" ng-click="cancel_edit_name(d)" value="Cancel" translate>Cancel</button>
+                    <button type="button" class="submit_button btn btn-sm btn-primary" ng-click="save_dataset_name(d)" ng-disabled="d.name === d.old_name" value="Save" translate>Save</button>
+                  </div>
+                </form>
+              </td>
+              <td class="status_change status is_aligned_right">{$:: d.importfiles.length | number:0 $}</td>
+              <td class="last_change last_changed">{$:: d.updated_at | fromNow $}</td>
+              <td class="last_change_user changed_by">{$:: d.last_modified_by $}</td>
+              <td class="status_details percent_done">
+                <button type="button" class="btn btn-sm btn-primary" ng-click="open_data_upload_modal(d)" translate>Add Data Files</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
 </div>

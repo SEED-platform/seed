@@ -2,32 +2,31 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: new_member_modal_controller', function () {
+describe('controller: new_member_modal_controller', () => {
   // globals set up and used in each test scenario
-  var mock_user_service, controller, modal_state;
-  var ctrl_scope;
-  beforeEach(function () {
+  let mock_user_service; let controller; let
+    modal_state;
+  let ctrl_scope;
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, $q, user_service) {
+    inject(($controller, $rootScope, $uibModal, $q, user_service) => {
       controller = $controller;
       ctrl_scope = $rootScope.$new();
       modal_state = '';
 
       mock_user_service = user_service;
-      spyOn(mock_user_service, 'add')
-        .andCallFake(function () {
-          // return $q.reject for error scenario
-          return $q.resolve({status: 'success'});
-        });
+      spyOn(mock_user_service, 'add').andCallFake(() =>
+        // return $q.reject for error scenario
+        $q.resolve({ status: 'success' }));
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_new_member_controller () {
+  function create_new_member_controller() {
     controller = controller('new_member_modal_controller', {
       $scope: ctrl_scope,
       $uibModalInstance: {
@@ -38,7 +37,7 @@ describe('controller: new_member_modal_controller', function () {
           modal_state = 'dismiss';
         }
       },
-      organization: {organization_id: 1}
+      organization: { organization_id: 1 }
     });
   }
 
@@ -46,7 +45,7 @@ describe('controller: new_member_modal_controller', function () {
    * Test scenarios
    */
 
-  it('should set the default role to "member"', function () {
+  it('should set the default role to "member"', () => {
     // arrange
     create_new_member_controller();
 
@@ -57,29 +56,26 @@ describe('controller: new_member_modal_controller', function () {
     expect(ctrl_scope.user.role.value).toEqual('member');
   });
 
-  it('should call the user service to add a new user to the org',
-    function () {
-      // arrange
-      create_new_member_controller();
+  it('should call the user service to add a new user to the org', () => {
+    // arrange
+    create_new_member_controller();
 
-      // act
-      ctrl_scope.$digest();
-      ctrl_scope.user.first_name = 'JB';
-      ctrl_scope.user.last_name = 'Smooth';
-      ctrl_scope.user.email = 'jb.smooth@be.com';
-      ctrl_scope.submit_form(true);
+    // act
+    ctrl_scope.$digest();
+    ctrl_scope.user.first_name = 'JB';
+    ctrl_scope.user.last_name = 'Smooth';
+    ctrl_scope.user.email = 'jb.smooth@be.com';
+    ctrl_scope.submit_form(true);
 
-      // assertions
-      expect(mock_user_service.add)
-        .toHaveBeenCalledWith({
-          first_name: 'JB',
-          last_name: 'Smooth',
-          email: 'jb.smooth@be.com',
-          role: ctrl_scope.roles[1].value,
-          organization: {
-            organization_id: 1
-          }
-        });
+    // assertions
+    expect(mock_user_service.add).toHaveBeenCalledWith({
+      first_name: 'JB',
+      last_name: 'Smooth',
+      email: 'jb.smooth@be.com',
+      role: ctrl_scope.roles[1].value,
+      organization: {
+        organization_id: 1
+      }
     });
-
+  });
 });
