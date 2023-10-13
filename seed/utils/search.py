@@ -366,11 +366,14 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
             return None, {}
         elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
-            # Natural sort json data
-            if not direction:
-                return Collate(new_field_name, 'natural_sort'), annotations
-            else:
-                return Collate(new_field_name, 'natural_sort').desc(), annotations
+            if column['data_type'] in ['None', 'string']:
+                # Natural sort json text data
+                if not direction:
+                    return Collate(new_field_name, 'natural_sort'), annotations
+                else:
+                    return Collate(new_field_name, 'natural_sort').desc(), annotations
+
+            return f'{direction}{new_field_name}', annotations
         else:
             return f'{direction}state__{column_name}', {}
     else:
