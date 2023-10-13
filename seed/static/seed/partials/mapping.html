@@ -127,7 +127,7 @@
           ng-change="flag_profile_change()"
           ng-options="profile as profile.name for profile in profiles track by profile.id"
         ></select>
-        <button type="button" class="btn btn-primary" ng-click="apply_profile()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_profile.id === current_profile.id" translate>
+        <button type="button" class="btn btn-primary" ng-click="apply_profile()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_profile.id === current_profile.id" style="padding: 0 8px; width: min-content" translate>
           Apply Profile
         </button>
         <button
