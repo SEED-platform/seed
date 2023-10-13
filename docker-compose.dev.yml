@@ -22,7 +22,6 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
       - DJANGO_LOG_LEVEL
-      - EEEJ_LOAD_SMALL_TEST_DATASET=True
     volumes:
       - ref_seed_media:/seed/media
       - ./seed/:/seed/seed/
