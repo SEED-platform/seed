@@ -2,6 +2,7 @@
   <h4 class="modal-title" ng-switch-when="0" translate>Export properties to your Audit Template account</h4>
   <h4 class="modal-title" ng-switch-when="1" translate>Exporting properties to your Audit Template account</h4>
   <h4 class="modal-title" ng-switch-when="2" translate>Export Results</h4>
+  <h4 class="modal-title" ng-switch-when="3" translate>Export Error</h4>
 </div>
 <div class="modal-body form-horizontal" ng-switch on="step.number">
   <!-- step 0 -->
@@ -65,9 +66,14 @@
     </div>
   </div>
 
+    <!-- step 3 -->
+    <div ng-switch-when="3">
+        <div class="alert-danger" style="padding: 10px; border-radius: 5px">{$ upload_summary $}</div>
+    </div>
+
   <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="export()" ng-if="step.number == 0" translate>Export</button>
-    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="step.number == 0 || step.number == 1" translate>Cancel</button>
-    <button type="button" class="btn btn-default" ng-click="cancel(true)" ng-if="step.number == 2" translate>Close</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="step.number <= 1" translate>Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel(true)" ng-if="step.number >= 2" translate>Close</button>
   </div>
 </div>

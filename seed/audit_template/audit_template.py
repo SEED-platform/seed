@@ -110,7 +110,7 @@ class AuditTemplate(object):
 
         _batch_export_to_audit_template.delay(self.org_id, view_ids, token, progress_data.key)
 
-        return progress_data.result()
+        return progress_data.result(), []
 
     def export_to_audit_template(self, state, token):
         org = Organization.objects.get(pk=self.org_id)
