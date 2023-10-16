@@ -2211,6 +2211,13 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization_brief(user_service.get_organization().id);
+          }],
+          access_level_tree: ['organization_payload', 'organization_service', '$q', function (organization_payload, organization_service, $q) {
+            var organization_id = organization_payload.organization.id;
+            return organization_service.get_organization_access_level_tree(organization_id);
+          }],
         }
       })
       .state({

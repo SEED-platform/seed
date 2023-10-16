@@ -5024,27 +5024,27 @@ ul.r-list {
 
 #data-review-grid,
 #portfolio-summary {
-  .data-review-baseline-header {
+  .data-review-starting-header {
     background-color: #f8f1cf;
   }
 
-  .ui-grid-row:nth-child(odd) .data-review-baseline-cell {
+  .ui-grid-row:nth-child(odd) .data-review-starting-cell {
     background-color: #f8f5eb !important;
   }
 
-  .ui-grid-row:nth-child(even) .data-review-baseline-cell {
+  .ui-grid-row:nth-child(even) .data-review-starting-cell {
     background-color: #e0ded3 !important;
   }
 
-  .data-review-current-header {
+  .data-review-ending-header {
     background-color: #c4dff8;
   }
 
-  .ui-grid-row:nth-child(odd) .data-review-current-cell {
+  .ui-grid-row:nth-child(odd) .data-review-ending-cell {
     background-color: #e9f1f9 !important;
   }
 
-  .ui-grid-row:nth-child(even) .data-review-current-cell {
+  .ui-grid-row:nth-child(even) .data-review-ending-cell {
     background-color: #ced7df !important;
   }
 
