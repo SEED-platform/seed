@@ -54,6 +54,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_admin',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_quality_modal',
+  'BE.seed.controller.data_review',
   'BE.seed.controller.data_upload_audit_template_modal',
   'BE.seed.controller.data_upload_espm_modal',
   'BE.seed.controller.data_upload_modal',
@@ -2190,6 +2191,26 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var inventory_type = 'Property'; // just properties for now
             return filter_groups_service.get_filter_groups(inventory_type);
           }]
+        }
+      })
+      .state({
+        name: 'data_review',
+        url: '/insights/data_review',
+        templateUrl: static_url + 'seed/partials/data_review.html',
+        controller: 'data_review_controller',
+        resolve: {
+          valid_column_data_types: [function () {
+            return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];
+          }],
+          property_columns: ['valid_column_data_types', '$stateParams', 'inventory_service', 'naturalSort', function (valid_column_data_types, $stateParams, inventory_service, naturalSort) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id).then(function (columns) {
+              _.remove(columns, { table_name: 'TaxLotState' });
+              return columns;
+            });
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
         }
       })
       .state({

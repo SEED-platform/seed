@@ -4990,3 +4990,90 @@ ul.r-list {
     border-bottom: 1px solid #ddd;
   }
 }
+#data-review-selection-wrapper {
+  margin: 10px 0;
+  display: flex;
+
+  #review-selections {
+    margin-top: 22px;
+    padding-left: 0;
+    width: 220px;
+
+
+    .data-review-select-option {
+      font-size: 10px;
+      padding: 0 0 10px 0;
+    }
+
+    .data-review-form-control {
+      height: 20px;
+      width: 100px;
+    }
+
+  }
+
+  #portfolio-summary {
+    width: calc(100% - 250px);
+    margin-left: 16px;
+  }
+}
+
+#data-review-grid {
+  margin: 0 24px;
+}
+
+#data-review-grid,
+#portfolio-summary {
+  .data-review-baseline-header {
+    background-color: #f8f1cf;
+  }
+
+  .ui-grid-row:nth-child(odd) .data-review-baseline-cell {
+    background-color: #f8f5eb !important;
+  }
+
+  .ui-grid-row:nth-child(even) .data-review-baseline-cell {
+    background-color: #e0ded3 !important;
+  }
+
+  .data-review-current-header {
+    background-color: #c4dff8;
+  }
+
+  .ui-grid-row:nth-child(odd) .data-review-current-cell {
+    background-color: #e9f1f9 !important;
+  }
+
+  .ui-grid-row:nth-child(even) .data-review-current-cell {
+    background-color: #ced7df !important;
+  }
+
+  .above-target {
+    background: #9dca8f;
+  }
+
+  .below-target {
+    background: #ca8f8f;
+  }
+
+  .data-review-legend {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px;
+    width: 400px;
+
+    div {
+      margin: auto;
+      width: 100%;
+      padding: 5px;
+    }
+  }
+
+  .dataReview-gridOptions-wrapper {
+    height: calc(100vh - 400px);
+
+    .ui-grid {
+      height: 100%;
+    }
+  }
+}
