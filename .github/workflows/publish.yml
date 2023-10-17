@@ -5,7 +5,6 @@ on:
     branches:
       - develop
       - AH/develop
-      - AH/develop-build
     tags:
       - "*"
   workflow_dispatch:
@@ -45,7 +44,7 @@ jobs:
           if [[ ${GITHUB_EVENT_NAME} == "push" ]]; then
             if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
               SEED_TAG=seedplatform/seed:develop
-            elif [[ "${GITHUB_REF}" == "refs/heads/AH/develop-build" ]]; then
+            elif [[ "${GITHUB_REF}" == "refs/heads/AH/develop" ]]; then
               SEED_TAG=seedplatform/seed:develop-ah
             elif [[ "${GITHUB_REF}" =~ "refs/tags/v" ]]; then
               # you can have multiple tags, separated by commas
