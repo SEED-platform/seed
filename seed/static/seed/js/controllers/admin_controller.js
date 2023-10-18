@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.admin', []).controller('admin_controller', [
   '$window',
   '$translate',
   // eslint-disable-next-line func-names
-  function(
+  function (
     $scope,
     $log,
     $uibModal,

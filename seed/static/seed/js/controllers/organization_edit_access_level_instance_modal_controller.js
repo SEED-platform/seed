@@ -27,8 +27,8 @@ angular.module('BE.seed.controller.organization_edit_access_level_instance_modal
 
       $scope.edit_level_instance = function () {
         organization_service.edit_organization_access_level_instance(org_id, $scope.instance_id, $scope.level_instance_name)
-          .then(_ => $uibModalInstance.close())
-          .catch(err => {Notification.error(err)});
+          .then((_) => $uibModalInstance.close())
+          .catch((err) => { Notification.error(err); });
       };
 
       $scope.cancel = function () {

@@ -1741,7 +1741,7 @@ a:not([href]) {
   }
 
   .add-btn {
-    margin: 15px 0px;
+    margin: 15px 0;
     text-align: center;
   }
 
@@ -4889,41 +4889,49 @@ ul.r-list {
 }
 
 #ali-detail-table {
-  border: 1px solid #dddddd;
+  border: 1px solid #ddd;
+
   th {
-    border: 1px solid #dddddd;
+    border: 1px solid #ddd;
   }
 }
+
 .ali-header {
   background: #dbe3f4;
 }
+
 .ali-cell {
   color: #2955b4;
 }
+
 .al-tree {
   padding: 10px;
 }
 
 #access-level-tree {
   margin: 20px;
+
   ul {
     list-style-type: none;
     padding-left: 20px;
 
-    li:before {
-      content: "-";
+    li::before {
+      content: '-';
       display: inline-block;
       width: 10px;
     }
   }
+
   .collapsed ul {
     display: none;
   }
-  li.collapsed:before {
-    content: "+";
+
+  li.collapsed::before {
+    content: '+';
     display: inline-block;
     width: 10px;
   }
+
   li a:hover {
     cursor: pointer;
   }
@@ -4934,7 +4942,7 @@ ul.r-list {
 }
 
 .level1 {
-  margin: 0px 9px;
+  margin: 0 9px;
   background-color: #cdcdcd;
   text-transform: uppercase;
   font-weight: bold;
@@ -4942,7 +4950,7 @@ ul.r-list {
   border-bottom: 1px solid #b3b3b3;
   padding: 6px 10px 5px;
   white-space: nowrap;
-  font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'PT Sans Narrow', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   border: 1px solid #ddd;
 }
 
@@ -4954,12 +4962,12 @@ ul.r-list {
 
 .levels-header {
   font-weight: bold;
-  padding: 0px;
+  padding: 0;
   background: #efefef;
 }
 
 .levels-table-item-detail {
-  margin: 0px;
+  margin: 0;
   border: 1px solid #f1f1f1;
 }
 
@@ -4976,6 +4984,7 @@ ul.r-list {
   vertical-align: middle;
   font-weight: normal;
 }
+
 .ubid-form {
   input.ng-invalid {
     background-color: #fff0f0;

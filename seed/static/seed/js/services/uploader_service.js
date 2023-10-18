@@ -87,15 +87,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * as a background task
      * @param filename: the filepath of the uploaded tempfile (this is not an ImportFile!)
      */
-    uploader_factory.save_access_level_instance_data = function (filename, org_id) {
-      // TODO: is this the correct way to get the organization ID? I feel like we should check it
-      return $http.post('/api/v3/organizations/' + org_id + '/access_levels/start_save_data/', {
-        filename: filename
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
+    uploader_factory.save_access_level_instance_data = (filename, org_id) => // TODO: is this the correct way to get the organization ID? I feel like we should check it
+      $http.post(`/api/v3/organizations/${org_id}/access_levels/start_save_data/`, {
+        filename
+      }).then((response) => response.data);
 
     /**
      * check_progress: gets the progress for saves, maps, and matches

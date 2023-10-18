@@ -11,7 +11,7 @@ from rest_framework.renderers import JSONRenderer
 
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
-    has_perm_class,
+    has_perm_class
 )
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer

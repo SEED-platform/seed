@@ -733,7 +733,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
           $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
           $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
           // Add access level instances to grid
-          ["raw_access_level_instance_error", ...$scope.organization.access_level_names].reverse().forEach((level) => {
+          ['raw_access_level_instance_error', ...$scope.organization.access_level_names].reverse().forEach((level) => {
             $scope.propertiesGridOptions.columnDefs.unshift({
               name: level,
               displayName: level,
@@ -750,8 +750,8 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
               visible: true,
               width: 100,
               cellClass: 'ali-cell',
-              headerCellClass: 'ali-header',
-            })
+              headerCellClass: 'ali-header'
+            });
           });
 
           $scope.taxlotsGridOptions = angular.copy(gridOptions);

@@ -51,35 +51,22 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       })
       .then((response) => response.data);
 
-    organization_factory.get_organization_access_level_tree = function (org_id) {
-      return $http.get('/api/v3/organizations/' + org_id + '/' + 'access_levels/tree').then(function (response) {
-        return response.data;
-      });
-    };
+    organization_factory.get_organization_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/` + 'access_levels/tree').then((response) => response.data);
 
-    organization_factory.update_organization_access_level_names = function (org_id, new_access_level_names) {
-      return $http.post('/api/v3/organizations/' + org_id + '/' + 'access_levels/access_level_names/',
-        {"access_level_names": new_access_level_names}
-      ).then(function (response) {
-        return response.data;
-      });
-    };
+    organization_factory.update_organization_access_level_names = (org_id, new_access_level_names) => $http.post(
+      `/api/v3/organizations/${org_id}/` + 'access_levels/access_level_names/',
+      { access_level_names: new_access_level_names }
+    ).then((response) => response.data);
 
-    organization_factory.create_organization_access_level_instance = function (org_id, parent_id, name) {
-      return $http.post('/api/v3/organizations/' + org_id + '/' + 'access_levels/add_instance/',
-        {"parent_id": parent_id, "name": name}
-      ).then(function (response) {
-        return response.data;
-      });
-    };
+    organization_factory.create_organization_access_level_instance = (org_id, parent_id, name) => $http.post(
+      `/api/v3/organizations/${org_id}/` + 'access_levels/add_instance/',
+      { parent_id, name }
+    ).then((response) => response.data);
 
-    organization_factory.edit_organization_access_level_instance = function (org_id, instance_id, name) {
-      return $http.patch('/api/v3/organizations/' + org_id + '/' + 'access_levels/' + instance_id + '/edit_instance/',
-        { name: name }
-      ).then(function (response) {
-        return response.data;
-      });
-    };
+    organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.patch(
+      `/api/v3/organizations/${org_id}/` + `access_levels/${instance_id}/edit_instance/`,
+      { name }
+    ).then((response) => response.data);
 
     /**
      * updates the role for a user within an org
