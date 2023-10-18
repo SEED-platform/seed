@@ -43,7 +43,7 @@ angular.module('BE.seed.controller.data_review', [])
                     calculate_access_level_instances_by_depth(ali.children, depth + 1);
                 })
             }
-            calculate_access_level_instances_by_depth(access_level_tree, 1)
+            calculate_access_level_instances_by_depth($scope.access_level_tree, 1)
             
             $scope.change_selected_level_index = function () {
                 new_level_instance_depth = parseInt($scope.dataReview.level_name_index) + 1
