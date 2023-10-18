@@ -5,18 +5,16 @@
  * run_jasmine.js: runs the jasmine JS test runner
  */
 (function () {
-  var jasmineEnv = jasmine.getEnv();
+  const jasmineEnv = jasmine.getEnv();
   jasmineEnv.updateInterval = 1000;
 
-  var htmlReporter = new jasmine.HtmlReporter();
+  const htmlReporter = new jasmine.HtmlReporter();
 
   jasmineEnv.addReporter(htmlReporter);
 
-  jasmineEnv.specFilter = function (spec) {
-    return htmlReporter.specFilter(spec);
-  };
+  jasmineEnv.specFilter = (spec) => htmlReporter.specFilter(spec);
 
-  var currentWindowOnload = window.onload;
+  const currentWindowOnload = window.onload;
 
   window.onload = function () {
     if (currentWindowOnload) {
@@ -24,7 +22,7 @@
     }
     execJasmine();
   };
-  function execJasmine () {
+  function execJasmine() {
     jasmineEnv.execute();
   }
-})();
+}());

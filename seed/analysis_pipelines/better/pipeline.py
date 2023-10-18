@@ -46,6 +46,7 @@ from seed.models import (
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
+    Cycle,
     Meter
 )
 
@@ -81,8 +82,8 @@ def _validate_better_config(analysis):
 
 class BETTERPipeline(AnalysisPipeline):
     """
-    BETTERPipeline is a class for preparing, running, and post
-    processing BETTER analysis by implementing the AnalysisPipeline's abstract
+    BETTERPipeline is a class for preparing, running, and post-processing
+    BETTER analysis by implementing the AnalysisPipeline's abstract
     methods.
     """
 
@@ -150,6 +151,7 @@ def get_meter_readings(property_id, preprocess_meters, config):
     :param preprocess_meters: bool, if true aggregate and interpolate readings
         into monthly readings. If false, don't do any preprocessing of the property's
         meters and readings.
+    :param config: dict
     :return: List[dict], list of dictionaries of the form:
         { 'meter_type': <Meter.type>, 'readings': List[SimpleMeterReading | MeterReading] }
     """
@@ -163,20 +165,25 @@ def get_meter_readings(property_id, preprocess_meters, config):
     )
 
     # check if dates are ok
-    if 'select_meters' in config and config['select_meters'] == 'date_range':
-        try:
+
+    try:
+        if config.get('select_meters') == 'date_range':
             value1 = dateutil.parser.parse(config['meter']['start_date'])
             value2 = dateutil.parser.parse(config['meter']['end_date'])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
             value2 = value2 + timedelta(days=1)
+        elif config.get('select_meters') == 'select_cycle':
+            cycle = Cycle.objects.get(pk=config['cycle_id'])
+            value1 = dateutil.parser.parse(cycle.start.isoformat())
+            value2 = dateutil.parser.parse(cycle.end.isoformat()) + timedelta(days=1)
 
-        except Exception as err:
-            raise AnalysisPipelineException(
-                f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+    except Exception as err:
+        raise AnalysisPipelineException(
+            f'Analysis configuration error: invalid dates selected for meter readings: {err}')
 
     if preprocess_meters:
         for meter in meters:
-            if 'select_meters' in config and config['select_meters'] == 'date_range':
+            if config.get('select_meters') == 'date_range':
                 try:
                     meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
                 except Exception as err:
@@ -206,7 +213,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             readings = []
-            if 'select_meters' in config and config['select_meters'] == 'date_range':
+
+            if config.get('select_meters') in ['date_range', 'select_cycle']:
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
                 except Exception as err:
@@ -536,7 +544,11 @@ def _process_results(self, analysis_id):
         for data_path in column_data_paths:
             value = get_json_path(data_path.json_path, raw_better_results)
             if value is not None:
-                value = float(value) * data_path.unit_multiplier
+                # some of the ee_measures return an empty string, which should be falsey
+                if 'ee_measures' in data_path.json_path and value == '':
+                    value = 0.0 * data_path.unit_multiplier  # to be consistent
+                else:
+                    value = float(value) * data_path.unit_multiplier
             simplified_results[data_path.column_name] = value
 
         electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])

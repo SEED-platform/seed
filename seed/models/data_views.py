@@ -142,7 +142,7 @@ class DataView(models.Model):
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
-                    dataset = {'data': [], 'column': column.column_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
+                    dataset = {'data': [], 'column': column.display_name, 'aggregation': aggregation.name, 'filter_group': filter_name}
                     for cycle in sorted(list(self.cycles.all()), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)

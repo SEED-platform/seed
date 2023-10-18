@@ -190,7 +190,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
 
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': 'CustomID123',
             'import_file_id': import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,

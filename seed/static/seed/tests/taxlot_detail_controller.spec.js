@@ -2,21 +2,23 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('controller: inventory_detail_controller', function () {
-
+describe('controller: inventory_detail_controller', () => {
   // globals set up and used in each test scenario
-  var controller, ngFilter, ngLog, ngUrls;
-  var inventory_detail_controller_scope;
-  var mock_inventory_service, state;
-  var mock_uib_modal, mock_label_service, mock_label_payload;
+  let controller; let ngFilter; let ngLog; let
+    ngUrls;
+  let inventory_detail_controller_scope;
+  let mock_inventory_service; let
+    state;
+  let mock_uib_modal; let mock_label_service; let
+    mock_label_payload;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) {
+    inject(($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) => {
       controller = $controller;
       state = $state;
       ngFilter = $filter;
@@ -32,20 +34,18 @@ describe('controller: inventory_detail_controller', function () {
       // and return their promises
       mock_inventory_service = inventory_service;
 
-      spyOn(mock_inventory_service, 'update_taxlot')
-        .andCallFake(function (view_id, taxlot_state) {
-          inventory_detail_controller_scope.item_state = taxlot_state;
-          return $q.resolve({
-            status: 'success'
-          });
+      spyOn(mock_inventory_service, 'update_taxlot').andCallFake((view_id, taxlot_state) => {
+        inventory_detail_controller_scope.item_state = taxlot_state;
+        return $q.resolve({
+          status: 'success'
         });
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_inventory_detail_controller () {
-
-    var fake_taxlot_payload = {
+  function create_inventory_detail_controller() {
+    const fake_taxlot_payload = {
       taxlot: {
         id: 4,
         organization: 24
@@ -61,14 +61,14 @@ describe('controller: inventory_detail_controller', function () {
       },
       properties: [
         {
-          property: {id: 2},
-          cycle: {id: 1},
-          state: {address_line_1: '123 Main St. Bldg 1'}
+          property: { id: 2 },
+          cycle: { id: 1 },
+          state: { address_line_1: '123 Main St. Bldg 1' }
         },
         {
-          property: {id: 3},
-          cycle: {id: 1},
-          state: {address_line_1: '123 Main St. Bldg 2'}
+          property: { id: 3 },
+          cycle: { id: 1 },
+          state: { address_line_1: '123 Main St. Bldg 2' }
         }
       ],
       state: {
@@ -82,71 +82,71 @@ describe('controller: inventory_detail_controller', function () {
           some_extra_data_field_4: '4'
         }
       },
-      extra_data_keys: [
-        'some_extra_data_field_1',
-        'some_extra_data_field_2',
-        'some_extra_data_field_3',
-        'some_extra_data_field_4'
-      ],
+      extra_data_keys: ['some_extra_data_field_1', 'some_extra_data_field_2', 'some_extra_data_field_3', 'some_extra_data_field_4'],
       changed_fields: {
         regular_fields: ['address_line_2'],
         extra_data_fields: []
       },
-      history: [{
-        state: {
-          address_line_1: '123 Main St.',
-          address_line_2: 'newer value',
-          state: 'Illinois',
-          extra_data: {
-            some_extra_data_field_1: '1',
-            some_extra_data_field_2: '2',
-            some_extra_data_field_3: '3',
-            some_extra_data_field_4: '4'
-          }
+      history: [
+        {
+          state: {
+            address_line_1: '123 Main St.',
+            address_line_2: 'newer value',
+            state: 'Illinois',
+            extra_data: {
+              some_extra_data_field_1: '1',
+              some_extra_data_field_2: '2',
+              some_extra_data_field_3: '3',
+              some_extra_data_field_4: '4'
+            }
+          },
+          changed_fields: {
+            regular_fields: ['address_line_2'],
+            extra_data_fields: []
+          },
+          date_edited: '2016-07-26T15:55:10.180Z',
+          source: 'UserEdit'
         },
-        changed_fields: {
-          regular_fields: ['address_line_2'],
-          extra_data_fields: []
-        },
-        date_edited: '2016-07-26T15:55:10.180Z',
-        source: 'UserEdit'
-      }, {
-        state: {
-          address_line_1: '123 Main St.',
-          address_line_2: 'old value',
-          state: 'Illinois',
-          extra_data: {
-            some_extra_data_field_1: '1',
-            some_extra_data_field_2: '2',
-            some_extra_data_field_3: '3',
-            some_extra_data_field_4: '4'
-          }
-        },
-        changed_fields: {
-          regular_fields: [],
-          extra_data_fields: []
-        },
-        date_edited: '2016-07-25T15:55:10.180Z',
-        source: 'ImportFile',
-        filename: 'myfile.csv'
-      }],
+        {
+          state: {
+            address_line_1: '123 Main St.',
+            address_line_2: 'old value',
+            state: 'Illinois',
+            extra_data: {
+              some_extra_data_field_1: '1',
+              some_extra_data_field_2: '2',
+              some_extra_data_field_3: '3',
+              some_extra_data_field_4: '4'
+            }
+          },
+          changed_fields: {
+            regular_fields: [],
+            extra_data_fields: []
+          },
+          date_edited: '2016-07-25T15:55:10.180Z',
+          source: 'ImportFile',
+          filename: 'myfile.csv'
+        }
+      ],
       status: 'success'
     };
 
-    //TODO need more example taxlot columns
-    var fake_all_columns = [{
-      title: 'Address Line 1',
-      sort_column: 'property_name',
-      'class': '',
-      title_class: '',
-      type: 'string',
-      field_type: 'building_information',
-      sortable: true,
-      checked: false
-    }];
+    // TODO need more example taxlot columns
+    const fake_all_columns = [
+      {
+        title: 'Address Line 1',
+        sort_column: 'property_name',
+        class: '',
+        title_class: '',
+        type: 'string',
+        field_type: 'building_information',
+        sortable: true,
+        checked: false
+      }
+    ];
 
-    var fake_derived_columns_payload = {
-      derived_columns: [],
+    const fake_derived_columns_payload = {
+      derived_columns: []
     };
     controller('inventory_detail_controller', {
       $state: state,
@@ -174,8 +174,8 @@ describe('controller: inventory_detail_controller', function () {
           id: 1,
           display_decimal_places: 2,
           property_display_field: 'address_line_1',
-          taxlot_display_field: 'address_line_1',
-        },
+          taxlot_display_field: 'address_line_1'
+        }
       },
       analyses_payload: {
         analyses: []
@@ -184,19 +184,17 @@ describe('controller: inventory_detail_controller', function () {
         users: []
       },
       views_payload: {
-        status:	"success",
-        taxlot_views: [],
+        status: 'success',
+        taxlot_views: []
       }
     });
   }
-
 
   /**
    * Test scenarios
    */
 
-  it('should have a TaxLot payload with correct object properties', function () {
-
+  it('should have a TaxLot payload with correct object properties', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -206,12 +204,9 @@ describe('controller: inventory_detail_controller', function () {
     // assertions
     expect(inventory_detail_controller_scope.inventory.view_id).toBe(4);
     expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
-
   });
 
-
-  it('should make a copy of TaxLot state while making edits', function () {
-
+  it('should make a copy of TaxLot state while making edits', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -222,11 +217,9 @@ describe('controller: inventory_detail_controller', function () {
 
     // assertions
     expect(inventory_detail_controller_scope.item_copy.address_line_1).toBe('123 Main St.');
-
   });
 
-  it('should restore enabled the edit fields if a user clicks edit', function () {
-
+  it('should restore enabled the edit fields if a user clicks edit', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -236,12 +229,9 @@ describe('controller: inventory_detail_controller', function () {
 
     // assertions
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(true);
-
   });
 
-
-  it('should restore the copy of TaxLot state if a user clicks cancel', function () {
-
+  it('should restore the copy of TaxLot state if a user clicks cancel', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -254,11 +244,9 @@ describe('controller: inventory_detail_controller', function () {
     // assertions
     expect(inventory_detail_controller_scope.item_state.address_line_1).toBe('123 Main St.');
     expect(inventory_detail_controller_scope.edit_form_showing).toBe(false);
-
   });
 
-
-  it('should save the TaxLot state when a user clicks the save button', function () {
+  it('should save the TaxLot state when a user clicks the save button', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -269,15 +257,11 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.save_item();
 
     // assertions
-    expect(mock_inventory_service.update_taxlot)
-      .toHaveBeenCalledWith(inventory_detail_controller_scope.inventory.view_id,
-        inventory_detail_controller_scope.item_state);
+    expect(mock_inventory_service.update_taxlot).toHaveBeenCalledWith(inventory_detail_controller_scope.inventory.view_id, inventory_detail_controller_scope.item_state);
     expect(inventory_detail_controller_scope.item_state.address_line_1).toEqual('ABC Main St.');
   });
 
-
-  it('should hide certain TaxLot properties, including ids and extra_data', function () {
-
+  it('should hide certain TaxLot properties, including ids and extra_data', () => {
     // arrange
     create_inventory_detail_controller();
 
@@ -290,8 +274,5 @@ describe('controller: inventory_detail_controller', function () {
     expect(inventory_detail_controller_scope.is_valid_data_column_key('pk_source')).toEqual(false);
     expect(inventory_detail_controller_scope.is_valid_data_column_key('extra_data ')).toEqual(false);
     expect(inventory_detail_controller_scope.is_valid_data_column_key('address_line_1')).toEqual(true);
-
   });
-
-
 });

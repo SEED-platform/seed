@@ -7,90 +7,90 @@
  */
 
 // create dummy angularJS app to attach filter(s)
-var myfromNowFilterApp = angular.module('myfromNowFilterApp', ['fromNow']);
+const myfromNowFilterApp = angular.module('myfromNowFilterApp', ['fromNow']);
 
-describe('The fromNow filter', function () {
-  var fromNowFilter;
+describe('The fromNow filter', () => {
+  let fromNowFilter;
 
-  beforeEach(function () {
+  beforeEach(() => {
     module('myfromNowFilterApp');
-    inject(function (_fromNowFilter_) {
+    inject((_fromNowFilter_) => {
       fromNowFilter = _fromNowFilter_;
     });
   });
 
-  it('shows the present time as "a few seconds ago"', function () {
+  it('shows the present time as "a few seconds ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
+    const date_epoch_mills = new Date().getTime();
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('a few seconds ago');
   });
 
-  it('shows 5 minutes ago as "5 minutes ago"', function () {
+  it('shows 5 minutes ago as "5 minutes ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
-    date_epoch_mills = date_epoch_mills - 5 * 60 * 1000;
+    let date_epoch_mills = new Date().getTime();
+    date_epoch_mills -= 5 * 60 * 1000;
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('5 minutes ago');
   });
 
-  it('shows 4 hours ago as "4 hours ago"', function () {
+  it('shows 4 hours ago as "4 hours ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
-    date_epoch_mills = date_epoch_mills - 4 * 60 * 60 * 1000;
+    let date_epoch_mills = new Date().getTime();
+    date_epoch_mills -= 4 * 60 * 60 * 1000;
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('4 hours ago');
   });
 
-  it('shows 24 hours ago as "a day ago"', function () {
+  it('shows 24 hours ago as "a day ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
-    date_epoch_mills = date_epoch_mills - 24 * 60 * 60 * 1000;
+    let date_epoch_mills = new Date().getTime();
+    date_epoch_mills -= 24 * 60 * 60 * 1000;
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('a day ago');
   });
 
-  it('shows 36 hours ago as "2 days ago"', function () {
+  it('shows 36 hours ago as "2 days ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
-    date_epoch_mills = date_epoch_mills - 36 * 60 * 60 * 1000;
+    let date_epoch_mills = new Date().getTime();
+    date_epoch_mills -= 36 * 60 * 60 * 1000;
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('2 days ago');
   });
 
-  it('shows 1550 hours ago as "2 months ago"', function () {
+  it('shows 1550 hours ago as "2 months ago"', () => {
     // arrange
-    var date_epoch_mills = (new Date()).getTime();
-    date_epoch_mills = date_epoch_mills - 1550 * 60 * 60 * 1000;
+    let date_epoch_mills = new Date().getTime();
+    date_epoch_mills -= 1550 * 60 * 60 * 1000;
 
     // act
-    var from_now_value = fromNowFilter(date_epoch_mills);
+    const from_now_value = fromNowFilter(date_epoch_mills);
 
     // assert
     expect(from_now_value).toBe('2 months ago');
   });
 
-  it('defaults to "a few seconds ago" for undefined values', function () {
+  it('defaults to "a few seconds ago" for undefined values', () => {
     // arrange
 
     // act
@@ -100,6 +100,6 @@ describe('The fromNow filter', function () {
     expect(fromNowFilter(null)).toBe('a few seconds ago');
     expect(fromNowFilter('some text')).toBe('a few seconds ago');
     expect(fromNowFilter({})).toBe('a few seconds ago');
-    expect(fromNowFilter({time: 'not time'})).toBe('a few seconds ago');
+    expect(fromNowFilter({ time: 'not time' })).toBe('a few seconds ago');
   });
 });

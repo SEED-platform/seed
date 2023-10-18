@@ -7,14 +7,12 @@
  * instantiates new objects (spinners). - nicholasserra
  */
 angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
-  function () {
+  () => {
+    const spinner_utility = {};
+    let _spinner;
 
-    var spinner_utility = {};
-    var _spinner;
-
-    spinner_utility.show = function (params, target) {
-
-      var refresh = !!(params || target);
+    spinner_utility.show = (params, target) => {
+      const refresh = !!(params || target);
       target = target || $('.display')[0];
 
       if (!_spinner) {
@@ -29,7 +27,7 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
       $('.page')[0].style.opacity = 0.4;
     };
 
-    spinner_utility.hide = function () {
+    spinner_utility.hide = () => {
       if (_spinner) {
         _spinner.stop();
         $('.page')[0].style.opacity = 1;
@@ -37,4 +35,5 @@ angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
     };
 
     return spinner_utility;
-  }]);
+  }
+]);

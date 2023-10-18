@@ -1,176 +1,226 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: org.name $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left_40">
-                <h2><i class="fa fa-flag"></i> <span translate>Data Quality</span></h2>
-            </div>
-            <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
-                    <i class="fa fa-check" ng-show="rules_reset"></i>
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left_40">
+        <h2><i class="fa-solid fa-flag"></i> <span translate>Data Quality</span></h2>
+      </div>
+      <div class="section_action_container right_40 section_action_btn pull-right">
+        <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">
+          {$:: 'Reset All Rules' | translate $}
+          <i class="fa-solid fa-check" ng-show="rules_reset"></i>
+        </button>
+        <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">
+          {$:: 'Save Changes' | translate $}
+          <i class="fa-solid fa-check" ng-show="rules_updated"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding" style="margin-bottom: 15px">
+      <h3 translate>Modifying Data Quality Rules</h3>
+      <p>
+        From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally
+        assign or remove a label if the condition is not met.<br />
+        Reset All Rules: delete all rules and reinitialize the default set of rules.
+      </p>
+      <button class="btn btn-info btn-sm" style="margin-bottom: 15px" ng-click="create_new_rule()" translate>Create a new rule</button>
+
+      <div class="alert alert-danger" ng-show="invalid_conditions.length > 0" translate>
+        Fields that have a "Must Contain" or "Must Not Contain" Condition Check rule cannot have a "Range" Condition Check rule.
+      </div>
+      <div class="alert alert-danger" ng-show="invalid_data_types.length > 0" translate>
+        Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks.
+      </div>
+
+      <div class="data-quality-tab-container">
+        <ul class="nav nav-tabs" style="margin-bottom: 1px">
+          <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
+            <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})"
+              >View by Property <span class="badge badge_menu">{$ rule_count_property | number:0 $}</span></a
+            >
+          </li>
+          <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
+            <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'taxlots'})">View by Tax Lot <span class="badge badge_menu">{$ rule_count_taxlot | number:0 $}</span></a>
+          </li>
+        </ul>
+      </div>
+      <div class="table_list_container has_borders">
+        <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
+          <thead>
+            <tr>
+              <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0" ng-click="selectAll()">
+                <input type="checkbox" ng-checked="allEnabled()" class="no-click" />
+              </th>
+              <th style="min-width: 140px" translate>Condition Check</th>
+              <th style="min-width: 140px" translate>Field</th>
+              <th style="min-width: 100px; width: 100px" translate>Data Type</th>
+              <th translate>Minimum</th>
+              <th translate>Maximum</th>
+              <th translate>Units</th>
+              <th style="min-width: 110px; width: 110px" translate>Severity Level</th>
+              <th translate>Label</th>
+              <th style="min-width: 54px; width: 54px" translate>Delete</th>
+            </tr>
+          </thead>
+          <tbody ng-repeat="field in sortedRuleGroups()">
+            <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled, 'danger' : duplicate_rule_keys.includes(rule.$$hashKey) }">
+              <td class="check is_aligned_center" ng-click="rules_changed(rule); rule.enabled = !rule.enabled">
+                <input type="checkbox" ng-model="rule.enabled" class="no-click" />
+              </td>
+              <td>
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.condition"
+                  ng-options="condition.id as condition.label for condition in ::conditions"
+                  ng-change="rules_changed(rule); change_condition(rule, ruleGroups[inventory_type][field], field)"
+                  ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
+                ></select>
+              </td>
+              <td>
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.field"
+                  ng-options="col.column_name as col.displayName group by col.group for col in ::columns | orderBy: 'group'"
+                  ng-change="rules_changed(rule); change_field(rule, '{$ rule.field $}', $index)"
+                  title="{$ rule.field $}"
+                  focus-if="{$ rule.autofocus || 'false' $}"
+                ></select>
+              </td>
+              <td ng-if="rule.condition === 'range'">
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.data_type"
+                  ng-options="type.id as type.label for type in ::data_types[1]"
+                  ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
+                  ng-class="{'border-red red': invalid_data_types.includes(field)}"
+                ></select>
+              </td>
+              <td ng-if="rule.condition !== 'range'">
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.data_type"
+                  ng-if="_.includes(['include', 'exclude'], rule.condition)"
+                  ng-options="type.id as type.label for type in ::data_types[0]"
+                  ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
+                  ng-class="{'border-red red': invalid_data_types.includes(field)}"
+                ></select>
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.data_type"
+                  ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)"
+                  ng-options="type.id as type.label for type in ::data_types[2]"
+                  ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
+                  ng-class="{'border-red red': invalid_data_types.includes(field)}"
+                ></select>
+              </td>
+              <td ng-if="rule.data_type === data_type_keys.string" colspan="2" ng-class="{'error-bg': misconfigured_fields_ref.text_match.includes(rule.$$hashKey)}">
+                <input
+                  class="form-control input-sm"
+                  type="text"
+                  maxlength="200"
+                  ng-model="rule.text_match"
+                  ng-if="_.includes(['include', 'exclude', 'required', 'not_null', '', null, 'None'], rule.condition)"
+                  ng-change="rules_changed(rule)"
+                  placeholder="{$ rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}"
+                  ng-disabled="filter_null(rule)"
+                />
+              </td>
+              <td ng-if="rule.data_type !== data_type_keys.string">
+                <input
+                  class="form-control input-sm"
+                  type="number"
+                  ng-model="rule.min"
+                  ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date"
+                  placeholder="{$:: '(no minimum)' | translate $}"
+                  ng-disabled="filter_null(rule)"
+                />
+                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
+              </td>
+              <td ng-if="rule.data_type !== data_type_keys.string">
+                <input
+                  class="form-control input-sm"
+                  type="number"
+                  ng-model="rule.max"
+                  ng-change="rules_changed(rule)"
+                  ng-if="rule.data_type !== data_type_keys.date"
+                  placeholder="{$:: '(no maximum)' | translate $}"
+                  ng-disabled="filter_null(rule)"
+                />
+                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)" />
+              </td>
+              <td>
+                <select
+                  class="form-control input-sm"
+                  ng-options="unit.id as unit.label for unit in units"
+                  ng-model="rule.units"
+                  ng-change="rules_changed(rule)"
+                  ng-disabled="filter_null(rule)"
+                ></select>
+              </td>
+              <td ng-class="{'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
+                <select
+                  class="form-control input-sm"
+                  ng-model="rule.severity"
+                  ng-options="severity.id as severity.label for severity in ::severity_types"
+                  ng-change="rules_changed(rule)"
+                  ng-class="{'valid-bg': rule.severity === severity_type_keys.valid, 'error-bg': rule.severity === severity_type_keys.error, 'warning-bg': rule.severity === severity_type_keys.warning}"
+                ></select>
+              </td>
+              <td class="text-right" ng-class="{'error-bg': misconfigured_fields_ref.label.includes(rule.$$hashKey)}">
+                <div class="input-group input-group-sm" ng-if="rule.label">
+                  <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none">{$ rule.label.name | translate $}</span>
+                  <span class="input-group-btn">
+                    <button class="btn btn-danger" type="button" ng-click="rules_changed(rule); remove_label(rule)">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </button>
+                  </span>
+                </div>
+                <button class="btn btn-xs btn-info btn-rowform" ng-click="rules_changed(rule); create_label(rule, $index)" ng-if="!rule.label">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="rules_updated"></i>
+                <!-- code for multiple labels -->
+                <!-- <span ng-repeat="label in rule.label" class="label label-{$ label.label $}" style="display: block; margin-top: 7px; padding: 4.6px 7px;">{$ label.name $}</span> -->
+
+                <!-- old code -->
+                <!-- <select class="form-control input-sm" ng-model="rule.label" ng-change="rules_changed(rule)" ng-options="label.id as label.name for label in all_labels"></select> -->
+              </td>
+              <td class="check is_aligned_center">
+                <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
-            </div>
-        </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>Modifying Data Quality Rules</h3>
-            <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
-            Reset All Rules: delete all rules and reinitialize the default set of rules.</p>
-            <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
-
-            <div class="alert alert-danger" ng-show="invalid_conditions.length > 0" translate>
-                Fields that have a "Must Contain" or "Must Not Contain" Condition Check rule cannot have a "Range" Condition Check rule.
-            </div>
-            <div class="alert alert-danger" ng-show="invalid_data_types.length > 0" translate>
-                Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks.
-            </div>
-
-            <div class="data-quality-tab-container">
-                <ul class="nav nav-tabs" style="margin-bottom:1px;">
-                    <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
-                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'properties'})">View by Property <span class="badge badge_menu">{$ rule_count_property | number:0 $}</span></a>
-                    </li>
-                    <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
-                        <a ui-sref="organization_data_quality(::{organization_id: org.id, inventory_type: 'taxlots'})">View by Tax Lot <span class="badge badge_menu">{$ rule_count_taxlot | number:0 $}</span></a>
-                    </li>
-                </ul>
-            </div>
-            <div class="table_list_container has_borders">
-                <table id="data-quality-admin-table" class="table has_no_btm_margin tbody-striped">
-                    <thead>
-                        <tr>
-                            <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0;" ng-click="selectAll()">
-                                <input type="checkbox" ng-checked="allEnabled()" class="no-click">
-                            </th>
-                            <th style="min-width: 140px;" translate>Condition Check</th>
-                            <th style="min-width: 140px;" translate>Field</th>
-                            <th style="min-width: 100px; width: 100px;" translate>Data Type</th>
-                            <th translate>Minimum</th>
-                            <th translate>Maximum</th>
-                            <th translate>Units</th>
-                            <th style="min-width: 110px; width: 110px;" translate>Severity Level</th>
-                            <th translate>Label</th>
-                            <th style="min-width: 54px; width: 54px;" translate>Delete</th>
-                        </tr>
-                    </thead>
-                    <tbody ng-repeat="field in sortedRuleGroups()">
-                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled, 'danger' : duplicate_rule_keys.includes(rule.$$hashKey) }">
-                            <td class="check is_aligned_center" ng-click="rules_changed(rule); rule.enabled = !rule.enabled">
-                                <input type="checkbox" ng-model="rule.enabled" class="no-click">
-                            </td>
-                            <td>
-                                <select class="form-control input-sm" ng-model="rule.condition"
-                                        ng-options="condition.id as condition.label for condition in ::conditions"
-                                        ng-change="rules_changed(rule); change_condition(rule, ruleGroups[inventory_type][field], field)"
-                                        ng-class="{'border-red red': invalid_conditions.includes(field), 'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
-                                        ></select>
-                            </td>
-                            <td>
-                                <select class="form-control input-sm"
-                                        ng-model="rule.field"
-                                        ng-options="col.column_name as col.displayName group by col.group for col in ::columns | orderBy: 'group'"
-                                        ng-change="rules_changed(rule); change_field(rule, '{$ rule.field $}', $index)"
-                                        title="{$ rule.field $}"
-                                        focus-if="{$ rule.autofocus || 'false' $}"></select>
-                            </td>
-                            <td ng-if="rule.condition === 'range'">
-                                <select class="form-control input-sm"
-                                        ng-model="rule.data_type"
-                                        ng-options="type.id as type.label for type in ::data_types[1]"
-                                        ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
-                            </td>
-                            <td ng-if="rule.condition !== 'range'" >
-                                <select class="form-control input-sm"
-                                        ng-model="rule.data_type"
-                                        ng-if="_.includes(['include', 'exclude'], rule.condition)"
-                                        ng-options="type.id as type.label for type in ::data_types[0]"
-                                        ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
-                                <select class="form-control input-sm"
-                                        ng-model="rule.data_type"
-                                        ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)"
-                                        ng-options="type.id as type.label for type in ::data_types[2]"
-                                        ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
-                            </td>
-                            <td ng-if="rule.data_type === data_type_keys.string" colspan="2" ng-class="{'error-bg': misconfigured_fields_ref.text_match.includes(rule.$$hashKey)}">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-if="_.includes(['include', 'exclude', 'required', 'not_null', '', null, 'None'], rule.condition)" ng-change="rules_changed(rule)"
-                                       placeholder="{$ rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}"
-                                       ng-disabled="filter_null(rule)">
-                            </td>
-                            <td ng-if="rule.data_type !== data_type_keys.string">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)">
-                            </td>
-                            <td ng-if="rule.data_type !== data_type_keys.string">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no maximum)' | translate $}" ng-disabled="filter_null(rule)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)">
-                            </td>
-                            <td>
-                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rules_changed(rule)" ng-disabled="filter_null(rule)"></select>
-                            </td>
-                            <td ng-class="{'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
-                                <select class="form-control input-sm"
-                                        ng-model="rule.severity"
-                                        ng-options="severity.id as severity.label for severity in ::severity_types"
-                                        ng-change="rules_changed(rule)"
-                                        ng-class="{'valid-bg': rule.severity === severity_type_keys.valid, 'error-bg': rule.severity === severity_type_keys.error, 'warning-bg': rule.severity === severity_type_keys.warning}"></select>
-                            </td>
-                            <td class="text-right" ng-class="{'error-bg': misconfigured_fields_ref.label.includes(rule.$$hashKey)}">
-                                <div class="input-group input-group-sm" ng-if="rule.label">
-                                    <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none;">{$ rule.label.name | translate $}</span>
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-danger" type="button" ng-click="rules_changed(rule); remove_label(rule)">
-                                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                        </button>
-                                    </span>
-                                </div>
-                                <button class="btn btn-xs btn-info btn-rowform" ng-click="rules_changed(rule); create_label(rule, $index)" ng-if="!rule.label">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                </button>
-                                <!-- code for multiple labels -->
-                                <!-- <span ng-repeat="label in rule.label" class="label label-{$ label.label $}" style="display: block; margin-top: 7px; padding: 4.6px 7px;">{$ label.name $}</span> -->
-
-                                <!-- old code -->
-                                <!-- <select class="form-control input-sm" ng-model="rule.label" ng-change="rules_changed(rule)" ng-options="label.id as label.name for label in all_labels"></select> -->
-                            </td>
-                            <td class="check is_aligned_center">
-                                <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_rule(rule, $index)">
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="section_content_container">
-            <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
-                    <i class="fa fa-check" ng-show="rules_reset"></i>
-                </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="rules_updated"></i>
-                </button>
-            </div>
-        </div>
+      <div class="section_content with_padding pull-right" style="padding-bottom: 15px">
+        <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">
+          {$:: 'Reset All Rules' | translate $}
+          <i class="fa-solid fa-check" ng-show="rules_reset"></i>
+        </button>
+        <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">
+          {$:: 'Save Changes' | translate $}
+          <i class="fa-solid fa-check" ng-show="rules_updated"></i>
+        </button>
+      </div>
     </div>
+  </div>
 </div>
