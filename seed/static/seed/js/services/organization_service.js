@@ -96,6 +96,20 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.can_delete_access_level_instance = function (org_id, instance_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/' + 'access_levels/' + instance_id + '/can_delete_instance/',
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.delete_access_level_instance = function (org_id, instance_id) {
+      return $http.delete('/api/v3/organizations/' + org_id + '/' + 'access_levels/' + instance_id + '/delete_instance/',
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
     organization_factory.create_organization_access_level_instance = function (org_id, parent_id, name) {
       return $http.post('/api/v3/organizations/' + org_id + '/' + 'access_levels/add_instance/',
         {"parent_id": parent_id, "name": name}
