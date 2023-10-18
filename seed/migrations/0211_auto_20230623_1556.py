@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0028_auto_20230413_1250'),
-        ('seed', '0204_auto_add_props_to_tree'),
+        ('orgs', '0029_auto_20230413_1250'),
+        ('seed', '0210_auto_add_props_to_tree'),
     ]
 
     operations = [

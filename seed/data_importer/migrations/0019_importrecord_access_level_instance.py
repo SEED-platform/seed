@@ -35,8 +35,8 @@ def set_import_records_ali(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0028_auto_20230413_1250'),
-        ('data_importer', '0017_pm_source_type'),
+        ('orgs', '0029_auto_20230413_1250'),
+        ('data_importer', '0018_importfile_multiple_cycle_upload'),
     ]
 
     operations = [

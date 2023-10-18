@@ -34,8 +34,8 @@ def set_analysis_ali(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0028_auto_20230413_1250'),
-        ('seed', '0205_auto_20230623_1556'),
+        ('orgs', '0029_auto_20230413_1250'),
+        ('seed', '0211_auto_20230623_1556'),
     ]
 
     operations = [

@@ -26,7 +26,7 @@ def give_org_access_level_root(apps, schema_editor):
 
 
 @transaction.atomic
-def assign_users_to_root_acces_level(apps, schema_editor):
+def assign_users_to_root_access_level(apps, schema_editor):
     OrganizationUser = apps.get_model('orgs', 'OrganizationUser')
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
@@ -40,7 +40,7 @@ def assign_users_to_root_acces_level(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0027_organization_ubid_threshold'),
+        ('orgs', '0028_organization_audit_template_report_type'),
     ]
 
     operations = [
@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
             name='access_level_instance',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='orgs.accesslevelinstance', related_name="users"),
         ),
-        migrations.RunPython(assign_users_to_root_acces_level, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(assign_users_to_root_access_level, reverse_code=migrations.RunPython.noop),
         migrations.AlterField(
             model_name='organizationuser',
             name='access_level_instance',

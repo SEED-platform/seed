@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_importer', '0018_importrecord_access_level_instance'),
+        ('data_importer', '0017_pm_source_type'),
     ]
 
     operations = [
