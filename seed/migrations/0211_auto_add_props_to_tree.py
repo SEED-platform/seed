@@ -5,7 +5,7 @@ from django.db import migrations, models, transaction
 
 
 @transaction.atomic
-def assign_properties_to_root_acces_level(apps, schema_editor):
+def assign_properties_to_root_access_level(apps, schema_editor):
     Property = apps.get_model('seed', 'Property')
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
@@ -17,7 +17,7 @@ def assign_properties_to_root_acces_level(apps, schema_editor):
 
 
 @transaction.atomic
-def assign_taxlots_to_root_acces_level(apps, schema_editor):
+def assign_taxlots_to_root_access_level(apps, schema_editor):
     TaxLot = apps.get_model('seed', 'TaxLot')
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
 
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0029_auto_20230413_1250'),
-        ('seed', '0209_auto_20230929_0959'),
+        ('seed', '0210_natural_sort'),
     ]
 
     operations = [
@@ -46,8 +46,8 @@ class Migration(migrations.Migration):
             name='access_level_instance',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='taxlots', to='orgs.accesslevelinstance'),
         ),
-        migrations.RunPython(assign_properties_to_root_acces_level, reverse_code=migrations.RunPython.noop),
-        migrations.RunPython(assign_taxlots_to_root_acces_level, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(assign_properties_to_root_access_level, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(assign_taxlots_to_root_access_level, reverse_code=migrations.RunPython.noop),
         migrations.AlterField(
             model_name='property',
             name='access_level_instance',

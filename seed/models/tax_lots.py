@@ -45,7 +45,7 @@ _log = logging.getLogger(__name__)
 
 class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
-    # should stay consistent although I prefer the name organization (!super_org)
+    # should stay consistent, although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="taxlots")
 
@@ -86,18 +86,18 @@ class TaxLotState(models.Model):
     raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
     raw_access_level_instance_error = models.TextField(null=True)
 
-    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True)
-    block_number = models.CharField(max_length=255, null=True, blank=True)
-    district = models.CharField(max_length=255, null=True, blank=True)
-    address_line_1 = models.CharField(max_length=255, null=True, blank=True)
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    jurisdiction_tax_lot_id = models.CharField(max_length=2047, null=True, blank=True, db_collation='natural_sort')
+    block_number = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    district = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    city = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-    postal_code = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
     number_properties = models.IntegerField(null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
@@ -111,9 +111,9 @@ class TaxLotState(models.Model):
     bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
     taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    ubid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation='natural_sort')
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
