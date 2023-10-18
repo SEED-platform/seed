@@ -312,7 +312,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @has_hierarchy_access(property_id_kwarg="pk")
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
 
