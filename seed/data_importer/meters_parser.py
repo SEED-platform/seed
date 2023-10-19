@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
-from pytz import timezone
+from pytz import AmbiguousTimeError, timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
@@ -261,8 +261,16 @@ class MetersParser(object):
                 unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
                 unaware_end = datetime.strptime(raw_details['End Date'], "%Y-%m-%d %H:%M:%S")
 
-            start_time = make_aware(unaware_start, timezone=self._tz)
-            end_time = make_aware(unaware_end, timezone=self._tz)
+            try:
+                start_time = make_aware(unaware_start, timezone=self._tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=False)
+            try:
+                end_time = make_aware(unaware_end, timezone=self._tz)
+            except AmbiguousTimeError:
+                # Handle timestamp that occurs twice due to "falling back" to standard time
+                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=False)
 
             successful_parse = self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
