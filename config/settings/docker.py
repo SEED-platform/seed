@@ -34,14 +34,14 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception("%s Not defined as env variables" % loc)
 
-DEBUG = os.environ.get('Debug', 'False')
+DEBUG = os.environ.get('Debug', False)
 COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False')
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False')
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', False)
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', False)
 
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
 if ALLOWED_HOSTS_ENV:
