@@ -498,7 +498,7 @@ class PortfolioManagerImport(object):
         # Now we need to wait while the report is being generated
         attempt_count = 0
         report_generation_complete = False
-        while attempt_count < 10:
+        while attempt_count < 30:
             attempt_count += 1
 
             # get the report data
@@ -522,7 +522,7 @@ class PortfolioManagerImport(object):
             if not this_matched_template:
                 raise PMExcept('Could not find a match for this report template id... odd at this point')
             if this_matched_template['pending'] == 1:
-                time.sleep(2)
+                time.sleep(5)
                 continue
             else:
                 report_generation_complete = True
