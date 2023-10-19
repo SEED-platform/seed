@@ -86,7 +86,7 @@ if 'REDIS_AWS_ELASTICACHE' in os.environ:
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'rediss://:%s@%s:6379/%s' % (
+    CELERY_BROKER_URL = 'rediss://:%s@%s:6379/%s?ssl_cert_reqs=required' % (
         CACHES['default']['OPTIONS']['PASSWORD'],
         os.environ.get('REDIS_HOST'),
         CACHES['default']['OPTIONS']['DB']
