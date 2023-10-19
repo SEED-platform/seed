@@ -34,16 +34,20 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception("%s Not defined as env variables" % loc)
 
-DEBUG = False
+DEBUG = os.environ.get('Debug', 'False')
 COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True')
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'True')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(',')
+else:
+    ALLOWED_HOSTS = ['*']
 
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g., SMTP), then please update this model to support both and
