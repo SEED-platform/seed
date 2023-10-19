@@ -81,6 +81,7 @@ if 'REDIS_AWS_ELASTICACHE' in os.environ:
                 'DB': 1,
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
                 'PASSWORD': os.environ.get('REDIS_PASSWORD')
+                "SSL": True  # If your AWS Elasticache is set up for SSL, set this to True
             },
             'TIMEOUT': 300
         }
