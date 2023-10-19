@@ -8,18 +8,19 @@ import ast
 import json
 
 from django.test import TestCase
-from django.urls import reverse
-
+from django.urls import reverse, reverse_lazy
 from seed.landing.models import SEEDUser as User
 from seed.models import UbidModel
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import (
+    FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
+from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.geocode import bounding_box_wkt, wkt_to_polygon
 from seed.utils.organizations import create_organization
 from seed.utils.ubid import centroid_wkt, get_jaccard_index, validate_ubid
@@ -771,3 +772,77 @@ class UbidSqlTests(TestCase):
         self.assertEqual(0, float(jaccard))
         jaccard = get_jaccard_index(invalid, invalid)
         self.assertEqual(1.0, float(jaccard))
+
+
+# class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        empty_details = {"address_line_1": None, "state": None, "postal_code": None, "city": None}
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.root_property_state = self.property_state_factory.get_property_state(**empty_details)
+        self.root_property_view = self.property_view_factory.get_property_view(prprty=self.root_property, state=self.root_property_state)
+        self.root_ubid = UbidModel.objects.create(
+            ubid="A+A-0-0-0-0",
+            property=self.root_property_state
+        )
+
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.child_property_state = self.property_state_factory.get_property_state(**empty_details)
+        self.child_property_view = self.property_view_factory.get_property_view(prprty=self.child_property, state=self.child_property_state)
+        self.child_ubid = UbidModel.objects.create(
+            ubid="B+B-1-1-1-1",
+            property=self.child_property_state
+        )
+
+    def test_ubids_get(self):
+        url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.id]) + '?organization_id=' + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can get ubid in root
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+      
+    def test_ubids_create(self):
+        url = reverse_lazy('api:v3:ubid-list') + "?organization_id=" + str(self.org.id)
+        ubid_details = {
+            'access_level_instance_id': self.child_level_instance.id,
+            'ubid':"C+C-0-0-0-0",
+            'property': self.child_property_state.id
+        }
+        params = json.dumps(ubid_details)
+
+        # child can
+        self.login_as_child_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 201
+
+        # child cannot with root property
+        ubid_details['property'] = self.root_property_state.id
+        params = json.dumps(ubid_details)
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        # child cannot with root id
+        ubid_details["access_level_instance_id"] = self.root_level_instance.id
+        ubid_details['property'] = self.child_property_state.id
+        params = json.dumps(ubid_details)
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        # root can
+        self.login_as_root_member()
+        ubid_details['ubid'] = 'D+D-0-0-0-0'
+        params = json.dumps(ubid_details)
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 201

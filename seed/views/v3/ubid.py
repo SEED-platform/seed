@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm_class, has_hierarchy_access
 from seed.models import DATA_STATE_IMPORT, UbidModel
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
@@ -226,6 +226,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
+    @has_hierarchy_access(ubid_id_kwarg="pk")
     def retrieve(self, request, pk):
         org_id = self.get_organization(request)
         try:
@@ -249,6 +250,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(body_ali_id='access_level_instance_id')
     def create(self, request):
         org_id = self.get_organization(request)
         serializer = UbidModelSerializer(data=request.data)
