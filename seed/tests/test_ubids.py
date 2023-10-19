@@ -846,3 +846,16 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
         params = json.dumps(ubid_details)
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
+
+    def test_ubids_destroy(self):
+        url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.pk]) + "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 204

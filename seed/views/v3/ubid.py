@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Subquery
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -25,7 +26,10 @@ from seed.utils.api_schema import (
 from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
-
+@method_decorator(
+    name='destroy',
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(ubid_id_kwarg="pk")]
+)
 class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = UbidModel
     pagination_class = None
