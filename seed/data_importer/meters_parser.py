@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
-from pytz import AmbiguousTimeError, timezone
+from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
@@ -233,9 +233,8 @@ class MetersParser(object):
         for raw_details in self._meters_and_readings_details:
             meter_details = {
                 'source': self._source_type,
+                'source_id': str(raw_details['Portfolio Manager Meter ID'])
             }
-
-            meter_details['source_id'] = str(raw_details['Portfolio Manager Meter ID'])
 
             # Continue/skip, if no property is found.
             given_property_id = str(raw_details['Portfolio Manager ID'])
@@ -266,11 +265,18 @@ class MetersParser(object):
             except AmbiguousTimeError:
                 # Handle timestamp that occurs twice due to "falling back" to standard time
                 start_time = make_aware(unaware_start, timezone=self._tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=True)
+
             try:
                 end_time = make_aware(unaware_end, timezone=self._tz)
             except AmbiguousTimeError:
                 # Handle timestamp that occurs twice due to "falling back" to standard time
                 end_time = make_aware(unaware_end, timezone=self._tz, is_dst=False)
+            except NonExistentTimeError:
+                # Handle timestamp that doesn't exist due to "springing forward" to dst
+                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=True)
 
             successful_parse = self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
