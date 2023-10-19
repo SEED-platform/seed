@@ -40,8 +40,8 @@ COMPRESS_ENABLED = False
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'True')
-CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'True')
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False')
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', 'False')
 
 ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
 if ALLOWED_HOSTS_ENV:
