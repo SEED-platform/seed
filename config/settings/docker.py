@@ -86,9 +86,9 @@ if 'REDIS_AWS_ELASTICACHE' in os.environ:
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'rediss://:%s@%s/%s' % (
+    CELERY_BROKER_URL = 'rediss://:%s@%s:6379/%s' % (
         CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
+        os.environ.get('REDIS_HOST'),
         CACHES['default']['OPTIONS']['DB']
     )
 elif 'REDIS_PASSWORD' in os.environ:
