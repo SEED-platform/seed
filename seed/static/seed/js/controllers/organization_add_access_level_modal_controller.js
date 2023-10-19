@@ -37,6 +37,10 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
         })
       };
 
+      $scope.remove_level = function() {
+        $scope.new_access_level_names.pop();
+      };
+
       $scope.add_level = function() {
         $scope.new_access_level_names.push("");
       };
