@@ -26,7 +26,7 @@ lokalise2                    \
   --config=lokalise.yml      \
     file download            \
   --filter-langs=fr_CA,en_US \
-  --format=po              \
+  --format=po                \
   --include-comments=true    \
   --export-sort=a_z          \
   --export-empty-as=base     \

@@ -1,21 +1,21 @@
 <div class="section">
   <div class="section_content_container">
     <div class="section_content">
-      <div uib-alert class="alert-danger http_error" ng-if="http_error == 404" close="closeAlert()" ><span translate>HTTP Error! Status Code: 404. The requested URL was not found.</span></div>
-      <div uib-alert class="alert-danger http_error" ng-if="http_error == 500" close="closeAlert()" ><span translate>HTTP Error! Status Code: 500. Internal Server Error.</span></div>
-
+      <div uib-alert class="alert-danger http_error" ng-if="http_error == 404" close="closeAlert()"><span translate>HTTP Error! Status Code: 404. The requested URL was not found.</span></div>
+      <div uib-alert class="alert-danger http_error" ng-if="http_error == 500" close="closeAlert()"><span translate>HTTP Error! Status Code: 500. Internal Server Error.</span></div>
 
       <div class="bg jumbotron">
         <div class="home_hero_content_container">
           <h1 translate>The SEED Platform™</h1>
-          <div translate>The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios.
+          <div translate>
+            The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy
+            performance information about large portfolios.
           </div>
           <div class="row">
-
             <div class="content_col col-md-4">
               <div class="content_col_header">
                 <div class="content_col_header_left">
-                  <span><i class="fa fa-cloud-upload"></i></span>
+                  <span><i class="fa-solid fa-cloud-arrow-up"></i></span>
                 </div>
                 <div class="content_col_header_right">
                   <h3 translate>Upload your data</h3>
@@ -27,7 +27,7 @@
             <div class="content_col col-md-4">
               <div class="content_col_header">
                 <div class="content_col_header_left">
-                  <span><i class="fa fa-exchange"></i></span>
+                  <span><i class="fa-solid fa-arrow-right-arrow-left"></i></span>
                 </div>
                 <div class="content_col_header_right">
                   <h3 translate>Match your data</h3>
@@ -39,7 +39,7 @@
             <div class="content_col col-md-4">
               <div class="content_col_header">
                 <div class="content_col_header_left">
-                  <span><i class="fa fa-check-square"></i></span>
+                  <span><i class="fa-solid fa-square-check"></i></span>
                 </div>
                 <div class="content_col_header_right">
                   <h3 translate>Manage compliance</h3>
@@ -47,7 +47,6 @@
               </div>
               <div class="copy" translate>MARKETING_BULLET_3</div>
             </div>
-
           </div>
         </div>
       </div>
@@ -58,21 +57,43 @@
 
           <div>
             <div>
-              <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V2_18_Getting_Started_Guide.pdf" target="_blank" rel="noopener noreferrer" title="SEED_v2.13_User_Guide" class="btn btn-warning btn-lg" role="button" style="white-space:normal !important;"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a>
+              <a
+                ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V2_18_Getting_Started_Guide.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="SEED_v2.13_User_Guide"
+                class="btn btn-warning btn-lg"
+                role="button"
+                style="white-space: normal !important"
+                ><i class="fa-solid fa-file-lines"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a
+              >
             </div>
 
             <div>
-              <a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info btn-lg" role="button" style="white-space:normal !important;"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a>
+              <a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info btn-lg" role="button" style="white-space: normal !important"
+                ><i class="fa-solid fa-cloud-arrow-down"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a
+              >
             </div>
 
             <div>
-              <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'" style="white-space:normal !important;"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$:: 'Upload your Buildings List' | translate $}</a>
+              <a
+                data-toggle="modal"
+                data-target="#dataUploadModal"
+                ng-click="open_data_upload_modal()"
+                class="btn btn-primary btn-lg"
+                role="button"
+                ng-hide="menu.user.organization.user_role === 'viewer'"
+                style="white-space: normal !important"
+                ><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;{$:: 'Upload your Buildings List' | translate $}</a
+              >
             </div>
           </div>
 
           <div ng-if="menu.user.organization && menu.user.organization.user_role !== 'viewer'">
             <div>
-              <a data-toggle="modal" ng-click="open_sample_data_modal()" class="btn btn-success btn-lg" role="button" style="white-space:normal !important;"><i class="fa fa-server"></i>&nbsp;&nbsp;{$:: 'Auto-Populate Sample Data' | translate $}</a>
+              <a data-toggle="modal" ng-click="open_sample_data_modal()" class="btn btn-success btn-lg" role="button" style="white-space: normal !important"
+                ><i class="fa-solid fa-server"></i>&nbsp;&nbsp;{$:: 'Auto-Populate Sample Data' | translate $}</a
+              >
             </div>
           </div>
 
@@ -80,7 +101,6 @@
           <!--    translate-values="{ injectedText: '<script>alert(\'XSS IN INJECTED VALUE!\');</script>' }"></p> -->
         </div>
       </div>
-
     </div>
   </div>
 </div>

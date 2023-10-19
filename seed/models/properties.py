@@ -178,37 +178,37 @@ class PropertyState(models.Model):
     raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
     raw_access_level_instance_error = models.TextField(null=True)
 
-    jurisdiction_property_id = models.TextField(null=True, blank=True)
+    jurisdiction_property_id = models.TextField(null=True, blank=True, db_collation='natural_sort')
 
-    custom_id_1 = models.CharField(max_length=255, null=True, blank=True)
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # Audit Template has their own building id
-    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True)
+    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    ubid = models.CharField(max_length=255, null=True, blank=True)
+    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # If the property is a campus then the pm_parent_property_id is the same
     # for all the properties. The main campus record will have the pm_property_id
     # set to be the same as the pm_parent_property_id
-    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True)
+    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True)
+    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # Tax Lot Number of the property - this field can be an unparsed list or just one string.
-    lot_number = models.TextField(null=True, blank=True)
-    property_name = models.CharField(max_length=255, null=True, blank=True)
+    lot_number = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    property_name = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # Leave this as is for now, normalize into its own table soon
     # use properties to assess from instances
-    address_line_1 = models.CharField(max_length=255, null=True, blank=True)
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True)
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    city = models.CharField(max_length=255, null=True, blank=True)
-    state = models.CharField(max_length=255, null=True, blank=True)
-    postal_code = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # New fields for latitude and longitude as native database objects
     latitude = models.FloatField(null=True, blank=True)
@@ -220,9 +220,9 @@ class PropertyState(models.Model):
     property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
 
     # Store the timezone of the property
-    property_timezone = models.CharField(max_length=255, null=True, blank=True)
+    property_timezone = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation='natural_sort')
 
     # EPA's eGRID Subregion Code
     #   https://www.epa.gov/egrid, https://bedes.lbl.gov/bedes-online/egrid-subregion-code
@@ -255,46 +255,46 @@ class PropertyState(models.Model):
     # SRSO
     # SRTV
     # SRVC
-    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True)
+    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
-    property_notes = models.TextField(null=True, blank=True)
-    property_type = models.TextField(null=True, blank=True)
+    property_notes = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    property_type = models.TextField(null=True, blank=True, db_collation='natural_sort')
     year_ending = models.DateField(null=True, blank=True)
 
     # Tax IDs are often stuck here.
-    use_description = models.CharField(max_length=255, null=True, blank=True)
+    use_description = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
 
     # Normalize eventually on owner/address table
-    owner = models.CharField(max_length=255, null=True, blank=True)
-    owner_email = models.CharField(max_length=255, null=True, blank=True)
-    owner_telephone = models.CharField(max_length=255, null=True, blank=True)
-    owner_address = models.CharField(max_length=255, null=True, blank=True)
-    owner_city_state = models.CharField(max_length=255, null=True, blank=True)
-    owner_postal_code = models.CharField(max_length=255, null=True, blank=True)
+    owner = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner_email = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner_telephone = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner_address = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner_city_state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner_postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
 
     energy_score = models.IntegerField(null=True, blank=True)
 
-    energy_alerts = models.TextField(null=True, blank=True)
-    space_alerts = models.TextField(null=True, blank=True)
-    building_certification = models.CharField(max_length=255, null=True, blank=True)
+    energy_alerts = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    space_alerts = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    building_certification = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
 
-    # Need to add another field eventually to define the source of the EUI's and other
+    # Need to add another field eventually to define the source of the EUIs and other
     # reported fields. Ideally would have the ability to provide the same field from
     # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
     # site EUI (modeled 8/4/2017).
     #
     # note: `*_orig` are all the unit-unaware original fields in the property
     # state, which have been superseded by unit-aware Quantity fields. The old
-    # ones are left in place via the rename from eg. site_eui -> site_eui_orig
+    # ones are left in place via the rename from e.g. site_eui -> site_eui_orig
     # with their original data intact until we're sure things are OK with the
     # new columns. At that point (probably 2.4 release) these can be safely
     # deleted and removed with a migration.
@@ -967,11 +967,21 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         longitude_change = original_obj.longitude != instance.longitude
         long_lat_change = original_obj.long_lat != instance.long_lat
         lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
-
-        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API,
+        # so the first block below is when a user manually changes the lat/long and the geocoding confidence
+        # needs to be updated to "manually" (or keep as Census Geocoder)
         if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
-            instance.geocoding_confidence = "Manually geocoded (N/A)"
+            # keep Census Geocoder confidence if newly present in the string
+            if instance is not None and instance.geocoding_confidence is not None:
+                if 'Census Geocoder' in instance.geocoding_confidence and 'Census Geocoder' not in original_obj.geocoding_confidence:
+                    instance.geocoding_confidence = instance.geocoding_confidence
+                else:
+                    instance.geocoding_confidence = "Manually geocoded (N/A)"
+            else:
+                # If we are here, then we are manually geocoding the property
+                instance.geocoding_confidence = "Manually geocoded (N/A)"
+
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None
