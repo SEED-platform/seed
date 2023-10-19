@@ -16,7 +16,7 @@ from typing import Any, Union
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce, Replace
+from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
 from past.builtins import basestring
 
@@ -314,7 +314,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
-                              Django field lookup suffix (e.g., `__gt`, `__icontains`, etc)
+                              Django field lookup suffix (e.g., `__gt`, `__icontains`, etc.)
                               https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
                               One custom field lookup suffix is allowed, `__ne`,
                               which negates the expression (i.e., column_name != filter_value)
@@ -347,7 +347,7 @@ def _parse_view_filter(filter_expression: str, filter_value: Union[str, bool], c
     return updated_filter.to_q(new_filter_value), annotations
 
 
-def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> tuple[Union[None, str], AnnotationDict]:
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> tuple[Union[None, str, Collate], AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -366,6 +366,13 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
             return None, {}
         elif column['is_extra_data']:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
+            if column['data_type'] in ['None', 'string']:
+                # Natural sort json text data
+                if not direction:
+                    return Collate(new_field_name, 'natural_sort'), annotations
+                else:
+                    return Collate(new_field_name, 'natural_sort').desc(), annotations
+
             return f'{direction}{new_field_name}', annotations
         else:
             return f'{direction}state__{column_name}', {}
@@ -393,7 +400,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     - `?my_custom_column__lt=1000` - inventory where the extra data field `my_custom_column` < 1000
 
     Sorts are specified with the `order_by` parameter, with any valid Column.column_name
-    as the value. By default the column is sorted in ascending order, columns prefixed
+    as the value. By default, the column is sorted in ascending order, columns prefixed
     with `-` will be sorted in descending order.
 
     Query string examples:
@@ -439,7 +446,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
 
             # if column data_type is "string", also filter on the empty string
             filter = QueryFilter.parse(filter_expression)
-            column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
+            column_data_type = columns_by_name.get(filter.field_name, {}).get('data_type')
             if column_data_type in ['string', 'None']:
                 empty_string_parsed_filters, _ = _parse_view_filter(filter_expression, filter_value, columns_by_name)
 
