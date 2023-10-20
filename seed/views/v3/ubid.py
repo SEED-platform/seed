@@ -103,6 +103,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         """
         body = dict(request.data)
         org_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         ubid_unpopulated = 0
         ubid_successfully_decoded = 0
@@ -112,7 +113,9 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if property_view_ids:
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             property_states = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
 
@@ -131,7 +134,9 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
                 id__in=taxlot_view_ids,
-                cycle__organization_id=org_id
+                cycle__organization_id=org_id,
+                taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+                taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
 

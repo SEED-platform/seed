@@ -914,3 +914,24 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         assert response.status_code == 200 
 
 
+    def test_ubids_decode_results(self):
+        url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
+        post_params = {'property_view_ids': [self.root_property_view.id, self.child_property_view.id, self.child_property_view2.id]}
+
+        # Child cannot decode root
+        self.login_as_child_member()
+        response = self.client.post(url, post_params)
+        assert response.status_code == 200
+        ubid_count = sum(response.json().values())
+        assert ubid_count == 2
+
+        self.login_as_root_member()
+        response = self.client.post(url, post_params)
+        assert response.status_code == 200
+        ubid_count = sum(response.json().values())
+        assert ubid_count == 3
+
+
+
+
+
