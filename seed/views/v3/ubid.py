@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class, has_hierarchy_access
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import DATA_STATE_IMPORT, UbidModel
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
@@ -220,7 +221,22 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         org_id = self.get_organization(request)
-        ubid_models = UbidModel.objects.filter(Q(property__organization_id=org_id) | Q(taxlot__organization_id=org_id))
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
+        # Check permissions for related property and taxlot states
+        accessible_property_states = Q(
+            property__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt
+        ) 
+        accessible_taxlot_states = Q(
+            taxlot__taxlotview__taxlot__access_level_instance__lft__gte=access_level_instance.lft,
+            taxlot__taxlotview__taxlot__access_level_instance__rgt__lte=access_level_instance.rgt
+        )
+
+        ubid_models = UbidModel.objects.filter(
+            Q(property__organization_id=org_id) | Q(taxlot__organization_id=org_id),
+            accessible_property_states | accessible_taxlot_states
+        )
 
         return JsonResponse({
             'status': 'success',

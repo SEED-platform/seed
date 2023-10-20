@@ -359,7 +359,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual('success', data['status'])
         self.assertEqual(3, len(data['data']))
 
-        ubid = data['data'][0]
+        ubid = data['data'][2]
         self.assertEqual('A+A-1-1-1-1', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
         self.assertEqual(self.property_state.id, ubid['property'])
@@ -367,7 +367,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual('B+B-2-2-2-2', ubid['ubid'])
         self.assertEqual(False, ubid['preferred'])
         self.assertEqual(self.property_state.id, ubid['property'])
-        ubid = data['data'][2]
+        ubid = data['data'][0]
         self.assertEqual('C+C-3-3-3-3', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
         self.assertEqual(None, ubid['property'])
@@ -880,6 +880,21 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.put(url, params, content_type='application/json')
         assert response.status_code == 200
 
+    def test_ubids_list(self):
+        url = reverse_lazy('api:v3:ubid-list') + "?organization_id=" + str(self.org.id)
+
+        # child user gets only child ubids
+        self.login_as_child_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert len(response.json()['data']) == 2
+
+        # root users gets all ubids
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert len(response.json()['data']) == 3
+
     def test_ubids_decode_by_ids(self):
         url = reverse('api:v3:ubid-decode-by-ids') + '?organization_id=%s' % self.org.pk
 
@@ -887,7 +902,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         post_params = {'property_view_ids': [self.child_property_view.id, self.child_property_view2.id]}
         response = self.client.post(url, post_params)
         assert response.status_code == 200 
-        
+
         # child user cannot
         post_params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
         response = self.client.post(url, post_params)
