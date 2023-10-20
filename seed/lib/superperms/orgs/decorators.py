@@ -271,7 +271,10 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
 
         elif ubid_id_kwarg and ubid_id_kwarg in kwargs:
             ubid = UbidModel.objects.get(pk=kwargs[ubid_id_kwarg])
-            requests_ali = ubid.property.propertyview_set.first().property.access_level_instance
+            if ubid.property:
+                requests_ali = ubid.property.propertyview_set.first().property.access_level_instance
+            else:
+                requests_ali = ubid.taxlot.taxlotview_set.first().taxlot.access_level_instance
 
         else:
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])

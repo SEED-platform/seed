@@ -320,6 +320,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @has_hierarchy_access(ubid_id_kwarg="pk")
     def update(self, request, pk):
         org_id = self.get_organization(request)
 

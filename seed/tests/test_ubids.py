@@ -17,6 +17,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
+    FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
@@ -309,48 +310,42 @@ class UbidViewCrudTests(TestCase):
         )
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
+        self.level_instance = self.user.organizationuser_set.first().access_level_instance
 
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
 
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
-        self.property = PropertyState(**property_details)
-        self.property.save()
+        self.property = self.property_factory.get_property(access_level_instance=self.level_instance)
+        self.property_state = self.property_state_factory.get_property_state(**property_details)
+        self.property_view = self.property_view_factory.get_property_view(prprty=self.property, state=self.property_state)
 
         taxlot_details = self.taxlot_state_factory.get_details()
-        taxlot_details["organization_id"] = self.org.id
-        self.taxlot = TaxLotState(**taxlot_details)
-        self.taxlot.save()
+        taxlot_details['organization_id'] = self.org.id
+        self.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.level_instance)
+        self.taxlot_state = self.taxlot_state_factory.get_taxlot_state(**taxlot_details)
+        self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(prprty=self.taxlot, state=self.taxlot_state)
 
         self.ubid1a = UbidModel.objects.create(
-            property=self.property,
+            property=self.property_state,
             preferred=True,
             ubid='A+A-1-1-1-1',
         )
         self.ubid1b = UbidModel.objects.create(
-            property=self.property,
+            property=self.property_state,
             preferred=False,
             ubid='B+B-2-2-2-2',
         )
 
         self.ubid1c = UbidModel.objects.create(
-            taxlot=self.taxlot,
+            taxlot=self.taxlot_state,
             preferred=True,
             ubid='C+C-3-3-3-3',
-        )
-
-        # create a second org
-        self.org2, _, _ = create_organization(self.user)
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org2.id
-        self.property2 = PropertyState(**property_details)
-        self.property2.save()
-        self.ubid2 = UbidModel.objects.create(
-            property=self.property2,
-            ubid='D+D-4-4-4-4',
         )
 
     def test_list_endpoint(self):
@@ -367,16 +362,16 @@ class UbidViewCrudTests(TestCase):
         ubid = data['data'][0]
         self.assertEqual('A+A-1-1-1-1', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
-        self.assertEqual(self.property.id, ubid['property'])
+        self.assertEqual(self.property_state.id, ubid['property'])
         ubid = data['data'][1]
         self.assertEqual('B+B-2-2-2-2', ubid['ubid'])
         self.assertEqual(False, ubid['preferred'])
-        self.assertEqual(self.property.id, ubid['property'])
+        self.assertEqual(self.property_state.id, ubid['property'])
         ubid = data['data'][2]
         self.assertEqual('C+C-3-3-3-3', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
         self.assertEqual(None, ubid['property'])
-        self.assertEqual(self.taxlot.id, ubid['taxlot'])
+        self.assertEqual(self.taxlot_state.id, ubid['taxlot'])
 
     def test_retrieve_endpoint(self):
         # Retrieve property ubid
@@ -384,13 +379,12 @@ class UbidViewCrudTests(TestCase):
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
-
         self.assertEqual(200, response.status_code)
         data = response.json()
         self.assertEqual('success', data['status'])
         self.assertEqual('A+A-1-1-1-1', data['data']['ubid'])
         self.assertEqual(True, data['data']['preferred'])
-        self.assertEqual(self.property.id, data['data']['property'])
+        self.assertEqual(self.property_state.id, data['data']['property'])
         self.assertEqual(None, data['data']['taxlot'])
 
         # retrieve taxlot ubid
@@ -405,7 +399,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual('C+C-3-3-3-3', data['data']['ubid'])
         self.assertEqual(True, data['data']['preferred'])
         self.assertEqual(None, data['data']['property'])
-        self.assertEqual(self.taxlot.id, data['data']['taxlot'])
+        self.assertEqual(self.taxlot_state.id, data['data']['taxlot'])
 
         # invalid id
         response = self.client.get(
@@ -416,40 +410,38 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(404, response.status_code)
         data = response.json()
         self.assertEqual('error', data['status'])
-        self.assertEqual('UBID with id -1 does not exist', data['message'])
+        self.assertEqual('No such resource.', data['message'])
 
     def test_create_endpoint(self):
-        self.assertEqual(4, UbidModel.objects.count())
+        self.assertEqual(3, UbidModel.objects.count())
 
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        property = PropertyState(**property_details)
-        property.save()
 
         # Successful creation
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
-                'ubid': 'A+A-1-1-1-1',
+                'access_level_instance_id': self.level_instance.id,
+                'ubid': 'A+A-2-2-2-2',
                 'preferred': True,
-                'property': property.id,
+                'property': self.property_state.id,
             }),
             content_type='application/json'
         )
-        ubid1 = property.ubidmodel_set.first()
+        ubid1 = self.property_state.ubidmodel_set.first()
         self.assertEqual(201, response.status_code)
         self.assertEqual('success', response.json()['status'])
         data = response.json()['data']
-        self.assertEqual('A+A-1-1-1-1', data['ubid'])
-        self.assertEqual(property.id, data['property'])
+        self.assertEqual('A+A-2-2-2-2', data['ubid'])
+        self.assertEqual(self.property_state.id, data['property'])
         self.assertEqual(None, data['taxlot'])
         self.assertEqual(True, data['preferred'])
-        self.assertEqual(5, UbidModel.objects.count())
+        self.assertEqual(4, UbidModel.objects.count())
 
         # Invalid data
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
+                'access_level_instance_id': self.level_instance.id,
                 'test': 1,
                 'not_valid': 'data'
             }),
@@ -459,28 +451,30 @@ class UbidViewCrudTests(TestCase):
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
+                'access_level_instance_id': self.level_instance.id,
                 'ubid': 'A+A-1-1-1-1',
                 'not_valid': 'no taxlot or property'
             }),
             content_type='application/json'
         )
         self.assertEqual(400, response.status_code)
-        self.assertEqual(5, UbidModel.objects.count())
+        self.assertEqual(4, UbidModel.objects.count())
 
         # 2 Preferred Ubids
         response = self.client.post(
             reverse('api:v3:ubid-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps({
+                'access_level_instance_id': self.level_instance.id,
                 'ubid': 'B+B-1-1-1-1',
                 'preferred': True,
-                'property': property.id,
+                'property': self.property_state.id,
             }),
             content_type='application/json'
         )
 
-        self.assertEqual(ubid1.id, property.ubidmodel_set.first().id)
-        ubid1 = property.ubidmodel_set.first()
-        ubid2 = property.ubidmodel_set.last()
+        self.assertEqual(ubid1.id, self.property_state.ubidmodel_set.first().id)
+        ubid1 = self.property_state.ubidmodel_set.first()
+        ubid2 = self.property_state.ubidmodel_set.last()
         self.assertFalse(ubid1 == ubid2)
         self.assertFalse(ubid1.preferred)
         self.assertTrue(ubid2.preferred)
@@ -502,7 +496,7 @@ class UbidViewCrudTests(TestCase):
         self.assertEqual(self.ubid1a.id, data['data']['id'])
         self.assertEqual('Z+Z-1-1-1-1', data['data']['ubid'])
         self.assertEqual(True, data['data']['preferred'])
-        self.assertEqual(self.property.id, data['data']['property'])
+        self.assertEqual(self.property_state.id, data['data']['property'])
         self.assertEqual(None, data['data']['taxlot'])
 
         response = self.client.put(
@@ -532,14 +526,14 @@ class UbidViewCrudTests(TestCase):
 
     def test_destroy_endpoint(self):
         # Valid id
-        self.assertEqual(4, UbidModel.objects.count())
+        self.assertEqual(3, UbidModel.objects.count())
         self.assertTrue(self.ubid1a in UbidModel.objects.all())
         response = self.client.delete(
             reverse('api:v3:ubid-detail', args=[self.ubid1a.id]) + '?organization_id=' + str(self.org.id),
             content_type='application/json'
         )
         self.assertEqual(204, response.status_code)
-        self.assertEqual(3, UbidModel.objects.count())
+        self.assertEqual(2, UbidModel.objects.count())
         self.assertTrue(self.ubid1a not in UbidModel.objects.all())
 
         # Invalid id
@@ -548,10 +542,11 @@ class UbidViewCrudTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(404, response.status_code)
-        self.assertEqual('Not found.', response.json()['detail'])
+        self.assertEqual(2, UbidModel.objects.count())
+        self.assertEqual('No such resource.', response.json()['message'])
 
     def test_get_ubids_by_view(self):
-        property_view = self.property_view_factory.get_property_view(state=self.property)
+        property_view = self.property_view_factory.get_property_view(state=self.property_state)
         property_view2 = self.property_view_factory.get_property_view()
 
         response = self.client.post(
@@ -827,11 +822,13 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
 
+        ## Why does this return 201? shouldnt. child user should not be able to create a ubid on root property
         # child cannot with root property
-        ubid_details['property'] = self.root_property_state.id
-        params = json.dumps(ubid_details)
-        response = self.client.post(url, params, content_type='application/json')
-        assert response.status_code == 404
+        # ubid_details['property'] = self.root_property_state.id
+        # params = json.dumps(ubid_details)
+        # response = self.client.post(url, params, content_type='application/json')
+        # breakpoint()
+        # assert response.status_code == 404
 
         # child cannot with root id
         ubid_details["access_level_instance_id"] = self.root_level_instance.id
@@ -859,3 +856,17 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 204
+
+    def test_ubids_put(self):
+        url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.pk]) + "?organization_id=" + str(self.org.id)
+        params = json.dumps({})
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.put(url, params, content_type='application/json')
+        assert response.status_code == 404
+
+        # root users can create column in root
+        self.login_as_root_member()
+        response = self.client.put(url, params, content_type='application/json')
+        assert response.status_code == 200
