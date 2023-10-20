@@ -770,7 +770,7 @@ class UbidSqlTests(TestCase):
 
 
 # class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
-class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
     def setUp(self):
         super().setUp()
@@ -778,6 +778,7 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
+        # Root properties
         empty_details = {"address_line_1": None, "state": None, "postal_code": None, "city": None}
         self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
         self.root_property_state = self.property_state_factory.get_property_state(**empty_details)
@@ -787,12 +788,20 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
             property=self.root_property_state
         )
 
+        # Child properties
         self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
         self.child_property_state = self.property_state_factory.get_property_state(**empty_details)
         self.child_property_view = self.property_view_factory.get_property_view(prprty=self.child_property, state=self.child_property_state)
         self.child_ubid = UbidModel.objects.create(
             ubid="B+B-1-1-1-1",
             property=self.child_property_state
+        )
+        self.child_property2 = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.child_property_state2 = self.property_state_factory.get_property_state(**empty_details)
+        self.child_property_view2 = self.property_view_factory.get_property_view(prprty=self.child_property2, state=self.child_property_state2)
+        self.child_ubid = UbidModel.objects.create(
+            ubid="Z+Z-1-1-1-1",
+            property=self.child_property_state2
         )
 
     def test_ubids_get(self):
@@ -870,3 +879,23 @@ class ubidx(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         response = self.client.put(url, params, content_type='application/json')
         assert response.status_code == 200
+
+    def test_ubids_decode_by_ids(self):
+        url = reverse('api:v3:ubid-decode-by-ids') + '?organization_id=%s' % self.org.pk
+
+        self.login_as_child_member()
+        post_params = {'property_view_ids': [self.child_property_view.id, self.child_property_view2.id]}
+        response = self.client.post(url, post_params)
+        assert response.status_code == 200 
+        
+        # child user cannot
+        post_params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
+        response = self.client.post(url, post_params)
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        post_params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
+        response = self.client.post(url, post_params)
+        assert response.status_code == 200 
+
+
