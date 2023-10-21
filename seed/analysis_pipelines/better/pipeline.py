@@ -381,21 +381,26 @@ def _process_results(self, analysis_id):
     progress_data.step('Processing results')
 
     # store all measure recommendations
+    #
+    # Updated measure list 10/21/2023. There were several added and 4 removed/renamed which include removal of:
+    #   'Check Fossil Baseload', 'Decrease Ventilation', 'Eliminate Electric Heating', 'Upgrade Windows',
+    # The data will still exist in the database for historic reason, but new runs will not include those.
     ee_measure_names = [
-        'Upgrade Windows',
-        'Reduce Plug Loads',
         'Add/Fix Economizers',
-        'Decrease Ventilation',
-        'Reduce Lighting Load',
-        'Check Fossil Baseload',
+        'Add Wall/Ceiling/Roof Insulation',
         'Decrease Infiltration',
         'Decrease Heating Setpoints',
-        'Eliminate Electric Heating',
+        'Ensure Adequate Ventilation Rate',
         'Increase Cooling Setpoints',
-        'Reduce Equipment Schedules',
-        'Add Wall/Ceiling Insulation',
         'Increase Cooling System Efficiency',
-        'Increase Heating System Efficiency'
+        'Increase Heating System Efficiency',
+        'Reduce Equipment Schedules',
+        'Reduce Lighting Load',
+        'Reduce Plug Loads',
+        'Use High Efficiency Heat Pump for Heating',
+        'Upgrade Windows to Improve Thermal Efficiency',
+        'Upgrade Windows to Reduce Solar Heat Gain',
+        'Upgrade to Sustainable Resources for Water Heating',
     ]
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
