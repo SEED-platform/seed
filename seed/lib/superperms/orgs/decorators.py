@@ -25,6 +25,7 @@ from seed.lib.superperms.orgs.models import (
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import Analysis, Property, PropertyView, TaxLotView, UbidModel
+
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
 
@@ -315,7 +316,6 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             'status': 'error',
             'message': 'No such resource.'
         }, status=status.HTTP_404_NOT_FOUND)
-
 
 
 def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, ubid_id_kwarg=None):

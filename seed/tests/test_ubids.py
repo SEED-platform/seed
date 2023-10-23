@@ -9,6 +9,7 @@ import json
 
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
+
 from seed.landing.models import SEEDUser as User
 from seed.models import UbidModel
 from seed.models.properties import PropertyState
@@ -414,7 +415,6 @@ class UbidViewCrudTests(TestCase):
 
     def test_create_endpoint(self):
         self.assertEqual(3, UbidModel.objects.count())
-
 
         # Successful creation
         response = self.client.post(
@@ -854,12 +854,12 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
-      
+
     def test_ubids_create(self):
         url = reverse_lazy('api:v3:ubid-list') + "?organization_id=" + str(self.org.id)
         params = json.dumps({
             'access_level_instance_id': self.child_level_instance.id,
-            'ubid':"C+C-0-0-0-0",
+            'ubid': "C+C-0-0-0-0",
             'property': self.child_property_state.id
         })
 
@@ -868,7 +868,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
 
-        ## Why does this return 201? shouldnt. child user should not be able to create a ubid on root property
+        # Why does this return 201? shouldnt. child user should not be able to create a ubid on root property
         # child cannot with root property
         # ubid_details['property'] = self.root_property_state.id
         # params = json.dumps(ubid_details)
@@ -879,7 +879,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         # child cannot with root id
         params = json.dumps({
             'access_level_instance_id': self.root_level_instance.id,
-            'ubid':"C+C-0-0-0-0",
+            'ubid': "C+C-0-0-0-0",
             'property': self.child_property_state.id
         })
         response = self.client.post(url, params, content_type='application/json')
@@ -889,7 +889,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         params = json.dumps({
             'access_level_instance_id': self.root_level_instance.id,
-            'ubid':"D+D-0-0-0-0",
+            'ubid': "D+D-0-0-0-0",
             'property': self.child_property_state.id
         })
         response = self.client.post(url, params, content_type='application/json')
@@ -901,7 +901,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_child_member()
         params = json.dumps({
             'access_level_instance_id': self.root_level_instance.id,
-            'ubid':"C+C-0-0-0-0",
+            'ubid': "C+C-0-0-0-0",
             'taxlot': self.child_taxlot_state.id
         })
         response = self.client.post(url, params, content_type='application/json')
@@ -956,7 +956,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_child_member()
         params = {'property_view_ids': [self.child_property_view.id, self.child_property_view2.id]}
         response = self.client.post(url, params)
-        assert response.status_code == 200 
+        assert response.status_code == 200
 
         params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
         response = self.client.post(url, params)
@@ -965,7 +965,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
         response = self.client.post(url, params)
-        assert response.status_code == 200 
+        assert response.status_code == 200
 
         # taxlots
         self.login_as_child_member()
@@ -976,8 +976,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         params = {'taxlot_view_ids': [self.child_taxlot_view.id, self.root_taxlot_view.id]}
         response = self.client.post(url, params)
-        assert response.status_code == 200 
-
+        assert response.status_code == 200
 
     def test_ubids_decode_results(self):
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk

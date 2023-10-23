@@ -13,7 +13,10 @@ from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class, has_hierarchy_access
+from seed.lib.superperms.orgs.decorators import (
+    has_hierarchy_access,
+    has_perm_class
+)
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import DATA_STATE_IMPORT, UbidModel
 from seed.models.properties import PropertyState, PropertyView
@@ -26,6 +29,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 from seed.utils.viewsets import ModelViewSetWithoutPatch
+
 
 @method_decorator(
     name='destroy',
@@ -232,7 +236,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         accessible_property_states = Q(
             property__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
             property__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt
-        ) 
+        )
         accessible_taxlot_states = Q(
             taxlot__taxlotview__taxlot__access_level_instance__lft__gte=access_level_instance.lft,
             taxlot__taxlotview__taxlot__access_level_instance__rgt__lte=access_level_instance.rgt
