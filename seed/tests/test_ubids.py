@@ -836,12 +836,10 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         # properties
         url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.id]) + '?organization_id=' + str(self.org.id)
 
-        # child user cannot
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can get ubid in root
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
@@ -849,12 +847,10 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         # taxlots
         url = reverse_lazy('api:v3:ubid-detail', args=[self.root_taxlot_ubid.id]) + '?organization_id=' + str(self.org.id)
 
-        # child user cannot
         self.login_as_child_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can get ubid in root
         self.login_as_root_member()
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
@@ -889,7 +885,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 404
 
-        # # root can
+        # root can
         self.login_as_root_member()
         params = json.dumps({
             'access_level_instance_id': self.root_level_instance.id,
@@ -899,7 +895,7 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
 
-        # # Taxlots
+        # Taxlots
         url = reverse_lazy('api:v3:ubid-list') + "?organization_id=" + str(self.org.id)
 
         self.login_as_child_member()
@@ -916,13 +912,12 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         assert response.status_code == 201
 
     def test_ubids_destroy(self):
-        # child user cannot
         url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.pk]) + "?organization_id=" + str(self.org.id)
+
         self.login_as_child_member()
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
         url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.pk]) + "?organization_id=" + str(self.org.id)
         self.login_as_root_member()
         response = self.client.delete(url, content_type='application/json')
@@ -932,12 +927,10 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         url = reverse_lazy('api:v3:ubid-detail', args=[self.root_ubid.pk]) + "?organization_id=" + str(self.org.id)
         params = json.dumps({})
 
-        # child user cannot
         self.login_as_child_member()
         response = self.client.put(url, params, content_type='application/json')
         assert response.status_code == 404
 
-        # root users can create column in root
         self.login_as_root_member()
         response = self.client.put(url, params, content_type='application/json')
         assert response.status_code == 200
@@ -965,7 +958,6 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.post(url, params)
         assert response.status_code == 200 
 
-        # child user cannot
         params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
         response = self.client.post(url, params)
         assert response.status_code == 404
@@ -989,9 +981,9 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
     def test_ubids_decode_results(self):
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
+        # properties
         params = {'property_view_ids': [self.root_property_view.id, self.child_property_view.id, self.child_property_view2.id]}
 
-        # Child cannot decode root
         self.login_as_child_member()
         response = self.client.post(url, params)
         assert response.status_code == 200
@@ -1007,7 +999,6 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         # taxlots
         params = {'taxlot_view_ids': [self.root_taxlot_view.id, self.child_taxlot_view.id, self.child_taxlot_view2.id]}
 
-        # Child cannot decode root
         self.login_as_child_member()
         response = self.client.post(url, params)
         assert response.status_code == 200
