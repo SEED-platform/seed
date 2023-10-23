@@ -50,7 +50,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(body_property_view_ids='property_view_ids')
+    @has_hierarchy_access()
     @action(detail=False, methods=['POST'])
     def decode_by_ids(self, request):
         """
@@ -397,6 +397,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_view_data')
+    @has_hierarchy_access()
     @action(detail=False, methods=['POST'])
     def ubids_by_view(self, request):
         body = dict(request.data)
