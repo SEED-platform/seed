@@ -83,7 +83,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @has_hierarchy_access(body_import_record_id="import_record")
+    @has_hierarchy_access(param_import_record_id="import_record")
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.

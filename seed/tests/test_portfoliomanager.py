@@ -452,18 +452,16 @@ class UploadViewSetPermission(AccessLevelBaseTestCase):
         with open(filename, 'rb') as f:
 
             url = reverse_lazy('api:v3:upload-list')
-            params = {
-                "file": f,
-                "organization_id": self.org.id,
-                "import_record": self.import_record.pk
-            }
+            url += "?organization_id=" + str(self.org.id)
+            url += "&import_record=" + str(self.import_record.id)
+            params = {"file": f}
 
             self.login_as_child_member()
-            response = self.client.post(url, params)
+            response = self.client.post(url, data=params)
             assert response.status_code == 404
 
             self.login_as_root_member()
-            response = self.client.post(url, params)
+            response = self.client.post(url, data=params)
             assert response.status_code == 200
 
     def test_create_from_pm_import(self):
