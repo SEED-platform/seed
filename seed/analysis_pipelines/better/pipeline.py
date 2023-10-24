@@ -388,8 +388,8 @@ def _process_results(self, analysis_id):
     ee_measure_names = [
         'Add/Fix Economizers',
         'Add Wall/Ceiling/Roof Insulation',
-        'Decrease Infiltration',
         'Decrease Heating Setpoints',
+        'Decrease Infiltration',
         'Ensure Adequate Ventilation Rate',
         'Increase Cooling Setpoints',
         'Increase Cooling System Efficiency',
@@ -397,10 +397,10 @@ def _process_results(self, analysis_id):
         'Reduce Equipment Schedules',
         'Reduce Lighting Load',
         'Reduce Plug Loads',
-        'Use High Efficiency Heat Pump for Heating',
         'Upgrade Windows to Improve Thermal Efficiency',
         'Upgrade Windows to Reduce Solar Heat Gain',
         'Upgrade to Sustainable Resources for Water Heating',
+        'Use High Efficiency Heat Pump for Heating',
     ]
     ee_measure_column_data_paths = [
         ExtraDataColumnPath(
