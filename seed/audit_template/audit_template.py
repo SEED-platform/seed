@@ -79,15 +79,16 @@ class AuditTemplate(object):
         if not org.at_organization_token or not org.audit_template_user or not org.audit_template_password:
             return None, 'An Audit Template organization token, user email and password are required!'
         url = f'{self.API_URL}/users/authenticate'
-        json = {
-            'organization_token': org.at_organization_token,
-            'email': org.audit_template_user,
-            'password': org.audit_template_password
+        # Send data as form-data to handle special characters like '%'
+        form_data = {
+            'organization_token': (None, org.at_organization_token),
+            'email': (None, org.audit_template_user),
+            'password': (None, org.audit_template_password),
         }
-        headers = {"Content-Type": "application/json; charset=utf-8", 'accept': 'application/xml'}
+        headers = {'Accept': 'application/xml'}
 
         try:
-            response = requests.request("POST", url, headers=headers, json=json)
+            response = requests.request("POST", url, headers=headers, files=form_data)
             if response.status_code != 200:
                 return None, f'Expected 200 response from Audit Template get_api_token but got {response.status_code}: {response.content}'
         except Exception as e:
