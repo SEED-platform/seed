@@ -769,8 +769,7 @@ class UbidSqlTests(TestCase):
         self.assertEqual(1.0, float(jaccard))
 
 
-# class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
-class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
+class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
 
     def setUp(self):
         super().setUp()
@@ -867,14 +866,6 @@ class x(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_child_member()
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 201
-
-        # Why does this return 201? shouldnt. child user should not be able to create a ubid on root property
-        # child cannot with root property
-        # ubid_details['property'] = self.root_property_state.id
-        # params = json.dumps(ubid_details)
-        # response = self.client.post(url, params, content_type='application/json')
-        # breakpoint()
-        # assert response.status_code == 404
 
         # child cannot with root id
         params = json.dumps({
