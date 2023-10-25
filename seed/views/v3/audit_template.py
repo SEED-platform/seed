@@ -189,12 +189,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         property_view_ids = request.data.get('property_view_ids', [])
         at = AuditTemplate(self.get_organization(request))
 
-        progress_data = at.batch_export_to_audit_template(property_view_ids)
-
+        progress_data, message = at.batch_export_to_audit_template(property_view_ids)
         if progress_data is None:
             return JsonResponse({
                 'success': False,
-                'message': 'Unexpected Error'
+                'message': message or 'Unexpected Error'
             }, status=400)
-
         return JsonResponse(progress_data)
