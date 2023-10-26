@@ -1100,7 +1100,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             assert resp.status_code == 404
 
     def test_property_analyses(self):
-        url = reverse('api:v3:properties-analyses', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        url = reverse('api:v3:properties-analyses', args=[self.property.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()
