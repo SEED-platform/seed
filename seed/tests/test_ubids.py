@@ -359,16 +359,17 @@ class UbidViewCrudTests(TestCase):
         data = response.json()
         self.assertEqual('success', data['status'])
         self.assertEqual(3, len(data['data']))
+        data = sorted(data['data'], key=lambda ubid: ubid['id'])
 
-        ubid = data['data'][2]
+        ubid = data[0]
         self.assertEqual('A+A-1-1-1-1', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
         self.assertEqual(self.property_state.id, ubid['property'])
-        ubid = data['data'][1]
+        ubid = data[1]
         self.assertEqual('B+B-2-2-2-2', ubid['ubid'])
         self.assertEqual(False, ubid['preferred'])
         self.assertEqual(self.property_state.id, ubid['property'])
-        ubid = data['data'][0]
+        ubid = data[2]
         self.assertEqual('C+C-3-3-3-3', ubid['ubid'])
         self.assertEqual(True, ubid['preferred'])
         self.assertEqual(None, ubid['property'])
