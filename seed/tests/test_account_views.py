@@ -101,6 +101,7 @@ class AccountsViewTests(TestCase):
             'salesforce_enabled': False,
             'ubid_threshold': 1.0,
             'inventory_count': 0,
+            "access_level_names": [self.org.name]
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
