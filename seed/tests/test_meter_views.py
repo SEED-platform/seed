@@ -342,6 +342,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         """Test edge case to make sure that data for two different meters don't overwrite each other"""
         property_view = self.property_view_factory.get_property_view()
         url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        url_meters += "?organization_id=" + str(self.org.id)
 
         payload = {
             'type': 'Electric',
@@ -398,6 +399,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         """Test edge case to make sure that data for two different meters don't overwrite each other"""
         property_view = self.property_view_factory.get_property_view()
         url_meters = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        url_meters += "?organization_id=" + str(self.org.id)
 
         payload = {
             'type': 'Electric',
