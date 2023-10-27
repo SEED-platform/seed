@@ -1043,41 +1043,6 @@ class Column(models.Model):
         Returns:
             dict with lists of columns to which is mappable.
         """
-
-        def select_col_obj(column_name, table_name, organization_column):
-            if organization_column:
-                return [organization_column]
-            else:
-                # Try for "global" column definitions, e.g., BEDES. - Note the BEDES are not
-                # loaded into the database as of 9/8/2016 so not sure if this code is ever
-                # exercised
-                obj = Column.objects.filter(organization=None, column_name=column_name).first()
-
-                if obj:
-                    # create organization mapped column
-                    obj.pk = None
-                    obj.id = None
-                    obj.organization = organization
-                    obj.save()
-
-                    return [obj]
-                else:
-                    if table_name:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            table_name=table_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-                    else:
-                        obj, _ = Column.objects.get_or_create(
-                            organization=organization,
-                            column_name=column_name,
-                            is_extra_data=is_extra_data,
-                        )
-                        return [obj]
-
         # Container to store the dicts with the Column object
         new_data = []
 
@@ -1092,66 +1057,25 @@ class Column(models.Model):
                     is_extra_data = False
                     break
 
-            try:
-                to_org_col, _ = Column.objects.get_or_create(
-                    organization=organization,
-                    column_name=field['to_field'],
-                    table_name=field['to_table_name'],
-                    is_extra_data=is_extra_data
-                )
-            except Column.MultipleObjectsReturned:
-                _log.debug("More than one to_column found for {}.{}".format(field['to_table_name'],
-                                                                            field['to_field']))
-                # raise Exception("Cannot handle more than one to_column returned for {}.{}".format(
-                #     field['to_field'], field['to_table_name']))
+            to_org_col, _ = Column.objects.get_or_create(
+                organization=organization,
+                column_name=field['to_field'],
+                table_name=field['to_table_name'],
+                is_extra_data=is_extra_data
+            )
 
-                # TODO: write something to remove the duplicate columns
-                to_org_col = Column.objects.filter(organization=organization,
-                                                   column_name=field['to_field'],
-                                                   table_name=field['to_table_name'],
-                                                   is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first to_column")
+            # the from column is the field in the import file, thus the table_name needs to be
+            # blank. Eventually need to handle passing in import_file_id
+            from_org_col, _ = Column.objects.update_or_create(
+                organization=organization,
+                table_name='',
+                column_name=field['from_field'],
+                is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
+                defaults={'units_pint': field.get('from_units', None)}
+            )
 
-            try:
-                # the from column is the field in the import file, thus the table_name needs to be
-                # blank. Eventually need to handle passing in import_file_id
-                from_org_col, _ = Column.objects.update_or_create(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
-                    defaults={'units_pint': field.get('from_units', None)}
-                )
-            except Column.MultipleObjectsReturned:
-                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
-                # To do that, delete all multiples along with any associated ColumnMapping objects.
-                _log.debug(
-                    "More than one from_column found for {}.{}".format(field['to_table_name'],
-                                                                       field['to_field']))
-
-                all_from_cols = Column.objects.filter(
-                    organization=organization,
-                    table_name='',
-                    column_name=field['from_field'],
-                    is_extra_data=False
-                )
-
-                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
-                all_from_cols.delete()
-
-                from_org_col = Column.objects.create(
-                    organization=organization,
-                    table_name='',
-                    units_pint=field.get('from_units', None),
-                    column_name=field['from_field'],
-                    column_description=field['from_field'],
-                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
-                )
-                _log.debug("Creating a new from_column")
-
-            new_field['to_column_object'] = select_col_obj(field['to_field'],
-                                                           field['to_table_name'], to_org_col)
-            new_field['from_column_object'] = select_col_obj(field['from_field'], "", from_org_col)
+            new_field['to_column_object'] = [to_org_col]
+            new_field['from_column_object'] = [from_org_col]
             new_data.append(new_field)
 
         return new_data
