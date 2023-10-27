@@ -153,10 +153,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             access_level_instance__rgt__lte=access_level_instance.rgt,
         ).order_by('-id')
 
-        analyses_queryset = (
-            Analysis.objects.filter(organization=organization_id)
-            .order_by('-id')
-        )
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info())
