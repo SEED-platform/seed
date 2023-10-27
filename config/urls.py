@@ -19,7 +19,7 @@ from seed.landing.views import (
     password_reset_confirm,
     password_reset_done
 )
-from seed.views.main import angular_js_tests, version
+from seed.views.main import angular_js_tests, health_check, version
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -63,6 +63,7 @@ urlpatterns = [
     re_path(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
+    re_path(r'^api/health_check/$', health_check, name='health_check'),
     re_path(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^api/version/$', version, name='version'),
     re_path(r'^api/', include((api, "seed"), namespace='api')),
