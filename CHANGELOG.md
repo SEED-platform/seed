@@ -1,3 +1,32 @@
+# SEED Version 2.20.1
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Feature to enable Redis for ElastiCache by @dhaley in https://github.com/SEED-platform/seed/pull/4288
+* Health check endpoint by @axelstudios in https://github.com/SEED-platform/seed/pull/4371
+### Improvements 📈
+* Update dependencies and fonts by @axelstudios in https://github.com/SEED-platform/seed/pull/3941
+* Update Redis config to support encryption in transit with AWS ElastiCache  by @dhaley in https://github.com/SEED-platform/seed/pull/4258
+* Decrease BETTER polling rate 5x, increase timeout 5x by @axelstudios in https://github.com/SEED-platform/seed/pull/4280
+* Increase ESPM max timeout by @anchapin in https://github.com/SEED-platform/seed/pull/4296
+* Update list of BETTER's measures returned by @nllong in https://github.com/SEED-platform/seed/pull/4300
+### Maintenance 🧹
+* Code Cleanup by @axelstudios in https://github.com/SEED-platform/seed/pull/3539
+### Bug Fixes 🐛
+* Fix mapping of BETTER's measures with empty strings to false by @nllong in https://github.com/SEED-platform/seed/pull/4276
+* Enable natural sorting of Inventory List columns by @axelstudios in https://github.com/SEED-platform/seed/pull/4281
+* Handle ambiguous timestamps by @axelstudios in https://github.com/SEED-platform/seed/pull/4287
+* Fix cycle deletion modal by @axelstudios in https://github.com/SEED-platform/seed/pull/4291
+* Handle nonexistent timestamps by @axelstudios in https://github.com/SEED-platform/seed/pull/4294
+* Add failing logic to AT export if AT credentials are invalid by @perryr16 in https://github.com/SEED-platform/seed/pull/4282
+* Add analysis description translations by @kflemin in https://github.com/SEED-platform/seed/pull/4304
+* Fix showing derived column values on the inventory list page by @axelstudios in https://github.com/SEED-platform/seed/pull/4364
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.20.0...v2.20.1
+
 # SEED Version 2.20.0
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->
@@ -64,8 +93,6 @@
 * Include x and y in property insights tables by @haneslinger in https://github.com/SEED-platform/seed/pull/4075
 * Add percentages to program overview by @haneslinger in https://github.com/SEED-platform/seed/pull/4077
 * Add matching criteria to report export by @haneslinger in https://github.com/SEED-platform/seed/pull/4072
-* Default to excluding Address Line 1 as a matching criteria by @axelstudios in https://github.com/SEED-platform/seed/pull/4256
-* Refactor map page for functionality and performance by @axelstudios in https://github.com/SEED-platform/seed/pull/4260
 ### Maintenance 🧹
 * Bump django from 3.2.18 to 3.2.19 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4034
 * Improve inventory load times by @ebeers-png in https://github.com/SEED-platform/seed/pull/3990
