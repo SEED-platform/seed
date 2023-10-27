@@ -11,8 +11,11 @@
         </ul>
     <!-- </div> -->
     </div>
-    <div class="row text-center add-btn">
-        <button  type="button" class="btn btn-primary col-sm-4 col-sm-offset-8" ng-click="add_level()">
+    <div class="row text-center" style="display: flex; justify-content: end; gap: 10px">
+        <button  type="button" class="btn btn-primary" ng-click="remove_level()">
+            <i class="fa fa-minus-circle"></i> {$:: 'Remove Access Level' | translate $}
+        </button>
+        <button  type="button" class="btn btn-primary" ng-click="add_level()">
             <i class="fa fa-plus-circle"></i> {$:: 'Add Access Level' | translate $}
         </button>
     </div>

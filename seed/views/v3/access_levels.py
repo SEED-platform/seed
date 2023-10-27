@@ -16,11 +16,17 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
+from seed.data_importer.models import ImportRecord
 from seed.data_importer.tasks import \
     save_raw_access_level_instances_data as task_save_raw
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.lib.superperms.orgs.models import (
+    AccessLevelInstance,
+    Organization,
+    OrganizationUser
+)
+from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.views.v3.uploads import get_upload_path
@@ -349,3 +355,132 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.name = name
         instance.save()
         return JsonResponse({'status': 'success'})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['GET'])
+    def can_delete_instance(self, request, organization_pk=None, pk=None):
+        # get org
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        # get instance
+        try:
+            instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        reasons_not_to_delete = []
+
+        # Related ImportRecords
+        related_import_record_count = ImportRecord.objects.filter(
+            super_organization=org,
+            access_level_instance__lft__gte=instance.lft,
+            access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_import_record_count > 0:
+            reasons_not_to_delete.append(f"Has {related_import_record_count} related ImportRecords")
+
+        # Related OrganizationUsers
+        related_organization_user_count = OrganizationUser.objects.filter(
+            organization=org,
+            access_level_instance__lft__gte=instance.lft,
+            access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_organization_user_count > 0:
+            reasons_not_to_delete.append(f"Has {related_organization_user_count} related OrganizationUsers")
+
+        # Related Analyses
+        related_analysis_count = Analysis.objects.filter(
+            organization=org,
+            access_level_instance__lft__gte=instance.lft,
+            access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_analysis_count > 0:
+            reasons_not_to_delete.append(f"Has {related_analysis_count} related Analysis")
+
+        # Related Properties
+        related_property_count = Property.objects.filter(
+            organization=org,
+            access_level_instance__lft__gte=instance.lft,
+            access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_property_count > 0:
+            reasons_not_to_delete.append(f"Has {related_property_count} related properties")
+
+        # Related PropertyStates
+        related_property_state_count = PropertyState.objects.filter(
+            organization=org,
+            raw_access_level_instance__lft__gte=instance.lft,
+            raw_access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_property_state_count > 0:
+            reasons_not_to_delete.append(f"Has {related_property_state_count} related Property States")
+
+        # Related Taxlots
+        related_taxlot_count = TaxLot.objects.filter(
+            organization=org,
+            access_level_instance__lft__gte=instance.lft,
+            access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_taxlot_count > 0:
+            reasons_not_to_delete.append(f"Has {related_taxlot_count} related Taxlot")
+
+        # Related TaxlotStates
+        related_taxlot_state_count = TaxLotState.objects.filter(
+            organization=org,
+            raw_access_level_instance__lft__gte=instance.lft,
+            raw_access_level_instance__rgt__lte=instance.rgt,
+        ).count()
+        if related_taxlot_state_count > 0:
+            reasons_not_to_delete.append(f"Has {related_taxlot_state_count} related TaxlotState")
+
+        if len(reasons_not_to_delete) == 0:
+            return JsonResponse({
+                'can_delete': True,
+            }, status=status.HTTP_200_OK
+            )
+
+        else:
+            return JsonResponse({
+                'can_delete': False,
+                "reasons": reasons_not_to_delete,
+            }, status=status.HTTP_200_OK
+            )
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['DElETE'])
+    def delete_instance(self, request, organization_pk=None, pk=None):
+        # get org
+        try:
+            org = Organization.objects.get(pk=organization_pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        # get instance
+        try:
+            instance = AccessLevelInstance.objects.filter(organization=org.pk).get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve Access Level Instances at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+        # get instance
+        if instance == org.root:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Cannot delete root.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+        instance.delete()
+
+        return JsonResponse({'status': 'success'}, status=status.HTTP_204_NO_CONTENT)

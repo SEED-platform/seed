@@ -75,6 +75,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.filter_group_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
+  'BE.seed.controller.organization_delete_access_level_instance_modal',
   'BE.seed.controller.insights_program',
   'BE.seed.controller.insights_property',
   'BE.seed.controller.inventory_cycles',

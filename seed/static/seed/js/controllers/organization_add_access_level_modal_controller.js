@@ -35,11 +35,15 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
           });
       };
 
-      $scope.add_level = function () {
-        $scope.new_access_level_names.push('');
+      $scope.remove_level = () => {
+        $scope.new_access_level_names.pop();
       };
 
-      $scope.cancel = function () {
+      $scope.add_level = () => {
+        $scope.new_access_level_names.push("");
+      };
+
+      $scope.cancel = () => {
         $uibModalInstance.dismiss('cancel');
       };
     }]);
