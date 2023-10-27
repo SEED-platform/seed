@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       };
 
       $scope.open_upload_al_instances_modal = function () {
-        const step = 17; // this is the step that corresponds to uploading access levels
+        const step = 20; // this is the step that corresponds to uploading access levels
         $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/data_upload_modal.html`,
           controller: 'data_upload_modal_controller',
