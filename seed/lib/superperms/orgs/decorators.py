@@ -225,7 +225,7 @@ def has_perm_class(perm_name: str, requires_org: bool = True):
     return decorator
 
 
-def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, *args, **kwargs):
+def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, body_import_record_id=None, param_import_record_id=None, *args, **kwargs):
     """Helper function to has_hierarchy_access"""
     body = request.data
     params = request.GET
@@ -266,6 +266,14 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             import_file = ImportFile.objects.get(pk=body[body_import_file_id])
             requests_ali = import_file.access_level_instance
 
+        elif body_import_record_id and body_import_record_id in body:
+            import_record = ImportRecord.objects.get(pk=body[body_import_record_id])
+            requests_ali = import_record.access_level_instance
+
+        elif param_import_record_id and param_import_record_id in params:
+            import_record = ImportRecord.objects.get(pk=params[param_import_record_id])
+            requests_ali = import_record.access_level_instance
+
         elif analysis_id_kwarg and analysis_id_kwarg in kwargs:
             analysis = Analysis.objects.get(pk=kwargs[analysis_id_kwarg])
             requests_ali = analysis.access_level_instance
@@ -288,17 +296,17 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
         }, status=status.HTTP_404_NOT_FOUND)
 
 
-def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None):
+def has_hierarchy_access(property_id_kwarg=None, property_view_id_kwarg=None, param_property_view_id=None, taxlot_view_id_kwarg=None, import_file_id_kwarg=None, param_import_file_id=None, import_record_id_kwarg=None, body_ali_id=None, body_import_file_id=None, analysis_id_kwarg=None, body_import_record_id=None, param_import_record_id=None):
     """Must be called after has_perm_class"""
     def decorator(fn):
         if 'self' in signature(fn).parameters:
             @wraps(fn)
             def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(self, request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, body_import_record_id, param_import_record_id, *args, **kwargs) or fn(self, request, *args, **kwargs)
         else:
             @wraps(fn)
             def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, *args, **kwargs) or fn(request, *args, **kwargs)
+                return assert_hierarchy_access(request, property_id_kwarg, property_view_id_kwarg, param_property_view_id, taxlot_view_id_kwarg, import_file_id_kwarg, param_import_file_id, import_record_id_kwarg, body_ali_id, body_import_file_id, analysis_id_kwarg, body_import_record_id, param_import_record_id, *args, **kwargs) or fn(request, *args, **kwargs)
 
         return _wrapped
 
