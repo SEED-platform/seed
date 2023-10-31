@@ -444,5 +444,5 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except ObjectDoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': f"No such resource."
+                'message': "No such resource."
             }, status=status.HTTP_404_NOT_FOUND)
