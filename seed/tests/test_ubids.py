@@ -583,7 +583,7 @@ class UbidViewCrudTests(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual('error', response.json()['status'])
-        self.assertEqual('Bad request.', response.json()['message'])
+        self.assertEqual('view_id and type (property or taxlot) are required', response.json()['message'])
 
         # invalid view id
         response = self.client.post(
@@ -607,9 +607,9 @@ class UbidViewCrudTests(TestCase):
             }),
             content_type='application/json'
         )
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(400, response.status_code)
         self.assertEqual('error', response.json()['status'])
-        self.assertEqual('No such resource.', response.json()['message'])
+        self.assertEqual('view_id and type (property or taxlot) are required', response.json()['message'])
 
         # property state has no ubids
         response = self.client.post(
@@ -941,34 +941,6 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         assert len(response.json()['data']) == 6
-
-    def test_ubids_decode_by_ids(self):
-        url = reverse('api:v3:ubid-decode-by-ids') + '?organization_id=%s' % self.org.pk
-        # properties
-        self.login_as_child_member()
-        params = {'property_view_ids': [self.child_property_view.id, self.child_property_view2.id]}
-        response = self.client.post(url, params)
-        assert response.status_code == 200
-
-        params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
-        response = self.client.post(url, params)
-        assert response.status_code == 404
-
-        self.login_as_root_member()
-        params = {'property_view_ids': [self.child_property_view.id, self.root_property_view.id]}
-        response = self.client.post(url, params)
-        assert response.status_code == 200
-
-        # taxlots
-        self.login_as_child_member()
-        params = {'taxlot_view_ids': [self.child_taxlot_view.id, self.root_taxlot_view.id]}
-        response = self.client.post(url, params)
-        assert response.status_code == 404
-
-        self.login_as_root_member()
-        params = {'taxlot_view_ids': [self.child_taxlot_view.id, self.root_taxlot_view.id]}
-        response = self.client.post(url, params)
-        assert response.status_code == 200
 
     def test_ubids_decode_results(self):
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk

@@ -278,22 +278,6 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             else:
                 requests_ali = ubid.taxlot.taxlotview_set.first().taxlot.access_level_instance
 
-        elif body.get('property_view_ids'):
-            views = PropertyView.objects.filter(id__in=body.getlist('property_view_ids'))
-            requests_ali = min(views, key=lambda view: view.property.access_level_instance.depth).property.access_level_instance
-
-        elif body.get('taxlot_view_ids'):
-            views = TaxLotView.objects.filter(id__in=body.getlist('taxlot_view_ids'))
-            requests_ali = min(views, key=lambda view: view.taxlot.access_level_instance.depth).taxlot.access_level_instance
-
-        elif body.get('view_id') and body.get('type'):
-            if body['type'] == 'property':
-                view = PropertyView.objects.get(pk=body['view_id'])
-                requests_ali = view.property.access_level_instance
-            else:
-                view = TaxLotView.objects.get(pk=body['view_id'])
-                requests_ali = view.taxlot.access_level_instance
-
         else:
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])
             requests_ali = property_view.property.access_level_instance
@@ -303,12 +287,6 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             'status': 'error',
             'message': 'No such resource.'
         }, status=status.HTTP_404_NOT_FOUND)
-
-    except MultiValueDictKeyError:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Bad request.'
-        }, status=status.HTTP_400_BAD_REQUEST)
 
     user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
     if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
