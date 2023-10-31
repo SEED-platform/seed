@@ -281,6 +281,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     # get all the table_mappings that exist for the organization
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error("+++++++ table_mappings")
+    logger.error(table_mappings)
 
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.
@@ -399,7 +403,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
-                        _process_ali_data(map_model_obj, import_file.access_level_instance)
+                        # _process_ali_data(map_model_obj, import_file.access_level_instance)
+                        _new_process_ali_data(map_model_obj, row, import_file.access_level_instance, table_mappings.get(""))
 
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
@@ -499,6 +504,66 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     progress_data.step()
 
     return True
+
+
+def _new_process_ali_data(model, raw_data, import_file_ali, ah_mappings):
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error("+++++++")
+    # logger.error(model)
+    # logger.error(raw_data)
+    # logger.error(ah_mappings)
+    # logger.error({to_col: raw_data.get(from_col) for from_col, (_, to_col, _, _) in ah_mappings.items()})
+
+    org_alns = model.organization.access_level_names
+    ali_info = {
+        to_col: raw_data.get(from_col)
+        for from_col, (_, to_col, _, _) in ah_mappings.items()
+    }
+    logger.error(ali_info)
+
+    # if org only has root, just assign it to root, they won't have any ali info
+    if AccessLevelInstance.objects.filter(organization=model.organization).count() <= 1:
+        model.raw_access_level_instance = model.organization.root
+        logger.error("org only has root")
+        return
+
+    # clean ali_info
+    ali_info = {k: v for k, v in ali_info.items() if v is not None}
+    if not ali_info:
+        model.raw_access_level_instance_error = "Missing Access Level Column data."
+        return
+
+    # ensure we have a valid set of keys, else error out
+    needed_keys = set(org_alns[:len(ali_info)])
+    logger.error(needed_keys)
+    logger.error(set(org_alns[:len(ali_info)]))
+    if needed_keys != ali_info.keys():
+        model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
+        return
+
+    # try to get ali matching ali info within subtree
+    paths_match = Q(path=ali_info)
+    in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
+    ali = AccessLevelInstance.objects.filter(Q(paths_match & in_subtree)).first()
+
+    # if ali is None, we error
+    if ali is None:
+        is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
+        ancestor_ali = AccessLevelInstance.objects.filter(Q(is_ancestor & paths_match)).first()
+
+        # differing errors if
+        # 1. the user can see the ali but cannot access, or
+        # 2. the ali cannot be seen by the user and/or doesn't exist.
+        if ancestor_ali is not None:
+            model.raw_access_level_instance_error = "Access Level Instance cannot be accessed with the permissions of this import file."
+        else:
+            model.raw_access_level_instance_error = "Access Level Information does not match any existing Access Level Instance."
+
+        return
+
+    # success!
+    model.raw_access_level_instance = ali
 
 
 def _process_ali_data(model, import_file_ali):

@@ -1048,19 +1048,18 @@ class Column(models.Model):
 
         for field in fields:
             new_field = field
-
-            # Check if the extra_data field in the model object is a database column
-            is_extra_data = True
-            for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                        'column_name']:
-                    is_extra_data = False
-                    break
+            is_ah_data = any([
+                field['to_field'] == name for name in organization.access_level_names
+            ])
+            is_extra_data = not any([
+                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']
+                for c in Column.DATABASE_COLUMNS
+            ])
 
             to_org_col, _ = Column.objects.get_or_create(
                 organization=organization,
                 column_name=field['to_field'],
-                table_name=field['to_table_name'],
+                table_name='' if is_ah_data else field['to_table_name'],
                 is_extra_data=is_extra_data
             )
 
