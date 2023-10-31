@@ -1,143 +1,213 @@
+<script type="text/ng-template" id="colored-labels">
+  <div class="label-{$:: data.label $}">
+    <span ng-bind="$getDisplayText()"></span>
+    <a class="remove-button" ng-click="$removeTag()">×</a>
+  </div>
+</script>
+
 <div class="page_header_container" ng-cloak>
-    <div class="page_header">
-        <div class="left page_action_container"></div>
-        <div class="page_title">
-            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
-        </div>
-        <div class="right page_action_container page_action_btn"></div>
+  <div class="page_header">
+    <div class="left page_action_container"></div>
+    <div class="page_title">
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
     </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="inventory-list-controls columns">
-    <div class="column no-shrink">
-        <div class="row">
-            <label>{$:: 'Cycle' | translate $}:</label>
-            <select class="form-control input-sm grow" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
-            </select>
-        </div>
-        <div class="row">
-            <label>{$:: 'Column List Profile' | translate $}:</label>
-            <select class="form-control input-sm grow" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
-        </div>
-        <div class="row">
-            <label>{$:: 'Actions' | translate $}:</label>
-            <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
-                <option value="none" selected="selected"></option>
-                <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total $}) </option>
-                <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
-                <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
-                    <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
-                    <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
-                    <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
-                    <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
-                    <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
-                    <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
-                    <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
-                    <option value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
-                    <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
-                    <option value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
-                    <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
-                    <option value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
-                    <option value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
-                </optgroup>
-                <optgroup label="{$:: 'Options' | translate $}">
-                    <option value="open_show_populated_columns_modal" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
-                    <option value="toggle_access_level_instances" ng-disabled="data.length === 0">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Level Names</option>
-                </optgroup>
-            </select>
-        </div>
+  <div class="column no-shrink">
+    <div class="row">
+      <label>{$:: 'Cycle' | translate $}:</label>
+      <select
+        class="form-control input-sm grow"
+        ng-model="cycle.selected_cycle"
+        ng-change="update_cycle(cycle.selected_cycle)"
+        ng-options="option.name for option in ::cycle.cycles track by option.id"
+      ></select>
     </div>
-    <form name="listControlsForm" class="form-inline column" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
-        <div class="row">
-            <label for="sort-list">{$:: 'Sorting By (in order)' | translate $}:</label>
-            <div class="input-group input-group-sm grow">
-                <tags-input id="sort-list" class="ti-input-sm tags-input-style grow" ng-model="column_sorts" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_sort($tag)">
-                </tags-input>
-                <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa fa-lg fa-trash"></i></span>
-            </div>
-        </div>
-        <div class="row">
-            <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
-            <div class="input-group input-group-sm grow">
-                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
-                </tags-input>
-                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
-            </div>
-        </div>
-        <div class="row">
-            <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
-            <div class="input-group input-group-sm grow">
-                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
-                </tags-input>
-                <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
-            </div>
-            <div class="btn-group">
-                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and'); filterUsingLabels()" ng-disabled="!labels.length" translate>AND</span>
-                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or'); filterUsingLabels()" ng-disabled="!labels.length" translate>OR</span>
-                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude'); filterUsingLabels()" ng-disabled="!labels.length" translate>EXCLUDE</span>
-            </div>
-        </div>
-        <div class="row">
-            <label>{$:: 'Filter Group' | translate $}:</label>
-            <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
-                <option value="-1">-- No filter --</option>
-                <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
-            </select>
-            <div class="btn-group">
-                <button class="btn btn-success" type="button" ng-click="save_filter_group()" ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Save">
-                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                </button>
-                <button class="btn btn-primary" type="button" ng-click="rename_filter_group()" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
-                    <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
-                </button>
-                <button class="btn btn-danger" type="button" ng-click="remove_filter_group()" ng-model="currentFilterGroup" ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})" ng-disabled="!currentFilterGroup || currentFilterGroup.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                </button>
-                <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">
-                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                </button>
-            </div>
-        </div>
-    </form>
+    <div class="row">
+      <label>{$:: 'Column List Profile' | translate $}:</label>
+      <select class="form-control input-sm grow" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+    </div>
+    <div class="row">
+      <label>{$:: 'Actions' | translate $}:</label>
+      <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
+        <option value="none" selected="selected"></option>
+        <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total $})</option>
+        <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
+        <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
+          <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
+          <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
+          <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+          <option value="open_export_to_audit_template_modal" ng-if="::inventory_type === 'properties'" ng-disabled="selectedCount === 0" translate>Export to Audit Template</option>
+          <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
+          <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
+          <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
+          <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
+          <option value="open_set_update_to_now_modal" ng-disabled="selectedCount === 0" translate>Set Update Time to Now</option>
+          <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
+          <option value="open_ubid_decode_modal" ng-disabled="selectedCount === 0" translate>Decode UBID</option>
+          <option value="open_ubid_jaccard_index_modal" ng-disabled="selectedCount > 2" translate>Compare UBIDs</option>
+          <option value="open_ubid_admin_modal" ng-disabled="selectedCount !== 1" translate>Add/Update UBID</option>
+          <option value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
+        </optgroup>
+        <optgroup label="{$:: 'Options' | translate $}">
+          <option value="open_show_populated_columns_modal" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+          <option value="toggle_access_level_instances" ng-disabled="data.length === 0">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Level Names</option>
+        </optgroup>
+      </select>
+    </div>
+  </div>
+  <form name="listControlsForm" class="form-inline column" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
+    <div class="row">
+      <label for="sort-list">{$:: 'Sorting By (in order)' | translate $}:</label>
+      <div class="input-group input-group-sm grow">
+        <tags-input
+          id="sort-list"
+          class="ti-input-sm tags-input-style grow"
+          ng-model="column_sorts"
+          display-property="display"
+          placeholder="(from table below)"
+          replace-spaces-with-dashes="false"
+          on-tag-removing="delete_sort($tag)"
+        >
+        </tags-input>
+        <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa-solid fa-lg fa-trash"></i></span>
+      </div>
+    </div>
+    <div class="row">
+      <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
+      <div class="input-group input-group-sm grow">
+        <tags-input
+          id="filters-list"
+          class="ti-input-sm tags-input-style grow"
+          ng-model="column_filters"
+          display-property="display"
+          placeholder="(from table below)"
+          replace-spaces-with-dashes="false"
+          on-tag-removing="delete_filter($tag)"
+        >
+        </tags-input>
+        <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa-solid fa-lg fa-trash"></i></span>
+      </div>
+    </div>
+    <div class="row">
+      <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
+      <div class="input-group input-group-sm grow">
+        <tags-input
+          id="tags-input"
+          class="remove-editing ti-input-sm tags-input-style grow"
+          ng-model="selected_labels"
+          on-tag-added="filterUsingLabels()"
+          on-tag-removed="filterUsingLabels()"
+          min-length="1"
+          placeholder="{$:: 'Add a label' | translate $}"
+          replace-spaces-with-dashes="false"
+          add-from-autocomplete-only="true"
+          template="colored-labels"
+          ng-disabled="!labels.length"
+        >
+          <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+        </tags-input>
+        <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-lg fa-trash"></i></span>
+      </div>
+      <div class="btn-group" style="height: 30px">
+        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and'); filterUsingLabels()" ng-disabled="!labels.length" translate>AND</span>
+        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or'); filterUsingLabels()" ng-disabled="!labels.length" translate>OR</span>
+        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude'); filterUsingLabels()" ng-disabled="!labels.length" translate
+          >EXCLUDE</span
+        >
+      </div>
+    </div>
+    <div class="row">
+      <label>{$:: 'Filter Group' | translate $}:</label>
+      <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
+        <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
+      </select>
+      <div class="btn-group">
+        <button
+          class="btn btn-success"
+          type="button"
+          ng-click="save_filter_group()"
+          ng-disabled="!currentFilterGroup || !Modified || currentFilterGroup.id === -1"
+          tooltip-placement="bottom"
+          uib-tooltip="Save"
+        >
+          <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          ng-click="rename_filter_group()"
+          ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1"
+          tooltip-placement="bottom"
+          uib-tooltip="Rename"
+        >
+          <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+        </button>
+        <button
+          class="btn btn-danger"
+          type="button"
+          ng-click="remove_filter_group()"
+          ng-model="currentFilterGroup"
+          ng-change="check_for_filter_group_changes(currentFilterGroup, {$currentFilterGroup$})"
+          ng-disabled="!currentFilterGroup || currentFilterGroup.id === -1"
+          tooltip-placement="bottom"
+          uib-tooltip="Delete"
+        >
+          <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <button class="btn btn-info" type="button" ng-click="new_filter_group()" tooltip-placement="bottom" uib-tooltip="New">
+          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </form>
 </div>
 <div class="inventory-list-tab-container">
-    <div class="item-count">
-        {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
-        <i ng-if="selectedCount > 0">
-            <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span><span ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span><span>)</span>
-        </i>
-        <button
-            ng-click="load_inventory(inventory_pagination.page - 1)"
-            ng-disabled="!inventory_pagination.has_previous"
-            class="btn btn-default btn-sm">
-            <i class="fa fa-chevron-left"></i>
-        </button>
-        <button
-            ng-click="load_inventory(inventory_pagination.page + 1)"
-            ng-disabled="!inventory_pagination.has_next"
-            class="btn btn-default btn-sm">
-            <i class="fa fa-chevron-right"></i>
-        </button>
-    </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px; pointer-events: none;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
-        </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
-            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-        </li>
-    </ul>
+  <ul class="nav nav-tabs" style="pointer-events: none">
+    <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all">
+      <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
+    </li>
+    <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all">
+      <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+    </li>
+  </ul>
+  <div class="item-count">
+    {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+    <i ng-if="selectedCount > 0">
+      <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
+      ><span ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span
+      ><span>)</span>
+    </i>
+    <button ng-click="load_inventory(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous" class="btn btn-default btn-sm">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button ng-click="load_inventory(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next" class="btn btn-default btn-sm">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+  </div>
 </div>
 
-<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
-    <div class="section_content">
-        <div id="grid-container">
-            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
-        </div>
+<div class="section_content_container" ng-cloak style="display: flex; flex: 1">
+  <div class="section_content" style="display: flex; width: 100%">
+    <div id="grid-container" style="display: flex; width: 100%; overflow-x: hidden">
+      <div
+        ui-grid="gridOptions"
+        ui-grid-exporter
+        ui-grid-move-columns
+        ui-grid-pinning
+        ui-grid-resize-columns
+        ui-grid-save-state
+        ui-grid-selection
+        ui-grid-tree-view
+        style="display: flex; width: 100%"
+      ></div>
     </div>
+  </div>
 </div>

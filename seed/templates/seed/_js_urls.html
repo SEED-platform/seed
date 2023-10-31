@@ -3,18 +3,18 @@
   window.BE = window.BE || {};
   // new URLs
   window.BE.app_urls = {
-    "seed": {"home": "/app/"},
-    "audit_logs": {
-      "create_note": "/audit_logs/create_note/",
-      "update_note": "/audit_logs/update_note/",
-      "get_building_logs": "/audit_logs/get_building_logs/"
-    }
+    seed: { home: '/app/' },
+    audit_logs: {
+      create_note: '/audit_logs/create_note/',
+      update_note: '/audit_logs/update_note/',
+      get_building_logs: '/audit_logs/get_building_logs/',
+    },
   };
 
   // old URLs
   window.BE.urls = window.BE.urls || {};
   // static URLs
-  window.BE.urls.STATIC_URL = "{{ STATIC_URL }}";
+  window.BE.urls.STATIC_URL = '{{ STATIC_URL }}';
 
   window.BE.urls.seed_home = '{% url "seed:home" %}';
 </script>

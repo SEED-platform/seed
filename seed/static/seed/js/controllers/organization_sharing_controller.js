@@ -11,16 +11,8 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
   'auth_payload',
   'organization_service',
   '$filter',
-  function (
-    $scope,
-    all_columns,
-    organization_payload,
-    query_threshold_payload,
-    shared_fields_payload,
-    auth_payload,
-    organization_service,
-    $filter
-  ) {
+  // eslint-disable-next-line func-names
+  function ($scope, all_columns, organization_payload, query_threshold_payload, shared_fields_payload, auth_payload, organization_service, $filter) {
     $scope.fields = all_columns.columns;
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};
@@ -31,7 +23,7 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
       select_all: false
     };
 
-    $scope.$watch('filter_params.title', function () {
+    $scope.$watch('filter_params.title', () => {
       if (!$scope.filter_params.title) {
         $scope.controls.select_all = false;
       }
@@ -40,14 +32,12 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     /**
      * updates all the fields checkboxes to match the ``select_all`` checkbox
      */
-    $scope.select_all_clicked = function (type) {
-      var fields = $filter('filter')($scope.fields, $scope.filter_params);
-      fields = fields.map(function (f) {
-        return f.name;
-      });
+    $scope.select_all_clicked = (type) => {
+      let fields = $filter('filter')($scope.fields, $scope.filter_params);
+      fields = fields.map((f) => f.name);
       if (type === 'public') {
-        $scope.fields = $scope.fields.map(function (f) {
-          if (_.includes(fields, f.name)) {
+        $scope.fields = $scope.fields.map((f) => {
+          if (fields.includes(f.name)) {
             f.public_checked = $scope.controls.public_select_all;
           }
           return f;
@@ -58,32 +48,31 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
     /**
      * saves the updates settings
      */
-    $scope.save_settings = function () {
-      $scope.org.public_fields = $scope.fields.filter(function (f) {
-        return f.public_checked;
-      });
-      organization_service.save_org_settings($scope.org).then(function () {
-        $scope.settings_updated = true;
-      }, function (data) {
-        $scope.$emit('app_error', data);
-      });
+    $scope.save_settings = () => {
+      $scope.org.public_fields = $scope.fields.filter((f) => f.public_checked);
+      organization_service.save_org_settings($scope.org).then(
+        () => {
+          $scope.settings_updated = true;
+        },
+        (data) => {
+          $scope.$emit('app_error', data);
+        }
+      );
     };
 
     /**
      * preforms from initial data processing:
      * - sets the checked shared fields
      */
-    var init = function () {
-      var public_columns = shared_fields_payload.public_fields.map(function (f) {
-        return f.name;
-      });
-      $scope.fields = $scope.fields.map(function (f) {
-        if (_.includes(public_columns, f.name)) {
+    const init = () => {
+      const public_columns = shared_fields_payload.public_fields.map((f) => f.name);
+      $scope.fields = $scope.fields.map((f) => {
+        if (public_columns.includes(f.name)) {
           f.public_checked = true;
         }
         return f;
       });
     };
     init();
-
-  }]);
+  }
+]);

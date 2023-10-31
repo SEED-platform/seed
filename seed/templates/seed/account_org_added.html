@@ -1,11 +1,12 @@
 {% load i18n %}{% autoescape off %}
-{% blocktrans %}Hello {{ first_name }}, {% endblocktrans %}
+  {% blocktrans %}Hello {{ first_name }}, {% endblocktrans %}
 
-{% blocktrans %}You are receiving this e-mail because you have been added to the '{{ new_org }}' organization by '{{ requested_by }}'. Please disregard this message if you are not expecting access to SEED.{% endblocktrans %}
+  {% blocktrans %}You are receiving this e-mail because you have been added to the '{{ new_org }}' organization by '{{ requested_by }}'. Please disregard this message if you are not expecting access
+    to SEED.{% endblocktrans %}
 
-{% blocktrans %}You can view your new organization by logging into the SEED instance here:{%  endblocktrans %}
-{{ protocol }}://{{ domain }}
+  {% blocktrans %}You can view your new organization by logging into the SEED instance here:{% endblocktrans %}
+  {{ protocol }}://{{ domain }}
 
-{% blocktrans %}The SEED Team{% endblocktrans %}
+  {% blocktrans %}The SEED Team{% endblocktrans %}
 
 {% endautoescape %}

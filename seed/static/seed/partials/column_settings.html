@@ -1,257 +1,272 @@
 <div class="page_header_container">
-    <div class="page_header">
-        <div class="left page_action_container">
-            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
-        </div>
-        <div class="page_title">
-            <h1>{$:: org.name $}</h1>
-        </div>
-        <div class="right page_action_container"></div>
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
 </div>
 <div class="section_nav_container">
-    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left_40">
-                <h2><i class="fa fa-sliders"></i> <span translate>Column Settings</span></h2>
-            </div>
-            <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="columns_updated"></i>
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left_40">
+        <h2><i class="fa-solid fa-sliders"></i> <span translate>Column Settings</span></h2>
+      </div>
+      <div class="section_action_container right_40 section_action_btn pull-right">
+        <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">
+          {$:: 'Save Changes' | translate $}
+          <i class="fa-solid fa-check" ng-show="columns_updated"></i>
+        </button>
+        <button type="button" class="btn btn-primary" ng-click="open_create_column_modal()">{$:: 'Create Column' | translate $}</button>
+      </div>
+    </div>
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding" style="padding: 15px">
+      <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click="changeText(btnText)">{$ btnText $}</button>
+    </div>
+    <div class="section_content with_padding collapse in" style="margin-bottom: 15px" id="instruction">
+      <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
+      <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+      <table class="column-settings-instructions">
+        <tr>
+          <td translate>Display Name</td>
+          <td>
+            <ul>
+              <li translate>COL_CHANGE_DISPLAY</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Column Name</td>
+          <td>
+            <ul>
+              <li translate>COL_CHANGE_NAME</li>
+              <li translate>GEOCODING_NEEDS_THREE_COLS</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Column Description</td>
+          <td>
+            <ul>
+              <li translate>COL_CHANGE_DESCRIPTION</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Geocoding Order</td>
+          <td>
+            <ul>
+              <li translate>COL_GEOCODING_TOGGLE</li>
+              <li translate>COL_GEOCODING_TOGGLE_EXT</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Rename</td>
+          <td>
+            <ul>
+              <li translate>RENAME_SYS_LEVEL_COL</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Data Type</td>
+          <td>
+            <ul>
+              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Merge Protection</td>
+          <td>
+            <ul>
+              <li translate>MERGE_PROTECTION_EXPLANATION</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Recognize Empty</td>
+          <td>
+            <ul>
+              <li translate>RECOGNIZE_EMPTY_EXPLANATION</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Match Criteria</td>
+          <td>
+            <ul>
+              <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+              <li style="font-weight: bold" translate>MATCHING_CRITERIA_PREVIEW_WARNING</li>
+            </ul>
+          </td>
+        </tr>
+        <tr ng-if="::org.comstock_enabled">
+          <td translate>ComStock Mapping</td>
+          <td>
+            <ul>
+              <li translate>Map SEED fields to ComStock fields</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td translate>Delete</td>
+          <td>
+            <ul>
+              <li translate>Permanently delete extra_data columns and all associated data</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="section_content with_padding" style="margin-bottom: 15px">
+      <div class="data-quality-tab-container">
+        <ul class="nav nav-tabs" style="margin-bottom: 1px">
+          <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
+            <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" translate>View by Property</a>
+          </li>
+          <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
+            <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+          </li>
+        </ul>
+      </div>
+      <div class="table_list_container has_borders">
+        <table id="column-table" class="table has_no_btm_margin">
+          <thead>
+            <tr>
+              <th class="text-left" ng-click="toggle_display_name_order_sort()">
+                <span>Display Name<i class="glyphicon glyphicon-sort"></i></span>
+              </th>
+              <th class="text-left" ng-click="toggle_column_name_order_sort()">
+                <span>Column Name<i class="glyphicon glyphicon-sort"></i></span>
+              </th>
+              <th class="text-center" style="min-width: 350px" translate>Column Description</th>
+              <th class="text-center" style="min-width: 80px; width: 80px" ng-click="toggle_geocoding_order_sort()">
+                <span>Geocoding Order<i class="glyphicon glyphicon-sort"></i></span>
+              </th>
+              <th class="text-center" style="min-width: 130px; width: 130px" translate>Rename</th>
+              <th class="text-center" style="min-width: 130px; width: 130px" translate>Data Type</th>
+              <th class="text-center" style="min-width: 120px; width: 120px" translate>Merge Protection</th>
+              <th class="text-center" style="min-width: 120px; width: 120px" ng-click="toggle_recognize_empty_sort()"><span>Recognize Empty</span> <i class="glyphicon glyphicon-sort"></i></th>
+              <th class="text-center" style="min-width: 120px; width: 120px" ng-click="toggle_matching_criteria_sort()"><span>Match Criteria</span> <i class="glyphicon glyphicon-sort"></i></th>
+              <th class="text-center" style="min-width: 80px" ng-if="::org.comstock_enabled" translate>ComStock Mapping</th>
+              <th class="text-center" style="min-width: 65px; width: 65px" translate>Delete</th>
+            </tr>
+            <tr class="sub_head">
+              <th class="sub_head">
+                <input
+                  type="text"
+                  class="form-control input-sm"
+                  ng-model="filter_params.displayName"
+                  placeholder="{$:: 'Search display name' | translate $}"
+                  ng-class="{active: filter_params.displayName.length > 0}"
+                />
+              </th>
+              <th class="sub_head">
+                <input
+                  type="text"
+                  class="form-control input-sm"
+                  ng-model="filter_params.column_name"
+                  placeholder="{$:: 'Search column name' | translate $}"
+                  ng-class="{active: filter_params.column_name.length > 0}"
+                />
+              </th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head"></th>
+              <th class="sub_head" ng-if="::org.comstock_enabled"></th>
+              <th class="sub_head"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="column in columns | filter:filter_params:strict">
+              <td>
+                <input type="text" class="form-control" ng-model="column.displayName" ng-change="setModified()" ng-model-options="{debounce: 125}" required />
+              </td>
+              <td>
+                {$:: column.column_name $}
+                <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px">extra data</span>
+              </td>
+              <td>
+                <input type="text" class="form-control" ng-model="column.column_description" ng-change="setModified()" ng-model-options="{debounce: 125}" required />
+              </td>
+
+              <td>
+                <span style="display: flex; align-items: center">
+                  <span ng-click="geocoding_toggle(column)" style="margin-right: 5px">
+                    <input type="checkbox" ng-checked="column.geocoding_order" class="no-click" />
+                  </span>
+                  <select
+                    class="form-control input-sm"
+                    ng-model="column.geocoding_order"
+                    ng-options="n for n in geocoding_columns_position_options"
+                    ng-change="reinsert_geocoding_column(column)"
+                    ng-disabled="!column.geocoding_order"
+                  ></select>
+                </span>
+              </td>
+
+              <td class="text-center">
+                <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
+              </td>
+              <td class="text-center">
+                <select
+                  class="form-control input-sm"
+                  ng-model="column.data_type"
+                  ng-options="type.id as type.label for type in ::data_types"
+                  ng-change="setModified()"
+                  ng-disabled="!column.is_extra_data"
+                ></select>
+              </td>
+              <td ng-click="change_merge_protection(column)" class="text-center">
+                <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click" />
+              </td>
+              <td class="text-center" ng-click="change_recognize_empty(column)">
+                <input type="checkbox" ng-checked="column.recognize_empty" class="no-click" />
+              </td>
+
+              <td class="text-center" ng-if="matching_status(column) == 'eligible'" ng-click="change_is_matching_criteria(column)">
+                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click" />
+              </td>
+              <td class="text-center" ng-if="matching_status(column) == 'locked'">
+                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click" ng-disabled="true" />
+              </td>
+              <td class="text-center" ng-if="::matching_status(column) == 'ineligible'">
+                <span ng-if="column.is_extra_data" translate>Ineligible</span>
+              </td>
+              <td class="text-center" ng-if="::org.comstock_enabled">
+                <select class="form-control input-sm" ng-model="column.comstock_mapping" ng-options="type.id as type.label for type in ::comstock_types" ng-change="comstockModified(column)"></select>
+              </td>
+              <td class="text-center">
+                <button ng-if="::column.is_extra_data" class="btn btn-danger" type="button" ng-click="delete_column(column)">
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="open_create_column_modal()">{$:: 'Create Column' | translate $}
-                </button>
-            </div>
-        </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" style="padding: 15px;">
-            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click=changeText(btnText)>{$ btnText $}</button>
-        </div>
-        <div class="section_content with_padding collapse in" style="margin-bottom:15px;" id="instruction">
-            <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
-            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
-            <table class="column-settings-instructions">
-                <tr>
-                    <td translate>Display Name</td>
-                    <td>
-                        <ul>
-                            <li translate>COL_CHANGE_DISPLAY</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Column Name</td>
-                    <td>
-                        <ul>
-                            <li translate>COL_CHANGE_NAME</li>
-                            <li translate>GEOCODING_NEEDS_THREE_COLS</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Column Description</td>
-                    <td>
-                        <ul>
-                            <li translate>COL_CHANGE_DESCRIPTION</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Geocoding Order</td>
-                    <td>
-                        <ul>
-                            <li translate>COL_GEOCODING_TOGGLE</li>
-                            <li translate>COL_GEOCODING_TOGGLE_EXT</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Rename</td>
-                    <td>
-                        <ul>
-                            <li translate>RENAME_SYS_LEVEL_COL</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Data Type</td>
-                    <td>
-                        <ul>
-                            <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Merge Protection</td>
-                    <td>
-                        <ul>
-                            <li translate>MERGE_PROTECTION_EXPLANATION</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Recognize Empty</td>
-                    <td>
-                        <ul>
-                            <li translate>RECOGNIZE_EMPTY_EXPLANATION</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Match Criteria</td>
-                    <td>
-                        <ul>
-                            <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
-                            <li style="font-weight: bold;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr ng-if="::org.comstock_enabled">
-                    <td translate>ComStock Mapping</td>
-                    <td>
-                        <ul>
-                            <li translate>Map SEED fields to ComStock fields</li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td translate>Delete</td>
-                    <td>
-                        <ul>
-                            <li translate>Permanently delete extra_data columns and all associated data</li>
-                        </ul>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div class="section_content with_padding" style="margin-bottom:15px;">
-            <div class="data-quality-tab-container">
-                <ul class="nav nav-tabs" style="margin-bottom:1px;">
-                    <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
-                        <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" translate>View by Property</a>
-                    </li>
-                    <li ui-sref-active="active" heading="{$:: 'View by Tax Lot' | translate $}">
-                        <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="table_list_container has_borders">
-                <table id="column-table" class="table has_no_btm_margin">
-                    <thead>
-                        <tr>
-                            <th class="text-left" ng-click="toggle_display_name_order_sort()">
-                                <span>Display Name<i class="glyphicon glyphicon-sort"></i></span>
-                            </th>
-                            <th class="text-left" ng-click="toggle_column_name_order_sort()">
-                                <span>Column Name<i class="glyphicon glyphicon-sort"></i></span>
-                            </th>
-                            <th class="text-center" style="min-width: 350px;" translate>Column Description</th>
-                            <th class="text-center" style="min-width: 80px; width: 80px;" ng-click="toggle_geocoding_order_sort()">
-                                <span>Geocoding Order<i class="glyphicon glyphicon-sort"></i></span>
-                            </th>
-                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
-                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
-                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
-                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_recognize_empty_sort()">
-                              <span>Recognize Empty</span> <i class="glyphicon glyphicon-sort"></i>
-                            </th>
-                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_matching_criteria_sort()">
-                                <span>Match Criteria</span> <i class="glyphicon glyphicon-sort"></i>
-                            </th>
-                            <th class="text-center" style="min-width: 80px" ng-if="::org.comstock_enabled" translate>ComStock Mapping</th>
-                            <th class="text-center" style="min-width: 65px; width: 65px;" translate>Delete</th>
-                        </tr>
-                        <tr class="sub_head">
-                            <th class="sub_head">
-                                <input type="text"
-                                     class="form-control input-sm"
-                                     ng-model="filter_params.displayName"
-                                     placeholder="{$:: 'Search display name' | translate $}"
-                                     ng-class="{active: filter_params.displayName.length > 0}">
-                            </th>
-                            <th class="sub_head">
-                                <input type="text"
-                                     class="form-control input-sm"
-                                     ng-model="filter_params.column_name"
-                                     placeholder="{$:: 'Search column name' | translate $}"
-                                     ng-class="{active: filter_params.column_name.length > 0}">
-                            </th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head"></th>
-                            <th class="sub_head" ng-if="::org.comstock_enabled"></th>
-                            <th class="sub_head"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="column in columns | filter:filter_params:strict">
-                            <td>
-                                <input type="text" class="form-control" ng-model="column.displayName" ng-change="setModified()" ng-model-options="{debounce: 125}" required>
-                            </td>
-                            <td>
-                                {$:: column.column_name $}
-                                <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" ng-model="column.column_description" ng-change="setModified()" ng-model-options="{debounce: 125}" required>
-                            </td>
-
-                            <td>
-                                <span style="display: flex; align-items:center;">
-                                    <span ng-click="geocoding_toggle(column)" style="margin-right: 5px;">
-                                        <input type="checkbox" ng-checked="column.geocoding_order" class="no-click">
-                                    </span>
-                                    <select class="form-control input-sm" ng-model="column.geocoding_order" ng-options="n for n in geocoding_columns_position_options" ng-change="reinsert_geocoding_column(column)" ng-disabled="!column.geocoding_order"></select>
-                                </span>
-                            </td>
-
-
-                            <td class="text-center">
-                                <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
-                            </td>
-                            <td class="text-center">
-                                <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
-                            </td>
-                            <td ng-click="change_merge_protection(column)" class="text-center">
-                                <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
-                            </td>
-                            <td class="text-center" ng-click="change_recognize_empty(column)">
-                                <input type="checkbox" ng-checked="column.recognize_empty" class="no-click">
-                            </td>
-
-                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
-                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
-                            </td>
-                            <td class="text-center" ng-if="::column.is_extra_data">
-                                <span ng-if="column.is_extra_data" translate>Ineligible</span>
-                            </td>
-                            <td class="text-center" ng-if="::org.comstock_enabled">
-                                <select class="form-control input-sm" ng-model="column.comstock_mapping" ng-options="type.id as type.label for type in ::comstock_types" ng-change="comstockModified(column)"></select>
-                            </td>
-                            <td class="text-center">
-                                <button ng-if="::column.is_extra_data" class="btn btn-danger" type="button" ng-click="delete_column(column)">
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="section_content_container">
-            <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="columns_updated"></i>
-                </button>
-            </div>
-        </div>
+      <div class="section_content with_padding pull-right" style="padding-bottom: 15px">
+        <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">
+          {$:: 'Save Changes' | translate $}
+          <i class="fa-solid fa-check" ng-show="columns_updated"></i>
+        </button>
+      </div>
     </div>
+  </div>
 </div>

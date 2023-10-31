@@ -18,30 +18,32 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
       organization_service,
       org_id,
       current_access_level_names,
-      Notification,
+      Notification
     ) {
       $scope.current_access_level_names = [...current_access_level_names];
       $scope.new_access_level_names = current_access_level_names;
 
-      $scope.is_modifed = function() {
-        return !_.isEqual($scope.current_access_level_names, $scope.new_access_level_names);
-      }
+      $scope.is_modifed = () => !_.isEqual($scope.current_access_level_names, $scope.new_access_level_names);
 
       $scope.save_access_level_names = function () {
         organization_service.update_organization_access_level_names(org_id, $scope.new_access_level_names)
-        .then(
-          _ => $uibModalInstance.close()
-        )
-        .catch(err => {
-          Notification.error(err);
-        })
+          .then(
+            (_) => $uibModalInstance.close()
+          )
+          .catch((err) => {
+            Notification.error(err);
+          });
       };
 
-      $scope.add_level = function() {
+      $scope.remove_level = () => {
+        $scope.new_access_level_names.pop();
+      };
+
+      $scope.add_level = () => {
         $scope.new_access_level_names.push("");
       };
 
-      $scope.cancel = function () {
+      $scope.cancel = () => {
         $uibModalInstance.dismiss('cancel');
       };
     }]);

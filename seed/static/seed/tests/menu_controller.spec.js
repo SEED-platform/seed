@@ -2,23 +2,22 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-describe('Controller: menu_controller', function () {
+describe('Controller: menu_controller', () => {
   // globals set up and used in each test scenario
-  var controller;
-  var menu_controller_scope;
-  var mock_spinner_utility;
+  let controller;
+  let menu_controller_scope;
+  let mock_spinner_utility;
   // var mock_dataset_service;
-
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
-  beforeEach(function () {
+  beforeEach(() => {
     module('BE.seed');
-    inject(function (_$httpBackend_) {
+    inject((_$httpBackend_) => {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, organization_service, user_service, dataset_service, spinner_utility) {
+    inject(($controller, $rootScope, $uibModal, urls, $q, organization_service, user_service, dataset_service, spinner_utility) => {
       controller = $controller;
       menu_controller_scope = $rootScope.$new();
       menu_controller_scope.inventory_type = 'properties';
@@ -38,19 +37,17 @@ describe('Controller: menu_controller', function () {
       //   });
 
       mock_spinner_utility = spinner_utility;
-      spyOn(mock_spinner_utility, 'show')
-        .andCallFake(function () {
-          // Do nothing
-        });
-      spyOn(mock_spinner_utility, 'hide')
-        .andCallFake(function () {
-          // Do nothing
-        });
+      spyOn(mock_spinner_utility, 'show').andCallFake(() => {
+        // Do nothing
+      });
+      spyOn(mock_spinner_utility, 'hide').andCallFake(() => {
+        // Do nothing
+      });
     });
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_menu_controller () {
+  function create_menu_controller() {
     controller('menu_controller', {
       $scope: menu_controller_scope,
       $stateParams: {
@@ -61,7 +58,6 @@ describe('Controller: menu_controller', function () {
       }
     });
   }
-
 
   /**
    * Test scenarios

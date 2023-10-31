@@ -119,6 +119,10 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
                 ).count(),
+                'census_geocoder': PropertyState.objects.filter(
+                    id__in=Subquery(property_views.values('state_id')),
+                    geocoding_confidence__startswith='Census'
+                ).count(),
                 'manual': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
@@ -148,6 +152,10 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 'low_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
+                ).count(),
+                'census_geocoder': TaxLotState.objects.filter(
+                    id__in=Subquery(taxlot_views.values('state_id')),
+                    geocoding_confidence__startswith='Census'
                 ).count(),
                 'manual': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),

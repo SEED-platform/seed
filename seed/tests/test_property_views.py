@@ -391,7 +391,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
 
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': 'CustomID123',
             'import_file_id': import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1100,7 +1100,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             assert resp.status_code == 404
 
     def test_property_analyses(self):
-        url = reverse('api:v3:properties-analyses', args=[self.view.id]) + f'?organization_id={self.org.pk}'
+        url = reverse('api:v3:properties-analyses', args=[self.property.id]) + f'?organization_id={self.org.pk}'
 
         # root member can
         self.login_as_root_member()

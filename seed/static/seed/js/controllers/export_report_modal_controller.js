@@ -9,40 +9,34 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
   'cycle_start',
   'cycle_end',
   'inventory_reports_service',
-  function (
-    $scope,
-    $uibModalInstance,
-    axes_data,
-    cycle_start,
-    cycle_end,
-    inventory_reports_service
-  ) {
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, axes_data, cycle_start, cycle_end, inventory_reports_service) {
     $scope.export_name = '';
 
-    $scope.export_selected = function () {
-      var filename = $scope.export_name;
+    $scope.export_selected = () => {
+      let filename = $scope.export_name;
 
       if (!filename) return;
 
-      var ext = '.xlsx';
-      if (!_.endsWith(filename, ext)) filename += ext;
+      const ext = '.xlsx';
+      if (!filename.endsWith(ext)) filename += ext;
 
-      inventory_reports_service.export_reports_data(axes_data, cycle_start, cycle_end)
-        .then(function (response) {
-          var blob_type = response.headers()['content-type'];
+      inventory_reports_service.export_reports_data(axes_data, cycle_start, cycle_end).then((response) => {
+        const blob_type = response.headers()['content-type'];
 
-          var blob = new Blob([response.data], {type: blob_type});
-          saveAs(blob, filename);
+        const blob = new Blob([response.data], { type: blob_type });
+        saveAs(blob, filename);
 
-          $scope.close();
-        });
+        $scope.close();
+      });
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
-  }]);
+  }
+]);

@@ -105,7 +105,7 @@ class LabelInventoryViewSet(APIView):
     def filter_by_inventory(self, qs, inventory_type, inventory_ids):
         if inventory_ids:
             filterdict = {
-                "{}view__pk__in".format(inventory_type): inventory_ids
+                f"{inventory_type}view__pk__in": inventory_ids
             }
             qs = qs.filter(**filterdict)
         return qs
@@ -114,14 +114,14 @@ class LabelInventoryViewSet(APIView):
         Model = self.models[inventory_type]
 
         # Ensure the the label org and inventory org are the same
-        inventory_views = getattr(Model, "{}view".format(inventory_type)).get_queryset()
+        inventory_views = getattr(Model, f"{inventory_type}view").get_queryset()
         inventory_parent_org_id = inventory_views.get(pk=inventory_id)\
             .cycle.organization.get_parent().id
         label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
         if inventory_parent_org_id == label_super_org_id:
             create_dict = {
                 'statuslabel_id': label_id,
-                "{}view_id".format(inventory_type): inventory_id
+                f"{inventory_type}view_id": inventory_id
             }
 
             return Model(**create_dict)

@@ -15,11 +15,11 @@
  *
  */
 
-var makeFileSystemUploader = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeFileSystemUploader = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
-      endpoint: '/api/v3/upload/?organization_id=' + scope.organizationId + '',
+      endpoint: `/api/v3/upload/?organization_id=${scope.organizationId}`,
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
@@ -51,7 +51,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
        * a message indicating upload has started, "upload_submitted", and
        * the filename.
        */
-      onSubmitted: function (id, fileName) {
+      onSubmitted(id, fileName) {
         scope.eventfunc({
           message: 'upload_submitted',
           file: {
@@ -59,7 +59,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           }
         });
-        var params = {
+        const params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
@@ -79,7 +79,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
        * a message indicating upload has completed, "upload_complete", and
        * the filename.
        */
-      onComplete: function (id, fileName, responseJSON) {
+      onComplete(id, fileName, responseJSON) {
         if (!responseJSON.success) {
           alert('Upload failed.');
         } else {
@@ -88,7 +88,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
             file: {
               filename: fileName,
               file_id: responseJSON.import_file_id,
-              cycle_id: (scope.sourceprog === 'PortfolioManager' && scope.$parent.useField) ? 'year_ending' : scope.$parent.selectedCycle.id,
+              cycle_id: scope.sourceprog === 'PortfolioManager' && scope.$parent.useField ? 'year_ending' : scope.$parent.selectedCycle.id,
               source_type: scope.sourcetype,
               source_program: scope.sourceprog,
               source_program_version: scope.sourcever
@@ -104,7 +104,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
        * bytes of the file loaded, and total - the total number of bytes
        * for the file.
        */
-      onProgress: function (id, fileName, loaded, total) {
+      onProgress(id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
           file: {
@@ -112,8 +112,8 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           },
           progress: {
-            loaded: loaded,
-            total: total
+            loaded,
+            total
           }
         });
       },
@@ -122,7 +122,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
        * in the element attribute. Primarily for non-conforming files
        * that return 400 from the backend and invalid file extensions.
        */
-      onError: function (id, fileName, errorReason, xhr) {
+      onError(id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
           scope.eventfunc({
             message: _.includes(allowed_extensions, 'geojson') ? 'invalid_geojson_extension' : 'invalid_extension'
@@ -136,9 +136,9 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
           return;
         }
 
-        var error = errorReason;
+        let error = errorReason;
         try {
-          var json = JSON.parse(xhr.responseText);
+          const json = JSON.parse(xhr.responseText);
           if (_.has(json, 'message')) {
             error = json.message;
           }
@@ -151,7 +151,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
           file: {
             filename: fileName,
             source_type: scope.sourcetype,
-            error: error
+            error
           }
         });
       }
@@ -160,12 +160,12 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeAccessLevelInstanceUploader = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/organizations/' + scope.organizationId + '/access_levels/importer/',
+      endpoint: `/api/v3/organizations/${scope.organizationId}/access_levels/importer/`,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
@@ -198,7 +198,7 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
        * a message indicating upload has started, "upload_submitted", and
        * the filename.
        */
-      onSubmitted: function (id, fileName) {
+      onSubmitted: (id, fileName) => {
         scope.eventfunc({
           message: 'upload_submitted',
           file: {
@@ -206,7 +206,7 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
             source_type: scope.sourcetype
           }
         });
-        var params = {
+        const params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
@@ -222,7 +222,7 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
        * a message indicating upload has completed, "ali_upload_complete", and
        * the filename.
        */
-      onComplete: function (id, fileName, responseJSON) {
+      onComplete: (id, fileName, responseJSON) => {
         if (!responseJSON.success) {
           alert('Upload failed.');
         } else {
@@ -245,7 +245,7 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
        * bytes of the file loaded, and total - the total number of bytes
        * for the file.
        */
-      onProgress: function (id, fileName, loaded, total) {
+      onProgress: (id, fileName, loaded, total) => {
         scope.eventfunc({
           message: 'upload_in_progress',
           file: {
@@ -253,8 +253,8 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
             source_type: scope.sourcetype
           },
           progress: {
-            loaded: loaded,
-            total: total
+            loaded,
+            total
           }
         });
       },
@@ -263,9 +263,9 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
        * in the element attribute. Primarily for non-conforming files
        * that return 400 from the backend and invalid file extensions.
        */
-      onError: function (id, fileName, errorReason, xhr) {
-        if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_xml_extension'});
+      onError: (id, fileName, errorReason, xhr) => {
+        if (errorReason.includes(' has an invalid extension.')) {
+          scope.eventfunc({ message: 'invalid_xml_extension' });
           return;
         }
 
@@ -275,9 +275,9 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
           return;
         }
 
-        var error = errorReason;
+        let error = errorReason;
         try {
-          var json = JSON.parse(xhr.responseText);
+          const json = JSON.parse(xhr.responseText);
           if (_.has(json, 'message')) {
             error = json.message;
           }
@@ -290,7 +290,7 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
           file: {
             filename: fileName,
             source_type: scope.sourcetype,
-            error: error
+            error
           }
         });
       }
@@ -299,12 +299,12 @@ var makeAccessLevelInstanceUploader = function (scope, element, allowed_extensio
   return uploader;
 };
 
-var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeBuildingSyncUpdater = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_building_sync/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId,
+      endpoint: `/api/v3/properties/${scope.importrecord}/update_with_building_sync/?cycle_id=${scope.cycleId}&organization_id=${scope.organizationId}`,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
@@ -340,7 +340,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * a message indicating upload has started, "upload_submitted", and
        * the filename.
        */
-      onSubmitted: function (id, fileName) {
+      onSubmitted(id, fileName) {
         scope.eventfunc({
           message: 'upload_submitted',
           file: {
@@ -348,7 +348,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           }
         });
-        var params = {
+        const params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
@@ -366,8 +366,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * a message indicating upload has completed, "upload_complete", and
        * the filename.
        */
-      onComplete: function (id, fileName, responseJSON) {
-
+      onComplete(id, fileName, responseJSON) {
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -388,7 +387,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * bytes of the file loaded, and total - the total number of bytes
        * for the file.
        */
-      onProgress: function (id, fileName, loaded, total) {
+      onProgress(id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
           file: {
@@ -396,8 +395,8 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           },
           progress: {
-            loaded: loaded,
-            total: total
+            loaded,
+            total
           }
         });
       },
@@ -406,9 +405,9 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * in the element attribute. Primarily for non-conforming files
        * that return 400 from the backend and invalid file extensions.
        */
-      onError: function (id, fileName, errorReason, xhr) {
+      onError(id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_xml_extension'});
+          scope.eventfunc({ message: 'invalid_xml_extension' });
           return;
         }
 
@@ -418,9 +417,9 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
           return;
         }
 
-        var error = errorReason;
+        let error = errorReason;
         try {
-          var json = JSON.parse(xhr.responseText);
+          const json = JSON.parse(xhr.responseText);
           if (_.has(json, 'message')) {
             error = json.message;
           }
@@ -433,7 +432,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
           file: {
             filename: fileName,
             source_type: scope.sourcetype,
-            error: error
+            error
           }
         });
       }
@@ -442,20 +441,19 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-var makeESPMUpdater = function (scope, element, allowed_extensions) {
-  var uploader = new qq.FineUploaderBasic({
+const makeESPMUpdater = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_espm/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId + '&mapping_profile_id=' + scope.mappingProfileId,
+      endpoint: `/api/v3/properties/${scope.importrecord}/update_with_espm/?cycle_id=${scope.cycleId}&organization_id=${scope.organizationId}&mapping_profile_id=${scope.mappingProfileId}`,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {
         'X-CSRFToken': BE.csrftoken
       },
-      params: {
-      }
+      params: {}
     },
     validation: {
       allowedExtensions: allowed_extensions
@@ -482,7 +480,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        * a message indicating upload has started, "upload_submitted", and
        * the filename.
        */
-      onSubmitted: function (id, fileName) {
+      onSubmitted(id, fileName) {
         scope.eventfunc({
           message: 'upload_submitted',
           file: {
@@ -490,7 +488,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           }
         });
-        var params = {
+        const params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
@@ -508,8 +506,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        * a message indicating upload has completed, "upload_complete", and
        * the filename.
        */
-      onComplete: function (id, fileName, responseJSON) {
-
+      onComplete(id, fileName, responseJSON) {
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -530,7 +527,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        * bytes of the file loaded, and total - the total number of bytes
        * for the file.
        */
-      onProgress: function (id, fileName, loaded, total) {
+      onProgress(id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
           file: {
@@ -538,8 +535,8 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           },
           progress: {
-            loaded: loaded,
-            total: total
+            loaded,
+            total
           }
         });
       },
@@ -548,9 +545,9 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
        * in the element attribute. Primarily for non-conforming files
        * that return 400 from the backend and invalid file extensions.
        */
-      onError: function (id, fileName, errorReason, xhr) {
+      onError(id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({ message: 'invalid_extension' });
           return;
         }
 
@@ -560,9 +557,9 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
           return;
         }
 
-        var error = errorReason;
+        let error = errorReason;
         try {
-          var json = JSON.parse(xhr.responseText);
+          const json = JSON.parse(xhr.responseText);
           if (_.has(json, 'message')) {
             error = json.message;
           }
@@ -575,7 +572,7 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
           file: {
             filename: fileName,
             source_type: scope.sourcetype,
-            error: error
+            error
           }
         });
       }
@@ -585,13 +582,12 @@ var makeESPMUpdater = function (scope, element, allowed_extensions) {
 };
 
 /* Inventory Document Uploader for files to attach to a property */
-var makeDocumentUploader = function (scope, element, allowed_extensions) {
-
-  var uploader = new qq.FineUploaderBasic({
+const makeDocumentUploader = (scope, element, allowed_extensions) => {
+  const uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v3/properties/' + scope.importrecord + '/upload_inventory_document/?organization_id=' + scope.organizationId,
+      endpoint: `/api/v3/properties/${scope.importrecord}/upload_inventory_document/?organization_id=${scope.organizationId}`,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
@@ -627,7 +623,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        * a message indicating upload has started, "upload_submitted", and
        * the filename.
        */
-      onSubmitted: function (id, fileName) {
+      onSubmitted(id, fileName) {
         scope.eventfunc({
           message: 'upload_submitted',
           file: {
@@ -635,8 +631,8 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           }
         });
-        var extracted_filetype = fileName.split('.').pop();
-        var params = {
+        const extracted_filetype = fileName.split('.').pop();
+        const params = {
           csrf_token: BE.csrftoken,
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
@@ -653,7 +649,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        * a message indicating upload has completed, "upload_complete", and
        * the filename.
        */
-      onComplete: function (id, fileName, responseJSON) {
+      onComplete(id, fileName, responseJSON) {
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -674,7 +670,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        * bytes of the file loaded, and total - the total number of bytes
        * for the file.
        */
-      onProgress: function (id, fileName, loaded, total) {
+      onProgress(id, fileName, loaded, total) {
         scope.eventfunc({
           message: 'upload_in_progress',
           file: {
@@ -682,8 +678,8 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
             source_type: scope.sourcetype
           },
           progress: {
-            loaded: loaded,
-            total: total
+            loaded,
+            total
           }
         });
       },
@@ -692,9 +688,9 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        * in the element attribute. Primarily for non-conforming files
        * that return 400 from the backend and invalid file extensions.
        */
-      onError: function (id, fileName, errorReason, xhr) {
+      onError(id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_extension'});
+          scope.eventfunc({ message: 'invalid_extension' });
           return;
         }
 
@@ -704,9 +700,9 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
           return;
         }
 
-        var error = errorReason;
+        let error = errorReason;
         try {
-          var json = JSON.parse(xhr.responseText);
+          const json = JSON.parse(xhr.responseText);
           if (_.has(json, 'message')) {
             error = json.message;
           }
@@ -719,7 +715,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
           file: {
             filename: fileName,
             source_type: scope.sourcetype,
-            error: error
+            error
           }
         });
       }
@@ -728,8 +724,8 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
-var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
-  var uploader;
+const sdUploaderFineUploader = (scope, element /* , attrs, filename */) => {
+  let uploader;
   if (scope.sourcetype === 'AccessLevelInstances') {
     uploader = makeAccessLevelInstanceUploader(scope, element, ['csv', 'xls', 'xlsx']);
   } else if (scope.sourcetype === 'BuildingSyncUpdate') {
@@ -752,21 +748,22 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   return uploader;
 };
 
-angular.module('sdUploader', []).directive('sdUploader', function () {
-  return {
-    scope: {
-      cycleId: '=',
-      eventfunc: '&',
-      importrecord: '=',
-      organizationId: '=',
-      mappingProfileId: '=?',
-      sourceprog: '@',
-      sourcetype: '@',
-      sourcever: '='
-    },
-    restrict: 'A',
-    link: function (scope, element, attrs) {
-      $(sdUploaderFineUploader(scope, element, attrs));
-    }
-  };
-});
+// Test support
+window.sdUploaderFineUploader = sdUploaderFineUploader;
+
+angular.module('sdUploader', []).directive('sdUploader', () => ({
+  scope: {
+    cycleId: '=',
+    eventfunc: '&',
+    importrecord: '=',
+    organizationId: '=',
+    mappingProfileId: '=?',
+    sourceprog: '@',
+    sourcetype: '@',
+    sourcever: '='
+  },
+  restrict: 'A',
+  link: (scope, element, attrs) => {
+    $(sdUploaderFineUploader(scope, element, attrs));
+  }
+}));

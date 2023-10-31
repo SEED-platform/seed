@@ -1,174 +1,261 @@
 <div>
-    <div class="modal-header">
-        <h4 class="modal-title" id="manageLabelsModalLabel" translate>Run Analysis</h4>
-    </div>
-    <div class="modal-body">
-        <div class="newAnalysisInput" style="margin-top:0;">
-            <form id="newAnalysisForm" name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
-                <div class="form-group">
-                    <label class="control-label sectionLabel" translate>Name</label>
-                    <input id="AnalysisName" type="text" name="name" class="form-control"
-                           ng-minlength="1" ng-maxlength="100" ng-model="new_analysis.name"
-                           placeholder="{$:: 'Analysis Name' | translate $}" required>
-                </div>
-                <div class="form-group">
-                    <label class="control-label sectionLabel">Type</label>
-                    <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
-                        <option ng-option value='BSyncr' selected="selected">BSyncr</option>
-                        <option ng-option value='BETTER' selected="selected">BETTER</option>
-                        <option ng-option value='EUI' selected="selected">EUI</option>
-                        <option ng-option value='CO2' selected="selected">Average Annual CO2</option>
-                    </select>
-                </div>
-
-                <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
-                    <label class="control-label sectionLabel">BSyncr Model Selection</label>
-                    <select class="form-control" ng-model="new_analysis.configuration.model_type" ng-dropdown required>
-                        <option ng-repeat="model in bsyncr_models" selected="selected" ng-value="model">{$:: model $}</option>
-                    </select>
-                </div>
-
-                <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
-                    <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
-                    <div class="form-group" style="padding-top: 1em;">
-                        <div class="container-fluid">
-                            <div class="row" style="padding-bottom: 1em">
-                                <div class="col-md-6">
-                                    <label class="control-label sectionLabel text-muted">
-                                        Savings Target
-                                        <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"></i>
-                                    </label>
-                                    <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
-                                        <option ng-repeat="model in better_savings_targets" selected="selected" ng-value=model>{$:: model $}</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="control-label sectionLabel text-muted">
-                                        Benchmark Data Type
-                                        <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
-                                    </label>
-                                    <select class="form-control" ng-model="new_analysis.configuration.benchmark_data_type" ng-dropdown required>
-                                        <option ng-repeat="model in better_benchmark_options" selected="selected"
-                                                ng-value=model>{$:: model $}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row" style="padding-bottom: 2em">
-                                <div class="col-md-6">
-                                    <label class="control-label sectionLabel text-muted">
-                                        Minimum Model R Squared
-                                        <i class="ui-grid-icon-info-circled" uib-tooltip-html="'R² is a value from 0 to 1 that represents the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"></i>
-                                    </label>
-                                    <input ng-model="new_analysis.configuration.min_model_r_squared" type="number" class="form-control" ng-init="new_analysis.configuration.min_model_r_squared=0.6" ng-value="0.6" step=".01" min="0" max="1">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="control-label sectionLabel text-muted">
-                                        Preprocess Meters
-                                        <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
-                                    </label>
-                                    <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" class="form-control" style="width: 34px; cursor: pointer">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="control-label sectionLabel text-muted">
-                                        Run Portfolio Analysis
-                                        <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>
-                                    </label>
-                                    <input ng-model="new_analysis.configuration.portfolio_analysis" ng-disabled="inventory_count == 1" type="checkbox" class="form-control" style="width: 34px; cursor: pointer">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="btn-group">
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
-                        </div>
-                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
-                            <div class="row">
-                                <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
-                                    <label for="from-date">{$:: 'From date' | translate $}:</label>
-                                    <div class="input-group date-input">
-                                        <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="datePickersOpen.start" ng-model="new_analysis.configuration.meter.start_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="to-date">{$:: 'To date' | translate $}:</label>
-                                    <div class="input-group date-input">
-                                        <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="datePickersOpen.end" ng-model="new_analysis.configuration.meter.end_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group" ng-if="new_analysis.service == 'EUI'">
-                    <label class="control-label sectionLabel">EUI Analysis Options</label>
-                    <div class="form-group" style="padding: 1em 0">
-
-                        <div class="btn-group">
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
-                            <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
-                        </div>
-
-                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
-                            <div class="row">
-                                <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
-                                    <label for="from-date">{$:: 'From date' | translate $}:</label>
-                                    <div class="input-group date-input">
-                                        <input id="from-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="datePickersOpen.start" ng-model="new_analysis.configuration.meter.start_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="to-date">{$:: 'To date' | translate $}:</label>
-                                    <div class="input-group date-input">
-                                        <input id="to-date" type="text" class="form-control" uib-datepicker-popup="MM-dd-yyyy" is-open="datePickersOpen.end" ng-model="new_analysis.configuration.meter.end_date" uib-tooltip="'From Date' must be before 'To Date'" tooltip-placement="top" tooltip-trigger="mouseenter" tooltip-enable="invalidDates" ng-required="true">
-                                        <span class="input-group-btn">
-                                            <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa fa-calendar"></i></button>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-top: 1em">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <label class="control-label sectionLabel">Cycle</label>
-                                    <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
-                                        <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group" ng-if="new_analysis.service == 'CO2'">
-                    <label class="control-label sectionLabel">CO2 Analysis Options</label>
-                    <div class="form-group" style="padding-top: 1em">
-                        <div class="form-row">
-                            <label class="control-label sectionLabel text-muted">
-                                Save Results to Property
-                                <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If checked, the results from the analysis will be saved to the property, overriding any existing values or defaults.'"></i>
-                            </label>
-                            <input ng-model="new_analysis.configuration.save_co2_results" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" checked="checked">
-                        </div>
-                    </div>
-                </div>
-            </form>
+  <div class="modal-header">
+    <h4 class="modal-title" id="manageLabelsModalLabel" translate>Run Analysis</h4>
+    <div>An analysis will be created for cycle <span style="font-weight: bold">{$ current_cycle.name $}</span></div>
+  </div>
+  <div class="modal-body">
+    <div class="newAnalysisInput" style="margin-top: 0">
+      <form id="newAnalysisForm" name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
+        <div class="form-group">
+          <label class="control-label sectionLabel" translate>Name</label>
+          <input
+            id="AnalysisName"
+            type="text"
+            name="name"
+            class="form-control"
+            ng-minlength="1"
+            ng-maxlength="100"
+            ng-model="new_analysis.name"
+            placeholder="{$:: 'Analysis Name' | translate $}"
+            required
+          />
         </div>
+        <div class="form-group">
+          <label class="control-label sectionLabel">Type</label>
+          <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
+            <option ng-option value="BSyncr" selected="selected">BSyncr</option>
+            <option ng-option value="BETTER" selected="selected">BETTER</option>
+            <option ng-option value="EUI" selected="selected">EUI</option>
+            <option ng-option value="CO2" selected="selected">Average Annual CO2</option>
+            <option ng-option value="EEEJ" selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
+          </select>
+        </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
+          <label class="control-label sectionLabel">BSyncr Model Selection</label>
+          <select class="form-control" ng-model="new_analysis.configuration.model_type" ng-dropdown required>
+            <option ng-repeat="model in bsyncr_models" selected="selected" ng-value="model">{$:: model $}</option>
+          </select>
+        </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
+          <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
+          <div class="form-group" style="padding-top: 1em">
+            <div class="container-fluid">
+              <div class="row" style="padding-bottom: 1em">
+                <div class="col-md-6">
+                  <label class="control-label sectionLabel text-muted">
+                    Savings Target
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"
+                    ></i>
+                  </label>
+                  <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
+                    <option ng-repeat="model in better_savings_targets" selected="selected" ng-value="model">{$:: model $}</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="control-label sectionLabel text-muted">
+                    Benchmark Data Type
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"
+                    ></i>
+                  </label>
+                  <select class="form-control" ng-model="new_analysis.configuration.benchmark_data_type" ng-dropdown required>
+                    <option ng-repeat="model in better_benchmark_options" selected="selected" ng-value="model">{$:: model $}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row" style="padding-bottom: 2em">
+                <div class="col-md-6">
+                  <label class="control-label sectionLabel text-muted">
+                    Minimum Model R Squared
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'R² is a value from 0 to 1 that represents the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"
+                    ></i>
+                  </label>
+                  <input
+                    ng-model="new_analysis.configuration.min_model_r_squared"
+                    type="number"
+                    class="form-control"
+                    ng-init="new_analysis.configuration.min_model_r_squared=0.6"
+                    ng-value="0.6"
+                    step=".01"
+                    min="0"
+                    max="1"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <label class="control-label sectionLabel text-muted">
+                    Preprocess Meters
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"
+                    ></i>
+                  </label>
+                  <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" />
+                </div>
+                <div class="col-md-3">
+                  <label class="control-label sectionLabel text-muted">
+                    Run Portfolio Analysis
+                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>
+                  </label>
+                  <input ng-model="new_analysis.configuration.portfolio_analysis" ng-disabled="inventory_count == 1" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" />
+                </div>
+              </div>
+            </div>
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+            </div>
+            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
+              <div class="row">
+                <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
+                  <label for="from-date">{$:: 'From date' | translate $}:</label>
+                  <div class="input-group date-input">
+                    <input
+                      id="from-date"
+                      type="text"
+                      class="form-control"
+                      uib-datepicker-popup="MM-dd-yyyy"
+                      is-open="datePickersOpen.start"
+                      ng-model="new_analysis.configuration.meter.start_date"
+                      uib-tooltip="'From Date' must be before 'To Date'"
+                      tooltip-placement="top"
+                      tooltip-trigger="mouseenter"
+                      tooltip-enable="invalidDates"
+                      ng-required="true"
+                    />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="to-date">{$:: 'To date' | translate $}:</label>
+                  <div class="input-group date-input">
+                    <input
+                      id="to-date"
+                      type="text"
+                      class="form-control"
+                      uib-datepicker-popup="MM-dd-yyyy"
+                      is-open="datePickersOpen.end"
+                      ng-model="new_analysis.configuration.meter.end_date"
+                      uib-tooltip="'From Date' must be before 'To Date'"
+                      tooltip-placement="top"
+                      tooltip-trigger="mouseenter"
+                      tooltip-enable="invalidDates"
+                      ng-required="true"
+                    />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-top: 1em">
+              <div class="row">
+                <div class="col-md-12">
+                  <label class="control-label sectionLabel">Cycle</label>
+                  <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
+                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'EUI'">
+          <label class="control-label sectionLabel">EUI Analysis Options</label>
+          <div class="form-group" style="padding: 1em 0">
+            <div class="btn-group">
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
+              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
+            </div>
+
+            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
+              <div class="row">
+                <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
+                  <label for="from-date">{$:: 'From date' | translate $}:</label>
+                  <div class="input-group date-input">
+                    <input
+                      id="from-date"
+                      type="text"
+                      class="form-control"
+                      uib-datepicker-popup="MM-dd-yyyy"
+                      is-open="datePickersOpen.start"
+                      ng-model="new_analysis.configuration.meter.start_date"
+                      uib-tooltip="'From Date' must be before 'To Date'"
+                      tooltip-placement="top"
+                      tooltip-trigger="mouseenter"
+                      tooltip-enable="invalidDates"
+                      ng-required="true"
+                    />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-solid fa-calendar"></i></button>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="to-date">{$:: 'To date' | translate $}:</label>
+                  <div class="input-group date-input">
+                    <input
+                      id="to-date"
+                      type="text"
+                      class="form-control"
+                      uib-datepicker-popup="MM-dd-yyyy"
+                      is-open="datePickersOpen.end"
+                      ng-model="new_analysis.configuration.meter.end_date"
+                      uib-tooltip="'From Date' must be before 'To Date'"
+                      tooltip-placement="top"
+                      tooltip-trigger="mouseenter"
+                      tooltip-enable="invalidDates"
+                      ng-required="true"
+                    />
+                    <span class="input-group-btn">
+                      <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-solid fa-calendar"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-top: 1em">
+              <div class="row">
+                <div class="col-md-12">
+                  <label class="control-label sectionLabel">Cycle</label>
+                  <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
+                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" ng-if="new_analysis.service == 'CO2'">
+          <label class="control-label sectionLabel">CO2 Analysis Options</label>
+          <div class="form-group" style="padding-top: 1em">
+            <div class="form-row">
+              <label class="control-label sectionLabel text-muted">
+                Save Results to Property
+                <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If checked, the results from the analysis will be saved to the property, overriding any existing values or defaults.'"></i>
+              </label>
+              <input ng-model="new_analysis.configuration.save_co2_results" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" checked="checked" />
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()" translate>Cancel</button>
-        <button type="submit" class="btn btn-primary" form="newAnalysisForm" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
-    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
+    <button type="submit" class="btn btn-primary" form="newAnalysisForm" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
+  </div>
 </div>

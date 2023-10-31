@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Organization
+from seed.models import Organization, TaxLot
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -314,3 +314,54 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         # retrieve the last access level instance
         _ = AccessLevelInstance.objects.get(organization=self.org, name="Company H")
+
+    def test_can_delete_instance(self):
+        self.org.access_level_names += ["2nd gen", "3rd gen"]
+        ali = self.org.add_new_access_level_instance(self.org.root.pk, "child")
+
+        url = reverse_lazy('api:v3:organization-access_levels-can-delete-instance', args=[self.org.id, ali.pk],)
+        result = self.client.get(url)
+        assert result.json()["can_delete"]
+
+    def test_can_delete_instance_has_relation(self):
+        self.org.access_level_names += ["2nd gen", "3rd gen"]
+        ali = self.org.add_new_access_level_instance(self.org.root.pk, "child")
+
+        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=ali)
+
+        url = reverse_lazy('api:v3:organization-access_levels-can-delete-instance', args=[self.org.id, ali.pk],)
+        result = self.client.get(url)
+        assert not result.json()["can_delete"]
+        assert result.json()["reasons"] == ["Has 1 related Taxlot"]
+
+    def test_can_delete_instance_child_has_relation(self):
+        self.org.access_level_names += ["2nd gen", "3rd gen"]
+        ali = self.org.add_new_access_level_instance(self.org.root.pk, "me")
+        child = self.org.add_new_access_level_instance(ali.pk, "child")
+
+        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=child)
+
+        url = reverse_lazy('api:v3:organization-access_levels-can-delete-instance', args=[self.org.id, ali.pk],)
+        result = self.client.get(url)
+        assert not result.json()["can_delete"]
+        assert result.json()["reasons"] == ["Has 1 related Taxlot"]
+
+    def test_delete_instance(self):
+        self.org.access_level_names += ["2nd gen", "3rd gen"]
+        ali = self.org.add_new_access_level_instance(self.org.root.pk, "me")
+        child = self.org.add_new_access_level_instance(ali.pk, "child")
+
+        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=child)
+
+        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, ali.pk],)
+        result = self.client.delete(url)
+
+        assert result.status_code == 204
+        assert AccessLevelInstance.objects.count() == 1
+        assert TaxLot.objects.count() == 0
+
+    def test_delete_instance_root(self):
+        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, self.org     .root.pk],)
+        result = self.client.delete(url)
+
+        assert result.status_code == 400

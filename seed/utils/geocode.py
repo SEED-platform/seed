@@ -48,7 +48,7 @@ def create_geocoded_additional_columns(organization: Organization):
     """Create the additional columns that are needed for storing the extra
     geocoded data that will be returned by the MapQuest service."""
     new_columns = [
-        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "GeocodedAddress"},
+        {"name": "geocoded_address", "display_name": "Geocoded Address", "description": "Geocoded Address"},
         {"name": "geocoded_postal_code", "display_name": "Geocoded Postal Code", "description": "Geocoded Postal Code"},
         {"name": "geocoded_side_of_street", "display_name": "Geocoded Side of Street", "description": "Geocoded Side of Street"},
         {"name": "geocoded_country", "display_name": "Geocoded Country", "description": "Geocoded Country"},
@@ -89,12 +89,13 @@ def geocode_buildings(buildings):
     Depending on if and how a -State is geocoded, the geocoding_confidence is
     populated with the details such as the confidence quality or lack thereof.
     """
-    # -States with longitude and latitude prepopulated while excluding those previously geocoded by API
-    pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High")
+    # -States with longitude and latitude prepopulated while excluding those previously geocoded by API or census geocoder
+    pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High").exclude(geocoding_confidence__startswith="Census Geocoder")
     _geocode_by_prepopulated_fields(pregeocoded)
 
     # Include ungeocoded -States as well as previously API geocoded -States.
-    buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
+    # Include for geocoding those coded by the EEEJ analysis
+    buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High") | Q(geocoding_confidence__startswith="Census Geocoder"))
 
     # Don't continue if there are no buildings remaining
     if not buildings_to_geocode:

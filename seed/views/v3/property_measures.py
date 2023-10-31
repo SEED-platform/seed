@@ -4,6 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -26,7 +27,14 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     serializer_class = PropertyMeasureSerializer
     model = PropertyMeasure
+    pagination_class = None
     orgfilter = 'property_state__organization_id'
+
+    enum_validators = {
+        'application_scale': PropertyMeasure.str_to_application_scale,
+        'category_affected': PropertyMeasure.str_to_category_affected,
+        'implementation_status': PropertyMeasure.str_to_impl_status
+    }
 
     @api_endpoint_class
     @ajax_request_class
@@ -41,15 +49,10 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 "status": 'error',
-                "message": 'No Measures found for given pks'
+                "message": 'No PropertyView found for given pks'
             }, status=status.HTTP_404_NOT_FOUND)
 
         measure_set = PropertyMeasure.objects.filter(scenario=scenario_pk, property_state=property_state.id)
-        if not measure_set:
-            return JsonResponse({
-                "status": 'error',
-                "message": 'No Measures found for given pks'
-            }, status=status.HTTP_404_NOT_FOUND)
 
         serialized_measures = []
         for measure in measure_set:
@@ -89,8 +92,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                "application_scale": "integer",
-                "category_affected": "integer",
+                "application_scale": PropertyMeasure.APPLICATION_SCALE_TYPES,
+                "category_affected": PropertyMeasure.CATEGORY_AFFECTED_TYPE,
                 "cost_capital_replacement": "integer",
                 "cost_installation": "integer",
                 "cost_material": "integer",
@@ -98,9 +101,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 "cost_residual_value": "integer",
                 "cost_total_first": "integer",
                 "description": "string",
-                "implementation_status": "integer",
+                "implementation_status": PropertyMeasure.IMPLEMENTATION_TYPES,
                 "property_measure_name": "string",
-                "recommended": "string",
+                "recommended": "boolean",
                 "useful_life": "integer",
             }
         )
@@ -126,6 +129,15 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         for key, value in request.data.items():
             if key in possible_fields:
+                # Handle enums
+                if key in self.enum_validators.keys():
+                    value = self.enum_validators[key](value)
+                    if value is None:
+                        return JsonResponse({
+                            "Success": False,
+                            "Message": f"Invalid {key} value"
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
                 setattr(property_measure, key, value)
             else:
                 return JsonResponse({
@@ -133,7 +145,13 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                     "message": f'"{key}" is not a valid property measure field'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        property_measure.save()
+        try:
+            property_measure.save()
+        except ValidationError as e:
+            return JsonResponse({
+                "Success": False,
+                "Message": str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             "status": "success",
