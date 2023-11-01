@@ -24,7 +24,7 @@ SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'REDIS_HOST', 'REDIS_AWS_ELASTICACHE', 'REDIS_URL', 'DJANGO_EMAIL_BACKEND',
+                     'REDIS_PASSWORD', 'REDIS_HOST', 'REDIS_AWS_ELASTICACHE', 'DJANGO_EMAIL_BACKEND',
                      'POSTGRES_HOST'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
@@ -77,55 +77,44 @@ DATABASES = {
 
 # Redis / Celery config
 if 'REDIS_AWS_ELASTICACHE' in os.environ:
+    CELERY_BROKER_URL = f"rediss://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST')}:6379/1?ssl_cert_reqs=required"
+
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_URL'),
+            'LOCATION': CELERY_BROKER_URL,
             'OPTIONS': {
-                'DB': 1,
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                'PASSWORD': os.environ.get('REDIS_PASSWORD'),
-                "SSL": True  # If your AWS Elasticache is set up for SSL, set this to True
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'rediss://:%s@%s:6379/%s?ssl_cert_reqs=required' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        os.environ.get('REDIS_HOST'),
-        CACHES['default']['OPTIONS']['DB']
-    )
 elif 'REDIS_PASSWORD' in os.environ:
+    CELERY_BROKER_URL = f"redis://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': f"{os.environ.get('REDIS_HOST', 'db-redis')}:6379",
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
             'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': REDIS_PASSWORD,  # noqa F405
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
 else:
+    CELERY_BROKER_URL = f"redis://{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
             'OPTIONS': {
-                'DB': 1
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://%s/%s' % (
-        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-    )
 
 CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL

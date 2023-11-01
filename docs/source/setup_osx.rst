@@ -270,15 +270,17 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {'DB': 1},
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 MapQuest API Key
 ----------------

@@ -15,28 +15,23 @@ Docker then you will not need to do this.
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
-the CACHES configuration option. Your final configuration should look like the following in your
+the CELERY_BROKER_URL. Your final configuration should look like the following in your
 local_untracked.py file
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://:password@127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
             'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': 'password',
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             },
             'TIMEOUT': 300
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (

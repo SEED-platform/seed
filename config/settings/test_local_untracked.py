@@ -32,8 +32,8 @@ DATABASES = {
 }
 
 # redis cache config
-# with AWS ElastiCache redis, the LOCATION setting looks something like:
-# 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
+# with AWS ElastiCache redis, the CELERY_BROKER_URL setting looks something like:
+# 'rediss://:password@xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379/1?ssl_cert_reqs=required'
 
 EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
 if EAGER:
@@ -41,18 +41,18 @@ if EAGER:
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
 else:
-    print("Using redis database")
+    print('Using redis database')
+    CELERY_BROKER_URL = 'redis://localhost:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "localhost:6379",
-            'OPTIONS': {'DB': 1},
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://%s/%s' % (
-        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
