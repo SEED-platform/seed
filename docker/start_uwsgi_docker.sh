@@ -2,9 +2,9 @@
 
 cd /seed
 
-# Check if 'STRATUS_MANAGED_SERVICES_ENABLED' is not set or if its value is 'TRUE'
-if [[ "${STRATUS_MANAGED_SERVICES_ENABLED}" == "on" ]]; then
-    echo "'STRATUS_MANAGED_SERVICES_ENABLED' is set and not equal to 'on'. Skipping wait-for-it.sh execution."
+# Check if 'DISABLE_SERVICE_CHECKS_ON_START' is not set or if its value is 'TRUE'
+if [[ "${DISABLE_SERVICE_CHECKS_ON_START}" == "on" ]]; then
+    echo "'DISABLE_SERVICE_CHECKS_ON_START' is set and equal to 'on'. Skipping wait-for-it.sh execution."
 else
     cd /seed
 
