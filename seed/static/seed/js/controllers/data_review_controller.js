@@ -111,6 +111,10 @@ angular.module('BE.seed.controller.data_review', [])
                 let starting_properties = properties[$scope.dataReview.starting_cycle.id].filter(p => p[level] == ali)
                 let ending_properties = properties[$scope.dataReview.ending_cycle.id].filter(p => p[level] == ali)
                 let flat_properties = [...starting_properties, ...ending_properties].flat()
+                // labels are related to property views, but cross cycles displays based on property 
+                // create a lookup between property_view.id to property.id
+                $scope.property_lookup = {}
+                flat_properties.forEach(p => $scope.property_lookup[p.property_view_id] = p.id)
                 let unique_ids = [...new Set(flat_properties.map(property => property.id))]
                 let site_eui = cycle_column_lookup.site_eui
                 let gfa = cycle_column_lookup.gross_floor_area
@@ -210,15 +214,10 @@ angular.module('BE.seed.controller.data_review', [])
                 $scope.show_full_labels[key] = !$scope.show_full_labels[key];
                 setTimeout(() => {
                     $scope.gridApi.grid.getColumn(labels_col).width = $scope.get_label_column_width(labels_col, key);
-                    console.log('a')
                     const icon = document.getElementById('label-header-icon');
-                    console.log('b')
                     icon.classList.add($scope.show_full_labels[key] ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
-                    console.log('c')
                     icon.classList.remove($scope.show_full_labels[key] ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
-                    console.log('d')
                     $scope.gridApi.grid.refresh();
-                    console.log('e')
                 }, 0);
             };
 
@@ -256,10 +255,11 @@ angular.module('BE.seed.controller.data_review', [])
                     if (label.show_in_list) {
                         for (const m in label.is_applied) {
                             const id = label.is_applied[m];
-                            if (!$scope.show_labels_by_inventory_id[key][id]) {
-                                $scope.show_labels_by_inventory_id[key][id] = [];
+                            const property_id = $scope.property_lookup[id]
+                            if (!$scope.show_labels_by_inventory_id[key][property_id]) {
+                                $scope.show_labels_by_inventory_id[key][property_id] = [];
                             }
-                            $scope.show_labels_by_inventory_id[key][id].push(label);
+                            $scope.show_labels_by_inventory_id[key][property_id].push(label);
                         }
                     }
                 }
@@ -267,7 +267,8 @@ angular.module('BE.seed.controller.data_review', [])
 
             // Builds the html to display labels associated with this row entity
             $scope.display_labels = (entity, key) => {
-                const id =  entity.property_view_id;
+                const id =  entity.id;
+                // const id = entity.property_view_id;
                 // const id = $scope.inventory_type === 'properties' ? entity.property_view_id : entity.taxlot_view_id;
                 const labels = [];
                 const titles = [];
