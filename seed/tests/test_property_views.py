@@ -391,7 +391,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
 
         base_details = {
-            'address_line_1': '123 Match Street',
+            'custom_id_1': 'CustomID123',
             'import_file_id': import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1098,6 +1098,63 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             self.login_as_child_member()
             resp = self.client.put(url, data=data, content_type=MULTIPART_CONTENT)
             assert resp.status_code == 404
+
+    def test_property_analyses(self):
+        url = reverse('api:v3:properties-analyses', args=[self.property.id]) + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 200
+
+        # child member cannot
+        self.login_as_child_member()
+        resp = self.client.get(url, content_type='application/json')
+        assert resp.status_code == 404
+
+    def test_update_property_view_with_espm(self):
+        """Simple test to verify that the property state is merged with an updated
+        ESPM download XLSX file."""
+        pm_property_id = '22482007'
+        mapping_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data', 'mappings', 'espm-single-mapping.csv'
+        )
+        # need to upload the mappings for the ESPM data to a new profile
+        mapping_profile = ColumnMappingProfile.create_from_file(
+            mapping_filepath, self.org, 'ESPM', overwrite_if_exists=True
+        )
+
+        test_filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'data', f'portfolio-manager-single-{pm_property_id}.xlsx'
+        )
+
+        url = reverse('api:v3:properties-update-with-espm', args=[self.view.id])
+        url += f"?organization_id={self.org.id}&cycle_id={self.cycle.id}&mapping_profile_id={mapping_profile.id}"
+        doc = open(test_filepath, 'rb')
+
+        self.login_as_root_member()
+        resp = self.client.put(
+            path=url,
+            data=encode_multipart(data=dict(
+                file=doc,
+                file_type='XLSX',
+                name=doc.name),
+                boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT
+        )
+        assert resp.status_code == 200
+
+        self.login_as_child_member()
+        resp = self.client.put(
+            path=url,
+            data=encode_multipart(data=dict(
+                file=doc,
+                file_type='XLSX',
+                name=doc.name),
+                boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT
+        )
+        assert resp.status_code == 404
 
 
 class PropertyMergeViewTests(DataMappingBaseTestCase):

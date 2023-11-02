@@ -75,7 +75,7 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': os.environ.get('REDIS_HOST', 'db-redis:6379'),
+            'LOCATION': f"{os.environ.get('REDIS_HOST', 'db-redis')}:6379",
             'OPTIONS': {
                 'DB': 1
             },
@@ -84,15 +84,9 @@ else:
     }
     if 'REDIS_PASSWORD' in os.environ:
         CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
-            CACHES['default']['OPTIONS']['PASSWORD'],
-            CACHES['default']['LOCATION'],
-            CACHES['default']['OPTIONS']['DB']
-        )
+        CELERY_BROKER_URL = f"redis://:{CACHES['default']['OPTIONS']['PASSWORD']}@{CACHES['default']['LOCATION']}/{CACHES['default']['OPTIONS']['DB']}"
     else:
-        CELERY_BROKER_URL = 'redis://{}/{}'.format(
-            CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-        )
+        CELERY_BROKER_URL = f"redis://{CACHES['default']['LOCATION']}/{CACHES['default']['OPTIONS']['DB']}"
 
     CELERY_BROKER_TRANSPORT = 'redis'
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL

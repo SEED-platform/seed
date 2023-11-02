@@ -2,87 +2,85 @@
  * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
-angular.module('BE.seed.controller.new_member_modal', [])
-  .controller('new_member_modal_controller', [
-    '$scope',
-    '$uibModalInstance',
-    'organization',
-    'user_service',
-    '$timeout',
-    '$translate',
-    'access_level_tree',
-    'level_names',
-    function (
-      $scope,
-      $uibModalInstance,
-      organization,
-      user_service,
-      $timeout,
-      $translate,
-      access_level_tree,
-      level_names,
-    ) {
-      $scope.access_level_tree = access_level_tree;
-      $scope.level_names = level_names;
-      $scope.level_name_index = null;
-      $scope.potential_level_instances = [];
+angular.module('BE.seed.controller.new_member_modal', []).controller('new_member_modal_controller', [
+  '$scope',
+  '$uibModalInstance',
+  'organization',
+  'user_service',
+  '$timeout',
+  '$translate',
+  'access_level_tree',
+  'level_names',
+  // eslint-disable-next-line func-names
+  function ($scope, $uibModalInstance, organization, user_service, $timeout, $translate, access_level_tree, level_names) {
+    $scope.access_level_tree = access_level_tree;
+    $scope.level_names = level_names;
+    $scope.level_name_index = null;
+    $scope.potential_level_instances = [];
 
-      /* Build out access_level_instances_by_depth recurrsively */
-      access_level_instances_by_depth = {};
-      calculate_access_level_instances_by_depth = function(tree, depth=1){
-        if (tree == undefined) return;
-        if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
-        tree.forEach(ali => {
-          access_level_instances_by_depth[depth].push({id: ali.id, name: ali.data.name})
-          calculate_access_level_instances_by_depth(ali.children, depth+1);
-        })
+    /* Build out access_level_instances_by_depth recursively */
+    const access_level_instances_by_depth = {};
+    const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
+      if (tree === undefined) return;
+      if (access_level_instances_by_depth[depth] === undefined) access_level_instances_by_depth[depth] = [];
+      for (const ali of tree) {
+        access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
+        calculate_access_level_instances_by_depth(ali.children, depth + 1);
       }
-      calculate_access_level_instances_by_depth(access_level_tree, 1);
+    };
+    calculate_access_level_instances_by_depth(access_level_tree, 1);
 
-      $scope.change_selected_level_index = function(){
-        new_level_instance_depth = parseInt($scope.level_name_index) + 1
-        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
-      }
+    $scope.change_selected_level_index = () => {
+      const new_level_instance_depth = parseInt($scope.level_name_index, 10) + 1;
+      $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+    };
 
-      $scope.roles = [{
+    $scope.roles = [
+      {
         name: $translate.instant('Owner'),
         value: 'owner'
-      }, {
+      },
+      {
         name: $translate.instant('Member'),
         value: 'member'
-      }, {
+      },
+      {
         name: $translate.instant('Viewer'),
         value: 'viewer'
-      }];
-      $scope.user = {
-        organization,
-        role: $scope.roles[1]
-      };
+      }
+    ];
+    $scope.user = {
+      organization,
+      role: $scope.roles[1].value
+    };
 
-      /**
-       * adds a user to the org
-       */
-      $scope.submit_form = function () {
-        // make `role` a string
-        const u = _.cloneDeep($scope.user);
-        u.role = u.role.value;
+    /**
+     * adds a user to the org
+     */
+    $scope.submit_form = () => {
+      // make `role` a string
+      const u = _.cloneDeep($scope.user);
 
-        user_service.add(u).then(function () {
+      user_service.add(u).then(
+        () => {
           $uibModalInstance.close();
-        }, function (data) {
+        },
+        (data) => {
           $scope.$emit('app_error', data);
-        });
-      };
+        }
+      );
+    };
 
-      $scope.close = function () {
-        $uibModalInstance.close();
-      };
+    $scope.close = () => {
+      $uibModalInstance.close();
+    };
 
-      $scope.cancel = function () {
-        $uibModalInstance.dismiss('cancel');
-      };
+    $scope.cancel = () => {
+      $uibModalInstance.dismiss('cancel');
+    };
 
-      $timeout(function () {
-        angular.element('#newMemberFirstName').focus();
-      }, 50);
-    }]);
+    $timeout(() => {
+      angular.element('#newMemberFirstName').focus();
+    }, 50);
+  }
+]);

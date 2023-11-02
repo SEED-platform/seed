@@ -1,78 +1,84 @@
 <div class="modal-header">
-    <div class="modal-links">
-        <span ng-show="!is_show_reorder" translate>Show/Hide Columns</span>
-        <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder" translate>Show/Hide Columns</a>
-        |
-        <span ng-show="is_show_reorder" translate>Reorder Columns</span>
-        <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder" translate>Reorder Columns</a>
-    </div>
+  <div class="modal-links">
+    <span ng-show="!is_show_reorder" translate>Show/Hide Columns</span>
+    <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder" translate>Show/Hide Columns</a>
+    |
+    <span ng-show="is_show_reorder" translate>Reorder Columns</span>
+    <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder" translate>Reorder Columns</a>
+  </div>
 </div>
 
 <div class="modal-body form-horizontal">
-    <div class="form-group">
-        <div class="col-sm-12" ng-show="!is_show_reorder">
-            <p translate>Select which columns to include in the list:</p>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th class="check is_aligned_center ">
-                            <input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()" name="select-all">
-                            <label for="select-all" translate>Select All Columns</label>
-                        </th>
-                        <th class="sub_head">
-                            <span class="glyphicon glyphicon-search search-icon"></span>
-                            <input type="text" class="form-control input-sm" ng-model="filter_columns.title" placeholder="{$:: 'Search column name' | translate $}" ng-class="{active: filter_columns.title.length > 0}">
-                        </th>
-                    </tr>
-                </thead>
-            </table>
-            <div class="row column_container">
-                <div class="form_column col-sm-12">
-                    <ul class="column">
-                        <li ng-repeat="f in fields | filter:filter_columns:strict">
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" ng-model="f.checked" ng-disabled="f.static">
-                                    {$ f.title | translate $}
-                                </label>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+  <div class="form-group">
+    <div class="col-sm-12" ng-show="!is_show_reorder">
+      <p translate>Select which columns to include in the list:</p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="check is_aligned_center">
+              <input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()" name="select-all" />
+              <label for="select-all" translate>Select All Columns</label>
+            </th>
+            <th class="sub_head">
+              <span class="glyphicon glyphicon-search search-icon"></span>
+              <input
+                type="text"
+                class="form-control input-sm"
+                ng-model="filter_columns.title"
+                placeholder="{$:: 'Search column name' | translate $}"
+                ng-class="{active: filter_columns.title.length > 0}"
+              />
+            </th>
+          </tr>
+        </thead>
+      </table>
+      <div class="row column_container">
+        <div class="form_column col-sm-12">
+          <ul class="column">
+            <li ng-repeat="f in fields | filter:filter_columns:strict">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="f.checked" ng-disabled="f.static" />
+                  {$ f.title | translate $}
+                </label>
+              </div>
+            </li>
+          </ul>
         </div>
-
-        <div class="col-sm-12" ng-show="is_show_reorder">
-            <div class="section_content with_padding">
-                <p translate>Drag the columns below to change the order that they appear in the table.</p>
-            </div>
-            <div class="section_content with_padding">
-                <div class="table_list_container has_borders">
-                    <table class="table table-striped has_no_btm_margin table_highlight_first">
-                        <thead>
-                        <tr>
-                            <th translate>Column Name</th>
-                        </tr>
-                        </thead>
-                    </table>
-                    <div class="vert_table_scroll_container">
-                        <table id="sort" class="table has_no_btm_margin table-striped table_scroll">
-                            <tbody ui-sortable="sortable_options" ng-model="fields">
-                            <tr ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict">
-                                <td>
-                                    <span>{$ field.title | translate $}</span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <div class="col-sm-12" ng-show="is_show_reorder">
+      <div class="section_content with_padding">
+        <p translate>Drag the columns below to change the order that they appear in the table.</p>
+      </div>
+      <div class="section_content with_padding">
+        <div class="table_list_container has_borders">
+          <table class="table table-striped has_no_btm_margin table_highlight_first">
+            <thead>
+              <tr>
+                <th translate>Column Name</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="vert_table_scroll_container">
+            <table id="sort" class="table has_no_btm_margin table-striped table_scroll">
+              <tbody ui-sortable="sortable_options" ng-model="fields">
+                <tr ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict">
+                  <td>
+                    <span>{$ field.title | translate $}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-footer">
   <button type="button" class="btn btn-primary" ng-click="save_settings()" translate>Save Settings</button>
-  <button type="button" class="btn btn-default"  ng-click="cancel_settings()" translate>Cancel</button>
+  <button type="button" class="btn btn-default" ng-click="cancel_settings()" translate>Cancel</button>
 </div>

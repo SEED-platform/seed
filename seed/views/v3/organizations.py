@@ -8,10 +8,8 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from random import randint
 
 import dateutil
-from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
@@ -33,7 +31,6 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
@@ -70,14 +67,9 @@ from seed.serializers.organizations import (
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
-from seed.utils.match import (
-    match_merge_link,
-    matching_criteria_column_names,
-    whole_org_match_merge_link
-)
+from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import (
     create_organization,
@@ -161,8 +153,11 @@ def _dict_org(request, organizations):
             'audit_template_user': o.audit_template_user,
             'audit_template_password': o.audit_template_password,
             'at_host_url': settings.AUDIT_TEMPLATE_HOST,
+            'audit_template_report_type': o.audit_template_report_type,
             'salesforce_enabled': o.salesforce_enabled,
             'ubid_threshold': o.ubid_threshold,
+            'inventory_count': o.property_set.count() + o.taxlot_set.count(),
+            'access_level_names': o.access_level_names,
         }
         orgs.append(org)
 
@@ -197,24 +192,11 @@ def _dict_org_brief(request, organizations):
             'user_role': user_role,
             'display_decimal_places': o.display_decimal_places,
             'salesforce_enabled': o.salesforce_enabled,
-            "access_level_names": o.access_level_names,
+            'access_level_names': o.access_level_names,
         }
         orgs.append(org)
 
     return orgs
-
-
-def _get_match_merge_link_key(identifier):
-    return "org_match_merge_link_result__%s" % identifier
-
-
-@shared_task(serializer='pickle', ignore_result=True)
-def cache_match_merge_link_result(summary, identifier, progress_key):
-    result_key = _get_match_merge_link_key(identifier)
-    set_cache_raw(result_key, summary)
-
-    progress_data = ProgressData.from_key(progress_key)
-    progress_data.finish_with_success()
 
 
 class OrganizationViewSet(viewsets.ViewSet):
@@ -281,7 +263,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @has_hierarchy_access(param_import_file_id="import_file_id")
+    @has_hierarchy_access(param_import_file_id='import_file_id')
     @action(detail=True, methods=['POST'])
     def column_mappings(self, request, pk=None):
         """
@@ -322,21 +304,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})
-
-    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=[]):
-        identifier = randint(100, 100000)
-        result_key = _get_match_merge_link_key(identifier)
-        set_cache_raw(result_key, {})
-
-        progress_data = ProgressData(func_name='org_match_merge_link', unique_id=identifier)
-        progress_data.delete()
-
-        whole_org_match_merge_link.apply_async(
-            args=(org_id, state_class_name, proposed_columns),
-            link=cache_match_merge_link_result.s(identifier, progress_data.key)
-        )
-
-        return progress_data.key
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_boolean_field(
@@ -634,6 +601,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_password != org.audit_template_password:
             org.audit_template_password = audit_template_password
 
+        audit_template_report_type = posted_org.get('audit_template_report_type', False)
+        if audit_template_report_type != org.audit_template_report_type:
+            org.audit_template_report_type = audit_template_report_type
+
         salesforce_enabled = posted_org.get('salesforce_enabled', False)
         if salesforce_enabled != org.salesforce_enabled:
             org.salesforce_enabled = salesforce_enabled
@@ -790,126 +761,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         )
 
         return JsonResponse(matching_criteria_column_names)
-
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'inventory_type': 'string'
-            },
-            required=['inventory_type'],
-            description='Properties:\n'
-                        '- inventory_type: either "properties" or "taxlots"'
-        )
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=True, methods=['POST'])
-    def match_merge_link(self, request, pk=None):
-        """
-        Run match_merge_link for an org.
-        """
-        inventory_type = request.data.get('inventory_type', None)
-        if inventory_type not in ['properties', 'taxlots']:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            org = Organization.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
-
-        progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name)
-
-        return JsonResponse({'progress_key': progress_key})
-
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                'inventory_type': 'string',
-                'add': ['string'],
-                'remove': ['string'],
-            },
-            required=['inventory_type'],
-            description='Properties:\n'
-                        '- inventory_type: either "properties" or "taxlots"\n'
-                        '- add: list of column names\n'
-                        '- remove: list of column names'
-        )
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=True, methods=['POST'])
-    def match_merge_link_preview(self, request, pk=None):
-        """
-        Run match_merge_link preview for an org and record type.
-        """
-        inventory_type = request.data.get('inventory_type', None)
-        if inventory_type not in ['properties', 'taxlots']:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            org = Organization.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
-
-        current_columns = matching_criteria_column_names(org.id, state_class_name)
-
-        add = set(request.data.get('add', []))
-        remove = set(request.data.get('remove', []))
-
-        provided_columns = Column.objects.filter(
-            column_name__in=add.union(remove),
-            organization_id=org.id,
-            table_name=state_class_name
-        )
-        if provided_columns.count() != (len(add) + len(remove)):
-            return JsonResponse({'status': 'error',
-                                 'message': 'Invalid column names provided.'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        proposed_columns = current_columns.union(add).difference(remove)
-
-        progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name, list(proposed_columns))
-
-        return JsonResponse({'progress_key': progress_key})
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            'match_merge_link_id',
-            required=True,
-            description='ID of match merge link'
-        )]
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=True, methods=['GET'])
-    def match_merge_link_result(self, request, pk=None):
-        try:
-            Organization.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        identifier = request.query_params['match_merge_link_id']
-        result_key = _get_match_merge_link_key(identifier)
-
-        # using unsafe serialization b/c the result might not be a dict
-        return JsonResponse(get_cache_raw(result_key), safe=False)
 
     @api_endpoint_class
     @ajax_request_class

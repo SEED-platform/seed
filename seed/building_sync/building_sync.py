@@ -374,7 +374,6 @@ class BuildingSync(object):
             'postal_code': property_['postal_code'],
             'longitude': property_['longitude'],
             'latitude': property_['latitude'],
-            'property_name': property_['property_name'],
             'property_type': property_['property_type'],
             'year_built': property_['year_built'],
             'floors_above_grade': property_['floors_above_grade'],

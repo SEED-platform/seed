@@ -4,29 +4,27 @@
  *
  * Directive sd-scroll-sync used for keeping the horizontal scrollbar in sync across multiple scrolling areas
  */
-angular.module('sdScrollSync', []).directive('sdScrollSync', function () {
-  var scrollLeft = 0;
-
-  function combine (elements) {
-    elements.on('scroll', function (e) {
-      if (e.isTrigger) {
-        e.target.scrollLeft = scrollLeft;
-      } else {
-        scrollLeft = e.target.scrollLeft;
-        elements.each(function () {
-          if (!this.isEqualNode(e.target)) {
-            $(this).trigger('scroll');
-          }
-        });
-      }
-    });
-  }
+angular.module('sdScrollSync', []).directive('sdScrollSync', () => {
+  let scrollLeft = 0;
 
   return {
     restrict: 'A',
     replace: false,
-    compile: function (element, attrs) {
-      combine(element.find('.' + attrs.sdScrollSync));
+    compile: (element, attrs) => {
+      const elements = element.find(`.${attrs.sdScrollSync}`);
+
+      elements.on('scroll', (e) => {
+        if (e.isTrigger) {
+          e.target.scrollLeft = scrollLeft;
+        } else {
+          scrollLeft = e.target.scrollLeft;
+          elements.each(function () {
+            if (!this.isEqualNode(e.target)) {
+              $(this).trigger('scroll');
+            }
+          });
+        }
+      });
     }
   };
 });

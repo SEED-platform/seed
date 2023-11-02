@@ -1,72 +1,75 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel" translate>Export your Properties and Tax Lots</h4>
+  <h4 class="modal-title" id="exportModalLabel" translate>Export your Properties and Tax Lots</h4>
 </div>
-<div class="modal-body form-horizontal" style="padding-bottom: 0;">
-    <div class="section">
-
-        <div class="section_content_container">
-            <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <div class="col-sm-6">
-                            <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required>
-                        </div>
-                    </div>
-                </form>
+<div class="modal-body form-horizontal" style="padding-bottom: 0">
+  <div class="section">
+    <div class="section_content_container">
+      <div class="section_content with_padding">
+        <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required />
             </div>
-        </div>
-
-        <div class="section_content_container">
-            <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="include-notes" translate>Include Notes</label>
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <div class="col-sm-6">
-                            <input type="checkbox" class="checkbox" id="include-notes" ng-model="include_notes">
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="section_content_container">
-            <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="include-label-header" translate>CSV - Include Label Header</label>
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <div class="col-sm-6">
-                            <input type="checkbox" class="checkbox" id="include-label-header" ng-model="include_label_header">
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="section_content_container">
-            <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="include-meter-readings" translate>GeoJSON - Include Meter Readings (only recommended if exporting a few buildings)</label>
-                <form class="form-horizontal" role="form">
-                    <div class="form-group">
-                        <div class="col-sm-6">
-                            <input type="checkbox" class="checkbox" id="include-meter-readings" ng-model="include_meter_readings">
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <div class="section_content_container">
+      <div class="section_content with_padding">
+        <label class="control-label col-sm-4" for="include-notes" translate>Include Notes</label>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <input type="checkbox" class="checkbox" id="include-notes" ng-model="include_notes" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="section_content_container">
+      <div class="section_content with_padding">
+        <label class="control-label col-sm-4" for="include-label-header" translate>CSV - Include Label Header</label>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <input type="checkbox" class="checkbox" id="include-label-header" ng-model="include_label_header" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="section_content_container">
+      <div class="section_content with_padding">
+        <label class="control-label col-sm-4" for="include-meter-readings" translate>GeoJSON - Include Meter Readings (only recommended if exporting a few buildings)</label>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <div class="col-sm-6">
+              <input type="checkbox" class="checkbox" id="include-meter-readings" ng-model="include_meter_readings" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-primary" ng-click="export_selected('csv')" ng-disabled="!export_name.length || exporting" translate>Export CSV</button>
-    <button type="button" class="btn btn-primary" ng-click="export_selected('xlsx')" ng-disabled="!export_name.length || exporting" ng-if="inventory_type === 'properties'" translate>Export BuildingSync in Excel format</button>
-    <button type="button" class="btn btn-primary" ng-click="export_selected('geojson')" ng-disabled="!export_name.length || exporting" translate>Export GeoJSON</button>
+  <button type="button" class="btn btn-primary" ng-click="export_selected('csv')" ng-disabled="!export_name.length || exporting" translate>Export CSV</button>
+  <button type="button" class="btn btn-primary" ng-click="export_selected('xlsx')" ng-disabled="!export_name.length || exporting" ng-if="inventory_type === 'properties'" translate>
+    Export BuildingSync in Excel format
+  </button>
+  <button type="button" class="btn btn-primary" ng-click="export_selected('geojson')" ng-disabled="!export_name.length || exporting" translate>Export GeoJSON</button>
 </div>
 <div class="progress_bar_container export_progress" ng-if="exporting">
-    <div class="progress_bar_copy_top">Progress: </div>
-    <uib-progressbar class="progress-striped active" value="exporter_progress.progress" type="success"></uib-progressbar>
-    <div class="progress_bar_copy_bottom">{$ exporter_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$ exporter_progress.status_message ? ': ' + exporter_progress.status_message : '' $}</div>
+  <div class="progress_bar_copy_top">Progress:</div>
+  <uib-progressbar class="progress-striped active" value="exporter_progress.progress" type="success"></uib-progressbar>
+  <div class="progress_bar_copy_bottom">
+    {$ exporter_progress.progress | number:0 $}% {$:: 'Complete' | translate $} {$ exporter_progress.status_message ? ': ' + exporter_progress.status_message : '' $}
+  </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="exporting"translate>Cancel</button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="exporting" translate>Cancel</button>
 </div>

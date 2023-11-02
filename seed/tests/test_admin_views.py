@@ -110,7 +110,7 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER',
+            'role': 'member',
             'access_level_instance_id': org.root.id,
         }
 
@@ -136,7 +136,7 @@ class AdminViewsTest(TestCase):
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
-            'role_level': 'ROLE_MEMBER',
+            'role': 'owner',
             'access_level_instance_id': child.id,
         }
 
@@ -154,7 +154,6 @@ class AdminViewsTest(TestCase):
                 'organization_id': org.id,
                 'email': 'new_owner@testserver'}
         res = self._post_json(self.add_user_url, data)
-
         self.assertEqual(res.body['status'], 'success')
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])

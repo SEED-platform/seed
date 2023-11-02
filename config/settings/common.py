@@ -5,6 +5,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from __future__ import absolute_import
 
 import os
+from distutils.util import strtobool
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -141,12 +142,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
-COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
 COMPRESS_FILTERS = {
     'css': [
         'compressor.filters.css_default.CssAbsoluteFilter',
-        'django_compressor_autoprefixer.AutoprefixerFilter',
         'compressor.filters.cssmin.CSSMinFilter',
+    ],
+    'js': [
+        'compressor.filters.jsmin.JSMinFilter',
+        'compressor.filters.yuglify.YUglifyJSFilter',
     ]
 }
 STATICFILES_DIRS = [
@@ -158,7 +161,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'django_libsass.SassCompiler'),
+    ('text/x-scss', 'npx sass {infile} {outfile}'),
 )
 AWS_QUERYSTRING_AUTH = False
 
@@ -312,6 +315,11 @@ SWAGGER_SETTINGS = {
     'DOC_EXPANSION': 'none',
     'LOGOUT_URL': '/accounts/logout',
 }
+
+try:
+    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get('EEEJ_LOAD_SMALL_TEST_DATASET', 'False')))
+except Exception:
+    EEEJ_LOAD_SMALL_TEST_DATASET = False
 
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')

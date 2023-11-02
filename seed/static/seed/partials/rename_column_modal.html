@@ -1,63 +1,63 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" translate>RENAME_COLUMN_TITLE</h4>
+  <h4 class="modal-title" translate>RENAME_COLUMN_TITLE</h4>
 </div>
 
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
-    <div class="data_upload_steps container-fluid" ng-switch-when="1">
-        <div class="row" style="padding-bottom: 30px;">
-            <p translate>Current Name</p>
-            <input type="text" class="form-control" ng-model="current_column_name" ng-disabled="true">
-        </div>
-        <div class="row" style="padding-bottom: 20px;">
-            <p translate>Desired Name</p>
-            <input type="text" class="form-control" ng-model="column.name" ng-change=check_name_exists()>
-            <div class="alert alert-warning" style="margin: 16px 0 0;" ng-if="column.exists" translate>COLUMN_NAME_EXISTS_WARNING</div>
-            <div class="alert alert-danger" style="margin: 16px 0 0;" ng-if="column.name === current_column_name" translate>COLUMN_NAME_DUPLICATE_ERROR</div>
-        </div>
-        <div class="row" style="padding-bottom: 30px;">
-            <div class="alert alert-danger" style="margin: 0px;">
-              <ul style="padding-left: 20px;">
-                <li translate>IRREVERSIBLE_OPERATION_WARNING</li>
-                <li translate>NEW_COLUMN_REPLACE_DATA_WARNING</li>
-                <li translate>USING_DEFAULT_UNITS_WARNING</li>
-                <li translate>LONG_OPERATION_WARNING</li>
-              </ul>
-            </div>
-            <div style="margin: 5px;" ng-if="column.exists">
-                <input type="checkbox" id="overwrite-preference" ng-model="settings.overwrite_preference">
-                <label for="overwrite-preference" translate>OVERWRITE_COLUMN_DATA_QUESTION</label>
-            </div>
-            <div style="margin: 5px;">
-                <input type="checkbox" id="user-acknowledgement" ng-model="settings.user_acknowledgement">
-                <label for="user-acknowledgement" translate>Acknowledge</label>
-            </div>
-        </div>
+  <div class="data_upload_steps container-fluid" ng-switch-when="1">
+    <div class="row" style="padding-bottom: 30px">
+      <p translate>Current Name</p>
+      <input type="text" class="form-control" ng-model="current_column_name" ng-disabled="true" />
     </div>
+    <div class="row" style="padding-bottom: 20px">
+      <p translate>Desired Name</p>
+      <input type="text" class="form-control" ng-model="column.name" ng-change="check_name_exists()" />
+      <div class="alert alert-warning" style="margin: 16px 0 0" ng-if="column.exists" translate>COLUMN_NAME_EXISTS_WARNING</div>
+      <div class="alert alert-danger" style="margin: 16px 0 0" ng-if="column.name === current_column_name" translate>COLUMN_NAME_DUPLICATE_ERROR</div>
+    </div>
+    <div class="row" style="padding-bottom: 30px">
+      <div class="alert alert-danger" style="margin: 0px">
+        <ul style="padding-left: 20px">
+          <li translate>IRREVERSIBLE_OPERATION_WARNING</li>
+          <li translate>NEW_COLUMN_REPLACE_DATA_WARNING</li>
+          <li translate>USING_DEFAULT_UNITS_WARNING</li>
+          <li translate>LONG_OPERATION_WARNING</li>
+        </ul>
+      </div>
+      <div style="margin: 5px" ng-if="column.exists">
+        <input type="checkbox" id="overwrite-preference" ng-model="settings.overwrite_preference" />
+        <label for="overwrite-preference" translate>OVERWRITE_COLUMN_DATA_QUESTION</label>
+      </div>
+      <div style="margin: 5px">
+        <input type="checkbox" id="user-acknowledgement" ng-model="settings.user_acknowledgement" />
+        <label for="user-acknowledgement" translate>Acknowledge</label>
+      </div>
+    </div>
+  </div>
 
-    <div class="data_upload_steps container-fluid" ng-switch-when="2">
-        <div class="alert alert-info" ng-if="results.success">{$:: results.message $}</div>
-        <div class="alert alert-danger" ng-if="!results.success">{$:: results.message $}</div>
-        <div class="row" style="padding-bottom: 30px;">
-            <p translate>Desired Name</p>
-            <input type="text" class="form-control" ng-model="column.name" ng-disabled="true">
-        </div>
+  <div class="data_upload_steps container-fluid" ng-switch-when="2">
+    <div class="alert alert-info" ng-if="results.success">{$:: results.message $}</div>
+    <div class="alert alert-danger" ng-if="!results.success">{$:: results.message $}</div>
+    <div class="row" style="padding-bottom: 30px">
+      <p translate>Desired Name</p>
+      <input type="text" class="form-control" ng-model="column.name" ng-disabled="true" />
     </div>
+  </div>
 </div>
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
-    <div ng-switch-when="1">
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="!valid()" ng-click="accept_rename()" translate>Confirm</button>
-        </div>
-
-        <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
-        </div>
+  <div ng-switch-when="1">
+    <div class="row text-center">
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="!valid()" ng-click="accept_rename()" translate>Confirm</button>
     </div>
 
-    <div ng-switch-when="2">
-        <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="dismiss_and_refresh()" translate>Dismiss</button>
-        </div>
+    <div class="row text-center">
+      <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
     </div>
+  </div>
+
+  <div ng-switch-when="2">
+    <div class="row text-center">
+      <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="dismiss_and_refresh()" translate>Dismiss</button>
+    </div>
+  </div>
 </div>

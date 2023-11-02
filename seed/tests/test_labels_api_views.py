@@ -417,3 +417,105 @@ class LabelTestPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.delete(url, content_type='application/json')
         assert resp.status_code == 204
+
+
+class TestPropertyLabelPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.root_property_view = self.property_view_factory.get_property_view(prprty=self.root_property)
+
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.child_property_view = self.property_view_factory.get_property_view(prprty=self.child_property)
+
+        self.status_label = Label.objects.create(name='test', super_organization=self.org)
+
+    def test_add(self):
+        url = f'/api/v3/labels_property/?organization_id={self.org.id}'
+        post_params = {
+            'add_label_ids': [self.status_label.pk],
+            'remove_label_ids': [],
+            'inventory_ids': [self.root_property_view.pk, self.child_property_view.pk],
+        }
+
+        self.login_as_child_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_property_view.labels.all()) == []
+        assert list(self.child_property_view.labels.all()) == [self.status_label]
+
+        self.login_as_root_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_property_view.labels.all()) == [self.status_label]
+        assert list(self.child_property_view.labels.all()) == [self.status_label]
+
+    def test_delete(self):
+        self.root_property_view.labels.add(self.status_label)
+        self.child_property_view.labels.add(self.status_label)
+
+        url = f'/api/v3/labels_property/?organization_id={self.org.id}'
+        post_params = {
+            'add_label_ids': [],
+            'remove_label_ids': [self.status_label.pk],
+            'inventory_ids': [self.root_property_view.pk, self.child_property_view.pk],
+        }
+
+        self.login_as_child_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_property_view.labels.all()) == [self.status_label]
+        assert list(self.child_property_view.labels.all()) == []
+
+        self.login_as_root_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_property_view.labels.all()) == []
+        assert list(self.child_property_view.labels.all()) == []
+
+
+class TestTaxlotLabelPermissions(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.root_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.root_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.root_taxlot)
+
+        self.child_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        self.child_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.child_taxlot)
+
+        self.status_label = Label.objects.create(name='test', super_organization=self.org)
+
+    def test_add(self):
+        url = f'/api/v3/labels_taxlot/?organization_id={self.org.id}'
+        post_params = {
+            'add_label_ids': [self.status_label.pk],
+            'remove_label_ids': [],
+            'inventory_ids': [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
+        }
+
+        self.login_as_child_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_taxlot_view.labels.all()) == []
+        assert list(self.child_taxlot_view.labels.all()) == [self.status_label]
+
+        self.login_as_root_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_taxlot_view.labels.all()) == [self.status_label]
+        assert list(self.child_taxlot_view.labels.all()) == [self.status_label]
+
+    def test_delete(self):
+        self.root_taxlot_view.labels.add(self.status_label)
+        self.child_taxlot_view.labels.add(self.status_label)
+
+        url = f'/api/v3/labels_taxlot/?organization_id={self.org.id}'
+        post_params = {
+            'add_label_ids': [],
+            'remove_label_ids': [self.status_label.pk],
+            'inventory_ids': [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
+        }
+
+        self.login_as_child_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_taxlot_view.labels.all()) == [self.status_label]
+        assert list(self.child_taxlot_view.labels.all()) == []
+
+        self.login_as_root_member()
+        self.client.put(url, post_params, content_type='application/json')
+        assert list(self.root_taxlot_view.labels.all()) == []
+        assert list(self.child_taxlot_view.labels.all()) == []
