@@ -8,21 +8,27 @@ angular.module('BE.seed.controller.data_review', [])
         '$state',
         '$stateParams',
         'inventory_service',
+        'label_service',
         'cycles',
         'organization_payload',
         'access_level_tree',
         'property_columns',
         'spinner_utility',
+        'uiGridConstants',
+        'gridUtil',
         function (
             $scope,
             $state,
             $stateParams,
             inventory_service,
+            label_service,
             cycles,
             organization_payload,
             access_level_tree,
             property_columns,
             spinner_utility,
+            uiGridConstants,
+            gridUtil,
         ) {
             $scope.cycles = cycles.cycles;
             $scope.columns = property_columns;
@@ -32,6 +38,8 @@ angular.module('BE.seed.controller.data_review', [])
             $scope.organization = organization_payload.organization;
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.level_names = access_level_tree.access_level_names;
+            const localStorageLabelKey = `grid.properties.labels`;
+
             
             /* Build out access_level_instances_by_depth recurrsively */
             let access_level_instances_by_depth = {};
@@ -59,8 +67,9 @@ angular.module('BE.seed.controller.data_review', [])
             $scope.dataReview = {
                 goal_column: site_eui_column.id,
                 goal: 0,
-                // starting cycle 
-                // ending cycle 
+                // temp
+                starting_cycle: $scope.cycles.find(c => c.id == 3),
+                ending_cycle: $scope.cycles.find(c => c.id == 4),
                 // level_name_index
                 // access_level_instance
             };
@@ -74,16 +83,20 @@ angular.module('BE.seed.controller.data_review', [])
                     console.log('not valid')
                     return
                 }
+                console.log($scope.dataReview)
                 spinner_utility.show()
-                $scope.valid = true;
                 const cycle_ids = [$scope.dataReview.starting_cycle.id, $scope.dataReview.ending_cycle.id]
-
+                
                 inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
                     $scope.data = format_properties(result)
                     $scope.summary_data = format_summary()
+                    get_all_labels()
+                    set_grid_options()
                     // $scope.updateHeight()
-                }).then(() => { spinner_utility.hide() })
-                console.log('valid')
+                }).then(() => { 
+                    $scope.valid = true;
+                    spinner_utility.hide() 
+                })
             }
             $scope.refresh_data()
 
@@ -167,6 +180,130 @@ angular.module('BE.seed.controller.data_review', [])
                 return Math.round((a - b) / a * 100)
             }
 
+            // LABEL LOGIC START
+            $scope.max_label_width = 750;
+            $scope.get_label_column_width = (labels_col, key) => {
+                if (!$scope.show_full_labels[key]) {
+                    return 30;
+                }
+                // return 200;
+                let maxWidth = 0;
+                const renderContainer = document.body.getElementsByClassName('ui-grid-render-container-body')[1];
+                const col = $scope.gridApi.grid.getColumn(labels_col);
+                const cells = renderContainer.querySelectorAll(`.${uiGridConstants.COL_CLASS_PREFIX}${col.uid} .ui-grid-cell-contents`);
+                Array.prototype.forEach.call(cells, (cell) => {
+                    gridUtil.fakeElement(cell, {}, (newElm) => {
+                        const e = angular.element(newElm);
+                        e.attr('style', 'float: left;');
+                        const width = gridUtil.elementWidth(e);
+                        if (width > maxWidth) {
+                            maxWidth = width;
+                        }
+                    });
+                });
+                return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
+            };
+
+            // Expand or contract labels col
+            $scope.show_full_labels = { start: false, end: false }
+            $scope.toggle_labels = (labels_col, key) => {
+                $scope.show_full_labels[key] = !$scope.show_full_labels[key];
+                setTimeout(() => {
+                    $scope.gridApi.grid.getColumn(labels_col).width = $scope.get_label_column_width(labels_col, key);
+                    console.log('a')
+                    const icon = document.getElementById('label-header-icon');
+                    console.log('b')
+                    icon.classList.add($scope.show_full_labels[key] ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
+                    console.log('c')
+                    icon.classList.remove($scope.show_full_labels[key] ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
+                    console.log('d')
+                    $scope.gridApi.grid.refresh();
+                    console.log('e')
+                }, 0);
+            };
+
+            // retreive labels for cycle
+            const get_all_labels = () => {
+                get_labels('start');
+                // get_labels('end');
+            }
+            const get_labels = (key) => {
+                const cycle = key == 'start' ? $scope.dataReview.starting_cycle : $scope.dataReview.ending_cycle;
+
+                label_service.get_labels('properties', undefined, cycle.id).then((current_labels) => {                    
+                    let labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
+
+                    // load saved label filter
+                    const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+                    // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
+                    
+                    if (key == 'start') {
+                        $scope.starting_labels = labels
+                        $scope.build_labels(key, $scope.starting_labels);
+                    } else {
+                        $scope.ending_labels = labels
+                        $scope.build_labels(key, $scope.ending_labels);
+                    }
+                });
+            };
+
+            // Find labels that should be displayed and organize by applied inventory id
+            $scope.show_labels_by_inventory_id = {start: {}, end: {}};
+            $scope.build_labels = (key, labels) => {
+                $scope.show_labels_by_inventory_id[key] = {};
+                for (const n in labels) {
+                    const label = labels[n];
+                    if (label.show_in_list) {
+                        for (const m in label.is_applied) {
+                            const id = label.is_applied[m];
+                            if (!$scope.show_labels_by_inventory_id[key][id]) {
+                                $scope.show_labels_by_inventory_id[key][id] = [];
+                            }
+                            $scope.show_labels_by_inventory_id[key][id].push(label);
+                        }
+                    }
+                }
+            };
+
+            // Builds the html to display labels associated with this row entity
+            $scope.display_labels = (entity, key) => {
+                const id =  entity.property_view_id;
+                // const id = $scope.inventory_type === 'properties' ? entity.property_view_id : entity.taxlot_view_id;
+                const labels = [];
+                const titles = [];
+                if ($scope.show_labels_by_inventory_id[key][id]) {
+                    for (const i in $scope.show_labels_by_inventory_id[key][id]) {
+                        const label = $scope.show_labels_by_inventory_id[key][id][i];
+                        labels.push('<span class="', $scope.show_full_labels[key] ? 'label' : 'label-bar', ' label-', label.label, '">', $scope.show_full_labels[key] ? label.text : '', '</span>');
+                        titles.push(label.text);
+                    }
+                }
+                return ['<span title="', titles.join(', '), '" class="label-bars" style="overflow-x:scroll">', labels.join(''), '</span>'].join('');
+            };
+
+            // labels associated with starting cycle
+            const get_starting_labels = () => {
+                width_fn = $scope.gridApi ? $scope.get_label_column_width('starting-labels', 'start') : 30;
+                return {
+                    name: 'starting-labels',
+                    displayName: '',
+                    headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels(\'starting-labels\', \'start\')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
+                    cellTemplate: '<div ng-click="grid.appScope.toggle_labels(\'starting-labels\', \'start\')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, \'start\')"></div>',
+                    enableColumnMenu: false,
+                    enableColumnMoving: false,
+                    enableColumnResizing: false,
+                    enableFiltering: false,
+                    enableHiding: false,
+                    enableSorting: false,
+                    exporterSuppressExport: true,
+                    // pinnedLeft: true,
+                    visible: true,
+                    width: width_fn,
+                    maxWidth: $scope.max_label_width
+                }
+            }
+
+            // LABEL LOGIC END
             const apply_defaults = (cols, ...defaults) => { _.map(cols, (col) => _.defaults(col, ...defaults)) }
 
             const property_column_names = [
@@ -188,6 +325,7 @@ angular.module('BE.seed.controller.data_review', [])
                     { field: 'starting_sqft', displayName: 'Sq. FT' },
                     { field: 'starting_site_eui', displayName: 'Site EUI' },
                     { field: 'starting_kbtu', displayName: 'kBTU' },
+                    get_starting_labels()
                 ]
                 const ending_cols = [
                     { field: 'ending_period', displayName: 'Period' },
@@ -258,14 +396,16 @@ angular.module('BE.seed.controller.data_review', [])
                 $scope.gridApi.core.refresh();
             }
 
-            $scope.gridOptions = {
-                data: 'data',
-                columnDefs: selected_columns($scope.columns),
-                enableFiltering: true,
-                enableHorizontalScrollbar: 1,
-                cellWidth: 200,
-                onRegisterApi: (gridApi) => {
-                    $scope.gridApi = gridApi;
+            const set_grid_options = () => {
+                $scope.gridOptions = {
+                    data: 'data',
+                    columnDefs: selected_columns($scope.columns),
+                    enableFiltering: true,
+                    enableHorizontalScrollbar: 1,
+                    cellWidth: 200,
+                    onRegisterApi: (gridApi) => {
+                        $scope.gridApi = gridApi;
+                    }
                 }
             }
 
@@ -308,4 +448,4 @@ angular.module('BE.seed.controller.data_review', [])
 
         }
     ]
-    )
+)
