@@ -42,6 +42,9 @@
         <select class="form-control" id="newMemberAccessLevelInstance" ng-model="user.access_level_instance_id" ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"></select>
       </div>
     </div>
+    <div ng-if="error_message" class="container-fluid alert alert-danger">
+      {$ error_message $}
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
