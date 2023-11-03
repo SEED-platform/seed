@@ -2,10 +2,8 @@ Developer Resources
 ===================
 
 .. toctree::
-
     migrations
     translation
-
 
 General Notes
 -------------
@@ -13,9 +11,10 @@ General Notes
 Pre-commit
 ^^^^^^^^^^
 We use precommit commits for formatting. Set it up locally with
-```
-pre-commit install
-```
+
+.. code-block:: bash
+
+    pre-commit install
 
 Flake Settings
 ^^^^^^^^^^^^^^
@@ -55,14 +54,16 @@ Usage
 *****
 
 SEED does not require exhaustive type annotations, but it is recommended you add them if you
-create any new functions or refactor any existing code where it might be beneficial
-and not require a ton of additional effort.
+create any new functions or refactor any existing code where it might be beneficial (e.g. types
+that appear ambiguous or that the IDE can't determine) and not require a ton of additional effort.
 
 When applicable, we recommend you use `built-in collection types <https://docs.python.org/3/whatsnew/3.9.html#type-hinting-generics-in-standard-collections>`_
 such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized types
-from the :code:`typing` module.
+from the :code:`typing` module. You can also use ``TypedDict`` and ``NotRequired`` from the ``typing_extensions``
+package to specify the types of required/optional keys of dictionaries.
 
 Common gotchas:
+
 - If trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
 - If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
 - If you're wasting time trying to please the type checker, feel free to throw :code:`# type: ignore` on the problematic line (or at the top of the file to ignore all issues for that file)
@@ -194,11 +195,10 @@ renamed `{$` and `$}`.
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed = angular.module('BE.seed', ['$interpolateProvider'], function ($interpolateProvider) {
-            $interpolateProvider.startSymbol("{$");
-            $interpolateProvider.endSymbol("$}");
-        }
-    );
+    window.BE.apps.seed = angular.module('BE.seed', ['$interpolateProvider', ($interpolateProvider) => {
+      $interpolateProvider.startSymbol('{$');
+      $interpolateProvider.endSymbol('$}');
+    }]);
 
 Django CSRF Token and AJAX Requests
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -208,8 +208,8 @@ recommended by http://django-angular.readthedocs.io/en/latest/integration.html#x
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed.run(function ($http, $cookies) {
-        $http.defaults.headers.common['X-CSRFToken'] = $cookies['csrftoken'];
+    window.BE.apps.seed.run(($http, $cookies) => {
+      $http.defaults.headers.common['X-CSRFToken'] = $cookies['csrftoken'];
     });
 
 
@@ -221,7 +221,7 @@ Routes in `static/seed/js/seed.js` (the normal angularjs `app.js`)
 
 .. code-block:: JavaScript
 
-  SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider', function (stateHelperProvider, $urlRouterProvider, $locationProvider) {
+  SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider', (stateHelperProvider, $urlRouterProvider, $locationProvider) => {
     stateHelperProvider
       .state({
         name: 'home',
@@ -289,9 +289,9 @@ This is a brief description of how to drop and re-create the database
 for the seed application.
 
 The first two commands below are commands distributed with the
-Postgres database, and are not part of the seed application. The third
-command below will create the required database tables for seed and
-setup initial data that the application expects (initial columns for
+Postgres database, and are not part of the SEED application. The third
+command below will create the required database tables for SEED and
+setup initial data that the application expects (e.g. initial columns for
 BEDES). The last command below (spanning multiple lines) will create a
 new superuser and organization that you can use to login to the
 application, and from there create any other users or organizations
@@ -304,14 +304,10 @@ user:
 
     createuser -U seed seeduser
 
-    psql -c 'DROP DATABASE "seed"'
-    psql -c 'CREATE DATABASE "seed" WITH OWNER = "seeduser";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seed" TO seeduser;'
-    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
-    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
-    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
-    psql -d seed -c 'SELECT timescaledb_pre_restore();'
-    psql -d seed -c 'SELECT timescaledb_post_restore();'
+    psql -d postgres -U seeduser -c 'DROP DATABASE seed;'
+    psql -d postgres -U seeduser -c 'CREATE DATABASE seed;'
+    psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
 
     ./manage.py migrate
     ./manage.py create_default_user \
@@ -324,20 +320,18 @@ Restoring a Database Dump
 
 .. code-block:: bash
 
-    psql -c 'DROP DATABASE "seed";'
-    psql -c 'CREATE DATABASE "seed" WITH OWNER = "seeduser";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seed" TO "seeduser";'
-    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
-    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
-    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
-    psql -d seed -c 'SELECT timescaledb_pre_restore();'
+    psql -d postgres -U seeduser -c 'DROP DATABASE seed;'
+    psql -d postgres -U seeduser -c 'CREATE DATABASE seed;'
+    psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seed -U seeduser -c 'SELECT timescaledb_pre_restore();'
 
     # restore a previous database dump (must be pg_restore 12+)
-    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seed /backups/prod-backups/prod_20191203_000002.dump
+    pg_restore -d seed -U seeduser /backups/prod-backups/prod_20191203_000002.dump
     # if any errors appear during the pg_restore process check that the `installed_version` of the timescaledb extension where the database was dumped matches the extension version where it's being restored
     # `SELECT default_version, installed_version FROM pg_available_extensions WHERE name = 'timescaledb';`
 
-    psql -d seed -c 'SELECT timescaledb_post_restore();'
+    psql -d seed -U seeduser -c 'SELECT timescaledb_post_restore();'
 
     ./manage.py migrate
 
@@ -397,11 +391,12 @@ Python compliance uses PEP8 with flake8
     # or
     tox -e flake8
 
-JS Compliance uses jshint
+JS Compliance uses ESLint
 
 .. code-block:: bash
 
-    jshint seed/static/seed/js
+    npm run lint
+    npm run lint:fix
 
 Building Documentation
 ----------------------
@@ -410,9 +405,9 @@ Older versions of the source code documentation are (still) on readthedocs; howe
 
 .. code-block:: bash
 
-        cd docs
-        rm -rf htmlout
-        sphinx-build -b html source htmlout
+    cd docs
+    rm -rf htmlout
+    sphinx-build -b html source htmlout
 
 For releasing, copy the ``htmlout`` directory into the seed-platform's website repository under ``docs/code_documentation/<new_version>``. Make sure to add the new documentation to the table in the ``docs/developer_resources.md``.
 
@@ -449,17 +444,16 @@ Release Instructions
 
 To make a release do the following:
 
-#. Create a branch to prepare the updates (e.g., 2.16.0-release-prep).
-#. Github admin user, on develop branch: update the ``package.json`` and ``npm-shrinkwrap.json`` files with the most recent version number. Always use MAJOR.MINOR.RELEASE.
+#. Create a branch from develop to prepare the updates (e.g., 2.21.0-release-prep).
+#. Update the root ``package.json`` file with the release version number, and then run ``npm install``. Always use MAJOR.MINOR.RELEASE.
 #. Update the ``docs/sources/migrations.rst`` file with any required actions.
-#. Push updates to new branch on GitHub, then go to the releases page to draft a new release which will generate the changelog.
-#. Copy the GitHub change log results into the CHANGELOG.md. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, etc.)
+#. Commit the changes and push the release prep branch to GitHub, then go to the Releases page to draft a new release which will generate the changelog.
+#. Copy the GitHub changelog results into ``CHANGELOG.md``. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, if any PRs were missing the ``Do not publish`` label, etc.) and push the changelog update.
 #. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
 #. Create PR for release preparation and merge after tests/reviews pass.
-#. Once develop tests pass, then create a new PR from develop to main.
-#. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
-#. Include list of changes since previous release (i.e., the content in the CHANGELOG.md)
-#. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+#. Create a new Release using the develop branch and new release number as the tag (https://github.com/SEED-platform/seed/releases). Include list of changes since previous release (e.g., the additions to ``CHANGELOG.md``).
+#. Locally, merge the ``develop`` branch into the ``main`` branch and push.
+#. Verify that the Docker versions are built and pushed to Docker Hub (https://hub.docker.com/r/seedplatform/seed/tags/).
 #. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 
 .. _`SEED's Contribution Agreement in the GitHub repository`: https://github.com/SEED-platform/seed/blob/develop/.github/CONTRIBUTING.md
