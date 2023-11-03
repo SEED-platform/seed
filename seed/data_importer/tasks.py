@@ -281,10 +281,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     # get all the table_mappings that exist for the organization
     table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error("+++++++ table_mappings")
-    logger.error(table_mappings)
 
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.
@@ -507,37 +503,30 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
 
 def _new_process_ali_data(model, raw_data, import_file_ali, ah_mappings):
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error("+++++++")
-    # logger.error(model)
-    # logger.error(raw_data)
-    # logger.error(ah_mappings)
-    # logger.error({to_col: raw_data.get(from_col) for from_col, (_, to_col, _, _) in ah_mappings.items()})
-
     org_alns = model.organization.access_level_names
-    ali_info = {
-        to_col: raw_data.get(from_col)
-        for from_col, (_, to_col, _, _) in ah_mappings.items()
-    }
-    logger.error(ali_info)
 
     # if org only has root, just assign it to root, they won't have any ali info
     if AccessLevelInstance.objects.filter(organization=model.organization).count() <= 1:
         model.raw_access_level_instance = model.organization.root
-        logger.error("org only has root")
+        return
+
+    # if not mappings
+    if not ah_mappings:
+        model.raw_access_level_instance_error = "Missing Access Level mappings."
         return
 
     # clean ali_info
-    ali_info = {k: v for k, v in ali_info.items() if v is not None}
+    ali_info = {
+        to_col: raw_data.get(from_col)
+        for from_col, (_, to_col, _, _) in ah_mappings.items()
+        if raw_data.get(from_col) is not None
+    }
     if not ali_info:
         model.raw_access_level_instance_error = "Missing Access Level Column data."
         return
 
     # ensure we have a valid set of keys, else error out
     needed_keys = set(org_alns[:len(ali_info)])
-    logger.error(needed_keys)
-    logger.error(set(org_alns[:len(ali_info)]))
     if needed_keys != ali_info.keys():
         model.raw_access_level_instance_error = "Missing/Incomplete Access Level Column."
         return
