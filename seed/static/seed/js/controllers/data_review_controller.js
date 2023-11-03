@@ -224,7 +224,7 @@ angular.module('BE.seed.controller.data_review', [])
             // retreive labels for cycle
             const get_all_labels = () => {
                 get_labels('start');
-                // get_labels('end');
+                get_labels('end');
             }
             const get_labels = (key) => {
                 const cycle = key == 'start' ? $scope.dataReview.starting_cycle : $scope.dataReview.ending_cycle;
@@ -268,8 +268,6 @@ angular.module('BE.seed.controller.data_review', [])
             // Builds the html to display labels associated with this row entity
             $scope.display_labels = (entity, key) => {
                 const id =  entity.id;
-                // const id = entity.property_view_id;
-                // const id = $scope.inventory_type === 'properties' ? entity.property_view_id : entity.taxlot_view_id;
                 const labels = [];
                 const titles = [];
                 if ($scope.show_labels_by_inventory_id[key][id]) {
@@ -282,14 +280,18 @@ angular.module('BE.seed.controller.data_review', [])
                 return ['<span title="', titles.join(', '), '" class="label-bars" style="overflow-x:scroll">', labels.join(''), '</span>'].join('');
             };
 
-            // labels associated with starting cycle
-            const get_starting_labels = () => {
-                width_fn = $scope.gridApi ? $scope.get_label_column_width('starting-labels', 'start') : 30;
+
+            // Build column defs for starting or ending labels
+            const build_label_col_def = (labels_col, key) => {
+                const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>`
+                const cell_template = `<div ng-click="grid.appScope.toggle_labels(${labels_col}, '${key}')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`
+                const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 30
+
                 return {
-                    name: 'starting-labels',
+                    name: labels_col,
                     displayName: '',
-                    headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels(\'starting-labels\', \'start\')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
-                    cellTemplate: '<div ng-click="grid.appScope.toggle_labels(\'starting-labels\', \'start\')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, \'start\')"></div>',
+                    headerCellTemplate: header_cell_template,
+                    cellTemplate: cell_template,
                     enableColumnMenu: false,
                     enableColumnMoving: false,
                     enableColumnResizing: false,
@@ -326,13 +328,14 @@ angular.module('BE.seed.controller.data_review', [])
                     { field: 'starting_sqft', displayName: 'Sq. FT' },
                     { field: 'starting_site_eui', displayName: 'Site EUI' },
                     { field: 'starting_kbtu', displayName: 'kBTU' },
-                    get_starting_labels()
+                    build_label_col_def('starting-labels', 'start')
                 ]
                 const ending_cols = [
                     { field: 'ending_period', displayName: 'Period' },
                     { field: 'ending_sqft', displayName: 'Sq. FT' },
                     { field: 'ending_site_eui', displayName: 'Site EUI' },
                     { field: 'ending_kbtu', displayName: 'kBTU' },
+                    build_label_col_def('ending-labels', 'end')
                 ]
                 const summary_cols = [
                     { field: 'site_eui_change', displayName: 'Site EUI % Improvement' },
