@@ -225,6 +225,9 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_match_merge_happens_after_property_merge(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'pm_property_id': '123MatchID',
             'city': 'Golden',
@@ -290,6 +293,9 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         self.assertEqual(audit_log.name, 'System Match')
 
     def test_match_merge_happens_after_taxlot_merge(self):
+        # For the sake of this test, update the matching criteria to include address line 1
+        Column.objects.filter(column_name='address_line_1').update(is_matching_criteria=True)
+
         base_details = {
             'jurisdiction_tax_lot_id': '123MatchID',
             'city': 'Golden',

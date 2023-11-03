@@ -3,22 +3,18 @@
  * See also https://github.com/seed-platform/seed/main/LICENSE.md
  */
 angular.module('BE.seed.service.event', []).factory('event_service', [
-    '$http',
-    function ($http) {
+  '$http',
+  ($http) => {
+    const event_factory = {};
 
-        const event_factory = {};
+    event_factory.get_events = (org_id, inventory_type, property_pk) => $http
+      .get(`/api/v3/${inventory_type}/${property_pk}/events/`, {
+        params: {
+          organization_id: org_id
+        }
+      })
+      .then((response) => response.data);
 
-        event_factory.get_events = function (org_id, inventory_type, property_pk) {
-            return $http.get('/api/v3/' + inventory_type + '/' + property_pk + '/events/', {
-                params: {
-                    organization_id: org_id
-                }
-            }).then(function (response) {
-                return response.data;
-            });
-        };
-
-
-        return event_factory;
-
-    }]);
+    return event_factory;
+  }
+]);

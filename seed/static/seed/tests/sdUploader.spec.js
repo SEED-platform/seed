@@ -6,24 +6,26 @@
 // http://docs.angularjs.org/guide/dev_guide.unit-testing
 
 // create dummy angularJS app to attach filter(s)
-var mySDUploaderDirectiveApp = angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
+const mySDUploaderDirectiveApp = angular.module('mySDUploaderDirectiveApp', ['sdUploader']);
 
-describe('The sdUploader directive', function () {
-  var g_message, g_file, g_progress;
-  var $compile;
-  var $rootScope;
-  var $scope;
-  var sdUploaderFineUploader = window.sdUploaderFineUploader;
-  var uploader_html = '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
-  beforeEach(function () {
+describe('The sdUploader directive', () => {
+  let g_message; let g_file; let
+    g_progress;
+  let $compile;
+  let $rootScope;
+  let $scope;
+  const sdUploaderFineUploader = window.sdUploaderFineUploader;
+  const uploader_html =
+    '<div sd-uploader sourcetype="assessor" importrecord="5" buttontext="Upload your building list .csv file" eventfunc="uploaderfunc(message, filename, progress)" ng-hide="uploader.in_progress"></div>';
+  beforeEach(() => {
     module('mySDUploaderDirectiveApp');
-    inject(function (_$compile_, _$rootScope_) {
+    inject((_$compile_, _$rootScope_) => {
       // The injector unwraps the underscores (_) from around the parameter names when matching
       $compile = _$compile_;
       $rootScope = _$rootScope_;
       $scope = $rootScope.$new();
       // Set up parent with cycle information
-      $rootScope.selectedCycle = {id: 1};
+      $rootScope.selectedCycle = { id: 1 };
       $scope.eventfunc = function (fine_object) {
         // console.log({fin: fine_object});
         g_message = fine_object.message;
@@ -34,9 +36,9 @@ describe('The sdUploader directive', function () {
     });
   });
 
-  it('Creates the fineuploader element', function () {
+  it('Creates the fineuploader element', () => {
     // arrange
-    var element = $compile(uploader_html)($scope);
+    const element = $compile(uploader_html)($scope);
 
     // act
     $scope.$digest();
@@ -45,10 +47,10 @@ describe('The sdUploader directive', function () {
     expect(element.html()).toContain('qq-button-id');
   });
 
-  it('Only allows one file to be uploaded at a time', function () {
+  it('Only allows one file to be uploaded at a time', () => {
     // arrange
-    var element = $compile(uploader_html)($scope);
-    var func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
+    const element = $compile(uploader_html)($scope);
+    const func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
 
     // act
     $scope.$digest();
@@ -57,34 +59,32 @@ describe('The sdUploader directive', function () {
     expect(func._options.multiple).toBe(false);
   });
 
-  it('Uses the callback function to share its state: upload started', function () {
+  it('Uses the callback function to share its state: upload started', () => {
     // arrange
-    var element = $compile(uploader_html)($scope);
-    var func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
-    var filename = 'test_file.csv';
+    const element = $compile(uploader_html)($scope);
+    const func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
+    const filename = 'test_file.csv';
 
     // act
     $scope.$digest();
     func._options.callbacks.onSubmitted(1, filename);
-
 
     // assert
     expect(g_message).toBe('upload_submitted');
     expect(g_file.filename).toBe(filename);
   });
 
-  it('Uses the callback function to share its state: in progress', function () {
+  it('Uses the callback function to share its state: in progress', () => {
     // arrange
-    var element = $compile(uploader_html)($scope);
-    var func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
-    var filename = 'test_file.csv';
-    var loaded = 10;
-    var total = 100;
+    const element = $compile(uploader_html)($scope);
+    const func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
+    const filename = 'test_file.csv';
+    const loaded = 10;
+    const total = 100;
 
     // act
     $scope.$digest();
     func._options.callbacks.onProgress(1, filename, loaded, total);
-
 
     // assert
     expect(g_message).toBe('upload_in_progress');
@@ -93,21 +93,18 @@ describe('The sdUploader directive', function () {
     expect(g_progress.total).toBe(total);
   });
 
-  it('Uses the callback function to share its state: complete', function () {
+  it('Uses the callback function to share its state: complete', () => {
     // arrange
-    var element = $compile(uploader_html)($scope);
-    var func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
-    var filename = 'test_file.csv';
-
+    const element = $compile(uploader_html)($scope);
+    const func = sdUploaderFineUploader($scope, element, '', 'test_file.csv');
+    const filename = 'test_file.csv';
 
     // act
     $scope.$digest();
-    func._options.callbacks.onComplete(1, filename, {success: true});
-
+    func._options.callbacks.onComplete(1, filename, { success: true });
 
     // assert
     expect(g_message).toBe('upload_complete');
     expect(g_file.filename).toBe(filename);
   });
-
 });
