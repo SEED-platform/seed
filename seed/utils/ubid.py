@@ -21,8 +21,8 @@ def centroid_wkt(state):
         return GEOSGeometry(state.centroid, srid=4326).wkt
 
 
-# Decode UBIDs from queryset or individual PropertyState/TaxLotState
 def decode_unique_ids(qs):
+    """Decode UBIDs from queryset or individual PropertyState/TaxLotState"""
     # import here to prevent circular reference
     from seed.models.properties import PropertyState
     from seed.models.tax_lots import TaxLotState
