@@ -214,7 +214,7 @@ angular.module('BE.seed.controller.data_review', [])
                 $scope.show_full_labels[key] = !$scope.show_full_labels[key];
                 setTimeout(() => {
                     $scope.gridApi.grid.getColumn(labels_col).width = $scope.get_label_column_width(labels_col, key);
-                    const icon = document.getElementById('label-header-icon');
+                    const icon = document.getElementById(`label-header-icon-${key}`);
                     icon.classList.add($scope.show_full_labels[key] ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
                     icon.classList.remove($scope.show_full_labels[key] ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
                     $scope.gridApi.grid.refresh();
@@ -283,7 +283,7 @@ angular.module('BE.seed.controller.data_review', [])
 
             // Build column defs for starting or ending labels
             const build_label_col_def = (labels_col, key) => {
-                const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>`
+                const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon-${key}" style="margin:2px; float:right;"></i>`
                 const cell_template = `<div ng-click="grid.appScope.toggle_labels(${labels_col}, '${key}')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`
                 const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 30
 
@@ -367,7 +367,7 @@ angular.module('BE.seed.controller.data_review', [])
             }
 
             const add_access_level_names = (cols) => {
-                $scope.organization.access_level_names.reverse().slice(0, -1).forEach((level) => {
+                $scope.organization.access_level_names.slice(1).reverse().forEach((level) => {
                     cols.unshift({
                         name: level,
                         displayName: level,

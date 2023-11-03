@@ -90,8 +90,8 @@
                 <!-- Submit -->
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button class="btn btn-success" type="submit" ng-click="refresh_data()"
-                            style="width: 100px; height: 20px; padding: 0; margin-right: 7px; float: right;"
+                        <button class="btn btn-success data-review-btn" type="submit" ng-click="refresh_data()"
+                            style="margin-right: 7px; float: right;"
                             translate>Create</button>
                     </div>
                 </div>
@@ -109,8 +109,7 @@
 
     <div id="data-review-grid" ng-if="valid" style="overflow-x: scroll;">
         <div class="form-group" ng-if="valid">
-            <button class="btn btn-primary" ng-click="toggle_access_level_instances()"
-                style="width: 100px; height: 20px; padding: 0;">
+            <button class="btn btn-primary data-review-btn" ng-click="toggle_access_level_instances()">
                 {$ show_access_level_instances ? 'Hide' : 'Show' $} ALIs
             </button>
         </div>
