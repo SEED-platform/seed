@@ -341,8 +341,10 @@ Restoring a Database Dump
         --password=password \
         --organization=testorg
 
+If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails:
 
-    # if restoring a production backup to a different deployment update the site settings for password reset emails
+.. code-block:: bash
+
     ./manage.py shell
 
     from django.contrib.sites.models import Site
@@ -350,6 +352,12 @@ Restoring a Database Dump
     site.domain = 'dev1.seed-platform.org'
     site.name = 'SEED Dev1'
     site.save()
+
+    from seed.models import Organization
+    Organization.objects.filter(salesforce_enabled=True).update(salesforce_enabled=False)
+
+    from django_celery_beat.models import PeriodicTask
+    PeriodicTask.objects.filter(enabled=True, name__startswith='salesforce_sync_org-').update(enabled=False)
 
 
 Migrating the Database
