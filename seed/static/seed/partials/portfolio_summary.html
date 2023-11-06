@@ -2,7 +2,7 @@
     <div class="page_header">
         <div class="left page_action_container"></div>
         <div class="page_title">
-            <h1 translate>Data Review</h1>
+            <h1 translate>Portfolio Summary</h1>
         </div>
         <div class="right page_action_container"></div>
     </div>
@@ -13,45 +13,45 @@
 </div>
 <div style="display: flex; flex-direction:column">
 
-    <div id="data-review-selection-wrapper" class="row">
+    <div id="portfolio-summary-selection-wrapper" class="row">
         <div id="review-selections" class="col-sm-2x">
-            <form name="dataReviewForm" class="form-horizontal css-form" role="form">
+            <form name="portfolioSummaryForm" class="form-horizontal css-form" role="form">
                 <!-- Name -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="data-review-label" class="control-label col-sm-5 data-review-select-option"
+                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
                         for="report_name"> Report Name </label>
                     <div class="col-sm-7">
-                        <input type="text" id="goal_name" class="data-review-form-control"
-                            ng-model="dataReview.name"></input>
+                        <input type="text" id="goal_name" class="portfolio-summary-form-control"
+                            ng-model="portfolioSummary.name"></input>
                     </div>
                 </div>
                 <!-- Starting Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="data-review-label" class="control-label col-sm-5 data-review-select-option"
+                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
                         for="starting_cycle_select"> Starting Cycle </label>
                     <div class="col-sm-7">
-                        <select name="starting_cycles" class="data-review-form-control" id="starting_cycle_select"
+                        <select name="starting_cycles" class="portfolio-summary-form-control" id="starting_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="dataReview.starting_cycle">
+                            ng-model="portfolioSummary.starting_cycle">
                         </select>
                     </div>
                 </div>
                 <!-- Ending Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="data-review-label" class="control-label col-sm-5 data-review-select-option"
+                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
                         for="ending_cycle_select"> Ending Cycle </label>
                     <div class="col-sm-7">
-                        <select name="ending_cycles" class="data-review-form-control" id="ending_cycle_select"
+                        <select name="ending_cycles" class="portfolio-summary-form-control" id="ending_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="dataReview.ending_cycle">
+                            ng-model="portfolioSummary.ending_cycle">
                         </select>
                     </div>
                 </div>
                 <!-- Access Level -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 data-review-select-option" for="access_level_name" translate>Access Level:</label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option" for="access_level_name" translate>Access Level:</label>
                     <div class="col-sm-7">
-                        <select class="data-review-form-control" id="access_level_name" ng-model="dataReview.level_name_index"
+                        <select class="portfolio-summary-form-control" id="access_level_name" ng-model="portfolioSummary.level_name_index"
                             ng-change="change_selected_level_index()"
                             ng-options="i as name for (i, name) in level_names">
                         </select>
@@ -59,9 +59,9 @@
                 </div>
                 <!-- Access Level Instance -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 data-review-select-option" for="access_level_instance" translate>Access Level Instance:</label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option" for="access_level_instance" translate>Access Level Instance:</label>
                     <div class="col-sm-7">
-                        <select class="data-review-form-control" id="access_level_instance" ng-model="dataReview.access_level_instance"
+                        <select class="portfolio-summary-form-control" id="access_level_instance" ng-model="portfolioSummary.access_level_instance"
                             ng-options="potential_level_instance.name as potential_level_instance.name for potential_level_instance in potential_level_instances"
                             >
                         </select>
@@ -69,28 +69,28 @@
                 </div>
                 <!-- Goal Column -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="data-review-label" class="control-label col-sm-5 data-review-select-option"
+                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
                         for="goal_column_select"> Goal Column </label>
                     <div class="col-sm-7">
-                        <select name="goal_columns" class="data-review-form-control" id="goal_column_select"
+                        <select name="goal_columns" class="portfolio-summary-form-control" id="goal_column_select"
                             ng-options="column.id as column.column_name for column in columns"
-                            ng-model="dataReview.goal_column" ng-disabled="true">
+                            ng-model="portfolioSummary.goal_column" ng-disabled="true">
                         </select>
                     </div>
                 </div>
                 <!-- Goal % -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="data-review-label" class="control-label col-sm-5 data-review-select-option"
+                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
                         for="goal_input">Goal (%)</label>
                     <div class="col-sm-7">
-                        <input type="number" id="goal_input" class="data-review-form-control"
-                            ng-model="dataReview.goal" required></input>
+                        <input type="number" id="goal_input" class="portfolio-summary-form-control"
+                            ng-model="portfolioSummary.goal" required></input>
                     </div>
                 </div>
                 <!-- Submit -->
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button class="btn btn-success data-review-btn" type="submit" ng-click="refresh_data()"
+                        <button class="btn btn-success portfolio-summary-btn" type="submit" ng-click="refresh_data()"
                             style="margin-right: 7px; float: right;"
                             translate>Create</button>
                     </div>
@@ -107,15 +107,14 @@
 
     </div>
 
-    <div id="data-review-grid" ng-if="valid" style="overflow-x: scroll;">
+    <div id="portfolio-summary-grid" ng-if="valid" style="overflow-x: scroll;">
         <div class="form-group" ng-if="valid">
-            <button class="btn btn-primary data-review-btn" ng-click="toggle_access_level_instances()">
+            <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
                 {$ show_access_level_instances ? 'Hide' : 'Show' $} ALIs
             </button>
         </div>
-        <div class="dataReview-gridOptions-wrapper" ng-style="{'heightx': gridHeight}">
-            <div ui-grid="gridOptions" ui-grid-resize-columns ui-grid-group-columns ui-grid-move-columns
-                ui-grid-pinning></div>
+        <div class="portfolioSummary-gridOptions-wrapper" ng-style="{'heightx': gridHeight}">
+            <div ui-grid="gridOptions" ui-grid-resize-columns ui-grid-group-columns></div>
         </div>
     </div>
 </div>

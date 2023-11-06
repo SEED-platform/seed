@@ -49,7 +49,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.data_quality_admin',
   'BE.seed.controller.data_quality_labels_modal',
   'BE.seed.controller.data_quality_modal',
-  'BE.seed.controller.data_review',
   'BE.seed.controller.data_upload_audit_template_modal',
   'BE.seed.controller.data_upload_espm_modal',
   'BE.seed.controller.data_upload_modal',
@@ -116,6 +115,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.organization_sharing',
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
+  'BE.seed.controller.portfolio_summary',
   'BE.seed.controller.postoffice_modal',
   'BE.seed.controller.profile',
   'BE.seed.controller.program_setup',
@@ -2793,10 +2793,10 @@ SEED_app.config([
         }
       })
       .state({
-        name: 'data_review',
-        url: '/insights/data_review',
-        templateUrl: static_url + 'seed/partials/data_review.html',
-        controller: 'data_review_controller',
+        name: 'portfolio_summary',
+        url: '/insights/portfolio_summary',
+        templateUrl: static_url + 'seed/partials/portfolio_summary.html',
+        controller: 'portfolio_summary_controller',
         resolve: {
           valid_column_data_types: [function () {
             return ['number', 'float', 'integer', 'area', 'eui', 'ghg', 'ghg_intensity'];

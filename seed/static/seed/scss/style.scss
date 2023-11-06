@@ -5030,7 +5030,7 @@ ul.r-list {
     border-bottom: 1px solid #ddd;
   }
 }
-#data-review-selection-wrapper {
+#portfolio-summary-selection-wrapper {
   margin: 10px 0;
   display: flex;
 
@@ -5040,12 +5040,12 @@ ul.r-list {
     width: 220px;
 
 
-    .data-review-select-option {
+    .portfolio-summary-select-option {
       font-size: 10px;
       padding: 0 0 10px 0;
     }
 
-    .data-review-form-control {
+    .portfolio-summary-form-control {
       height: 20px;
       width: 100px;
     }
@@ -5057,38 +5057,38 @@ ul.r-list {
     margin-left: 16px;
   }
 }
-.data-review-btn {
+.portfolio-summary-btn {
   width: 100px;
   height: 25px;
   padding: 0;    
 }
-#data-review-grid {
+#portfolio-summary-grid {
   margin: 0 24px;
 }
 
-#data-review-grid,
+#portfolio-summary-grid,
 #portfolio-summary {
-  .data-review-starting-header {
+  .portfolio-summary-starting-header {
     background-color: #f8f1cf;
   }
 
-  .ui-grid-row:nth-child(odd) .data-review-starting-cell {
+  .ui-grid-row:nth-child(odd) .portfolio-summary-starting-cell {
     background-color: #f8f5eb !important;
   }
 
-  .ui-grid-row:nth-child(even) .data-review-starting-cell {
+  .ui-grid-row:nth-child(even) .portfolio-summary-starting-cell {
     background-color: #e0ded3 !important;
   }
 
-  .data-review-ending-header {
+  .portfolio-summary-ending-header {
     background-color: #f8d0c4;
   }
 
-  .ui-grid-row:nth-child(odd) .data-review-ending-cell {
+  .ui-grid-row:nth-child(odd) .portfolio-summary-ending-cell {
     background-color: #f9eee9 !important;
   }
 
-  .ui-grid-row:nth-child(even) .data-review-ending-cell {
+  .ui-grid-row:nth-child(even) .portfolio-summary-ending-cell {
     background-color: #dfd3ce !important;
   }
 
@@ -5100,7 +5100,7 @@ ul.r-list {
     background: #ca8f8f;
   }
 
-  .data-review-legend {
+  .portfolio-summary-legend {
     display: flex;
     justify-content: space-around;
     margin: 10px;
@@ -5113,7 +5113,7 @@ ul.r-list {
     }
   }
 
-  .dataReview-gridOptions-wrapper {
+  .portfolioSummary-gridOptions-wrapper {
     height: calc(100vh - 400px);
 
     .ui-grid {
