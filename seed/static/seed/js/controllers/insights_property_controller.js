@@ -468,7 +468,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       });
 
       // update x axis ticks (for year)
-      if (x_axis_name.toLowerCase().includes('year')) {
+      if (x_axis_name && x_axis_name.toLowerCase().includes('year')) {
         $scope.insightsChart.options.scales.x.ticks = {
           callback(value) {
             return this.getLabelForValue(value).replace(',', '');
