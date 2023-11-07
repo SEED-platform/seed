@@ -20,6 +20,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    // toggle help
+    $scope.show_help = false;
+    $scope.toggle_help = () => {
+      $scope.show_help = !$scope.show_help;
+    }
+
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
     const saved_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`));
