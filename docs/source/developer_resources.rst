@@ -356,8 +356,9 @@ If restoring a production backup to a different deployment update the site setti
     from seed.models import Organization
     Organization.objects.filter(salesforce_enabled=True).update(salesforce_enabled=False)
 
-    from django_celery_beat.models import PeriodicTask
+    from django_celery_beat.models import PeriodicTask, PeriodicTasks
     PeriodicTask.objects.filter(enabled=True, name__startswith='salesforce_sync_org-').update(enabled=False)
+    PeriodicTasks.update_changed()
 
 
 Migrating the Database
