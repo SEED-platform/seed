@@ -18,7 +18,7 @@
             <form name="portfolioSummaryForm" class="form-horizontal css-form" role="form">
                 <!-- Name -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
+                    <label class="control-label col-sm-5 portfolio-summary-select-option"
                         for="report_name"> Report Name </label>
                     <div class="col-sm-7">
                         <input type="text" id="goal_name" class="portfolio-summary-form-control"
@@ -27,8 +27,8 @@
                 </div>
                 <!-- Starting Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
-                        for="starting_cycle_select"> Starting Cycle </label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option starting-legend"
+                        for="starting_cycle_select">Starting Cycle</label>
                     <div class="col-sm-7">
                         <select name="starting_cycles" class="portfolio-summary-form-control" id="starting_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
@@ -38,8 +38,8 @@
                 </div>
                 <!-- Ending Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
-                        for="ending_cycle_select"> Ending Cycle </label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option ending-legend"
+                        for="ending_cycle_select">Ending Cycle </label>
                     <div class="col-sm-7">
                         <select name="ending_cycles" class="portfolio-summary-form-control" id="ending_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
@@ -69,18 +69,18 @@
                 </div>
                 <!-- Goal Column -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
+                    <label class="control-label col-sm-5 portfolio-summary-select-option"
                         for="goal_column_select"> Goal Column </label>
                     <div class="col-sm-7">
                         <select name="goal_columns" class="portfolio-summary-form-control" id="goal_column_select"
-                            ng-options="column.id as column.column_name for column in columns"
-                            ng-model="portfolioSummary.goal_column" ng-disabled="true">
+                            ng-options="column.column_name as column.displayName for column in goal_columns"
+                            ng-model="portfolioSummary.goal_column">
                         </select>
                     </div>
                 </div>
                 <!-- Goal % -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label id="portfolio-summary-label" class="control-label col-sm-5 portfolio-summary-select-option"
+                    <label class="control-label col-sm-5 portfolio-summary-select-option"
                         for="goal_input">Goal (%)</label>
                     <div class="col-sm-7">
                         <input type="number" id="goal_input" class="portfolio-summary-form-control"
@@ -91,7 +91,7 @@
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
                         <button class="btn btn-success portfolio-summary-btn" type="submit" ng-click="refresh_data()"
-                            style="margin-right: 7px; float: right;"
+                            style="margin-right: 1px; float: right;"
                             translate>Create</button>
                     </div>
                 </div>

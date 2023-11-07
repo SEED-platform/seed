@@ -5036,13 +5036,19 @@ ul.r-list {
 
   #review-selections {
     margin-top: 22px;
-    padding-left: 0;
+    padding-left: 10px;
     width: 220px;
-
 
     .portfolio-summary-select-option {
       font-size: 10px;
-      padding: 0 0 10px 0;
+      padding: 4px 0 6px 0;
+  
+    }
+    .starting-legend {
+      background-color:#f8f1cf;
+    }
+    .ending-legend {
+      background-color: #f8d0c4;
     }
 
     .portfolio-summary-form-control {
@@ -5098,19 +5104,6 @@ ul.r-list {
 
   .below-target {
     background: #ca8f8f;
-  }
-
-  .portfolio-summary-legend {
-    display: flex;
-    justify-content: space-around;
-    margin: 10px;
-    width: 400px;
-
-    div {
-      margin: auto;
-      width: 100%;
-      padding: 5px;
-    }
   }
 
   .portfolioSummary-gridOptions-wrapper {
