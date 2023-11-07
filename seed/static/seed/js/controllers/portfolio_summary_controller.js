@@ -32,7 +32,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         ) {
             $scope.cycles = cycles.cycles;
             $scope.columns = property_columns;
-            const goal_column_names = ['site_eui', 'energy_score']
+            const goal_column_names = [
+                'energy_score',
+                'site_eui', 
+                'site_eui_weather_normalized',
+                'total_ghg_emissions_intensity'
+            ]
             $scope.goal_columns = $scope.columns.filter(c => goal_column_names.includes(c.column_name))
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
             $scope.valid = false;
@@ -70,9 +75,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const site_eui_column = property_columns.find(col => col.column_name == 'site_eui');
             $scope.portfolioSummary = {
                 // temp - hardcoded
+                name: 'Test Portfolio',
                 goal_column: 'site_eui',
                 goal: 0,
-                // temp - hardcoded
                 starting_cycle: $scope.cycles.find(c => c.id == 3),
                 ending_cycle: $scope.cycles.find(c => c.id == 2),
                 // level_name_index
@@ -247,42 +252,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 }
             }
 
-            // -------- ACCESS LEVEL LOGIC -----------
-
-            const add_access_level_names = (cols) => {
-                $scope.organization.access_level_names.slice(1).reverse().forEach((level) => {
-                    cols.unshift({
-                        name: level,
-                        displayName: level,
-                        group: 'access_level_instance',
-                        enableColumnMenu: true,
-                        enableColumnMoving: false,
-                        enableColumnResizing: true,
-                        enableFiltering: true,
-                        enableHiding: true,
-                        enableSorting: true,
-                        enablePinning: false,
-                        exporterSuppressExport: true,
-                        pinnedLeft: true,
-                        visible: true,
-                        width: 100,
-                        cellClass: 'ali-cell',
-                        headerCellClass: 'ali-header',
-                    })
-                })
-            }
-
-            $scope.show_access_level_instances = true
-            $scope.toggle_access_level_instances = function () {
-                $scope.show_access_level_instances = !$scope.show_access_level_instances
-                $scope.gridOptions.columnDefs.forEach((col) => {
-                    if (col.group == 'access_level_instance') {
-                        col.visible = $scope.show_access_level_instances
-                    }
-                })
-                $scope.gridApi.core.refresh();
-            }
-
             // ------------ DATA TABLE LOGIC ---------
 
             const set_site_eui_goal = (starting, ending, property) => {
@@ -352,7 +321,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const default_ending = { headerCellClass: 'portfolio-summary-ending-header', cellClass: 'portfolio-summary-ending-cell' }
                 const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 }
 
-                cols.forEach(col => col.parentColumn = 'parent')
                 const starting_cols = [
                     { field: 'starting_cycle', displayName: 'Cycle' },
                     { field: 'starting_sqft', displayName: 'Sq. FT' },
@@ -368,8 +336,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     build_label_col_def('ending-labels', 'end')
                 ]
                 const summary_cols = [
-                    { field: 'site_eui_change', displayName: 'Site EUI % Improvement' },
                     { field: 'sqft_change', displayName: 'Sq Ft % Change' },
+                    { field: 'site_eui_change', displayName: 'Site EUI % Improvement' },
                 ]
 
                 apply_defaults(starting_cols, default_starting)
@@ -379,6 +347,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // Apply filters
                 _.map(cols, (col) => {
                     let options = {};
+                    // not an ideal solution. How is this done on the inventory list
+                    if (col.column_name == 'pm_property_id') {
+                        col.type = 'number'
+                    }
                     if (col.data_type === 'datetime') {
                         options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                         options.filter = inventory_service.dateFilter();
@@ -394,6 +366,40 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 add_access_level_names(cols)
                 return cols
 
+            }
+
+            const add_access_level_names = (cols) => {
+                $scope.organization.access_level_names.slice(1).reverse().forEach((level) => {
+                    cols.unshift({
+                        name: level,
+                        displayName: level,
+                        group: 'access_level_instance',
+                        enableColumnMenu: true,
+                        enableColumnMoving: false,
+                        enableColumnResizing: true,
+                        enableFiltering: true,
+                        enableHiding: true,
+                        enableSorting: true,
+                        enablePinning: false,
+                        exporterSuppressExport: true,
+                        pinnedLeft: true,
+                        visible: true,
+                        width: 100,
+                        cellClass: 'ali-cell',
+                        headerCellClass: 'ali-header',
+                    })
+                })
+            }
+
+            $scope.show_access_level_instances = true
+            $scope.toggle_access_level_instances = function () {
+                $scope.show_access_level_instances = !$scope.show_access_level_instances
+                $scope.gridOptions.columnDefs.forEach((col) => {
+                    if (col.group == 'access_level_instance') {
+                        col.visible = $scope.show_access_level_instances
+                    }
+                })
+                $scope.gridApi.core.refresh();
             }
 
             const set_grid_options = (result) => {
