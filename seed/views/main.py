@@ -11,6 +11,8 @@ import subprocess
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from rest_framework import status
@@ -112,6 +114,37 @@ def celery_queue(request):
                     results[method] = {'total': 0}
 
     return JsonResponse(results)
+
+
+def health_check(request):
+    """
+    Perform a health check without requiring authentication
+    """
+    try:
+        postgres_status = connection.ensure_connection() is None
+    except Exception:
+        postgres_status = False
+
+    try:
+        ping_result = getattr(app.control.inspect(), 'ping')()
+        celery_keys = list(ping_result.keys()) if ping_result else []
+        celery_status = False if not len(celery_keys) else ping_result.get(celery_keys[0], {}).get('ok') == 'pong'
+    except Exception:
+        celery_status = False
+
+    try:
+        redis_status = not cache.has_key('redis-ping')
+    except Exception:
+        redis_status = False
+
+    success = postgres_status and celery_status and redis_status
+
+    return JsonResponse({
+        'status': 'healthy' if success else 'unhealthy',
+        'postgres': 'success' if postgres_status else 'error',
+        'celery': 'success' if celery_status else 'error',
+        'redis': 'success' if redis_status else 'error',
+    }, status=(200 if success else 418))
 
 
 @api_endpoint

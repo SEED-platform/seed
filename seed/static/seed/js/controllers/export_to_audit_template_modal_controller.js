@@ -30,11 +30,17 @@ angular.module('BE.seed.controller.export_to_audit_template_modal', []).controll
 
     $scope.export = () => {
       const property_view_ids = { property_view_ids: ids };
-      audit_template_service.batch_export_to_audit_template($scope.org_id, property_view_ids).then(({ progress_key }) => {
+      audit_template_service.batch_export_to_audit_template($scope.org_id, property_view_ids).then(data => {
+        if (!data.progress_key) {
+            $scope.upload_summary = data.message;
+            $scope.step.number = 3;
+            return
+        }
+
         $scope.step.number = 1;
 
         uploader_service.check_progress_loop(
-          progress_key,
+          data.progress_key,
           0,
           1,
           (summary) => {
