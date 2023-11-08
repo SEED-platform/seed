@@ -21,6 +21,7 @@ from django.utils.translation import gettext_lazy as _
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
 
@@ -952,7 +953,7 @@ class Column(models.Model):
 
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
-        mappings = Column._column_fields_to_columns(mappings, organization)
+        mappings = Column._column_fields_to_columns(mappings, organization, user)
         for mapping in mappings:
             if isinstance(mapping, dict):
                 try:
@@ -1009,7 +1010,7 @@ class Column(models.Model):
         return True
 
     @staticmethod
-    def _column_fields_to_columns(fields, organization):
+    def _column_fields_to_columns(fields, organization, user):
         """
         List of dictionaries to process into column objects. This method will create the columns
         if they did not previously exist. Note that fields are probably mutable, but the method
@@ -1045,24 +1046,32 @@ class Column(models.Model):
         """
         # Container to store the dicts with the Column object
         new_data = []
+        org_user = OrganizationUser.objects.get(organization=organization, user=user)
+        is_root_user = org_user.access_level_instance == organization.root
 
         for field in fields:
             new_field = field
+            is_ah_data = any([
+                field['to_field'] == name for name in organization.access_level_names
+            ])
+            is_extra_data = not any([
+                field['to_table_name'] == c['table_name'] and field['to_field'] == c['column_name']
+                for c in Column.DATABASE_COLUMNS
+            ])
 
-            # Check if the extra_data field in the model object is a database column
-            is_extra_data = True
-            for c in Column.DATABASE_COLUMNS:
-                if field['to_table_name'] == c['table_name'] and field['to_field'] == c[
-                        'column_name']:
-                    is_extra_data = False
-                    break
-
-            to_org_col, _ = Column.objects.get_or_create(
-                organization=organization,
-                column_name=field['to_field'],
-                table_name=field['to_table_name'],
-                is_extra_data=is_extra_data
-            )
+            to_col_params = {
+                "organization": organization,
+                "column_name": field['to_field'],
+                "table_name": '' if is_ah_data else field['to_table_name'],
+                "is_extra_data": is_extra_data,
+            }
+            if is_root_user or is_ah_data:
+                to_org_col, _ = Column.objects.get_or_create(**to_col_params)
+            else:
+                try:
+                    to_org_col = Column.objects.get(**to_col_params)
+                except Column.DoesNotExist:
+                    raise PermissionError(f"user does not have permission to create column {field['to_field']}")
 
             # the from column is the field in the import file, thus the table_name needs to be
             # blank. Eventually need to handle passing in import_file_id

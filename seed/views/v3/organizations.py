@@ -293,17 +293,18 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'No organization found'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        result = Column.create_mappings(
-            request.data.get('mappings', []),
-            organization,
-            request.user,
-            import_file_id
-        )
+        try:
+            Column.create_mappings(
+                request.data.get('mappings', []),
+                organization,
+                request.user,
+                import_file_id
+            )
+        except PermissionError as e:
+            return JsonResponse({'status': 'error', "message": str(e)})
 
-        if result:
-            return JsonResponse({'status': 'success'})
         else:
-            return JsonResponse({'status': 'error'})
+            return JsonResponse({'status': 'success'})
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_boolean_field(
