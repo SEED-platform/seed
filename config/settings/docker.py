@@ -34,16 +34,20 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception("%s Not defined as env variables" % loc)
 
-DEBUG = False
+DEBUG = os.environ.get('Debug', False)
 COMPRESS_ENABLED = False
 # COMPRESS_STORAGE = 'compressor.storage.GzipCompressorFileStorage'
 # COMPRESS_OFFLINE = True
 
 # Make sure to disable secure cookies and csrf when using Cloudflare
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', False)
+CSRF_COOKIE_SECURE = os.environ.get('CSRF_COOKIE_SECURE', False)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS')
+if ALLOWED_HOSTS_ENV:
+    ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(',')
+else:
+    ALLOWED_HOSTS = ['*']
 
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g., SMTP), then please update this model to support both and
@@ -80,14 +84,15 @@ if 'REDIS_AWS_ELASTICACHE' in os.environ:
             'OPTIONS': {
                 'DB': 1,
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                'PASSWORD': os.environ.get('REDIS_PASSWORD')
+                'PASSWORD': os.environ.get('REDIS_PASSWORD'),
+                "SSL": True  # If your AWS Elasticache is set up for SSL, set this to True
             },
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'rediss://:%s@%s/%s' % (
+    CELERY_BROKER_URL = 'rediss://:%s@%s:6379/%s?ssl_cert_reqs=required' % (
         CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
+        os.environ.get('REDIS_HOST'),
         CACHES['default']['OPTIONS']['DB']
     )
 elif 'REDIS_PASSWORD' in os.environ:
@@ -145,7 +150,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
         },
     },
 }

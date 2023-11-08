@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
   '$log',
   'urls',
   'Notification',
+  'organization_service',
   'cycle_service',
   'cycles_payload',
   'organization_payload',
@@ -16,7 +17,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
   '$sce',
   '$uibModal',
   // eslint-disable-next-line func-names
-  function ($scope, $filter, $log, urls, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
+  function ($scope, $filter, $log, urls, Notification, organization_service, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
     const processCycles = (cycles) => {
@@ -171,7 +172,7 @@ angular.module('BE.seed.controller.cycle_admin', []).controller('cycle_admin_con
         keyboard: false,
         resolve: {
           // use cycle data from organization endpoint b/c it includes inventory counts
-          cycle: (organization_service) => organization_service.get_organization($scope.org.id).then((res) => res.organization.cycles.find((cycle) => cycle.cycle_id === cycle_id)),
+          cycle: () => organization_service.get_organization($scope.org.id).then((res) => res.organization.cycles.find((cycle) => cycle.cycle_id === cycle_id)),
           organization_id: () => $scope.org.id
         }
       });

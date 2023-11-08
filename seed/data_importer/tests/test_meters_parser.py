@@ -733,3 +733,73 @@ class MeterUtilTests(TestCase):
         meters_parser = MetersParser(self.org.id, raw_meters)
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
+    def test_meters_parser_can_handle_ambiguous_timestamps(self):
+        raw_meters = [
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2022-11-06 01:00:00',
+                'End Date': '2022-11-06 01:15:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            }
+        ]
+
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID',
+                'type': Meter.ELECTRICITY_GRID,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2022, 11, 6, 1, 0, 0), timezone=self.tz_obj, is_dst=False),
+                        'end_time': make_aware(datetime(2022, 11, 6, 1, 15, 0), timezone=self.tz_obj, is_dst=False),
+                        'reading': 100,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            }
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
+    def test_meters_parser_can_handle_nonexistent_timestamps(self):
+        raw_meters = [
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Start Date': '2023-03-12 02:00:00',
+                'End Date': '2023-03-12 02:15:00',
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 100,
+            }
+        ]
+
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID',
+                'type': Meter.ELECTRICITY_GRID,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2023, 3, 12, 2, 0, 0), timezone=self.tz_obj, is_dst=True),
+                        'end_time': make_aware(datetime(2023, 3, 12, 2, 15, 0), timezone=self.tz_obj, is_dst=True),
+                        'reading': 100,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            }
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
