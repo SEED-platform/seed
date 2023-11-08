@@ -136,6 +136,33 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         response = self.client.post(url, params, content_type='application/json')
         assert response.status_code == 200
 
+    def test_column_mappings_creates_new_column(self):
+        self.import_record.access_level_instance = self.child_level_instance
+        self.import_record.save()
+        url = reverse('api:v3:organizations-column-mappings', args=[self.org.pk]) + f'?import_file_id={self.import_file.id}'
+        params = json.dumps({'mappings': [{
+            "from_field": "a new col",
+            "from_units": None,
+            "to_field": "a new col",
+            "to_field_display_name": "a new col",
+            "to_table_name": "PropertyState",
+        }]})
+
+        # child user cannot
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "status": "error",
+            "message": "user does not have permission to create column a new col"
+        }
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, params, content_type='application/json')
+        assert response.status_code == 200
+        assert response.json() == {'status': 'success'}
+
     def test_columns_delete(self):
         url = reverse('api:v3:organizations-columns', args=[self.org.pk])
 
