@@ -270,8 +270,9 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             import_record = ImportRecord.objects.get(pk=body[body_import_record_id])
             requests_ali = import_record.access_level_instance
 
-        elif param_import_record_id and param_import_record_id in params:
-            import_record = ImportRecord.objects.get(pk=params[param_import_record_id])
+        elif param_import_record_id and (param_import_record_id in request.POST or param_import_record_id in request.GET):
+            import_record_pk = request.POST.get(param_import_record_id, request.GET.get(param_import_record_id))
+            import_record = ImportRecord.objects.get(pk=import_record_pk)
             requests_ali = import_record.access_level_instance
 
         elif analysis_id_kwarg and analysis_id_kwarg in kwargs:
