@@ -405,7 +405,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             }, status=status.HTTP_200_OK)
         except django.core.exceptions.ValidationError as e:
             message_dict = e.message_dict
-            # rename key __all__ to general to make it more user friendly
+            # rename key __all__ to general to make it more user-friendly
             if '__all__' in message_dict:
                 message_dict['general'] = message_dict.pop('__all__')
 
