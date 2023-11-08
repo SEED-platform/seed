@@ -91,7 +91,8 @@ from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     properties_across_cycles,
-    update_result_with_master
+    update_result_with_master,
+    get_portfolio_summary
 )
 from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
@@ -2011,6 +2012,38 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # delete file
         doc_file.delete()
         return JsonResponse({'status': 'success'})
+    
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['POST'])
+    def portfolio_summary(self, request):
+        """
+        Gets a Portfolio Summary dictionary given a baseline cycle
+        """
+        try:
+            org_id = int(self.get_organization(request))
+
+            baseline_cycle_id = request.data.get('baseline_cycle')
+            current_cycle = Cycle.objects.exclude(name='Migration Created Cycle').order_by('-end').first()
+
+            cycle_ids = [baseline_cycle_id, current_cycle.id]
+
+            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+            properties_by_cycle = properties_across_cycles(org_id, ali, -1, cycle_ids)
+            response = get_portfolio_summary(properties_by_cycle, cycle_ids)
+        # temporary, this exception needs to be more specific
+        except: 
+            return JsonResponse({
+                'status': 'error',
+                'message': 'unexpected error'
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'data': response
+        })
+
 
 
 def diffupdate(old, new):

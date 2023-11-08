@@ -32,13 +32,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         ) {
             $scope.cycles = cycles.cycles;
             $scope.columns = property_columns;
-            const goal_column_names = [
-                'energy_score',
-                'site_eui', 
-                'site_eui_weather_normalized',
-                'total_ghg_emissions_intensity'
-            ]
-            $scope.goal_columns = $scope.columns.filter(c => goal_column_names.includes(c.column_name))
+            $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
             $scope.valid = false;
             $scope.data = [];
@@ -64,6 +58,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.change_selected_level_index = function () {
                 new_level_instance_depth = parseInt($scope.portfolioSummary.level_name_index) + 1
                 $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
+                console.log($scope.potential_level_instances)
             }
 
             // must be alphabetical
@@ -76,7 +71,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.portfolioSummary = {
                 // temp - hardcoded
                 name: 'Test Portfolio',
-                goal_column: 'site_eui',
+                goal_column: 'source_eui',
                 goal: 0,
                 starting_cycle: $scope.cycles.find(c => c.id == 3),
                 ending_cycle: $scope.cycles.find(c => c.id == 2),
@@ -84,17 +79,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // access_level_instance
             };
 
-
-            const set_goal_fns = () => {
-                switch ($scope.portfolioSummary.goal_column) {
-                    case 'site_eui':
-                        // format_properties()
-                        $scope.goal_fn = set_site_eui_goal
-                        // selected_columns()
-                        //format_summary()
-                        break
-                }
-            }
 
             $scope.refresh_data = () => {
                 console.log('refresh_data')
@@ -104,11 +88,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     console.log('not valid')
                     return
                 }
-                set_goal_fns()
                 console.log($scope.portfolioSummary)
                 spinner_utility.show()
                 const cycle_ids = [$scope.portfolioSummary.starting_cycle.id, $scope.portfolioSummary.ending_cycle.id]
-                
+                inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
+                    console.log('ps', result)
+                })
                 inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
                     get_all_labels()
                     set_grid_options(result)
@@ -269,10 +254,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // and others are cycle specific (site EUI, sqft)
 
                 let level = $scope.level_names[$scope.portfolioSummary.level_name_index]
-                let ali = $scope.portfolioSummary.access_level_instance
+                let ali_id = $scope.portfolioSummary.access_level_instance
+                let ali_name = $scope.potential_level_instances.find(ali => ali.id == ali_id).name
 
-                let starting_properties = properties[$scope.portfolioSummary.starting_cycle.id].filter(p => p[level] == ali)
-                let ending_properties = properties[$scope.portfolioSummary.ending_cycle.id].filter(p => p[level] == ali)
+                let starting_properties = properties[$scope.portfolioSummary.starting_cycle.id].filter(p => p[level] == ali_name)
+                let ending_properties = properties[$scope.portfolioSummary.ending_cycle.id].filter(p => p[level] == ali_name)
                 let flat_properties = [...starting_properties, ...ending_properties].flat()
                 // labels are related to property views, but cross cycles displays based on property 
                 // create a lookup between property_view.id to property.id
@@ -296,7 +282,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     // comparison stats
                     property.sqft_change = percentage(property.ending_sqft, property.starting_sqft)
                     // set_site_eui_goal(starting, ending, property)
-                    $scope.goal_fn(starting, ending, property)
+                    set_site_eui_goal(starting, ending, property)
 
                     combined_properties.push(property)
 

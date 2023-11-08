@@ -1205,6 +1205,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
+    inventory_service.get_portfolio_summary = (baseline_cycle_id) => {
+      return $http.post('/api/v3/properties/portfolio_summary/', {
+        organization_id: user_service.get_organization().id,
+        baseline_cycle: baseline_cycle_id
+      })
+    }
+
     return inventory_service;
   }
 ]);
