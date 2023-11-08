@@ -4,11 +4,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Union
 
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce, Replace
+from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
 
@@ -228,7 +229,7 @@ class TestInventoryViewSearchParsers(TestCase):
         class TestCase:
             name: str
             input: QueryDict
-            expected_order_by: list[str]
+            expected_order_by: list[Union[str, Collate]]
             expected_annotations: dict
 
         # -- Setup
@@ -265,7 +266,7 @@ class TestInventoryViewSearchParsers(TestCase):
             TestCase(
                 name='order_by extra data string column',
                 input=QueryDict(f'order_by=test_string_{test_string_column.id}'),
-                expected_order_by=['_test_string_final'],
+                expected_order_by=[Collate('_test_string_final', 'natural_sort')],
                 expected_annotations={
                     '_test_string_to_text': KeyTextTransform('test_string', 'state__extra_data', output_field=models.TextField()),
                     '_test_string_final': Coalesce('_test_string_to_text', models.Value(''), output_field=models.TextField()),
@@ -308,8 +309,8 @@ class TestInventoryViewSearchParsers(TestCase):
 
             # -- Assert
             self.assertEqual(
-                order_by,
-                test_case.expected_order_by,
+                repr(order_by),
+                repr(test_case.expected_order_by),
                 f'Failed "{test_case.name}"; actual: {order_by}; expected: {test_case.expected_order_by}'
             )
             self.assertEqual(

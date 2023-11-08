@@ -86,12 +86,7 @@ def toggle_salesforce_sync(salesforce_enabled, org_id):
     tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
     if tasks:
         task = tasks.first()
-        if salesforce_enabled:
-            # look for task and make sure it's enabled
-            task.enabled = True
-        else:
-            # look for task and make sure it's disabled
-            task.enabled = False
+        task.enabled = bool(salesforce_enabled)
         task.save()
 
 
