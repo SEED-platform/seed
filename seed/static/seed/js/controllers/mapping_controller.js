@@ -114,6 +114,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
             $scope.initialize_mappings();
             $scope.updateInventoryTypeDropdown();
             $scope.updateColDuplicateStatus();
+            $scope.updateColIsDisallowedCreation();
             $scope.updateDerivedColumnMatchStatus();
           })
           .catch(() => {
@@ -125,6 +126,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         $scope.initialize_mappings();
         $scope.updateInventoryTypeDropdown();
         $scope.updateColDuplicateStatus();
+        $scope.updateColIsDisallowedCreation();
         $scope.updateDerivedColumnMatchStatus();
       }
     };
@@ -319,6 +321,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         }
       });
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
     };
     $scope.updateInventoryTypeDropdown = () => {
@@ -368,6 +371,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
       if (!checkingMultiple) {
         $scope.updateColDuplicateStatus();
+        $scope.updateColIsDisallowedCreation();
         $scope.updateDerivedColumnMatchStatus();
       }
     };
@@ -396,6 +400,22 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       });
 
       $scope.duplicates_present = duplicates_present;
+    };
+
+    $scope.updateColIsDisallowedCreation = () => {
+      if (window.BE.is_ali_root == "True"){
+        return
+      }
+
+      existing_columns = [
+        ...$scope.mappable_property_columns.map(col => col.display_name),
+        ...$scope.organization.access_level_names
+      ]
+      $scope.mappings.forEach(col => {
+        col.is_disallowed_creation = !!col.suggestion && !existing_columns.some(existing_col => existing_col === col.suggestion);
+      });
+
+      $scope.disallowed_creation_present = $scope.mappings.some(col => col.is_disallowed_creation)
     };
 
     // Verify there are not any suggested Column names that match an existing Derived Column name
@@ -468,6 +488,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         if (changed) $scope.change(col, true);
       });
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
     };
 
@@ -618,6 +639,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       $scope.empty_units_present() ||
       !$scope.required_property_fields_present() ||
       !$scope.required_taxlot_fields_present() ||
+      $scope.disallowed_creation_present ||
       suggestions_not_provided_yet() ||
       $scope.derived_column_match;
 
@@ -644,10 +666,15 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      *   after saving column mappings, deletes unmatched buildings
      */
     $scope.remap_buildings = () => {
-      $scope.import_file.progress = 0;
-      $scope.save_mappings = true;
-      $scope.review_mappings = true;
-      mapping_service.save_mappings($scope.import_file.id, $scope.get_mappings()).then(() => {
+      mapping_service.save_mappings($scope.import_file.id, $scope.get_mappings()).then((mapping_result) => {
+        if (mapping_result.status === 'error' || mapping_result.status === 'warning') {
+          return;
+        }
+
+        $scope.import_file.progress = 0;
+        $scope.save_mappings = true;
+        $scope.review_mappings = true;
+
         // start re-mapping
         mapping_service.remap_buildings($scope.import_file.id).then((data) => {
           if (data.status === 'error' || data.status === 'warning') {
@@ -866,6 +893,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       }
 
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
       $scope.updateInventoryTypeDropdown();
     };
