@@ -64,7 +64,7 @@ def faq_page(request):
                 faq_data[category_name].append(parsed_faq._asdict())
 
     if not request.user.is_anonymous:
-        initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
+        initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root = _get_default_org(
             request.user
         )
     debug = settings.DEBUG

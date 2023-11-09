@@ -17,6 +17,7 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
     $scope.level_names = level_names;
     $scope.level_name_index = null;
     $scope.potential_level_instances = [];
+    $scope.error_message = null;
 
     /* Build out access_level_instances_by_depth recursively */
     const access_level_instances_by_depth = {};
@@ -67,6 +68,7 @@ angular.module('BE.seed.controller.new_member_modal', []).controller('new_member
         },
         (data) => {
           $scope.$emit('app_error', data);
+          $scope.error_message = data.data.message;
         }
       );
     };

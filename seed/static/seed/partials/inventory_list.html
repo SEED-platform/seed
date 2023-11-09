@@ -57,7 +57,7 @@
           <option value="update_salesforce" ng-disabled="!organization.salesforce_enabled || selectedCount === 0" translate>Update Salesforce</option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
-          <option value="open_show_populated_columns_modal" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+          <option value="open_show_populated_columns_modal" if="menu.user.is_ali_root" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
           <option value="toggle_access_level_instances" ng-disabled="data.length === 0">{$ show_access_level_instances ? 'Hide' : 'Show' $} Access Level Names</option>
         </optgroup>
       </select>
@@ -129,7 +129,7 @@
       <select class="form-control input-sm grow" ng-model="currentFilterGroupId" ng-change="check_for_filter_group_changes(currentFilterGroupId, {$currentFilterGroupId$})">
         <option ng-repeat="group in filterGroups track by group.id" value="{$ group.id $}">{$ group.name $}</option>
       </select>
-      <div class="btn-group">
+      <div class="btn-group" ng-if="menu.user.is_ali_root">
         <button
           class="btn btn-success"
           type="button"
