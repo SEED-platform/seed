@@ -25,25 +25,25 @@
                             ng-model="portfolioSummary.name"></input>
                     </div>
                 </div>
-                <!-- Starting Cycle -->
+                <!-- Baseline Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option starting-legend"
-                        for="starting_cycle_select">Starting Cycle</label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option baseline-legend"
+                        for="baseline_cycle_select">Baseline Cycle</label>
                     <div class="col-sm-7">
-                        <select name="starting_cycles" class="portfolio-summary-form-control" id="starting_cycle_select"
+                        <select name="baseline_cycles" class="portfolio-summary-form-control" id="baseline_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="portfolioSummary.starting_cycle">
+                            ng-model="portfolioSummary.baseline_cycle">
                         </select>
                     </div>
                 </div>
-                <!-- Ending Cycle -->
+                <!-- Current Cycle -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option ending-legend"
-                        for="ending_cycle_select">Ending Cycle </label>
+                    <label class="control-label col-sm-5 portfolio-summary-select-option current-legend"
+                        for="current_cycle_select">Current Cycle </label>
                     <div class="col-sm-7">
-                        <select name="ending_cycles" class="portfolio-summary-form-control" id="ending_cycle_select"
+                        <select name="current_cycles" class="portfolio-summary-form-control" id="current_cycle_select"
                             ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="portfolioSummary.ending_cycle">
+                            ng-model="portfolioSummary.current_cycle">
                         </select>
                     </div>
                 </div>
@@ -97,7 +97,7 @@
                 </div>
             </form>
         </div>
-        <div id="portfolio-summary" class="col-sm-10x" ng-if="valid"
+        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_valid"
             style=" width: calc(100% - 250px); margin-left: 16px;">
             <h3>
                 Portfolio Summary
@@ -107,8 +107,8 @@
 
     </div>
 
-    <div id="portfolio-summary-grid" ng-if="valid" style="overflow-x: scroll;">
-        <div class="form-group" ng-if="valid">
+    <div id="portfolio-summary-grid" ng-if="data_valid" style="overflow-x: scroll;">
+        <div class="form-group" ng-if="data_valid">
             <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
                 {$ show_access_level_instances ? 'Hide' : 'Show' $} ALIs
             </button>

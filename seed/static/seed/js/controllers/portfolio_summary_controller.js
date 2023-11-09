@@ -34,7 +34,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.columns = property_columns;
             $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
-            $scope.valid = false;
             $scope.data = [];
             $scope.summary_data = [];
             $scope.organization = organization_payload.organization;
@@ -73,8 +72,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 name: 'Test Portfolio',
                 goal_column: 'source_eui',
                 goal: 0,
-                starting_cycle: $scope.cycles.find(c => c.id == 3),
-                ending_cycle: $scope.cycles.find(c => c.id == 2),
+                baseline_cycle: $scope.cycles.find(c => c.id == 3),
+                current_cycle: $scope.cycles.find(c => c.id == 2),
                 // level_name_index
                 // access_level_instance
             };
@@ -82,26 +81,33 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             $scope.refresh_data = () => {
                 console.log('refresh_data')
-                expected_keys = ['starting_cycle', 'ending_cycle', 'goal', 'goal_column', 'level_name_index', 'access_level_instance']
-                valid = expected_keys.every(key => key in $scope.portfolioSummary)
+                expected_keys = ['baseline_cycle', 'current_cycle', 'goal', 'goal_column', 'level_name_index', 'access_level_instance']
+                valid = expected_keys.every(key => key in $scope.portfolioSummary);
                 if (!valid) {
                     console.log('not valid')
                     return
                 }
+                $scope.loading = true;
                 console.log($scope.portfolioSummary)
-                spinner_utility.show()
-                const cycle_ids = [$scope.portfolioSummary.starting_cycle.id, $scope.portfolioSummary.ending_cycle.id]
+                // spinner_utility.show()
+                const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
                 inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
-                    console.log('ps', result)
+                    summary = result.data.data ;
+                    console.log('got summary data')
+                    set_summary_grid_options(summary);
+                }).then(() => {
+                    $scope.summary_valid = true;
                 })
                 inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
-                    get_all_labels()
-                    set_grid_options(result)
-                    set_summary_grid_options()
+                    console.log('got data')
+                    get_all_labels();
+                    set_grid_options(result);
+                    // set_summary_grid_options()
                     // $scope.updateHeight()
+                    $scope.data_valid = true;
                 }).then(() => { 
-                    $scope.valid = true;
-                    spinner_utility.hide() 
+                    $scope.loading = false;
+                    // spinner_utility.hide() 
                 })
             }
             $scope.refresh_data()
@@ -140,7 +146,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             };
 
             // Expand or contract labels col
-            $scope.show_full_labels = { start: false, end: false }
+            $scope.show_full_labels = { baseline: false, current: false }
             $scope.toggle_labels = (labels_col, key) => {
                 $scope.show_full_labels[key] = !$scope.show_full_labels[key];
                 setTimeout(() => {
@@ -154,11 +160,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // retreive labels for cycle
             const get_all_labels = () => {
-                get_labels('start');
-                get_labels('end');
+                get_labels('baseline');
+                get_labels('current');
             }
             const get_labels = (key) => {
-                const cycle = key == 'start' ? $scope.portfolioSummary.starting_cycle : $scope.portfolioSummary.ending_cycle;
+                const cycle = key == 'baseline' ? $scope.portfolioSummary.baseline_cycle : $scope.portfolioSummary.current_cycle;
 
                 label_service.get_labels('properties', undefined, cycle.id).then((current_labels) => {                    
                     let labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
@@ -167,18 +173,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
                     // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
                     
-                    if (key == 'start') {
-                        $scope.starting_labels = labels
-                        $scope.build_labels(key, $scope.starting_labels);
+                    if (key == 'baseline') {
+                        $scope.baseline_labels = labels
+                        $scope.build_labels(key, $scope.baseline_labels);
                     } else {
-                        $scope.ending_labels = labels
-                        $scope.build_labels(key, $scope.ending_labels);
+                        $scope.current_labels = labels
+                        $scope.build_labels(key, $scope.current_labels);
                     }
                 });
             };
 
             // Find labels that should be displayed and organize by applied inventory id
-            $scope.show_labels_by_inventory_id = {start: {}, end: {}};
+            $scope.show_labels_by_inventory_id = {baseline: {}, current: {}};
             $scope.build_labels = (key, labels) => {
                 $scope.show_labels_by_inventory_id[key] = {};
                 for (const n in labels) {
@@ -212,7 +218,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             };
 
 
-            // Build column defs for starting or ending labels
+            // Build column defs for baseline or current labels
             const build_label_col_def = (labels_col, key) => {
                 const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon-${key}" style="margin:2px; float:right;"></i>`
                 const cell_template = `<div ng-click="grid.appScope.toggle_labels(${labels_col}, '${key}')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`
@@ -239,13 +245,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // ------------ DATA TABLE LOGIC ---------
 
-            const set_site_eui_goal = (starting, ending, property) => {
+            const set_site_eui_goal = (baseline, current, property) => {
                 let site_eui = cycle_column_lookup.site_eui
-                property.starting_site_eui = starting && starting[site_eui]
-                property.starting_kbtu = Math.round(property.starting_sqft * property.starting_site_eui) || undefined
-                property.ending_site_eui = ending && ending[site_eui]
-                property.ending_kbtu = Math.round(property.ending_sqft * property.ending_site_eui) || undefined
-                property.site_eui_change = percentage(property.starting_site_eui, property.ending_site_eui)
+                property.baseline_site_eui = baseline && baseline[site_eui]
+                property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_site_eui) || undefined
+                property.current_site_eui = current && current[site_eui]
+                property.current_kbtu = Math.round(property.current_sqft * property.current_site_eui) || undefined
+                property.site_eui_change = percentage(property.baseline_site_eui, property.current_site_eui)
             }
 
             const format_properties = (properties) => {
@@ -257,9 +263,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let ali_id = $scope.portfolioSummary.access_level_instance
                 let ali_name = $scope.potential_level_instances.find(ali => ali.id == ali_id).name
 
-                let starting_properties = properties[$scope.portfolioSummary.starting_cycle.id].filter(p => p[level] == ali_name)
-                let ending_properties = properties[$scope.portfolioSummary.ending_cycle.id].filter(p => p[level] == ali_name)
-                let flat_properties = [...starting_properties, ...ending_properties].flat()
+                let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id].filter(p => p[level] == ali_name)
+                let current_properties = properties[$scope.portfolioSummary.current_cycle.id].filter(p => p[level] == ali_name)
+                let flat_properties = [...baseline_properties, ...current_properties].flat()
                 // labels are related to property views, but cross cycles displays based on property 
                 // create a lookup between property_view.id to property.id
                 $scope.property_lookup = {}
@@ -269,20 +275,20 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let combined_properties = []
                 unique_ids.forEach(id => {
                     // find matching properties
-                    let starting = starting_properties.find(p => p.id == id)
-                    let ending = ending_properties.find(p => p.id == id)
+                    let baseline = baseline_properties.find(p => p.id == id)
+                    let current = current_properties.find(p => p.id == id)
                     // set accumulator
-                    let property = starting || ending
-                    // add starting stats
-                    property.starting_cycle = $scope.portfolioSummary.starting_cycle.name
-                    property.starting_sqft = starting && starting[gfa]
-                    // add ending stats
-                    property.ending_cycle = $scope.portfolioSummary.ending_cycle.name
-                    property.ending_sqft = ending && ending[gfa]
+                    let property = baseline || current
+                    // add baseline stats
+                    property.baseline_cycle = $scope.portfolioSummary.baseline_cycle.name
+                    property.baseline_sqft = baseline && baseline[gfa]
+                    // add current stats
+                    property.current_cycle = $scope.portfolioSummary.current_cycle.name
+                    property.current_sqft = current && current[gfa]
                     // comparison stats
-                    property.sqft_change = percentage(property.ending_sqft, property.starting_sqft)
-                    // set_site_eui_goal(starting, ending, property)
-                    set_site_eui_goal(starting, ending, property)
+                    property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
+                    // set_site_eui_goal(baseline, current, property)
+                    set_site_eui_goal(baseline, current, property)
 
                     combined_properties.push(property)
 
@@ -303,32 +309,32 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // handle cycle specific columns
             const selected_columns = () => {
                 let cols = property_column_names.map(name => $scope.columns.find(col => col.column_name === name))
-                const default_starting = { headerCellClass: 'portfolio-summary-starting-header', cellClass: 'portfolio-summary-starting-cell' }
-                const default_ending = { headerCellClass: 'portfolio-summary-ending-header', cellClass: 'portfolio-summary-ending-cell' }
+                const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' }
+                const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' }
                 const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 }
 
-                const starting_cols = [
-                    { field: 'starting_cycle', displayName: 'Cycle' },
-                    { field: 'starting_sqft', displayName: 'Sq. FT' },
-                    { field: 'starting_site_eui', displayName: 'Site EUI' },
-                    { field: 'starting_kbtu', displayName: 'kBTU' },
-                    build_label_col_def('starting-labels', 'start')
+                const baseline_cols = [
+                    { field: 'baseline_cycle', displayName: 'Cycle' },
+                    { field: 'baseline_sqft', displayName: 'Sq. FT' },
+                    { field: 'baseline_site_eui', displayName: 'Site EUI' },
+                    { field: 'baseline_kbtu', displayName: 'kBTU' },
+                    build_label_col_def('baseline-labels', 'baseline')
                 ]
-                const ending_cols = [
-                    { field: 'ending_cycle', displayName: 'Cycle' },
-                    { field: 'ending_sqft', displayName: 'Sq. FT' },
-                    { field: 'ending_site_eui', displayName: 'Site EUI' },
-                    { field: 'ending_kbtu', displayName: 'kBTU' },
-                    build_label_col_def('ending-labels', 'end')
+                const current_cols = [
+                    { field: 'current_cycle', displayName: 'Cycle' },
+                    { field: 'current_sqft', displayName: 'Sq. FT' },
+                    { field: 'current_site_eui', displayName: 'Site EUI' },
+                    { field: 'current_kbtu', displayName: 'kBTU' },
+                    build_label_col_def('current-labels', 'current')
                 ]
                 const summary_cols = [
                     { field: 'sqft_change', displayName: 'Sq Ft % Change' },
                     { field: 'site_eui_change', displayName: 'Site EUI % Improvement' },
                 ]
 
-                apply_defaults(starting_cols, default_starting)
-                apply_defaults(ending_cols, default_ending)
-                cols = [...cols, ...starting_cols, ...ending_cols, ...summary_cols]
+                apply_defaults(baseline_cols, default_baseline)
+                apply_defaults(current_cols, default_current)
+                cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols]
 
                 // Apply filters
                 _.map(cols, (col) => {
@@ -404,56 +410,56 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // -------- SUMMARY LOGIC ------------
 
-            const format_summary = () => {
-                // summary consists of starting/ending total sqft, total kbtu, weigthed eui 
-                // calc percentage for sqft change and eui improvment
-                let starting_total_sqft = 0
-                let starting_total_kbtu = 0
-                let ending_total_sqft = 0
-                let ending_total_kbtu = 0
+            // const format_summary = () => {
+            //     // summary consists of baseline/current total sqft, total kbtu, weigthed eui 
+            //     // calc percentage for sqft change and eui improvment
+            //     let baseline_total_sqft = 0
+            //     let baseline_total_kbtu = 0
+            //     let current_total_sqft = 0
+            //     let current_total_kbtu = 0
 
-                $scope.data.forEach(row => {
-                    starting_total_sqft += row.starting_sqft || 0
-                    starting_total_kbtu += row.starting_kbtu || 0
-                    ending_total_sqft += row.ending_sqft || 0
-                    ending_total_kbtu += row.ending_kbtu || 0
-                })
-                let starting_weighted_site_eui = Math.round(starting_total_kbtu / starting_total_sqft)
-                let ending_weighted_site_eui = Math.round(ending_total_kbtu / ending_total_sqft)
-                let sqft_change = percentage(ending_total_sqft, starting_total_sqft)
-                let eui_change = percentage(starting_weighted_site_eui, ending_weighted_site_eui)
+            //     $scope.data.forEach(row => {
+            //         baseline_total_sqft += row.baseline_sqft || 0
+            //         baseline_total_kbtu += row.baseline_kbtu || 0
+            //         current_total_sqft += row.current_sqft || 0
+            //         current_total_kbtu += row.current_kbtu || 0
+            //     })
+            //     let baseline_weighted_site_eui = Math.round(baseline_total_kbtu / baseline_total_sqft)
+            //     let current_weighted_site_eui = Math.round(current_total_kbtu / current_total_sqft)
+            //     let sqft_change = percentage(current_total_sqft, baseline_total_sqft)
+            //     let eui_change = percentage(baseline_weighted_site_eui, current_weighted_site_eui)
 
-                return [{
-                    starting_cycle: $scope.portfolioSummary.starting_cycle.name,
-                    starting_total_sqft,
-                    starting_total_kbtu,
-                    starting_weighted_site_eui,
-                    ending_cycle: $scope.portfolioSummary.ending_cycle.name,
-                    ending_total_sqft,
-                    ending_total_kbtu,
-                    ending_weighted_site_eui,
-                    sqft_change,
-                    eui_change,
-                }]
-            }
+            //     return [{
+            //         baseline_cycle: $scope.portfolioSummary.baseline_cycle.name,
+            //         baseline_total_sqft,
+            //         baseline_total_kbtu,
+            //         baseline_weighted_site_eui,
+            //         current_cycle: $scope.portfolioSummary.current_cycle.name,
+            //         current_total_sqft,
+            //         current_total_kbtu,
+            //         current_weighted_site_eui,
+            //         sqft_change,
+            //         eui_change,
+            //     }]
+            // }
 
 
             const summary_selected_columns = () => {
-                const default_starting = { headerCellClass: 'portfolio-summary-starting-header', cellClass: 'portfolio-summary-starting-cell' }
-                const default_ending = { headerCellClass: 'portfolio-summary-ending-header', cellClass: 'portfolio-summary-ending-cell' }
+                const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' }
+                const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' }
                 const default_styles = { headerCellFilter: 'translate' }
 
-                const starting_cols = [
-                    { field: 'starting_cycle', displayName: 'Cycle' },
-                    { field: 'starting_total_sqft', displayName: 'Total Sq. FT' },
-                    { field: 'starting_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'starting_weighted_site_eui', displayName: 'Site Eui' },
+                const baseline_cols = [
+                    { field: 'baseline_cycle', displayName: 'Cycle' },
+                    { field: 'baseline_total_sqft', displayName: 'Total Sq. FT' },
+                    { field: 'baseline_total_kbtu', displayName: 'Total kBTU' },
+                    { field: 'baseline_weighted_site_eui', displayName: 'Site Eui' },
                 ]
-                const ending_cols = [
-                    { field: 'ending_cycle', displayName: 'Cycle' },
-                    { field: 'ending_total_sqft', displayName: 'Total Sq. FT' },
-                    { field: 'ending_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'ending_weighted_site_eui', displayName: 'Site Eui' },
+                const current_cols = [
+                    { field: 'current_cycle', displayName: 'Cycle' },
+                    { field: 'current_total_sqft', displayName: 'Total Sq. FT' },
+                    { field: 'current_total_kbtu', displayName: 'Total kBTU' },
+                    { field: 'current_weighted_site_eui', displayName: 'Site Eui' },
                 ]
                 const calc_cols = [
                     { field: 'sqft_change', displayName: 'Sq. FT % Change' },
@@ -463,15 +469,33 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         }
                     },
                 ]
-                apply_defaults(starting_cols, default_starting, default_styles)
-                apply_defaults(ending_cols, default_ending, default_styles)
+                apply_defaults(baseline_cols, default_baseline, default_styles)
+                apply_defaults(current_cols, default_current, default_styles)
                 apply_defaults(calc_cols)
 
-                return [...starting_cols, ...ending_cols, ...calc_cols]
+                return [...baseline_cols, ...current_cols, ...calc_cols]
             }
 
-            const set_summary_grid_options = () => {
-                $scope.summary_data = format_summary()
+            const format_summary = (summary) => {
+                const base = summary.base
+                const current = summary.current
+                return [{
+                    baseline_cycle: base.cycle_name,
+                    baseline_total_sqft: base.total_sqft,
+                    baseline_total_kbtu: base.total_kbtu,
+                    baseline_weighted_site_eui: base.weighted_eui,
+                    current_cycle: current.cycle_name,
+                    current_total_sqft: current.total_sqft,
+                    current_total_kbtu: current.total_kbtu,
+                    current_weighted_site_eui: current.weighted_eui,
+                    sqft_change: summary.sqft_change,
+                    eui_change: summary.eui_change,
+                }]
+            }
+
+            const set_summary_grid_options = (summary) => {
+                $scope.summary_data = format_summary(summary)
+                console.log($scope.summary_data)
                 $scope.summaryGridOptions = {
                     data: 'summary_data',
                     columnDefs: summary_selected_columns()
