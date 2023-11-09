@@ -463,14 +463,23 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         org_id = self.get_organization(request)
         profile_id = request.data.get('profile_id', -1)
         cycle_ids = request.data.get('cycle_ids', [])
+        access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
+        access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if not (user_ali == access_level_instance or access_level_instance.is_descendant_of(user_ali)):
+            return JsonResponse({
+                'status': 'error',
+                'message': f'No access_level_instance with id {access_level_instance_id}.'
+            }, status=status.HTTP_404_NOT_FOUND)
 
         if not org_id:
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        response = properties_across_cycles(org_id, ali, profile_id, cycle_ids)
+        print(access_level_instance)
+        response = properties_across_cycles(org_id, access_level_instance, profile_id, cycle_ids)
 
         return JsonResponse(response)
 

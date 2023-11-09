@@ -983,6 +983,27 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
+    def test_property_filter_by_cycle_with_access_level_id(self):
+        url = reverse('api:v3:properties-filter-by-cycle') + f'?organization_id={self.org.pk}'
+
+        # root member can
+        self.login_as_root_member()
+        params = json.dumps({"cycle_ids": [self.cycle.id], "access_level_instance_id": self.root_level_instance.id})
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 1
+
+        params = json.dumps({"cycle_ids": [self.cycle.id], "access_level_instance_id": self.child_level_instance.id})
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 200
+        assert len(resp.json()[str(self.cycle.id)]) == 0
+
+        # child member cannot
+        self.login_as_child_member()
+        params = json.dumps({"cycle_ids": [self.cycle.id], "access_level_instance_id": self.root_level_instance.id})
+        resp = self.client.post(url, params, content_type='application/json')
+        assert resp.status_code == 404
+
     def test_properties_get_canonical_properties(self):
         url = reverse('api:v3:properties-get-canonical-properties') + '?organization_id={}'.format(self.org.pk)
         params = json.dumps({'view_ids': [self.view.pk]})
