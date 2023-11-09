@@ -19,6 +19,7 @@ from seed.models import (
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
+    Cycle,
     PropertyView,
     TaxLotProperty,
     TaxLotView
@@ -26,6 +27,12 @@ from seed.models import (
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import build_view_filters_and_sorts
 from seed.serializers.columns import ColumnSerializer
+import logging
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.ERROR,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 
 def get_changed_fields(old, new):
@@ -269,22 +276,29 @@ def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[])
 
 def get_portfolio_summary(properties_by_cycle, cycle_ids):
     # Calculate Portfolio Summary stats for baseline and current cycles given ALI's
-    base_properties = properties_by_cycle[cycle_ids[0]]
-    current_properties = properties_by_cycle[cycle_ids[1]]
-
+    logging.error('>>> util 1')
+    base_cycle = Cycle.objects.get(id=cycle_ids[0])
+    current_cycle = Cycle.objects.get(id=cycle_ids[1])
+    logging.error('>>> util 2')
+    base_properties = properties_by_cycle[base_cycle.id]
+    current_properties = properties_by_cycle[current_cycle.id]
     col_gfa = ColumnSerializer(Column.objects.get(column_name='gross_floor_area')).data['name']
     col_eui = ColumnSerializer(Column.objects.get(column_name='site_eui')).data['name']
+    logging.error('>>> util 3')
 
-    base_summary = calculate_summary(base_properties, col_gfa, col_eui)
-    current_summary = calculate_summary(current_properties, col_gfa, col_eui)
+    base_summary = calculate_summary(base_properties, base_cycle.name, col_gfa, col_eui)
+    logging.error('>>> util 4')
+    current_summary = calculate_summary(current_properties, current_cycle.name, col_gfa, col_eui)
+    logging.error('>>> util 5')
 
     def percentage(a,b):
-        return int((a - b) / a * 100)
+        return int((a - b) / a * 100) if a != 0 else 0
     
     sqft_change = percentage(current_summary['total_sqft'], base_summary['total_sqft'])
-    eui_change = percentage(current_summary['weighted_eui'], base_summary['weighted_eui'])
+    eui_change = percentage(base_summary['weighted_eui'], current_summary['weighted_eui'])
 
 
+    logging.error('>>> util 6')
     return {
         'base': base_summary,
         'current': current_summary,
@@ -292,7 +306,7 @@ def get_portfolio_summary(properties_by_cycle, cycle_ids):
         'eui_change': eui_change,
     }
 
-def calculate_summary(properties, col_gfa, col_eui):
+def calculate_summary(properties, cycle_name, col_gfa, col_eui):
     sum_gfa = 0
     sum_kbtu = 0
     for p in properties:
@@ -305,6 +319,7 @@ def calculate_summary(properties, col_gfa, col_eui):
 
     weighted_eui = int(sum_kbtu / sum_gfa)
     return {
+        'cycle_name': cycle_name,
         'total_sqft': sum_gfa,
         'total_kbtu': sum_kbtu,
         'weighted_eui': weighted_eui

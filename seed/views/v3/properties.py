@@ -99,6 +99,13 @@ from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.ERROR,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True
@@ -2021,17 +2028,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Gets a Portfolio Summary dictionary given a baseline cycle
         """
         try:
+            logging.error('>>> view 1')
             org_id = int(self.get_organization(request))
 
             baseline_cycle_id = request.data.get('baseline_cycle')
             current_cycle = Cycle.objects.exclude(name='Migration Created Cycle').order_by('-end').first()
 
+            logging.error('>>> view 2')
             cycle_ids = [baseline_cycle_id, current_cycle.id]
 
             ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
+            logging.error('>>> view 3')
             properties_by_cycle = properties_across_cycles(org_id, ali, -1, cycle_ids)
+            logging.error('>>> view 4')
             response = get_portfolio_summary(properties_by_cycle, cycle_ids)
+            logging.error('>>> view 5')
         # temporary, this exception needs to be more specific
         except: 
             return JsonResponse({
