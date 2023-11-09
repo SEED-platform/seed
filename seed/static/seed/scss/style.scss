@@ -5074,27 +5074,27 @@ ul.r-list {
 
 #portfolio-summary-grid,
 #portfolio-summary {
-  .portfolio-summary-starting-header {
+  .portfolio-summary-baseline-header {
     background-color: #f8f1cf;
   }
 
-  .ui-grid-row:nth-child(odd) .portfolio-summary-starting-cell {
+  .ui-grid-row:nth-child(odd) .portfolio-summary-baseline-cell {
     background-color: #f8f5eb !important;
   }
 
-  .ui-grid-row:nth-child(even) .portfolio-summary-starting-cell {
+  .ui-grid-row:nth-child(even) .portfolio-summary-baseline-cell {
     background-color: #e0ded3 !important;
   }
 
-  .portfolio-summary-ending-header {
+  .portfolio-summary-current-header {
     background-color: #f8d0c4;
   }
 
-  .ui-grid-row:nth-child(odd) .portfolio-summary-ending-cell {
+  .ui-grid-row:nth-child(odd) .portfolio-summary-current-cell {
     background-color: #f9eee9 !important;
   }
 
-  .ui-grid-row:nth-child(even) .portfolio-summary-ending-cell {
+  .ui-grid-row:nth-child(even) .portfolio-summary-current-cell {
     background-color: #dfd3ce !important;
   }
 
@@ -5113,6 +5113,15 @@ ul.r-list {
       height: 100%;
     }
   }
+}
+.portfolio-summary-loading{
+  border: 1px solid rgb(188, 188, 188);
+  border-radius: 5px;
+  height: 100px;
+  padding: 0 50px;
+  position: relative;
+  background: rgba(128, 128, 128, 0.1);
+  color: rgb(128, 128, 128);
 }
 
 .analysis-results-section {

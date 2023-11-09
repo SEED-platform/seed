@@ -13,7 +13,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         'organization_payload',
         'access_level_tree',
         'property_columns',
-        'spinner_utility',
         'uiGridConstants',
         'gridUtil',
         function (
@@ -26,7 +25,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             organization_payload,
             access_level_tree,
             property_columns,
-            spinner_utility,
             uiGridConstants,
             gridUtil,
         ) {
@@ -80,6 +78,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
 
             $scope.refresh_data = () => {
+                $scope.data_valid = false;
+                $scope.summary_valid= false;
                 console.log('refresh_data')
                 expected_keys = ['baseline_cycle', 'current_cycle', 'goal', 'goal_column', 'level_name_index', 'access_level_instance']
                 valid = expected_keys.every(key => key in $scope.portfolioSummary);
@@ -87,27 +87,25 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     console.log('not valid')
                     return
                 }
-                $scope.loading = true;
+                $scope.data_loading = true;
+                $scope.summary_loading = true;
                 console.log($scope.portfolioSummary)
-                // spinner_utility.show()
                 const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
                 inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
                     summary = result.data.data ;
                     console.log('got summary data')
                     set_summary_grid_options(summary);
                 }).then(() => {
+                    $scope.summary_loading = false;
                     $scope.summary_valid = true;
                 })
                 inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
                     console.log('got data')
                     get_all_labels();
                     set_grid_options(result);
-                    // set_summary_grid_options()
-                    // $scope.updateHeight()
-                    $scope.data_valid = true;
                 }).then(() => { 
-                    $scope.loading = false;
-                    // spinner_utility.hide() 
+                    $scope.data_valid = true;
+                    $scope.data_loading = false;
                 })
             }
             $scope.refresh_data()
@@ -410,40 +408,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // -------- SUMMARY LOGIC ------------
 
-            // const format_summary = () => {
-            //     // summary consists of baseline/current total sqft, total kbtu, weigthed eui 
-            //     // calc percentage for sqft change and eui improvment
-            //     let baseline_total_sqft = 0
-            //     let baseline_total_kbtu = 0
-            //     let current_total_sqft = 0
-            //     let current_total_kbtu = 0
-
-            //     $scope.data.forEach(row => {
-            //         baseline_total_sqft += row.baseline_sqft || 0
-            //         baseline_total_kbtu += row.baseline_kbtu || 0
-            //         current_total_sqft += row.current_sqft || 0
-            //         current_total_kbtu += row.current_kbtu || 0
-            //     })
-            //     let baseline_weighted_site_eui = Math.round(baseline_total_kbtu / baseline_total_sqft)
-            //     let current_weighted_site_eui = Math.round(current_total_kbtu / current_total_sqft)
-            //     let sqft_change = percentage(current_total_sqft, baseline_total_sqft)
-            //     let eui_change = percentage(baseline_weighted_site_eui, current_weighted_site_eui)
-
-            //     return [{
-            //         baseline_cycle: $scope.portfolioSummary.baseline_cycle.name,
-            //         baseline_total_sqft,
-            //         baseline_total_kbtu,
-            //         baseline_weighted_site_eui,
-            //         current_cycle: $scope.portfolioSummary.current_cycle.name,
-            //         current_total_sqft,
-            //         current_total_kbtu,
-            //         current_weighted_site_eui,
-            //         sqft_change,
-            //         eui_change,
-            //     }]
-            // }
-
-
             const summary_selected_columns = () => {
                 const default_baseline = { headerCellClass: 'portfolio-summary-baseline-header', cellClass: 'portfolio-summary-baseline-cell' }
                 const default_current = { headerCellClass: 'portfolio-summary-current-header', cellClass: 'portfolio-summary-current-cell' }
@@ -477,13 +441,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_summary = (summary) => {
-                const base = summary.base
+                const baseline = summary.baseline
                 const current = summary.current
                 return [{
-                    baseline_cycle: base.cycle_name,
-                    baseline_total_sqft: base.total_sqft,
-                    baseline_total_kbtu: base.total_kbtu,
-                    baseline_weighted_site_eui: base.weighted_eui,
+                    baseline_cycle: baseline.cycle_name,
+                    baseline_total_sqft: baseline.total_sqft,
+                    baseline_total_kbtu: baseline.total_kbtu,
+                    baseline_weighted_site_eui: baseline.weighted_eui,
                     current_cycle: current.cycle_name,
                     current_total_sqft: current.total_sqft,
                     current_total_kbtu: current.total_kbtu,

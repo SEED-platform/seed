@@ -97,16 +97,23 @@
                 </div>
             </form>
         </div>
-        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_valid"
+        <!-- Summary Table-->
+        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_loading || summary_valid"
             style=" width: calc(100% - 250px); margin-left: 16px;">
             <h3>
                 Portfolio Summary
             </h3>
-            <div ui-grid="summaryGridOptions" ui-grid-resize-columns ui-grid-group-columns style="height:60px"></div>
+            <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns ui-grid-group-columns style="height:60px"></div>
+            <div class="portfolio-summary-loading" ng-if="summary_loading">
+                <h4>Loading Summary Data...</h4>
+                <uib-progress class="progress-striped active">
+                    <uib-bar value="100" type="info"></uib-bar>
+                </uib-progress>
+            </div>
         </div>
 
     </div>
-
+    <!-- Data Table-->
     <div id="portfolio-summary-grid" ng-if="data_valid" style="overflow-x: scroll;">
         <div class="form-group" ng-if="data_valid">
             <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
@@ -116,5 +123,12 @@
         <div class="portfolioSummary-gridOptions-wrapper" ng-style="{'heightx': gridHeight}">
             <div ui-grid="gridOptions" ui-grid-resize-columns ui-grid-group-columns></div>
         </div>
+
+    </div>
+    <div class="portfolio-summary-loading" ng-if="data_loading" style="margin:100px 20px;">
+        <h4>Loading Data...</h4>
+        <uib-progress class="progress-striped active" >
+            <uib-bar value="100" type="info"></uib-bar>
+        </uib-progress>
     </div>
 </div>
