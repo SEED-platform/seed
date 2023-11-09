@@ -10,6 +10,8 @@ import json
 # Imports from Django
 from django.http import JsonResponse
 from rest_framework import status
+from django.db.models import Sum, F
+
 
 # Local Imports
 from seed.lib.superperms.orgs.models import Organization
@@ -26,7 +28,6 @@ from seed.models import (
 )
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import build_view_filters_and_sorts
-from seed.serializers.columns import ColumnSerializer
 import logging
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -274,53 +275,50 @@ def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[])
     return results
 
 
-def get_portfolio_summary(properties_by_cycle, cycle_ids):
+def get_portfolio_summary(org_id, ali, cycle_ids):
+    # def get_portfolio_summary(properties_by_cycle, cycle_ids):
     # Calculate Portfolio Summary stats for baseline and current cycles given ALI's
-    logging.error('>>> util 1')
-    base_cycle = Cycle.objects.get(id=cycle_ids[0])
-    current_cycle = Cycle.objects.get(id=cycle_ids[1])
-    logging.error('>>> util 2')
-    base_properties = properties_by_cycle[base_cycle.id]
-    current_properties = properties_by_cycle[current_cycle.id]
-    col_gfa = ColumnSerializer(Column.objects.get(column_name='gross_floor_area')).data['name']
-    col_eui = ColumnSerializer(Column.objects.get(column_name='site_eui')).data['name']
-    logging.error('>>> util 3')
+    cycles = Cycle.objects.filter(id__in=cycle_ids)
+    cycle_lookup = {cycle.id: {'type': 'baseline' if cycle.id == cycle_ids[0] else 'current', 'name': cycle.name} for cycle in cycles}
+    summary = {}
+    for cycle_id in cycle_ids:
+        # calcualte total_sqft, total_kbtu, and weighted_eui from property_views
+        property_views = PropertyView.objects.select_related('property', 'state') \
+            .filter(
+                property__organization_id=org_id,
+                cycle_id=cycle_id,
+                property__access_level_instance__lft__gte=ali.lft,
+                property__access_level_instance__rgt__lte=ali.rgt,
+        )
 
-    base_summary = calculate_summary(base_properties, base_cycle.name, col_gfa, col_eui)
-    logging.error('>>> util 4')
-    current_summary = calculate_summary(current_properties, current_cycle.name, col_gfa, col_eui)
-    logging.error('>>> util 5')
+        aggregated_data = property_views.aggregate(
+            total_sqft=Sum('state__gross_floor_area'),
+            total_kbtu=Sum(F('state__site_eui') * F('state__gross_floor_area'))
+        )
 
+        def get_magnitude(key):
+            value = aggregated_data.get(key, 0)
+            return int(value.m) if value else 0
+        
+        total_sqft = get_magnitude('total_sqft')
+        total_kbtu = get_magnitude('total_kbtu')
+        weighted_eui = int(total_kbtu / total_sqft) if total_sqft else 0
+
+
+        lookup = cycle_lookup[cycle_id]
+        summary[lookup['type']] = {
+            'cycle_name': lookup['name'],
+            'total_sqft': total_sqft,
+            'total_kbtu': total_kbtu,
+            'weighted_eui': weighted_eui
+        }
+    
     def percentage(a,b):
         return int((a - b) / a * 100) if a != 0 else 0
     
-    sqft_change = percentage(current_summary['total_sqft'], base_summary['total_sqft'])
-    eui_change = percentage(base_summary['weighted_eui'], current_summary['weighted_eui'])
+    summary['sqft_change'] = percentage(summary['current']['total_sqft'], summary['baseline']['total_sqft'])
+    summary['eui_change'] = percentage(summary['baseline']['weighted_eui'], summary['current']['weighted_eui'])
 
-
-    logging.error('>>> util 6')
-    return {
-        'base': base_summary,
-        'current': current_summary,
-        'sqft_change': sqft_change,
-        'eui_change': eui_change,
-    }
-
-def calculate_summary(properties, cycle_name, col_gfa, col_eui):
-    sum_gfa = 0
-    sum_kbtu = 0
-    for p in properties:
-        gfa = p.get(col_gfa)
-        eui = p.get(col_eui)
-        if gfa:
-            sum_gfa += gfa
-            if eui:
-                sum_kbtu += gfa * eui
-
-    weighted_eui = int(sum_kbtu / sum_gfa)
-    return {
-        'cycle_name': cycle_name,
-        'total_sqft': sum_gfa,
-        'total_kbtu': sum_kbtu,
-        'weighted_eui': weighted_eui
-    }
+    return summary
+        
+  
