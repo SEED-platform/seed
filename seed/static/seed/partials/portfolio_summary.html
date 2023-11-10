@@ -14,7 +14,7 @@
 <div style="display: flex; flex-direction:column">
 
     <div id="portfolio-summary-selection-wrapper" class="row">
-        <div id="review-selections" class="col-sm-2x">
+        <div id="portfolio-summary-selections" class="col-sm-2x">
             <form name="portfolioSummaryForm" class="form-horizontal css-form" role="form">
                 <!-- Name -->
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
@@ -40,11 +40,10 @@
                 <div class="form-group" style="margin-left: 0; margin-bottom: 0">
                     <label class="control-label col-sm-5 portfolio-summary-select-option current-legend"
                         for="current_cycle_select">Current Cycle </label>
-                    <div class="col-sm-7">
-                        <select name="current_cycles" class="portfolio-summary-form-control" id="current_cycle_select"
-                            ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="portfolioSummary.current_cycle">
-                        </select>
+                    <div class="col-sm-7" >
+                        <div class="portfolio-summary-constant" uib-tooltip="{$ portfolioSummary.current_cycle.name $}">
+                            {$ portfolioSummary.current_cycle.name $}
+                        </div>
                     </div>
                 </div>
                 <!-- Access Level -->

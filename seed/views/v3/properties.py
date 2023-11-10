@@ -92,7 +92,8 @@ from seed.utils.properties import (
     pair_unpair_property_taxlot,
     properties_across_cycles,
     update_result_with_master,
-    get_portfolio_summary
+    get_portfolio_summary,
+    filter_views_by_property,
 )
 from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
@@ -2044,6 +2045,34 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return JsonResponse({
             'status': 'success',
             'data': response
+        })
+    
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['POST'])
+    def filter_by_property(self, request):
+        """
+        Gets all property views given a list of property ids
+        """
+        try:
+            org_id = int(self.get_organization(request))
+            cycle_id = request.data.get('cycle')
+            property_ids = request.data.get('property_ids')
+            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+   
+            response = filter_views_by_property(org_id, ali, cycle_id, property_ids)
+
+        # temporary, this exception needs to be more specific
+        except: 
+            logging.error('>>> ERROR in filter_by_properties')
+            return JsonResponse({
+                'status': 'error',
+                'message': 'unexpected error'
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'results': response
         })
 
 

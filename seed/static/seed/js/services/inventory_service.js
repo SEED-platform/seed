@@ -1209,7 +1209,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v3/properties/portfolio_summary/', {
         organization_id: user_service.get_organization().id,
         baseline_cycle: baseline_cycle_id
-      })
+      }).then(response => response.data)
+    }
+
+    inventory_service.filter_by_property = (cycle_id, property_ids) => {
+      return $http.post('/api/v3/properties/filter_by_property/', {
+        organization_id: user_service.get_organization().id,
+        cycle: cycle_id,
+        property_ids: property_ids 
+      }).then(response => response.data)
     }
 
     return inventory_service;

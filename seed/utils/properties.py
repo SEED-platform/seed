@@ -320,5 +320,21 @@ def get_portfolio_summary(org_id, ali, cycle_ids):
     summary['eui_change'] = percentage(summary['baseline']['weighted_eui'], summary['current']['weighted_eui'])
 
     return summary
-        
-  
+
+def filter_views_by_property(org_id, ali, cycle_id, property_ids):
+    # return property_views given a cycle and list of property_ids
+    columns = Column.retrieve_all(org_id, 'property', False)
+    show_columns = list(Column.objects.filter(organization_id=org_id).values_list('id', flat=True))
+
+    property_views = PropertyView.objects.select_related('state').filter(
+        property__access_level_instance__lft__gte=ali.lft,
+        property__access_level_instance__rgt__lte=ali.rgt,
+        cycle=cycle_id, 
+        property__in=property_ids
+    )
+    related_results = TaxLotProperty.serialize(property_views, show_columns, columns)
+
+    org = Organization.objects.get(pk=org_id)
+    unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+    return unit_collapsed_results 

@@ -28,7 +28,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             uiGridConstants,
             gridUtil,
         ) {
-            $scope.cycles = cycles.cycles;
+            const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
+            $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
             $scope.columns = property_columns;
             $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
@@ -59,7 +60,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             // must be alphabetical
-            const cycle_column_keys = ['energy_score', 'gross_floor_area', 'site_eui'].sort()
+            const cycle_column_keys = ['energy_score', 'gross_floor_area', 'site_eui', 'pm_property_id'].sort()
             const cycle_column_vals = property_columns.filter(c => cycle_column_keys.includes(c.column_name)).map(c => c.name)
             // convert column_name to name
             const cycle_column_lookup = Object.fromEntries(_.zip(cycle_column_keys, cycle_column_vals))
@@ -71,7 +72,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 goal_column: 'source_eui',
                 goal: 0,
                 baseline_cycle: $scope.cycles.find(c => c.id == 3),
-                current_cycle: $scope.cycles.find(c => c.id == 2),
+                current_cycle: current_cycle
                 // level_name_index
                 // access_level_instance
             };
@@ -91,24 +92,84 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.summary_loading = true;
                 console.log($scope.portfolioSummary)
                 const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
+                const baseline_cycle = $scope.portfolioSummary.baseline_cycle
+
                 inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
-                    summary = result.data.data ;
+                    summary = result.data;
                     console.log('got summary data')
                     set_summary_grid_options(summary);
                 }).then(() => {
                     $scope.summary_loading = false;
                     $scope.summary_valid = true;
                 })
-                inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
-                    console.log('got data')
-                    get_all_labels();
-                    set_grid_options(result);
-                }).then(() => { 
-                    $scope.data_valid = true;
-                    $scope.data_loading = false;
+
+                // RETURN THE SAME 100 BASED ON PROPERTY ID
+                let combined_result = {}
+                get_paginated_properties(1, 100, current_cycle).then(current_result => {
+                    console.log('got current')
+                    properties = current_result.results
+                    combined_result[current_cycle.id] = properties;
+                    property_ids = properties.map(p => p.id)
+                    inventory_service.filter_by_property(baseline_cycle.id, property_ids).then(baseline_result => {
+                        console.log('got baseline')
+                        properties = baseline_result.results 
+                        combined_result[baseline_cycle.id] = properties;
+                        set_grid_options(combined_result)
+                    }).then(() => {
+                        $scope.data_loading = false;
+                        $scope.data_valid = true
+                    }) 
                 })
+
+                // // RETURN FIRST 100 OF EACH. TESTING ONLY
+                // current_promise = get_paginated_properties(1, 100, current_cycle)
+                // baseline_promise = get_paginated_properties(1, 100, baseline_cycle)
+                // Promise.all([current_promise, baseline_promise]).then(([current_result, baseline_result]) => {
+                //     console.log('Promise all')
+                //     get_all_labels();
+                //     let combined_result = {}
+                //     combined_result[current_cycle.id] = current_result.results;
+                //     combined_result[baseline_cycle.id] = baseline_result.results;
+                //     set_grid_options(combined_result);
+                // }).then(() => {
+                //     $scope.data_valid = true;
+                //     $scope.data_loading = false;
+                // })
+
+
+                // // OLD - GET ALL PROPERTIES - SLOW
+                // inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
+                //     console.log('got data')
+                //     get_all_labels();
+                //     set_grid_options(result);
+                // }).then(() => { 
+                //     $scope.data_valid = true;
+                //     $scope.data_loading = false;
+                // })
             }
             $scope.refresh_data()
+
+            const get_paginated_properties = (page, chunk, cycle) => {
+                fn = inventory_service.get_properties;
+
+                // add label filtering
+            
+
+                return fn(
+                    page,
+                    chunk,
+                    cycle,
+                    _.get($scope, 'currentProfile.id'),
+                    undefined,
+                    undefined,
+                    true,
+                    $scope.organization.id,
+                    true,
+                    $scope.column_filters,
+                    $scope.column_sorts,
+                    false
+                );
+            };
 
 
 

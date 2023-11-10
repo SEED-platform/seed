@@ -5034,7 +5034,7 @@ ul.r-list {
   margin: 10px 0;
   display: flex;
 
-  #review-selections {
+  #portfolio-summary-selections {
     margin-top: 22px;
     padding-left: 10px;
     width: 220px;
@@ -5043,6 +5043,15 @@ ul.r-list {
       font-size: 10px;
       padding: 4px 0 6px 0;
   
+    }
+    .portfolio-summary-constant {
+      border: 1px solid gray;
+      border-radius: 2px;
+      background: rgb(229, 229, 229);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      padding-left: 4px;
     }
     .starting-legend {
       background-color:#f8f1cf;
