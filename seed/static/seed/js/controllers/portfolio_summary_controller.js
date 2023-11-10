@@ -29,7 +29,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             gridUtil,
         ) {
             $scope.data = []
-            const localStorageKey = `grid.properties`;
+            const localStorageKey = `grid.portfolio_summary`;
+
             const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
             $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
             $scope.columns = property_columns;
@@ -109,7 +110,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
                 inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
                     summary = result.data;
-                    console.log('got summary data')
+                    // console.log('got summary data')
                     set_summary_grid_options(summary);
                 }).then(() => {
                     $scope.summary_loading = false;
@@ -121,19 +122,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.data_loading = true;
                 $scope.data_valid = false;
 
-                $scope.rp = false
+
                 let baseline_cycle = $scope.portfolioSummary.baseline_cycle
                 let current_cycle = $scope.portfolioSummary.current_cycle
                 let combined_result = {}
                 get_paginated_properties(page, 50, current_cycle).then(current_result => {
-                    console.log('got current')
+                    // console.log('got current')
                     $scope.inventory_pagination = current_result.pagination
                     properties = current_result.results
                     combined_result[current_cycle.id] = properties;
                     property_ids = properties.map(p => p.id)
 
                     inventory_service.filter_by_property(baseline_cycle.id, property_ids).then(baseline_result => {
-                        console.log('got baseline')
+                        // console.log('got baseline')
                         properties = baseline_result.results
                         combined_result[baseline_cycle.id] = properties;
                         set_grid_options(combined_result)
@@ -148,9 +149,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             const get_paginated_properties = (page, chunk, cycle) => {
                 fn = inventory_service.get_properties;
-
-                // add label filtering
-            
+                console.log('sorts', $scope.column_sorts)
+                console.log('filters', $scope.column_filters)
 
                 return fn(
                     page,
@@ -456,12 +456,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const updateColumnFilterSort = () => {
                 const columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
 
-                inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
-                    columns
-                });
+                // inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
+                //     columns
+                // });
                 // let columns = $scope.gridApi.grid.columns
                 $scope.column_filters = [];
-                $scope.column_sorts = [];
+                // $scope.column_sorts = [];
                 // parse the filters and sorts
                 for (const column of columns) {
                     const { name, filters, sort } = column;
@@ -478,7 +478,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         for (const subFilter of subFilters) {
                             if (subFilter) {
                                 const { string, operator, value } = parseFilter(subFilter);
-                                const index = all_columns.findIndex((p) => p.name === column_name);
+                                const index = $scope.columns.findIndex((p) => p.name === column_name);
                                 const display = [$scope.columnDisplayByName[name], string, value].join(' ');
                                 $scope.column_filters.push({
                                     name,
@@ -495,33 +495,78 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         // remove the column id at the end of the name
                         const column_name = name.split('_').slice(0, -1).join('_');
                         const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
-                        $scope.column_sorts.push({
+                        $scope.column_sorts = [{
                             name,
                             column_name,
                             direction: sort.direction,
                             display,
                             priority: sort.priority
-                        });
-                        $scope.column_sorts.sort((a, b) => a.priority > b.priority);
+                        }];
+                        // $scope.column_sorts.sort((a, b) => a.priority > b.priority);
                     }
                 }
                 // $scope.isModified();
             };
 
-            const restoreGridSettings = () => {
-                console.log('resotreGridSettings')
-                $scope.restore_status = RESTORE_SETTINGS;
-                let state = inventory_service.loadGridSettings(`${localStorageKey}.sort`);
-                if (!_.isNull(state)) {
-                    state = JSON.parse(state);
-                    $scope.gridApi.saveState.restore($scope, state).then(() => {
-                        console.log('done restoring')
-                        $scope.restore_status = RESTORE_SETTINGS_DONE;
-                    });
+            // https://regexr.com/6cka2
+            const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+            const parseFilter = (expression) => {
+                // parses an expression string into an object containing operator and value
+                const filterData = expression.match(combinedRegex);
+                if (filterData) {
+                    if (!_.isUndefined(filterData[2])) {
+                        // Numeric Equality
+                        const operator = filterData[1];
+                        const value = Number(filterData[2].replace('\\.', '.'));
+                        if (operator === '!') {
+                            return { string: 'is not', operator: 'ne', value };
+                        }
+                        return { string: 'is', operator: 'exact', value };
+                    }
+                    if (!_.isUndefined(filterData[4])) {
+                        // Text Equality
+                        const operator = filterData[3];
+                        const value = filterData[4];
+                        if (operator === '!') {
+                            return { string: 'is not', operator: 'ne', value };
+                        }
+                        return { string: 'is', operator: 'exact', value };
+                    }
+                    if (!_.isUndefined(filterData[7])) {
+                        // Numeric Comparison
+                        const operator = filterData[5];
+                        const value = Number(filterData[6].replace('\\.', '.'));
+                        switch (operator) {
+                            case '<':
+                                return { string: '<', operator: 'lt', value };
+                            case '<=':
+                                return { string: '<=', operator: 'lte', value };
+                            case '>':
+                                return { string: '>', operator: 'gt', value };
+                            case '>=':
+                                return { string: '>=', operator: 'gte', value };
+                        }
+                    } else {
+                        // Date Comparison
+                        const operator = filterData[5];
+                        const value = filterData[8];
+                        switch (operator) {
+                            case '<':
+                                return { string: '<', operator: 'lt', value };
+                            case '<=':
+                                return { string: '<=', operator: 'lte', value };
+                            case '>':
+                                return { string: '>', operator: 'gt', value };
+                            case '>=':
+                                return { string: '>=', operator: 'gte', value };
+                        }
+                    }
                 } else {
-                    $scope.restore_status = RESTORE_SETTINGS_DONE;
+                    // Case-insensitive Contains
+                    return { string: 'contains', operator: 'icontains', value: expression };
                 }
             };
+
             const set_grid_options = (result) => {
                 $scope.data = format_properties(result)
                 $scope.gridOptions = {
@@ -533,38 +578,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     onRegisterApi: (gridApi) => {
                         console.log('on register')
                         $scope.gridApi = gridApi;
-                    // _.defer(() => {
-                    //     restoreGridSettings();
-                    // });
-                    // gridApi.core.on.filterChanged(
-                    //     $scope,
-                    //     _.debounce(() => {
-                    //         console.log('fc1')
-                    //         if ($scope.restore_status === RESTORE_COMPLETE) {
-                    //             console.log('fc2')
-                    //             updateColumnFilterSort();
-                    //             // $scope.load_inventory(1);
-                    //         }
-                    //     }, 1000)
-                    // );
-                    // gridApi.core.on.sortChanged(
-                    //     $scope,
-                    //     _.debounce(() => {
-                    //         console.log('sc1')
-                    //         // if ($scope.restore_status === RESTORE_COMPLETE) {
-                    //         if ($scope.rp) {
-                    //             console.log('sc2')
-                    //             updateColumnFilterSort();
-                    //             $scope.load_inventory(1);
-                    //             console.log('sc3')
-                    //         } else {
-                    //             $scope.rp = true
-                    //         }
-                    //     }, 1000)
-                    // );
 
-
-
+                        gridApi.core.on.sortChanged($scope, () => {
+                            updateColumnFilterSort();
+                            $scope.load_inventory(1);
+                        });
+                        gridApi.core.on.filterChanged(
+                            $scope,
+                            _.debounce(() => {
+                                updateColumnFilterSort();
+                                $scope.load_inventory(1);
+                            }, 2000)
+                        );
                     }
                 }
             }
