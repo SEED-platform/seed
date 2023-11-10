@@ -28,11 +28,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             uiGridConstants,
             gridUtil,
         ) {
+            $scope.data = []
+            const localStorageKey = `grid.properties`;
             const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
             $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
             $scope.columns = property_columns;
             $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
+            $scope.columnDisplayByName = {};
+            for (const i in $scope.columns) {
+                $scope.columnDisplayByName[$scope.columns[i].name] = $scope.columns[i].displayName;
+            }
             $scope.data = [];
             $scope.summary_data = [];
             $scope.organization = organization_payload.organization;
@@ -79,8 +85,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
 
             $scope.refresh_data = () => {
-                $scope.data_valid = false;
-                $scope.summary_valid= false;
                 console.log('refresh_data')
                 expected_keys = ['baseline_cycle', 'current_cycle', 'goal', 'goal_column', 'level_name_index', 'access_level_instance']
                 valid = expected_keys.every(key => key in $scope.portfolioSummary);
@@ -88,12 +92,21 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     console.log('not valid')
                     return
                 }
-                $scope.data_loading = true;
                 $scope.summary_loading = true;
                 console.log($scope.portfolioSummary)
-                const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
-                const baseline_cycle = $scope.portfolioSummary.baseline_cycle
 
+                load_summary()
+                $scope.load_inventory(1)
+                // This will enable gridOptions which will hig filter change 
+                // which will call load inventory
+                // $scope.data_loading = false;
+                // $scope.data_valid = true
+            }
+
+            const load_summary = () => {
+                $scope.summary_valid = false;
+
+                const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
                 inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
                     summary = result.data;
                     console.log('got summary data')
@@ -102,52 +115,36 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     $scope.summary_loading = false;
                     $scope.summary_valid = true;
                 })
+            }
 
-                // RETURN THE SAME 100 BASED ON PROPERTY ID
+            $scope.load_inventory = (page) => {
+                $scope.data_loading = true;
+                $scope.data_valid = false;
+
+                $scope.rp = false
+                let baseline_cycle = $scope.portfolioSummary.baseline_cycle
+                let current_cycle = $scope.portfolioSummary.current_cycle
                 let combined_result = {}
-                get_paginated_properties(1, 100, current_cycle).then(current_result => {
+                get_paginated_properties(page, 50, current_cycle).then(current_result => {
                     console.log('got current')
+                    $scope.inventory_pagination = current_result.pagination
                     properties = current_result.results
                     combined_result[current_cycle.id] = properties;
                     property_ids = properties.map(p => p.id)
+
                     inventory_service.filter_by_property(baseline_cycle.id, property_ids).then(baseline_result => {
                         console.log('got baseline')
-                        properties = baseline_result.results 
+                        properties = baseline_result.results
                         combined_result[baseline_cycle.id] = properties;
                         set_grid_options(combined_result)
                     }).then(() => {
                         $scope.data_loading = false;
                         $scope.data_valid = true
-                    }) 
+                    })
                 })
-
-                // // RETURN FIRST 100 OF EACH. TESTING ONLY
-                // current_promise = get_paginated_properties(1, 100, current_cycle)
-                // baseline_promise = get_paginated_properties(1, 100, baseline_cycle)
-                // Promise.all([current_promise, baseline_promise]).then(([current_result, baseline_result]) => {
-                //     console.log('Promise all')
-                //     get_all_labels();
-                //     let combined_result = {}
-                //     combined_result[current_cycle.id] = current_result.results;
-                //     combined_result[baseline_cycle.id] = baseline_result.results;
-                //     set_grid_options(combined_result);
-                // }).then(() => {
-                //     $scope.data_valid = true;
-                //     $scope.data_loading = false;
-                // })
-
-
-                // // OLD - GET ALL PROPERTIES - SLOW
-                // inventory_service.properties_cycle(undefined, cycle_ids).then(result => {
-                //     console.log('got data')
-                //     get_all_labels();
-                //     set_grid_options(result);
-                // }).then(() => { 
-                //     $scope.data_valid = true;
-                //     $scope.data_loading = false;
-                // })
             }
             $scope.refresh_data()
+
 
             const get_paginated_properties = (page, chunk, cycle) => {
                 fn = inventory_service.get_properties;
@@ -324,7 +321,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id].filter(p => p[level] == ali_name)
                 let current_properties = properties[$scope.portfolioSummary.current_cycle.id].filter(p => p[level] == ali_name)
-                let flat_properties = [...baseline_properties, ...current_properties].flat()
+                let flat_properties = [...current_properties, ...baseline_properties].flat()
                 // labels are related to property views, but cross cycles displays based on property 
                 // create a lookup between property_view.id to property.id
                 $scope.property_lookup = {}
@@ -398,6 +395,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // Apply filters
                 _.map(cols, (col) => {
                     let options = {};
+                    if (col.pinnedLeft) {
+                        col.pinnedLeft = false;
+                    }
                     // not an ideal solution. How is this done on the inventory list
                     if (col.column_name == 'pm_property_id') {
                         col.type = 'number'
@@ -453,19 +453,122 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.gridApi.core.refresh();
             }
 
+            const updateColumnFilterSort = () => {
+                const columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
+
+                inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
+                    columns
+                });
+                // let columns = $scope.gridApi.grid.columns
+                $scope.column_filters = [];
+                $scope.column_sorts = [];
+                // parse the filters and sorts
+                for (const column of columns) {
+                    const { name, filters, sort } = column;
+                    // remove the column id at the end of the name
+                    const column_name = name.split('_').slice(0, -1).join('_');
+
+                    for (const filter of filters) {
+                        if (_.isEmpty(filter)) {
+                            continue;
+                        }
+
+                        // a filter can contain many comma-separated filters
+                        const subFilters = _.map(_.split(filter.term, ','), _.trim);
+                        for (const subFilter of subFilters) {
+                            if (subFilter) {
+                                const { string, operator, value } = parseFilter(subFilter);
+                                const index = all_columns.findIndex((p) => p.name === column_name);
+                                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                                $scope.column_filters.push({
+                                    name,
+                                    column_name,
+                                    operator,
+                                    value,
+                                    display
+                                });
+                            }
+                        }
+                    }
+
+                    if (sort.direction) {
+                        // remove the column id at the end of the name
+                        const column_name = name.split('_').slice(0, -1).join('_');
+                        const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+                        $scope.column_sorts.push({
+                            name,
+                            column_name,
+                            direction: sort.direction,
+                            display,
+                            priority: sort.priority
+                        });
+                        $scope.column_sorts.sort((a, b) => a.priority > b.priority);
+                    }
+                }
+                // $scope.isModified();
+            };
+
+            const restoreGridSettings = () => {
+                console.log('resotreGridSettings')
+                $scope.restore_status = RESTORE_SETTINGS;
+                let state = inventory_service.loadGridSettings(`${localStorageKey}.sort`);
+                if (!_.isNull(state)) {
+                    state = JSON.parse(state);
+                    $scope.gridApi.saveState.restore($scope, state).then(() => {
+                        console.log('done restoring')
+                        $scope.restore_status = RESTORE_SETTINGS_DONE;
+                    });
+                } else {
+                    $scope.restore_status = RESTORE_SETTINGS_DONE;
+                }
+            };
             const set_grid_options = (result) => {
                 $scope.data = format_properties(result)
                 $scope.gridOptions = {
                     data: 'data',
-                    columnDefs: selected_columns($scope.columns),
+                    columnDefs: selected_columns(),
                     enableFiltering: true,
                     enableHorizontalScrollbar: 1,
                     cellWidth: 200,
                     onRegisterApi: (gridApi) => {
+                        console.log('on register')
                         $scope.gridApi = gridApi;
+                    // _.defer(() => {
+                    //     restoreGridSettings();
+                    // });
+                    // gridApi.core.on.filterChanged(
+                    //     $scope,
+                    //     _.debounce(() => {
+                    //         console.log('fc1')
+                    //         if ($scope.restore_status === RESTORE_COMPLETE) {
+                    //             console.log('fc2')
+                    //             updateColumnFilterSort();
+                    //             // $scope.load_inventory(1);
+                    //         }
+                    //     }, 1000)
+                    // );
+                    // gridApi.core.on.sortChanged(
+                    //     $scope,
+                    //     _.debounce(() => {
+                    //         console.log('sc1')
+                    //         // if ($scope.restore_status === RESTORE_COMPLETE) {
+                    //         if ($scope.rp) {
+                    //             console.log('sc2')
+                    //             updateColumnFilterSort();
+                    //             $scope.load_inventory(1);
+                    //             console.log('sc3')
+                    //         } else {
+                    //             $scope.rp = true
+                    //         }
+                    //     }, 1000)
+                    // );
+
+
+
                     }
                 }
             }
+            
 
             // -------- SUMMARY LOGIC ------------
 
