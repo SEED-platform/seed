@@ -2033,8 +2033,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             baseline_cycle_id = request.data.get('baseline_cycle')
             current_cycle = Cycle.objects.exclude(name='Migration Created Cycle').order_by('-end').first()
             cycle_ids = [baseline_cycle_id, current_cycle.id]
-            ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-            response = get_portfolio_summary(org_id, ali, cycle_ids)
+
+            access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
+            access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            if not (user_ali == access_level_instance or access_level_instance.is_descendant_of(user_ali)):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'No access_level_instance with id {access_level_instance_id}.'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            response = get_portfolio_summary(org_id, access_level_instance, cycle_ids)
         # temporary, this exception needs to be more specific
         except: 
             return JsonResponse({

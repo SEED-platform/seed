@@ -67,10 +67,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             // must be alphabetical
-            const cycle_column_keys = ['energy_score', 'gross_floor_area', 'site_eui', 'pm_property_id'].sort()
-            const cycle_column_vals = property_columns.filter(c => cycle_column_keys.includes(c.column_name)).map(c => c.name)
+            const column_keys = ['energy_score', 'gross_floor_area', 'site_eui', 'pm_property_id'].sort()
+            const column_vals = property_columns.filter(c => column_keys.includes(c.column_name)).map(c => c.name)
             // convert column_name to name
-            const cycle_column_lookup = Object.fromEntries(_.zip(cycle_column_keys, cycle_column_vals))
+            const column_lookup = Object.fromEntries(_.zip(column_keys, column_vals))
 
             const site_eui_column = property_columns.find(col => col.column_name == 'site_eui');
             $scope.portfolioSummary = {
@@ -108,7 +108,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.summary_valid = false;
 
                 const cycle_ids = [$scope.portfolioSummary.baseline_cycle.id, $scope.portfolioSummary.current_cycle.id]
-                inventory_service.get_portfolio_summary(cycle_ids[0]).then(result => {
+                let access_level_instance_id = $scope.portfolioSummary.access_level_instance
+                inventory_service.get_portfolio_summary(cycle_ids[0], access_level_instance_id).then(result => {
                     summary = result.data;
                     // console.log('got summary data')
                     set_summary_grid_options(summary);
@@ -305,7 +306,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // ------------ DATA TABLE LOGIC ---------
 
             const set_site_eui_goal = (baseline, current, property) => {
-                let site_eui = cycle_column_lookup.site_eui
+                const site_eui = column_lookup.site_eui
                 property.baseline_site_eui = baseline && baseline[site_eui]
                 property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_site_eui) || undefined
                 property.current_site_eui = current && current[site_eui]
@@ -314,14 +315,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_properties = (properties) => {
-                let gfa = cycle_column_lookup.gross_floor_area
+                const gfa = column_lookup.gross_floor_area
+                
                 // properties = {cycle_id1: [properties1], cycle_id2: [properties2]}. 
-                // there are some fields that span cycles (id, name, type)
+                // some fields that span cycles (id, name, type)
                 // and others are cycle specific (site EUI, sqft)
-
                 let current_properties = properties[$scope.portfolioSummary.current_cycle.id]
                 let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id]
                 let flat_properties = [...current_properties, ...baseline_properties].flat()
+
                 // labels are related to property views, but cross cycles displays based on property 
                 // create a lookup between property_view.id to property.id
                 $scope.property_lookup = {}
