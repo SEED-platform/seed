@@ -125,8 +125,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 let baseline_cycle = $scope.portfolioSummary.baseline_cycle
                 let current_cycle = $scope.portfolioSummary.current_cycle
+                let access_level_instance_id = $scope.portfolioSummary.access_level_instance
                 let combined_result = {}
-                get_paginated_properties(page, 50, current_cycle).then(current_result => {
+                get_paginated_properties(page, 50, current_cycle, access_level_instance_id).then(current_result => {
                     // console.log('got current')
                     $scope.inventory_pagination = current_result.pagination
                     properties = current_result.results
@@ -147,7 +148,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.refresh_data()
 
 
-            const get_paginated_properties = (page, chunk, cycle) => {
+            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id) => {
                 fn = inventory_service.get_properties;
                 console.log('sorts', $scope.column_sorts)
                 console.log('filters', $scope.column_filters)
@@ -164,7 +165,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     true,
                     $scope.column_filters,
                     $scope.column_sorts,
-                    false
+                    false,
+                    undefined,
+                    access_level_instance_id
                 );
             };
 
@@ -311,30 +314,26 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_properties = (properties) => {
+                let gfa = cycle_column_lookup.gross_floor_area
                 // properties = {cycle_id1: [properties1], cycle_id2: [properties2]}. 
                 // there are some fields that span cycles (id, name, type)
                 // and others are cycle specific (site EUI, sqft)
 
-                let level = $scope.level_names[$scope.portfolioSummary.level_name_index]
-                let ali_id = $scope.portfolioSummary.access_level_instance
-                let ali_name = $scope.potential_level_instances.find(ali => ali.id == ali_id).name
-
-                let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id].filter(p => p[level] == ali_name)
-                let current_properties = properties[$scope.portfolioSummary.current_cycle.id].filter(p => p[level] == ali_name)
+                let current_properties = properties[$scope.portfolioSummary.current_cycle.id]
+                let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id]
                 let flat_properties = [...current_properties, ...baseline_properties].flat()
                 // labels are related to property views, but cross cycles displays based on property 
                 // create a lookup between property_view.id to property.id
                 $scope.property_lookup = {}
                 flat_properties.forEach(p => $scope.property_lookup[p.property_view_id] = p.id)
                 let unique_ids = [...new Set(flat_properties.map(property => property.id))]
-                let gfa = cycle_column_lookup.gross_floor_area
                 let combined_properties = []
                 unique_ids.forEach(id => {
                     // find matching properties
                     let baseline = baseline_properties.find(p => p.id == id)
                     let current = current_properties.find(p => p.id == id)
                     // set accumulator
-                    let property = baseline || current
+                    let property = current || baseline
                     // add baseline stats
                     property.baseline_cycle = $scope.portfolioSummary.baseline_cycle.name
                     property.baseline_sqft = baseline && baseline[gfa]
