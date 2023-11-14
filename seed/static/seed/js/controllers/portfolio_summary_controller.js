@@ -334,11 +334,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     // set accumulator
                     let property = current || baseline
                     // add baseline stats
-                    property.baseline_cycle = $scope.portfolioSummary.baseline_cycle.name
-                    property.baseline_sqft = baseline && baseline[gfa]
+                    if (baseline) {
+                        property.baseline_cycle = $scope.portfolioSummary.baseline_cycle.name
+                        property.baseline_sqft = baseline[gfa]
+                    }
                     // add current stats
-                    property.current_cycle = $scope.portfolioSummary.current_cycle.name
-                    property.current_sqft = current && current[gfa]
+                    if (current) {
+                        property.current_cycle = $scope.portfolioSummary.current_cycle.name
+                        property.current_sqft = current[gfa]
+                    }
                     // comparison stats
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
 
