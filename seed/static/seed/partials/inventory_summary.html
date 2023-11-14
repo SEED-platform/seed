@@ -63,14 +63,4 @@
       </table>
     </div>
   </div>
-  <div class="column">
-    <div class="row">
-      <uib-tabset class="grow">
-        <uib-tab ng-repeat="chart in charts" index="$index" heading="{$:: chart.xLabel $}" ng-click="draw_chart(chart.name)">
-          <div ng-hide="summary_data[chart.name].length < 1" id="chart-{$:: chart.name $}"></div>
-          <div ng-hide="summary_data[chart.name].length > 0" style="padding: 10px">Insufficient number of properties to summarize!</div>
-        </uib-tab>
-      </uib-tabset>
-    </div>
-  </div>
 </div>

@@ -20,73 +20,6 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       cycles: cycles_payload.cycles
     };
 
-    $scope.charts = [
-      {
-        name: 'property_types',
-        chart: null,
-        x: 'extra_data__Largest Property Use Type',
-        y: 'count',
-        xLabel: 'Property Types'
-      },
-      {
-        name: 'year_built',
-        chart: null,
-        x: 'year_built',
-        y: 'percentage',
-        xLabel: 'Year Built'
-      },
-      {
-        name: 'energy',
-        chart: null,
-        x: 'site_eui',
-        y: 'percentage',
-        xLabel: 'Site EUI'
-      },
-      {
-        name: 'square_footage',
-        chart: null,
-        x: 'gross_floor_area',
-        y: 'percentage',
-        xLabel: 'Gross Floor Area'
-      }
-    ];
-    let charts_loaded = false;
-
-    const load_charts = () => {
-      if (!charts_loaded) {
-        charts_loaded = true;
-        $scope.charts.forEach((config) => {
-          const svg = dimple.newSvg(`#chart-${config.name}`, '100%', 500);
-          // eslint-disable-next-line new-cap
-          const chart = new dimple.chart(svg, []);
-          const xaxis = chart.addCategoryAxis('x', config.x);
-          xaxis.title = config.xLabel;
-          chart.addMeasureAxis('y', config.y);
-          chart.addSeries(null, dimple.plot.bar);
-          $scope.charts[config.name] = chart;
-        });
-      }
-
-      $scope.charts.forEach((config) => {
-        const chart = $scope.charts[config.name];
-        if ($scope.summary_data[config.name].length < 1) {
-          return;
-        }
-        chart.data = $scope.summary_data[config.name];
-        chart.svg.select('.missing-data').remove();
-        $scope.draw_chart(config.name, false);
-      });
-    };
-
-    $scope.draw_chart = (chart_name, no_data_change = true) => {
-      if ($scope.summary_data[chart_name].length < 1) {
-        return;
-      }
-      setTimeout(() => {
-        $scope.charts[chart_name].draw(0, no_data_change);
-      }, 50);
-    };
-
     const refresh_data = () => {
       $scope.progress = {};
       const modalInstance = $uibModal.open({
@@ -115,7 +48,6 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
           count: value
         }));
 
-        load_charts();
         modalInstance.close();
       });
     };
