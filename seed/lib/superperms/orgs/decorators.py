@@ -276,6 +276,8 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
             requests_ali = import_record.access_level_instance
 
         elif analysis_id_kwarg and analysis_id_kwarg in kwargs:
+            if int(kwargs[analysis_id_kwarg]) < 1:
+                return
             analysis = Analysis.objects.get(pk=kwargs[analysis_id_kwarg])
             requests_ali = analysis.access_level_instance
 
