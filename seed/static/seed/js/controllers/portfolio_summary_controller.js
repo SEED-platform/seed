@@ -29,13 +29,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             gridUtil,
         ) {
             $scope.data = []
-            const localStorageKey = `grid.portfolio_summary`;
+            // const localStorageKey = `grid.portfolio_summary`;
 
             const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
             $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
             $scope.columns = property_columns;
             $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
+            // from inventory_list_controller
             $scope.columnDisplayByName = {};
             for (const i in $scope.columns) {
                 $scope.columnDisplayByName[$scope.columns[i].name] = $scope.columns[i].displayName;
@@ -66,11 +67,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 console.log($scope.potential_level_instances)
             }
 
+            // Create lookup table for column_names to names
             // must be alphabetical
-            const column_keys = ['energy_score', 'gross_floor_area', 'source_eui', 'pm_property_id'].sort()
-            const column_vals = property_columns.filter(c => column_keys.includes(c.column_name)).map(c => c.name)
+            const column_names = ['gross_floor_area', 'source_eui', 'source_eui_weather_normalized', 'pm_property_id'].sort()
+            const column_vals = property_columns.filter(c => column_names.includes(c.column_name)).map(c => c.name)
             // convert column_name to name
-            const column_lookup = Object.fromEntries(_.zip(column_keys, column_vals))
+            const column_lookup = Object.fromEntries(_.zip(column_names, column_vals))
 
             // const source_eui_column = property_columns.find(col => col.column_name == 'source_eui');
             $scope.portfolioSummary = {
@@ -78,7 +80,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 name: 'Test Portfolio',
                 goal_column: 'source_eui',
                 goal: 0,
-                baseline_cycle: $scope.cycles.find(c => c.id == 3),
+                baseline_cycle: $scope.cycles.find(c => c.id == 3), // temp hardcoded
                 current_cycle: current_cycle
                 // level_name_index
                 // access_level_instance
@@ -96,12 +98,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.summary_loading = true;
                 console.log($scope.portfolioSummary)
 
+                // set summary and data gridOptions
                 load_summary()
                 $scope.load_inventory(1)
-                // This will enable gridOptions which will hig filter change 
-                // which will call load inventory
-                // $scope.data_loading = false;
-                // $scope.data_valid = true
             }
 
             const load_summary = () => {
@@ -129,16 +128,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let access_level_instance_id = $scope.portfolioSummary.access_level_instance
                 let combined_result = {}
                 get_paginated_properties(page, 50, current_cycle, access_level_instance_id).then(current_result => {
-                    // console.log('got current')
                     $scope.inventory_pagination = current_result.pagination
                     properties = current_result.results
                     combined_result[current_cycle.id] = properties;
                     property_ids = properties.map(p => p.id)
 
                     inventory_service.filter_by_property(baseline_cycle.id, property_ids).then(baseline_result => {
-                        // console.log('got baseline')
                         properties = baseline_result.results
                         combined_result[baseline_cycle.id] = properties;
+                        get_all_labels()
                         set_grid_options(combined_result)
                     }).then(() => {
                         $scope.data_loading = false;
@@ -172,11 +170,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 );
             };
 
-
-
-            
-
             const percentage = (a, b) => {
+                if (!a) return null;
                 return Math.round((a - b) / a * 100)
             }
 
@@ -307,9 +302,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             const set_source_eui_goal = (baseline, current, property) => {
                 const source_eui = column_lookup.source_eui
-                property.baseline_source_eui = baseline && baseline[source_eui]
+                const weather_eui = column_lookup.source_eui_weather_normalized
+                // find prefered source_eui
+                property.baseline_source_eui = baseline && (baseline[weather_eui] || baseline[source_eui])
                 property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_source_eui) || undefined
-                property.current_source_eui = current && current[source_eui]
+                property.current_source_eui = current && (current[weather_eui] || current[source_eui])
                 property.current_kbtu = Math.round(property.current_sqft * property.current_source_eui) || undefined
                 property.source_eui_change = percentage(property.baseline_source_eui, property.current_source_eui)
             }
@@ -344,7 +341,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     property.current_sqft = current && current[gfa]
                     // comparison stats
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
-                    // set_source_eui_goal(baseline, current, property)
+
                     set_source_eui_goal(baseline, current, property)
 
                     combined_properties.push(property)
@@ -373,14 +370,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const baseline_cols = [
                     { field: 'baseline_cycle', displayName: 'Cycle' },
                     { field: 'baseline_sqft', displayName: 'Sq. FT' },
-                    { field: 'baseline_source_eui', displayName: 'Source EUI' },
+                    { field: 'baseline_source_eui', displayName: 'EUI' },
                     { field: 'baseline_kbtu', displayName: 'kBTU' },
                     build_label_col_def('baseline-labels', 'baseline')
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
                     { field: 'current_sqft', displayName: 'Sq. FT' },
-                    { field: 'current_source_eui', displayName: 'Source EUI' },
+                    { field: 'current_source_eui', displayName: 'EUI' },
                     { field: 'current_kbtu', displayName: 'kBTU' },
                     build_label_col_def('current-labels', 'current')
                 ]
@@ -394,6 +391,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols]
 
                 // Apply filters
+                // from inventory_list_controller
                 _.map(cols, (col) => {
                     let options = {};
                     if (col.pinnedLeft) {
@@ -454,6 +452,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.gridApi.core.refresh();
             }
 
+            // from inventory_list_controller
             const updateColumnFilterSort = () => {
                 const columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
 
@@ -509,6 +508,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // $scope.isModified();
             };
 
+            // from inventory_list_controller
             // https://regexr.com/6cka2
             const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
             const parseFilter = (expression) => {
@@ -607,13 +607,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'baseline_cycle', displayName: 'Cycle' },
                     { field: 'baseline_total_sqft', displayName: 'Total Sq. FT' },
                     { field: 'baseline_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'baseline_weighted_source_eui', displayName: 'Source Eui' },
+                    { field: 'baseline_weighted_source_eui', displayName: 'EUI' },
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
                     { field: 'current_total_sqft', displayName: 'Total Sq. FT' },
                     { field: 'current_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'current_weighted_source_eui', displayName: 'Source Eui' },
+                    { field: 'current_weighted_source_eui', displayName: 'EUI' },
                 ]
                 const calc_cols = [
                     { field: 'sqft_change', displayName: 'Sq. FT % Change' },
