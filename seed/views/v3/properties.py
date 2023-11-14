@@ -2042,10 +2042,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'status': 'error',
                     'message': f'No access_level_instance with id {access_level_instance_id}.'
                 }, status=status.HTTP_404_NOT_FOUND)
-            
+
             response = get_portfolio_summary(org_id, access_level_instance, cycle_ids)
         # temporary, this exception needs to be more specific
-        except: 
+        except Exception as e:
+            logging.error('portfolio_summary error %s', e) 
             return JsonResponse({
                 'status': 'error',
                 'message': 'unexpected error'
@@ -2072,8 +2073,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             response = filter_views_by_property(org_id, ali, cycle_id, property_ids)
 
         # temporary, this exception needs to be more specific
-        except: 
-            logging.error('>>> ERROR in filter_by_properties')
+        except Exception as e: 
+            logging.error('filter_by_property error %s', e)
             return JsonResponse({
                 'status': 'error',
                 'message': 'unexpected error'

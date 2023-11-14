@@ -67,12 +67,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             // must be alphabetical
-            const column_keys = ['energy_score', 'gross_floor_area', 'site_eui', 'pm_property_id'].sort()
+            const column_keys = ['energy_score', 'gross_floor_area', 'source_eui', 'pm_property_id'].sort()
             const column_vals = property_columns.filter(c => column_keys.includes(c.column_name)).map(c => c.name)
             // convert column_name to name
             const column_lookup = Object.fromEntries(_.zip(column_keys, column_vals))
 
-            const site_eui_column = property_columns.find(col => col.column_name == 'site_eui');
+            // const source_eui_column = property_columns.find(col => col.column_name == 'source_eui');
             $scope.portfolioSummary = {
                 // temp - hardcoded
                 name: 'Test Portfolio',
@@ -305,13 +305,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // ------------ DATA TABLE LOGIC ---------
 
-            const set_site_eui_goal = (baseline, current, property) => {
-                const site_eui = column_lookup.site_eui
-                property.baseline_site_eui = baseline && baseline[site_eui]
-                property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_site_eui) || undefined
-                property.current_site_eui = current && current[site_eui]
-                property.current_kbtu = Math.round(property.current_sqft * property.current_site_eui) || undefined
-                property.site_eui_change = percentage(property.baseline_site_eui, property.current_site_eui)
+            const set_source_eui_goal = (baseline, current, property) => {
+                const source_eui = column_lookup.source_eui
+                property.baseline_source_eui = baseline && baseline[source_eui]
+                property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_source_eui) || undefined
+                property.current_source_eui = current && current[source_eui]
+                property.current_kbtu = Math.round(property.current_sqft * property.current_source_eui) || undefined
+                property.source_eui_change = percentage(property.baseline_source_eui, property.current_source_eui)
             }
 
             const format_properties = (properties) => {
@@ -319,7 +319,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 
                 // properties = {cycle_id1: [properties1], cycle_id2: [properties2]}. 
                 // some fields that span cycles (id, name, type)
-                // and others are cycle specific (site EUI, sqft)
+                // and others are cycle specific (source EUI, sqft)
                 let current_properties = properties[$scope.portfolioSummary.current_cycle.id]
                 let baseline_properties = properties[$scope.portfolioSummary.baseline_cycle.id]
                 let flat_properties = [...current_properties, ...baseline_properties].flat()
@@ -344,8 +344,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     property.current_sqft = current && current[gfa]
                     // comparison stats
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
-                    // set_site_eui_goal(baseline, current, property)
-                    set_site_eui_goal(baseline, current, property)
+                    // set_source_eui_goal(baseline, current, property)
+                    set_source_eui_goal(baseline, current, property)
 
                     combined_properties.push(property)
 
@@ -373,20 +373,20 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const baseline_cols = [
                     { field: 'baseline_cycle', displayName: 'Cycle' },
                     { field: 'baseline_sqft', displayName: 'Sq. FT' },
-                    { field: 'baseline_site_eui', displayName: 'Site EUI' },
+                    { field: 'baseline_source_eui', displayName: 'Source EUI' },
                     { field: 'baseline_kbtu', displayName: 'kBTU' },
                     build_label_col_def('baseline-labels', 'baseline')
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
                     { field: 'current_sqft', displayName: 'Sq. FT' },
-                    { field: 'current_site_eui', displayName: 'Site EUI' },
+                    { field: 'current_source_eui', displayName: 'Source EUI' },
                     { field: 'current_kbtu', displayName: 'kBTU' },
                     build_label_col_def('current-labels', 'current')
                 ]
                 const summary_cols = [
                     { field: 'sqft_change', displayName: 'Sq Ft % Change' },
-                    { field: 'site_eui_change', displayName: 'Site EUI % Improvement' },
+                    { field: 'source_eui_change', displayName: 'EUI % Improvement' },
                 ]
 
                 apply_defaults(baseline_cols, default_baseline)
@@ -607,13 +607,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'baseline_cycle', displayName: 'Cycle' },
                     { field: 'baseline_total_sqft', displayName: 'Total Sq. FT' },
                     { field: 'baseline_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'baseline_weighted_site_eui', displayName: 'Site Eui' },
+                    { field: 'baseline_weighted_source_eui', displayName: 'Source Eui' },
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
                     { field: 'current_total_sqft', displayName: 'Total Sq. FT' },
                     { field: 'current_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'current_weighted_site_eui', displayName: 'Site Eui' },
+                    { field: 'current_weighted_source_eui', displayName: 'Source Eui' },
                 ]
                 const calc_cols = [
                     { field: 'sqft_change', displayName: 'Sq. FT % Change' },
@@ -637,11 +637,11 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     baseline_cycle: baseline.cycle_name,
                     baseline_total_sqft: baseline.total_sqft,
                     baseline_total_kbtu: baseline.total_kbtu,
-                    baseline_weighted_site_eui: baseline.weighted_eui,
+                    baseline_weighted_source_eui: baseline.weighted_eui,
                     current_cycle: current.cycle_name,
                     current_total_sqft: current.total_sqft,
                     current_total_kbtu: current.total_kbtu,
-                    current_weighted_site_eui: current.weighted_eui,
+                    current_weighted_source_eui: current.weighted_eui,
                     sqft_change: summary.sqft_change,
                     eui_change: summary.eui_change,
                 }]

@@ -10,7 +10,8 @@ import json
 # Imports from Django
 from django.http import JsonResponse
 from rest_framework import status
-from django.db.models import Sum, F
+from django.db.models import F, IntegerField, Sum, Value
+from django.db.models.functions import Coalesce
 
 
 # Local Imports
@@ -290,10 +291,18 @@ def get_portfolio_summary(org_id, ali, cycle_ids):
                 property__access_level_instance__lft__gte=ali.lft,
                 property__access_level_instance__rgt__lte=ali.rgt,
         )
+        # create an order of prefered fields to perform the kbtu calculation
+        prefered_fields = [
+            F('state__source_eui_weather_normalized'),
+            F('state__source_eui_modeled'),
+            F('state__source_eui'),
+        ]
 
         aggregated_data = property_views.aggregate(
             total_sqft=Sum('state__gross_floor_area'),
-            total_kbtu=Sum(F('state__site_eui') * F('state__gross_floor_area'))
+            total_kbtu=Sum(
+                Coalesce(*prefered_fields) * F('state__gross_floor_area')
+            )
         )
 
         def get_magnitude(key):
