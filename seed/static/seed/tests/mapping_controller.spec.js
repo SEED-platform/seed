@@ -251,7 +251,8 @@ describe('controller: mapping_controller', () => {
       status: 'success',
       organization: {
         display_decimal_places: 2,
-        id: 1
+        id: 1,
+        access_level_names: []
       }
     };
 

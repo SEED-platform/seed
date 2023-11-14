@@ -9,22 +9,13 @@ from django.db import migrations, models, transaction
 def set_import_records_ali(apps, schema_editor):
     ImportRecord = apps.get_model('data_importer', 'ImportRecord')
     AccessLevelInstance = apps.get_model('orgs', 'AccessLevelInstance')
-    OrganizationUser = apps.get_model('orgs', 'OrganizationUser')
 
     import_records = ImportRecord.objects.all()
     for import_record in import_records:
-        owner = import_record.owner
         org = import_record.super_organization
 
         if org is None:
             raise ValueError(f"ImportRecord with pk {import_record.pk} has no super_organization, and is thus orphaned. This shouldn't have happened and this ImportRecord cannot be migrated. Please add a super_organization or delete the ImportRecord and try again.")
-
-        if owner is not None:
-            try:
-                org_user = OrganizationUser.objects.get(organization=org, user=owner)
-                ali = org_user.access_level_instance
-            except OrganizationUser.DoesNotExist:
-                raise ValueError(f"ImportRecord with pk {import_record.pk} has super organization with pk {org.pk} and owner with pk {owner.pk}. The owner is not a part of this org, which is weird.")
         else:
             ali = AccessLevelInstance.objects.get(organization=org, depth=1)
 
