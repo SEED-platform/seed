@@ -4,13 +4,10 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-import json
-
 from datetime import datetime
 from django.urls import reverse_lazy
 
 from seed.models import Column, Goal
-
 
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.test_helpers.fake import (
@@ -81,4 +78,17 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 404
         assert response.json()['message'] == 'No such resource.'
 
+    def test_goal_destroy(self):
+        assert Goal.objects.count() == 2
+        
+        self.login_as_child_member()
+        url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 404
+        assert Goal.objects.count() == 2
+
+        url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 204
+        assert Goal.objects.count() == 1
         
