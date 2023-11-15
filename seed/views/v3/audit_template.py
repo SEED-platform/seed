@@ -17,13 +17,43 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def get_submission(self, request, pk, report_format='pdf', filename='report.pdf'):
+        """
+        Fetches a Report Submission (XML or PDF) for an Audit Template property (only)
+        """
+        valid_file_formats = ['xml', 'pdf']
+        if report_format.lower() not in valid_file_formats:
+            message = f"The report_format specified is invalid. Must be one of: {valid_file_formats}."
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+
+        at = AuditTemplate(self.get_organization(self.request))
+        response, message = at.get_submission(pk, report_format)
+
+        if response is None:
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+        if report_format.lower() == 'xml':
+            return HttpResponse(response.text)
+        else:
+            response2 = HttpResponse(response.content)
+            response2.headers["Content-Type"] = 'application/pdf'
+            response2.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+            return response2
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def get_building_xml(self, request, pk):
         """
-        Fetches a Building XML for an Audit Template property and updates the corresponding PropertyView
+        Fetches a Building XML for an Audit Template property (only)
         """
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)

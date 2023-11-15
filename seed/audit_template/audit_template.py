@@ -53,6 +53,33 @@ class AuditTemplate(object):
 
         return response, ""
 
+    def get_submission(self, audit_template_submission_id, report_format='pdf'):
+        # supporting 'PDF' and 'XML' formats only for now
+
+        token, message = self.get_api_token()
+        if not token:
+            return None, message
+
+        # validate format
+        if report_format.lower() not in ['xml', 'pdf']:
+            report_format = 'pdf'
+
+        # set headers
+        headers = {'accept': 'application/pdf'}
+        if report_format.lower() == 'xml':
+            headers = {'accept': 'application/xml'}
+
+        url = f'{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={token}'
+        try:
+            response = requests.request("GET", url, headers=headers)
+
+            if response.status_code != 200:
+                return None, f'Expected 200 response from Audit Template get_submission but got {response.status_code}: {response.content}'
+        except Exception as e:
+            return None, f'Unexpected error from Audit Template: {e}'
+
+        return response, ""
+
     def get_buildings(self, cycle_id):
         token, message = self.get_api_token()
         if not token:
