@@ -288,7 +288,12 @@ def assert_hierarchy_access(request, property_id_kwarg=None, property_view_id_kw
 
         elif goal_id_kwarg and goal_id_kwarg in kwargs:
             goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
-            requests_ali = goal.access_level_instance
+            body_ali_id = body.get('access_level_instance')
+            if body_ali_id:
+                body_ali = AccessLevelInstance.objects.get(pk=body_ali_id)
+                requests_ali = body_ali if body_ali.depth < goal.access_level_instance.depth else goal.access_level_instance
+            else:
+                requests_ali = goal.access_level_instance
 
         else:
             property_view = PropertyView.objects.get(pk=request.GET['property_view_id'])

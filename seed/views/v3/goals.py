@@ -18,8 +18,16 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
 @method_decorator(
+    name='retrieve',
+    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(goal_id_kwarg='pk')]
+)
+@method_decorator(
     name='destroy',
     decorator=[has_perm_class('requires_member'), has_hierarchy_access(goal_id_kwarg="pk")]
+)
+@method_decorator(
+    name='create',
+    decorator=[has_perm_class('requires_member'), has_hierarchy_access(body_ali_id="access_level_instance")]
 )
 class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = GoalSerializer
@@ -30,7 +38,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class('requires_viewer')
     def list(self, request):
         organization_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         goals = Goal.objects.filter(
             organization=organization_id,
@@ -42,55 +50,29 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             'status': 'success',
             'goals': self.serializer_class(goals, many=True).data 
         })
-    
-    @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
-    @has_hierarchy_access(goal_id_kwarg='pk')
-    def retrieve(self, request, pk):
-        organization_id = self.get_organization(request)
 
-        goal = Goal.objects.get(
-            organization=organization_id,
-            pk=pk,
-        )
-        return JsonResponse({
-            'status': 'success',
-            'goal': self.serializer_class(goal).data
-        })
-    
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
-    @has_hierarchy_access(body_ali_id='access_level_instance')
-    def create(self, request):
-        serializer = GoalSerializer(data=request.data)
+    @has_perm_class('requires_member')
+    @has_hierarchy_access(goal_id_kwarg='pk')
+    def update(self, request, pk):
+        try:
+            goal = Goal.objects.get(pk=pk)
+        except Goal.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'error': "No such resource."
+            })
+
+
+        data = GoalSerializer(goal).data
+        for key, val in request.data.items(): data[key] = val
+        
+        serializer = GoalSerializer(data=data)
 
         if not serializer.is_valid():
             return JsonResponse({
                 'status': 'error',
-                'error': serializer.errors
+                'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.save()
-        return JsonResponse({
-            'status': 'success',
-            'data': serializer.data,
-        }, status=status.HTTP_201_CREATED)
-
-    # @swagger_auto_schema_org_query_param
-    # @has_perm_class('required_member')
-    # @has_hierarchy_access(goal_id_kwarg='pk')
-    # def destroy(self, request, pk):
-        
-        
-
-        
-
-    # @has_hierarchy_access(property_id_kwarg='property_pk')
-
-    # def create(self)
-
-    # def retreive(self)
-        
-    # def delete(self)
-        
-    # def update(self)
+        return JsonResponse(serializer.data)
