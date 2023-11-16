@@ -18,14 +18,14 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('target_percentage', models.IntegerField(validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)])),
-                ('name', models.CharField(max_length=255)),
+                ('name', models.CharField(max_length=255, unique=True)),
                 ('access_level_instance', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.accesslevelinstance')),
                 ('baseline_cycle', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_baseline_cycles', to='seed.cycle')),
                 ('column1', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_column1s', to='seed.column')),
-                ('column2', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_column2s', to='seed.column')),
-                ('column3', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_column3s', to='seed.column')),
+                ('column2', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_column2s', to='seed.column')),
+                ('column3', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='goal_column3s', to='seed.column')),
                 ('current_cycle', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='goal_current_cycles', to='seed.cycle')),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='orgs.organization')),
             ],
-        ),
+        ), 
     ]

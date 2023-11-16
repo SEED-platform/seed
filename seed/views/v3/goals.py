@@ -10,7 +10,7 @@ from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
 )
-from seed.models import Goal, AccessLevelInstance
+from seed.models import AccessLevelInstance, Column, Cycle, Goal 
 from seed.serializers.goals import GoalSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -48,8 +48,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_hierarchy_access(goal_id_kwarg='pk')
     def retrieve(self, request, pk):
         organization_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        ali = access_level_instance
 
         goal = Goal.objects.get(
             organization=organization_id,
@@ -60,6 +58,24 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             'goal': self.serializer_class(goal).data
         })
     
+    @swagger_auto_schema_org_query_param
+    @has_perm_class('requires_viewer')
+    @has_hierarchy_access(body_ali_id='access_level_instance')
+    def create(self, request):
+        serializer = GoalSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return JsonResponse({
+                'status': 'error',
+                'error': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return JsonResponse({
+            'status': 'success',
+            'data': serializer.data,
+        }, status=status.HTTP_201_CREATED)
+
     # @swagger_auto_schema_org_query_param
     # @has_perm_class('required_member')
     # @has_hierarchy_access(goal_id_kwarg='pk')

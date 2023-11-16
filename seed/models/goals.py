@@ -18,11 +18,11 @@ class Goal(models.Model):
     current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name='goal_current_cycles')
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE)
     column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column1s')
-    column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column2s')
-    column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column3s')
-    # dont like validators? could use choices and define a list of integers 0-100
+    # column 2 and 3 optional
+    column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column2s', blank=True, null=True)
+    column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column3s', blank=True, null=True)
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
 
     # access_level_name 
     # NOT NECESSARY? its only used to select an ali_id. Just make it part of the create/edit process

@@ -4,6 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 from datetime import datetime
 from django.urls import reverse_lazy
 
@@ -29,13 +30,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
         # columns 
         self.column_eui_extra = self.column_factory.get_column('Source EUI - Adjusted to Current Year', is_extra_data=True)
+        self.root_ali = self.org.root
         self.child_ali = self.org.root.get_children().first()
 
         self.root_goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
-            access_level_instance=self.org.root,
+            access_level_instance=self.root_ali,
             column1=self.column_eui_extra,
             column2=Column.objects.get(column_name='source_eui_weather_normalized'),
             column3=Column.objects.get(column_name='source_eui'),
@@ -79,16 +81,119 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['message'] == 'No such resource.'
 
     def test_goal_destroy(self):
-        assert Goal.objects.count() == 2
+        goal_count = Goal.objects.count()
         
+        # invalid permission
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 404
-        assert Goal.objects.count() == 2
+        assert Goal.objects.count() == goal_count
 
+        # valid
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 204
-        assert Goal.objects.count() == 1
+        assert Goal.objects.count() == goal_count - 1
+
+    def test_goal_create(self):
+        goal_count = Goal.objects.count()
+        url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
+        preferred_columns = [
+            'placeholder', 
+            self.column_eui_extra.id, 
+            Column.objects.get(column_name='source_eui_weather_normalized').id, 
+            Column.objects.get(column_name='source_eui').id
+        ]
+        def reset_goal_data(name):
+            return {
+                'organization': self.org.id,
+                'baseline_cycle': self.cycle1.id,
+                'current_cycle': self.cycle3.id,
+                'access_level_instance': self.child_ali.id,
+                'column1': preferred_columns[1],
+                'column2': preferred_columns[2],
+                'column3': preferred_columns[3],
+                'target_percentage': 20,
+                'name': name
+            }
+        goal_data = reset_goal_data('child_goal 2')
+
+        # success
+        self.login_as_child_member()
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_data),
+            content_type='application/json'
+        )
+        assert response.status_code == 201 
+        assert Goal.objects.count() == goal_count + 1
+        goal_count = Goal.objects.count()
+
+        # invalid permission
+        goal_data['access_level_instance'] = self.root_ali.id
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_data),
+            content_type='application/json'
+        )
+        assert response.status_code == 404
+        assert Goal.objects.count() == goal_count
+
+        # invalid data
+        goal_data['access_level_instance'] = self.child_ali.id
+        goal_data['baseline_cycle'] = 999
+        goal_data['column1'] = 998
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 400
+        errors = response.json()['error']
+        assert errors['name'] == ['goal with this name already exists.']
+        assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
+        assert errors['column1'] == ['Invalid pk "998" - object does not exist.']
+        assert Goal.objects.count() == goal_count
+
+        # cycles must be unique
+        goal_data = reset_goal_data('child_goal 3')
+        goal_data['current_cycle'] = self.cycle1.id
+
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 400
+        assert response.json()['error']['non_field_errors'] == ['Cycles must be unique.']
+
+        # columns must be unique
+        goal_data = reset_goal_data('child_goal 3')
+        goal_data['column2'] = preferred_columns[1]
+
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 400
+        assert response.json()['error']['non_field_errors'] == ['Columns must be unique.']
+
+        # missing data
+        goal_data = reset_goal_data('')
+        goal_data.pop('name')
+        goal_data.pop('baseline_cycle')
+        goal_data.pop('column1')
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 400
+        errors = response.json()['error']
+        assert errors['name'] == ['This field is required.']
+        assert errors['baseline_cycle'] == ['This field is required.']
+        assert errors['column1'] == ['This field is required.']
+
+        # column2 and 3 are optional
+        goal_data = reset_goal_data('child_goal 3')
+        goal_data['column2'] = None
+        goal_data['column3'] = None
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 201
+        assert response.json()['data']['column2'] == None
+        assert response.json()['data']['column3'] == None
+        assert Goal.objects.count() == goal_count + 1
+
+
+
+
+    
+    # # def test_goal_update(self):
+    # #     x = 10
         
