@@ -14,33 +14,67 @@ from seed.tests.util import AccessLevelBaseTestCase
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
 )
 
 
-class GoalViewTests(AccessLevelBaseTestCase):
+class x(AccessLevelBaseTestCase):
+    # class GoalViewTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
         self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory =  FakePropertyFactory(organization=self.org)
+        self.property_view_factory =  FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory =  FakePropertyStateFactory(organization=self.org)
 
         # cycles 
         self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
         self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
         self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
         # columns 
-        self.column_eui_extra = self.column_factory.get_column('Source EUI - Adjusted to Current Year', is_extra_data=True)
+        # self.column_eui_extra = self.column_factory.get_column('Source EUI - Adjusted to Current Year', is_extra_data=True)
         self.root_ali = self.org.root
         self.child_ali = self.org.root.get_children().first()
+
+        # properties 3 cycles, 3 properties
+        property_details_a = self.property_state_factory.get_details()
+        property_details_a['source_eui'] = 10
+        property_details_a['gross_floor_area'] = 20
+        property_details_a['source_eui_weather_normalized'] = 12
+
+        property_details_b = self.property_state_factory.get_details()
+        property_details_b['source_eui'] = 5
+        property_details_b['gross_floor_area'] = 20
+
+        self.property1 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.root_ali)
+        self.property3 = self.property_factory.get_property(access_level_instance=self.root_ali)
+
+        self.state1a = self.property_state_factory.get_property_state(**property_details_a)
+        self.state2a = self.property_state_factory.get_property_state(**property_details_a)
+        self.state3a = self.property_state_factory.get_property_state(**property_details_a)
+
+        self.state1b = self.property_state_factory.get_property_state(**property_details_b)
+        self.state3b = self.property_state_factory.get_property_state(**property_details_b)
+
+        self.view1a = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state1a, cycle=self.cycle1)
+        self.view1b = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state1b, cycle=self.cycle3)
+        self.view2a = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state2a, cycle=self.cycle2)
+        self.view2b = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state3a, cycle=self.cycle1)
+        self.view3a = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state3b, cycle=self.cycle3)
 
         self.root_goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.root_ali,
-            column1=self.column_eui_extra,
-            column2=Column.objects.get(column_name='source_eui_weather_normalized'),
-            column3=Column.objects.get(column_name='source_eui'),
+            column1=Column.objects.get(column_name='source_eui_weather_normalized'),
+            column2=Column.objects.get(column_name='source_eui'),
+            column3=Column.objects.get(column_name='site_eui'),
             target_percentage=20,
             name='root_goal'
         )
@@ -49,9 +83,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
-            column1=self.column_eui_extra,
-            column2=Column.objects.get(column_name='source_eui_weather_normalized'),
-            column3=Column.objects.get(column_name='source_eui'),
+            column1=Column.objects.get(column_name='source_eui_weather_normalized'),
+            column2=Column.objects.get(column_name='source_eui'),
+            column3=None,
             target_percentage=20,
             name='child_goal'
         )
@@ -106,9 +140,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         preferred_columns = [
             'placeholder', 
-            self.column_eui_extra.id, 
             Column.objects.get(column_name='source_eui_weather_normalized').id, 
-            Column.objects.get(column_name='source_eui').id
+            Column.objects.get(column_name='source_eui').id,
+            Column.objects.get(column_name='site_eui').id,
         ]
         def reset_goal_data(name):
             return {
@@ -243,3 +277,27 @@ class GoalViewTests(AccessLevelBaseTestCase):
         errors = response.json()['errors']
         assert errors['column1'] == ['Invalid pk "999" - object does not exist.']
         assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
+
+    # def test_portfolio_summary(self):
+    #     """
+    #     need to modify for goals.
+
+    #     3 properties 
+    #     6 property views 
+    #     6 property states
+    #     3 cycles 
+
+    #     """
+    #     self.login_as_child_member()
+    #     url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
+    #     response = self.client.get(url, content_type='application/json')
+    #     assert response.status_code == 404 
+    #     assert response.json()['message'] == 'No such resource.'
+
+    #     url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
+    #     response = self.client.get(url, content_type='application/json')
+    #     x = response
+    #     breakpoint()
+
+    # NEED TO TEST WITH EXTRA DATA.
+    # are data types a problem?

@@ -2033,7 +2033,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             baseline_cycle_id = request.data.get('baseline_cycle')
             current_cycle = Cycle.objects.exclude(name='Migration Created Cycle').order_by('-end').first()
             cycle_ids = [baseline_cycle_id, current_cycle.id]
-
+        
             access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
             access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
             user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)

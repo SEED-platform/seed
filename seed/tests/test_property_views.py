@@ -686,6 +686,13 @@ class PropertyViewTests(DataMappingBaseTestCase):
         false_result = self.client.post(url, false_post_params, content_type='application/json')
         self.assertEqual(b'false', false_result.content)
 
+    def test_portfolio_summary(self):
+        breakpoint()
+        assert True 
+    
+    def test_filter_by_property(self):
+        assert True
+
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
     def setUp(self):

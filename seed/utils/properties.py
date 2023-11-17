@@ -277,7 +277,6 @@ def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[])
 
 
 def get_portfolio_summary(org_id, ali, cycle_ids):
-    # def get_portfolio_summary(properties_by_cycle, cycle_ids):
     # Calculate Portfolio Summary stats for baseline and current cycles given ALI's
     cycles = Cycle.objects.filter(id__in=cycle_ids)
     cycle_lookup = {cycle.id: {'type': 'baseline' if cycle.id == cycle_ids[0] else 'current', 'name': cycle.name} for cycle in cycles}
