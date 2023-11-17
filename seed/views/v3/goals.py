@@ -118,8 +118,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             total_kbtu = get_magnitude('total_kbtu')
             weighted_eui = int(total_kbtu / total_sqft) if total_sqft else 0
 
-            cycle_type = 'current' if cycle == goal.current_cycle.id else 'baseline'
-
+            cycle_type = 'current' if cycle == goal.current_cycle else 'baseline'
 
             summary[cycle_type] = {
                 'cycle_name': cycle.name,
