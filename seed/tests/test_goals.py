@@ -196,9 +196,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['column3'] == None
         assert Goal.objects.count() == goal_count + 1
 
-
-
-
     
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
@@ -206,12 +203,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         goal_data = {
-            'name': 'child_goal x',
-            'baseline_cycle': self.cycle2.id
+            'baseline_cycle': self.cycle2.id,
+            'target_percentage': 99,
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 200
-        assert response.json()['name'] == 'child_goal x'
+        assert response.json()['target_percentage'] == 99
         assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['column1'] == original_goal.column1.id
 
@@ -223,6 +220,26 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 404
         assert response.json()['message'] == 'No such resource.'
 
-        # invalid data
+        # extra data is ignored
+        goal_data = {
+            'name': 'child_goal y',
+            'baseline_cycle': self.cycle1.id,
+            'extra_data': 'invalid'
+        }
+        response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.json()['name'] == 'child_goal y'
+        assert response.json()['baseline_cycle'] == self.cycle1.id
+        assert response.json()['column1'] == original_goal.column1.id
+        assert 'extra_data' not in response.json()
 
-        # extra data
+
+        # invalid data  
+        goal_data = {
+            'column1': 999,
+            'baseline_cycle': 999,
+            'target_percentage': 999,
+        }
+        response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
+        errors = response.json()['errors']
+        assert errors['column1'] == ['Invalid pk "999" - object does not exist.']
+        assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']

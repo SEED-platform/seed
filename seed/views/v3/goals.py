@@ -63,16 +63,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 'error': "No such resource."
             })
 
-
-        data = GoalSerializer(goal).data
-        for key, val in request.data.items(): data[key] = val
-        
-        serializer = GoalSerializer(data=data)
+        serializer = GoalSerializer(goal, data=request.data, partial=True)
 
         if not serializer.is_valid():
             return JsonResponse({
                 'status': 'error',
                 'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
+    
+        serializer.save()
 
         return JsonResponse(serializer.data)
