@@ -20,10 +20,15 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
-    def get_submission(self, request, pk, report_format='pdf', filename='report.pdf'):
+    def get_submission(self, request, pk):
         """
-        Fetches a Report Submission (XML or PDF) for an Audit Template property (only)
+        Fetches a Report Submission (XML or PDF) from Audit Template (only)
         """
+
+        # get report format or default to pdf
+        default_report_format = 'pdf'
+        report_format = request.query_params.get('report_format', default_report_format)
+
         valid_file_formats = ['xml', 'pdf']
         if report_format.lower() not in valid_file_formats:
             message = f"The report_format specified is invalid. Must be one of: {valid_file_formats}."
@@ -32,6 +37,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
                 'message': message
             }, status=400)
 
+        # retrieve report
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_submission(pk, report_format)
 
@@ -45,7 +51,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         else:
             response2 = HttpResponse(response.content)
             response2.headers["Content-Type"] = 'application/pdf'
-            response2.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
+            response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
             return response2
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
