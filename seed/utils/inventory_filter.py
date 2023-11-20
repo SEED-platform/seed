@@ -169,6 +169,10 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
         views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
 
+    # return property views limited to the 'include_property_ids' list if not empty
+    if include_property_ids := request.data.get('include_property_ids'):
+        views_list = views_list.filter(property__id__in=include_property_ids)
+
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))
         return JsonResponse({

@@ -122,22 +122,28 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.data_loading = true;
                 $scope.data_valid = false;
 
-
                 let baseline_cycle = $scope.portfolioSummary.baseline_cycle
                 let current_cycle = $scope.portfolioSummary.current_cycle
                 let access_level_instance_id = $scope.portfolioSummary.access_level_instance
                 let combined_result = {}
-                get_paginated_properties(page, 50, current_cycle, access_level_instance_id).then(current_result => {
+                let per_page = 50
+                /* 
+                * The cycle order should be dynamic, 
+                * based off sorts/filter, 
+                * default current_cycle 
+                */
+                get_paginated_properties(page, per_page, current_cycle, access_level_instance_id).then(current_result => {
                     $scope.inventory_pagination = current_result.pagination
                     properties = current_result.results
                     combined_result[current_cycle.id] = properties;
                     property_ids = properties.map(p => p.id)
 
-                    inventory_service.filter_by_property(baseline_cycle.id, property_ids).then(baseline_result => {
+                    get_paginated_properties(page, per_page, baseline_cycle, access_level_instance_id, property_ids).then(baseline_result => {
                         properties = baseline_result.results
                         combined_result[baseline_cycle.id] = properties;
                         get_all_labels()
                         set_grid_options(combined_result)
+
                     }).then(() => {
                         $scope.data_loading = false;
                         $scope.data_valid = true
@@ -147,7 +153,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.refresh_data()
 
 
-            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id) => {
+            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_property_ids=null) => {
                 fn = inventory_service.get_properties;
                 console.log('sorts', $scope.column_sorts)
                 console.log('filters', $scope.column_filters)
@@ -166,7 +172,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     $scope.column_sorts,
                     false,
                     undefined,
-                    access_level_instance_id
+                    access_level_instance_id,
+                    include_property_ids,
                 );
             };
 

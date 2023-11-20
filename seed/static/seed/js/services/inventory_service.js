@@ -64,6 +64,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null,
       access_level_instance_id = null,
+      include_property_ids,
     ) => {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
@@ -102,6 +103,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             // Pass the specific ids if they exist
             include_view_ids,
             exclude_view_ids,
+            include_property_ids,
             // Pass the current profile (if one exists) to limit the column data that is returned
             profile_id,
           }
