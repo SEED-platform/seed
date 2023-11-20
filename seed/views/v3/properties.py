@@ -93,7 +93,6 @@ from seed.utils.properties import (
     properties_across_cycles,
     update_result_with_master,
     get_portfolio_summary,
-    filter_views_by_property,
 )
 from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
