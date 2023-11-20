@@ -17,14 +17,22 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema(manual_parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.base_field(
+            name='id',
+            location_attr='IN_PATH',
+            type='TYPE_INTEGER',
+            required=True,
+            description='Audit Template Submission ID.'),
+        AutoSchemaHelper.query_string_field('report_format', False, 'Report format Valid values are: xml, pdf. Defaults to pdf.')
+    ])
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def get_submission(self, request, pk):
         """
         Fetches a Report Submission (XML or PDF) from Audit Template (only)
         """
-
         # get report format or default to pdf
         default_report_format = 'pdf'
         report_format = request.query_params.get('report_format', default_report_format)
@@ -181,7 +189,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         at = AuditTemplate(org)
         result = at.get_buildings(cycle_id)
 
-        if type(result) is tuple:
+        if isinstance(result, tuple):
             return JsonResponse({
                 'success': False,
                 'message': result[1]

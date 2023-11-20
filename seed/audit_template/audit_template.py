@@ -53,9 +53,17 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def get_submission(self, audit_template_submission_id, report_format='pdf'):
-        # supporting 'PDF' and 'XML' formats only for now
+    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf'):
+        """Download an Audit Template submission report.
 
+        Args:
+            audit_template_submission_id (int): value of the "Submission ID" as seen on Audit Template
+            report_format (str, optional): Report format, either `xml` or `pdf`. Defaults to 'pdf'.
+
+        Returns:
+            requests.response: Result from Audit Template website
+        """
+        # supporting 'PDF' and 'XML' formats only for now
         token, message = self.get_api_token()
         if not token:
             return None, message
@@ -188,7 +196,7 @@ class AuditTemplate(object):
         view = state.propertyview_set.first()
 
         gfa = state.gross_floor_area
-        if type(gfa) == int:
+        if isinstance(gfa, int):
             gross_floor_area = str(gfa)
         elif gfa.units != ureg.feet**2:
             gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
