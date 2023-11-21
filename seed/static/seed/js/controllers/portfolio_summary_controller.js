@@ -7,6 +7,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         '$scope',
         '$state',
         '$stateParams',
+        '$uibModal',
+        'urls',
         'inventory_service',
         'label_service',
         'cycles',
@@ -19,6 +21,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope,
             $state,
             $stateParams,
+            $uibModal,
+            urls,
             inventory_service,
             label_service,
             cycles,
@@ -28,13 +32,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             uiGridConstants,
             gridUtil,
         ) {
+
+            $scope.goals = ['g1','g2','g3','g4','g5']
             $scope.data = []
             // const localStorageKey = `grid.portfolio_summary`;
 
+            // allow user to select any cycle
             const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
-            $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
+            // $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
+            $scope.cycles = cycles.cycles;
             $scope.columns = property_columns;
-            $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
+            $scope.goal_columns = $scope.columns.filter(c => c.data_type == 'eui')
+            // $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
             // from inventory_list_controller
             $scope.columnDisplayByName = {};
@@ -73,6 +82,21 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const column_vals = property_columns.filter(c => column_names.includes(c.column_name)).map(c => c.name)
             // convert column_name to name
             const column_lookup = Object.fromEntries(_.zip(column_names, column_vals))
+
+            $scope.open_goal_editor_modal = () => {
+                $uibModal.open({
+                    templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
+                    controller: 'goal_editor_modal_controller',
+                    size: 'lg',
+                    resolve: {
+                        organization: () => $scope.organization,
+                        cycles: () => $scope.cycles,
+                        goal_columns: () => $scope.goal_columns,
+                        level_names: () => $scope.level_names,
+                        access_level_tree: () => $scope.access_level_tree,
+                    },
+                });
+            }
 
             // const source_eui_column = property_columns.find(col => col.column_name == 'source_eui');
             $scope.portfolioSummary = {

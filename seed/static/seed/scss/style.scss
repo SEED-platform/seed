@@ -5030,112 +5030,160 @@ ul.r-list {
     border-bottom: 1px solid #ddd;
   }
 }
-#portfolio-summary-selection-wrapper {
-  margin: 10px 0;
+.portfolio-summary-wrapper{
   display: flex;
+  flex-direction: column;
 
-  #portfolio-summary-selections {
-    margin-top: 22px;
-    padding-left: 10px;
-    width: 220px;
-
-    .portfolio-summary-select-option {
-      font-size: 10px;
-      padding: 4px 0 6px 0;
+  .goal-actions-wrapper {
+      display: flex;
+      margin: 20px 10px;
+      div{
+        margin: 0 10px;
+      }
   
+      .goal-select-wrapper {
+        display: flex;
+        .goal-select-label{
+          margin: auto;
+        }
+        .goal-selection{
+          #goal-select{
+            width: 30vw;
+            max-width: 500px;
+            background: #F5F5F5;
+            border-radius: 5px;
+            padding: 5px;
+          }
+        }
+      }
+      .goal-btn-wrapper {
+        button{
+          height:31px;
+        }
+      }
     }
-    .portfolio-summary-constant {
-      border: 1px solid gray;
-      border-radius: 2px;
-      background: rgb(229, 229, 229);
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      padding-left: 4px;
+  #portfolio-summary-selection-wrapper {
+    margin: 10px 0;
+    display: flex;
+
+    #portfolio-summary-selections {
+      margin-top: 22px;
+      padding-left: 10px;
+      width: 220px;
+
+      .portfolio-summary-select-option {
+        font-size: 10px;
+        padding: 4px 0 6px 0;
+    
+      }
+      .portfolio-summary-constant {
+        border: 1px solid gray;
+        border-radius: 2px;
+        background: rgb(229, 229, 229);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-left: 4px;
+      }
+      .starting-legend {
+        background-color:#f8f1cf;
+      }
+      .ending-legend {
+        background-color: #f8d0c4;
+      }
+
+      .portfolio-summary-form-control {
+        height: 20px;
+        width: 100px;
+      }
+
     }
-    .starting-legend {
-      background-color:#f8f1cf;
+
+    #portfolio-summary {
+      width: calc(100% - 250px);
+      margin-left: 16px;
     }
-    .ending-legend {
+  }
+  .portfolio-summary-btn {
+    width: 100px;
+    height: 25px;
+    padding: 0;    
+  }
+  #portfolio-summary-grid {
+    margin: 0 24px;
+  }
+
+  #portfolio-summary-grid,
+  #portfolio-summary {
+    .portfolio-summary-baseline-header {
+      background-color: #f8f1cf;
+    }
+
+    .ui-grid-row:nth-child(odd) .portfolio-summary-baseline-cell {
+      background-color: #f8f5eb !important;
+    }
+
+    .ui-grid-row:nth-child(even) .portfolio-summary-baseline-cell {
+      background-color: #e0ded3 !important;
+    }
+
+    .portfolio-summary-current-header {
       background-color: #f8d0c4;
     }
 
-    .portfolio-summary-form-control {
-      height: 20px;
-      width: 100px;
+    .ui-grid-row:nth-child(odd) .portfolio-summary-current-cell {
+      background-color: #f9eee9 !important;
     }
 
-  }
+    .ui-grid-row:nth-child(even) .portfolio-summary-current-cell {
+      background-color: #dfd3ce !important;
+    }
 
-  #portfolio-summary {
-    width: calc(100% - 250px);
-    margin-left: 16px;
-  }
-}
-.portfolio-summary-btn {
-  width: 100px;
-  height: 25px;
-  padding: 0;    
-}
-#portfolio-summary-grid {
-  margin: 0 24px;
-}
+    .above-target {
+      background: #9dca8f;
+    }
 
-#portfolio-summary-grid,
-#portfolio-summary {
-  .portfolio-summary-baseline-header {
-    background-color: #f8f1cf;
-  }
+    .below-target {
+      background: #ca8f8f;
+    }
 
-  .ui-grid-row:nth-child(odd) .portfolio-summary-baseline-cell {
-    background-color: #f8f5eb !important;
-  }
+    .portfolioSummary-gridOptions-wrapper {
+      height: calc(100vh - 400px);
 
-  .ui-grid-row:nth-child(even) .portfolio-summary-baseline-cell {
-    background-color: #e0ded3 !important;
-  }
-
-  .portfolio-summary-current-header {
-    background-color: #f8d0c4;
-  }
-
-  .ui-grid-row:nth-child(odd) .portfolio-summary-current-cell {
-    background-color: #f9eee9 !important;
-  }
-
-  .ui-grid-row:nth-child(even) .portfolio-summary-current-cell {
-    background-color: #dfd3ce !important;
-  }
-
-  .above-target {
-    background: #9dca8f;
-  }
-
-  .below-target {
-    background: #ca8f8f;
-  }
-
-  .portfolioSummary-gridOptions-wrapper {
-    height: calc(100vh - 400px);
-
-    .ui-grid {
-      height: 100%;
+      .ui-grid {
+        height: 100%;
+      }
     }
   }
+  .portfolio-summary-loading{
+    border: 1px solid rgb(188, 188, 188);
+    border-radius: 5px;
+    height: 100px;
+    padding: 0 50px;
+    position: relative;
+    background: rgba(128, 128, 128, 0.1);
+    color: rgb(128, 128, 128);
+  }
+  .portfolio-summary-item-count {
+    margin-right: 6px;
+    margin-top: 2px;
+    text-align: right;
+  }
 }
-.portfolio-summary-loading{
-  border: 1px solid rgb(188, 188, 188);
-  border-radius: 5px;
-  height: 100px;
-  padding: 0 50px;
-  position: relative;
-  background: rgba(128, 128, 128, 0.1);
-  color: rgb(128, 128, 128);
-}
-.portfolio-summary-item-count {
-  margin-right: 6px;
-  margin-top: 2px;
-  text-align: right;
+
+#goal-details {
+  max-height: 70vh;
+  overflow: scroll;
+  // display: flex;
+  // column-gap: 10px;
+
+  .goal-label {
+    width: 150px;
+  }
+  .goal-form-control {
+    height: unset;
+    padding: 0;
+  }
 }
 .analysis-results-section {
   padding: 5px 10px;

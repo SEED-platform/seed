@@ -11,8 +11,24 @@
 <div class="section_nav_container">
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
-<div style="display: flex; flex-direction:column">
+<div class="portfolio-summary-wrapper">
+    <div class="goal-actions-wrapper">
+        <div class="goal-select-wrapper">
+            <label class="goal-select-label" for="goal-select">
+                GOAL
+            </label>
+            <div class="goal-selection">
+                <select name="goal-select" id="goal-select"
+                    ng-options="goal for goal in goals" ng-model="portfolioSummary.goal">
+                </select>
+            </div>
+        </div>
+        <div class="goal-btn-wrapper">
+            <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()"
+                style="margin-right: 1px; float: right;" translate>Edit</button>
+        </div>
 
+    </div>
     <div id="portfolio-summary-selection-wrapper" class="row">
         <div id="portfolio-summary-selections" class="col-sm-2x">
             <form name="portfolioSummaryForm" class="form-horizontal css-form" role="form">
