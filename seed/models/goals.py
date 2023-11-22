@@ -24,10 +24,6 @@ class Goal(models.Model):
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     name = models.CharField(max_length=255, unique=True)
 
-    # access_level_name 
-    # NOT NECESSARY? its only used to select an ali_id. Just make it part of the create/edit process
-    # these options are found in organization.access_level_names
-
     def __str__(self):
         return f"Goal - {self.name}"
     
