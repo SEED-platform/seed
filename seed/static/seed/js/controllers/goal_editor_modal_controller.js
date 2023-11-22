@@ -12,7 +12,6 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         'organization',
         'cycles',
         'goal_columns',
-        'level_names',
         'access_level_tree',
         function (
             $scope,
@@ -23,19 +22,30 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             organization,
             cycles,
             goal_columns,
-            level_names,
             access_level_tree,
         ) {
-            $scope.access_level_tree = access_level_tree;
+            $scope.access_level_tree = access_level_tree.access_level_tree;
+
+            $scope.level_names = []
+            access_level_tree.access_level_names.forEach((level, i) => $scope.level_names.push({index: i, name: level}))
             $scope.cycles = cycles;
             $scope.goal_columns = goal_columns;
             const blank_column = { id: null, displayName: "" };
             $scope.goal_columns.unshift(blank_column);
-            $scope.level_names = level_names ;
             $scope.organization = organization;
             $scope.valid = false;
+            $scope.selected_goal = null;
+            const get_goals = () => {
+                goal_service.get_goals().then(result => {
+                    $scope.goals = result.status == 'success' ? result.goals : []
+                })
+            }
+            get_goals()
 
-            $scope.goal = { organization: $scope.organization.id };
+            const reset_goal = () => {
+                $scope.goal = { organization: $scope.organization.id };
+            }
+
 
             // how do we prevent users from hitting create button over and over?
             $scope.$watch('goal', (cur, old) => {
@@ -61,6 +71,11 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                 console.log($scope.potential_level_instances);
             }
 
+            $scope.set_selected_goal = (goal) => {
+                $scope.selected_goal = goal
+                $scope.goal = goal
+                $scope.change_selected_level_index()
+            }
 
             $scope.save_goal = () => {
                 $scope.goal_changed = false;
@@ -69,6 +84,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                     console.log('res', result)
                     if (result.status == 200 || result.status == 201) {
                         $scope.errors = null;
+                        get_goals()
                     } else {
                         $scope.errors = [`Unexpected response status: ${result.status}`];
                         for (let key in result.data) {
@@ -76,6 +92,18 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                         }
                     };
                 });
+            }
+
+            $scope.delete_goal = (goal_id) => {
+                goal_service.delete_goal(goal_id).then(response =>{
+                    console.log('del', response)
+                    get_goals()
+                })
+            }
+
+            $scope.new_goal = () => {
+                $scope.selected_goal = null;
+                reset_goal()
             }
 
             $scope.close = () => {

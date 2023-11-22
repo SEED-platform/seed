@@ -14,6 +14,12 @@ class GoalSerializer(serializers.ModelSerializer):
         model = Goal
         fields = '__all__'
 
+
+    def to_representation(self, obj):
+        result = super().to_representation(obj)
+        result['level_name_index'] = obj.access_level_instance.depth - 1
+        return result
+
     def validate(self, data):
         baseline_cycle = data.get('baseline_cycle')
         current_cycle = data.get('current_cycle')

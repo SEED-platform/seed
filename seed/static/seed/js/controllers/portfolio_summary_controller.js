@@ -88,12 +88,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
                     controller: 'goal_editor_modal_controller',
                     size: 'lg',
+                    backdrop: 'static',
                     resolve: {
                         organization: () => $scope.organization,
                         cycles: () => $scope.cycles,
                         goal_columns: () => $scope.goal_columns,
-                        level_names: () => $scope.level_names,
-                        access_level_tree: () => $scope.access_level_tree,
+                        access_level_tree: () => access_level_tree,
                     },
                 });
             }

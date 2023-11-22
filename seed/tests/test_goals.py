@@ -20,8 +20,7 @@ from seed.test_helpers.fake import (
 )
 
 
-class x(AccessLevelBaseTestCase):
-    # class GoalViewTests(AccessLevelBaseTestCase):
+class GoalViewTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 

@@ -9,32 +9,30 @@
         </div>
     </div>
     <div class="modal-body">
-        <div class="section">
+        <div class="section"> 
             <div class="section_content_container rp-data-view">
                 <div class="section_content r-columns rp-data-view-config">
                     <!-- Goal List -->
-                    <div class="r-column r-shrink r-panel">
+                    <div class="r-column r-shrink r-panel" style="width:400px">
                         <ul class="r-list">
-                            <li class="r-list-header">Program</li>
-                            <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
-                                <span class="r-grow">{$ selected_compliance_metric.name $}</span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                            <li class="r-list-header">Goal</li>
+                            <li ng-show="selected_goal" class="r-selected r-row r-row-centered">
+                                <span class="r-grow" uib-tooltip="{$ selected_goal.name.length > 200 ? selected_goal.name : '' $}">{$ selected_goal.name $}</span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(selected_goal.id)"></i>
                             </li>
                         </ul>
-                        <ul class="r-list r-scrollable">
-                            <li ng-show="!selected_compliance_metric || compliance_metric.id != selected_compliance_metric.id"
-                                ng-repeat-start="compliance_metric in compliance_metrics" ng-repeat-end
+                        <ul class="r-list r-scrollable" id="goal-list">
+                            <li ng-show="!selected_goal || goal.id != selected_goal.id"
+                                ng-repeat-start="goal in goals" ng-repeat-end
                                 class="r-row r-row-centered">
-                                <a ui-sref="program_setup(::{organization_id: org.id, id: compliance_metric.id})"
-                                    class="r-grow">{$:: compliance_metric.name $}</a>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+                                <span class="r-grow" uib-tooltip="{$ goal.name.length > 200 ? goal.name : '' $}" style="cursor: pointer" ng-click="set_selected_goal(goal)">{$ goal.name $}</span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal.id)"></i>
                             </li>
                         </ul>
                         <ul class="r-list">
                             <li>
-                                <button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()"
-                                    ng-disabled="!program_settings_not_changed">
-                                    <i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Program
+                                <button class="btn btn-success r-grow" ng-click="new_goal()">
+                                    <i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Goal
                                 </button>
                             </li>
                         </ul>
@@ -86,7 +84,7 @@
                                     <li class="r-row r-row-centered">
                                         <label for="select-level-name" class="r-pad-right-5 goal-label">Access Level</label>
                                         <select id="select-level-name" class="form-control goal-form-control" 
-                                            ng-options="i as name for (i, name) in level_names"
+                                            ng-options="level.index as level.name for level in level_names"
                                             ng-change="change_selected_level_index()" 
                                             ng-model="goal.level_name_index"
                                             required>
