@@ -17,6 +17,12 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
                 .catch((response) => response);
         }
 
+        goal_service.update_goal = (goal) => {
+            return $http.put(`/api/v3/goals/${goal.id}/`, goal)
+                .then(response => response)
+                .catch(response => response)
+        }
+
         goal_service.get_goals = () => {
             return $http.get('/api/v3/goals/', {
                 params: {
