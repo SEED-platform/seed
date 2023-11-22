@@ -167,6 +167,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.event',
   'BE.seed.service.filter_groups',
   'BE.seed.service.flippers',
+  'BE.seed.service.goal',
   'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',

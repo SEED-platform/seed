@@ -5,20 +5,14 @@
                 <div class="section_action_container left">
                     <h2><i class="fa-solid fa-gauge-high"></i> Goal Setup</h2>
                 </div>
-                <div class="section_action_container right_40 section_action_btn pull-right">
-                    <button class="btn btn-info r-margin-right-5" ng-click="click_delete()">Delete</button>
-                    <button class="btn btn-primary" ng-click="save_settings()">
-                        Save Changes<i class="fa-solid fa-check" ng-show="settings_updated"></i>
-                    </button>
-                </div>
             </div>
         </div>
     </div>
     <div class="modal-body">
         <div class="section">
             <div class="section_content_container rp-data-view">
-                <!-- Goal List -->
                 <div class="section_content r-columns rp-data-view-config">
+                    <!-- Goal List -->
                     <div class="r-column r-shrink r-panel">
                         <ul class="r-list">
                             <li class="r-list-header">Program</li>
@@ -48,127 +42,143 @@
                     <!-- New Goal -->
                         
                     <div id="goal-details" style="max-height: 70vh; overflow: scroll">
-                        <div id="goal-details-col1" class="r-column table_list_container" style="width:100%">
-                            <!-- Name -->
-                            <ul class="r-list">
-                                <li class="r-list-header">Goal</li>
-                                <li class="r-row r-row-centered">
-                                    <label for="input-name" class="r-pad-right-5 goal-label">Name</label>
-                                    <input id="input-name" class="form-control goal-form-control" type="text" ng-model="goal.name" />
-                                </li>
-                            </ul>
-                            <!-- Cycle Selection -->
-                            <ul class="r-list">
-                                <li class="r-list-header">Cycle Selection</li>
-                                <!-- Baseline Cycle -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-baseline-cycle" class="r-pad-right-5 goal-label">Baseline Cycle</label>
-                                    <select id="select-baseline-cycle" class="form-control goal-form-control"
-                                        ng-options="cycle as cycle.name for cycle in cycles"
-                                        ng-change=""
-                                        ng-model="goal.baseline_cycle">
-                                    </select>
-                                </li>
-                                <!-- Current Cycle -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-current-cycle" class="r-pad-right-5 goal-label">Current Cycle</label>
-                                    <select id="select-current-cycle" class="form-control goal-form-control"
-                                        ng-options="cycle as cycle.name for cycle in cycles"
-                                        ng-change=""
-                                        ng-model="goal.current_cycle">
-                                    </select>
-                                </li>
-                                <li ng-if="true" class="r-info">
-                                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>More info</span>
-                                </li>
-                            </ul>
-                            <!-- Access Level Selection -->
-                            <ul class="r-list">
-                                <li class="r-list-header">Access Level Instance</li>
-                                <!-- Access Level Name -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-level-name" class="r-pad-right-5 goal-label">Access Level</label>
-                                    <select id="select-level-name" class="form-control goal-form-control" 
-                                        ng-options="i as name for (i, name) in level_names"
-                                        ng-change="change_selected_level_index()" 
-                                        ng-model="goal.level_name_index">
-                                        <!-- goal.level_name can be found if an access level instance has been selected. not saved on goal.-->
-                                    </select>
-                                </li>
-                                <!-- Access Level Instance -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-level-instance" class="r-pad-right-5 goal-label">Level Instance</label>
-                                    <select id="select-level-instance" class="form-control goal-form-control" 
-                                        ng-change="" 
-                                        ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-                                        ng-model="goal.access_level_instance">
-                                    </select>
-                                </li>
-                
-                                <li ng-if="true" class="r-info">
-                                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Portfolio Summary will only include properties belonging to the following Access Level Instance.</span>
-                                </li>
-                            </ul>
-                        </div>
+                        <form name="goal_form">
+                            <div id="goal-details-col1" class="r-column table_list_container" style="width:100%">
+                                <!-- Name -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">Goal</li>
+                                    <li class="r-row r-row-centered">
+                                        <label for="input-name" class="r-pad-right-5 goal-label">Name</label>
+                                        <input id="input-name" class="form-control goal-form-control" type="text" ng-model="goal.name" style="padding-left: 5px" required/>
+                                    </li>
+                                </ul>
+                                <!-- Cycle Selection -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">Cycle Selection</li>
+                                    <!-- Baseline Cycle -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-baseline-cycle" class="r-pad-right-5 goal-label">Baseline Cycle</label>
+                                        <select id="select-baseline-cycle" class="form-control goal-form-control"
+                                            ng-options="cycle.id as cycle.name for cycle in cycles"
+                                            ng-change=""
+                                            ng-model="goal.baseline_cycle"
+                                            required>
+                                        </select>
+                                    </li>
+                                    <!-- Current Cycle -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-current-cycle" class="r-pad-right-5 goal-label">Current Cycle</label>
+                                        <select id="select-current-cycle" class="form-control goal-form-control"
+                                            ng-options="cycle.id as cycle.name for cycle in cycles"
+                                            ng-change=""
+                                            ng-model="goal.current_cycle"
+                                            required>
+                                        </select>
+                                    </li>
+                                    <li ng-if="true" class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Current Cycle will be measured against Baseline Cycle</span>
+                                    </li>
+                                </ul>
+                                <!-- Access Level Selection -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">Access Level Instance</li>
+                                    <!-- Access Level Name -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-level-name" class="r-pad-right-5 goal-label">Access Level</label>
+                                        <select id="select-level-name" class="form-control goal-form-control" 
+                                            ng-options="i as name for (i, name) in level_names"
+                                            ng-change="change_selected_level_index()" 
+                                            ng-model="goal.level_name_index"
+                                            required>
+                                            <!-- goal.level_name can be found if an access level instance has been selected. not saved on goal.-->
+                                        </select>
+                                    </li>
+                                    <!-- Access Level Instance -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-level-instance" class="r-pad-right-5 goal-label">Level Instance</label>
+                                        <select id="select-level-instance" class="form-control goal-form-control" 
+                                            ng-change="" 
+                                            ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
+                                            ng-model="goal.access_level_instance"
+                                            required>
+                                        </select>
+                                    </li>
+                    
+                                    <li ng-if="true" class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Portfolio Summary will only include properties belonging to the following Access Level Instance.</span>
+                                    </li>
+                                </ul>
+                            </div>
 
-                        <div id="goal-detail-col2" class="r-column table_list_container">
-
-                            <!-- EUI Target Columns -->
-                            <ul class="r-list">
-                                <li class="r-list-header">EUI Target Columns</li>
-                                <!-- Column1 -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-column1" class="r-pad-right-5 goal-label">Primary Column</label>
-                                    <select id="select-column1" class="form-control goal-form-control"
-                                        ng-options="column.column_name as column.displayName for column in goal_columns"
-                                        ng-change=""
-                                        ng-model="goal.column1">
-                                    </select>
-                                </li>
-                                <!-- Column2 -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-column2" class="r-pad-right-5 goal-label">Secondary Column</label>
-                                    <select id="select-column2" class="form-control goal-form-control"
-                                        ng-options="column.column_name as column.displayName for column in goal_columns"
-                                        ng-change=""
-                                        ng-model="goal.column2">
-                                    </select>
-                                </li>
-                                <!-- Column3 -->
-                                <li class="r-row r-row-centered">
-                                    <label for="select-column3" class="r-pad-right-5 goal-label">Tertiary Column</label>
-                                    <select id="select-column3" class="form-control goal-form-control"
-                                        ng-options="column.column_name as column.displayName for column in goal_columns"
-                                        ng-change=""
-                                        ng-model="goal.column3">
-                                    </select>
-                                </li>
-                                <li ng-if="true" class="r-info">
-                                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both
-                                    primary and secondary are unavailable.</span>
-                                </li>
-                            </ul>
-                            <!-- Target -->
-                            <ul class="r-list">
-                                <li class="r-list-header">Target</li>
-                                <li class="r-row r-row-centered">
-                                    <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
-                                    <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target" required/>
-                                </li>
-                                <li ng-if="true" class="r-info">
-                                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Target to quantify EUI improvement.</span>
-                                </li>
-                            </ul>
-                            <!-- Partner Level -->
-                            
+                            <div id="goal-detail-col2" class="r-column table_list_container">
+                                <!-- EUI Target Columns -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">EUI Target Columns</li>
+                                    <!-- Column1 -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-column1" class="r-pad-right-5 goal-label">Primary Column</label>
+                                        <select id="select-column1" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                            ng-change=""
+                                            ng-model="goal.column1"
+                                            required>
+                                        </select>
+                                    </li>
+                                    <!-- Column2 -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-column2" class="r-pad-right-5 goal-label">Secondary Column</label>
+                                        <select id="select-column2" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                            ng-change=""
+                                            ng-model="goal.column2">
+                                        </select>
+                                    </li>
+                                    <!-- Column3 -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-column3" class="r-pad-right-5 goal-label">Tertiary Column</label>
+                                        <select id="select-column3" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                            ng-change=""
+                                            ng-model="goal.column3">
+                                        </select>
+                                    </li>
+                                    <li ng-if="true" class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both
+                                        primary and secondary are unavailable.</span>
+                                    </li>
+                                </ul>
+                                <!-- Target -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">Target</li>
+                                    <li class="r-row r-row-centered">
+                                        <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
+                                        <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage" 
+                                        min="0" max="100" style="padding-left: 5px"
+                                        required/>
+                                    </li>
+                                    <li ng-if="true" class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Target to quantify EUI improvement. Must be between 0 and 100.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="modal-footer">
-        <div class="row text-center">
-            <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="close()">Dismiss</button>
+        <div id="goal-messages" class="alert-danger" ng-if="errors">
+            <div ng-repeat="error in errors">
+                {$ error $}
+            </div>
+        </div>
+        <div class="section_action_container right_40 section_action_btn pull-right">
+            <button class="btn btn-danger r-margin-right-5" ng-click="click_delete()" ng-if="goal.id">Delete</button>
+            <button class="btn btn-primary" ng-click="save_goal()" ng-disabled="goal_form.$invalid || !goal_changed">
+                Save Changes<i class="fa-solid fa-check" ng-show="settings_updated" ></i>
+            </button>
+            <button class="btn btn-default r-margin-right-5" ng-click="close()">Dismiss</button>
         </div>
     </div>
 </div>

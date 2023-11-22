@@ -15,10 +15,16 @@ class GoalSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        # cycles must be unique 
-        if data.get('baseline_cycle') == data.get('current_cycle'):
-            message = 'Cycles must be unique.'
-            raise ValidationError(message)
+        baseline_cycle = data.get('baseline_cycle')
+        current_cycle = data.get('current_cycle')
+
+        if baseline_cycle and current_cycle:
+            if baseline_cycle == current_cycle:
+                raise ValidationError('Cycles must be unique.')
+            
+            if baseline_cycle.end > current_cycle.end:
+                raise ValidationError('Baseline Cycle must preceed Current Cycle')
+
         
         # non Null columns must be uniuqe
         columns = [data.get('column1'), data.get('column2'), data.get('column3')]   
