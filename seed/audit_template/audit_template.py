@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 from datetime import datetime
+from typing import Any, Tuple
 
 import requests
 from celery import shared_task
@@ -53,7 +54,7 @@ class AuditTemplate(object):
 
         return response, ""
 
-    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf'):
+    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf') -> Tuple[Any, str]:
         """Download an Audit Template submission report.
 
         Args:
@@ -82,7 +83,7 @@ class AuditTemplate(object):
             response = requests.request("GET", url, headers=headers)
 
             if response.status_code != 200:
-                return None, f'Expected 200 response from Audit Template get_submission but got {response.status_code}: {response.content}'
+                return None, f'Expected 200 response from Audit Template get_submission but got {response.status_code!r}: {response.content!r}'
         except Exception as e:
             return None, f'Unexpected error from Audit Template: {e}'
 
