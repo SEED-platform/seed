@@ -44,6 +44,7 @@ class AuditTemplateViewTests(TestCase):
 
         self.get_building_url = reverse('api:v3:audit_template-get-building-xml', args=['1'])
         self.get_buildings_url = reverse('api:v3:audit_template-get-buildings')
+        self.get_submission_url = reverse('api:v3:audit_template-get-submission', args=['1'])
 
         self.good_authenticate_response = mock.Mock()
         self.good_authenticate_response.status_code = 200
@@ -56,6 +57,11 @@ class AuditTemplateViewTests(TestCase):
         self.good_get_building_response = mock.Mock()
         self.good_get_building_response.status_code = 200
         self.good_get_building_response.text = "building response"
+
+        self.good_get_submission_response = mock.Mock()
+        self.good_get_submission_response.status_code = 200
+        self.good_get_submission_response.text = "submission response"
+        self.good_get_submission_response.content = "submission response"
 
         self.bad_get_building_response = mock.Mock()
         self.bad_get_building_response.status_code = 400
@@ -70,6 +76,16 @@ class AuditTemplateViewTests(TestCase):
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
         self.assertEqual(response.content, b"building response")
+
+    @mock.patch('requests.request')
+    def test_get_submission_from_audit_template(self, mock_request):
+        # -- Act
+        mock_request.side_effect = [self.good_authenticate_response, self.good_get_submission_response]
+        response = self.client.get(self.get_submission_url, data={"organization_id": self.org.id})
+
+        # -- Assert
+        self.assertEqual(200, response.status_code, response.content)
+        self.assertEqual(response.content, b"submission response")
 
     @mock.patch('requests.request')
     def test_get_building_xml_from_audit_template_org_has_no_at_token(self, mock_request):

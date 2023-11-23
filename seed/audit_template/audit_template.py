@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import json
 import logging
 from datetime import datetime
+from typing import Any, Tuple
 
 import requests
 from celery import shared_task
@@ -48,6 +49,41 @@ class AuditTemplate(object):
             response = requests.request("GET", url, headers=headers)
             if response.status_code != 200:
                 return None, f'Expected 200 response from Audit Template get_building_xml but got {response.status_code}: {response.content}'
+        except Exception as e:
+            return None, f'Unexpected error from Audit Template: {e}'
+
+        return response, ""
+
+    def get_submission(self, audit_template_submission_id: int, report_format: str = 'pdf') -> Tuple[Any, str]:
+        """Download an Audit Template submission report.
+
+        Args:
+            audit_template_submission_id (int): value of the "Submission ID" as seen on Audit Template
+            report_format (str, optional): Report format, either `xml` or `pdf`. Defaults to 'pdf'.
+
+        Returns:
+            requests.response: Result from Audit Template website
+        """
+        # supporting 'PDF' and 'XML' formats only for now
+        token, message = self.get_api_token()
+        if not token:
+            return None, message
+
+        # validate format
+        if report_format.lower() not in ['xml', 'pdf']:
+            report_format = 'pdf'
+
+        # set headers
+        headers = {'accept': 'application/pdf'}
+        if report_format.lower() == 'xml':
+            headers = {'accept': 'application/xml'}
+
+        url = f'{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={token}'
+        try:
+            response = requests.request("GET", url, headers=headers)
+
+            if response.status_code != 200:
+                return None, f'Expected 200 response from Audit Template get_submission but got {response.status_code!r}: {response.content!r}'
         except Exception as e:
             return None, f'Unexpected error from Audit Template: {e}'
 
@@ -161,7 +197,7 @@ class AuditTemplate(object):
         view = state.propertyview_set.first()
 
         gfa = state.gross_floor_area
-        if type(gfa) == int:
+        if isinstance(gfa, int):
             gross_floor_area = str(gfa)
         elif gfa.units != ureg.feet**2:
             gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
