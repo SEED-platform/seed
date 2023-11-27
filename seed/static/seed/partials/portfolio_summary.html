@@ -29,93 +29,37 @@
         </div>
 
     </div>
-    <div id="portfolio-summary-selection-wrapper" class="row">
-        <div id="portfolio-summary-selections" class="col-sm-2x">
-            <form name="portfolioSummaryForm" class="form-horizontal css-form" role="form">
-                <!-- Name -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option"
-                        for="report_name"> Report Name </label>
-                    <div class="col-sm-7">
-                        <input type="text" id="goal_name" class="portfolio-summary-form-control"
-                            ng-model="portfolioSummary.name"></input>
-                    </div>
+    <!-- GOAL DETAILS -->
+    <div class="goal-details-container" ng-if="valid">
+        <div class="goal-details-column" style="margin-left: 10px;">
+            <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
+                <div class="goal-detail-key">
+                    {$ detail[0] $}:
                 </div>
-                <!-- Baseline Cycle -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option baseline-legend"
-                        for="baseline_cycle_select">Baseline Cycle</label>
-                    <div class="col-sm-7">
-                        <select name="baseline_cycles" class="portfolio-summary-form-control" id="baseline_cycle_select"
-                            ng-options="cycle as cycle.name for cycle in cycles"
-                            ng-model="portfolioSummary.baseline_cycle">
-                        </select>
-                    </div>
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 20) ? detail[1] : '' $}">
+                    {$ detail[1] $}
                 </div>
-                <!-- Current Cycle -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option current-legend"
-                        for="current_cycle_select">Current Cycle </label>
-                    <div class="col-sm-7" >
-                        <div class="portfolio-summary-constant" uib-tooltip="{$ portfolioSummary.current_cycle.name $}">
-                            {$ portfolioSummary.current_cycle.name $}
-                        </div>
-                    </div>
-                </div>
-                <!-- Access Level -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option" for="access_level_name" translate>Access Level:</label>
-                    <div class="col-sm-7">
-                        <select class="portfolio-summary-form-control" id="access_level_name" ng-model="portfolioSummary.level_name_index"
-                            ng-change="change_selected_level_index()"
-                            ng-options="i as name for (i, name) in level_names">
-                        </select>
-                    </div>
-                </div>
-                <!-- Access Level Instance -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option" for="access_level_instance" translate>Access Level Instance:</label>
-                    <div class="col-sm-7">
-                        <select class="portfolio-summary-form-control" id="access_level_instance" ng-model="portfolioSummary.access_level_instance"
-                            ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
-                            >
-                        </select>
-                    </div>
-                </div>
-                <!-- Goal Column -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option"
-                        for="goal_column_select"> Goal Column </label>
-                    <div class="col-sm-7">
-                        <select name="goal_columns" class="portfolio-summary-form-control" id="goal_column_select"
-                            ng-options="column.column_name as column.displayName for column in goal_columns"
-                            ng-model="portfolioSummary.goal_column">
-                        </select>
-                    </div>
-                </div>
-                <!-- Goal % -->
-                <div class="form-group" style="margin-left: 0; margin-bottom: 0">
-                    <label class="control-label col-sm-5 portfolio-summary-select-option"
-                        for="goal_input">Goal (%)</label>
-                    <div class="col-sm-7">
-                        <input type="number" id="goal_input" class="portfolio-summary-form-control"
-                            ng-model="portfolioSummary.goal" required></input>
-                    </div>
-                </div>
-                <!-- Submit -->
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button class="btn btn-success portfolio-summary-btn" type="submit" ng-click="refresh_data()"
-                            style="margin-right: 1px; float: right;"
-                            translate>Create</button>
-                    </div>
-                </div>
-            </form>
+            </div>
+            
         </div>
+        <div class="goal-details-column">
+            <div ng-repeat="detail in goal_details.slice(3)" class="goal-detail">
+                <div class="goal-detail-key">
+                    {$ detail[0] $}:
+                </div>
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 20) ? detail[1] : '' $}">
+                    {$ detail[1] $}
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+    <div id="portfolio-summary-selection-wrapper" class="row">
+
         <!-- Summary Table-->
-        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_loading || summary_valid"
-            style=" width: calc(100% - 250px); margin-left: 16px;">
-            <h3>
+        <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_loading || summary_valid">
+            <h3 style="margin-top:0;">
                 Portfolio Summary
             </h3>
             <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns ui-grid-group-columns style="height:60px"></div>
@@ -131,30 +75,32 @@
     <!-- Data Table container -->
     <!-- Pagination -->
     <div class="portfolio-summary-item-count" ng-if="data_valid">
-        {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of
-            {$ inventory_pagination.total $}</span>
-        <i ng-if="selectedCount > 0">
-            <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a
-                    ng-click="select_all()" translate>Select All</a></span><span
-                ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select
-                    None</a></span><span>)</span>
-        </i>
-        <button ng-click="load_inventory(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous"
-            class="btn btn-default btn-sm">
-            <i class="fa-solid fa-chevron-left"></i>
-        </button>
-        <button ng-click="load_inventory(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next"
-            class="btn btn-default btn-sm">
-            <i class="fa-solid fa-chevron-right"></i>
-        </button>
-    </div>
-    <!-- Data Table -->
-    <div id="portfolio-summary-grid" ng-if="data_valid" style="overflow-x: scroll;">
         <div class="form-group" ng-if="data_valid">
             <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
                 {$ show_access_level_instances ? 'Hide' : 'Show' $} ALIs
             </button>
         </div>
+        <div>
+            {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of
+                {$ inventory_pagination.total $}</span>
+            <i ng-if="selectedCount > 0">
+                <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a
+                    ng-click="select_all()" translate>Select All</a></span><span
+                    ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select
+                        None</a></span><span>)</span>
+                    </i>
+                    <button ng-click="load_inventory(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous"
+                    class="btn btn-default btn-sm">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button ng-click="load_inventory(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next"
+                    class="btn btn-default btn-sm">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    <!-- Data Table -->
+    <div id="portfolio-summary-grid" ng-if="data_valid" style="overflow-x: scroll;">
         <div class="portfolioSummary-gridOptions-wrapper" ng-style="{'heightx': gridHeight}">
             <div 
                 ui-grid="gridOptions" 
