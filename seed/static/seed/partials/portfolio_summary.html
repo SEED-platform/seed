@@ -19,7 +19,7 @@
             </label>
             <div class="goal-selection">
                 <select name="goal-select" id="goal-select"
-                    ng-options="goal for goal in goals" ng-model="portfolioSummary.goal">
+                    ng-options="goal as goal.name for goal in goals" ng-model="goal">
                 </select>
             </div>
         </div>
