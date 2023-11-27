@@ -44,13 +44,38 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.$watch('goal', () => {
                 if (!_.isEmpty($scope.goal)) {
                     console.log('watch goal', $scope.goal.name)
+                    $scope.valid = true
+                    format_goal_details()
                     $scope.refresh_data()
+                } else {
+                    $scope.valid = false
                 }
             })
+
+            const format_goal_details = () => {
+                $scope.change_selected_level_index()
+                const get_column_name = (column_id) => $scope.columns.find(c => c.id == column_id).displayName
+                const get_cycle_name = (cycle_id) => $scope.cycles.find(c => c.id == cycle_id).name
+                const level_name = $scope.level_names[$scope.goal.level_name_index]
+                const access_level_instance = $scope.potential_level_instances.find(level => level.id == $scope.goal.access_level_instance).name
+
+                $scope.goal_details = [
+                    ['Baseline Cycle', get_cycle_name($scope.goal.baseline_cycle)],
+                    ['Current Cycle', get_cycle_name($scope.goal.current_cycle)],
+                    [level_name, access_level_instance],
+                    ['Primary Column', get_column_name($scope.goal.column1)],
+                ]
+                if ($scope.goal.column2) {
+                    $scope.goal_details.push(['Secondary Column', get_column_name($scope.goal.column2)])
+                }
+                if ($scope.goal.column3) {
+                    $scope.goal_details.push(['Tertiary Column', get_column_name($scope.goal.column3)])
+                }
+                $scope.goal_details.push(['Target (%)', $scope.goal.target_percentage])
+            }
+
             $scope.data = []
             
-
-
             // allow user to select any cycle
             const current_cycle = cycles.cycles.reduce((acc, cur) => new Date(acc.end) > new Date(cur.end) ? acc : cur)
             // $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
@@ -127,14 +152,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             $scope.refresh_data = () => {
                 console.log('refresh_data')
-                // HARDCODED, REMOVE
-                $scope.valid = true
-                // expected_keys = ['baseline_cycle', 'current_cycle', 'target_percentage', 'goal_column', 'level_name_index', 'access_level_instance']
-                // valid = expected_keys.every(key => key in $scope.goal);
-                // if (!valid) {
-                //     console.log('not valid')
-                //     return
-                // }
                 $scope.summary_loading = true;
                 console.log($scope.goal)
 
