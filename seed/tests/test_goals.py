@@ -18,12 +18,13 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
+from seed.landing.models import SEEDUser as User
+from seed.utils.organizations import create_organization
 
 
 class GoalViewTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
-
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.property_factory =  FakePropertyFactory(organization=self.org)
@@ -78,9 +79,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.root_ali,
-            column1=Column.objects.get(column_name='source_eui_weather_normalized'),
-            column2=Column.objects.get(column_name='source_eui'),
-            column3=Column.objects.get(column_name='site_eui'),
+            column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
+            column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
+            column3=Column.objects.get(organization=self.org.id, column_name='site_eui'),
             target_percentage=20,
             name='root_goal'
         )
@@ -89,12 +90,21 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
-            column1=Column.objects.get(column_name='source_eui_weather_normalized'),
-            column2=Column.objects.get(column_name='source_eui'),
+            column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
+            column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
             column3=None,
             target_percentage=20,
             name='child_goal'
         )
+
+        user2_details = {
+            'username': 'test_user2@demo.com',
+            'password': 'test_pass2',
+            'email': 'test_user2@demo.com',
+        }
+        self.user2 = User.objects.create_superuser(**user2_details)
+        self.org2, _, _ = create_organization(self.user2, "org2")
+
 
     def test_goal_list(self):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
@@ -146,9 +156,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         preferred_columns = [
             'placeholder', 
-            Column.objects.get(column_name='source_eui_weather_normalized').id, 
-            Column.objects.get(column_name='source_eui').id,
-            Column.objects.get(column_name='site_eui').id,
+            Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized').id, 
+            Column.objects.get(organization=self.org.id, column_name='source_eui').id,
+            Column.objects.get(organization=self.org.id, column_name='site_eui').id,
         ]
         def reset_goal_data(name):
             return {
@@ -235,6 +245,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['column2'] == None
         assert response.json()['column3'] == None
         assert Goal.objects.count() == goal_count + 1
+
+        # incorrect org
+        # SHOULDNT BE ABLE TO ADD A GOAL TO INCORRECT ORG. DECORATOR? VIEW?
+        goal_data = reset_goal_data('wrong org goal')
+        goal_data['organization'] = self.org2.id
+        response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
+        # x = response
+        # breakpoint()
 
     
     def test_goal_update(self):
