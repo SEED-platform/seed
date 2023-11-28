@@ -19,23 +19,25 @@
             <div class="col-md-2">
               <h2 style="font-size: 18px"><i class="fa-solid fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
             </div>
-            <div class="orm-inline pull-right chart-inputs">
+            <div class="form-inline pull-right chart-inputs">
               <form class="form-inline pull-right chart-inputs" role="form" style="display: flex">
-                <div>
-                  <div class="r-list-header" translate>Cycles to Include in Report</div>
-                  <li ng-repeat="item in selected_cycles" class="r-row r-row-centered">
-                    <span class="r-grow">{$:: get_cycle_display(item) $}</span>
-                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
-                  </li>
-                  <li class="r-row r-row-centered">
-                    <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection" style="width: 100%;">
-                      <option ng-repeat="cycle in available_cycles()" ng-value="cycle.id">{$:: cycle.name $}</option>
-                    </select>
-                  </li>
+                <div style="display: flex; flex-direction: column;" class="right-bar">
+                  <div class="form-group">
+                     <label for="select-cycle">{$:: 'Cycles to Include' | translate $}:</label>
+                    <li ng-repeat="item in selected_cycles" class="r-row r-row-centered">
+                      <span class="r-grow">{$:: get_cycle_display(item) $}</span>
+                      <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_remove_cycle(item)"></i>
+                    </li>
+                    <li class="r-row r-row-centered">
+                      <select id="select-cycle" class="form-control" ng-change="select_cycle()" ng-model="cycle_selection" style="width: 15em;">
+                        <option ng-repeat="cycle in available_cycles()" ng-value="cycle.id">{$:: cycle.name $}</option>
+                      </select>
+                    </li>
+                  </div>
                 </div>
 
                 <div style="display: flex; flex-direction: column;">
-                  <div class="form-group">
+                  <div class="form-group pad-bottom-10">
                     <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
                     <sd-dropdown is-button id="xAxisSelector" ng-model="xAxisSelectedItem" items="xAxisVars"></sd-dropdown>
                   </div>

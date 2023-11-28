@@ -3891,6 +3891,16 @@ $pairedCellWidth: 60px;
   padding-left: 5px;
 }
 
+.pad-bottom-10 {
+  padding-bottom: 10px;
+}
+
+.right-bar {
+  padding-left: 10px;
+  padding-right: 25px;
+  border-right: 1px solid #999;
+}
+
 .matching-column-header .ui-grid-header-cell-label {
   font-weight: bolder;
 }
