@@ -52,7 +52,7 @@ def schedule_sync(data, org_id):
 
     timezone = data.get('timezone', get_current_timezone())
 
-    if 'update_at_hour' in data and data['update_at_hour'] and 'update_at_minute' in data and data['update_at_minute']:
+    if 'update_at_hour' in data and 'update_at_minute' in data:
         # create crontab schedule
         schedule, _ = CrontabSchedule.objects.get_or_create(
             minute=data['update_at_minute'],
@@ -77,6 +77,9 @@ def schedule_sync(data, org_id):
             # update crontab (if changed)
             task.crontab = schedule
             task.save()
+
+            # Cleanup orphaned/unused crontab schedules
+            CrontabSchedule.objects.exclude(id__in=PeriodicTask.objects.values_list('crontab_id', flat=True)).delete()
 
 
 def toggle_salesforce_sync(salesforce_enabled, org_id):
