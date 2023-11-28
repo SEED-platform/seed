@@ -882,7 +882,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         data = self.get_raw_report_data(pk, cycles, params['x_var'], params['y_var'])
         data = {
-            "chart_data": [d["chart_data"] for d in data],
+            "chart_data": sum([d["chart_data"] for d in data], []),
             "property_counts": [d["property_counts"] for d in data]
         }
 
@@ -949,14 +949,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         # get data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         data = self.get_raw_report_data(pk, cycles, params["x_var"], params["y_var"])
-
-        # error if empty
-        empty = all([d['property_counts']['num_properties_w-data'] == 0 for d in data])
-        if empty:
-            return Response(
-                {'status': 'error', 'message': 'No data found'},
-                status=status.HTTP_200_OK
-            )
 
         chart_data = []
         property_counts = []
