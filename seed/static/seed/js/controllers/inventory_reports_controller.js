@@ -387,7 +387,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         .then(
           (data) => {
             data = data.data;
-            console.log(data);
             const propertyCounts = data.property_counts;
             const colorsArr = mapColors(propertyCounts);
             $scope.propertyCounts = propertyCounts;
@@ -414,13 +413,10 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
               $scope.pointBackgroundColors.push(colorMap.get($scope.scatterChart.data.datasets[0].data[i].yr_e));
             }
             $scope.scatterChart.update();
-            console.log($scope.scatterChart.data.datasets[0].data)
 
             if ($scope.chartData.chartData && $scope.chartData.chartData.length > 0) {
-              console.log("all good")
               $scope.chartStatusMessage = '';
             } else {
-              console.log("no data")
               $scope.chartStatusMessage = 'No Data';
             }
           },
@@ -431,7 +427,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         )
         .finally(() => {
           $scope.chartIsLoading = false;
-          console.log("finally")
         });
     }
 
@@ -455,7 +450,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
         .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles)
         .then(
           (data) => {
-            // console.log(data)
             data = data.aggregated_data;
             $scope.aggPropertyCounts = data.property_counts;
             const propertyCounts = data.property_counts;
@@ -478,21 +472,17 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
             $scope.barChart.update();
 
             if (!_.isEmpty($scope.aggChartData.chartData)) {
-              // console.log("all good")
               $scope.aggChartStatusMessage = '';
             } else {
-              // console.log("no data")
               $scope.aggChartStatusMessage = 'No Data';
             }
           },
           (data, status) => {
-            // console.log("error")
             $scope.aggChartStatusMessage = 'Data Load Error';
             $log.error(`#InventoryReportsController: Error loading agg chart data : ${status}`);
           }
         )
         .finally(() => {
-          // console.log("finally")
           $scope.aggChartIsLoading = false;
         });
     }

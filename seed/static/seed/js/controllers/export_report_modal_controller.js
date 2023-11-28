@@ -12,7 +12,6 @@ angular.module('BE.seed.controller.export_report_modal', []).controller('export_
   function ($scope, $uibModalInstance, axes_data, cycles, inventory_reports_service) {
     $scope.export_name = '';
 
-    console.log(cycles)
     $scope.export_selected = () => {
       let filename = $scope.export_name;
 
