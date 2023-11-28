@@ -35,9 +35,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             gridUtil,
         ) {
             $scope.goal = {}
-            const get_goals = () => {
+            // optionally pass a goal name to be set as $scope.goal
+            const get_goals = (goal_name=false) => {
                 goal_service.get_goals().then(result => {
                     $scope.goals = result.status == 'success' ? result.goals : []
+                    if (goal_name) {
+                        $scope.goal = $scope.goals.find(goal => goal.name == goal_name)
+                    }
                 })
             }
             get_goals()
@@ -81,8 +85,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // $scope.cycles = cycles.cycles.filter(c => c.id != current_cycle.id);
             $scope.cycles = cycles.cycles;
             $scope.columns = property_columns;
-            $scope.goal_columns = $scope.columns.filter(c => c.data_type == 'eui')
-            // $scope.goal_columns = [$scope.columns.find(c => c.column_name == 'source_eui')]
             const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
             // from inventory_list_controller
             $scope.columnDisplayByName = {};
@@ -122,8 +124,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // convert column_name to name
             const column_lookup = Object.fromEntries(_.zip(column_names, column_vals))
 
+            // GOAL EDITOR MODAL
             $scope.open_goal_editor_modal = () => {
-                $uibModal.open({
+                $scope.goal_columns = $scope.columns.filter(c => c.data_type == 'eui')
+                const modalInstance = $uibModal.open({
                     templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
                     controller: 'goal_editor_modal_controller',
                     size: 'lg',
@@ -133,8 +137,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         cycles: () => $scope.cycles,
                         goal_columns: () => $scope.goal_columns,
                         access_level_tree: () => access_level_tree,
+                        goal: () => $scope.goal,
                     },
                 });
+
+                modalInstance.result.then((goal_name) => {
+                    get_goals(goal_name)
+                })
             }
 
             // const source_eui_column = property_columns.find(col => col.column_name == 'source_eui');

@@ -13,6 +13,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         'cycles',
         'goal_columns',
         'access_level_tree',
+        'goal',
         function (
             $scope,
             $state,
@@ -23,31 +24,30 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             cycles,
             goal_columns,
             access_level_tree,
+            goal,
         ) {
+            $scope.organization = organization;
+            // form data
+            $scope.goal = goal;
+            // existing goal
+            $scope.selected_goal = goal.id ? goal : null;
             $scope.access_level_tree = access_level_tree.access_level_tree;
-
             $scope.level_names = []
             access_level_tree.access_level_names.forEach((level, i) => $scope.level_names.push({index: i, name: level}))
             $scope.cycles = cycles;
             $scope.goal_columns = goal_columns;
-            const blank_column = { id: null, displayName: "" };
-            $scope.goal_columns.unshift(blank_column);
-            $scope.organization = organization;
             $scope.valid = false;
-            $scope.selected_goal = null;
+
             const get_goals = () => {
                 goal_service.get_goals().then(result => {
                     $scope.goals = result.status == 'success' ? result.goals : []
                 })
             }
             get_goals()
-
-            const reset_goal = () => {
-                $scope.goal = { organization: $scope.organization.id };
-            }
-
-
-            // how do we prevent users from hitting create button over and over?
+            
+            // allow "none" as an option
+            $scope.goal_columns.unshift({ id: null, displayName: "" });
+            // Prevent user from hitting save changes multiple times
             $scope.$watch('goal', (cur, old) => {
                 $scope.goal_changed = cur != old;
             }, true)
@@ -80,11 +80,15 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.save_goal = () => {
                 $scope.goal_changed = false;
                 const goal_fn = $scope.goal.id ? goal_service.update_goal : goal_service.create_goal
+                // if new goal, assign org id
+                $scope.goal.organization = $scope.goal.organization || $scope.organization.id
                 goal_fn($scope.goal).then(result => {
                     console.log('res', result)
                     if (result.status == 200 || result.status == 201) {
                         $scope.errors = null;
+                        $scope.goal.id = $scope.goal.id || result.data.id
                         get_goals()
+                        $scope.set_selected_goal($scope.goal)
                     } else {
                         $scope.errors = [`Unexpected response status: ${result.status}`];
                         for (let key in result.data) {
@@ -95,19 +99,21 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
 
             $scope.delete_goal = (goal_id) => {
-                goal_service.delete_goal(goal_id).then(response =>{
-                    console.log('del', response)
+                goal_service.delete_goal(goal_id).then(() =>{
                     get_goals()
+                    if (goal_id == $scope.selected_goal.id) {
+                        $scope.set_selected_goal({})
+                    }
                 })
             }
 
             $scope.new_goal = () => {
                 $scope.selected_goal = null;
-                reset_goal()
+                $scope.goal = {}
             }
 
             $scope.close = () => {
-                $uibModalInstance.dismiss();
+                $uibModalInstance.close($scope.goal.name);
             }
         }
     ]

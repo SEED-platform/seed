@@ -5049,7 +5049,7 @@ ul.r-list {
         .goal-selection{
           #goal-select{
             width: 30vw;
-            max-width: 500px;
+            max-width: 515px;
             background: #F5F5F5;
             border-radius: 5px;
             padding: 5px;
@@ -5063,7 +5063,7 @@ ul.r-list {
       }
     }
   #portfolio-summary-selection-wrapper {
-    margin: 10px 0;
+    margin: 10px 7px;
     display: flex;
 
     #portfolio-summary-selections {
@@ -5101,7 +5101,7 @@ ul.r-list {
 
     #portfolio-summary {
       width: 100%;
-      padding-bottom: 10px;
+      padding-bottom: 30px;
       margin: 0 16px 10px;
       border-bottom: 1px solid rgb(199, 199, 199);
     }
@@ -5181,7 +5181,7 @@ ul.r-list {
     border-radius: 5px;
     background: rgb(241, 241, 241);
     width: fit-content;
-    margin: 16px;
+    margin: 16px 25px;
     
     .goal-details-column {
       

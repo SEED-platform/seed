@@ -25,7 +25,7 @@
         </div>
         <div class="goal-btn-wrapper">
             <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()"
-                style="margin-right: 1px; float: right;" translate>Edit</button>
+                style="margin-right: 1px; float: right;">{$ valid ? 'Edit' : 'New Goal' $}</button>
         </div>
 
     </div>
@@ -33,10 +33,10 @@
     <div class="goal-details-container" ng-if="valid">
         <div class="goal-details-column" style="margin-left: 10px;">
             <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
-                <div class="goal-detail-key">
+                <div class="goal-detail-key" style="width: 100px">
                     {$ detail[0] $}:
                 </div>
-                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 20) ? detail[1] : '' $}">
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">
                     {$ detail[1] $}
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <div class="goal-detail-key">
                     {$ detail[0] $}:
                 </div>
-                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 20) ? detail[1] : '' $}">
+                <div class="goal-detail-value" uib-tooltip="{$ (detail[1].length > 25) ? detail[1] : '' $}">
                     {$ detail[1] $}
                 </div>
             </div>
