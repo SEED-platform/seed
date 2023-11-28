@@ -786,16 +786,30 @@ class OrganizationViewSet(viewsets.ViewSet):
     def get_data(self, property_view, x_var, y_var, matching_columns):
         result = {}
         state = property_view.state
-        if getattr(state, x_var, None) and getattr(state, y_var, None):
-            for matching_column in matching_columns:
-                name = matching_column.column_name
-                if matching_column.is_extra_data:
-                    result[name] = state.extra_data.get(name)
-                else:
-                    result[name] = getattr(state, name)
 
-            result["x"] = getattr(state, x_var)
+        # set y
+        if not getattr(state, y_var, None):
+            return {}
+        else:
             result["y"] = getattr(state, y_var)
+
+        # set x
+        if x_var == "Count":
+            result["x"] = 1
+
+        elif not getattr(state, x_var):
+            return {}
+
+        else:
+            result["x"] = getattr(state, x_var)
+
+        # set matching columns
+        for matching_column in matching_columns:
+            name = matching_column.column_name
+            if matching_column.is_extra_data:
+                result[name] = state.extra_data.get(name)
+            else:
+                result[name] = getattr(state, name)
 
         return result
 

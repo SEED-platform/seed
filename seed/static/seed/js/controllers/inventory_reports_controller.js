@@ -94,14 +94,23 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
 
     const filtered_columns = _.filter(columns, (column) => _.includes(acceptable_column_types, column.data_type));
 
-    $scope.xAxisVars = _.map(filtered_columns, (column) => ({
+    $scope.xAxisVars =[
+      {
+        name: "Count",
+        label: "Count",
+        varName: "Count",
+        axisLabel: "Count",
+      },
+      ... _.map(filtered_columns, (column) => ({
       name: $translate.instant(column.displayName), // short name for variable, used in pulldown
       label: $translate.instant(column.displayName), // full name for variable
       varName: column.column_name, // name of variable, to be sent to server
       axisLabel: parse_axis_label(column) // label to be used in charts, should include units
       // axisType: 'Measure', //DimpleJS property for axis type
       // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
-    }));
+      }))
+    ];
+    console.log($scope.xAxisVars)
 
     const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
     const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
