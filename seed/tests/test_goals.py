@@ -247,12 +247,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert Goal.objects.count() == goal_count + 1
 
         # incorrect org
-        # SHOULDNT BE ABLE TO ADD A GOAL TO INCORRECT ORG. DECORATOR? VIEW?
         goal_data = reset_goal_data('wrong org goal')
         goal_data['organization'] = self.org2.id
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
-        # x = response
-        # breakpoint()
+        assert response.json()['non_field_errors'] == ['Organization mismatch.']
 
     
     def test_goal_update(self):

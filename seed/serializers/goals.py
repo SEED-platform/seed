@@ -23,20 +23,27 @@ class GoalSerializer(serializers.ModelSerializer):
     def validate(self, data):
         baseline_cycle = data.get('baseline_cycle')
         current_cycle = data.get('current_cycle')
+        organization = data.get('organization')
+        ali = data.get('access_level_instance')
 
         if baseline_cycle and current_cycle:
             if baseline_cycle == current_cycle:
                 raise ValidationError('Cycles must be unique.')
             
             if baseline_cycle.end > current_cycle.end:
-                raise ValidationError('Baseline Cycle must preceed Current Cycle')
-
+                raise ValidationError('Baseline Cycle must preceed Current Cycle.')
         
+        if not all([
+            getattr(baseline_cycle, 'organization', None) == organization,
+            getattr(current_cycle, 'organization', None) == organization,
+            getattr(ali, 'organization', None) == organization
+        ]):
+            raise ValidationError('Organization mismatch.')
+
         # non Null columns must be uniuqe
         columns = [data.get('column1'), data.get('column2'), data.get('column3')]   
         unique_columns = {column for column in columns if column is not None}
         if len(unique_columns) < len([col for col in columns if col is not None]):
-            message = 'Columns must be unique.'
-            raise ValidationError(message)
+            raise ValidationError('Columns must be unique.')
         
         return data
