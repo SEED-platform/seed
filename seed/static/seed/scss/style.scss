@@ -5043,22 +5043,22 @@ ul.r-list {
   
       .goal-select-wrapper {
         display: flex;
+        margin: 15px;
         .goal-select-label{
           margin: auto;
         }
         .goal-selection{
           #goal-select{
             width: 30vw;
-            max-width: 515px;
+            max-width: 512px;
             background: #F5F5F5;
             border-radius: 5px;
             padding: 5px;
           }
         }
-      }
-      .goal-btn-wrapper {
         button{
-          height:31px;
+          margin-left: 10px;
+          height:100%;
         }
       }
     }
@@ -5181,7 +5181,7 @@ ul.r-list {
     border-radius: 5px;
     background: rgb(241, 241, 241);
     width: fit-content;
-    margin: 16px 25px;
+    margin: 0 0 16px 25px;
     
     .goal-details-column {
       

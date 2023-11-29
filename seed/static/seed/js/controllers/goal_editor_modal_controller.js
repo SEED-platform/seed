@@ -102,7 +102,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                 goal_service.delete_goal(goal_id).then(() =>{
                     get_goals()
                     if (goal_id == $scope.selected_goal.id) {
-                        $scope.set_selected_goal({})
+                        $scope.selected_goal = null;
                     }
                 })
             }

@@ -22,12 +22,10 @@
                     ng-options="goal as goal.name for goal in goals" ng-model="goal">
                 </select>
             </div>
+            <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()">
+                {$ valid ? 'Edit' : 'New Goal' $}
+            </button>
         </div>
-        <div class="goal-btn-wrapper">
-            <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()"
-                style="margin-right: 1px; float: right;">{$ valid ? 'Edit' : 'New Goal' $}</button>
-        </div>
-
     </div>
     <!-- GOAL DETAILS -->
     <div class="goal-details-container" ng-if="valid">

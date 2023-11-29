@@ -128,7 +128,8 @@
                                         <select id="select-column2" class="form-control goal-form-control"
                                             ng-options="column.id as column.displayName for column in goal_columns"
                                             ng-change=""
-                                            ng-model="goal.column2">
+                                            ng-model="goal.column2"
+                                            ng-disabled="!goal.column1">
                                         </select>
                                     </li>
                                     <!-- Column3 -->
@@ -137,7 +138,8 @@
                                         <select id="select-column3" class="form-control goal-form-control"
                                             ng-options="column.id as column.displayName for column in goal_columns"
                                             ng-change=""
-                                            ng-model="goal.column3">
+                                            ng-model="goal.column3"
+                                            ng-disabled="!goal.column2">
                                         </select>
                                     </li>
                                     <li ng-if="true" class="r-info">
