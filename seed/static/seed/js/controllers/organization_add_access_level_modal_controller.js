@@ -31,7 +31,8 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
             (_) => $uibModalInstance.close()
           )
           .catch((err) => {
-            Notification.error(err);
+            console.log(err.data.message);
+            Notification.error(err.data.message);
           });
       };
 
