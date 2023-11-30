@@ -49,6 +49,17 @@
       <div ng-if="selected_data_view || editing" class="r-panel r-columns r-no-margin">
         <div class="r-column">
           <ul class="r-list">
+            <li class="r-list-header" translate>Name</li>
+          </ul>
+          <ul class="r-list">
+            <li ng-if="editing">
+                <input id="input-name" class="form-control" type="text" ng-model="fields.name" />
+            </li>
+            <li ng-if="!editing">
+              <input id="input-name" class="form-control" type="text" ng-model="fields.name" disabled/>
+            </li>
+          </ul>
+          <ul class="r-list">
             <li class="r-list-header" translate>Filter Groups</li>
           </ul>
           <ul class="r-list">
@@ -215,10 +226,6 @@
         </div>
 
         <div ng-if="editing">
-          <div class="r-row r-row-centered r-margin-bottom-10">
-            <label for="input-name" class="r-pad-right-5" translate>Name</label>
-            <input id="input-name" class="form-control" type="text" ng-model="fields.name" />
-          </div>
           <div ng-if="create_errors.length > 0" class="r-panel r-error r-margin-bottom-10">
             <ul class="r-list">
               <li ng-repeat="error in create_errors">{$ error $}</li>
