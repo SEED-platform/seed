@@ -133,7 +133,7 @@ def health_check(request):
         celery_status = False
 
     try:
-        redis_status = not cache.has_key('redis-ping')
+        redis_status = 'redis-ping' not in cache
     except Exception:
         redis_status = False
 

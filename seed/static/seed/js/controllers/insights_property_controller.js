@@ -20,6 +20,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    // toggle help
+    $scope.show_help = false;
+    $scope.toggle_help = () => {
+      $scope.show_help = !$scope.show_help;
+    }
+
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
     const saved_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`));
@@ -468,7 +474,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       });
 
       // update x axis ticks (for year)
-      if (x_axis_name.toLowerCase().includes('year')) {
+      if (x_axis_name && x_axis_name.toLowerCase().includes('year')) {
         $scope.insightsChart.options.scales.x.ticks = {
           callback(value) {
             return this.getLabelForValue(value).replace(',', '');

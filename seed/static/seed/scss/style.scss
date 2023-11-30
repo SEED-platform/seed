@@ -4312,11 +4312,12 @@ iframe.analysis-results {
 
 // program overview / compliance-setup
 .compliance-setup {
-  background-color: #eee;
-  padding: 1.5em;
+  /*background-color: #eee;*/
+  padding: 0.5em;
 
   p {
     margin: 0;
+    font-size: 1.25em !important;
   }
 }
 
@@ -4340,12 +4341,22 @@ iframe.analysis-results {
   margin-right: 10px;
 }
 
+.chart-buttons {
+  margin-top: 10px;
+  margin-right: 5px;
+  text-align: right;
+}
+
 .chart-legend {
   margin-top: 15px;
   margin-left: 0;
+  margin-right: 15px;
+  padding: 15px;
+  border: 1px solid #ddd;
 
   .title {
     font-size: 1.4em;
+    font-weight: bold;
   }
 
   .legend-icon {
@@ -4392,6 +4403,30 @@ iframe.analysis-results {
   .small-text {
     font-size: 1em !important;
   }
+}
+
+.chart-options {
+  margin-top: 25px;
+  padding-top: 10px;
+  margin-left: 0;
+
+  .title {
+    font-size: 1.4em;
+    font-weight: bold;
+  }
+
+  .form-group {
+    margin-bottom: 5px;
+  }
+
+  .small-text {
+    font-size: 1em !important;
+  }
+}
+
+.help-text-icon {
+  margin: 0px 5px;
+  color: #337ab7;
 }
 
 .title-row {
@@ -4607,7 +4642,15 @@ ul.r-list {
 }
 
 .less_pad {
-  padding-left: 30px !important;
+  padding: 0px 10px 10px 10px !important;
+}
+
+.insights-header {
+  padding: 10px 10px 0px 10px !important;
+}
+
+.insights-table {
+  margin-top: 0px !important;
 }
 
 .rp-data-view {
