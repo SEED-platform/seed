@@ -290,11 +290,13 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       non_compliant.data.forEach((item) => {
         // only when we are displaying the non-compliant metric (energy or emission)
         // don't add whisker if data is in range for that metric or it looks bad
+        item.distance = null;
         let add = false;
         const metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
         if (item.x && item.y && item.target) {
           if ((metric_type === 1 && item.target < item.y) || (metric_type === 2 && item.target > item.y)) {
             add = true;
+            item.distance = Math.abs(item.target - item.y)
           }
         }
 
