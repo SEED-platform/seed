@@ -6,8 +6,7 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from django.db.models import F, Sum
-from django.db.models.functions import Coalesce
+from django.db.models import ExpressionWrapper, F, IntegerField, Sum
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
@@ -19,6 +18,7 @@ from seed.serializers.goals import GoalSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
+from seed.utils.goals import get_eui_expression
 
 
 @method_decorator(
@@ -89,10 +89,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         """
         org_id = int(self.get_organization(request))
         goal = Goal.objects.get(pk=pk)
-        column_names = goal.column_names()
-        preferred_fields = [F(f'state__{name}') for name in column_names]
         summary = {}
-
         for cycle in [goal.baseline_cycle, goal.current_cycle]:
             # calcualte total_sqft, total_kbtu, and weighted_eui from property_views
             property_views = PropertyView.objects.select_related('property', 'state') \
@@ -102,28 +99,28 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                     property__access_level_instance__lft__gte=goal.access_level_instance.lft,
                     property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
             )
-            
-            aggregated_data = property_views.aggregate(
-                total_sqft=Sum('state__gross_floor_area'),
-                total_kbtu=Sum(
-                    Coalesce(*preferred_fields) * F('state__gross_floor_area')
-                )
+
+            # Create eui annotation based on goal column priority
+            property_views = property_views.annotate(
+                eui=get_eui_expression(goal),
+                sqft=ExpressionWrapper(F('state__gross_floor_area'), output_field=IntegerField()),
+            ).annotate(
+                kbtu=F('eui') * F('sqft')
             )
 
-            def get_magnitude(key):
-                value = aggregated_data.get(key, 0)
-                return int(value.m) if value else 0
-        
-            total_sqft = get_magnitude('total_sqft')
-            total_kbtu = get_magnitude('total_kbtu')
-            weighted_eui = int(total_kbtu / total_sqft) if total_sqft else 0
+            aggregated_data = property_views.aggregate(
+                total_kbtu=Sum('kbtu'),
+                total_sqft=Sum('sqft')
+            )
+
+            weighted_eui = int(aggregated_data['total_kbtu'] / aggregated_data['total_sqft']) if aggregated_data['total_sqft'] else 0
 
             cycle_type = 'current' if cycle == goal.current_cycle else 'baseline'
 
             summary[cycle_type] = {
                 'cycle_name': cycle.name,
-                'total_sqft': total_sqft,
-                'total_kbtu': total_kbtu,
+                'total_sqft': aggregated_data['total_sqft'],
+                'total_kbtu': aggregated_data['total_kbtu'],
                 'weighted_eui': weighted_eui
             }
     

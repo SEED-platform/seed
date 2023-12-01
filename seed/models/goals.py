@@ -26,9 +26,10 @@ class Goal(models.Model):
 
     def __str__(self):
         return f"Goal - {self.name}"
-    
-    def column_names(self):
+
+    def columns(self):
+        """ Preferred column order """
         columns = [self.column1, self.column2, self.column3]
-        return [column.column_name for column in columns if column]
+        return [column for column in columns if column]
 
 

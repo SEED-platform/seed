@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         'cycles',
         'organization_payload',
         'access_level_tree',
+        'current_profile',
         'property_columns',
         'uiGridConstants',
         'gridUtil',
@@ -30,6 +31,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             cycles,
             organization_payload,
             access_level_tree,
+            current_profile,
             property_columns,
             uiGridConstants,
             gridUtil,
@@ -42,6 +44,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const localStorageLabelKey = `grid.properties.labels`;
             $scope.goal = {}
             $scope.baseline_first = false;
+            $scope.currentProfile = current_profile;
             
             // optionally pass a goal name to be set as $scope.goal
             const get_goals = (goal_name=false) => {
@@ -146,9 +149,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const load_summary = () => {
                 $scope.summary_valid = false;
 
-                const cycle_ids = [$scope.goal.baseline_cycle, $scope.goal.current_cycle]
-                let access_level_instance_id = $scope.goal.access_level_instance
-                inventory_service.get_portfolio_summary(cycle_ids[0], access_level_instance_id).then(result => {
+                goal_service.get_portfolio_summary($scope.goal.id).then(result => {
                     summary = result.data;
                     set_summary_grid_options(summary);
                 }).then(() => {

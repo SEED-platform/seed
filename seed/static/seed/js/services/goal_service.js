@@ -42,6 +42,16 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
             .then(response => response)
             .catch(response => response)
         }
+
+        goal_service.get_portfolio_summary = (goal_id) => {
+            return $http.get(`/api/v3/goals/${goal_id}/portfolio_summary/`, {
+                params: {
+                    organization_id: user_service.get_organization().id
+                }
+            })
+            .then(response => response)
+            .catch(response => response)
+        }
         
         return goal_service
         }

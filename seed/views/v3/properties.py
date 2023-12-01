@@ -92,7 +92,6 @@ from seed.utils.properties import (
     pair_unpair_property_taxlot,
     properties_across_cycles,
     update_result_with_master,
-    get_portfolio_summary,
 )
 from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
@@ -2019,42 +2018,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # delete file
         doc_file.delete()
         return JsonResponse({'status': 'success'})
-    
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
-    def portfolio_summary(self, request):
-        """
-        Gets a Portfolio Summary dictionary given a baseline cycle
-        """
-        try:
-            org_id = int(self.get_organization(request))
-            baseline_cycle_id = request.data.get('baseline_cycle')
-            current_cycle = Cycle.objects.exclude(name='Migration Created Cycle').order_by('-end').first()
-            cycle_ids = [baseline_cycle_id, current_cycle.id]
-        
-            access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
-            access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
-            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-            if not (user_ali == access_level_instance or access_level_instance.is_descendant_of(user_ali)):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'No access_level_instance with id {access_level_instance_id}.'
-                }, status=status.HTTP_404_NOT_FOUND)
-
-            response = get_portfolio_summary(org_id, access_level_instance, cycle_ids)
-        # temporary, this exception needs to be more specific
-        except Exception as e:
-            logging.error('portfolio_summary error %s', e) 
-            return JsonResponse({
-                'status': 'error',
-                'message': 'unexpected error'
-            })
-
-        return JsonResponse({
-            'status': 'success',
-            'data': response
-        })
 
 
 def diffupdate(old, new):

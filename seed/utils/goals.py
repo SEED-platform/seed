@@ -1,0 +1,44 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
+from django.db.models import Case, F, IntegerField, Value, When
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Coalesce, Cast
+
+
+def get_eui_expression(goal):
+    """
+    goal.column is designed to only accept columns of data_type=eui, columns like site_eui, or source_eui 
+    however the user may choose to use an extra_data column that has been typed on the frontend as eui. 
+    This frontend change does not effect the db and extra_data fields are stored as JSON objects 
+    extra_data = {Name: value} where value can be any type. 
+
+    This function dynamically finds the highest priority eui column and sets its type to Integer
+    """
+    priority = []
+
+    # Iterate through the columns in priority order
+    for column in goal.columns():
+        if column.is_extra_data:
+            # extra_data is a JSON object and could be any data type. Convert to integer if possible
+            column_expression = Case(
+                When(**{f'state__extra_data__{column.column_name}__regex': r'^\d+$'},
+                     then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=IntegerField())),
+                default=Value(0),
+                output_field=IntegerField()
+            )
+
+        else:
+            column_expression = Cast(F(f'state__{column.column_name}'), output_field=IntegerField())
+        
+        priority.append(column_expression)
+
+    # default value
+    priority.append(Value(0, output_field=IntegerField()))
+    # Coalesce to pick the first non-null value
+    eui_expression = Coalesce(*priority, output_field=IntegerField())
+
+    return eui_expression
