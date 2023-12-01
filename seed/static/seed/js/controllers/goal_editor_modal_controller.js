@@ -103,6 +103,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                     get_goals()
                     if (goal_id == $scope.selected_goal.id) {
                         $scope.selected_goal = null;
+                        $scope.goal = null;
                     }
                 })
             }
@@ -113,7 +114,8 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
 
             $scope.close = () => {
-                $uibModalInstance.close($scope.goal.name);
+                let goal_name = $scope.goal ? $scope.goal.name : null
+                $uibModalInstance.close(goal_name)
             }
         }
     ]

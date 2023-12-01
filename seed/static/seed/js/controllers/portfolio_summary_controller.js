@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     $scope.goals = result.status == 'success' ? result.goals : []
                     if (goal_name) {
                         $scope.goal = $scope.goals.find(goal => goal.name == goal_name)
-                    } else if (!$scope.goal.name && $scope.goals.length) {
+                    } else if ($scope.goals.length) {
                         // init - default selected goal to first
                         $scope.goal = $scope.goals[0]
                     }
@@ -215,7 +215,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             const percentage = (a, b) => {
                 if (!a) return null;
-                return Math.round((a - b) / a * 100) || undefined
+                const value = Math.round((a - b) / a * 100);
+                return isNaN(value) ? null : value;
             }
 
             // -------------- LABEL LOGIC -------------
