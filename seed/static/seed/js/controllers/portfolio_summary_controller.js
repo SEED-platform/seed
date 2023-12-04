@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         'property_columns',
         'uiGridConstants',
         'gridUtil',
+        'spinner_utility',
         function (
             $scope,
             $state,
@@ -35,6 +36,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             property_columns,
             uiGridConstants,
             gridUtil,
+            spinner_utility,
         ) {
             $scope.organization = organization_payload.organization;
             $scope.cycles = cycles.cycles;
@@ -46,31 +48,31 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.baseline_first = false;
             $scope.currentProfile = current_profile;
             
-            // optionally pass a goal name to be set as $scope.goal
+            // optionally pass a goal name to be set as $scope.goal - used on modal close
             const get_goals = (goal_name=false) => {
                 goal_service.get_goals().then(result => {
                     $scope.goals = result.status == 'success' ? result.goals : []
-                    if (goal_name) {
-                        $scope.goal = $scope.goals.find(goal => goal.name == goal_name)
-                    } else if ($scope.goals.length) {
-                        // init - default selected goal to first
-                        $scope.goal = $scope.goals[0]
-                    }
+                    $scope.goal = goal_name ? 
+                        $scope.goals.find(goal => goal.name == goal_name) : 
+                        $scope.goals[0]
                 })
             }
             get_goals()
             
-            // If goal changes, repopulate data
+            // If goal changes, reset grid filters and repopulate ui-grids
             $scope.$watch('goal', () => {
-                if (!_.isEmpty($scope.goal)) {
-                    $scope.valid = true
-                    format_goal_details()
-                    $scope.refresh_data()
-                } else {
-                    $scope.valid = false
-                }
+                if ($scope.gridApi) $scope.reset_sorts_filters($scope.gridApi);
+                _.isEmpty($scope.goal) ? $scope.valid = false : reset_data();
             })
+            
+            const reset_data = () => {
+                $scope.valid = true;
+                $scope.data_valid = false;
+                format_goal_details();
+                $scope.refresh_data();
+            }
 
+            // selected goal details
             const format_goal_details = () => {
                 $scope.change_selected_level_index()
                 const get_column_name = (column_id) => $scope.columns.find(c => c.id == column_id).displayName
@@ -100,7 +102,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.columnDisplayByName[$scope.columns[i].name] = $scope.columns[i].displayName;
             }
             
-            /* Build out access_level_instances_by_depth recurrsively */
+            // Build out access_level_instances_by_depth recurrsively 
             let access_level_instances_by_depth = {};
             const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
                 if (tree == undefined) return;
@@ -158,9 +160,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 })
             }
             
+            $scope.page_change = (page) => {
+                spinner_utility.show()
+                $scope.load_inventory(page)
+            }
             $scope.load_inventory = (page) => {
                 $scope.data_loading = true;
-                $scope.data_valid = false;
+                // $scope.data_valid = false;
 
                 let access_level_instance_id = $scope.goal.access_level_instance
                 let combined_result = {}
@@ -655,6 +661,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             const set_grid_options = (result) => {
                 $scope.data = format_properties(result)
+                spinner_utility.hide()
                 $scope.gridOptions = {
                     data: 'data',
                     columnDefs: selected_columns(),
@@ -665,18 +672,29 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         $scope.gridApi = gridApi;
 
                         gridApi.core.on.sortChanged($scope, () => {
-                            updateColumnFilterSort();
-                            $scope.load_inventory(1);
-                        });
-                        gridApi.core.on.filterChanged(
-                            $scope,
+                            spinner_utility.show()
                             _.debounce(() => {
                                 updateColumnFilterSort();
                                 $scope.load_inventory(1);
-                            }, 2000)
-                        );
+                            }, 500)();
+                        });
+
+                        gridApi.core.on.filterChanged($scope, () => {
+                            _.debounce(() => {
+                                spinner_utility.show()
+                                updateColumnFilterSort();
+                                $scope.load_inventory(1);
+                            }, 1000)();
+                        });
                     }
                 }
+            }
+
+            $scope.reset_sorts_filters = (grid) => {
+                $scope.column_filters = []
+                $scope.column_sorts = []
+                $scope.gridApi.grid.clearAllFilters()
+                $scope.gridApi.core.refresh()
             }
             
 

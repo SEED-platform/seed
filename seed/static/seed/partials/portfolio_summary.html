@@ -86,11 +86,11 @@
                     ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select
                         None</a></span><span>)</span>
                     </i>
-                    <button ng-click="load_inventory(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous"
+                    <button ng-click="page_change(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous"
                     class="btn btn-default btn-sm">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button ng-click="load_inventory(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next"
+                <button ng-click="page_change(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next"
                     class="btn btn-default btn-sm">
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
