@@ -110,7 +110,6 @@ angular.module('BE.seed.controller.inventory_reports', []).controller('inventory
       // axisTickFormat: ',.0f' //DimpleJS property for axis tick format
       }))
     ];
-    console.log($scope.xAxisVars)
 
     const acceptable_y_column_names = ['gross_floor_area', 'property_type', 'year_built'];
     const filtered_y_columns = _.filter(columns, (column) => _.includes(acceptable_y_column_names, column.column_name));
