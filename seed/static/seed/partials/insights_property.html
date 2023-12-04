@@ -106,11 +106,13 @@
                           <th>Name</th>
                           <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
                           <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+                          <th translate>Distance to Target</th>
                         </tr>
                         <tr ng-repeat="item in chart_datasets[1]['data']">
                           <td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
                           <td>{$ item.x $}</td>
                           <td>{$ item.y $}</td>
+                          <td>{$ item.distance $}
                         </tr>
                       </table>
                     </td>

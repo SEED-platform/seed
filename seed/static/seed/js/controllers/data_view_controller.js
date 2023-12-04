@@ -100,6 +100,7 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       if ($scope.selected_data_view) {
         $scope.selected_data_view.first_axis_aggregations = [];
         $scope.selected_data_view.second_axis_aggregations = [];
+        $scope.fields.name = $scope.selected_data_view.name;
       } else if ($scope.id) {
         $scope.data_views_error = `Could not find Data View with id #${$scope.id}!`;
       }
@@ -262,9 +263,12 @@ angular.module('BE.seed.controller.data_view', []).controller('data_view_control
       $scope.selected_data_view = {
         name: 'New Custom Report',
         first_axis_aggregations: [],
-        second_axis_aggregations: []
+        second_axis_aggregations: [],
+        filter_groups: [],
+        cycles: []
       };
       $scope.editing = true;
+      $scope.fields.name = $scope.selected_data_view.name;
       spinner_utility.hide();
     };
 
