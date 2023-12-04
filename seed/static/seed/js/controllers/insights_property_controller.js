@@ -20,6 +20,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    // toggle help
+    $scope.show_help = false;
+    $scope.toggle_help = () => {
+      $scope.show_help = !$scope.show_help;
+    }
+
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
     const saved_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`));
@@ -284,11 +290,13 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       non_compliant.data.forEach((item) => {
         // only when we are displaying the non-compliant metric (energy or emission)
         // don't add whisker if data is in range for that metric or it looks bad
+        item.distance = null;
         let add = false;
         const metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
         if (item.x && item.y && item.target) {
           if ((metric_type === 1 && item.target < item.y) || (metric_type === 2 && item.target > item.y)) {
             add = true;
+            item.distance = Math.abs(item.target - item.y)
           }
         }
 
@@ -477,7 +485,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       });
 
       // update x axis ticks (for year)
-      if (x_axis_name.toLowerCase().includes('year')) {
+      if (x_axis_name && x_axis_name.toLowerCase().includes('year')) {
         $scope.insightsChart.options.scales.x.ticks = {
           callback(value) {
             return this.getLabelForValue(value).replace(',', '');
