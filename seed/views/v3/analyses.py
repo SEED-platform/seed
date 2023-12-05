@@ -160,7 +160,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 {
                     "id": view.id,
                     "display_name": view.display_name,
-                    "parsed_results": view.parsed_results,
                     "analysis": view.analysis_id,
                     "property": view.property_id,
                     "cycle": view.cycle_id,
