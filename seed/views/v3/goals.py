@@ -91,7 +91,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         goal = Goal.objects.get(pk=pk)
         summary = {}
         for cycle in [goal.baseline_cycle, goal.current_cycle]:
-            # calcualte total_sqft, total_kbtu, and weighted_eui from property_views
             property_views = PropertyView.objects.select_related('property', 'state') \
                 .filter(
                     property__organization_id=org_id,
@@ -100,7 +99,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                     property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
             )
 
-            # Create eui annotation based on goal column priority
+            # Create annotations for kbtu calcs. 'eui' is based on goal column priority
             property_views = property_views.annotate(
                 eui=get_eui_expression(goal),
                 sqft=ExpressionWrapper(F('state__gross_floor_area'), output_field=IntegerField()),

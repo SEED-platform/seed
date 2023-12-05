@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             // ACCESS LEVEL INSTANCES
             /* Build out access_level_instances_by_depth recurrsively */
             let access_level_instances_by_depth = {};
-            const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
+            const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
                 if (tree == undefined) return;
                 if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
                 tree.forEach(ali => {
@@ -65,11 +65,12 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
             calculate_access_level_instances_by_depth($scope.access_level_tree, 1);
 
-            $scope.change_selected_level_index = function () {
+            $scope.change_selected_level_index = () => {
                 new_level_instance_depth = parseInt($scope.goal.level_name_index) + 1
                 $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
                 console.log($scope.potential_level_instances);
             }
+            $scope.change_selected_level_index()
 
             $scope.set_selected_goal = (goal) => {
                 $scope.selected_goal = goal
@@ -92,7 +93,14 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                     } else {
                         $scope.errors = [`Unexpected response status: ${result.status}`];
                         for (let key in result.data) {
-                            $scope.errors.push(`${key}: ${result.data[key]}`)
+                            if (typeof result.data[key] == 'object') {
+                                const key_data = result.data[key]
+                                for (let k in key_data) {
+                                    $scope.errors.push(`${k}: ${key_data[k]}`)
+                                }
+                            } else {
+                                $scope.errors.push(`${key}: ${result.data[key]}`)
+                            }
                         }
                     };
                 });
