@@ -317,20 +317,6 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     // CHARTS
     const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
 
-    const tooltip_footer = (tooltipItems) => {
-      let text = '';
-      tooltipItems.forEach((tooltipItem) => {
-        if (tooltipItem.raw.name) {
-          text = `Property: ${tooltipItem.raw.name}`;
-        } else {
-          // revise this in future
-          text = `Property ID: ${tooltipItem.raw.id}`;
-        }
-      });
-
-      return text;
-    };
-
     const _build_chart = () => {
       if (!$scope.chart_datasets) {
         return;
@@ -369,7 +355,30 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
               },
               tooltip: {
                 callbacks: {
-                  footer: tooltip_footer
+                  label: function(context) {
+                    let text = [];
+                    // property ID / default display field
+                    if (context.raw.name) {
+                      text.push(`Property: ${context.raw.name}`);
+                    } else {
+                      text.push(`Property ID: ${context.raw.id}`);
+                    }
+
+                    // x and y axis names and values
+                    const x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
+                    const x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
+
+                    let y_axis_name = null;
+                    if ($scope.configs.chart_metric === 0) {
+                      y_axis_name = $scope.data.metric.actual_energy_column_name;
+                    } else if ($scope.configs.chart_metric === 1) {
+                      y_axis_name = $scope.data.metric.actual_emission_column_name;
+                    }
+
+                    text.push(`${x_axis_name}: ${context.parsed.x}`);
+                    text.push(`${y_axis_name}: ${context.parsed.y}`);
+                    return text;
+                  }
                 }
               },
               zoom: {
