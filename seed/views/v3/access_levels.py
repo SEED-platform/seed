@@ -46,9 +46,11 @@ class AccessLevelViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
         return Response({
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": org.get_access_tree(from_ali=user_ali),
         },
             status=status.HTTP_200_OK,
         )
@@ -127,7 +129,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         org.add_new_access_level_instance(parent_id, name)
         result = {
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": org.get_access_tree(from_ali=org.root),  # root as requires owner.
         }
 
         status_code = status.HTTP_201_CREATED

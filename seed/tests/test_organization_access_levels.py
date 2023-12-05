@@ -10,91 +10,59 @@ import time
 
 from django.urls import reverse_lazy
 
-from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Organization, TaxLot
-from seed.tests.util import DataMappingBaseTestCase
-from seed.utils.organizations import create_organization
+from seed.tests.util import AccessLevelBaseTestCase
 
 
-class TestOrganizationViews(DataMappingBaseTestCase):
+class TestOrganizationViews(AccessLevelBaseTestCase):
     def setUp(self):
-        user_details = {
-            'username': 'test_user@demo.com',
-            'password': 'test_pass',
-        }
-        user = User.objects.create_superuser(
-            email='test_user@demo.com', **user_details
-        )
-        self.org, _, _ = create_organization(user, "my org")
-        self.org.save()
-
-        self.client.login(**user_details)
+        super().setUp()
 
     def test_access_level_tree(self):
         url = reverse_lazy('api:v3:organization-access_levels-tree', args=[self.org.id],)
 
         # get tree
+        self.login_as_root_member()
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
         assert result == {
-            'access_level_names': ['my org'],
+            'access_level_names': ["root", "child"],
             'access_level_tree': [{
                 'id': self.org.root.pk,
                 'data': {
-                    'name': 'root',
+                    'name': self.root_level_instance.name,
                     'organization': self.org.id,
-                    'path': {'my org': 'root'},
-                }
-            },],
-        }
-
-        # populate tree
-        self.org.access_level_names += ["2nd gen", "3rd gen"]
-        self.org.save()
-        aunt = self.org.add_new_access_level_instance(self.org.root.id, "aunt")
-        mom = self.org.add_new_access_level_instance(self.org.root.id, "mom")
-        me = self.org.add_new_access_level_instance(mom.id, "me")
-
-        # get tree
-        raw_result = self.client.get(url)
-        result = json.loads(raw_result.content)
-        assert result == {
-            'access_level_names': ['my org', "2nd gen", "3rd gen"],
-            'access_level_tree': [{
-                'id': self.org.root.pk,
-                'data': {
-                    'name': 'root',
-                    'organization': self.org.id,
-                    'path': {'my org': 'root'},
+                    'path': {'root': 'root'},
                 },
                 'children': [
                     {
-                        'id': aunt.pk,
+                        'id': self.child_level_instance.pk,
                         'data': {
-                            'name': 'aunt',
+                            'name': 'child',
                             'organization': self.org.id,
-                            'path': {'my org': 'root', '2nd gen': 'aunt'},
+                            'path': {'root': 'root', 'child': 'child'},
                         }
                     },
-                    {
-                        'id': mom.pk,
-                        'data': {
-                            'name': 'mom',
-                            'organization': self.org.id,
-                            'path': {'my org': 'root', '2nd gen': 'mom'},
-                        },
-                        'children': [{
-                            'id': me.pk,
-                            'data': {
-                                'name': 'me',
-                                'organization': self.org.id,
-                                'path': {'my org': 'root', '2nd gen': 'mom', '3rd gen': 'me'},
-                            }
-                        }]
-                    }
                 ]
             }],
+        }
+
+        self.login_as_child_member()
+        raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+        assert result == {
+            'access_level_names': ["root", "child"],
+            'access_level_tree': [
+                {
+                    'id': self.child_level_instance.pk,
+                    'data': {
+                        'name': 'child',
+                        'organization': self.org.id,
+                        'path': {'root': 'root', 'child': 'child'},
+                    }
+                },
+            ],
         }
 
     def test_edit_access_level_names(self):
