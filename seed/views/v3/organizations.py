@@ -786,15 +786,29 @@ class OrganizationViewSet(viewsets.ViewSet):
     def get_data(self, property_view, x_var, y_var, matching_columns):
         result = {}
         state = property_view.state
-        if getattr(state, x_var, None) and getattr(state, y_var, None):
-            for matching_column in matching_columns:
-                name = matching_column.column_name
-                if matching_column.is_extra_data:
-                    result[name] = state.extra_data.get(name)
-                else:
-                    result[name] = getattr(state, name)
 
+        # set matching columns
+        for matching_column in matching_columns:
+            name = matching_column.column_name
+            if matching_column.is_extra_data:
+                result[name] = state.extra_data.get(name)
+            else:
+                result[name] = getattr(state, name)
+
+        # set x
+        if x_var == "Count":
+            result["x"] = 1
+
+        elif not getattr(state, x_var):
+            return {}
+
+        else:
             result["x"] = getattr(state, x_var)
+
+        # set y
+        if not getattr(state, y_var, None):
+            return {}
+        else:
             result["y"] = getattr(state, y_var)
 
         return result
@@ -955,7 +969,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         for datum in data:
             buildings = datum['chart_data']
             yr_e = datum['property_counts']['yr_e']
-            chart_data.extend(self.aggregate_data(yr_e, params["y_var"], buildings)),
+            chart_data.extend(self.aggregate_data(yr_e, params["x_var"], params["y_var"], buildings)),
             property_counts.append(datum['property_counts'])
 
         # Send back to client
@@ -969,7 +983,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response(result, status=status.HTTP_200_OK)
 
-    def aggregate_data(self, yr_e, y_var, buildings):
+    def aggregate_data(self, yr_e, x_var, y_var, buildings):
         aggregation_method = {
             'property_type': self.aggregate_property_type,
             'year_built': self.aggregate_year_built,
@@ -977,9 +991,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
 
         }
-        return aggregation_method[y_var](yr_e, buildings)
+        return aggregation_method[y_var](yr_e, x_var, buildings)
 
-    def aggregate_property_type(self, yr_e, buildings):
+    def aggregate_property_type(self, yr_e, x_var, buildings):
         # Group buildings in this year_ending group into uses
         chart_data = []
         grouped_uses = defaultdict(list)
@@ -988,14 +1002,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over use groups to make each chart item
         for use, buildings_in_uses in grouped_uses.items():
+            x = [b['x'] for b in buildings_in_uses]
             chart_data.append({
-                'x': median([b['x'] for b in buildings_in_uses]),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': use.capitalize(),
                 'yr_e': yr_e
             })
         return chart_data
 
-    def aggregate_year_built(self, yr_e, buildings):
+    def aggregate_year_built(self, yr_e, x_var, buildings):
         # Group buildings in this year_ending group into decades
         chart_data = []
         grouped_decades = defaultdict(list)
@@ -1004,16 +1019,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over decade groups to make each chart item
         for decade, buildings_in_decade in grouped_decades.items():
+            x = [b['x'] for b in buildings_in_decade]
             chart_data.append({
-                'x': median(
-                    [b['x'] for b in buildings_in_decade]
-                ),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]),  # 1990-1999
                 'yr_e': yr_e
             })
         return chart_data
 
-    def aggregate_gross_floor_area(self, yr_e, buildings):
+    def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
         chart_data = []
         y_display_map = {
             0: '0-99k',
@@ -1041,10 +1055,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over range groups to make each chart item
         for range_floor, buildings_in_range in grouped_ranges.items():
+            x = [b['x'] for b in buildings_in_range]
             chart_data.append({
-                'x': median(
-                    [b['x'] for b in buildings_in_range]
-                ),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': y_display_map[range_floor],
                 'yr_e': yr_e
             })
@@ -1176,7 +1189,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 base_row += 1
 
             # Gather and write Agg data
-            for agg_datum in self.aggregate_data(yr_e, params['y_var'], data_rows):
+            for agg_datum in self.aggregate_data(yr_e, params['x_var'], params['y_var'], data_rows):
                 agg_sheet.write(agg_row, data_col_start, agg_datum.get('x'))
                 agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get('y'))
                 agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get('yr_e'))
