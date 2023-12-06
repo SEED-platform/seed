@@ -91,14 +91,12 @@ class AnalysisPropertyView(models.Model):
         :param analysis_property_views: list[AnalysisPropertyView]
         :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
         """
-        # build a query to find PropertyViews linked to the canonical property and cycles we're interested in
-        property_view_query = models.Q()
-        for analysis_property_view in analysis_property_views:
-            property_view_query |= (
-                models.Q(property_id=analysis_property_view.property_id)
-                & models.Q(cycle_id=analysis_property_view.cycle_id)
-            )
-        property_views = PropertyView.objects.filter(property_view_query)
+        # Fast query to find all potentially-necessary propertyViews
+        views = analysis_property_views.values('property_id', 'cycle_id')
+        property_views = PropertyView.objects.filter(
+            property_id__in=set(v['property_id'] for v in views),
+            cycle_id__in=set(v['cycle_id'] for v in views),
+        )
 
         # get original property views keyed by canonical property id and cycle
         property_views_by_property_cycle_id = {
