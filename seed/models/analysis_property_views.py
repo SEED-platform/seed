@@ -5,9 +5,11 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from collections import namedtuple
+from typing import Union
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.db.models import QuerySet
 
 from seed.models import Analysis, Cycle, Property, PropertyState, PropertyView
 
@@ -84,18 +86,25 @@ class AnalysisPropertyView(models.Model):
         return analysis_property_view_ids, failures
 
     @classmethod
-    def get_property_views(cls, analysis_property_views):
+    def get_property_views(cls, analysis_property_views: Union[list, QuerySet]):
         """Get PropertyViews related to the AnalysisPropertyViews. If no PropertyView
         is found for an AnalysisPropertyView, the value will be None for that key.
 
-        :param analysis_property_views: list[AnalysisPropertyView]
+        :param analysis_property_views: list[AnalysisPropertyView] | QuerySet
         :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
         """
         # Fast query to find all potentially-necessary propertyViews
-        views = analysis_property_views.values('property_id', 'cycle_id')
+        if isinstance(analysis_property_views, list):
+            property_ids = set(v.property_id for v in analysis_property_views)
+            cycle_ids = set(v.cycle_id for v in analysis_property_views)
+        else:
+            views = analysis_property_views.values('property_id', 'cycle_id')
+            property_ids = set(v['property_id'] for v in views)
+            cycle_ids = set(v['cycle_id'] for v in views)
+
         property_views = PropertyView.objects.filter(
-            property_id__in=set(v['property_id'] for v in views),
-            cycle_id__in=set(v['cycle_id'] for v in views),
+            property_id__in=property_ids,
+            cycle_id__in=cycle_ids,
         )
 
         # get original property views keyed by canonical property id and cycle
