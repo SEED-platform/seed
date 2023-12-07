@@ -49,7 +49,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         return Response({
-            "access_level_names": org.access_level_names,
+            "access_level_names": org.access_level_names[user_ali.depth - 1:],
             "access_level_tree": org.get_access_tree(from_ali=user_ali),
         },
             status=status.HTTP_200_OK,

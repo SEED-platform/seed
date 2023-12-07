@@ -52,7 +52,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
         assert result == {
-            'access_level_names': ["root", "child"],
+            'access_level_names': ["child"],
             'access_level_tree': [
                 {
                     'id': self.child_level_instance.pk,
