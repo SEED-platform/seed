@@ -21,17 +21,17 @@ class GoalSerializer(serializers.ModelSerializer):
         return result
 
     def validate(self, data):
-        baseline_cycle = data.get('baseline_cycle')
-        current_cycle = data.get('current_cycle')
-        organization = data.get('organization')
-        ali = data.get('access_level_instance')
+        # partial update allows a cycle or ali to be blank
+        baseline_cycle = data.get('baseline_cycle') or self.instance.baseline_cycle
+        current_cycle = data.get('current_cycle') or self.instance.current_cycle
+        organization = data.get('organization') or self.instance.organization
+        ali = data.get('access_level_instance') or self.instance.access_level_instance
 
-        if baseline_cycle and current_cycle:
-            if baseline_cycle == current_cycle:
-                raise ValidationError('Cycles must be unique.')
-            
-            if baseline_cycle.end > current_cycle.end:
-                raise ValidationError('Baseline Cycle must preceed Current Cycle.')
+        if baseline_cycle == current_cycle:
+            raise ValidationError('Cycles must be unique.')
+        
+        if baseline_cycle.end > current_cycle.end:
+            raise ValidationError('Baseline Cycle must preceed Current Cycle.')
         
         if not all([
             getattr(baseline_cycle, 'organization', None) == organization,

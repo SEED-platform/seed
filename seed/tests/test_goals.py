@@ -35,28 +35,42 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
         self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
         self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
-        # columns 
-        # self.column_eui_extra = self.column_factory.get_column('Source EUI - Adjusted to Current Year', is_extra_data=True)
+
         self.root_ali = self.org.root
         self.child_ali = self.org.root.get_children().first()
+
+        # columns 
+        extra_eui = Column.objects.create(
+            table_name='PropertyState',
+            column_name='extra_eui',
+            organization=self.org,
+            is_extra_data=True,
+        )
 
         # properties
         # property_details_{property}{cycle}
         property_details_11 = self.property_state_factory.get_details()
         property_details_11['source_eui'] = 1
         property_details_11['gross_floor_area'] = 2 
+        property_details_11['extra_data'] = {'extra_eui': '10'}
+
         property_details_13 = self.property_state_factory.get_details()
         property_details_13['source_eui'] = 3
         property_details_13['source_eui_weather_normalized'] = 4 
         property_details_13['gross_floor_area'] = 5 
+        property_details_13['extra_data'] = {'extra_eui': 20}
 
         property_details_31 = self.property_state_factory.get_details()
         property_details_31['source_eui'] = 6
         property_details_31['gross_floor_area'] = 7 
+        property_details_31['extra_data'] = {'extra_eui': 'abcd'}
+
         property_details_33 = self.property_state_factory.get_details()
         property_details_33['source_eui'] = 8
         property_details_33['source_eui_weather_normalized'] = 9
         property_details_33['gross_floor_area'] = 10
+        property_details_33['extra_data'] = {'extra_eui': 40}
+
 
         self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
@@ -97,6 +111,18 @@ class GoalViewTests(AccessLevelBaseTestCase):
             name='child_goal'
         )
 
+        self.child_goal_extra = Goal.objects.create(
+            organization=self.org,
+            baseline_cycle=self.cycle1,
+            current_cycle=self.cycle3,
+            access_level_instance=self.child_ali,
+            column1=extra_eui,
+            column2=None,
+            column3=None,
+            target_percentage=20,
+            name='child_goal_extra'
+        )
+
         user2_details = {
             'username': 'test_user2@demo.com',
             'password': 'test_pass2',
@@ -111,12 +137,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.get(url, contemt_type='application/json')
         assert response.status_code == 200
-        assert len(response.json()['goals']) == 2
+        assert len(response.json()['goals']) == 3
 
         self.login_as_child_member()
         response = self.client.get(url, contemt_type='application/json')
         assert response.status_code == 200
-        assert len(response.json()['goals']) == 1
+        assert len(response.json()['goals']) == 2
     
     def test_goal_retrieve(self):
         self.login_as_child_member()
@@ -276,11 +302,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 404
         assert response.json()['message'] == 'No such resource.'
 
-        # extra data is ignored
+        # unexpected fields are ignored
         goal_data = {
             'name': 'child_goal y',
             'baseline_cycle': self.cycle1.id,
-            'extra_data': 'invalid'
+            'unexpected': 'invalid'
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.json()['name'] == 'child_goal y'
@@ -328,6 +354,24 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         assert summary == exp_summary
 
+        # with extra data 
+        url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.child_goal_extra.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url, content_type='application/json')
+        summary = response.json()
+        exp_summary = {
+            'baseline': {
+                'cycle_name': '2001 Annual',
+                'total_kbtu': 20,
+                'total_sqft': 9,
+                'weighted_eui': 2
+            },
+            'current': {
+                'cycle_name': '2003 Annual',
+                'total_kbtu': 500,
+                'total_sqft': 15,
+                'weighted_eui': 33},
+            'eui_change': -1550,
+            'sqft_change': 40
+        }
 
-    # NEED TO TEST WITH EXTRA DATA.
-    # are data types a problem?
+        assert summary == exp_summary
