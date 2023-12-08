@@ -48,9 +48,29 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
+        access_level_tree = []
+        curr = access_level_tree
+
+        # nest each ancestor underneath each other.
+        # remember, we shouldn't see our aunts.
+        for a in user_ali.get_ancestors():
+            curr.append({
+                'id': a.pk,
+                'data': {
+                    'name': a.name,
+                    'organization': org.id,
+                    'path': a.path,
+                },
+                'children': [],
+            })
+            curr = curr[0]["children"]
+
+        # once we get to ourselves, we can see the whole tree
+        curr.extend(org.get_access_tree(from_ali=user_ali))
+
         return Response({
-            "access_level_names": org.access_level_names[user_ali.depth - 1:],
-            "access_level_tree": org.get_access_tree(from_ali=user_ali),
+            "access_level_names": org.access_level_names,
+            "access_level_tree": access_level_tree,
         },
             status=status.HTTP_200_OK,
         )

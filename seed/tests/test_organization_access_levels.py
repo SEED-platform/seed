@@ -21,6 +21,32 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
 
     def test_access_level_tree(self):
         url = reverse_lazy('api:v3:organization-access_levels-tree', args=[self.org.id],)
+        sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        child_dict = {
+            'id': self.child_level_instance.pk,
+            'data': {
+                'name': 'child',
+                'organization': self.org.id,
+                'path': {'root': 'root', 'child': 'child'},
+            }
+        }
+        sibling_dict = {
+            'id': sibling.pk,
+            'data': {
+                'name': 'sibling',
+                'organization': self.org.id,
+                'path': {'root': 'root', 'child': 'sibling'},
+            }
+        }
+
+        root_dict = {
+            'id': self.org.root.pk,
+            'data': {
+                'name': self.root_level_instance.name,
+                'organization': self.org.id,
+                'path': {'root': 'root'},
+            },
+        }
 
         # get tree
         self.login_as_root_member()
@@ -28,41 +54,15 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         result = json.loads(raw_result.content)
         assert result == {
             'access_level_names': ["root", "child"],
-            'access_level_tree': [{
-                'id': self.org.root.pk,
-                'data': {
-                    'name': self.root_level_instance.name,
-                    'organization': self.org.id,
-                    'path': {'root': 'root'},
-                },
-                'children': [
-                    {
-                        'id': self.child_level_instance.pk,
-                        'data': {
-                            'name': 'child',
-                            'organization': self.org.id,
-                            'path': {'root': 'root', 'child': 'child'},
-                        }
-                    },
-                ]
-            }],
+            'access_level_tree': [{**root_dict, "children": [child_dict, sibling_dict]}],
         }
 
         self.login_as_child_member()
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
         assert result == {
-            'access_level_names': ["child"],
-            'access_level_tree': [
-                {
-                    'id': self.child_level_instance.pk,
-                    'data': {
-                        'name': 'child',
-                        'organization': self.org.id,
-                        'path': {'root': 'root', 'child': 'child'},
-                    }
-                },
-            ],
+            'access_level_names': ["root", "child"],
+            'access_level_tree': [{**root_dict, "children": [child_dict]}],
         }
 
     def test_edit_access_level_names(self):
@@ -70,7 +70,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         url = reverse_lazy('api:v3:organization-access_levels-tree', args=[self.org.id])
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
-        assert result["access_level_names"] == ["my org"]
+        assert result["access_level_names"] == ["root", "child"]
 
         # get update access level names
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
@@ -103,11 +103,6 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
             content_type='application/json',
         )
         assert raw_result.status_code == 400
-
-        # populate tree
-        self.org.access_level_names += ["2nd gen", "3rd gen"]
-        self.org.save()
-        self.org.add_new_access_level_instance(self.org.root.id, "aunt")
 
         # get try to add too few levels
         url = reverse_lazy('api:v3:organization-access_levels-access-level-names', args=[self.org.id])
@@ -147,40 +142,46 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert raw_result.status_code == 400
 
     def test_add_new_access_level_instance(self):
-        self.org.access_level_names = ["1st gen", "2nd gen"]
-        self.org.save()
-
-        # get try to clear access_level_names
         url = reverse_lazy('api:v3:organization-access_levels-add-instance', args=[self.org.id])
         raw_result = self.client.post(
             url,
-            data=json.dumps({"parent_id": self.org.root.pk, "name": "boo"}),
+            data=json.dumps({"parent_id": self.org.root.pk, "name": "aunt"}),
             content_type='application/json',
         )
         assert raw_result.status_code == 201
 
         # get new access_level_instance
-        boo = AccessLevelInstance.objects.get(organization=self.org, name="boo")
+        aunt = AccessLevelInstance.objects.get(organization=self.org, name="aunt")
 
         # check result
         result = json.loads(raw_result.content)
         assert result == {
-            'access_level_names': ["1st gen", "2nd gen"],
+            'access_level_names': ["root", "child"],
             'access_level_tree': [{
                 'id': self.org.root.pk,
                 'data': {
-                    'name': 'root',
+                    'name': self.root_level_instance.name,
                     'organization': self.org.id,
-                    'path': {'1st gen': 'root'},
+                    'path': {'root': 'root'},
                 },
-                'children': [{
-                    'id': boo.pk,
-                    'data': {
-                        'name': 'boo',
-                        'organization': self.org.id,
-                        'path': {'1st gen': 'root', '2nd gen': 'boo'},
-                    }
-                }]
+                'children': [
+                    {
+                        'id': aunt.pk,
+                        'data': {
+                            'name': 'aunt',
+                            'organization': self.org.id,
+                            'path': {'root': 'root', 'child': 'aunt'},
+                        }
+                    },
+                    {
+                        'id': self.child_level_instance.pk,
+                        'data': {
+                            'name': 'child',
+                            'organization': self.org.id,
+                            'path': {'root': 'root', 'child': 'child'},
+                        }
+                    },
+                ]
             }],
         }
 
@@ -253,6 +254,8 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
         self.org.save()
 
+        self.child_level_instance.delete()
+
         filename = "access-level-instances.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -316,12 +319,10 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
 
     def test_delete_instance(self):
         self.org.access_level_names += ["2nd gen", "3rd gen"]
-        ali = self.org.add_new_access_level_instance(self.org.root.pk, "me")
-        child = self.org.add_new_access_level_instance(ali.pk, "child")
 
-        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=child)
+        self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
 
-        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, ali.pk],)
+        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, self.child_level_instance.pk],)
         result = self.client.delete(url)
 
         assert result.status_code == 204
@@ -329,7 +330,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert TaxLot.objects.count() == 0
 
     def test_delete_instance_root(self):
-        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, self.org     .root.pk],)
+        url = reverse_lazy('api:v3:organization-access_levels-delete-instance', args=[self.org.id, self.org.root.pk],)
         result = self.client.delete(url)
 
         assert result.status_code == 400
