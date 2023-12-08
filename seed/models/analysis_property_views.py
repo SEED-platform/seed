@@ -8,6 +8,7 @@ from collections import namedtuple
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.db.models import QuerySet
 
 from seed.models import Analysis, Cycle, Property, PropertyState, PropertyView
 
@@ -84,11 +85,11 @@ class AnalysisPropertyView(models.Model):
         return analysis_property_view_ids, failures
 
     @classmethod
-    def get_property_views(cls, analysis_property_views):
+    def get_property_views(cls, analysis_property_views: QuerySet):
         """Get PropertyViews related to the AnalysisPropertyViews. If no PropertyView
         is found for an AnalysisPropertyView, the value will be None for that key.
 
-        :param analysis_property_views: list[AnalysisPropertyView]
+        :param analysis_property_views: QuerySet[AnalysisPropertyView]
         :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
         """
         # Fast query to find all potentially-necessary propertyViews
