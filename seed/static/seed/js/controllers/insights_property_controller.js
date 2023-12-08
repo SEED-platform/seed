@@ -10,11 +10,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
   'urls',
   'compliance_metrics',
   'compliance_metric_service',
+  'cycles_payload',
   'organization_payload',
   'spinner_utility',
   'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $state, $stateParams, $uibModal, urls, compliance_metrics, compliance_metric_service, organization_payload, spinner_utility, auth_payload) {
+  function ($scope, $state, $stateParams, $uibModal, urls, compliance_metrics, compliance_metric_service, cycles_payload, organization_payload, spinner_utility, auth_payload) {
     $scope.id = $stateParams.id;
     $scope.static_url = urls.static_url;
     $scope.organization = organization_payload.organization;
@@ -25,6 +26,9 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.toggle_help = () => {
       $scope.show_help = !$scope.show_help;
     }
+
+    // order cycles payload by start_date
+    $scope.all_cycles = _.orderBy(cycles_payload.cycles, ['start'], ['asc']);
 
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
@@ -103,6 +107,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
             // cycles
             $scope.cycles = $scope.data.metric.cycles;
             if (_.size($scope.cycles) > 0) {
+              // ensure cycles are listed chronologically by start-date asc
+              // roundabout b/c we do not have start_date in data.metric.cycles
+              $scope.cycles = _.filter($scope.all_cycles, function (o) {
+                                return _.map($scope.data.metric.cycles, 'id').includes(o.id)
+              });
+
               // used saved cycle
               if (saved_configs?.chart_cycle) {
                 const saved_cycle = $scope.cycles.find((c) => c.id === saved_configs.chart_cycle);
