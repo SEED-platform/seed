@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                 })
             }
             get_goals()
-            
+
             // allow "none" as an option
             $scope.goal_columns.unshift({ id: null, displayName: "" });
             // Prevent user from hitting save changes multiple times
@@ -128,4 +128,3 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         }
     ]
 )
-    

@@ -6,15 +6,15 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db.models import Case, F, IntegerField, Value, When
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Coalesce, Cast
+from django.db.models.functions import Cast, Coalesce
 
 
 def get_eui_expression(goal):
     """
-    goal.column is designed to only accept columns of data_type=eui, columns like site_eui, or source_eui 
-    however the user may choose to use an extra_data column that has been typed on the frontend as eui. 
-    This frontend change does not effect the db and extra_data fields are stored as JSON objects 
-    extra_data = {Name: value} where value can be any type. 
+    goal.column is designed to only accept columns of data_type=eui, columns like site_eui, or source_eui
+    however the user may choose to use an extra_data column that has been typed on the frontend as eui.
+    This frontend change does not effect the db and extra_data fields are stored as JSON objects
+    extra_data = {Name: value} where value can be any type.
 
     This function dynamically finds the highest priority eui column and sets its type to Integer
     """
@@ -33,7 +33,7 @@ def get_eui_expression(goal):
 
         else:
             column_expression = Cast(F(f'state__{column.column_name}'), output_field=IntegerField())
-        
+
         priority.append(column_expression)
 
     # default value

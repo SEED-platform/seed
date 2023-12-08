@@ -30,8 +30,8 @@ from seed.views.v3.eeej import EEEJViewSet
 from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
-from seed.views.v3.goals import GoalViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.goals import GoalViewSet
 from seed.views.v3.green_assessment_properties import (
     GreenAssessmentPropertyViewSet
 )

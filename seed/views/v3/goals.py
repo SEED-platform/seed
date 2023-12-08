@@ -2,23 +2,23 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.db.models import ExpressionWrapper, F, IntegerField, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from rest_framework import status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
-from django.db.models import ExpressionWrapper, F, IntegerField, Sum
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
 )
-from seed.models import AccessLevelInstance, Column, Cycle, Goal, PropertyView
+from seed.models import AccessLevelInstance, Goal, PropertyView
 from seed.serializers.goals import GoalSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.viewsets import ModelViewSetWithoutPatch
 from seed.utils.goals import get_eui_expression
+from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
 @method_decorator(
@@ -37,7 +37,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = GoalSerializer
     queryset = Goal.objects.all()
 
-
     @swagger_auto_schema_org_query_param
     @has_perm_class('requires_viewer')
     def list(self, request):
@@ -52,7 +51,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({
             'status': 'success',
-            'goals': self.serializer_class(goals, many=True).data 
+            'goals': self.serializer_class(goals, many=True).data
         })
 
     @swagger_auto_schema_org_query_param
@@ -74,7 +73,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 'status': 'error',
                 'errors': serializer.errors,
             }, status=status.HTTP_400_BAD_REQUEST)
-    
+
         serializer.save()
 
         return JsonResponse(serializer.data)
@@ -122,10 +121,10 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 'total_kbtu': aggregated_data['total_kbtu'],
                 'weighted_eui': weighted_eui
             }
-    
-        def percentage(a,b):
+
+        def percentage(a, b):
             return int((a - b) / a * 100) if a != 0 else 0
-        
+
         summary['sqft_change'] = percentage(summary['current']['total_sqft'], summary['baseline']['total_sqft'])
         summary['eui_change'] = percentage(summary['baseline']['weighted_eui'], summary['current']['weighted_eui'])
 

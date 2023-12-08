@@ -5030,38 +5030,38 @@ ul.r-list {
     border-bottom: 1px solid #ddd;
   }
 }
-.portfolio-summary-wrapper{
+.portfolio-summary-wrapper {
   display: flex;
   flex-direction: column;
 
   .goal-actions-wrapper {
+    display: flex;
+    margin: 20px 10px 0 10px;
+    div {
+      margin: 0 10px;
+    }
+
+    .goal-select-wrapper {
       display: flex;
-      margin: 20px 10px 0 10px;;
-      div{
-        margin: 0 10px;
+      margin: 15px;
+      .goal-select-label {
+        margin: auto;
       }
-  
-      .goal-select-wrapper {
-        display: flex;
-        margin: 15px;
-        .goal-select-label{
-          margin: auto;
+      .goal-selection {
+        #goal-select {
+          width: 30vw;
+          max-width: 512px;
+          background: #f5f5f5;
+          border-radius: 5px;
+          padding: 5px;
         }
-        .goal-selection{
-          #goal-select{
-            width: 30vw;
-            max-width: 512px;
-            background: #F5F5F5;
-            border-radius: 5px;
-            padding: 5px;
-          }
-        }
-        button{
-          margin-left: 10px;
-          height:100%;
-        }
+      }
+      button {
+        margin-left: 10px;
+        height: 100%;
       }
     }
+  }
   #portfolio-summary-selection-wrapper {
     margin: 10px 7px;
     display: flex;
@@ -5074,7 +5074,6 @@ ul.r-list {
       .portfolio-summary-select-option {
         font-size: 10px;
         padding: 4px 0 6px 0;
-    
       }
       .portfolio-summary-constant {
         border: 1px solid gray;
@@ -5086,7 +5085,7 @@ ul.r-list {
         padding-left: 4px;
       }
       .starting-legend {
-        background-color:#f8f1cf;
+        background-color: #f8f1cf;
       }
       .ending-legend {
         background-color: #f8d0c4;
@@ -5096,7 +5095,6 @@ ul.r-list {
         height: 20px;
         width: 100px;
       }
-
     }
 
     #portfolio-summary {
@@ -5109,7 +5107,7 @@ ul.r-list {
   .portfolio-summary-btn {
     width: 100px;
     height: 25px;
-    padding: 0;    
+    padding: 0;
   }
   #portfolio-summary-grid {
     margin: 0 24px;
@@ -5157,7 +5155,7 @@ ul.r-list {
       }
     }
   }
-  .portfolio-summary-loading{
+  .portfolio-summary-loading {
     border: 1px solid rgb(188, 188, 188);
     border-radius: 5px;
     height: 100px;
@@ -5182,9 +5180,8 @@ ul.r-list {
     background: rgb(241, 241, 241);
     width: fit-content;
     margin: 0 0 16px 25px;
-    
+
     .goal-details-column {
-      
       .goal-detail {
         display: flex;
         .goal-detail-key {
@@ -5202,7 +5199,6 @@ ul.r-list {
       }
     }
   }
-
 }
 
 #goal-details {

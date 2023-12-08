@@ -9,7 +9,7 @@
         </div>
     </div>
     <div class="modal-body">
-        <div class="section"> 
+        <div class="section">
             <div class="section_content_container rp-data-view">
                 <div class="section_content r-columns rp-data-view-config">
                     <!-- Goal List -->
@@ -38,7 +38,7 @@
                         </ul>
                     </div>
                     <!-- New Goal -->
-                        
+
                     <div id="goal-details" style="max-height: 70vh; overflow: scroll">
                         <form name="goal_form">
                             <div id="goal-details-col1" class="r-column table_list_container" style="width:100%">
@@ -83,9 +83,9 @@
                                     <!-- Access Level Name -->
                                     <li class="r-row r-row-centered">
                                         <label for="select-level-name" class="r-pad-right-5 goal-label">Access Level</label>
-                                        <select id="select-level-name" class="form-control goal-form-control" 
+                                        <select id="select-level-name" class="form-control goal-form-control"
                                             ng-options="level.index as level.name for level in level_names"
-                                            ng-change="change_selected_level_index()" 
+                                            ng-change="change_selected_level_index()"
                                             ng-model="goal.level_name_index"
                                             required>
                                             <!-- goal.level_name can be found if an access level instance has been selected. not saved on goal.-->
@@ -94,14 +94,14 @@
                                     <!-- Access Level Instance -->
                                     <li class="r-row r-row-centered">
                                         <label for="select-level-instance" class="r-pad-right-5 goal-label">Level Instance</label>
-                                        <select id="select-level-instance" class="form-control goal-form-control" 
-                                            ng-change="" 
+                                        <select id="select-level-instance" class="form-control goal-form-control"
+                                            ng-change=""
                                             ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
                                             ng-model="goal.access_level_instance"
                                             required>
                                         </select>
                                     </li>
-                    
+
                                     <li ng-if="true" class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Portfolio Summary will only include properties belonging to the following Access Level Instance.</span>
                                     </li>
@@ -152,7 +152,7 @@
                                     <li class="r-list-header">Target</li>
                                     <li class="r-row r-row-centered">
                                         <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
-                                        <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage" 
+                                        <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage"
                                         min="0" max="100" style="padding-left: 5px"
                                         required/>
                                     </li>

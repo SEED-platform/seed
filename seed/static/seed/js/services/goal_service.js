@@ -6,7 +6,7 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
     '$http',
     'user_service',
     (
-        $http, 
+        $http,
         user_service,
     ) => {
         const goal_service = {};
@@ -37,7 +37,7 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
             return $http.delete(`/api/v3/goals/${goal_id}`, {
                 params: {
                     organization_id: user_service.get_organization().id
-                } 
+                }
             })
             .then(response => response)
             .catch(response => response)
@@ -52,7 +52,7 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
             .then(response => response)
             .catch(response => response)
         }
-        
+
         return goal_service
         }
     ]

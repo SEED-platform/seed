@@ -1218,7 +1218,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v3/properties/filter_by_property/', {
         organization_id: user_service.get_organization().id,
         cycle: cycle_id,
-        property_ids: property_ids 
+        property_ids: property_ids
       }).then(response => response.data)
     }
 

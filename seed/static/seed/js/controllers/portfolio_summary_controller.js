@@ -49,25 +49,25 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.cycle_columns = [];
             // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
             $scope.previous_filter_sort_columns = {baseline_first: false, columns:[]}
-            
+
             // optionally pass a goal name to be set as $scope.goal - used on modal close
             const get_goals = (goal_name=false) => {
                 goal_service.get_goals().then(result => {
                     $scope.goals = result.status == 'success' ? result.goals : []
-                    $scope.goal = goal_name ? 
-                        $scope.goals.find(goal => goal.name == goal_name) : 
+                    $scope.goal = goal_name ?
+                        $scope.goals.find(goal => goal.name == goal_name) :
                         $scope.goals[0]
                 })
             }
             get_goals()
-            
+
             // If goal changes, reset grid filters and repopulate ui-grids
             $scope.$watch('goal', () => {
                 console.log('watch goal')
                 if ($scope.gridApi) $scope.reset_sorts_filters();
                 _.isEmpty($scope.goal) ? $scope.valid = false : reset_data();
             })
-            
+
             const reset_data = () => {
                 $scope.valid = true;
                 $scope.data_valid = false;
@@ -104,8 +104,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             for (const i in $scope.columns) {
                 $scope.columnDisplayByName[$scope.columns[i].name] = $scope.columns[i].displayName;
             }
-            
-            // Build out access_level_instances_by_depth recurrsively 
+
+            // Build out access_level_instances_by_depth recurrsively
             let access_level_instances_by_depth = {};
             const calculate_access_level_instances_by_depth = function (tree, depth = 1) {
                 if (tree == undefined) return;
@@ -116,7 +116,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 })
             }
             calculate_access_level_instances_by_depth($scope.access_level_tree, 1)
-            
+
             $scope.change_selected_level_index = function () {
                 new_level_instance_depth = parseInt($scope.goal.level_name_index) + 1
                 $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth]
@@ -164,7 +164,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     $scope.summary_valid = true;
                 })
             }
-            
+
             $scope.page_change = (page) => {
                 spinner_utility.show()
                 $scope.load_inventory(page)
@@ -178,9 +178,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let per_page = 50
                 let current_cycle = {id: $scope.goal.current_cycle}
                 let baseline_cycle = {id: $scope.goal.baseline_cycle}
-                // order of cycle property filter is dynamic based on column_sorts 
-                let cycle_priority = $scope.previous_filter_sort_columns.baseline_first ? 
-                    [baseline_cycle, current_cycle]: 
+                // order of cycle property filter is dynamic based on column_sorts
+                let cycle_priority = $scope.previous_filter_sort_columns.baseline_first ?
+                    [baseline_cycle, current_cycle]:
                     [current_cycle, baseline_cycle]
 
                 get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true).then(result0 => {
@@ -188,7 +188,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     properties = result0.results
                     combined_result[cycle_priority[0].id] = properties;
                     property_ids = properties.map(p => p.id)
-                    
+
                     get_paginated_properties(page, per_page, cycle_priority[1], access_level_instance_id, false, property_ids).then(result1 => {
                         properties = result1.results
                         combined_result[cycle_priority[1].id] = properties;
@@ -205,7 +205,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids=null) => {
                 fn = inventory_service.get_properties;
                 const [filters, sorts] = include_filters_sorts ? [$scope.column_filters, $scope.column_sorts] : [[],[]]
-   
+
                 return fn(
                     page,
                     chunk,
@@ -277,13 +277,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const get_labels = (key) => {
                 const cycle = key == 'baseline' ? $scope.goal.baseline_cycle : $scope.goal.current_cycle;
 
-                label_service.get_labels('properties', undefined, cycle).then((current_labels) => {                    
+                label_service.get_labels('properties', undefined, cycle).then((current_labels) => {
                     let labels = _.filter(current_labels, (label) => !_.isEmpty(label.is_applied));
 
                     // load saved label filter
                     const ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
                     // $scope.selected_labels = _.filter(labels, (label) => _.includes(ids, label.id));
-                    
+
                     if (key == 'baseline') {
                         $scope.baseline_labels = labels
                         $scope.build_labels(key, $scope.baseline_labels);
@@ -366,7 +366,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         property.current_eui = current[col.name]
                     }
                 }
-                
+
                 property.baseline_kbtu = Math.round(property.baseline_sqft * property.baseline_eui) || undefined
                 property.current_kbtu = Math.round(property.current_sqft * property.current_eui) || undefined
                 property.eui_change = percentage(property.baseline_eui, property.current_eui)
@@ -378,7 +378,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const preferred_columns = [$scope.columns.find(c => c.id == $scope.goal.column1)]
                 if ($scope.goal.column2) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.column2))
                 if ($scope.goal.column3) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.column3))
-                
+
                 const baseline_cycle_name = $scope.cycles.find(c => c.id == $scope.goal.baseline_cycle).name
                 const current_cycle_name = $scope.cycles.find(c => c.id == $scope.goal.current_cycle).name
                 // some fields span cycles (id, name, type)
@@ -388,8 +388,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let flat_properties = $scope.previous_filter_sort_columns.baseline_first ?
                     [baseline_properties, current_properties].flat() :
                     [current_properties, baseline_properties].flat()
-                
-                // labels are related to property views, but cross cycles displays based on property 
+
+                // labels are related to property views, but cross cycles displays based on property
                 // create a lookup between property_view.id to property.id
                 $scope.property_lookup = {}
                 flat_properties.forEach(p => $scope.property_lookup[p.property_view_id] = p.id)
@@ -536,18 +536,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_cycle_columns = (columns) => {
-                /* filtering is based on existing db columns. 
+                /* filtering is based on existing db columns.
                 ** The PortfilioSummary uses cycle specific columns that do not exist elsewhere ('baseline_eui', 'current_sqft')
                 ** To sort on these columns, override the column name to the cannonical column, and set the cycle filter order
                 ** ex: if sort = {name: 'baseline_sqft'}, set {name: 'gross_floor_area_##'} and filter for baseline properties frist.
 
-                ** NOTE: 
+                ** NOTE:
                 ** cant fitler on cycle - cycle is not a column
                 ** cant filter on kbtu, sqft_change, eui_change - not real columns. calc'ed from eui and sqft. (similar to derived columns)
                 */
                 let eui_column = $scope.columns.find(c => c.id == $scope.goal.column1)
                 let gfa_column = $scope.columns.find(c => c.column_name == 'gross_floor_area')
-                
+
                 const cycle_column_lookup = {
                     'baseline_eui': eui_column.name,
                     'baseline_sqft': gfa_column.name,
@@ -760,7 +760,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.column_filters = []
                 $scope.gridApi.grid.clearAllFilters()
             }
-            
+
 
             // -------- SUMMARY LOGIC ------------
 

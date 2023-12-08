@@ -2,15 +2,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 
-from seed.models import (
-    AccessLevelInstance, 
-    Column,
-    Cycle, 
-    Organization, 
-)
+from seed.models import AccessLevelInstance, Column, Cycle, Organization
+
 
 class Goal(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
@@ -31,5 +27,3 @@ class Goal(models.Model):
         """ Preferred column order """
         columns = [self.column1, self.column2, self.column3]
         return [column for column in columns if column]
-
-

@@ -91,7 +91,7 @@ from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     properties_across_cycles,
-    update_result_with_master,
+    update_result_with_master
 )
 from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter

@@ -6,19 +6,19 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 from datetime import datetime
+
 from django.urls import reverse_lazy
 
+from seed.landing.models import SEEDUser as User
 from seed.models import Column, Goal
-
-from seed.tests.util import AccessLevelBaseTestCase
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakePropertyViewFactory,
+    FakePropertyViewFactory
 )
-from seed.landing.models import SEEDUser as User
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -27,11 +27,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
         super().setUp()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
         self.column_factory = FakeColumnFactory(organization=self.org)
-        self.property_factory =  FakePropertyFactory(organization=self.org)
-        self.property_view_factory =  FakePropertyViewFactory(organization=self.org)
-        self.property_state_factory =  FakePropertyStateFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        # cycles 
+        # cycles
         self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
         self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
         self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
@@ -39,7 +39,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.root_ali = self.org.root
         self.child_ali = self.org.root.get_children().first()
 
-        # columns 
+        # columns
         extra_eui = Column.objects.create(
             table_name='PropertyState',
             column_name='extra_eui',
@@ -51,18 +51,18 @@ class GoalViewTests(AccessLevelBaseTestCase):
         # property_details_{property}{cycle}
         property_details_11 = self.property_state_factory.get_details()
         property_details_11['source_eui'] = 1
-        property_details_11['gross_floor_area'] = 2 
+        property_details_11['gross_floor_area'] = 2
         property_details_11['extra_data'] = {'extra_eui': '10'}
 
         property_details_13 = self.property_state_factory.get_details()
         property_details_13['source_eui'] = 3
-        property_details_13['source_eui_weather_normalized'] = 4 
-        property_details_13['gross_floor_area'] = 5 
+        property_details_13['source_eui_weather_normalized'] = 4
+        property_details_13['gross_floor_area'] = 5
         property_details_13['extra_data'] = {'extra_eui': 20}
 
         property_details_31 = self.property_state_factory.get_details()
         property_details_31['source_eui'] = 6
-        property_details_31['gross_floor_area'] = 7 
+        property_details_31['gross_floor_area'] = 7
         property_details_31['extra_data'] = {'extra_eui': 'abcd'}
 
         property_details_33 = self.property_state_factory.get_details()
@@ -70,7 +70,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         property_details_33['source_eui_weather_normalized'] = 9
         property_details_33['gross_floor_area'] = 10
         property_details_33['extra_data'] = {'extra_eui': 40}
-
 
         self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
@@ -131,7 +130,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.user2 = User.objects.create_superuser(**user2_details)
         self.org2, _, _ = create_organization(self.user2, "org2")
 
-
     def test_goal_list(self):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         self.login_as_root_member()
@@ -143,17 +141,17 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.get(url, contemt_type='application/json')
         assert response.status_code == 200
         assert len(response.json()['goals']) == 2
-    
+
     def test_goal_retrieve(self):
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200 
+        assert response.status_code == 200
         assert response.json()['id'] == self.child_goal.id
 
         url = reverse_lazy('api:v3:goals-detail', args=[999]) + '?organization_id=' + str(self.org.id)
         response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 404 
+        assert response.status_code == 404
         assert response.json()['message'] == 'No such resource.'
 
         url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
@@ -163,7 +161,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_destroy(self):
         goal_count = Goal.objects.count()
-        
+
         # invalid permission
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
@@ -181,11 +179,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         goal_count = Goal.objects.count()
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         preferred_columns = [
-            'placeholder', 
-            Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized').id, 
+            'placeholder',
+            Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized').id,
             Column.objects.get(organization=self.org.id, column_name='source_eui').id,
             Column.objects.get(organization=self.org.id, column_name='site_eui').id,
         ]
+
         def reset_goal_data(name):
             return {
                 'organization': self.org.id,
@@ -207,7 +206,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             data=json.dumps(goal_data),
             content_type='application/json'
         )
-        assert response.status_code == 201 
+        assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         goal_count = Goal.objects.count()
 
@@ -268,8 +267,8 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 201
         assert response.json()['column1'] == preferred_columns[1]
-        assert response.json()['column2'] == None
-        assert response.json()['column3'] == None
+        assert response.json()['column2'] is None
+        assert response.json()['column3'] is None
         assert Goal.objects.count() == goal_count + 1
 
         # incorrect org
@@ -278,7 +277,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.json()['non_field_errors'] == ['Organization mismatch.']
 
-    
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
 
@@ -294,7 +292,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['column1'] == original_goal.column1.id
 
-        # invalid permission 
+        # invalid permission
         goal_data = {
             'access_level_instance': self.root_ali.id
         }
@@ -314,8 +312,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['column1'] == original_goal.column1.id
         assert 'extra_data' not in response.json()
 
-
-        # invalid data  
+        # invalid data
         goal_data = {
             'column1': 999,
             'baseline_cycle': 999,
@@ -330,7 +327,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 404 
+        assert response.status_code == 404
         assert response.json()['message'] == 'No such resource.'
 
         url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
@@ -354,7 +351,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         assert summary == exp_summary
 
-        # with extra data 
+        # with extra data
         url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.child_goal_extra.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.get(url, content_type='application/json')
         summary = response.json()

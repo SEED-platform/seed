@@ -23,7 +23,14 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser
 )
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import Analysis, Goal, Property, PropertyView, TaxLotView, UbidModel
+from seed.models import (
+    Analysis,
+    Goal,
+    Property,
+    PropertyView,
+    TaxLotView,
+    UbidModel
+)
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)

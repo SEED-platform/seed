@@ -2,8 +2,8 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
+from rest_framework import serializers
 
 from seed.models import Goal
 
@@ -13,7 +13,6 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = '__all__'
-
 
     def to_representation(self, obj):
         result = super().to_representation(obj)
@@ -29,10 +28,10 @@ class GoalSerializer(serializers.ModelSerializer):
 
         if baseline_cycle == current_cycle:
             raise ValidationError('Cycles must be unique.')
-        
+
         if baseline_cycle.end > current_cycle.end:
             raise ValidationError('Baseline Cycle must preceed Current Cycle.')
-        
+
         if not all([
             getattr(baseline_cycle, 'organization', None) == organization,
             getattr(current_cycle, 'organization', None) == organization,
@@ -41,9 +40,9 @@ class GoalSerializer(serializers.ModelSerializer):
             raise ValidationError('Organization mismatch.')
 
         # non Null columns must be uniuqe
-        columns = [data.get('column1'), data.get('column2'), data.get('column3')]   
+        columns = [data.get('column1'), data.get('column2'), data.get('column3')]
         unique_columns = {column for column in columns if column is not None}
         if len(unique_columns) < len([col for col in columns if col is not None]):
             raise ValidationError('Columns must be unique.')
-        
+
         return data

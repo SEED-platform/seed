@@ -6,13 +6,11 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import itertools
 import json
+import logging
 
 # Imports from Django
 from django.http import JsonResponse
 from rest_framework import status
-from django.db.models import F, IntegerField, Sum, Value
-from django.db.models.functions import Coalesce
-
 
 # Local Imports
 from seed.lib.superperms.orgs.models import Organization
@@ -22,14 +20,13 @@ from seed.models import (
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
-    Cycle,
     PropertyView,
     TaxLotProperty,
     TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import build_view_filters_and_sorts
-import logging
+
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.ERROR,

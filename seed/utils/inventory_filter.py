@@ -52,7 +52,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             'message': f'No access_level_instance with id {access_level_instance_id}.'
         }, status=status.HTTP_404_NOT_FOUND)
 
-
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
     else:
