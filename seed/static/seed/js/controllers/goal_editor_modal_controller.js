@@ -27,9 +27,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             goal,
         ) {
             $scope.organization = organization;
-            // form data
             $scope.goal = goal;
-            // existing goal
             $scope.selected_goal = goal.id ? goal : null;
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.level_names = []
