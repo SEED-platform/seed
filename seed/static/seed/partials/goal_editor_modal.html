@@ -16,17 +16,18 @@
                     <div class="r-column r-shrink r-panel" style="width:400px">
                         <ul class="r-list">
                             <li class="r-list-header">Goal</li>
-                            <li ng-show="selected_goal" class="r-selected r-row r-row-centered">
-                                <span class="r-grow" uib-tooltip="{$ selected_goal.name.length > 200 ? selected_goal.name : '' $}">{$ selected_goal.name $}</span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(selected_goal.id)"></i>
+                            <li ng-show="goal" class="r-selected r-row r-row-centered">
+                                <span class="r-grow" uib-tooltip="{$ goal.name.length > 200 ? goal.name : '' $}">{$ goal.name $}</span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal.id)"></i>
                             </li>
                         </ul>
                         <ul class="r-list r-scrollable" id="goal-list">
-                            <li ng-show="!selected_goal || goal.id != selected_goal.id"
-                                ng-repeat-start="goal in goals" ng-repeat-end
+                            <li 
+                                ng-repeat-start="goal_option in goals" ng-repeat-end
+                                ng-show="goal_option.id != goal.id"
                                 class="r-row r-row-centered">
-                                <span class="r-grow" uib-tooltip="{$ goal.name.length > 200 ? goal.name : '' $}" style="cursor: pointer" ng-click="set_selected_goal(goal)">{$ goal.name $}</span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal.id)"></i>
+                                <span class="r-grow" uib-tooltip="{$ goal_option.name.length > 200 ? goal_option.name : '' $}" style="cursor: pointer" ng-click="set_goal(goal_option)">{$ goal_option.name $}</span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal_option.id)"></i>
                             </li>
                         </ul>
                         <ul class="r-list">

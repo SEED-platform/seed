@@ -63,7 +63,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except Goal.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'error': "No such resource."
+                'errors': "No such resource."
             })
 
         serializer = GoalSerializer(goal, data=request.data, partial=True)

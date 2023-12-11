@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // optionally pass a goal name to be set as $scope.goal - used on modal close
             const get_goals = (goal_name=false) => {
                 goal_service.get_goals().then(result => {
-                    $scope.goals = result.status == 'success' ? result.goals : []
+                    $scope.goals = _.isEmpty(result.goals) ? [] : result.goals
                     $scope.goal = goal_name ?
                         $scope.goals.find(goal => goal.name == goal_name) :
                         $scope.goals[0]
@@ -65,12 +65,17 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.$watch('goal', () => {
                 console.log('watch goal')
                 if ($scope.gridApi) $scope.reset_sorts_filters();
-                _.isEmpty($scope.goal) ? $scope.valid = false : reset_data();
+                $scope.data_valid = false;
+                if (_.isEmpty($scope.goal)) {
+                    $scope.valid = false;
+                    $scope.summary_valid = false;
+                } else {
+                    reset_data();
+                } 
             })
 
             const reset_data = () => {
                 $scope.valid = true;
-                $scope.data_valid = false;
                 format_goal_details();
                 $scope.refresh_data();
             }
