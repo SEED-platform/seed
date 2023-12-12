@@ -29,10 +29,12 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.organization = organization;
             $scope.goal = goal || {};
             $scope.access_level_tree = access_level_tree.access_level_tree;
-            $scope.level_names = []
-            access_level_tree.access_level_names.forEach((level, i) => $scope.level_names.push({index: i, name: level}))
+            $scope.all_level_names = []
+            access_level_tree.access_level_names.forEach((level, i) => $scope.all_level_names.push({index: i, name: level}))
             $scope.cycles = cycles;
             $scope.goal_columns = goal_columns;
+            // allow "none" as an option
+            $scope.goal_columns.unshift({ id: null, displayName: "" });
             $scope.valid = false;
 
             const get_goals = () => {
@@ -42,20 +44,34 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
             get_goals()
 
-            // allow "none" as an option
-            $scope.goal_columns.unshift({ id: null, displayName: "" });
-            // Prevent user from hitting save changes multiple times
             $scope.$watch('goal', (cur, old) => {
                 $scope.goal_changed = cur != old;
             }, true)
 
             // ACCESS LEVEL INSTANCES
+            // Users do not have permissions to create goals on levels above their own in the tree
+            const remove_restricted_level_names = (user_ali) => {
+                const path_keys = Object.keys(user_ali.data.path)
+                $scope.level_names = []
+                const reversed_names = $scope.all_level_names.slice().reverse()
+                for (let index in reversed_names) {
+                    $scope.level_names.push(reversed_names[index])
+                    if (path_keys.includes(reversed_names[index].name)) {
+                        break
+                    }
+                }
+                $scope.level_names.reverse()
+            }
+
             /* Build out access_level_instances_by_depth recurrsively */
             let access_level_instances_by_depth = {};
             const calculate_access_level_instances_by_depth = (tree, depth = 1) => {
                 if (tree == undefined) return;
                 if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
                 tree.forEach(ali => {
+                    if (ali.id == window.BE.access_level_instance_id) {
+                        remove_restricted_level_names(ali)
+                    }
                     access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
                     calculate_access_level_instances_by_depth(ali.children, depth + 1);
                 })
@@ -65,7 +81,6 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.change_selected_level_index = () => {
                 new_level_instance_depth = parseInt($scope.goal.level_name_index) + 1
                 $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
-                console.log($scope.potential_level_instances);
             }
             $scope.change_selected_level_index()
 
@@ -87,8 +102,9 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                         $scope.set_goal($scope.goal)
                     } else {
                         $scope.errors = [`Unexpected response status: ${result.status}`];
-                        for (let key in result.data) {
-                            $scope.errors.push(`${result.data[key]}`)
+                        let result_errors = 'errors' in result.data ? result.data.errors : result.data
+                        for (let key in result_errors) {
+                            $scope.errors.push(`${JSON.stringify(result_errors[key])}`)
                         }
                     };
                 });
