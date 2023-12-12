@@ -46,9 +46,31 @@ class AccessLevelViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at pk = ' + str(organization_pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
+        access_level_tree = []
+        curr = access_level_tree
+
+        # nest each ancestor underneath each other.
+        # remember, we shouldn't see our aunts.
+        for a in user_ali.get_ancestors():
+            curr.append({
+                'id': a.pk,
+                'data': {
+                    'name': a.name,
+                    'organization': org.id,
+                    'path': a.path,
+                },
+                'children': [],
+            })
+            curr = curr[0]["children"]
+
+        # once we get to ourselves, we can see the whole tree
+        curr.extend(org.get_access_tree(from_ali=user_ali))
+
         return Response({
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": access_level_tree,
         },
             status=status.HTTP_200_OK,
         )
@@ -127,7 +149,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         org.add_new_access_level_instance(parent_id, name)
         result = {
             "access_level_names": org.access_level_names,
-            "access_level_tree": org.get_access_tree(),
+            "access_level_tree": org.get_access_tree(from_ali=org.root),  # root as requires owner.
         }
 
         status_code = status.HTTP_201_CREATED
