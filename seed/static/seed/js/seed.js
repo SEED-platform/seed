@@ -2671,11 +2671,6 @@ SEED_app.config([
             'compliance_metric_service',
             (compliance_metric_service) => compliance_metric_service.get_compliance_metrics()
           ],
-          cycles_payload: [
-            'cycle_service',
-            '$stateParams',
-            (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-          ],
           organization_payload: [
             'user_service',
             'organization_service',
