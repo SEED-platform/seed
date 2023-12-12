@@ -386,8 +386,11 @@ class Organization(models.Model):
 
         return new_access_level_instance
 
-    def get_access_tree(self) -> dict:
-        return AccessLevelInstance.dump_bulk(self.root)
+    def get_access_tree(self, from_ali=None) -> dict:
+        if from_ali is None:
+            from_ali = self.root
+
+        return AccessLevelInstance.dump_bulk(from_ali)
 
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
