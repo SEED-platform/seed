@@ -69,9 +69,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                 if (tree == undefined) return;
                 if (access_level_instances_by_depth[depth] == undefined) access_level_instances_by_depth[depth] = [];
                 tree.forEach(ali => {
-                    if (ali.id == window.BE.access_level_instance_id) {
-                        remove_restricted_level_names(ali)
-                    }
+                    if (ali.id == window.BE.access_level_instance_id) remove_restricted_level_names(ali)
                     access_level_instances_by_depth[depth].push({ id: ali.id, name: ali.data.name });
                     calculate_access_level_instances_by_depth(ali.children, depth + 1);
                 })
