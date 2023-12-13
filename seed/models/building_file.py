@@ -16,7 +16,6 @@ from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
@@ -89,7 +88,7 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def _create_property_state(self, organization_id, data):
+    def _create_property_state(self, organization_id, data, access_level_instance):
         """given data parsed from a file, it creates the property state
         for this BuildingFile and returns it.
 
@@ -99,9 +98,7 @@ class BuildingFile(models.Model):
         """
         # sub-select the data that are needed to create the PropertyState object
         db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        org = Organization.objects.get(pk=organization_id)
-        # TODO: allow user to choose ali
-        create_data = {"organization_id": organization_id, "raw_access_level_instance": org.root}
+        create_data = {"organization_id": organization_id, "raw_access_level_instance": access_level_instance}
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
@@ -140,7 +137,7 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True, access_level_instance=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
@@ -175,7 +172,10 @@ class BuildingFile(models.Model):
 
         # Create the property state if none already exists for this file
         if self.property_state is None:
-            property_state = self._create_property_state(organization_id, data)
+            if access_level_instance is None:
+                return False, None, None, "BuildingFile does not have a property_state nor an was an access_level_instance passed."
+
+            property_state = self._create_property_state(organization_id, data, access_level_instance)
         else:
             property_state = self.property_state
 
