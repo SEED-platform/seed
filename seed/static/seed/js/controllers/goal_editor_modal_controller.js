@@ -34,7 +34,9 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.cycles = cycles;
             $scope.goal_columns = goal_columns;
             // allow "none" as an option
-            $scope.goal_columns.unshift({ id: null, displayName: "" });
+            if (!goal_columns.find(c => c.id === null && c.displayName === '')) {
+                $scope.goal_columns.unshift({ id: null, displayName: '' });
+            }
             $scope.valid = false;
 
             const get_goals = () => {

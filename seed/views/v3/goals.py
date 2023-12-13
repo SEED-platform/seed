@@ -23,15 +23,27 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 @method_decorator(
     name='retrieve',
-    decorator=[has_perm_class('requires_viewer'), has_hierarchy_access(goal_id_kwarg='pk')]
+    decorator=[
+        swagger_auto_schema_org_query_param, 
+        has_perm_class('requires_viewer'), 
+        has_hierarchy_access(goal_id_kwarg='pk')
+    ]
 )
 @method_decorator(
     name='destroy',
-    decorator=[has_perm_class('requires_member'), has_hierarchy_access(goal_id_kwarg="pk")]
+    decorator=[
+        swagger_auto_schema_org_query_param, 
+        has_perm_class('requires_member'), 
+        has_hierarchy_access(goal_id_kwarg="pk")
+    ]
 )
 @method_decorator(
     name='create',
-    decorator=[has_perm_class('requires_member'), has_hierarchy_access(body_ali_id="access_level_instance")]
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class('requires_member'), 
+        has_hierarchy_access(body_ali_id="access_level_instance")
+        ]
 )
 class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = GoalSerializer
@@ -79,6 +91,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse(serializer.data)
 
     @ajax_request_class
+    @swagger_auto_schema_org_query_param
     @has_perm_class('requires_viewer')
     @has_hierarchy_access(goal_id_kwarg='pk')
     @action(detail=True, methods=['GET'])
