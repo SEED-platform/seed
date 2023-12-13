@@ -88,7 +88,7 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def _create_property_state(self, organization_id, data, access_level_instance):
+    def _create_property_state(self, organization_id, data):
         """given data parsed from a file, it creates the property state
         for this BuildingFile and returns it.
 
@@ -98,7 +98,7 @@ class BuildingFile(models.Model):
         """
         # sub-select the data that are needed to create the PropertyState object
         db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        create_data = {"organization_id": organization_id, "raw_access_level_instance": access_level_instance}
+        create_data = {"organization_id": organization_id}
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
@@ -172,10 +172,7 @@ class BuildingFile(models.Model):
 
         # Create the property state if none already exists for this file
         if self.property_state is None:
-            if access_level_instance is None:
-                return False, None, None, "BuildingFile does not have a property_state nor an was an access_level_instance passed."
-
-            property_state = self._create_property_state(organization_id, data, access_level_instance)
+            property_state = self._create_property_state(organization_id, data)
         else:
             property_state = self.property_state
 
@@ -388,7 +385,8 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view and promote_property_state:
+        elif not property_view and promote_property_state and access_level_instance:
+            property_state.raw_access_level_instance = access_level_instance
             property_view = property_state.promote(cycle)
         else:
             return True, property_state, None, messages
