@@ -2819,24 +2819,6 @@ SEED_app.config([
             var organization_id = organization_payload.organization.id;
             return organization_service.get_organization_access_level_tree(organization_id);
           }],
-          current_profile: [
-            'inventory_service',
-            (inventory_service) => {
-              return inventory_service.get_column_list_profiles('List View Profile', 'Property', true).then(profiles => {
-                const validProfileIds = _.map(profiles, 'id');
-                const lastProfileId = inventory_service.get_last_profile('properties');
-                if (_.includes(validProfileIds, lastProfileId)) {
-                  return inventory_service.get_column_list_profile(lastProfileId);
-                }
-                const currentProfileId = _.first(profiles)?.id;
-                if (currentProfileId) {
-                  inventory_service.save_last_profile(currentProfileId, 'properties');
-                  return inventory_service.get_column_list_profile(currentProfileId);
-                }
-                return null;
-              })
-            }
-          ],
         }
       })
       .state({

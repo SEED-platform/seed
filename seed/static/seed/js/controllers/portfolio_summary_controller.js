@@ -15,7 +15,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         'cycles',
         'organization_payload',
         'access_level_tree',
-        'current_profile',
         'property_columns',
         'uiGridConstants',
         'gridUtil',
@@ -32,7 +31,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             cycles,
             organization_payload,
             access_level_tree,
-            current_profile,
             property_columns,
             uiGridConstants,
             gridUtil,
@@ -40,15 +38,35 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         ) {
             $scope.organization = organization_payload.organization;
             $scope.cycles = cycles.cycles;
-            $scope.columns = property_columns;
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.level_names = access_level_tree.access_level_names;
             const localStorageLabelKey = `grid.properties.labels`;
-            $scope.goal = {}
-            $scope.currentProfile = current_profile;
+            $scope.goal = {};
+            $scope.columns = property_columns;
             $scope.cycle_columns = [];
+            $scope.goal_columns = [];
+            let matching_column_names = [];
+            let table_column_ids = [];
+
+            const initialize_columns = () => {
+                $scope.columns.forEach(c => {
+                    const default_display = c.column_name == $scope.organization.property_display_field
+                    const matching = c.is_matching_criteria
+                    const eui = c.data_type === 'eui'
+                    const other = ['gross_floor_area', 'property_name', 'property_type'].includes(c.column_name)
+    
+                    if (default_display || matching || eui || other ) table_column_ids.push(c.id)
+                    if (eui) {
+                        console.log('eui c', c)
+                        $scope.goal_columns.push(c) 
+                    }
+                    if (matching) matching_column_names.push(c.column_name)  
+                })
+            }
+            initialize_columns()
+            
             // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
-            $scope.previous_filter_sort_columns = {baseline_first: false, columns:[]}
+            baseline_first = false
 
             // optionally pass a goal name to be set as $scope.goal - used on modal close
             const get_goals = (goal_name=false) => {
@@ -103,7 +121,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 }
             }
 
-            const matching_column_names = $scope.columns.filter(col => col.is_matching_criteria).map(col => col.column_name)
             // from inventory_list_controller
             $scope.columnDisplayByName = {};
             for (const i in $scope.columns) {
@@ -129,7 +146,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // GOAL EDITOR MODAL
             $scope.open_goal_editor_modal = () => {
-                $scope.goal_columns = $scope.columns.filter(c => c.data_type == 'eui')
                 const modalInstance = $uibModal.open({
                     templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
                     controller: 'goal_editor_modal_controller',
@@ -184,9 +200,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let current_cycle = {id: $scope.goal.current_cycle}
                 let baseline_cycle = {id: $scope.goal.baseline_cycle}
                 // order of cycle property filter is dynamic based on column_sorts
-                let cycle_priority = $scope.previous_filter_sort_columns.baseline_first ?
-                    [baseline_cycle, current_cycle]:
-                    [current_cycle, baseline_cycle]
+                let cycle_priority = baseline_first ? [baseline_cycle, current_cycle]: [current_cycle, baseline_cycle]
 
                 get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true).then(result0 => {
                     $scope.inventory_pagination = result0.pagination
@@ -215,16 +229,16 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     page,
                     chunk,
                     cycle,
-                    _.get($scope, 'currentProfile.id'),
-                    undefined,
-                    undefined,
-                    true,
-                    $scope.organization.id,
-                    true,
+                    undefined,  // profile_id
+                    undefined,  // include_view_ids
+                    undefined,  // exclude_view_ids
+                    true,  // save_last_cycle
+                    $scope.organization.id, 
+                    true,  // include_related
                     filters,
                     sorts,
-                    false,
-                    undefined,
+                    false,  // ids_only
+                    table_column_ids.join(),
                     access_level_instance_id,
                     include_property_ids,
                 );
@@ -390,7 +404,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // and others are cycle specific (source EUI, sqft)
                 let current_properties = properties[$scope.goal.current_cycle]
                 let baseline_properties = properties[$scope.goal.baseline_cycle]
-                let flat_properties = $scope.previous_filter_sort_columns.baseline_first ?
+                let flat_properties = baseline_first ?
                     [baseline_properties, current_properties].flat() :
                     [current_properties, baseline_properties].flat()
 
@@ -572,30 +586,29 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             }
 
-            const remove_conflict_columns = (current_columns) => {
+            const remove_conflict_columns = (grid_columns) => {
                 // Property's are returned from 2 different get requests. One for the current, one for the baseline
                 // The second filter is solely based on the property ids from the first
                 // Filtering on the first and  second will result in unrepresntative data
                 // Remove the conflict to allow sorting/filtering on either baseline or current.
 
-                const column_names = current_columns.map(c => c.name);
+                const column_names = grid_columns.map(c => c.name);
                 const includes_baseline = column_names.some(name => name.includes('baseline'));
                 const includes_current = column_names.some(name => name.includes('current'));
                 const conflict = includes_baseline && includes_current;
                 console.log('confict', conflict)
 
                 if (conflict) {
-                    $scope.previous_filter_sort_columns.baseline_first = !$scope.previous_filter_sort_columns.baseline_first;
-                    const excluded_name = $scope.previous_filter_sort_columns.baseline_first ? 'current' : 'baseline';
-                    current_columns = current_columns.filter(column => !column.name.includes(excluded_name));
+                    baseline_first = !baseline_first;
+                    const excluded_name = baseline_first ? 'current' : 'baseline';
+                    grid_columns = grid_columns.filter(column => !column.name.includes(excluded_name));
                 } else if (includes_baseline) {
-                    $scope.previous_filter_sort_columns.baseline_first = true;
+                    baseline_first = true;
                 } else if (includes_current) {
-                    $scope.previous_filter_sort_columns.baseline_first = false;
+                    baseline_first = false;
                 }
-                $scope.previous_filter_sort_columns.columns = current_columns
 
-                return current_columns
+                return grid_columns
             }
 
 
