@@ -121,8 +121,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
             }
 
             // x axis
-            $scope.x_axis_options = [...$scope.data.metric.x_axis_columns, { display_name: 'Ranked', id: 'Ranked' }];
 
+            $scope.x_axis_options = [...$scope.data.metric.x_axis_columns, { display_name: 'Ranked Distance to Compliance', id: 'Ranked' }];
             if (_.size($scope.x_axis_options) > 0) {
               // used saved chart_xaxis
               if (saved_configs?.chart_xaxis) {
@@ -365,9 +365,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
                     }
 
                     // x and y axis names and values
-                    const x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
-                    const x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
-
+                    const x_index = _.findIndex($scope.x_axis_options, { id: $scope.configs.chart_xaxis });
+                    const x_axis_name = $scope.x_axis_options[x_index]?.display_name;
                     let y_axis_name = null;
                     if ($scope.configs.chart_metric === 0) {
                       y_axis_name = $scope.data.metric.actual_energy_column_name;
@@ -458,8 +457,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     };
 
     const _update_chart = () => {
-      const x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
-      const x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
+      const x_index = _.findIndex($scope.x_axis_options, { id: $scope.configs.chart_xaxis });
+      const x_axis_name = $scope.x_axis_options[x_index]?.display_name;
 
       let y_axis_name = null;
       if ($scope.configs.chart_metric === 0) {
