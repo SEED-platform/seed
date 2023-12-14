@@ -56,10 +56,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     const other = ['gross_floor_area', 'property_name', 'property_type'].includes(c.column_name)
     
                     if (default_display || matching || eui || other ) table_column_ids.push(c.id)
-                    if (eui) {
-                        console.log('eui c', c)
-                        $scope.goal_columns.push(c) 
-                    }
+                    if (eui) $scope.goal_columns.push(c) 
                     if (matching) matching_column_names.push(c.column_name)  
                 })
             }
@@ -175,6 +172,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             const load_summary = () => {
                 console.log('load_summary')
+                $scope.show_access_level_instances = true;
                 $scope.summary_valid = false;
 
                 goal_service.get_portfolio_summary($scope.goal.id).then(result => {
@@ -351,7 +349,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // Build column defs for baseline or current labels
             const build_label_col_def = (labels_col, key) => {
                 const header_cell_template = `<i ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents fas fa-chevron-circle-right" id="label-header-icon-${key}" style="margin:2px; float:right;"></i>`
-                const cell_template = `<div ng-click="grid.appScope.toggle_labels(${labels_col}, '${key}')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`
+                const cell_template = `<div ng-click="grid.appScope.toggle_labels('${labels_col}', '${key}')" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity, '${key}')"></div>`
                 const width_fn = $scope.gridApi ? $scope.get_label_column_width(labels_col, key) : 30
 
                 return {
@@ -543,7 +541,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 })
             }
 
-            $scope.show_access_level_instances = true
             $scope.toggle_access_level_instances = function () {
                 $scope.show_access_level_instances = !$scope.show_access_level_instances
                 $scope.gridOptions.columnDefs.forEach((col) => {
@@ -617,7 +614,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let grid_columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
                 // check filter/sort columns. Cannot filter on both baseline and current. choose the more recent filter/sort
                 grid_columns = remove_conflict_columns(grid_columns)
-                console.log('gc',grid_columns.map(c => c.name))
+                console.log('grid_columns',grid_columns.map(c => c.name))
                 // convert cycle columnss to cannonical columns
                 let formatted_columns = format_cycle_columns(grid_columns)
 
