@@ -54,14 +54,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     const matching = c.is_matching_criteria
                     const eui = c.data_type === 'eui'
                     const other = ['gross_floor_area', 'property_name', 'property_type'].includes(c.column_name)
-    
+
                     if (default_display || matching || eui || other ) table_column_ids.push(c.id)
-                    if (eui) $scope.goal_columns.push(c) 
-                    if (matching) matching_column_names.push(c.column_name)  
+                    if (eui) $scope.goal_columns.push(c)
+                    if (matching) matching_column_names.push(c.column_name)
                 })
             }
             initialize_columns()
-            
+
             // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
             baseline_first = false
 
@@ -86,7 +86,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     $scope.summary_valid = false;
                 } else {
                     reset_data();
-                } 
+                }
             })
 
             const reset_data = () => {
@@ -231,7 +231,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     undefined,  // include_view_ids
                     undefined,  // exclude_view_ids
                     true,  // save_last_cycle
-                    $scope.organization.id, 
+                    $scope.organization.id,
                     true,  // include_related
                     filters,
                     sorts,
@@ -458,10 +458,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'baseline_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
                     { field: 'baseline_eui', displayName: 'EUI', cellFilter: 'number'},
                     // ktbu acts as a derived column. Disable sorting filtering
-                    { 
-                        field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number', 
-                        enableFiltering: false, enableSorting: false, 
-                        headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header' 
+                    {
+                        field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number',
+                        enableFiltering: false, enableSorting: false,
+                        headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header'
                     },
                     build_label_col_def('baseline-labels', 'baseline')
                 ]
@@ -469,10 +469,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'current_cycle', displayName: 'Cycle'},
                     { field: 'current_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
                     { field: 'current_eui', displayName: 'EUI', cellFilter: 'number'},
-                    { 
-                        field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number', 
-                        enableFiltering: false, enableSorting: false, 
-                        headerCellClass: 'derived-column-display-name portfolio-summary-current-header' 
+                    {
+                        field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number',
+                        enableFiltering: false, enableSorting: false,
+                        headerCellClass: 'derived-column-display-name portfolio-summary-current-header'
                     },
                     build_label_col_def('current-labels', 'current')
                 ]
