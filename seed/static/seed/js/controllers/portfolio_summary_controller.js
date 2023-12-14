@@ -107,7 +107,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     ['Baseline Cycle', get_cycle_name($scope.goal.baseline_cycle)],
                     ['Current Cycle', get_cycle_name($scope.goal.current_cycle)],
                     [level_name, access_level_instance],
-                    ['Target', `${$scope.goal.target_percentage} %`],
+                    ['Portfolio Target', `${$scope.goal.target_percentage} %`],
                     ['Primary Column', get_column_name($scope.goal.column1)],
                 ]
                 if ($scope.goal.column2) {
