@@ -454,22 +454,24 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const default_styles = { headerCellFilter: 'translate', minWidth: 75, width: 150 }
 
                 const baseline_cols = [
-                    { field: 'baseline_cycle', displayName: 'Cycle' },
-                    { field: 'baseline_sqft', displayName: 'Sq. FT' },
-                    { field: 'baseline_eui', displayName: 'EUI' },
-                    { field: 'baseline_kbtu', displayName: 'kBTU' },
+                    { field: 'baseline_cycle', displayName: 'Cycle'},
+                    { field: 'baseline_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
+                    { field: 'baseline_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number', 
+                        enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header' },
                     build_label_col_def('baseline-labels', 'baseline')
                 ]
                 const current_cols = [
-                    { field: 'current_cycle', displayName: 'Cycle' },
-                    { field: 'current_sqft', displayName: 'Sq. FT' },
-                    { field: 'current_eui', displayName: 'EUI' },
-                    { field: 'current_kbtu', displayName: 'kBTU' },
+                    { field: 'current_cycle', displayName: 'Cycle'},
+                    { field: 'current_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
+                    { field: 'current_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number', 
+                        enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name portfolio-summary-current-header' },
                     build_label_col_def('current-labels', 'current')
                 ]
                 const summary_cols = [
-                    { field: 'sqft_change', displayName: 'Sq Ft % Change' },
-                    { field: 'eui_change', displayName: 'EUI % Improvement' },
+                    { field: 'sqft_change', displayName: 'Sq Ft % Change', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name' },
+                    { field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name' },
                 ]
 
                 apply_defaults(baseline_cols, default_baseline)
@@ -786,15 +788,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 const baseline_cols = [
                     { field: 'baseline_cycle', displayName: 'Cycle' },
-                    { field: 'baseline_total_sqft', displayName: 'Total Sq. FT' },
-                    { field: 'baseline_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'baseline_weighted_eui', displayName: 'EUI' },
+                    { field: 'baseline_total_sqft', displayName: 'Total Sq. FT', cellFilter: 'number'},
+                    { field: 'baseline_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number'},
+                    { field: 'baseline_weighted_eui', displayName: 'EUI', cellFilter: 'number'},
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
-                    { field: 'current_total_sqft', displayName: 'Total Sq. FT' },
-                    { field: 'current_total_kbtu', displayName: 'Total kBTU' },
-                    { field: 'current_weighted_eui', displayName: 'EUI' },
+                    { field: 'current_total_sqft', displayName: 'Total Sq. FT', cellFilter: 'number'},
+                    { field: 'current_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number'},
+                    { field: 'current_weighted_eui', displayName: 'EUI', cellFilter: 'number'},
                 ]
                 const calc_cols = [
                     { field: 'sqft_change', displayName: 'Sq. FT % Change' },
@@ -832,7 +834,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.summary_data = format_summary(summary)
                 $scope.summaryGridOptions = {
                     data: 'summary_data',
-                    columnDefs: summary_selected_columns()
+                    columnDefs: summary_selected_columns(),
+                    enableSorting: false,
                 }
             }
 
