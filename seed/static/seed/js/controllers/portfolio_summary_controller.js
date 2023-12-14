@@ -457,16 +457,23 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'baseline_cycle', displayName: 'Cycle'},
                     { field: 'baseline_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
                     { field: 'baseline_eui', displayName: 'EUI', cellFilter: 'number'},
-                    { field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number', 
-                        enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header' },
+                    // ktbu acts as a derived column. Disable sorting filtering
+                    { 
+                        field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number', 
+                        enableFiltering: false, enableSorting: false, 
+                        headerCellClass: 'derived-column-display-name portfolio-summary-baseline-header' 
+                    },
                     build_label_col_def('baseline-labels', 'baseline')
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle'},
                     { field: 'current_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
                     { field: 'current_eui', displayName: 'EUI', cellFilter: 'number'},
-                    { field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number', 
-                        enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name portfolio-summary-current-header' },
+                    { 
+                        field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number', 
+                        enableFiltering: false, enableSorting: false, 
+                        headerCellClass: 'derived-column-display-name portfolio-summary-current-header' 
+                    },
                     build_label_col_def('current-labels', 'current')
                 ]
                 const summary_cols = [
@@ -744,6 +751,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     enableFiltering: true,
                     enableHorizontalScrollbar: 1,
                     cellWidth: 200,
+                    enableGridMenu: true,
+                    exporterMenuCsv: false,
+                    exporterMenuExcel: false,
+                    exporterMenuPdf: false,
+                    gridMenuShowHideColumns: false,
+                    gridMenuCustomItems: [{
+                        title: 'Export Page to CSV',
+                        action: ($event) => $scope.gridApi.exporter.csvExport('all', 'all'),
+                    }],
                     onRegisterApi: (gridApi) => {
                         $scope.gridApi = gridApi;
 

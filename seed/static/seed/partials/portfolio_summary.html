@@ -74,7 +74,7 @@
     <div class="portfolio-summary-item-count" ng-if="data_valid">
         <div class="form-group" ng-if="data_valid">
             <button class="btn btn-primary portfolio-summary-btn" ng-click="toggle_access_level_instances()">
-                {$ show_access_level_instances ? 'Hide' : 'Show' $} ALIs
+                {$ show_access_level_instances ? 'Hide' : 'Show' $} Access Levels
             </button>
         </div>
         <div>
@@ -104,6 +104,7 @@
                 ui-grid-save-state
                 ui-grid-resize-columns
                 ui-grid-group-columns
+                ui-grid-exporter
             ></div>
         </div>
 
