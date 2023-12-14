@@ -124,7 +124,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 total_sqft=Sum('sqft')
             )
 
-            weighted_eui = int(aggregated_data['total_kbtu'] / aggregated_data['total_sqft']) if aggregated_data['total_sqft'] else 0
+            weighted_eui = int(aggregated_data['total_kbtu'] / aggregated_data['total_sqft']) if aggregated_data['total_sqft'] else None
 
             cycle_type = 'current' if cycle == goal.current_cycle else 'baseline'
 
@@ -136,7 +136,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             }
 
         def percentage(a, b):
-            return int((a - b) / a * 100) if a != 0 else 0
+            if not a or not b:
+                return None
+            return int((a - b) / a * 100) or 0
 
         summary['sqft_change'] = percentage(summary['current']['total_sqft'], summary['baseline']['total_sqft'])
         summary['eui_change'] = percentage(summary['baseline']['weighted_eui'], summary['current']['weighted_eui'])
