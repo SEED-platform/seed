@@ -519,7 +519,7 @@ def _new_process_ali_data(model, raw_data, import_file_ali, ah_mappings):
     ali_info = {
         to_col: raw_data.get(from_col)
         for from_col, (_, to_col, _, _) in ah_mappings.items()
-        if raw_data.get(from_col) is not None
+        if raw_data.get(from_col) is not None and raw_data.get(from_col) != ""
     }
     if not ali_info:
         model.raw_access_level_instance_error = "Missing Access Level Column data."
