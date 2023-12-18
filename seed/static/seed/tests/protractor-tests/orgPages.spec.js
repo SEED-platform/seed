@@ -203,7 +203,7 @@ describe('When I visit the parent org', () => {
   });
 
   it('should select Data Quality tab and delete all default rules for taxlots', () => {
-    $('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
+    $('[ui-sref="organization_data_quality({organization_id: org.id, rule_type: \'taxlots\'})"]').click();
     expect($('.table_list_container').isPresent()).toBe(true);
 
     const rowCheck = element.all(by.repeater('rule in ruleGroup'));

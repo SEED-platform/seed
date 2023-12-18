@@ -81,6 +81,7 @@ class Rule(models.Model):
     TYPE_YEAR = 3
     TYPE_AREA = 4
     TYPE_EUI = 5
+    TYPE_WUI = 6
     DATA_TYPES = [
         (TYPE_NUMBER, "number"),
         (TYPE_STRING, "string"),
@@ -88,6 +89,7 @@ class Rule(models.Model):
         (TYPE_YEAR, "year"),
         (TYPE_AREA, "area"),
         (TYPE_EUI, "eui"),
+        (TYPE_WUI, "wui"),
     ]
 
     RULE_TYPE_DEFAULT = 0

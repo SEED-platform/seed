@@ -23,7 +23,6 @@ from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
 
-# from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.cycles import Cycle
@@ -78,7 +77,7 @@ class Property(models.Model):
         verbose_name_plural = "properties"
 
     def __str__(self):
-        return "Property - %s" % (self.pk)
+        return f"Property - {self.pk}"
 
     def copy_meters(self, source_property_id, source_persists=True):
         """
@@ -320,6 +319,7 @@ class PropertyState(models.Model):
     site_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     site_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     site_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    site_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
     source_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     source_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
     source_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
@@ -635,6 +635,7 @@ class PropertyState(models.Model):
                     ps.energy_score,
                     ps.site_eui,
                     ps.site_eui_modeled,
+                    ps.site_wui,
                     ps.total_ghg_emissions,
                     ps.total_marginal_ghg_emissions,
                     ps.total_ghg_emissions_intensity,
@@ -697,6 +698,7 @@ class PropertyState(models.Model):
             "energy_score",
             "site_eui",
             "site_eui_modeled",
+            "site_wui",
             "total_ghg_emissions",
             "total_marginal_ghg_emissions",
             "total_ghg_emissions_intensity",
@@ -882,7 +884,6 @@ class PropertyView(models.Model):
 
     A PropertyView contains a reference to a property (which should not change) and to a
     cycle (time period), and a state (characteristics).
-
     """
 
     # different property views can be associated with each other (2012, 2013)
@@ -890,12 +891,12 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
-    labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel, through="PropertyViewLabel", through_fields=("propertyview", "statuslabel"))
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
-        return "Property View - %s" % self.pk
+        return f"Property View - {self.pk}"
 
     class Meta:
         unique_together = (
@@ -957,6 +958,13 @@ def post_save_property_view(sender, **kwargs):
     """
     if kwargs["instance"].property:
         kwargs["instance"].property.save()
+
+
+class PropertyViewLabel(models.Model):
+    propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
+    statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
+    goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
+    baseline_propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE, null=True, related_name="baseline")
 
 
 class PropertyAuditLog(models.Model):

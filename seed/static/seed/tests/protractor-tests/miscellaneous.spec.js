@@ -110,7 +110,7 @@ describe('When I do miscellaneous things', () => {
   });
 
   it('should add labels to previous rules', () => {
-    $('[ui-sref="organization_data_quality({organization_id: org.id, inventory_type: \'taxlots\'})"]').click();
+    $('[ui-sref="organization_data_quality({organization_id: org.id, rule_type: \'taxlots\'})"]').click();
     $$('[ng-click="create_label(rule, $index)"]').first().click();
     $$('.btn.btn-sm.btn-default.action_link').get(2).click();
 

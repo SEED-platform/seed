@@ -1547,7 +1547,7 @@ SEED_app.config([
       })
       .state({
         name: 'organization_data_quality',
-        url: '/accounts/{organization_id:int}/data_quality/{inventory_type:properties|taxlots}',
+        url: '/accounts/{organization_id:int}/data_quality/{rule_type:properties|taxlots|cross-cycle}',
         templateUrl: `${static_url}seed/partials/data_quality_admin.html`,
         controller: 'data_quality_admin_controller',
         resolve: {
@@ -1557,7 +1557,7 @@ SEED_app.config([
             'naturalSort',
             ($stateParams, inventory_service, naturalSort) => {
               const { organization_id } = $stateParams;
-              if ($stateParams.inventory_type === 'properties') {
+              if ($stateParams.rule_type === 'properties') {
                 return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
                   columns = _.reject(columns, 'related');
                   columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
@@ -1565,12 +1565,22 @@ SEED_app.config([
                   return columns;
                 });
               }
-              return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
-                columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
-                return columns;
-              });
+              if ($stateParams.rule_type === 'taxlots') {
+                return inventory_service.get_taxlot_columns_for_org(organization_id).then((columns) => {
+                  columns = _.reject(columns, 'related');
+                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                  columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
+                  return columns;
+                });
+              }
+              if ($stateParams.rule_type === 'cross-cycle') {
+                return inventory_service.get_property_columns_for_org(organization_id).then((columns) => {
+                  columns = _.reject(columns, 'related');
+                  columns = _.map(columns, (col) => _.omit(col, ['pinnedLeft', 'related']));
+                  columns.sort((a, b) => naturalSort(a.displayName, b.displayName));
+                  return columns;
+                });
+              }
             }
           ],
           used_columns: [
@@ -1610,6 +1620,75 @@ SEED_app.config([
             '$stateParams',
             (data_quality_service, $stateParams) => {
               const { organization_id } = $stateParams;
+              if ($stateParams.rule_type === 'cross-cycle') {
+                return [{
+                  id: 1,
+                  data_type: 5,
+                  enabled: true,
+                  field: 'site_eui',
+                  condition: '>',
+                  percentChange: 40,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }, {
+                  id: 2,
+                  data_type: 5,
+                  enabled: true,
+                  field: 'site_eui',
+                  condition: '<',
+                  percentChange: 40,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }, {
+                  id: 3,
+                  data_type: 6,
+                  enabled: true,
+                  field: 'site_wui',
+                  condition: '>',
+                  percentChange: 40,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }, {
+                  id: 4,
+                  data_type: 6,
+                  enabled: true,
+                  field: 'site_wui',
+                  condition: '<',
+                  percentChange: 40,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }, {
+                  id: 5,
+                  data_type: 0,
+                  enabled: true,
+                  field: 'gross_floor_area',
+                  condition: '>',
+                  percentChange: 5,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }, {
+                  id: 6,
+                  data_type: 0,
+                  enabled: true,
+                  field: 'gross_floor_area',
+                  condition: '<',
+                  percentChange: 5,
+                  severity: 0,
+                  status_label: null,
+                  table_name: 'cross-cycle',
+                  for_derived_column: false
+                }];
+              }
               return data_quality_service.data_quality_rules(organization_id);
             }
           ],
