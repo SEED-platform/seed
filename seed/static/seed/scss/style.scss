@@ -202,6 +202,7 @@ a:not([href]) {
 }
 
 .sidebar {
+  font-size: 14px;
   margin-left: 0;
   position: fixed;
   float: none;
@@ -220,15 +221,15 @@ a:not([href]) {
     }
 
     .item {
-      position: relative;
-      overflow: hidden;
-      display: block;
-      padding: 16px;
-      width: 100%;
-      height: 53px;
+      height: 54px;
       color: $white;
       cursor: pointer;
+      display: flex;
       text-decoration: none;
+      justify-content: start;
+      overflow: hidden;
+      align-items: center;
+      position: relative;
 
       &:hover,
       &.active {
@@ -258,15 +259,8 @@ a:not([href]) {
 
       .icon {
         display: flex;
-        align-items: center;
-        position: relative;
-        float: left;
-        width: 20px;
-        text-align: center;
-
-        i {
-          width: 100%;
-        }
+        justify-content: center;
+        min-width: 55px;
 
         .toggle {
           display: flex;
@@ -274,19 +268,13 @@ a:not([href]) {
         }
       }
 
-      i:not(.fa-sm) {
-        font-size: 18px;
-      }
-
       .item_name {
-        position: relative;
-        top: 1px;
-        margin-top: 0;
-        margin-left: 16px;
-        line-height: 0;
         text-transform: uppercase;
         font-weight: bold;
         letter-spacing: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 204px;
       }
 
       .badge {
@@ -859,8 +847,6 @@ a:not([href]) {
     h3 {
       font-size: 14px;
       font-weight: bold;
-      margin-top: 26px;
-      margin-bottom: 6px;
     }
 
     .content_block {
@@ -909,42 +895,34 @@ a:not([href]) {
 
       .content_col {
         .content_col_header {
-          position: relative;
-          overflow: auto;
+          display: flex;
+          flex-direction: row;
 
-          .content_col_header_left {
-            position: relative;
-            float: left;
+          i {
+            padding-top: 7px;
+            padding-right: 10px;
+            font-size: 48px;
 
-            i {
-              padding-top: 7px;
-              padding-right: 10px;
-              font-size: 48px;
+            &.fa-cloud-arrow-up {
+              color: $lightBlue;
+            }
 
-              &.fa-cloud-arrow-up {
-                color: $lightBlue;
-              }
+            &.fa-arrow-right-arrow-left {
+              color: lighten($purple, 25%);
+            }
 
-              &.fa-arrow-right-arrow-left {
-                color: lighten($purple, 25%);
-              }
-
-              &.fa-square-check {
-                color: lighten($green, 20%);
-              }
+            &.fa-square-check {
+              color: lighten($green, 20%);
             }
           }
 
-          .content_col_header_right {
-            h3 {
-              font-size: 20px;
-              font-weight: bold;
-            }
+          h3 {
+            font-size: 20px;
+            font-weight: bold;
           }
         }
 
         .copy {
-          clear: both;
           padding: 5px 30px 0 0;
           font-size: 16px;
         }
@@ -3908,6 +3886,16 @@ $pairedCellWidth: 60px;
   margin-top: 20px;
 }
 
+.pad-bottom-10 {
+  padding-bottom: 10px;
+}
+
+.right-bar {
+  padding-left: 10px;
+  padding-right: 25px;
+  border-right: 1px solid #999;
+}
+
 .matching-column-header .ui-grid-header-cell-label {
   font-weight: bolder;
 }
@@ -4319,11 +4307,12 @@ iframe.analysis-results {
 
 // program overview / compliance-setup
 .compliance-setup {
-  background-color: #eee;
-  padding: 1.5em;
+  /*background-color: #eee;*/
+  padding: 0.5em;
 
   p {
     margin: 0;
+    font-size: 1.25em !important;
   }
 }
 
@@ -4347,12 +4336,22 @@ iframe.analysis-results {
   margin-right: 10px;
 }
 
+.chart-buttons {
+  margin-top: 10px;
+  margin-right: 5px;
+  text-align: right;
+}
+
 .chart-legend {
   margin-top: 15px;
   margin-left: 0;
+  margin-right: 15px;
+  padding: 15px;
+  border: 1px solid #ddd;
 
   .title {
     font-size: 1.4em;
+    font-weight: bold;
   }
 
   .legend-icon {
@@ -4399,6 +4398,30 @@ iframe.analysis-results {
   .small-text {
     font-size: 1em !important;
   }
+}
+
+.chart-options {
+  margin-top: 25px;
+  padding-top: 10px;
+  margin-left: 0;
+
+  .title {
+    font-size: 1.4em;
+    font-weight: bold;
+  }
+
+  .form-group {
+    margin-bottom: 5px;
+  }
+
+  .small-text {
+    font-size: 1em !important;
+  }
+}
+
+.help-text-icon {
+  margin: 0px 5px;
+  color: #337ab7;
 }
 
 .title-row {
@@ -4614,7 +4637,15 @@ ul.r-list {
 }
 
 .less_pad {
-  padding-left: 30px !important;
+  padding: 0px 10px 10px 10px !important;
+}
+
+.insights-header {
+  padding: 10px 10px 0px 10px !important;
+}
+
+.insights-table {
+  margin-top: 0px !important;
 }
 
 .rp-data-view {

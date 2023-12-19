@@ -12,82 +12,59 @@
 
 <div class="section_content_container">
   <div class="section_content container-fluid">
-    <div class="content_block row less_pad">
-      <div ng-show="!data">
-        <div class="col-md-10">
-          <div class="title-row">
-            <h2 style="font-size: 18px">{$:: 'Property Insights' | translate $}</h2>
-          </div>
+    <div class="content_block row insights-header">
+        <div ng-show="!data">
           <div ng-if="auth.requires_member" class="compliance-setup">
             <p>If you are not seeing a chart on this page, visit the <a ui-sref="programs(::{organization_id: organization.id})">Program</a> page to configure your program's metrics.</p>
           </div>
         </div>
-      </div>
-      <div ng-show="data">
-        <div class="col-md-2">
-          <div class="title-row">
-            <h2 style="font-size: 18px">{$:: 'Property Insights' | translate $}</h2>
-          </div>
+        <div ng-show="data">
           <div ng-if="auth.requires_member" class="compliance-setup">
-            <p>Need to configure your Program? <a ui-sref="programs(::{organization_id: organization.id})">Program Configuration page</a>.</p>
-          </div>
-          <div class="chart-legend">
-            <div class="title">Chart Legend</div>
-            <p class="small-text">Click a series to show/hide on the chart</p>
-            <div class="legend-row row" ng-click="toggle_dataset_visibility(0)">
-              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker" /></div>
-              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[0].hidden">Compliant</div>
-              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[0].hidden">Compliant</div>
-            </div>
-            <div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
-              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker" /></div>
-              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
-              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden">Not Compliant</div>
-            </div>
-            <div class="legend-row row" ng-click="toggle_dataset_visibility(2)">
-              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker" /></div>
-              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[2].hidden">Unknown</div>
-              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[2].hidden">Unknown</div>
-            </div>
-            <div class="legend-row row" ng-click="toggle_annotation_visibility()">
-              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker" /></div>
-              <div class="col-md-9 text" ng-hide="!display_annotation">Distance to Target</div>
-              <div class="col-md-9 text strikethrough" ng-hide="display_annotation">Distance to Target</div>
-            </div>
-          </div>
-          <div class="form-group margin-top-20">
-            <label for="program">Program</label>
-            <select class="form-control" id="selected_metric" ng-model="selected_metric" ng-change="update_metric()" ng-options="metric.id as metric.name for metric in compliance_metrics"></select>
-          </div>
-          <!-- chart setup form-->
-          <div class="form-group">
-            <label for="cycleSelect">Cycle</label>
-            <select class="form-control" id="cycleSelect" ng-model="configs.chart_cycle" ng-change="update()" ng-options="operator.id as operator.name for operator in cycles"></select>
-          </div>
-
-          <!-- metric and X axis -->
-          <div class="form-group">
-            <label for="metricSelect">Metric Type</label>
-            <select class="form-control" id="metricSelect" ng-model="configs.chart_metric" ng-change="update()" ng-options="operator.id as operator.name for operator in y_axis_options"></select>
-          </div>
-          <div class="form-group">
-            <label for="xSelect">X Axis</label>
-            <select class="form-control" id="xSelect" ng-model="configs.chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options"></select>
-          </div>
-
-          <div class="button-grid">
-            <div class="flex-button-child">
-              <button type="button" class="btn btn-primary" ng-click="downloadChart()"><i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span></button>
-            </div>
-            <div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Labels</button></div>
+            <p><span translate>CONFIGURE_PROGRAM</span> <a ui-sref="programs(::{organization_id: organization.id})" translate>Program Configuration page</a>.</p>
           </div>
         </div>
-        <div class="col-md-10">
-          <div class="graph" style="margin-left: 5vw; margin-right: 5vw">
+    </div>
+    <div class="content_block row less_pad">
+      <div ng-show="data">
+        <div class="col-md-2">
+          <div class="chart-options">
+            <div class="title"><span translate>Chart Options</span><span class="help-text-icon" ng-click="toggle_help()"><i class="fa-solid fa-circle-question" aria-label="display help text"></i></span></div>
+              <div ng-show="show_help">
+                <p class="small-text" translate>INSIGHTS_HELP_TEXT</p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="program">Program</label>
+              <select class="form-control" id="selected_metric" ng-model="selected_metric" ng-change="update_metric()" ng-options="metric.id as metric.name for metric in compliance_metrics"></select>
+            </div>
+            <!-- chart setup form-->
+            <div class="form-group">
+              <label for="cycleSelect">Cycle</label>
+              <select class="form-control" id="cycleSelect" ng-model="configs.chart_cycle" ng-change="update()" ng-options="operator.id as operator.name for operator in cycles"></select>
+            </div>
+
+            <!-- metric and X axis -->
+            <div class="form-group">
+              <label for="metricSelect">Metric Type</label>
+              <select class="form-control" id="metricSelect" ng-model="configs.chart_metric" ng-change="update()" ng-options="operator.id as operator.name for operator in y_axis_options"></select>
+            </div>
+            <div class="form-group">
+              <label for="xSelect">X Axis</label>
+              <select class="form-control" id="xSelect" ng-model="configs.chart_xaxis" ng-change="update()" ng-options="operator.id as operator.display_name for operator in x_axis_options"></select>
+            </div>
+
+            <div class="button-grid chart-buttons">
+              <div class="flex-button-child"><button type="button" class="btn btn-primary" ng-click="open_update_labels_modal()" ng-disabled="!visibleIds().length" translate>Update Property Labels</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="graph" style="margin-left: 3vw; margin-right: 2vw">
             <canvas id="property-insights-chart"></canvas>
           </div>
-          <div class="section_content r-columns" style="display: unset !important">
-            <div class="r-column r-shrink table_list_container" ng-if="data" style="margin-top: 2vw; margin-right: 5vw">
+          <div class="section_content r-columns insights-table" style="display: unset !important">
+            <div class="r-column r-shrink table_list_container" ng-if="data" style="margin-left: 3vw; margin-right: 2vw">
               <table>
                 <thead>
                   <tr>
@@ -129,11 +106,13 @@
                           <th>Name</th>
                           <th>X: {$ insightsChart.options.scales.x.title.text $}</th>
                           <th>Y: {$ insightsChart.options.scales.y.title.text $}</th>
+                          <th translate>Distance to Target</th>
                         </tr>
                         <tr ng-repeat="item in chart_datasets[1]['data']">
                           <td><a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: item.id, cycle_id: cycle.id})">Property - {$ item.name ? item.name: item.id $}</a></td>
                           <td>{$ item.x $}</td>
                           <td>{$ item.y $}</td>
+                          <td>{$ item.distance $}
                         </tr>
                       </table>
                     </td>
@@ -161,6 +140,38 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="button-grid chart-buttons">
+            <div class="flex-button-child">
+              <button type="button" class="btn btn-primary" ng-click="downloadChart()"><i class="fa-solid fa-share-from-square" aria-hidden="true"></i> <span translate>Export</span></button>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <div class="title" translate>Chart Legend</div>
+            <p class="small-text" translate>CLICK_LEGEND</p>
+            <div class="legend-row row" ng-click="toggle_dataset_visibility(0)">
+              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/teal_circle.svg" alt="blue circle marker" /></div>
+              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[0].hidden" translate>Compliant</div>
+              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[0].hidden" translate>Compliant</div>
+            </div>
+            <div class="legend-row row" ng-click="toggle_dataset_visibility(1)">
+              <div class="col-md-3 legend-icon-col">
+                <img class="legend-icon"  src="{$ static_url $}seed/images/red_triangle.svg" alt="red triangle marker" /></div>
+              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[1].hidden" translate>Not Compliant</div>
+              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[1].hidden" translate>Not Compliant</div>
+            </div>
+            <div class="legend-row row" ng-click="toggle_dataset_visibility(2)">
+              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/gray_square.svg" alt="gray square marker" /></div>
+              <div class="col-md-9 text" ng-hide="insightsChart.legend.legendItems[2].hidden" translate>Unknown</div>
+              <div class="col-md-9 text strikethrough" ng-hide="!insightsChart.legend.legendItems[2].hidden" translate>Unknown</div>
+            </div>
+            <div class="legend-row row" ng-click="toggle_annotation_visibility()">
+              <div class="col-md-3 legend-icon-col"><img class="legend-icon" src="{$ static_url $}seed/images/upsidedown_t.svg" alt="distance to target marker" /></div>
+              <div class="col-md-9 text" ng-hide="!display_annotation" translate>Distance to Target</div>
+              <div class="col-md-9 text strikethrough" ng-hide="display_annotation" translate>Distance to Target</div>
             </div>
           </div>
         </div>

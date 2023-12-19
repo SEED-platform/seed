@@ -35,6 +35,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.id = $stateParams.id;
     $scope.org = organization_payload.organization;
     $scope.cycles = cycles_payload.cycles;
+    // order cycles by start date
+    $scope.cycles = _.orderBy($scope.cycles, ['start'],
+    ['asc']);
     $scope.compliance_metrics_error = [];
     $scope.program_settings_not_changed = true;
     $scope.program_settings_changed = () => {
@@ -75,6 +78,13 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         $scope.selected_compliance_metric.cycles = [];
       }
       $scope.selected_compliance_metric.cycles.push(selection);
+      $scope.order_selected_cycles();
+
+    };
+
+    $scope.order_selected_cycles = () => {
+      // keep chronological order of displayed cycles
+      $scope.selected_compliance_metric.cycles = _.map($scope.cycles.filter(({ id }) => $scope.selected_compliance_metric?.cycles.includes(id)), 'id');
     };
 
     $scope.click_remove_cycle = (id) => {
@@ -163,13 +173,11 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         $scope.compliance_metrics_error.push('The actual energy or emission columns must be included when the target column is selected!');
       }
       if ($scope.compliance_metrics_error.length > 0) {
-        console.log('exited due to compliance_metrics_error');
         spinner_utility.hide();
         return;
       }
 
       // update the compliance metric
-      console.log('about to update the metric');
       compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then((data) => {
         if ('status' in data && data.status === 'error') {
           for (const [key, error] of Object.entries(data.compliance_metrics_error)) {

@@ -34,9 +34,9 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
          ]
      }
      */
-    const get_report_data = (xVar, yVar, start, end) => {
+    const get_report_data = (xVar, yVar, cycle_ids) => {
       // Error checks
-      if (_.some([xVar, yVar, start, end], _.isNil)) {
+      if (_.some([xVar, yVar, cycle_ids], _.isNil)) {
         $log.error('#inventory_reports_service.get_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -47,8 +47,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           params: {
             x_var: xVar,
             y_var: yVar,
-            start,
-            end
+            cycle_ids,
           }
         })
         .then((response) => response.data)
@@ -83,9 +82,9 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
        }
      }
      */
-    const get_aggregated_report_data = (xVar, yVar, start, end) => {
+    const get_aggregated_report_data = (xVar, yVar, cycle_ids) => {
       // Error checks
-      if (_.some([xVar, yVar, start, end], _.isNil)) {
+      if (_.some([xVar, yVar, cycle_ids], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -96,21 +95,20 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
           params: {
             x_var: xVar,
             y_var: yVar,
-            start,
-            end
+            cycle_ids,
           }
         })
         .then((response) => response.data)
         .catch(() => {});
     };
 
-    const export_reports_data = (axes_data, start, end) => {
+    const export_reports_data = (axes_data, cycle_ids) => {
       const { xVar } = axes_data;
       const { xLabel } = axes_data;
       const { yVar } = axes_data;
       const { yLabel } = axes_data;
       // Error checks
-      if (_.some([xVar, xLabel, yVar, yLabel, start, end], _.isNil)) {
+      if (_.some([xVar, xLabel, yVar, yLabel, cycle_ids], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -123,8 +121,7 @@ angular.module('BE.seed.service.inventory_reports', []).factory('inventory_repor
             x_label: xLabel,
             y_var: yVar,
             y_label: yLabel,
-            start,
-            end
+            cycle_ids,
           },
           responseType: 'arraybuffer'
         })

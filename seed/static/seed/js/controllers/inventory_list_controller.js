@@ -1193,7 +1193,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         // finally, update the data to include the calculated values
         $scope.data.forEach((row) => {
           Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-            const derived_column = attached_derived_columns.find((col) => col.id === derived_column_id);
+            const derived_column = attached_derived_columns.find((col) => col.id === Number(derived_column_id));
             const result = results.find((res) => res.id === row.id) || {};
             row[column_name_lookup[derived_column.name]] = result.value;
           });

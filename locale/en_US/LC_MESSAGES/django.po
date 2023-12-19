@@ -77,8 +77,20 @@ msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 msgid "ALSO_DELETE_BATCH_ANALYSES"
 msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}."
 
+msgid "ANALYSIS_DESCRIPTION_BETTER"
+msgstr "The BETTER analysis leverages better.lbl.gov to calculate energy, cost, and GHG emission savings by comparing the property's change point model with a benchmarked model. The results include saving potential and a list of recommended high-level energy conservation measures."
+
+msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
+
+msgid "ANALYSIS_DESCRIPTION_CO2"
+msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
+
 msgid "ANALYSIS_DESCRIPTION_EEEJ"
 msgstr "The EEEJ Analysis uses each property's address to identify the 2010 census tract. Based on census tract, disadvantaged community classification and energy burden information can be retrieved from the CEJST dataset. The number of affordable housing locations is retrieved from HUD datasets. Location is used to generate a link to view an EJScreen Report providing more demographic indicators."
+
+msgid "ANALYSIS_DESCRIPTION_EUI"
+msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
 
 msgid "AND"
 msgstr "AND"
@@ -355,6 +367,9 @@ msgstr "Buildings"
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "By clicking the Log In button you accept the NREL Data Terms."
 
+msgid "CLICK_LEGEND"
+msgstr "Click a label below to show/hide it on the chart"
+
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Error: New column name cannot match previous name."
 
@@ -411,6 +426,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
+
+msgid "CONFIGURE_PROGRAM"
+msgstr "Need to configure your Program?"
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
@@ -471,6 +489,9 @@ msgstr "Changed By"
 
 msgid "Chart Legend"
 msgstr "Chart Legend"
+
+msgid "Chart Options"
+msgstr "Chart Options"
 
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
@@ -1428,6 +1449,9 @@ msgstr "Include in your Tax Lot List all tax lots shared with you."
 msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
 msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
 
+msgid "INSIGHTS_HELP_TEXT"
+msgstr "Use the controls below to display a subset of properties on the graph. The chart legend can also be used to display or hide properties based on compliance status. The 'Update Property Labels' button can then be used to edit the labels applied to the properties visible on the graph."
+
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
@@ -2291,6 +2315,9 @@ msgstr "Profile Name"
 
 msgid "Program"
 msgstr "Program"
+
+msgid "Program Configuration page"
+msgstr "Program Configuration page"
 
 msgid "Program Definition"
 msgstr "Program Definition"
@@ -3372,6 +3399,9 @@ msgstr "Update Charts"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Property Labels"
+msgstr "Update Property Labels"
 
 msgid "Update Salesforce"
 msgstr "Update Salesforce"

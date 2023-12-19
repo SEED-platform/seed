@@ -17,13 +17,57 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
+    @swagger_auto_schema(manual_parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.base_field(
+            name='id',
+            location_attr='IN_PATH',
+            type='TYPE_INTEGER',
+            required=True,
+            description='Audit Template Submission ID.'),
+        AutoSchemaHelper.query_string_field('report_format', False, 'Report format Valid values are: xml, pdf. Defaults to pdf.')
+    ])
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def get_submission(self, request, pk):
+        """
+        Fetches a Report Submission (XML or PDF) from Audit Template (only)
+        """
+        # get report format or default to pdf
+        default_report_format = 'pdf'
+        report_format = request.query_params.get('report_format', default_report_format)
+
+        valid_file_formats = ['xml', 'pdf']
+        if report_format.lower() not in valid_file_formats:
+            message = f"The report_format specified is invalid. Must be one of: {valid_file_formats}."
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+
+        # retrieve report
+        at = AuditTemplate(self.get_organization(self.request))
+        response, message = at.get_submission(pk, report_format)
+
+        if response is None:
+            return JsonResponse({
+                'success': False,
+                'message': message
+            }, status=400)
+        if report_format.lower() == 'xml':
+            return HttpResponse(response.text)
+        else:
+            response2 = HttpResponse(response.content)
+            response2.headers["Content-Type"] = 'application/pdf'
+            response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
+            return response2
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def get_building_xml(self, request, pk):
         """
-        Fetches a Building XML for an Audit Template property and updates the corresponding PropertyView
+        Fetches a Building XML for an Audit Template property (only)
         """
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_building(pk)
@@ -145,7 +189,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         at = AuditTemplate(org)
         result = at.get_buildings(cycle_id)
 
-        if type(result) is tuple:
+        if isinstance(result, tuple):
             return JsonResponse({
                 'success': False,
                 'message': result[1]
@@ -189,12 +233,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         property_view_ids = request.data.get('property_view_ids', [])
         at = AuditTemplate(self.get_organization(request))
 
-        progress_data = at.batch_export_to_audit_template(property_view_ids)
-
+        progress_data, message = at.batch_export_to_audit_template(property_view_ids)
         if progress_data is None:
             return JsonResponse({
                 'success': False,
-                'message': 'Unexpected Error'
+                'message': message or 'Unexpected Error'
             }, status=400)
-
         return JsonResponse(progress_data)

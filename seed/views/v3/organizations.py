@@ -9,7 +9,6 @@ from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
 
-import dateutil
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
@@ -20,7 +19,6 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -793,47 +791,32 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
-    def get_cycles(self, start, end, organization_id):
-        if not isinstance(start, type(end)):
-            raise TypeError('start and end not same types')
-        # if of type int or convertable  assume they are cycle ids
-        try:
-            start = int(start)
-            end = int(end)
-        except ValueError:
-            # assume string is JS date
-            if isinstance(start, basestring):
-                start_datetime = dateutil.parser.parse(start)
-                end_datetime = dateutil.parser.parse(end)
-            else:
-                raise Exception('Date is not a string')
-        # get date times from cycles
-        if isinstance(start, int):
-            cycle = Cycle.objects.get(pk=start, organization_id=organization_id)
-            start_datetime = cycle.start
-            if start == end:
-                end_datetime = cycle.end
-            else:
-                end_datetime = Cycle.objects.get(
-                    pk=end, organization_id=organization_id
-                ).end
-        return Cycle.objects.filter(
-            start__gte=start_datetime, end__lte=end_datetime,
-            organization_id=organization_id
-        ).order_by('start')
-
     def get_data(self, property_view, x_var, y_var, matching_columns):
         result = {}
         state = property_view.state
-        if getattr(state, x_var, None) and getattr(state, y_var, None):
-            for matching_column in matching_columns:
-                name = matching_column.column_name
-                if matching_column.is_extra_data:
-                    result[name] = state.extra_data.get(name)
-                else:
-                    result[name] = getattr(state, name)
 
+        # set matching columns
+        for matching_column in matching_columns:
+            name = matching_column.column_name
+            if matching_column.is_extra_data:
+                result[name] = state.extra_data.get(name)
+            else:
+                result[name] = getattr(state, name)
+
+        # set x
+        if x_var == "Count":
+            result["x"] = 1
+
+        elif not getattr(state, x_var):
+            return {}
+
+        else:
             result["x"] = getattr(state, x_var)
+
+        # set y
+        if not getattr(state, y_var, None):
+            return {}
+        else:
             result["y"] = getattr(state, y_var)
 
         return result
@@ -907,42 +890,31 @@ class OrganizationViewSet(viewsets.ViewSet):
         """Retrieve a summary report for charting x vs y
         """
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        params = {}
-        missing_params = []
-        error = ''
-        for param in ['x_var', 'y_var', 'start', 'end']:
-            val = request.query_params.get(param, None)
-            if not val:
-                missing_params.append(param)
-            else:
-                params[param] = val
+        params = {
+            "x_var": request.query_params.get("x_var", None),
+            "y_var": request.query_params.get("y_var", None),
+            "cycle_ids": request.query_params.getlist("cycle_ids", None),
+        }
+
+        excepted_params = ["x_var", "y_var", "cycle_ids"]
+        missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
-            error = "{} Missing params: {}".format(
-                error, ", ".join(missing_params)
+            return Response(
+                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
+                status=status.HTTP_400_BAD_REQUEST
             )
-        if error:
-            status_code = status.HTTP_400_BAD_REQUEST
-            result = {'status': 'error', 'message': error}
-        else:
-            cycles = self.get_cycles(params['start'], params['end'], pk)
-            data = self.get_raw_report_data(
-                pk, access_level_instance, cycles, params['x_var'], params['y_var']
-            )
-            for datum in data:
-                if datum['property_counts']['num_properties_w-data'] != 0:
-                    break
-            property_counts = []
-            chart_data = []
-            for datum in data:
-                property_counts.append(datum['property_counts'])
-                chart_data.extend(datum['chart_data'])
-            data = {
-                'property_counts': property_counts,
-                'chart_data': chart_data,
-            }
-            result = {'status': 'success', 'data': data}
-            status_code = status.HTTP_200_OK
-        return Response(result, status=status_code)
+
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params['x_var'], params['y_var'])
+        data = {
+            "chart_data": sum([d["chart_data"] for d in data], []),
+            "property_counts": [d["property_counts"] for d in data]
+        }
+
+        return Response(
+            {'status': 'success', 'data': data},
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -976,61 +948,55 @@ class OrganizationViewSet(viewsets.ViewSet):
         """Retrieve a summary report for charting x vs y aggregated by y_var
         """
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
-        params = {}
-        missing_params = []
-        empty = True
-        error = ''
-        for param in ['x_var', 'y_var', 'start', 'end']:
-            val = request.query_params.get(param, None)
-            if not val:
-                missing_params.append(param)
-            elif param == 'y_var' and val not in valid_y_values:
-                error = "{} {} is not a valid value for {}.".format(
-                    error, val, param
-                )
-            else:
-                params[param] = val
+
+        # get params
+        params = {
+            "x_var": request.query_params.get("x_var", None),
+            "y_var": request.query_params.get("y_var", None),
+            "cycle_ids": request.query_params.getlist("cycle_ids", None)
+        }
+
+        # error if missing
+        excepted_params = ["x_var", "y_var", "cycle_ids"]
+        missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
-            error = "{} Missing params: {}".format(
-                error, ", ".join(missing_params)
+            return Response(
+                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
+                status=status.HTTP_400_BAD_REQUEST
             )
-        if error:
-            status_code = status.HTTP_400_BAD_REQUEST
-            result = {'status': 'error', 'message': error}
-        else:
-            cycles = self.get_cycles(params['start'], params['end'], pk)
-            x_var = params['x_var']
-            y_var = params['y_var']
-            data = self.get_raw_report_data(pk, access_level_instance, cycles, x_var, y_var)
-            for datum in data:
-                if datum['property_counts']['num_properties_w-data'] != 0:
-                    empty = False
-                    break
-            if empty:
-                result = {'status': 'error', 'message': 'No data found'}
-                status_code = status.HTTP_404_NOT_FOUND
-        if not empty or not error:
-            chart_data = []
-            property_counts = []
-            for datum in data:
-                buildings = datum['chart_data']
-                yr_e = datum['property_counts']['yr_e']
-                chart_data.extend(self.aggregate_data(yr_e, y_var, buildings)),
-                property_counts.append(datum['property_counts'])
-            # Send back to client
-            aggregated_data = {
+
+        # error if y_var invalid
+        valid_y_values = ['gross_floor_area', 'property_type', 'year_built']
+        if params["y_var"] not in valid_y_values:
+            return Response(
+                {'status': 'error', 'message': f"{params['y_var']} is not a valid value for y_var"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # get data
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        data = self.get_raw_report_data(pk, access_level_instance, cycles, params["x_var"], params["y_var"])
+
+        chart_data = []
+        property_counts = []
+        for datum in data:
+            buildings = datum['chart_data']
+            yr_e = datum['property_counts']['yr_e']
+            chart_data.extend(self.aggregate_data(yr_e, params["x_var"], params["y_var"], buildings)),
+            property_counts.append(datum['property_counts'])
+
+        # Send back to client
+        result = {
+            'status': 'success',
+            'aggregated_data': {
                 'chart_data': chart_data,
                 'property_counts': property_counts
-            }
-            result = {
-                'status': 'success',
-                'aggregated_data': aggregated_data,
-            }
-            status_code = status.HTTP_200_OK
-        return Response(result, status=status_code)
+            },
+        }
 
-    def aggregate_data(self, yr_e, y_var, buildings):
+        return Response(result, status=status.HTTP_200_OK)
+
+    def aggregate_data(self, yr_e, x_var, y_var, buildings):
         aggregation_method = {
             'property_type': self.aggregate_property_type,
             'year_built': self.aggregate_year_built,
@@ -1038,9 +1004,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
 
         }
-        return aggregation_method[y_var](yr_e, buildings)
+        return aggregation_method[y_var](yr_e, x_var, buildings)
 
-    def aggregate_property_type(self, yr_e, buildings):
+    def aggregate_property_type(self, yr_e, x_var, buildings):
         # Group buildings in this year_ending group into uses
         chart_data = []
         grouped_uses = defaultdict(list)
@@ -1049,14 +1015,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over use groups to make each chart item
         for use, buildings_in_uses in grouped_uses.items():
+            x = [b['x'] for b in buildings_in_uses]
             chart_data.append({
-                'x': median([b['x'] for b in buildings_in_uses]),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': use.capitalize(),
                 'yr_e': yr_e
             })
         return chart_data
 
-    def aggregate_year_built(self, yr_e, buildings):
+    def aggregate_year_built(self, yr_e, x_var, buildings):
         # Group buildings in this year_ending group into decades
         chart_data = []
         grouped_decades = defaultdict(list)
@@ -1065,16 +1032,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over decade groups to make each chart item
         for decade, buildings_in_decade in grouped_decades.items():
+            x = [b['x'] for b in buildings_in_decade]
             chart_data.append({
-                'x': median(
-                    [b['x'] for b in buildings_in_decade]
-                ),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': '%s-%s' % (decade, '%s9' % str(decade)[:-1]),  # 1990-1999
                 'yr_e': yr_e
             })
         return chart_data
 
-    def aggregate_gross_floor_area(self, yr_e, buildings):
+    def aggregate_gross_floor_area(self, yr_e, x_var, buildings):
         chart_data = []
         y_display_map = {
             0: '0-99k',
@@ -1102,10 +1068,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # Now iterate over range groups to make each chart item
         for range_floor, buildings_in_range in grouped_ranges.items():
+            x = [b['x'] for b in buildings_in_range]
             chart_data.append({
-                'x': median(
-                    [b['x'] for b in buildings_in_range]
-                ),
+                'x': sum(x) if x_var == "Count" else median(x),
                 'y': y_display_map[range_floor],
                 'yr_e': yr_e
             })
@@ -1154,23 +1119,24 @@ class OrganizationViewSet(viewsets.ViewSet):
         Export a report as a spreadsheet
         """
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        params = {}
-        missing_params = []
-        error = ''
-        for param in ['x_var', 'x_label', 'y_var', 'y_label', 'start', 'end']:
-            val = request.query_params.get(param, None)
-            if not val:
-                missing_params.append(param)
-            else:
-                params[param] = val
+
+        # get params
+        params = {
+            "x_var": request.query_params.get("x_var", None),
+            "x_label": request.query_params.get("x_label", None),
+            "y_var": request.query_params.get("y_var", None),
+            "y_label": request.query_params.get("y_label", None),
+            "cycle_ids": request.query_params.getlist("cycle_ids", None)
+        }
+
+        # error if missing
+        excepted_params = ["x_var", "x_label", "y_var", "y_label", "cycle_ids"]
+        missing_params = [p for p in excepted_params if p not in params]
         if missing_params:
-            error = "{} Missing params: {}".format(
-                error, ", ".join(missing_params)
+            return Response(
+                {'status': 'error', 'message': "Missing params: {}".format(", ".join(missing_params))},
+                status=status.HTTP_400_BAD_REQUEST
             )
-        if error:
-            status_code = status.HTTP_400_BAD_REQUEST
-            result = {'status': 'error', 'message': error}
-            return Response(result, status=status_code)
 
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="report-data"'
@@ -1199,7 +1165,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
 
         # Gather base data
-        cycles = self.get_cycles(params['start'], params['end'], pk)
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         data = self.get_raw_report_data(
             pk, access_level_instance, cycles, params['x_var'], params['y_var'], matching_columns
@@ -1238,7 +1204,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 base_row += 1
 
             # Gather and write Agg data
-            for agg_datum in self.aggregate_data(yr_e, params['y_var'], data_rows):
+            for agg_datum in self.aggregate_data(yr_e, params['x_var'], params['y_var'], data_rows):
                 agg_sheet.write(agg_row, data_col_start, agg_datum.get('x'))
                 agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get('y'))
                 agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get('yr_e'))
