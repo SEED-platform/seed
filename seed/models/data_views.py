@@ -243,22 +243,26 @@ class DataView(models.Model):
             return list(filter_views)
 
     def _get_label_views(self, cycle, filter_group):
-        if len(filter_group.labels.all()) == 0:
+        if not filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists():
             return None
 
-        logic = filter_group.label_logic
-        labels = Label.objects.filter(id__in=filter_group.labels.all())
-
-        if logic == 0:  # and
+        and_labels = filter_group.and_labels.all()
+        or_labels = filter_group.or_labels.all()
+        exclude_labels = filter_group.exclude_labels.all()
+        views = set()
+        if and_labels.exists():  # and
             views_all = []
-            for label in labels:
+            for label in and_labels:
                 views = cycle.propertyview_set.filter(labels__in=[label])
                 views_all.append(views)
-            return list(set.intersection(*map(set, views_all)))
-        elif logic == 1:  # or
-            return list(cycle.propertyview_set.filter(labels__in=labels))
-        elif logic == 2:  # exclude
-            return list(cycle.propertyview_set.exclude(labels__in=labels))
+            views = set.intersection(*map(set, views_all))
+        if or_labels.exists():  # or
+            or_views = set(cycle.propertyview_set.filter(labels__in=or_labels))
+            views = set.intersection(views or or_views, or_views)
+        if exclude_labels.exists():  # exclude
+            exclude_views = set(cycle.propertyview_set.exclude(labels__in=exclude_labels))
+            views = set.intersection(views or exclude_views, exclude_views)
+        return list(views)
 
     def _get_filter_group_views(self, cycle, query_dict):
         org_id = self.organization.id
