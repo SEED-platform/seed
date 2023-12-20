@@ -363,6 +363,28 @@ class FilterGroupsTests(TransactionTestCase):
             response.json(),
         )
 
+    def test_update_filter_group_bad_labels(self):
+        # Setup
+        first_label = StatusLabel.objects.create(
+            name='1', super_organization=self.org
+        )
+
+        # Action
+        response = self.client.put(
+            reverse(
+                'api:v3:filter_groups-detail',
+                args=[self.filter_group.id]
+            ),
+            data=json.dumps({
+                "and_labels": [first_label.id, -1],
+            }),
+            content_type='application/json',
+            **self.headers
+        )
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+
     def test_delete_filter_group(self):
         # Setup
         filter_group = FilterGroup.objects.create(
