@@ -695,7 +695,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Clone the property record twice, then copy over meters
         old_property = old_view.property
         new_property = old_property
-        new_property.id = None
         new_property.save()
 
         new_property_2 = Property.objects.get(pk=new_property.id)
