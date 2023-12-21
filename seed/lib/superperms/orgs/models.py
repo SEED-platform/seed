@@ -425,7 +425,7 @@ def presave_organization(sender, instance, **kwargs):
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
 
-    taken_names = Column.objects.filter(display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list("display_name", flat=True)
     if len(taken_names) > 0:
         raise ValueError(f"{taken_names} are column names.")
 
