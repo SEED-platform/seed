@@ -126,7 +126,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             if bad_label_ids:
                 return JsonResponse({
                     'success': False,
-                    'message': f'invalid label ids: {set(bad_label_ids)}'
+                    'message': f'invalid label ids: {", ".join([str(i) for i in set(bad_label_ids)])}'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             filter_group.and_labels.set(request.data.get("and_labels", []))

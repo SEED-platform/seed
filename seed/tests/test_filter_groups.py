@@ -363,32 +363,6 @@ class FilterGroupsTests(TransactionTestCase):
         )
 
     def test_update_filter_group_bad_labels(self):
-
-        # Action
-        response = self.client.get(
-            reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]),
-            **self.headers
-        )
-
-        # Assertion
-        self.assertEqual(200, response.status_code)
-        self.assertDictEqual(
-            {
-                'status': 'success',
-                'data': {
-                    "id": self.filter_group.id,
-                    "name": "test_filter_group",
-                    "organization_id": self.org.id,
-                    "inventory_type": "Tax Lot",
-                    "query_dict": {'year_built__lt': ['1950']},
-                    "and_labels": [self.status_label.id],
-                    'or_labels': [],
-                    'exclude_labels': [],
-                }
-            },
-            response.json(),
-        )
-
         # Setup
         first_label = StatusLabel.objects.create(
             name='1', super_organization=self.org
@@ -402,7 +376,7 @@ class FilterGroupsTests(TransactionTestCase):
             ),
             data=json.dumps({
                 "and_labels": [first_label.id, -1],
-                "or_labels": [first_label.id, 1],
+                "or_labels": [first_label.id, -1],
             }),
             content_type='application/json',
             **self.headers
@@ -410,7 +384,6 @@ class FilterGroupsTests(TransactionTestCase):
 
         # Assertion
         self.assertEqual(400, response.status_code)
-
 
         # Action
         response = self.client.get(
