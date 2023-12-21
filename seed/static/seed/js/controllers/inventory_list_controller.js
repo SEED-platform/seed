@@ -138,18 +138,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $scope.Modified = false;
 
     $scope.new_filter_group = () => {
-      const and_label_ids = [];
-      const or_label_ids = [];
-      const exclude_label_ids = [];
-      for (const label of $scope.selected_and_labels) {
-        and_label_ids.push(label.id);
-      }
-      for (const label of $scope.selected_or_labels) {
-        or_label_ids.push(label.id);
-      }
-      for (const label of $scope.selected_exclude_labels) {
-        exclude_label_ids.push(label.id);
-      }
+      const and_label_ids = $scope.selected_and_labels.map(l => l.id);
+      const or_label_ids = $scope.selected_or_labels.map(l => l.id);
+      const exclude_label_ids = $scope.selected_exclude_labels.map(l => l.id);
       const filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
       const query_dict = inventory_service.get_format_column_filters($scope.column_filters);
 
@@ -262,32 +253,21 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       if ($scope.filterGroups.length > 0) {
         const current_filters = inventory_service.get_format_column_filters($scope.column_filters);
         const saved_filters = $scope.currentFilterGroup.query_dict;
-        const current_and_labels = [];
-        const current_or_labels = [];
-        const current_exclude_labels = [];
-        for (const label of $scope.selected_and_labels) {
-          current_and_labels.push(label.id);
-        }
-        for (const label of $scope.selected_or_labels) {
-          current_or_labels.push(label.id);
-        }
-        for (const label of $scope.selected_exclude_labels) {
-          current_exclude_labels.push(label.id);
-        }
-        saved_and_labels = $scope.currentFilterGroup.and_labels;
-        saved_or_labels = $scope.currentFilterGroup.or_labels;
-        saved_exclude_labels = $scope.currentFilterGroup.exclude_labels;
-        if (!_.isEqual(current_filters, saved_filters)) {
-          $scope.Modified = true;
-        } else if (!_.isEqual(current_and_labels.sort(), saved_and_labels.sort())
-            || !_.isEqual(current_or_labels.sort(), saved_or_labels.sort())
-            || !_.isEqual(current_exclude_labels.sort(), saved_exclude_labels.sort())) {
-          $scope.Modified = true;
-        } else {
-          $scope.Modified = false;
-        }
-      }
+        const current_and_labels = new Set($scope.selected_and_labels.map(l => l.id));
+        const current_or_labels = new Set($scope.selected_or_labels.map(l => l.id));
+        const current_exclude_labels = new Set($scope.selected_exclude_labels.map(l => l.id));
 
+        const saved_and_labels = new Set($scope.currentFilterGroup.and_labels);
+        const saved_or_labels = new Set($scope.currentFilterGroup.or_labels);
+        const saved_exclude_labels = new Set($scope.currentFilterGroup.exclude_labels);
+
+        $scope.Modified = !(
+           _.isEqual(current_filters, saved_filters) &&
+           _.isEqual(current_and_labels, saved_and_labels) &&
+           _.isEqual(current_or_labels, saved_or_labels) &&
+           _.isEqual(current_exclude_labels, saved_exclude_labels)
+        )
+      }
       return $scope.Modified;
     };
 
