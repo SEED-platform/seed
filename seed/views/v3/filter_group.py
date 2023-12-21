@@ -121,12 +121,17 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             else:
                 filter_group.inventory_type = inventory_type_int
 
-        if "and_labels" in request.data:
-            filter_group.and_labels.set(request.data["and_labels"])
-        if "or_labels" in request.data:
-            filter_group.or_labels.set(request.data["or_labels"])
-        if "exclude_labels" in request.data:
-            filter_group.exclude_labels.set(request.data["exclude_labels"])
+        if "and_labels" in request.data or "or_labels" in request.data or "exclude_labels" in request.data:
+            _, bad_label_ids = self._get_labels(request.data.get("and_labels", []) + request.data.get("or_labels", []) + request.data.get("exclude_labels", []))
+            if bad_label_ids:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'invalid label ids: {set(bad_label_ids)}'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            filter_group.and_labels.set(request.data.get("and_labels", []))
+            filter_group.or_labels.set(request.data.get("or_labels", []))
+            filter_group.exclude_labels.set(request.data.get("exclude_labels", []))
 
         filter_group.save()
 
