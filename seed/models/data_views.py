@@ -249,19 +249,17 @@ class DataView(models.Model):
         and_labels = filter_group.and_labels.all()
         or_labels = filter_group.or_labels.all()
         exclude_labels = filter_group.exclude_labels.all()
-        views = set()
+        views = None
         if and_labels.exists():  # and
-            views_all = []
+            views = views or cycle.propertyview_set.all()
             for label in and_labels:
-                views = cycle.propertyview_set.filter(labels__in=[label])
-                views_all.append(views)
-            views = set.intersection(*map(set, views_all))
+                views = views.filter(labels=label)
         if or_labels.exists():  # or
-            or_views = set(cycle.propertyview_set.filter(labels__in=or_labels))
-            views = set.intersection(views or or_views, or_views)
+            views = views or cycle.propertyview_set.all()
+            views = views.filter(labels__in=or_labels)
         if exclude_labels.exists():  # exclude
-            exclude_views = set(cycle.propertyview_set.exclude(labels__in=exclude_labels))
-            views = set.intersection(views or exclude_views, exclude_views)
+            views = views or cycle.propertyview_set.all()
+            views = views.exclude(labels__in=exclude_labels)
         return list(views)
 
     def _get_filter_group_views(self, cycle, query_dict):
