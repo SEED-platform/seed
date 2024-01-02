@@ -94,7 +94,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     /* User has indicated 'Done' so perform selected label operations */
     $scope.done = function () {
       $scope.waiting = true;
-      spinner_utility.show()
+      spinner_utility.show();
       const addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value()
         .sort();
       const removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value()
