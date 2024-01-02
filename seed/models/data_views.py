@@ -14,7 +14,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
-from seed.models.models import StatusLabel as Label
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
@@ -243,7 +242,7 @@ class DataView(models.Model):
             return list(filter_views)
 
     def _get_label_views(self, cycle, filter_group):
-        if not filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists():
+        if not (filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists()):
             return None
 
         and_labels = filter_group.and_labels.all()
