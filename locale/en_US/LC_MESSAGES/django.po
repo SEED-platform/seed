@@ -367,6 +367,9 @@ msgstr "Buildings"
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "By clicking the Log In button you accept the NREL Data Terms."
 
+msgid "CLICK_LEGEND"
+msgstr "Click a label below to show/hide it on the chart"
+
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Error: New column name cannot match previous name."
 
@@ -423,6 +426,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
+
+msgid "CONFIGURE_PROGRAM"
+msgstr "Need to configure your Program?"
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
@@ -483,6 +489,9 @@ msgstr "Changed By"
 
 msgid "Chart Legend"
 msgstr "Chart Legend"
+
+msgid "Chart Options"
+msgstr "Chart Options"
 
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
@@ -1440,6 +1449,9 @@ msgstr "Include in your Tax Lot List all tax lots shared with you."
 msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
 msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
 
+msgid "INSIGHTS_HELP_TEXT"
+msgstr "Use the controls below to display a subset of properties on the graph. The chart legend can also be used to display or hide properties based on compliance status. The 'Update Property Labels' button can then be used to edit the labels applied to the properties visible on the graph."
+
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
@@ -2303,6 +2315,9 @@ msgstr "Profile Name"
 
 msgid "Program"
 msgstr "Program"
+
+msgid "Program Configuration page"
+msgstr "Program Configuration page"
 
 msgid "Program Definition"
 msgstr "Program Definition"
@@ -3384,6 +3399,9 @@ msgstr "Update Charts"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Property Labels"
+msgstr "Update Property Labels"
 
 msgid "Update Salesforce"
 msgstr "Update Salesforce"

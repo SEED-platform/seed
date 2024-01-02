@@ -370,6 +370,9 @@ msgstr "Bâtiments"
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
 
+msgid "CLICK_LEGEND"
+msgstr "Cliquez sur une étiquette ci-dessous pour l'afficher/masquer sur le graphique"
+
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Erreur: Le nom de la nouvelle colonne ne peut pas correspondre au nom précédent."
 
@@ -429,6 +432,9 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complétez et Actualisez la Page"
+
+msgid "CONFIGURE_PROGRAM"
+msgstr "Besoin de configurer votre programme?"
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Êtes-vous sûr de vouloir supprimer le profil"
@@ -490,6 +496,9 @@ msgstr "Changé par"
 
 msgid "Chart Legend"
 msgstr "Légende du graphique"
+
+msgid "Chart Options"
+msgstr "Options du graphique"
 
 msgid "Choose Existing Organization:"
 msgstr "Choisissez Organisation Existante:"
@@ -1453,6 +1462,9 @@ msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partag�
 msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
 msgstr "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés."
 
+msgid "INSIGHTS_HELP_TEXT"
+msgstr "Utilisez les commandes ci-dessous pour afficher un sous-ensemble de propriétés sur le graphique. La légende du graphique peut également être utilisée pour afficher ou masquer des propriétés en fonction de l'état de conformité. Le bouton 'Mettre à jour les étiquettes des propriétés' peut ensuite être utilisé pour modifier les étiquettes appliquées aux propriétés visibles sur le graphique."
+
 msgid "INTERNAL"
 msgstr "INTERNE"
 
@@ -2319,6 +2331,9 @@ msgstr "Nom de profil"
 
 msgid "Program"
 msgstr "Programme"
+
+msgid "Program Configuration page"
+msgstr "Page de configuration du programme"
 
 msgid "Program Definition"
 msgstr "Définition du programme"
@@ -3411,6 +3426,9 @@ msgstr "Mettre à jour les graphiques"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"
+
+msgid "Update Property Labels"
+msgstr "Mettre à jour les étiquettes de propriété"
 
 msgid "Update Salesforce"
 msgstr "Mettre à jour Salesforce"

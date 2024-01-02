@@ -20,6 +20,12 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     $scope.organization = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
+    // toggle help
+    $scope.show_help = false;
+    $scope.toggle_help = () => {
+      $scope.show_help = !$scope.show_help;
+    }
+
     // configs ($scope.configs set to saved_configs where still applies.
     // for example, if saved_configs.compliance_metric is 1, but 1 has been deleted, it does apply.)
     const saved_configs = JSON.parse(localStorage.getItem(`insights.property.configs.${$scope.organization.id}`));
@@ -115,8 +121,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
             }
 
             // x axis
-            $scope.x_axis_options = [...$scope.data.metric.x_axis_columns, { display_name: 'Ranked', id: 'Ranked' }];
 
+            $scope.x_axis_options = [...$scope.data.metric.x_axis_columns, { display_name: 'Ranked Distance to Compliance', id: 'Ranked' }];
             if (_.size($scope.x_axis_options) > 0) {
               // used saved chart_xaxis
               if (saved_configs?.chart_xaxis) {
@@ -284,11 +290,13 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       non_compliant.data.forEach((item) => {
         // only when we are displaying the non-compliant metric (energy or emission)
         // don't add whisker if data is in range for that metric or it looks bad
+        item.distance = null;
         let add = false;
         const metric_type = $scope.configs.chart_metric === 0 ? $scope.data.metric.energy_metric_type : $scope.data.metric.emission_metric_type;
         if (item.x && item.y && item.target) {
           if ((metric_type === 1 && item.target < item.y) || (metric_type === 2 && item.target > item.y)) {
             add = true;
+            item.distance = Math.abs(item.target - item.y)
           }
         }
 
@@ -308,20 +316,6 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
 
     // CHARTS
     const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
-
-    const tooltip_footer = (tooltipItems) => {
-      let text = '';
-      tooltipItems.forEach((tooltipItem) => {
-        if (tooltipItem.raw.name) {
-          text = `Property: ${tooltipItem.raw.name}`;
-        } else {
-          // revise this in future
-          text = `Property ID: ${tooltipItem.raw.id}`;
-        }
-      });
-
-      return text;
-    };
 
     const _build_chart = () => {
       if (!$scope.chart_datasets) {
@@ -361,7 +355,29 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
               },
               tooltip: {
                 callbacks: {
-                  footer: tooltip_footer
+                  label: function(context) {
+                    let text = [];
+                    // property ID / default display field
+                    if (context.raw.name) {
+                      text.push(`Property: ${context.raw.name}`);
+                    } else {
+                      text.push(`Property ID: ${context.raw.id}`);
+                    }
+
+                    // x and y axis names and values
+                    const x_index = _.findIndex($scope.x_axis_options, { id: $scope.configs.chart_xaxis });
+                    const x_axis_name = $scope.x_axis_options[x_index]?.display_name;
+                    let y_axis_name = null;
+                    if ($scope.configs.chart_metric === 0) {
+                      y_axis_name = $scope.data.metric.actual_energy_column_name;
+                    } else if ($scope.configs.chart_metric === 1) {
+                      y_axis_name = $scope.data.metric.actual_emission_column_name;
+                    }
+
+                    text.push(`${x_axis_name}: ${context.parsed.x}`);
+                    text.push(`${y_axis_name}: ${context.parsed.y}`);
+                    return text;
+                  }
                 }
               },
               zoom: {
@@ -441,8 +457,8 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
     };
 
     const _update_chart = () => {
-      const x_index = _.findIndex($scope.data.metric.x_axis_columns, { id: $scope.configs.chart_xaxis });
-      const x_axis_name = $scope.data.metric.x_axis_columns[x_index]?.display_name;
+      const x_index = _.findIndex($scope.x_axis_options, { id: $scope.configs.chart_xaxis });
+      const x_axis_name = $scope.x_axis_options[x_index]?.display_name;
 
       let y_axis_name = null;
       if ($scope.configs.chart_metric === 0) {
@@ -468,7 +484,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
       });
 
       // update x axis ticks (for year)
-      if (x_axis_name.toLowerCase().includes('year')) {
+      if (x_axis_name && x_axis_name.toLowerCase().includes('year')) {
         $scope.insightsChart.options.scales.x.ticks = {
           callback(value) {
             return this.getLabelForValue(value).replace(',', '');

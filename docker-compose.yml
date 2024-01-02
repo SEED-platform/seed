@@ -58,6 +58,12 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
+    healthcheck:
+      test: curl -f http://localhost/api/health_check/ || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 1
+      start_period: 45s
     logging:
       options:
         max-size: 50m

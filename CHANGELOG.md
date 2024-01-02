@@ -1,3 +1,34 @@
+# SEED Version 2.21.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Provide environment variable to disable wait-for-it condition in deployments by @dhaley in https://github.com/SEED-platform/seed/pull/4377
+* Add healthcheck to docker web container by @axelstudios in https://github.com/SEED-platform/seed/pull/4374
+* Audit Template report submission endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4411
+* Remove Summary charts by @haneslinger in https://github.com/SEED-platform/seed/pull/4402
+* Add count to default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4423
+### Improvements 📈
+* Property Insights UI enhancements by @kflemin in https://github.com/SEED-platform/seed/pull/4384
+* Add distance to target in table under property insights graph by @kflemin in https://github.com/SEED-platform/seed/pull/4386
+* Populate default report using cycles by @haneslinger in https://github.com/SEED-platform/seed/pull/4420
+* Analyses performance improvement by @haneslinger in https://github.com/SEED-platform/seed/pull/4434
+* Additional analyses performance improvement by @haneslinger in https://github.com/SEED-platform/seed/pull/4438
+### Maintenance 🧹
+* Updated developer resources documentation by @axelstudios in https://github.com/SEED-platform/seed/pull/4373
+* Bump django from 3.2.20 to 3.2.23 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/4379
+* Updated salesforce pg_restore docs by @axelstudios in https://github.com/SEED-platform/seed/pull/4382
+### Bug Fixes 🐛
+* Fix CO2 analysis column naming by @ebeers-png in https://github.com/SEED-platform/seed/pull/4410
+* Salesforce scheduling issues by @axelstudios in https://github.com/SEED-platform/seed/pull/4387
+* Custom report name field location by @kflemin in https://github.com/SEED-platform/seed/pull/4385
+* Order cycles by start date on program setup by @kflemin in https://github.com/SEED-platform/seed/pull/4428
+* Property Insights tooltip refinement by @kflemin in https://github.com/SEED-platform/seed/pull/4425
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v2.20.1...v2.21.0
+
 # SEED Version 2.20.1
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->

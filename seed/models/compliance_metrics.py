@@ -104,6 +104,7 @@ class ComplianceMetric(models.Model):
         results_by_cycles = {}
 #        property_datasets = {}
         # figure out what kind of metric it is (energy? emission? combo? bool?)
+
         metric = {
             'energy_metric': False,
             'emission_metric': False,
@@ -118,7 +119,7 @@ class ComplianceMetric(models.Model):
             'target_emission_column': None,
             'emission_metric_type': self.emission_metric_type,
             'filter_group': None,
-            'cycles': list(self.cycles.all().values('id', 'name')),
+            'cycles': list(self.cycles.all().order_by('start').values('id', 'name')),
             'x_axis_columns': list(self.x_axis_columns.all().values('id', 'display_name'))}
 
         if self.actual_energy_column is not None:
