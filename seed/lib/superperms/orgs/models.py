@@ -108,10 +108,14 @@ class Organization(models.Model):
 
     MEASUREMENT_CHOICES_GHG = (
         ('MtCO2e/year', 'MtCO2e/year'),
+        ('kgCO2e/year', 'kgCO2e/year'),
     )
 
     MEASUREMENT_CHOICES_GHG_INTENSITY = (
         ('kgCO2e/ft**2/year', 'kgCO2e/ft²/year'),
+        ('MtCO2e/ft**2/year', 'MtCO2e/ft²/year'),
+        ('kgCO2e/m**2/year', 'kgCO2e/m²/year'),
+        ('MtCO2e/m**2/year', 'MtCO2e/m²/year'),
     )
 
     US = 1

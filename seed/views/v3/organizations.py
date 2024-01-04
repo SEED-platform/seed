@@ -126,6 +126,7 @@ def _dict_org(request, organizations):
             'is_parent': o.is_parent,
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
+            'display_units_ghg': o.display_units_ghg,
             'display_units_area': o.display_units_area,
             'display_decimal_places': o.display_decimal_places,
             'cycles': cycles,
