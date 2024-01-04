@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def move_filter_groups(apps, schema_editor):
     FilterGroup = apps.get_model('seed', 'FilterGroup')
     for filter_group in FilterGroup.objects.all():
@@ -11,6 +12,7 @@ def move_filter_groups(apps, schema_editor):
             filter_group.or_labels.set(filter_group.labels.all())
         elif filter_group.labels.exists() and filter_group.label_logic == 2:  # exclude
             filter_group.exclude_labels.set(filter_group.labels.all())
+
 
 def move_filter_groups_back(apps, schema_editor):
     # if the filter group only has one set of labels, we can move those back
@@ -28,6 +30,7 @@ def move_filter_groups_back(apps, schema_editor):
             filter_group.labels.set(filter_group.exclude_labels.all())
             filter_group.label_logic = 2
             filter_group.save()
+
 
 class Migration(migrations.Migration):
 
