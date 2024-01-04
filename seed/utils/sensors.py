@@ -50,6 +50,8 @@ class PropertySensorReadingsExporter():
         sensor_readings = SensorReading.objects.filter(sensor__in=self.sensors)
         if self.showOnlyOccupiedReadings:
             sensor_readings = sensor_readings.filter(is_occupied=True)
+
+        # order by id **greatly** speeds this up (cause of indexing, I think
         timestamps = sensor_readings.distinct('timestamp').order_by("timestamp", "id").values_list("timestamp", flat=True)
         paginator = Paginator(timestamps, per_page)
         timestamps_in_page = paginator.page(page)
