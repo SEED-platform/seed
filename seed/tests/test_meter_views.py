@@ -426,6 +426,38 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.json()['status'], 'error')
         self.assertEqual(response.json()['message'], 'end_time must be non-time zone aware')
 
+    def test_bulk_import_bad_time(self):
+        # create property
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+
+        # prepare the data in bulk format
+        payload = []
+        for values in [("2022-01-05 05:00:00", "2022-01-05 06:00:00", 22.2),
+                       ("2022-01-05 05:00:00", "2022-01-05 06:00:00", 88.8), ]:
+            payload.append({
+                "start_time": values[0],
+                "end_time": values[1],
+                "reading": values[2],
+                "source_unit": "Wh (Watt-hours)",
+                # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                "conversion_factor": 0.00341,
+            })
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
     def test_bulk_import(self):
         # create property
         property_view = self.property_view_factory.get_property_view()

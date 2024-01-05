@@ -4,9 +4,11 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.db.utils import ProgrammingError
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import serializers
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -99,7 +101,10 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
         """On create, make sure to add in the property id which comes from the URL kwargs."""
 
         # check permissions?
-        if self.meter_pk:
-            serializer.save(meter_id=self.meter_pk)
-        else:
+        if self.meter_pk is None:
             raise Exception('No meter_pk provided in URL to create the meter reading')
+
+        try:
+            serializer.save(meter_id=self.meter_pk)
+        except ProgrammingError:
+            raise serializers.ValidationError('No meter_pk provided in URL to create the meter reading')
