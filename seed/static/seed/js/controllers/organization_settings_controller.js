@@ -41,7 +41,6 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     $translate
   ) {
     $scope.org = organization_payload.organization;
-    console.log($scope.org)
 
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {

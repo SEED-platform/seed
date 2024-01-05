@@ -501,13 +501,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.display_units_eui = desired_display_units_eui
         else:
             warn_bad_pint_spec('eui', desired_display_units_eui)
-    
+
         desired_display_units_ghg = posted_org.get('display_units_ghg')
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_GHG, desired_display_units_ghg):
             org.display_units_ghg = desired_display_units_ghg
         else:
             warn_bad_pint_spec('ghg', desired_display_units_ghg)
-    
+
         desired_display_units_ghg_intensity = posted_org.get('display_units_ghg_intensity')
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_GHG_INTENSITY, desired_display_units_ghg_intensity):
             org.display_units_ghg_intensity = desired_display_units_ghg_intensity
