@@ -954,6 +954,20 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <h3 translate>Measurement unit display for Green House Gas Emission Intensity (GHGI)</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_ghg_intensity"
+                  ng-model="org.display_units_ghg_intensity"></select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>METER_DISPLAY_SETTINGS_TITLE</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">

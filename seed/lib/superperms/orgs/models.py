@@ -107,8 +107,8 @@ class Organization(models.Model):
     )
 
     MEASUREMENT_CHOICES_GHG = (
-        ('MtCO2e/year', 'MtCO2e/year'),
         ('kgCO2e/year', 'kgCO2e/year'),
+        ('MtCO2e/year', 'MtCO2e/year'),
     )
 
     MEASUREMENT_CHOICES_GHG_INTENSITY = (
