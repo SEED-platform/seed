@@ -50,7 +50,9 @@ class PropertySensorReadingsExporter():
         sensor_readings = SensorReading.objects.filter(sensor__in=self.sensors)
         if self.showOnlyOccupiedReadings:
             sensor_readings = sensor_readings.filter(is_occupied=True)
-        timestamps = sensor_readings.distinct('timestamp').order_by("timestamp").values_list("timestamp", flat=True)
+
+        # order by id **greatly** speeds this up (cause of indexing, I think
+        timestamps = sensor_readings.distinct('timestamp').order_by("timestamp", "id").values_list("timestamp", flat=True)
         paginator = Paginator(timestamps, per_page)
         timestamps_in_page = paginator.page(page)
 
@@ -71,19 +73,21 @@ class PropertySensorReadingsExporter():
 
             time_format = "%Y-%m-%d %H:%M:%S"
 
-            for sensor in self.sensors:
-                field_name = self._build_column_def(sensor, column_defs)
+            field_name_by_sensor_id = {
+                sensor.id: self._build_column_def(sensor, column_defs)
+                for sensor in self.sensors
+            }
 
-                sensor_readings = sensor.sensor_readings.filter(timestamp__range=[earliest_time, latest_time])
-                if self.showOnlyOccupiedReadings:
-                    sensor_readings = sensor_readings.filter(is_occupied=True)
+            sensor_readings = SensorReading.objects.filter(timestamp__range=[earliest_time, latest_time], sensor__in=self.sensors)
+            if self.showOnlyOccupiedReadings:
+                sensor_readings = sensor_readings.filter(is_occupied=True)
 
-                for sensor_reading in sensor_readings.all():
-                    timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
-                    times_key = str(timestamp)
+            for sensor_reading in sensor_readings.all():
+                timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
+                times_key = str(timestamp)
 
-                    timestamps[times_key]["timestamp"] = timestamp
-                    timestamps[times_key][field_name] = sensor_reading.reading
+                timestamps[times_key]["timestamp"] = timestamp
+                timestamps[times_key][field_name_by_sensor_id[sensor_reading.sensor_id]] = sensor_reading.reading
 
         return {
             'pagination': {
