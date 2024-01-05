@@ -4,6 +4,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.db import models
+from timescale.db.models.fields import TimescaleDateTimeField
 
 from seed.models import Property
 
@@ -44,13 +45,15 @@ class Sensor(models.Model):
     column_name = models.CharField(max_length=255)
 
     class Meta:
-        unique_together = ('data_logger', 'display_name')
-        unique_together = ('data_logger', 'column_name')
+        unique_together = (
+            ('data_logger', 'display_name'),
+            ('data_logger', 'column_name'),
+        )
 
 
 class SensorReading(models.Model):
     reading = models.FloatField(null=True)
-    timestamp = models.DateTimeField()
+    timestamp = TimescaleDateTimeField(interval="1 second")
     sensor = models.ForeignKey(
         Sensor,
         on_delete=models.CASCADE,
