@@ -4,6 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+from django.db import transaction
 from django.db.utils import ProgrammingError
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
@@ -105,6 +106,7 @@ class MeterReadingViewSet(SEEDOrgModelViewSet):
             raise Exception('No meter_pk provided in URL to create the meter reading')
 
         try:
-            serializer.save(meter_id=self.meter_pk)
+            with transaction.atomic():
+                serializer.save(meter_id=self.meter_pk)
         except ProgrammingError:
             raise serializers.ValidationError('No meter_pk provided in URL to create the meter reading')
