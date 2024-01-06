@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='sensorreading',
             name='timestamp',
-            field=timescale.db.models.fields.TimescaleDateTimeField(interval='1 second'),
+            field=timescale.db.models.fields.TimescaleDateTimeField(interval='7 days'),
         ),
         migrations.AlterUniqueTogether(
             name='sensor',

@@ -53,7 +53,7 @@ class Sensor(models.Model):
 
 class SensorReading(models.Model):
     reading = models.FloatField(null=True)
-    timestamp = TimescaleDateTimeField(interval="1 second")
+    timestamp = TimescaleDateTimeField(interval="7 days")
     sensor = models.ForeignKey(
         Sensor,
         on_delete=models.CASCADE,
