@@ -12,15 +12,35 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
   'compliance_metric_service',
   'spinner_utility',
   'organization_payload',
+  'filter_groups',
   'cycles',
+  'property_columns',
   'auth_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $state, $uibModal, urls, compliance_metrics, compliance_metric_service, spinner_utility, organization_payload, cycles, auth_payload) {
+  function (
+    $scope,
+    $stateParams,
+    $state,
+    $uibModal,
+    urls,
+    compliance_metrics,
+    compliance_metric_service,
+    spinner_utility,
+    organization_payload,
+    filter_groups,
+    cycles,
+    property_columns,
+    auth_payload
+  ) {
     $scope.id = $stateParams.id;
     $scope.cycles = cycles.cycles;
     $scope.organization = organization_payload.organization;
     $scope.initialize_chart = true;
     $scope.auth = auth_payload.auth;
+
+    // used by modal
+    $scope.filter_groups = filter_groups;
+    $scope.property_columns = property_columns;
 
     // compliance metric
     $scope.compliance_metric = {};
@@ -43,6 +63,65 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
 
     // CHARTS
     const colors = { compliant: '#77CCCB', 'non-compliant': '#A94455', unknown: '#DDDDDD' };
+
+    // Program Setup Modal
+    $scope.open_program_setup_modal = () => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/program_setup.html`,
+        controller: 'program_setup_controller',
+        size: 'lg',
+        backdrop: 'static',
+        resolve: {
+          cycles: () => $scope.cycles,
+          compliance_metrics: () => $scope.compliance_metrics,
+          organization_payload: () => $scope.organization,
+          filter_groups: () => $scope.filter_groups,
+          property_columns: () => $scope.property_columns,
+          id: () => $scope.selected_metric
+        }
+      });
+      // on modal close
+      modalInstance.result.then((program) => {
+        // 1) change selection if no programs existed before
+        // 2) change selection if the selected one in insights no longer exists
+        // 3) reload if the selected one still exists (just in case)
+        // 4) do nothing
+        compliance_metric_service.get_compliance_metrics($scope.organization.id).then((data) => {
+          $scope.compliance_metrics = data;
+          const metric_ids = _.map($scope.compliance_metrics, 'id');
+          if ($scope.selected_metric === null && $scope.compliance_metrics.length > 0) {
+            // case 1
+            if (program != null) {
+              $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === program.id);
+              $scope.selected_metric = program.id;
+            } else {
+              // this should not happen, but just in case use the 1st one
+              $scope.compliance_metric = $scope.compliance_metrics[0];
+              $scope.selected_metric = $scope.compliance_metric.id;
+            }
+          } else if ($scope.selected_metric && metric_ids.indexOf($scope.selected_metric) === -1) {
+            // case 2
+            if (program != null) {
+              $scope.selected_metric = program.id;
+              $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
+            } else if ($scope.compliance_metrics.length > 0) {
+              // this should not happen, but just in case use the 1st one
+              $scope.compliance_metric = $scope.compliance_metrics[0];
+              $scope.selected_metric = $scope.compliance_metric.id;
+            } else {
+              // load nothing
+              $scope.compliance_metric = {};
+              $scope.selected_metric = null;
+            }
+          } else if ($scope.selected_metric) {
+            // case 3
+            // otherwise reload the data for selected one in case it changed
+            $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
+          }
+          $scope.updateSelectedMetric();
+        });
+      });
+    };
 
     const _load_datasets = () => {
       // load data
@@ -173,7 +252,10 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
     };
 
     $scope.updateSelectedMetric = () => {
-      $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      $scope.compliance_metric = {};
+      if ($scope.selected_metric != null) {
+        $scope.compliance_metric = _.find($scope.compliance_metrics, (o) => o.id === $scope.selected_metric);
+      }
 
       // reload data for selected metric
       _load_data();
