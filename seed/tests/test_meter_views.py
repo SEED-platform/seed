@@ -485,13 +485,13 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
         # prepare the data in bulk format
         reading1 = {
-                "start_time": "2022-01-05 05:00:00",
-                "end_time": "2022-01-05 06:00:00",
-                "reading": 10,
-                "source_unit": "Wh (Watt-hours)",
-                # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
-                "conversion_factor": 0.00341,
-            }
+            "start_time": "2022-01-05 05:00:00",
+            "end_time": "2022-01-05 06:00:00",
+            "reading": 10,
+            "source_unit": "Wh (Watt-hours)",
+            # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+            "conversion_factor": 0.00341,
+        }
         reading2 = dict(reading1)
         reading2["end_time"] = "2022-01-05 07:00:00"
         payload = [reading1, reading2]
