@@ -9,6 +9,7 @@ from typing import Tuple
 import dateutil.parser
 from django.db import connection
 from django.utils.timezone import make_aware
+from django.core.exceptions import ValidationError
 from psycopg2.extras import execute_values
 from pytz import timezone
 from rest_framework import serializers
@@ -53,6 +54,17 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
         updated_readings = list(map(lambda result: MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}), results))
 
         return updated_readings
+    
+    def validate(self, data):
+        # duplicate start and end date pairs will cause sql errors
+        date_pairs = set()
+        for datum in data:
+            date_pair = (datum.get('start_time'), datum.get('end_time'))
+            if date_pair in date_pairs:
+                raise ValidationError('Error: Each reading must have a unique combination of start_time end end_time.') 
+            date_pairs.add(date_pair)
+
+        return data
 
 
 class MeterReadingSerializer(serializers.ModelSerializer):
@@ -95,7 +107,6 @@ class MeterReadingSerializer(serializers.ModelSerializer):
 
         # Convert tuple to MeterReading for response
         updated_reading = MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)})
-
         return updated_reading
 
     def to_representation(self, obj):
