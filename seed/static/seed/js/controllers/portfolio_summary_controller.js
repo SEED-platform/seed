@@ -78,7 +78,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // If goal changes, reset grid filters and repopulate ui-grids
             $scope.$watch('goal', () => {
-                console.log('watch goal')
                 if ($scope.gridApi) $scope.reset_sorts_filters();
                 $scope.data_valid = false;
                 if (_.isEmpty($scope.goal)) {
@@ -164,14 +163,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             $scope.refresh_data = () => {
-                console.log('refresh_data')
                 $scope.summary_loading = true;
                 load_summary();
                 $scope.load_inventory(1);
             }
 
             const load_summary = () => {
-                console.log('load_summary')
                 $scope.show_access_level_instances = true;
                 $scope.summary_valid = false;
 
@@ -189,7 +186,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 $scope.load_inventory(page)
             }
             $scope.load_inventory = (page) => {
-                console.log('load_inventory')
                 $scope.data_loading = true;
 
                 let access_level_instance_id = $scope.goal.access_level_instance
@@ -287,7 +283,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
             // retreive labels for cycle
             const get_all_labels = () => {
-                console.log('get_all_labels')
                 get_labels('baseline');
                 get_labels('current');
             }
@@ -390,7 +385,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_properties = (properties) => {
-                console.log('format_properties')
                 const gfa = $scope.columns.find(col => col.column_name == 'gross_floor_area')
                 const preferred_columns = [$scope.columns.find(c => c.id == $scope.goal.column1)]
                 if ($scope.goal.column2) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.column2))
@@ -602,7 +596,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 const includes_baseline = column_names.some(name => name.includes('baseline'));
                 const includes_current = column_names.some(name => name.includes('current'));
                 const conflict = includes_baseline && includes_current;
-                console.log('confict', conflict)
 
                 if (conflict) {
                     baseline_first = !baseline_first;
@@ -623,7 +616,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let grid_columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
                 // check filter/sort columns. Cannot filter on both baseline and current. choose the more recent filter/sort
                 grid_columns = remove_conflict_columns(grid_columns)
-                console.log('grid_columns',grid_columns.map(c => c.name))
                 // convert cycle columnss to cannonical columns
                 let formatted_columns = format_cycle_columns(grid_columns)
 
@@ -739,12 +731,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             };
 
             const set_grid_options = (result) => {
-                console.log('set_grid_options')
                 $scope.data = format_properties(result)
                 spinner_utility.hide()
-                console.log('done')
-                console.log('s', $scope.column_sorts)
-                console.log('f', $scope.column_filters)
                 $scope.gridOptions = {
                     data: 'data',
                     columnDefs: selected_columns(),

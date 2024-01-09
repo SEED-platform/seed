@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         '$state',
         '$stateParams',
         '$uibModalInstance',
+        'Notification',
         'goal_service',
         'organization',
         'cycles',
@@ -19,6 +20,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $state,
             $stateParams,
             $uibModalInstance,
+            Notification,
             goal_service,
             organization,
             cycles,
@@ -95,7 +97,8 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                 // if new goal, assign org id
                 $scope.goal.organization = $scope.goal.organization || $scope.organization.id
                 goal_fn($scope.goal).then(result => {
-                    if (result.status == 200 || result.status == 201) {
+                    if (result.status === 200 || result.status === 201) {
+                        Notification.success({ message: 'Goal saved', delay: 5000 });
                         $scope.errors = null;
                         $scope.goal.id = $scope.goal.id || result.data.id;
                         get_goals()
@@ -111,7 +114,17 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             }
 
             $scope.delete_goal = (goal_id) => {
-                goal_service.delete_goal(goal_id).then(() =>{
+                const goal = $scope.goals.find(goal => goal.id === goal_id)
+                if (!goal) return Notification.warning({ message: 'Unexpected Error', delay: 5000 })
+
+                if (!confirm(`Are you sure you want to delete Goal "${goal.name}"`)) return
+
+                goal_service.delete_goal(goal_id).then((response) => {
+                    if (response.status === 204) {
+                        Notification.success({ message: 'Goal deleted successfully', delay: 5000 });
+                    } else {
+                        Notification.warning({ message: 'Unexpected Error', delay: 5000 })
+                    }
                     get_goals()
                     if (goal_id == $scope.goal.id) {
                         $scope.goal = null;
