@@ -4,6 +4,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
+import json
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
@@ -37,7 +38,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         default_report_format = 'pdf'
         report_format = request.query_params.get('report_format', default_report_format)
 
-        valid_file_formats = ['xml', 'pdf']
+        valid_file_formats = ['json', 'xml', 'pdf']
         if report_format.lower() not in valid_file_formats:
             message = f"The report_format specified is invalid. Must be one of: {valid_file_formats}."
             return JsonResponse({
@@ -49,18 +50,23 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         at = AuditTemplate(self.get_organization(self.request))
         response, message = at.get_submission(pk, report_format)
 
+        # error
         if response is None:
             return JsonResponse({
                 'success': False,
                 'message': message
             }, status=400)
+        # json
+        if report_format.lower() == 'json':
+            return JsonResponse(json.loads(response.content))
+        # xml
         if report_format.lower() == 'xml':
             return HttpResponse(response.text)
-        else:
-            response2 = HttpResponse(response.content)
-            response2.headers["Content-Type"] = 'application/pdf'
-            response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
-            return response2
+        # pdf
+        response2 = HttpResponse(response.content)
+        response2.headers["Content-Type"] = 'application/pdf'
+        response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
+        return response2
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @has_perm_class('can_view_data')
