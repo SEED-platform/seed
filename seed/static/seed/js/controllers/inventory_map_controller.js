@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         })
       })
 
-      return Promise.all(page_promises).then(pages => [].concat(pages))
+      return Promise.all(page_promises).then(pages => [].concat(...pages))
     }
 
 
@@ -73,6 +73,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
 
     const getInventoryFn = isPropertiesTab ? inventory_service.get_properties : inventory_service.get_taxlots;
     fetchRecords(getInventoryFn).then(async (data) => {
+      console.log(data);
       loadingModal.close();
 
       $scope.data = data;
