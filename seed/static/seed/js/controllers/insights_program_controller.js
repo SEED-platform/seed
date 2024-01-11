@@ -82,42 +82,30 @@ angular.module('BE.seed.controller.insights_program', []).controller('insights_p
       });
       // on modal close
       modalInstance.result.then((program) => {
-        // 1) change selection if no programs existed before
-        // 2) change selection if the selected one in insights no longer exists
-        // 3) reload if the selected one still exists (just in case)
-        // 4) do nothing
+        // re-fetch compliance metrics
         compliance_metric_service.get_compliance_metrics($scope.organization.id).then((data) => {
           $scope.compliance_metrics = data;
-          const metric_ids = _.map($scope.compliance_metrics, 'id');
-          if ($scope.selected_metric === null && $scope.compliance_metrics.length > 0) {
-            // case 1
+          // change selection to last selected in modal and reload
+          if ($scope.compliance_metrics.length > 0) {
             if (program != null) {
               $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === program.id);
               $scope.selected_metric = program.id;
             } else {
-              // this should not happen, but just in case use the 1st one
-              $scope.compliance_metric = $scope.compliance_metrics[0];
-              $scope.selected_metric = $scope.compliance_metric.id;
-            }
-          } else if ($scope.selected_metric && metric_ids.indexOf($scope.selected_metric) === -1) {
-            // case 2
-            if (program != null) {
-              $scope.selected_metric = program.id;
+              // attempt to keep the selected metric
               $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
-            } else if ($scope.compliance_metrics.length > 0) {
-              // this should not happen, but just in case use the 1st one
-              $scope.compliance_metric = $scope.compliance_metrics[0];
-              $scope.selected_metric = $scope.compliance_metric.id;
-            } else {
-              // load nothing
-              $scope.compliance_metric = {};
-              $scope.selected_metric = null;
+              if ($scope.compliance_metric == null) {
+                // load first metric b/c selected metric no longer exists
+                $scope.compliance_metric = $scope.compliance_metrics[0];
+                $scope.selected_metric = $scope.compliance_metric.id;
+              }
             }
-          } else if ($scope.selected_metric) {
-            // case 3
-            // otherwise reload the data for selected one in case it changed
-            $scope.compliance_metric = $scope.compliance_metrics.find((cm) => cm.id === $scope.selected_metric);
+          } else {
+            // load nothing
+            $scope.compliance_metric = {};
+            $scope.selected_metric = null;
+            $scope.data = null;
           }
+
           $scope.updateSelectedMetric();
         });
       });
