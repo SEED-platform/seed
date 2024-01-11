@@ -5,6 +5,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
+
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
