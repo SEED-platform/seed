@@ -1839,7 +1839,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           $scope.load_inventory(1);
         }
       }, 1000)
-    
+
 
     $scope.gridOptions = {
       data: 'data',
