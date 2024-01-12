@@ -59,7 +59,6 @@
         <li><a ui-sref="organization_email_templates({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Email Templates</a></li>
         <li><a ui-sref="organization_labels({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Labels</a></li>
         <li><a ui-sref="organization_members({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
-        <li><a ui-sref="programs({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Program Setup</a></li>
         <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
         <li>
           <a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>

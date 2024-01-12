@@ -71,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2017, 2023, Alliance for Sustainable Energy, LLC, and other contributors.'
+copyright = '2017, 2024, Alliance for Sustainable Energy, LLC, and other contributors.'
 author = 'Alliance for Sustainable Energy, LLC, and other contributors.'
 
 # The version info for the project you're documenting, acts as replacement for
