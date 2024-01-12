@@ -1797,7 +1797,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const restoreGridSettings = () => {
       $scope.restore_status = RESTORE_SETTINGS;
       let state = inventory_service.loadGridSettings(`${localStorageKey}.sort`);
-      // If save state has filters or columns, ignore the grids first attempt to run filterChanged or sortChanged
+      // If save state has filters or sorts, ignore the grids first attempt to run filterChanged or sortChanged
       const columns = JSON.parse(state).columns
       $scope.ignore_filter_or_sort = !_.isEmpty(columns)
       if (!_.isNull(state)) {
@@ -1824,7 +1824,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
 
     const filterOrSortChanged = _.debounce(() => {
-        // if table has filters or sorts on initial load, ignore to avoid duplicate refreshes
         if ($scope.ignore_filter_or_sort) {
           $scope.ignore_filter_or_sort = false;
         } else if ($scope.restore_status === RESTORE_COMPLETE) {
@@ -1902,12 +1901,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           saveSettings();
         });
         gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-        gridApi.core.on.filterChanged($scope, () => {
-          filterOrSortChanged()
-        })
-        gridApi.core.on.sortChanged($scope, () => {
-          filterOrSortChanged()
-        });
+        gridApi.core.on.filterChanged($scope, filterOrSortChanged)
+        gridApi.core.on.sortChanged($scope, filterOrSortChanged);
         gridApi.pinning.on.columnPinned($scope, (colDef, container) => {
           if (container) {
             saveSettings();
