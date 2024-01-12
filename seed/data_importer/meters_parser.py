@@ -461,11 +461,11 @@ class MetersParser(object):
         # check which (if any) meter readings are provided
         # there can be more than one reading type per row (e.g., both electricity
         # and natural gas in the same row)
-        provided_reading_types = []
+        provided_reading_types = set()
         for field in raw_data[0].keys():
             for header_string in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
                 if field.startswith(header_string):
-                    provided_reading_types.append(field)
+                    provided_reading_types.add(field)
                     continue
 
         if not provided_reading_types:
