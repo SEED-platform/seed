@@ -477,7 +477,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
       inventory_service.save_last_profile(newProfile.id, $scope.inventory_type);
       spinner_utility.show();
-      console.log('spinner watch profile')
       $window.location.reload();
     });
 
@@ -543,7 +542,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.filterUsingLabels = () => {
       inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-      console.log('li filterUsingLabels')
       $scope.load_inventory(1);
       $scope.isModified();
     };
@@ -596,7 +594,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.open_merge_modal = (selectedViewIds) => {
       spinner_utility.show();
-      console.log('spinner open merge modal')
       selectedViewIds.reverse();
       const modalInstance = $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/merge_modal.html`,
@@ -706,7 +703,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.run_data_quality_check = (selectedViewIds) => {
       spinner_utility.show();
-      console.log('spinner run dqc')
 
       const property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
       const taxlot_view_ids = $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
@@ -1181,10 +1177,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     };
 
     $scope.load_inventory = (page) => {
-      console.log('----li----')
       const page_size = 100;
       spinner_utility.show();
-      console.log('spinner load inventory')
       return fetchRecords(page, page_size).then((data) => {
         if (data.status === 'error') {
           let { message } = data;
@@ -1232,7 +1226,6 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       inventory_service.save_last_cycle(cycle.id);
       $scope.cycle.selected_cycle = cycle;
       get_labels();
-      console.log('li update_cycle')
       $scope.load_inventory(1);
     };
 
@@ -1910,11 +1903,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         });
         gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
         gridApi.core.on.filterChanged($scope, () => {
-          console.log('filterChanged')
           filterOrSortChanged()
         })
         gridApi.core.on.sortChanged($scope, () => {
-          console.log('sortChanged')
           filterOrSortChanged()
         });
         gridApi.pinning.on.columnPinned($scope, (colDef, container) => {
