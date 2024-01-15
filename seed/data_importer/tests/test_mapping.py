@@ -7,6 +7,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 import logging
 import os.path as osp
 import pathlib
+import unicodedata
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield.units import ureg
@@ -14,6 +15,7 @@ from quantityfield.units import ureg
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, Column
 from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import (
@@ -275,3 +277,32 @@ class TestDuplicateFileHeaders(DataMappingBaseTestCase):
 
         with self.assertRaises(Exception):
             tasks.map_data(self.import_file.pk)
+
+
+class TestUnicodeNormalization(DataMappingBaseTestCase):
+    def test_unicode_normalization(self):
+        """Test a few cases. The unicodedata.normalize('NFKD', text) method breaks out
+        the diacritics, which seems to provide the best normalization. So for the
+        tests to work, we have to run the normalization on the expected output as well."""
+        # Guillemets
+        unicode_text = "Café «Déjà Vu»"
+        expected_out = unicodedata.normalize("NFKD", "Café <<Déjà Vu>>")
+        normalized_text = normalize_unicode_and_characters(unicode_text)
+        self.assertEqual(normalized_text, expected_out)
+
+        # This passes straight through (no diacritics)
+        unicode_text = "شكرا لك"
+        normalized_text = normalize_unicode_and_characters(unicode_text)
+        self.assertEqual(normalized_text, unicode_text)
+
+        # mdash to `--`
+        unicode_text = "– über schön! —"
+        expected_out = unicodedata.normalize("NFKD", "- über schön! --")
+        normalized_text = normalize_unicode_and_characters(unicode_text)
+        self.assertEqual(normalized_text, expected_out)
+
+        # ñ stays, but need to break out the unicode diacritic in the expected out
+        unicode_text = "Ñaño malcriado"
+        expected_out = unicodedata.normalize("NFKD", "Ñaño malcriado")
+        normalized_text = normalize_unicode_and_characters(unicode_text)
+        self.assertEqual(normalized_text, expected_out)
