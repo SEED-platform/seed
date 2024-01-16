@@ -598,15 +598,24 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
      */
-    $scope.empty_units_present = () => Boolean(_.find($scope.mappings, (field) => field.suggestion_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field))));
+    $scope.empty_units_present = () => {
+      return $scope.mappings.some((field) => (
+          !field.isOmitted &&
+          field.suggestion_table_name === 'PropertyState' &&
+          field.from_units === null &&
+          ($scope.is_area_column(field) || $scope.is_eui_column(field))
+      ))
+    };
 
     /**
      * empty_fields_present: used to disable or enable the 'show & review
      *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
      */
     const suggestions_not_provided_yet = () => {
-      const no_suggestion_value = Boolean(_.find($scope.mappings, { suggestion: undefined }));
-      const no_suggestion_table_name = Boolean(_.find($scope.mappings, { suggestion_table_name: undefined }));
+      const non_omitted_mappings = $scope.mappings.filter(m => !m.isOmitted)
+      const no_suggestion_value = Boolean(_.find(non_omitted_mappings, { suggestion: undefined }));
+      const no_suggestion_table_name = Boolean(_.find(non_omitted_mappings, { suggestion_table_name: undefined }));
+
       return no_suggestion_value || no_suggestion_table_name;
     };
 

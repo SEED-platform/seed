@@ -1236,148 +1236,6 @@ SEED_app.config([
         }
       })
       .state({
-        name: 'programs',
-        url: '/accounts/{organization_id:int}/program_setup',
-        templateUrl: `${static_url}seed/partials/program_setup.html`,
-        controller: 'program_setup_controller',
-        resolve: {
-          valid_column_data_types: [
-            () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-          ],
-          valid_x_axis_data_types: [
-            () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-          ],
-          compliance_metrics: [
-            '$stateParams',
-            'compliance_metric_service',
-            ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
-          ],
-          organization_payload: [
-            'organization_service',
-            '$stateParams',
-            (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-          ],
-          cycles_payload: [
-            'cycle_service',
-            '$stateParams',
-            (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-          ],
-          property_columns: [
-            'valid_column_data_types',
-            '$stateParams',
-            'inventory_service',
-            'naturalSort',
-            (valid_column_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
-              columns = _.reject(columns, (item) => item.related || !valid_column_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
-              return columns;
-            })
-          ],
-          x_axis_columns: [
-            'valid_x_axis_data_types',
-            '$stateParams',
-            'inventory_service',
-            'naturalSort',
-            (valid_x_axis_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
-              columns = _.reject(columns, (item) => item.related || !valid_x_axis_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
-              return columns;
-            })
-          ],
-          filter_groups: [
-            '$stateParams',
-            'filter_groups_service',
-            ($stateParams, filter_groups_service) => {
-              const inventory_type = 'Property'; // just properties for now
-              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
-            }
-          ],
-          auth_payload: [
-            'auth_service',
-            '$stateParams',
-            '$q',
-            (auth_service, $stateParams, $q) => auth_service.is_authorized($stateParams.organization_id, ['requires_member']).then(
-              (data) => {
-                if (data.auth.requires_member) {
-                  return data;
-                }
-                return $q.reject('not authorized');
-              },
-              (data) => $q.reject(data.message)
-            )
-          ]
-        }
-      })
-      .state({
-        name: 'program_setup',
-        url: '/accounts/{organization_id:int}/program_setup/{id:int}',
-        templateUrl: `${static_url}seed/partials/program_setup.html`,
-        controller: 'program_setup_controller',
-        resolve: {
-          valid_column_data_types: [
-            () => ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-          ],
-          valid_x_axis_data_types: [
-            () => ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean']
-          ],
-          compliance_metrics: [
-            '$stateParams',
-            'compliance_metric_service',
-            ($stateParams, compliance_metric_service) => compliance_metric_service.get_compliance_metrics($stateParams.organization_id)
-          ],
-          organization_payload: [
-            'organization_service',
-            '$stateParams',
-            (organization_service, $stateParams) => organization_service.get_organization($stateParams.organization_id)
-          ],
-          cycles_payload: [
-            'cycle_service',
-            '$stateParams',
-            (cycle_service, $stateParams) => cycle_service.get_cycles_for_org($stateParams.organization_id)
-          ],
-          property_columns: [
-            'valid_column_data_types',
-            '$stateParams',
-            'inventory_service',
-            'naturalSort',
-            (valid_column_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
-              columns = _.reject(columns, (item) => item.related || !valid_column_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
-              return columns;
-            })
-          ],
-          x_axis_columns: [
-            'valid_x_axis_data_types',
-            '$stateParams',
-            'inventory_service',
-            'naturalSort',
-            (valid_x_axis_data_types, $stateParams, inventory_service, naturalSort) => inventory_service.get_property_columns_for_org($stateParams.organization_id).then((columns) => {
-              columns = _.reject(columns, (item) => item.related || !valid_x_axis_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
-              return columns;
-            })
-          ],
-          filter_groups: [
-            '$stateParams',
-            'filter_groups_service',
-            ($stateParams, filter_groups_service) => {
-              const inventory_type = 'Property'; // just properties for now
-              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
-            }
-          ],
-          auth_payload: [
-            'auth_service',
-            '$stateParams',
-            '$q',
-            (auth_service, $stateParams, $q) => auth_service.is_authorized($stateParams.organization_id, ['requires_member']).then(
-              (data) => {
-                if (data.auth.requires_member) {
-                  return data;
-                }
-                return $q.reject('not authorized');
-              },
-              (data) => $q.reject(data.message)
-            )
-          ]
-        }
-      })
-      .state({
         name: 'organization_column_settings',
         url: '/accounts/{organization_id:int}/column_settings/{inventory_type:properties|taxlots}',
         templateUrl: `${static_url}seed/partials/column_settings.html`,
@@ -2646,10 +2504,26 @@ SEED_app.config([
             'cycle_service',
             (cycle_service) => cycle_service.get_cycles()
           ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return inventory_service.get_property_columns_for_org(organization_id);
+            }
+          ],
           organization_payload: [
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
           ]
         }
       })
@@ -2675,6 +2549,26 @@ SEED_app.config([
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
+          ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return inventory_service.get_property_columns_for_org(organization_id);
+            }
+          ],
+          cycles: [
+            'cycle_service',
+            (cycle_service) => cycle_service.get_cycles()
           ]
         }
       })
