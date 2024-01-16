@@ -63,11 +63,12 @@ CHAR_MAPPING = {
 
 def normalize_unicode_and_characters(text):
     """Method to normalize unicode characters and replace specific characters with their normalized versions."""
-    # Normalize Unicode characters to their base form (NFKD decomposition) -- Decomposes characters with
-    # diacritics into base characters and separate diacritic characters.
-    # Unicode NFD standardizes/decomposed on a single code point for accented characters such as é, ü, and ñ.
+    # Normalize Unicode characters to their canonical form (NFC decomposition) --
+    # Combines characters and diacritics when possible.
+
+    # Unicode standardizes on a single code point for accented characters such as é, ü, and ñ.
     # More info can be seed here: https://docs.python.org/2/library/unicodedata.html#unicodedata.normalize
-    normalized_text = unicodedata.normalize('NFKD', text)
+    normalized_text = unicodedata.normalize('NFC', text)
 
     # Apply CHAR_MAPPINGS to remove certain characters to be normalized.
     normalized_text = normalized_text.translate(CHAR_MAPPING)
