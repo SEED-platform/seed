@@ -935,7 +935,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
         merged_state = merge_properties([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
-        _, _, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        _, _, view_id = match_merge_link(merged_state.id, 'PropertyState')
         view_id = PropertyView.objects.first().id
         url = reverse('api:v3:properties-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
 

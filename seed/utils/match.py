@@ -194,7 +194,7 @@ def _link_matches(matching_views, org_id, view, ViewClass):
     return matching_views.count() - 1
 
 
-def match_merge_link(view_id, StateClassName):
+def match_merge_link(state_id, StateClassName):
     """
     This method receives a -View's ID, checks for matches for that -View's
     -State across Cycles, merges matches where there are multiple in a Cycle,
@@ -214,19 +214,17 @@ def match_merge_link(view_id, StateClassName):
         ViewClass = TaxLotView
         class_name = "taxlot"
 
-    view = ViewClass.objects.get(pk=view_id)
-    given_state_id = view.state_id
-    org_id = view.state.organization_id
+    state = StateClass.objects.get(pk=state_id)
+    org_id = state.organization_id
 
     column_names = matching_criteria_column_names(org_id, StateClassName)
+    matching_criteria = matching_filter_criteria(state, column_names)
 
     # If associated -State has empty matching criteria, do nothing
-    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
-    if StateClass.objects.filter(pk=given_state_id, **empty_matching_criteria).exists():
+    if all(v is None for v in matching_criteria.values()):
         return 0, 0, None
 
     # 'state__' is appended to be able to query from the related -View Class
-    matching_criteria = matching_filter_criteria(view.state, column_names)
     state_appended_matching_criteria = {
         'state__' + col_name: v
         for col_name, v
@@ -247,7 +245,7 @@ def match_merge_link(view_id, StateClassName):
         if len(set(matching_alis)) != 1:
             raise MultipleALIError
 
-    merge_count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
+    merge_count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, state_id, StateClass)
 
     # Refresh target_view in case merges changed the target -View in last step.
     target_view = ViewClass.objects.get(state_id=target_state_id)

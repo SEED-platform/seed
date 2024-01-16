@@ -631,7 +631,7 @@ def link_views(merged_views, ViewClass, sub_progress_key):
 
     batch_size = math.ceil(len(merged_views) / 100)
     for idx, view in enumerate(merged_views):
-        _merge_count, _link_count, view_id = match_merge_link(view.id, state_class_name)
+        _merge_count, _link_count, view_id = match_merge_link(view.state_id, state_class_name)
 
         if view_id is not None:
             processed_views.append(ViewClass.objects.get(pk=view_id))

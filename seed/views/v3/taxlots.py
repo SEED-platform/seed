@@ -288,7 +288,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         try:
             with transaction.atomic():
                 merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
-                merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+                merge_count, link_count, view_id = match_merge_link(merged_state.id, 'TaxLotState')
 
         except MergeLinkPairError:
             return JsonResponse({
@@ -517,7 +517,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         )
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
+                merge_count, link_count, view_id = match_merge_link(taxlot_view.state.pk, 'TaxLotState')
 
         except MergeLinkPairError:
             return JsonResponse({
@@ -819,7 +819,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                                merge_count, link_count, view_id = match_merge_link(taxlot_view.state_id, 'TaxLotState')
+
                         except MergeLinkPairError:
                             return JsonResponse({
                                 'status': 'error',
