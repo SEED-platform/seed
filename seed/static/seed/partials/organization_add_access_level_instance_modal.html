@@ -1,22 +1,22 @@
 <div class="modal-header">
-    <h4> {$:: 'Add Level Instance to the Organizational Structure' | translate $} </h4>
+    <h4> {$:: 'Add Level Instance (Node) to the Organizational Structure' | translate $} </h4>
 </div>
 <div class="modal-body">
     <div class="row pad-bot-10">
         <div class="form-group col-sm-12">
-            <label for="selected_level_index">Select Level</label>
+            <label for="selected_level_index" translate>Select the Level at which you want to add the new Instance</label>
             <select
                 class="form-control"
                 id="selected_level_index"
                 ng-model="selected_level_index"
                 ng-change="change_selected_level_index()"
-                ng-options="i as level_name for (i, level_name) in level_names">
+                ng-options="i as ('Level ' + i + ' - ' + level_name) for (i, level_name) in level_names">
             </select>
         </div>
     </div>
     <div class="row pad-bot-10">
         <div class="form-group col-sm-12">
-            <label for="potential_parents">Select Parent</label>
+            <label for="potential_parents" translate>Select the new Instance's Parent Access Level Instance</label>
             <select
                 class="form-control"
                 id="potential_parents"
@@ -27,7 +27,7 @@
     </div>
     <div class="row pad-bot-10">
         <div class="form-group col-sm-12">
-            <label for="name">Name</label>
+            <label for="name" translate>Enter a Name for the new Access Level Instance</label>
             <input id="name" style="margin: 10px 0px;" type="text" class="form-control" ng-model="new_level_instance_name">
         </div>
     </div>

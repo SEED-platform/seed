@@ -1,15 +1,21 @@
 <div class="modal-header">
-  <h4> {$:: 'Delete Access Level Instance' | translate $}  {$ level_instance_name $}</h4>
+  <h4> {$:: 'Delete Access Level Instance' | translate $} - {$ level_instance_name $}</h4>
 </div>
 
-
-<div class="modal-body" ng-if="!can_delete_access_level_instance">
+<div class="modal-body" ng-if="!can_delete_access_level_instance" translate>
   Cannot delete this access level instance.
   <div ng-repeat="reason in reasons_why"> - {$ reason$}</div>
 </div>
 
-
 <div class="modal-body" style="display: flex; justify-content: space-between;" ng-if="can_delete_access_level_instance">
-  <div>Are you sure?</div>
-  <button type="button" class="btn btn-default btn-md btn-primary" ng-click="delete()" translate>Delete</button>
+  <div translate>ACCESS_LEVEL_DELETE_AREYOUSURE</div>
+</div>
+<div class="modal-footer" ng-if="can_delete_access_level_instance">
+  <div class="row text-center">
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="delete()" translate>Delete</button>
+  </div>
+  <div class="row text-center">
+
+    <button type="button" class="btn btn-default col-sm-6" ng-click="cancel()" translate>Dismiss</button>
+  </div>
 </div>

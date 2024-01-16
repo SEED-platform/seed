@@ -23,7 +23,11 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       spinner_utility
     ) {
       $scope.org = organization_payload.organization;
+      $scope.static_url = urls.static_url;
+      // AUTH: only owners can CRUD Access Level Tree and ALIs
+      // members and viewers can see their part of the hierarchy - read-only
       $scope.auth = auth_payload.auth;
+      $scope.btnText = 'Collapse Help';
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.access_level_names = access_level_tree.access_level_names;
 
@@ -32,6 +36,14 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
         $scope.accordionsCollapsed = collapseAll;
         const action = collapseAll ? 'hide' : 'show';
         $('.level-collapse').collapse(action);
+      };
+
+      $scope.changeText = (btnText) => {
+        if (btnText === 'Collapse Help') {
+          $scope.btnText = 'Expand Help';
+        } else {
+          $scope.btnText = 'Collapse Help';
+        }
       };
 
       $scope.open_add_level_modal = function () {
