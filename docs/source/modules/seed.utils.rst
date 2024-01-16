@@ -20,22 +20,6 @@ Buildings
     :undoc-members:
     :show-inheritance:
 
-Constants
----------
-
-.. automodule:: seed.utils.constants
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-Mappings
---------
-
-.. automodule:: seed.utils.mapping
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Organizations
 -------------
 

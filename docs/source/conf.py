@@ -56,7 +56,9 @@ autodoc_mock_imports = [
 templates_path = ['_templates']
 
 # Location of word list.
-spelling_word_list_filename = '../../.cspell.json'
+# convert the spelling list to a text file and save
+open('../../.cspell.txt', 'w').write('\n'.join(json.load(open('../../.cspell.json'))['words']))
+spelling_word_list_filename = '../../.cspell.txt'
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -91,7 +93,7 @@ release = data['version']
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
