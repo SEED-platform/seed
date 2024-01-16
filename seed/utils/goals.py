@@ -21,20 +21,20 @@ def get_eui_expression(goal):
     priority = []
 
     # Iterate through the columns in priority order
-    for column in goal.columns():
-        if column.is_extra_data:
+    for eui_column in goal.eui_columns():
+        if eui_column.is_extra_data:
             # extra_data is a JSON object and could be any data type. Convert to integer if possible
-            column_expression = Case(
-                When(**{f'state__extra_data__{column.column_name}__regex': r'^\d+$'},
-                     then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=IntegerField())),
+            eui_column_expression = Case(
+                When(**{f'state__extra_data__{eui_column.column_name}__regex': r'^\d+$'},
+                     then=Cast(KeyTextTransform(eui_column.column_name, 'state__extra_data'), output_field=IntegerField())),
                 default=Value(0),
                 output_field=IntegerField()
             )
 
         else:
-            column_expression = Cast(F(f'state__{column.column_name}'), output_field=IntegerField())
+            eui_column_expression = Cast(F(f'state__{eui_column.column_name}'), output_field=IntegerField())
 
-        priority.append(column_expression)
+        priority.append(eui_column_expression)
 
     # default value
     priority.append(Value(0, output_field=IntegerField()))

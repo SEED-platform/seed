@@ -46,30 +46,36 @@ class GoalViewTests(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
+        extra_area = Column.objects.create(
+            table_name='PropertyState',
+            column_name='extra_area',
+            organization=self.org,
+            is_extra_data=True,
+        )
 
         # properties
         # property_details_{property}{cycle}
         property_details_11 = self.property_state_factory.get_details()
         property_details_11['source_eui'] = 1
         property_details_11['gross_floor_area'] = 2
-        property_details_11['extra_data'] = {'extra_eui': '10'}
+        property_details_11['extra_data'] = {'extra_eui': '10', 'extra_area': '20'}
 
         property_details_13 = self.property_state_factory.get_details()
         property_details_13['source_eui'] = 3
         property_details_13['source_eui_weather_normalized'] = 4
         property_details_13['gross_floor_area'] = 5
-        property_details_13['extra_data'] = {'extra_eui': 20}
+        property_details_13['extra_data'] = {'extra_eui': 20, 'extra_area': 50}
 
         property_details_31 = self.property_state_factory.get_details()
         property_details_31['source_eui'] = 6
         property_details_31['gross_floor_area'] = 7
-        property_details_31['extra_data'] = {'extra_eui': 'abcd'}
+        property_details_31['extra_data'] = {'extra_eui': 'abcd', 'extra_area': 'xyz'}
 
         property_details_33 = self.property_state_factory.get_details()
         property_details_33['source_eui'] = 8
         property_details_33['source_eui_weather_normalized'] = 9
         property_details_33['gross_floor_area'] = 10
-        property_details_33['extra_data'] = {'extra_eui': 40}
+        property_details_33['extra_data'] = {'extra_eui': 40, 'extra_area': 100}
 
         self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
@@ -92,9 +98,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.root_ali,
-            column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
-            column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
-            column3=Column.objects.get(organization=self.org.id, column_name='site_eui'),
+            eui_column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
+            eui_column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
+            eui_column3=Column.objects.get(organization=self.org.id, column_name='site_eui'),
+            area_column=Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
             target_percentage=20,
             name='root_goal'
         )
@@ -103,9 +110,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
-            column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
-            column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
-            column3=None,
+            eui_column1=Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized'),
+            eui_column2=Column.objects.get(organization=self.org.id, column_name='source_eui'),
+            eui_column3=None,
+            area_column=Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
             target_percentage=20,
             name='child_goal'
         )
@@ -115,9 +123,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
             baseline_cycle=self.cycle1,
             current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
-            column1=extra_eui,
-            column2=None,
-            column3=None,
+            eui_column1=extra_eui,
+            eui_column2=None,
+            eui_column3=None,
+            area_column=extra_area,
             target_percentage=20,
             name='child_goal_extra'
         )
@@ -178,11 +187,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_create(self):
         goal_count = Goal.objects.count()
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
-        preferred_columns = [
+        goal_columns = [
             'placeholder',
             Column.objects.get(organization=self.org.id, column_name='source_eui_weather_normalized').id,
             Column.objects.get(organization=self.org.id, column_name='source_eui').id,
             Column.objects.get(organization=self.org.id, column_name='site_eui').id,
+            Column.objects.get(organization=self.org.id, column_name='gross_floor_area').id,
         ]
 
         def reset_goal_data(name):
@@ -191,9 +201,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
                 'baseline_cycle': self.cycle1.id,
                 'current_cycle': self.cycle3.id,
                 'access_level_instance': self.child_ali.id,
-                'column1': preferred_columns[1],
-                'column2': preferred_columns[2],
-                'column3': preferred_columns[3],
+                'eui_column1': goal_columns[1],
+                'eui_column2': goal_columns[2],
+                'eui_column3': goal_columns[3],
+                'area_column': goal_columns[4],
                 'target_percentage': 20,
                 'name': name
             }
@@ -223,13 +234,13 @@ class GoalViewTests(AccessLevelBaseTestCase):
         # invalid data
         goal_data['access_level_instance'] = self.child_ali.id
         goal_data['baseline_cycle'] = 999
-        goal_data['column1'] = 998
+        goal_data['eui_column1'] = 998
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 400
         errors = response.json()
         assert errors['name'] == ['goal with this name already exists.']
         assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
-        assert errors['column1'] == ['Invalid pk "998" - object does not exist.']
+        assert errors['eui_column1'] == ['Invalid pk "998" - object does not exist.']
         assert Goal.objects.count() == goal_count
 
         # cycles must be unique
@@ -242,7 +253,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # columns must be unique
         goal_data = reset_goal_data('child_goal 3')
-        goal_data['column2'] = preferred_columns[1]
+        goal_data['eui_column2'] = goal_columns[1]
 
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 400
@@ -252,23 +263,23 @@ class GoalViewTests(AccessLevelBaseTestCase):
         goal_data = reset_goal_data('')
         goal_data.pop('name')
         goal_data.pop('baseline_cycle')
-        goal_data.pop('column1')
+        goal_data.pop('eui_column1')
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 400
         errors = response.json()
         assert errors['name'] == ['This field is required.']
         assert errors['baseline_cycle'] == ['This field is required.']
-        assert errors['column1'] == ['This field is required.']
+        assert errors['eui_column1'] == ['This field is required.']
 
         # column2 and 3 are optional
         goal_data = reset_goal_data('child_goal 3')
-        goal_data['column2'] = None
-        goal_data['column3'] = None
+        goal_data['eui_column2'] = None
+        goal_data['eui_column3'] = None
         response = self.client.post(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 201
-        assert response.json()['column1'] == preferred_columns[1]
-        assert response.json()['column2'] is None
-        assert response.json()['column3'] is None
+        assert response.json()['eui_column1'] == goal_columns[1]
+        assert response.json()['eui_column2'] is None
+        assert response.json()['eui_column3'] is None
         assert Goal.objects.count() == goal_count + 1
 
         # incorrect org
@@ -290,7 +301,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         assert response.json()['target_percentage'] == 99
         assert response.json()['baseline_cycle'] == self.cycle2.id
-        assert response.json()['column1'] == original_goal.column1.id
+        assert response.json()['eui_column1'] == original_goal.eui_column1.id
 
         # invalid permission
         goal_data = {
@@ -309,18 +320,18 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.json()['name'] == 'child_goal y'
         assert response.json()['baseline_cycle'] == self.cycle1.id
-        assert response.json()['column1'] == original_goal.column1.id
+        assert response.json()['eui_column1'] == original_goal.eui_column1.id
         assert 'extra_data' not in response.json()
 
         # invalid data
         goal_data = {
-            'column1': 999,
+            'eui_column1': 999,
             'baseline_cycle': 999,
             'target_percentage': 999,
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         errors = response.json()['errors']
-        assert errors['column1'] == ['Invalid pk "999" - object does not exist.']
+        assert errors['eui_column1'] == ['Invalid pk "999" - object does not exist.']
         assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
 
     def test_portfolio_summary(self):

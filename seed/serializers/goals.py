@@ -40,9 +40,9 @@ class GoalSerializer(serializers.ModelSerializer):
             raise ValidationError('Organization mismatch.')
 
         # non Null columns must be uniuqe
-        columns = [data.get('column1'), data.get('column2'), data.get('column3')]
-        unique_columns = {column for column in columns if column is not None}
-        if len(unique_columns) < len([col for col in columns if col is not None]):
+        eui_columns = [data.get('eui_column1'), data.get('eui_column2'), data.get('eui_column3')]
+        unique_columns = {column for column in eui_columns if column is not None}
+        if len(unique_columns) < len([column for column in eui_columns if column is not None]):
             raise ValidationError('Columns must be unique.')
 
         return data

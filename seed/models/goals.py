@@ -13,17 +13,18 @@ class Goal(models.Model):
     baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name='goal_baseline_cycles')
     current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name='goal_current_cycles')
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE)
-    column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column1s')
-    # column 2 and 3 optional
-    column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column2s', blank=True, null=True)
-    column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_column3s', blank=True, null=True)
+    eui_column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column1s')
+    # eui column 2 and 3 optional
+    eui_column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column2s', blank=True, null=True)
+    eui_column3 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_eui_column3s', blank=True, null=True)
+    area_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name='goal_area_columns')
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return f"Goal - {self.name}"
 
-    def columns(self):
+    def eui_columns(self):
         """ Preferred column order """
-        columns = [self.column1, self.column2, self.column3]
-        return [column for column in columns if column]
+        eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
+        return [column for column in eui_columns if column]
