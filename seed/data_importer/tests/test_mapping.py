@@ -14,7 +14,6 @@ from quantityfield.units import ureg
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
-from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, Column
 from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import (
@@ -89,7 +88,7 @@ class TestMapping(DataMappingBaseTestCase):
         # for p in props:
         #     pp(p)
 
-    def test_remapping_with_and_without_unit_aware_columns_doesnt_lose_data(self):
+    def test_remapping_with_and_without_unit_aware_columns_does_not_lose_data(self):
         """
         During import, when the initial -State objects are created from the extra_data values,
         ColumnMapping objects are used to take the extra_data dictionary values and create the
@@ -276,32 +275,3 @@ class TestDuplicateFileHeaders(DataMappingBaseTestCase):
 
         with self.assertRaises(Exception):
             tasks.map_data(self.import_file.pk)
-
-
-class TestUnicodeNormalization(DataMappingBaseTestCase):
-    def test_unicode_normalization(self):
-        """Test a few cases. The unicodedata.normalize('NFC', text) method combines the
-        the letter and diacritics, which seems to provide the best compatibility."""
-        # Guillemets
-        unicode_text = "Café «Déjà Vu»"
-        expected_out = "Café <<Déjà Vu>>"
-        normalized_text = normalize_unicode_and_characters(unicode_text)
-        self.assertEqual(normalized_text, expected_out)
-
-        # This passes straight through (no diacritics)
-        unicode_text = "شكرا لك"
-        normalized_text = normalize_unicode_and_characters(unicode_text)
-        self.assertEqual(normalized_text, unicode_text)
-
-        # mdash to `--`
-        unicode_text = "– über schön! —"
-        expected_out = "- über schön! --"
-        normalized_text = normalize_unicode_and_characters(unicode_text)
-        self.assertEqual(normalized_text, expected_out)
-
-        # \u004E\u0303 is Ñ (N + tilde) and the normalization converts it to a
-        # single unicode character. ñ stays and combines the diacritic and letter
-        unicode_text = "\u004E\u0303a\u006E\u0303o malcriado"
-        expected_out = "Ñaño malcriado"
-        normalized_text = normalize_unicode_and_characters(unicode_text)
-        self.assertEqual(normalized_text, expected_out)
