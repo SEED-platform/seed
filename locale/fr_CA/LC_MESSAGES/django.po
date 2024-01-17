@@ -57,8 +57,38 @@ msgstr "Une liste de vos en-têtes importés."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "Un aperçu de vos données concaténées apparaîtra dans la case ci-dessous."
 
+msgid "ACCESS_LEVEL_DELETE_AREYOUSURE"
+msgstr "Êtes-vous sûr de vouloir supprimer cette instance de niveau d'accès ? L'opération supprimera également toutes les instances de niveau d'accès inférieures à celle-ci."
+
+msgid "ACCESS_LEVEL_DESCRIPTION"
+msgstr "Définissez des niveaux d'accès pour structurer le contenu de votre organisation. Une organisation peut avoir un ou plusieurs niveaux d'accès. Toutes les organisations ont au moins un niveau (niveau 1), nommé par défaut avec le nom de l'organisation. Tous les noms de niveaux d'accès sont personnalisables."
+
 msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
 msgstr "Le fichier d'instances de niveau d'accès a été téléchargé"
+
+msgid "ACCESS_LEVEL_INSTANCE_DESCRIPTION"
+msgstr "Les instances de niveau d'accès sont des sous-groupes personnalisés qui peuvent être définis au sein de chaque niveau d'accès. Ces ALI sont utilisées pour associer du contenu et restreindre l'accès des utilisateurs aux données. Il existe une seule ALI au niveau 1 de la hiérarchie, la racine du graphe en arbre. Celui-ci est nommé « racine » par défaut, mais peut être personnalisé. Tous les autres niveaux peuvent contenir une ou plusieurs ALI."
+
+msgid "ACCESS_LEVEL_ORG_OWNER"
+msgstr "En tant que propriétaire d'une organisation, vous pouvez définir la structure de votre graphe en arbre de niveaux d'accès à l'aide des boutons ci-dessous. Ce processus doit être effectué avant d'importer des données et d'ajouter des utilisateurs à votre organisation."
+
+msgid "ACCESS_LEVEL_OWNER_END"
+msgstr "Une fois que vous avez configuré le graphe en arbre des niveaux d'accès de votre organisation, vous êtes prêt à ajouter des utilisateurs et des propriétés aux différents niveaux de l'arbre."
+
+msgid "ACCESS_LEVEL_OWNER_STEP1"
+msgstr "Configurez le numéro et le nom de vos niveaux d'accès à l'aide du bouton Modifier/Ajouter des niveaux d'accès."
+
+msgid "ACCESS_LEVEL_OWNER_STEP2"
+msgstr "Téléchargez une feuille de calcul des instances de niveau d'accès. La feuille de calcul doit avoir un colonne pour chaque niveau d'accès, avec l'en-tête correspondant à votre nom de niveau personnalisé. Les instances de niveau d'accès constituent les lignes de la feuille de calcul. Assurez-vous de définir entièrement le chemin de chaque instance de niveau d’accès. Vous pouvez également sélectionner le niveau, l'instance de niveau d'accès parent et configurer le nom d'une seule nouvelle instance de niveau d'accès à l'aide du bouton Ajouter une instance de niveau d'accès."
+
+msgid "ACCESS_LEVEL_ROOT_TEXT"
+msgstr "Il n'y a qu'une seule instance de niveau d'accès autorisée à la racine du graphe en arbre (niveau 1). Cliquez sur l'icône en forme de crayon si vous souhaitez le renommer."
+
+msgid "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT"
+msgstr "Téléchargez votre structure organisationnelle sous forme de feuille de calcul. Le fichier doit inclure une colonne pour chaque niveau d'accès avec son en-tête de colonne égal au nom du niveau d'accès personnalisé. Chaque ligne doit contenir une instance de niveau d'accès, avec son ascendance entièrement définie (nom du nœud parent, nom du nœud grand-parent, etc.)"
+
+msgid "ACCESS_LEVEL_TREE_HELP_1"
+msgstr "Cette page vous permet de visualiser la structure du contenu de votre organisation. La structure est constituée de niveaux hiérarchiques qui définissent une arborescence ; c'est ce qu'on appelle les niveaux d'accès. Chaque niveau contient un ou plusieurs nœuds, appelés instances de niveau d'accès. Les autorisations sont gérées en associant le contenu et les utilisateurs à une instance de niveau d'accès particulière, regroupant et restreignant ainsi l'accès au contenu. Le nombre de niveaux d'accès dans votre structure, les noms des niveaux et les noms des instances de niveau d'accès sont personnalisables."
 
 msgid "ADD_FILES_TO"
 msgstr "Ajoutez des fichiers à {dataset_name}."
@@ -127,6 +157,18 @@ msgstr "Acceptez"
 msgid "Accept Terms of Service?"
 msgstr "Accepter les conditions d'utilisation?"
 
+msgid "Access Level Instances Errors"
+msgstr "Erreurs d’instances de niveau d’accès"
+
+msgid "Access Level Tree"
+msgstr "Graphe en arbre des niveaux d'accès"
+
+msgid "Access Levels (AL)"
+msgstr "Niveaux d'accès (AL)"
+
+msgid "Access Levels Instances (ALI)"
+msgstr "Instances de niveaux d'accès (ALI)"
+
 msgid "Acknowledge"
 msgstr "Reconnaître"
 
@@ -149,6 +191,9 @@ msgstr "Champ réel"
 msgid "Add"
 msgstr "Ajouter"
 
+msgid "Add Access Level"
+msgstr "Ajouter un niveau d'accès"
+
 msgid "Add Column"
 msgstr "Ajouter une colonne"
 
@@ -157,6 +202,12 @@ msgstr "Ajouter des fichiers de données"
 
 msgid "Add Label"
 msgstr "Ajouter une étiquette"
+
+msgid "Add Level Instance (Node) to the Organizational Structure"
+msgstr "Ajouter une instance de niveau (nœud) à la structure organisationnelle"
+
+msgid "Add Levels to the Organizational Structure Tree"
+msgstr "Ajouter des niveaux à l'arbre de la structure organisationnelle"
 
 msgid "Add Mapping"
 msgstr "Ajouter une configuration"
@@ -474,6 +525,9 @@ msgstr "Annuler"
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Impossible de supprimer des objets protégés alors que des objets apparentés existent toujours"
 
+msgid "Cannot delete this access level instance."
+msgstr "Impossible de supprimer cette instance de niveau d'accès."
+
 msgid "Change Merged Property"
 msgstr "Modifier la propriété fusionnée"
 
@@ -764,6 +818,9 @@ msgstr "ID personnalisé 1 (propriété)"
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "ID personnalisé 1 (lot d'impôt)"
 
+msgid "Custom Name for Level"
+msgstr "Nom personnalisé pour le niveau"
+
 msgid "Custom Reports"
 msgstr "Rapports"
 
@@ -913,6 +970,9 @@ msgstr "Champs d'affichage par défaut"
 
 msgid "Delete"
 msgstr "Supprimer"
+
+msgid "Delete Access Level Instance"
+msgstr "Supprimer une instance de niveau d'accès"
 
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
@@ -1064,6 +1124,9 @@ msgstr "Pour les champs «données supplémentaires», cela permet à l'utilisat
 msgid "Edit"
 msgstr "Modifier"
 
+msgid "Edit Access Level Instance Name"
+msgstr "Modifier le nom de l'instance du niveau d'accès"
+
 msgid "Edit Name"
 msgstr "Modifier le nom"
 
@@ -1116,6 +1179,9 @@ msgstr "Anglais"
 msgid "Enter Email Address"
 msgstr "Entrer l'adresse e-mail"
 
+msgid "Enter a Name for the new Access Level Instance"
+msgstr "Entrez un nom pour la nouvelle instance de niveau d'accès"
+
 msgid "Enter a valid email address."
 msgstr "Entrez une adresse mail valide."
 
@@ -1142,6 +1208,9 @@ msgstr "Erreur"
 
 msgid "Error Processing Data"
 msgstr "Erreur lors du traitement des données"
+
+msgid "Example Access Level Tree"
+msgstr "Exemple de graphe en arbre de niveaux d'accès"
 
 msgid "Example Usage"
 msgstr "Exemple d'utilisation"
@@ -1648,6 +1717,9 @@ msgstr "Axe gauche"
 msgid "Left Half"
 msgstr "Moitié gauche"
 
+msgid "Level"
+msgstr "Niveau"
+
 msgid "Loading data..."
 msgstr "Chargeant les données ..."
 
@@ -1766,6 +1838,9 @@ msgstr "Gérer la conformité"
 
 msgid "Managed by"
 msgstr "Dirigé par"
+
+msgid "Managing the Access Level Tree"
+msgstr "Graphe en arbre des niveaux d'accès"
 
 msgid "Manual Matching"
 msgstr "Correspondance manuelle"
@@ -1983,7 +2058,7 @@ msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
 msgstr "Il existe {num_property_columns} colonnes de propriétés et {num_taxlot_columns} colonnes de lot d'impôt qui vous sont accessibles."
 
 msgid "Name"
-msgstr "nom"
+msgstr "Nom"
 
 msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
@@ -2491,6 +2566,9 @@ msgstr "Lots d'impôt connexes"
 msgid "Remove"
 msgstr "Supprimer"
 
+msgid "Remove Access Level"
+msgstr "Supprimer le niveau d'accès"
+
 msgid "Remove Column Mappings"
 msgstr "Supprimer les mappages de colonnes"
 
@@ -2910,6 +2988,12 @@ msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire app
 msgid "Select one or more filter groups to load your inventory."
 msgstr "Sélectionnez un ou plusieurs groupes de filtres pour charger votre inventaire."
 
+msgid "Select the Level at which you want to add the new Instance"
+msgstr "Sélectionnez le niveau auquel vous souhaitez ajouter la nouvelle instance"
+
+msgid "Select the new Instance's Parent Access Level Instance"
+msgstr "Sélectionnez l'instance de niveau d'accès parent de la nouvelle instance"
+
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
 
@@ -3037,6 +3121,12 @@ msgstr "Etat (Propriété)"
 
 msgid "State (Tax Lot)"
 msgstr "État (lot d'impôt)"
+
+msgid "Step 1: Add Access Levels"
+msgstr "Étape 1: ajouter des niveaux d'accès"
+
+msgid "Step 2: Upload Access Level Instances"
+msgstr "Étape 2: Télécharger les instances de niveau d'accès"
 
 msgid "Sub-Org Name"
 msgstr "Nom de la sous-organisation"

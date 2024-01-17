@@ -4972,6 +4972,10 @@ ul.r-list {
   }
 }
 
+.level0 {
+  padding: 6px 10px 5px;
+}
+
 .level1 {
   margin: 0 9px;
   background-color: #cdcdcd;
@@ -5072,6 +5076,20 @@ ul.r-list {
   margin: 10px;
   padding: 10px 50px;
   font-size: 1.3em;
+}
+
+.tree-image {
+  width: 55%;
+  padding: 20px 100px;
+}
+
+.tree-button {
+  margin-right: 10px;
+}
+
+.al-label {
+  margin-top: 15px;
+  font-size: 1.1em;
 }
 
 #map {

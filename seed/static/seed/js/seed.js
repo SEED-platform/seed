@@ -1409,9 +1409,9 @@ SEED_app.config([
             '$q',
             (auth_service, $stateParams, $q) => {
               const organization_id = $stateParams.organization_id;
-              return auth_service.is_authorized(organization_id, ['requires_owner'])
+              return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
                 .then((data) => {
-                  if (data.auth.requires_owner) {
+                  if (data.auth.requires_viewer) {
                     return data;
                   }
                   return $q.reject('not authorized');
