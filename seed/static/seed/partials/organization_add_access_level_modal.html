@@ -7,7 +7,7 @@
         <!-- <ul style="padding: 0px;"> -->
             <div ng-repeat="(i, level_name) in new_access_level_names track by i" class="form-group">
               <div class="col-sm-4">
-                <label class="al-label" for="al_{{$i}}">{$:: 'Custom Name for Level' | translate $} {$:: i $} </label>
+                <label class="al-label" for="al_{{$i}}">{$:: 'Custom Name for Level' | translate $} {$:: i+1 $} </label>
               </div>
               <div class="col-sm-8">
                 <input class="form-control" style="margin: 10px 0px;" id="al_{{$i}}" type="text" ng-model="new_access_level_names[i]">
