@@ -550,6 +550,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
 
         property_view = self.property_view_factory.get_property_view()
         url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        url += "?organization_id=" + str(self.org.id)
 
         payload = {
             'type': 'Electric',
@@ -561,6 +562,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         meter_pk = response.json()['id']
 
         url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+        url += "?organization_id=" + str(self.org.id)
 
         # prepare the data in bulk format
         reading1 = {
