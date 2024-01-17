@@ -223,9 +223,7 @@ Max OSX
 Version 2.5.2
 -------------
 
-- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile
-to run since the migration requires the recalculation of all the normalized addresses to parse
-bldg correct and to cast the result as a string and not a bytestring.
+- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------
