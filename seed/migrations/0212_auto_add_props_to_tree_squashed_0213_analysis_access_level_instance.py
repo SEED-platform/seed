@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
     replaces = [('seed', '0211_auto_add_props_to_tree'), ('seed', '0212_auto_20230623_1556'), ('seed', '0213_analysis_access_level_instance')]
 
     dependencies = [
-        ('seed', '0210_natural_sort'),
+        ('seed', '0211_auto_20240109_1348'),
         ('orgs', '0029_auto_20230413_1250'),
     ]
 
