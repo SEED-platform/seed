@@ -37,6 +37,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             spinner_utility,
         ) {
             $scope.organization = organization_payload.organization;
+            // Ii there a better way to convert string units to displayUnits?
+            const area_units = $scope.organization.display_units_area.replace('**2', '²');
+            const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
             $scope.cycles = cycles.cycles;
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.level_names = access_level_tree.access_level_names;
@@ -454,8 +457,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 const baseline_cols = [
                     { field: 'baseline_cycle', displayName: 'Cycle'},
-                    { field: 'baseline_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
-                    { field: 'baseline_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'baseline_sqft', displayName: `Area (${area_units})`, cellFilter: 'number'},
+                    { field: 'baseline_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number'},
                     // ktbu acts as a derived column. Disable sorting filtering
                     {
                         field: 'baseline_kbtu', displayName: 'kBTU', cellFilter: 'number',
@@ -466,8 +469,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle'},
-                    { field: 'current_sqft', displayName: 'Sq. FT', cellFilter: 'number'},
-                    { field: 'current_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'current_sqft', displayName: `Area (${area_units})`, cellFilter: 'number'},
+                    { field: 'current_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number'},
                     {
                         field: 'current_kbtu', displayName: 'kBTU', cellFilter: 'number',
                         enableFiltering: false, enableSorting: false,
@@ -797,18 +800,18 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 const baseline_cols = [
                     { field: 'baseline_cycle', displayName: 'Cycle' },
-                    { field: 'baseline_total_sqft', displayName: 'Total Sq. FT', cellFilter: 'number'},
+                    { field: 'baseline_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number'},
                     { field: 'baseline_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number'},
-                    { field: 'baseline_weighted_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'baseline_weighted_eui', displayName: `EUI (${eui_units})`, cellFilter: 'number'},
                 ]
                 const current_cols = [
                     { field: 'current_cycle', displayName: 'Cycle' },
-                    { field: 'current_total_sqft', displayName: 'Total Sq. FT', cellFilter: 'number'},
+                    { field: 'current_total_sqft', displayName: `Total Area (${area_units})`, cellFilter: 'number'},
                     { field: 'current_total_kbtu', displayName: 'Total kBTU', cellFilter: 'number'},
-                    { field: 'current_weighted_eui', displayName: 'EUI', cellFilter: 'number'},
+                    { field: 'current_weighted_eui', displayName: `EUI (${eui_units})` , cellFilter: 'number'},
                 ]
                 const calc_cols = [
-                    { field: 'sqft_change', displayName: 'Sq. FT % Change' },
+                    { field: 'sqft_change', displayName: 'Area % Change' },
                     {
                         field: 'eui_change', displayName: 'EUI % Improvement', cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => {
                             return row.entity.eui_change >= $scope.goal.target_percentage ? 'above-target' : 'below-target'
