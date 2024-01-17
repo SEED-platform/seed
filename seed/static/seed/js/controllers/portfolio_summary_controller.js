@@ -44,20 +44,23 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             $scope.goal = {};
             $scope.columns = property_columns;
             $scope.cycle_columns = [];
-            $scope.goal_columns = [];
+            $scope.area_columns = [];
+            $scope.eui_columns = [];
             let matching_column_names = [];
             let table_column_ids = [];
 
             const initialize_columns = () => {
                 $scope.columns.forEach(c => {
-                    const default_display = c.column_name == $scope.organization.property_display_field
-                    const matching = c.is_matching_criteria
-                    const eui = c.data_type === 'eui'
-                    const other = ['gross_floor_area', 'property_name', 'property_type'].includes(c.column_name)
+                    const default_display = c.column_name == $scope.organization.property_display_field;
+                    const matching = c.is_matching_criteria;
+                    const area = c.data_type === 'area';
+                    const eui = c.data_type === 'eui';
+                    const other = ['property_name', 'property_type'].includes(c.column_name);
 
-                    if (default_display || matching || eui || other ) table_column_ids.push(c.id)
-                    if (eui) $scope.goal_columns.push(c)
-                    if (matching) matching_column_names.push(c.column_name)
+                    if (default_display || matching || eui || area || other ) table_column_ids.push(c.id);
+                    if (eui) $scope.eui_columns.push(c);
+                    if (area) $scope.area_columns.push(c);
+                    if (matching) matching_column_names.push(c.column_name);
                 })
             }
             initialize_columns()
@@ -107,13 +110,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     ['Current Cycle', get_cycle_name($scope.goal.current_cycle)],
                     [level_name, access_level_instance],
                     ['Portfolio Target', `${$scope.goal.target_percentage} %`],
-                    ['Primary Column', get_column_name($scope.goal.column1)],
+                    ['Area Column', get_column_name($scope.goal.area_column)],
+                    ['Primary Column', get_column_name($scope.goal.eui_column1)],
                 ]
-                if ($scope.goal.column2) {
-                    $scope.goal_details.push(['Secondary Column', get_column_name($scope.goal.column2)])
+                if ($scope.goal.eui_column2) {
+                    $scope.goal_details.push(['Secondary Column', get_column_name($scope.goal.eui_column2)])
                 }
-                if ($scope.goal.column3) {
-                    $scope.goal_details.push(['Tertiary Column', get_column_name($scope.goal.column3)])
+                if ($scope.goal.eui_column3) {
+                    $scope.goal_details.push(['Tertiary Column', get_column_name($scope.goal.eui_column3)])
                 }
             }
 
@@ -150,7 +154,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     resolve: {
                         organization: () => $scope.organization,
                         cycles: () => $scope.cycles,
-                        goal_columns: () => $scope.goal_columns,
+                        area_columns: () => $scope.area_columns,
+                        eui_columns: () => $scope.eui_columns,
                         access_level_tree: () => access_level_tree,
                         goal: () => $scope.goal,
                     },
@@ -385,10 +390,10 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             }
 
             const format_properties = (properties) => {
-                const gfa = $scope.columns.find(col => col.column_name == 'gross_floor_area')
-                const preferred_columns = [$scope.columns.find(c => c.id == $scope.goal.column1)]
-                if ($scope.goal.column2) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.column2))
-                if ($scope.goal.column3) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.column3))
+                const area = $scope.columns.find(c => c.id == $scope.goal.area_column)
+                const preferred_columns = [$scope.columns.find(c => c.id == $scope.goal.eui_column1)]
+                if ($scope.goal.eui_column2) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.eui_column2))
+                if ($scope.goal.eui_column3) preferred_columns.push($scope.columns.find(c => c.id == $scope.goal.eui_column3))
 
                 const baseline_cycle_name = $scope.cycles.find(c => c.id == $scope.goal.baseline_cycle).name
                 const current_cycle_name = $scope.cycles.find(c => c.id == $scope.goal.current_cycle).name
@@ -415,12 +420,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     // add baseline stats
                     if (baseline) {
                         property.baseline_cycle = baseline_cycle_name
-                        property.baseline_sqft = baseline[gfa.name]
+                        property.baseline_sqft = baseline[area.name]
                     }
                     // add current stats
                     if (current) {
                         property.current_cycle = current_cycle_name
-                        property.current_sqft = current[gfa.name]
+                        property.current_sqft = current[area.name]
                     }
                     // comparison stats
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
@@ -564,14 +569,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 ** cant fitler on cycle - cycle is not a column
                 ** cant filter on kbtu, sqft_change, eui_change - not real columns. calc'ed from eui and sqft. (similar to derived columns)
                 */
-                let eui_column = $scope.columns.find(c => c.id == $scope.goal.column1)
-                let gfa_column = $scope.columns.find(c => c.column_name == 'gross_floor_area')
+                let eui_column = $scope.columns.find(c => c.id == $scope.goal.eui_column1)
+                let area_column = $scope.columns.find(c => c.id == $scope.goal.area_column)
 
                 const cycle_column_lookup = {
                     'baseline_eui': eui_column.name,
-                    'baseline_sqft': gfa_column.name,
+                    'baseline_sqft': area_column.name,
                     'current_eui': eui_column.name,
-                    'current_sqft': gfa_column.name,
+                    'current_sqft': area_column.name,
                 }
                 $scope.cycle_columns = []
 

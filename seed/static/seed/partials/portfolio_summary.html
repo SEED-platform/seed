@@ -30,7 +30,7 @@
     <!-- GOAL DETAILS -->
     <div class="goal-details-container" ng-if="valid">
         <div class="goal-details-column" style="margin-left: 10px;">
-            <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
+            <div ng-repeat="detail in goal_details.slice(0, 4)" class="goal-detail">
                 <div class="goal-detail-key" style="width: 100px">
                     {$ detail[0] $}:
                 </div>
@@ -40,7 +40,7 @@
             </div>
         </div>
         <div class="goal-details-column">
-            <div ng-repeat="detail in goal_details.slice(3)" class="goal-detail">
+            <div ng-repeat="detail in goal_details.slice(4)" class="goal-detail">
                 <div class="goal-detail-key">
                     {$ detail[0] $}:
                 </div>
@@ -50,7 +50,6 @@
             </div>
 
         </div>
-
     </div>
     <div id="portfolio-summary-selection-wrapper" class="row">
 

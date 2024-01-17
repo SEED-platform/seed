@@ -17,7 +17,7 @@ from seed.models import AccessLevelInstance, Goal, PropertyView
 from seed.serializers.goals import GoalSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.goals import get_eui_expression
+from seed.utils.goals import get_eui_expression, get_area_expression
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
@@ -114,14 +114,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             # Create annotations for kbtu calcs. 'eui' is based on goal column priority
             property_views = property_views.annotate(
                 eui=get_eui_expression(goal),
-                sqft=ExpressionWrapper(F('state__gross_floor_area'), output_field=IntegerField()),
+                area=get_area_expression(goal),
             ).annotate(
-                kbtu=F('eui') * F('sqft')
+                kbtu=F('eui') * F('area')
             )
 
             aggregated_data = property_views.aggregate(
                 total_kbtu=Sum('kbtu'),
-                total_sqft=Sum('sqft')
+                total_sqft=Sum('area')
             )
 
             weighted_eui = int(aggregated_data['total_kbtu'] / aggregated_data['total_sqft']) if aggregated_data['total_sqft'] else None

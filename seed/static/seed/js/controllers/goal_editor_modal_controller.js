@@ -12,7 +12,8 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         'goal_service',
         'organization',
         'cycles',
-        'goal_columns',
+        'area_columns',
+        'eui_columns',
         'access_level_tree',
         'goal',
         function (
@@ -24,7 +25,8 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             goal_service,
             organization,
             cycles,
-            goal_columns,
+            area_columns,
+            eui_columns,
             access_level_tree,
             goal,
         ) {
@@ -34,10 +36,11 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.all_level_names = []
             access_level_tree.access_level_names.forEach((level, i) => $scope.all_level_names.push({index: i, name: level}))
             $scope.cycles = cycles;
-            $scope.goal_columns = goal_columns;
+            $scope.area_columns = area_columns;
+            $scope.eui_columns = eui_columns;
             // allow "none" as an option
-            if (!goal_columns.find(c => c.id === null && c.displayName === '')) {
-                $scope.goal_columns.unshift({ id: null, displayName: '' });
+            if (!eui_columns.find(c => c.id === null && c.displayName === '')) {
+                $scope.eui_columns.unshift({ id: null, displayName: '' });
             }
             $scope.valid = false;
 
@@ -106,8 +109,13 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
                     } else {
                         $scope.errors = [`Unexpected response status: ${result.status}`];
                         let result_errors = 'errors' in result.data ? result.data.errors : result.data
-                        for (let key in result_errors) {
-                            $scope.errors.push(`${JSON.stringify(result_errors[key])}`)
+                        if (result_errors instanceof Object) {
+                            for (let key in result_errors) {
+                                let key_string = key == 'non_field_errors' ? 'Error' : key;
+                                $scope.errors.push(`${key_string}: ${JSON.stringify(result_errors[key])}`)
+                            }
+                        } else {
+                            $scope.errors = $scope.errors.push(result_errors)
                         }
                     };
                 });

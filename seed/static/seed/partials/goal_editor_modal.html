@@ -74,7 +74,7 @@
                                             required>
                                         </select>
                                     </li>
-                                    <li ng-if="true" class="r-info">
+                                    <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Current Cycle will be measured against Baseline Cycle</span>
                                     </li>
                                 </ul>
@@ -103,49 +103,65 @@
                                         </select>
                                     </li>
 
-                                    <li ng-if="true" class="r-info">
+                                    <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Portfolio Summary will only include properties belonging to the following Access Level Instance.</span>
                                     </li>
                                 </ul>
                             </div>
 
                             <div id="goal-detail-col2" class="r-column table_list_container">
+                                <!-- AREA Target Column Selection -->
+                                <ul class="r-list">
+                                    <li class="r-list-header">Area Target Column </li>
+                                    <!-- Area Column -->
+                                    <li class="r-row r-row-centered">
+                                        <label for="select-area-column" class="r-pad-right-5 goal-label">Column</label>
+                                        <select id="select-area-column" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in area_columns" ng-change=""
+                                            ng-model="goal.area_column" required>
+                                        </select>
+                                    </li>
+                                    <li class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><i>Not seeing your column? Update column data type to "area" in Column Settings.</i>
+                                    </li>
+                                </ul>
                                 <!-- EUI Target Columns -->
                                 <ul class="r-list">
-                                    <li class="r-list-header">EUI Target Columns</li>
-                                    <!-- Column1 -->
+                                    <li class="r-list-header">EUI Target Columns </li>
+                                    <!-- EUI Column1 -->
                                     <li class="r-row r-row-centered">
-                                        <label for="select-column1" class="r-pad-right-5 goal-label">Primary Column</label>
-                                        <select id="select-column1" class="form-control goal-form-control"
-                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                        <label for="select-eui-column1" class="r-pad-right-5 goal-label">Primary Column</label>
+                                        <select id="select-eui-column1" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in eui_columns"
                                             ng-change=""
-                                            ng-model="goal.column1"
+                                            ng-model="goal.eui_column1"
                                             required>
                                         </select>
                                     </li>
-                                    <!-- Column2 -->
-                                    <li class="r-row r-row-centered">
-                                        <label for="select-column2" class="r-pad-right-5 goal-label">Secondary Column</label>
-                                        <select id="select-column2" class="form-control goal-form-control"
-                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                    <!-- EUI Column2 -->
+                                    <li class="r-row r-row-centered" ng-if="goal.eui_column1">
+                                        <label for="select-eui-column2" class="r-pad-right-5 goal-label">Secondary Column</label>
+                                        <select id="select-eui-column2" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in eui_columns"
                                             ng-change=""
-                                            ng-model="goal.column2"
-                                            ng-disabled="!goal.column1">
+                                            ng-model="goal.eui_column2"
+                                            ng-disabled="!goal.eui_column1">
                                         </select>
                                     </li>
-                                    <!-- Column3 -->
-                                    <li class="r-row r-row-centered">
-                                        <label for="select-column3" class="r-pad-right-5 goal-label">Tertiary Column</label>
-                                        <select id="select-column3" class="form-control goal-form-control"
-                                            ng-options="column.id as column.displayName for column in goal_columns"
+                                    <!-- EUI Column3 -->
+                                    <li class="r-row r-row-centered" ng-if="goal.eui_column2">
+                                        <label for="select-eui-column3" class="r-pad-right-5 goal-label">Tertiary Column</label>
+                                        <select id="select-eui-column3" class="form-control goal-form-control"
+                                            ng-options="column.id as column.displayName for column in eui_columns"
                                             ng-change=""
-                                            ng-model="goal.column3"
-                                            ng-disabled="!goal.column2">
+                                            ng-model="goal.eui_column3"
+                                            ng-disabled="!goal.eui_column2">
                                         </select>
                                     </li>
-                                    <li ng-if="true" class="r-info">
-                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both
-                                        primary and secondary are unavailable.</span>
+                                    <li class="r-info">
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+                                        <!-- <span> The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both primary and secondary are unavailable.</span> -->
+                                        <span><i>Not seeing your column? Update column data type to "eui" in Column Settings.</i></span>
                                     </li>
                                 </ul>
                                 <!-- Target -->
@@ -157,7 +173,7 @@
                                         min="0" max="100" style="padding-left: 5px"
                                         required/>
                                     </li>
-                                    <li ng-if="true" class="r-info">
+                                    <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span>Target to quantify Portfolio EUI improvement. Must be between 0 and 100.</span>
                                     </li>
                                 </ul>
