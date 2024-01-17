@@ -80,14 +80,6 @@ Token Generator
     :undoc-members:
     :show-inheritance:
 
-URLs
-----
-
-.. automodule:: seed.urls
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Utils
 -----
 
