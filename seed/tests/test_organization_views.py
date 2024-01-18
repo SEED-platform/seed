@@ -178,7 +178,7 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
 
     def test_report(self):
         url = reverse('api:v3:organizations-report', args=[self.org.pk])
-        url += "?x_var=1&y_var=2&start=2000-01-01&end=2023-01-01"
+        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
 
         # child user cannot
         self.login_as_child_member()
@@ -192,7 +192,7 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
 
     def test_report_aggregated(self):
         url = reverse('api:v3:organizations-report-aggregated', args=[self.org.pk])
-        url += "?x_var=building_count&y_var=gross_floor_area&start=2000-01-01&end=2023-01-01"
+        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
 
         # child user cannot
         self.login_as_child_member()
@@ -206,7 +206,7 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
 
     def test_report_export(self):
         url = reverse('api:v3:organizations-report-export', args=[self.org.pk])
-        url += "?x_var=building_count&y_var=gross_floor_area&start=2000-01-01&end=2023-01-01"
+        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
         url += "&x_label=x&y_label=y"
 
         # child user cannot

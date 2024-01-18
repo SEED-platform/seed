@@ -1394,7 +1394,7 @@ class TestMultiCycleImport(DataMappingBaseTestCase):
         self.property_state_factory.get_property_state(**base_details)
 
         base_details['property_name'] = 'p_default_b'
-        base_details['year_ending'] = date(2023, 4, 10)
+        base_details['year_ending'] = date(2000, 4, 10)
         self.property_state_factory.get_property_state(**base_details)
 
         # Properties with missing year_ending will be placed in default cycle

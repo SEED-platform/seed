@@ -1412,9 +1412,9 @@ SEED_app.config([
             '$q',
             (auth_service, $stateParams, $q) => {
               const organization_id = $stateParams.organization_id;
-              return auth_service.is_authorized(organization_id, ['requires_owner'])
+              return auth_service.is_authorized(organization_id, ['requires_viewer', 'requires_owner'])
                 .then((data) => {
-                  if (data.auth.requires_owner) {
+                  if (data.auth.requires_viewer) {
                     return data;
                   }
                   return $q.reject('not authorized');
@@ -2708,10 +2708,26 @@ SEED_app.config([
             'cycle_service',
             (cycle_service) => cycle_service.get_cycles()
           ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return inventory_service.get_property_columns_for_org(organization_id);
+            }
+          ],
           organization_payload: [
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
           ]
         }
       })
@@ -2737,6 +2753,26 @@ SEED_app.config([
             'user_service',
             'organization_service',
             (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
+          ],
+          filter_groups: [
+            '$stateParams',
+            'filter_groups_service',
+            ($stateParams, filter_groups_service) => {
+              const inventory_type = 'Property'; // just properties for now
+              return filter_groups_service.get_filter_groups(inventory_type, $stateParams.organization_id);
+            }
+          ],
+          property_columns: [
+            'inventory_service',
+            'user_service',
+            (inventory_service, user_service) => {
+              const organization_id = user_service.get_organization().id;
+              return inventory_service.get_property_columns_for_org(organization_id);
+            }
+          ],
+          cycles: [
+            'cycle_service',
+            (cycle_service) => cycle_service.get_cycles()
           ]
         }
       })

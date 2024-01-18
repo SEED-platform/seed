@@ -545,6 +545,49 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 3)
 
+    def test_bulk_import_duplicate_dates(self):
+        """Bulk Meter Readings with duplicate start_time and end_time pairs will be rejected to avoid sql errors"""
+
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': property_view.id})
+        url += "?organization_id=" + str(self.org.id)
+
+        payload = {
+            'type': 'Electric',
+            'source': 'Manual Entry',
+            'source_id': '1234567890',
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        meter_pk = response.json()['id']
+
+        url = reverse('api:v3:property-meter-readings-list', kwargs={'property_pk': property_view.id, 'meter_pk': meter_pk})
+        url += "?organization_id=" + str(self.org.id)
+
+        # prepare the data in bulk format
+        reading1 = {
+            "start_time": "2022-01-05 05:00:00",
+            "end_time": "2022-01-05 06:00:00",
+            "reading": 10,
+            "source_unit": "Wh (Watt-hours)",
+            # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+            "conversion_factor": 0.00341,
+        }
+        reading2 = dict(reading1)
+        reading2["end_time"] = "2022-01-05 07:00:00"
+        payload = [reading1, reading2]
+
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()[0]['reading'], 10)
+        self.assertEqual(response.json()[1]['reading'], 10)
+
+        # Duplicate start and end times will be rejected
+        payload = [reading1, reading1]
+        response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['non_field_errors'], ['Error: Each reading must have a unique combination of start_time end end_time.'])
+
     def test_delete_meter_readings(self):
         # would be nice nice to make a factory out of the meter / meter reading requests
         property_view = self.property_view_factory.get_property_view()

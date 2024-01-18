@@ -29,7 +29,7 @@ angular.module('BE.seed.controller.organization_delete_access_level_instance_mod
       $scope.can_delete_access_level_instance = undefined;
       $scope.reasons_why = [];
 
-      spinner_utility.show();;
+      spinner_utility.show();
       organization_service.can_delete_access_level_instance(org_id, $scope.instance_id)
         .then(res => {
           $scope.can_delete_access_level_instance = res.can_delete;
@@ -45,5 +45,9 @@ angular.module('BE.seed.controller.organization_delete_access_level_instance_mod
         organization_service.delete_access_level_instance(org_id, $scope.instance_id)
         .then(_ => $uibModalInstance.close())
         .catch(err => {Notification.error(err)});
+      }
+
+      $scope.cancel = () => {
+        $uibModalInstance.dismiss('cancel');
       }
     }]);

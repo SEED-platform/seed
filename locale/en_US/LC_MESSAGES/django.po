@@ -56,8 +56,38 @@ msgstr "A list of your imported headers."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "A preview of your concatenated data will appear in the box below."
 
+msgid "ACCESS_LEVEL_DELETE_AREYOUSURE"
+msgstr "Are you sure you want to delete this Access Level Instance? The operation will also delete all Access Level Instances below this one."
+
+msgid "ACCESS_LEVEL_DESCRIPTION"
+msgstr " Define access levels to structure your organization's content. An organization can have one or more access levels. All organizations have at least one level (level 1), which is named with the organization name by default. All access level names are customizable."
+
 msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
 msgstr "Access Level Instances File has been uploaded"
+
+msgid "ACCESS_LEVEL_INSTANCE_DESCRIPTION"
+msgstr "Access level instances are custom subgroups that can be defined within each access level. These ALIs are used to associate content together and restrict user access to data. There is a single ALI in level 1 of the hierarchy, the root of the tree. This is named 'root' by default, but can be customized. All other levels can contain one or more ALIs."
+
+msgid "ACCESS_LEVEL_ORG_OWNER"
+msgstr "As an organization owner, you can set the structure of your access level tree using the buttons below. This process should be performed prior to importing data and adding users to your organization."
+
+msgid "ACCESS_LEVEL_OWNER_END"
+msgstr "Once you have configured your organization's access level tree, you are ready to add users and properties to different levels of the tree."
+
+msgid "ACCESS_LEVEL_OWNER_STEP1"
+msgstr "Configure the number and name of your access levels using the Edit/Add Access Levels button."
+
+msgid "ACCESS_LEVEL_OWNER_STEP2"
+msgstr "Upload a spreadsheet of access level instances. The spreadsheet should have a column for each access level, with the header matching your customized level name. Access level instances make up the rows of the spreadsheet. Make sure to fully define the path of each access level instance. You can also select the level, parent access level instance, and configure the name of a single new access level instance using the Add Access Level Instance button."
+
+msgid "ACCESS_LEVEL_ROOT_TEXT"
+msgstr "There is only one access level instance allowed at the root of the tree (level 1). Click on the pencil icon if you wish to rename it."
+
+msgid "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT"
+msgstr "Upload your Organizational Structure in spreadsheet form. The file should include a column for each access level with its column header equal to the custom access level name. Each row should contain an access level instance, with its ancestry fully defined (parent node name, grand-parent node name, etc.)"
+
+msgid "ACCESS_LEVEL_TREE_HELP_1"
+msgstr "This page allows you to view the structure of your organization's content. The structure is made up of hierarchical levels that define a tree; these are called access levels. Each level contains one or more nodes, called access level instances. Permissions are managed by associating content and users with a particular access level instance, thereby grouping and restricting access to the content. The number of access levels in your structure, the names of the levels, and the names of the access level instances are customizable."
 
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
@@ -77,8 +107,20 @@ msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 msgid "ALSO_DELETE_BATCH_ANALYSES"
 msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}."
 
+msgid "ANALYSIS_DESCRIPTION_BETTER"
+msgstr "The BETTER analysis leverages better.lbl.gov to calculate energy, cost, and GHG emission savings by comparing the property's change point model with a benchmarked model. The results include saving potential and a list of recommended high-level energy conservation measures."
+
+msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
+
+msgid "ANALYSIS_DESCRIPTION_CO2"
+msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
+
 msgid "ANALYSIS_DESCRIPTION_EEEJ"
 msgstr "The EEEJ Analysis uses each property's address to identify the 2010 census tract. Based on census tract, disadvantaged community classification and energy burden information can be retrieved from the CEJST dataset. The number of affordable housing locations is retrieved from HUD datasets. Location is used to generate a link to view an EJScreen Report providing more demographic indicators."
+
+msgid "ANALYSIS_DESCRIPTION_EUI"
+msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
 
 msgid "AND"
 msgstr "AND"
@@ -113,6 +155,18 @@ msgstr "Accept"
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
 
+msgid "Access Level Instances Errors"
+msgstr "Access Level Instances Errors"
+
+msgid "Access Level Tree"
+msgstr "Access Level Tree"
+
+msgid "Access Levels (AL)"
+msgstr "Access Levels (AL)"
+
+msgid "Access Levels Instances (ALI)"
+msgstr "Access Levels Instances (ALI)"
+
 msgid "Acknowledge"
 msgstr "Acknowledge"
 
@@ -135,6 +189,9 @@ msgstr "Actual Field"
 msgid "Add"
 msgstr "Add"
 
+msgid "Add Access Level"
+msgstr "Add Access Level"
+
 msgid "Add Column"
 msgstr "Add Column"
 
@@ -143,6 +200,12 @@ msgstr "Add Data Files"
 
 msgid "Add Label"
 msgstr "Add Label"
+
+msgid "Add Level Instance (Node) to the Organizational Structure"
+msgstr "Add Level Instance (Node) to the Organizational Structure"
+
+msgid "Add Levels to the Organizational Structure Tree"
+msgstr "Add Levels to the Organizational Structure Tree"
 
 msgid "Add Mapping"
 msgstr "Add Mapping"
@@ -355,6 +418,9 @@ msgstr "Buildings"
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "By clicking the Log In button you accept the NREL Data Terms."
 
+msgid "CLICK_LEGEND"
+msgstr "Click a label below to show/hide it on the chart"
+
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Error: New column name cannot match previous name."
 
@@ -412,6 +478,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
 
+msgid "CONFIGURE_PROGRAM"
+msgstr "Need to configure your Program?"
+
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
 
@@ -449,6 +518,9 @@ msgstr "Cancel"
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Cannot delete protected objects while related objects still exist"
 
+msgid "Cannot delete this access level instance."
+msgstr "Cannot delete this access level instance."
+
 msgid "Change Merged Property"
 msgstr "Change Merged Property"
 
@@ -471,6 +543,9 @@ msgstr "Changed By"
 
 msgid "Chart Legend"
 msgstr "Chart Legend"
+
+msgid "Chart Options"
+msgstr "Chart Options"
 
 msgid "Choose Existing Organization:"
 msgstr "Choose Existing Organization:"
@@ -734,6 +809,9 @@ msgstr "Custom ID 1 (Property)"
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
 
+msgid "Custom Name for Level"
+msgstr "Custom Name for Level"
+
 msgid "Custom Reports"
 msgstr "Custom Reports"
 
@@ -884,6 +962,9 @@ msgstr "Default Display Fields"
 msgid "Delete"
 msgstr "Delete"
 
+msgid "Delete Access Level Instance"
+msgstr "Delete Access Level Instance"
+
 msgid "Delete All Mappings"
 msgstr "Delete All Mappings"
 
@@ -1033,6 +1114,9 @@ msgstr "For “extra data” fields, this allows the user to set the type, such 
 msgid "Edit"
 msgstr "Edit"
 
+msgid "Edit Access Level Instance Name"
+msgstr "Edit Access Level Instance Name"
+
 msgid "Edit Name"
 msgstr "Edit Name"
 
@@ -1084,6 +1168,9 @@ msgstr "English"
 msgid "Enter Email Address"
 msgstr "Enter Email Address"
 
+msgid "Enter a Name for the new Access Level Instance"
+msgstr "Enter a Name for the new Access Level Instance"
+
 msgid "Enter a valid email address."
 msgstr "Enter a valid email address."
 
@@ -1110,6 +1197,9 @@ msgstr "Error"
 
 msgid "Error Processing Data"
 msgstr "Error Processing Data"
+
+msgid "Example Access Level Tree"
+msgstr "Example Access Level Tree"
 
 msgid "Example Usage"
 msgstr "Example Usage"
@@ -1428,6 +1518,9 @@ msgstr "Include in your Tax Lot List all tax lots shared with you."
 msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
 msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
 
+msgid "INSIGHTS_HELP_TEXT"
+msgstr "Use the controls below to display a subset of properties on the graph. The chart legend can also be used to display or hide properties based on compliance status. The 'Update Property Labels' button can then be used to edit the labels applied to the properties visible on the graph."
+
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
@@ -1609,6 +1702,9 @@ msgstr "Left Axis"
 msgid "Left Half"
 msgstr "Left Half"
 
+msgid "Level"
+msgstr "Level"
+
 msgid "Loading data..."
 msgstr "Loading data..."
 
@@ -1727,6 +1823,9 @@ msgstr "Manage compliance"
 
 msgid "Managed by"
 msgstr "Managed by"
+
+msgid "Managing the Access Level Tree"
+msgstr "Managing the Access Level Tree"
 
 msgid "Manual Matching"
 msgstr "Manual Matching"
@@ -2292,6 +2391,9 @@ msgstr "Profile Name"
 msgid "Program"
 msgstr "Program"
 
+msgid "Program Configuration page"
+msgstr "Program Configuration page"
+
 msgid "Program Definition"
 msgstr "Program Definition"
 
@@ -2443,6 +2545,9 @@ msgstr "Related Tax Lots"
 
 msgid "Remove"
 msgstr "Remove"
+
+msgid "Remove Access Level"
+msgstr "Remove Access Level"
 
 msgid "Remove Column Mappings"
 msgstr "Remove Column Mappings"
@@ -2858,6 +2963,12 @@ msgstr "Select columns from the lists below to make them appear on the left or r
 msgid "Select one or more filter groups to load your inventory."
 msgstr "Select one or more filter groups to load your inventory."
 
+msgid "Select the Level at which you want to add the new Instance"
+msgstr "Select the Level at which you want to add the new Instance"
+
+msgid "Select the new Instance's Parent Access Level Instance"
+msgstr "Select the new Instance's Parent Access Level Instance"
+
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Select the type of file(s) you would like to add to"
 
@@ -2985,6 +3096,12 @@ msgstr "State (Property)"
 
 msgid "State (Tax Lot)"
 msgstr "State (Tax Lot)"
+
+msgid "Step 1: Add Access Levels"
+msgstr "Step 1: Add Access Levels"
+
+msgid "Step 2: Upload Access Level Instances"
+msgstr "Step 2: Upload Access Level Instances"
 
 msgid "Sub-Org Name"
 msgstr "Sub-Org Name"
@@ -3372,6 +3489,9 @@ msgstr "Update Charts"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Property Labels"
+msgstr "Update Property Labels"
 
 msgid "Update Salesforce"
 msgstr "Update Salesforce"

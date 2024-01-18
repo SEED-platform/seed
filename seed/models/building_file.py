@@ -16,7 +16,6 @@ from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
@@ -99,9 +98,7 @@ class BuildingFile(models.Model):
         """
         # sub-select the data that are needed to create the PropertyState object
         db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        org = Organization.objects.get(pk=organization_id)
-        # TODO: allow user to choose ali
-        create_data = {"organization_id": organization_id, "raw_access_level_instance": org.root}
+        create_data = {"organization_id": organization_id}
         extra_data = {}
         for k, v in data.items():
             # Skip the keys that are for measures and reports and process later
@@ -140,7 +137,7 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True, access_level_instance=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
@@ -388,7 +385,8 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view and promote_property_state:
+        elif not property_view and promote_property_state and access_level_instance:
+            property_state.raw_access_level_instance = access_level_instance
             property_view = property_state.promote(cycle)
         else:
             return True, property_state, None, messages
