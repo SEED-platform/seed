@@ -7,20 +7,19 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
-from quantityfield.units import ureg
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
 )
-from seed.models import AccessLevelInstance, Goal, PropertyView, Organization
+from seed.models import AccessLevelInstance, Goal, Organization, PropertyView
 from seed.serializers.goals import GoalSerializer
+from seed.serializers.pint import collapse_unit
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goals import get_area_expression, get_eui_expression
 from seed.utils.viewsets import ModelViewSetWithoutPatch
-from seed.serializers.pint import collapse_unit
 
 
 @method_decorator(
@@ -132,11 +131,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             if total_kbtu is not None and total_sqft:
                 # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
                 weighted_eui = collapse_unit(org, int(total_kbtu / total_sqft))
-            else: 
+            else:
                 weighted_eui = None
 
             if total_sqft is not None:
-                total_sqft = collapse_unit(org, total_sqft) 
+                total_sqft = collapse_unit(org, total_sqft)
 
             cycle_type = 'current' if cycle == goal.current_cycle else 'baseline'
 

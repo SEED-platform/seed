@@ -123,8 +123,8 @@
                                     </li>
                                     <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
-                                        <span>Not seeing your column? 
-                                            <span ng-if="auth.requires_owner">Update the column's data type to "Area" in 
+                                        <span>Not seeing your column?
+                                            <span ng-if="auth.requires_owner">Update the column's data type to "Area" in
                                                 <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()" translate>Column Settings</a>
                                             </span>
                                             <span ng-if="!auth.requires_owner">Have your organization owner update the column's data type to "Area"</span>
