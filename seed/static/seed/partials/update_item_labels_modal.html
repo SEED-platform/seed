@@ -23,7 +23,7 @@
           <span style="white-space: nowrap; margin-right: 20px"
             >{$ 'Show in List' | translate $} <input type="checkbox" style="margin-left: 5px" name="show_in_list" ng-model="new_label.show_in_list"
           /></span>
-          <button type="submit" class="btn btn-primary" ng-disabled="newLabelForm.$invalid || disabled" translate>Create label</button>
+          <button type="submit" class="btn btn-primary" ng-disabled="newLabelForm.$invalid || disabled || waiting" translate>Create label</button>
           <div class="help-block">
             <span class="has-error" ng-show="newLabelForm.name.$error.sdCheckLabelExists" translate>This label name is already taken.</span>
           </div>
@@ -58,6 +58,7 @@
               btn-checkbox-false="false"
               class="btn btn-sm btn-default action_link"
               ng-class="{'btn-danger':label.is_checked_remove}"
+              ng-disabled="waiting"
               ng-click="toggle_remove(label)"
               translate
             >
@@ -71,7 +72,7 @@
               btn-checkbox-false="false"
               class="btn btn-sm btn-default action_link"
               ng-class="{'btn-primary':label.is_checked_add}"
-              ng-disabled="inventory_ids.length === 1 && label.is_applied.length"
+              ng-disabled="inventory_ids.length === 1 && label.is_applied.length || waiting"
               ng-click="toggle_add(label)"
               translate
             >
@@ -86,7 +87,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" style="min-width: 90px" ng-disabled="!modified()" ng-click="done()" translate>Done</button>
-    <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-primary" style="min-width: 90px" ng-disabled="!modified() || waiting" ng-click="done()" translate>Done</button>
+    <button type="button" class="btn btn-default" style="min-width: 90px" ng-disabled="waiting" ng-click="cancel()" translate>Cancel</button>
   </div>
 </div>
