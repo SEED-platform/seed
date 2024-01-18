@@ -21,6 +21,10 @@ from seed.models import (
     PropertyState,
     PropertyView
 )
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
+)
 from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
@@ -69,9 +73,6 @@ class TestUnicodeImport(DataMappingBaseTestCase):
         )
         self.import_file.save()
 
-        # self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        # self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
-
     def test_unicode_import(self):
         """Test that unicode characters are imported correctly"""
         tasks.save_raw_data(self.import_file.pk)
@@ -113,3 +114,43 @@ class TestUnicodeImport(DataMappingBaseTestCase):
         state = qry.first().state
 
         self.assertEqual(state.property_name, "Déjà vu Café")
+
+
+class TestUnicodeMatching(DataMappingBaseTestCase):
+    """Test the matching of two properties with unicode characters
+    and changing one of the matching criteria with a unicode character and
+    having it fail."""
+
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_unicode_matching(self):
+        """If the file did not come from excel or a csv, then the unicode characters will
+        not be normalized."""
+        base_state_details = {
+            'pm_property_id': 'Building — 1',  # <- that is an m-dash
+            'city': 'City 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        self.property_state_factory.get_property_state(**base_state_details)
+
+        # Should normalize some characters, eg. mdash to `--`
+        base_state_details['pm_property_id'] = 'Building — 1'  # <- new state with mdash normalized
+        base_state_details['city'] = 'New City'
+        self.property_state_factory.get_property_state(**base_state_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        tasks.geocode_and_match_buildings_task(self.import_file_1.id)
+
+        # there should only be one property view
+        self.assertEqual(PropertyView.objects.count(), 1)
+        only_view = PropertyView.objects.first()
+        self.assertEqual(only_view.state.city, 'New City')
