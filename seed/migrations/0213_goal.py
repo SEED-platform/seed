@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0029_auto_20230413_1250'),
-        ('seed', '0211_auto_add_props_to_tree_squashed_0213_analysis_access_level_instance'),
+        ('seed', '0212_auto_add_props_to_tree_squashed_0213_analysis_access_level_instance'),
     ]
 
     operations = [
