@@ -3,8 +3,11 @@
 </div>
 
 <div class="modal-body" ng-if="!can_delete_access_level_instance">
-  <div translate>Cannot delete this access level instance without deleting everything in it.</div>
-  <div style="display: flex; gap: 1px;" ng-repeat="reason in reasons_why"> - {$ reason$}</div>
+  <div class="ali-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i><span translate>Warning</span>
+    <p translate>Deleting this access level instance will delete everything else associated with it:</p>
+    <div style="display: flex; gap: 1px;" ng-repeat="reason in reasons_why"> - {$ reason$}</div>
+  </div>
 </div>
 
 <div class="modal-body" style="display: flex; justify-content: space-between;">
