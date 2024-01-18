@@ -1799,6 +1799,9 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const restoreGridSettings = () => {
       $scope.restore_status = RESTORE_SETTINGS;
       let state = inventory_service.loadGridSettings(`${localStorageKey}.sort`);
+      // If save state has filters or sorts, ignore the grids first attempt to run filterChanged or sortChanged
+      const columns = JSON.parse(state).columns
+      $scope.ignore_filter_or_sort = !_.isEmpty(columns)
       if (!_.isNull(state)) {
         state = JSON.parse(state);
         $scope.gridApi.saveState.restore($scope, state).then(() => {
@@ -1821,6 +1824,16 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       $scope.selectedCount = 0;
       $scope.update_selected_display();
     };
+
+    const filterOrSortChanged = _.debounce(() => {
+        if ($scope.ignore_filter_or_sort) {
+          $scope.ignore_filter_or_sort = false;
+        } else if ($scope.restore_status === RESTORE_COMPLETE) {
+          updateColumnFilterSort();
+          $scope.load_inventory(1);
+        }
+      }, 1000)
+
 
     $scope.gridOptions = {
       data: 'data',
@@ -1890,24 +1903,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           saveSettings();
         });
         gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-        gridApi.core.on.filterChanged(
-          $scope,
-          _.debounce(() => {
-            if ($scope.restore_status === RESTORE_COMPLETE) {
-              updateColumnFilterSort();
-              $scope.load_inventory(1);
-            }
-          }, 1000)
-        );
-        gridApi.core.on.sortChanged(
-          $scope,
-          _.debounce(() => {
-            if ($scope.restore_status === RESTORE_COMPLETE) {
-              updateColumnFilterSort();
-              $scope.load_inventory(1);
-            }
-          }, 1000)
-        );
+        gridApi.core.on.filterChanged($scope, filterOrSortChanged)
+        gridApi.core.on.sortChanged($scope, filterOrSortChanged);
         gridApi.pinning.on.columnPinned($scope, (colDef, container) => {
           if (container) {
             saveSettings();
