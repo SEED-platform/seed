@@ -115,7 +115,7 @@
                                     <li class="r-list-header">Area Target Column </li>
                                     <!-- Area Column -->
                                     <li class="r-row r-row-centered">
-                                        <label for="select-area-column" class="r-pad-right-5 goal-label">Column</label>
+                                        <label for="select-area-column" class="r-pad-right-5 goal-label">Area Column</label>
                                         <select id="select-area-column" class="form-control goal-form-control"
                                             ng-options="column.id as column.displayName for column in area_columns" ng-change=""
                                             ng-model="goal.area_column" required>
@@ -140,7 +140,7 @@
                                     </li>
                                     <!-- EUI Column2 -->
                                     <li class="r-row r-row-centered" ng-if="goal.eui_column1">
-                                        <label for="select-eui-column2" class="r-pad-right-5 goal-label">Secondary Column</label>
+                                        <label for="select-eui-column2" class="r-pad-right-5 goal-label">Secondary (optional)</label>
                                         <select id="select-eui-column2" class="form-control goal-form-control"
                                             ng-options="column.id as column.displayName for column in eui_columns"
                                             ng-change=""
@@ -150,7 +150,7 @@
                                     </li>
                                     <!-- EUI Column3 -->
                                     <li class="r-row r-row-centered" ng-if="goal.eui_column2">
-                                        <label for="select-eui-column3" class="r-pad-right-5 goal-label">Tertiary Column</label>
+                                        <label for="select-eui-column3" class="r-pad-right-5 goal-label">Tertiary (optional)</label>
                                         <select id="select-eui-column3" class="form-control goal-form-control"
                                             ng-options="column.id as column.displayName for column in eui_columns"
                                             ng-change=""

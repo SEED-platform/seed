@@ -20,7 +20,7 @@ from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.goals import get_area_expression, get_eui_expression
 from seed.utils.viewsets import ModelViewSetWithoutPatch
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.pint import collapse_unit
 
 
 @method_decorator(
@@ -126,21 +126,25 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 total_kbtu=Sum('kbtu'),
                 total_sqft=Sum('area')
             )
-            weighted_eui = int(aggregated_data['total_kbtu'] / aggregated_data['total_sqft']) if aggregated_data['total_sqft'] else None
+            total_kbtu = aggregated_data['total_kbtu']
+            total_sqft = aggregated_data['total_sqft']
 
-            # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
-            converted_data = apply_display_unit_preferences(org, {
-                'total_sqft': aggregated_data['total_sqft'] * ureg.ft**2,
-                'weighted_eui': weighted_eui * ureg.kilobritish_thermal_unit / ureg.ft**2 / ureg.year,
-            })
+            if total_kbtu is not None and total_sqft:
+                # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
+                weighted_eui = collapse_unit(org, int(total_kbtu / total_sqft))
+            else: 
+                weighted_eui = None
+
+            if total_sqft is not None:
+                total_sqft = collapse_unit(org, total_sqft) 
 
             cycle_type = 'current' if cycle == goal.current_cycle else 'baseline'
 
             summary[cycle_type] = {
                 'cycle_name': cycle.name,
-                'total_sqft': converted_data['total_sqft'],
-                'total_kbtu': aggregated_data['total_kbtu'],
-                'weighted_eui': converted_data['weighted_eui']
+                'total_sqft': total_sqft,
+                'total_kbtu': total_kbtu,
+                'weighted_eui': weighted_eui
             }
 
         def percentage(a, b):
