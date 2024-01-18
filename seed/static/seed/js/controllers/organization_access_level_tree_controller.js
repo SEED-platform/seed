@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.organization_access_level_tree', [])
       // AUTH: only owners can CRUD Access Level Tree and ALIs
       // members and viewers can see their part of the hierarchy - read-only
       $scope.auth = auth_payload.auth;
-      $scope.btnText = 'Collapse Help';
+      $scope.btnText = 'Expand Help';
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.access_level_names = access_level_tree.access_level_names;
 
