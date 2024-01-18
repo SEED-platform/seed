@@ -57,7 +57,7 @@ def extra_data_expression(column, default_value):
     return Case(
         # use regex to determine if value can be converted to a number (int or float)
         When(**{f'state__extra_data__{column.column_name}__regex': r'^\d+(\.\d+)?$'},
-            then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=FloatField())),
+             then=Cast(KeyTextTransform(column.column_name, 'state__extra_data'), output_field=FloatField())),
         default=Value(default_value),
         output_field=FloatField()
     )
