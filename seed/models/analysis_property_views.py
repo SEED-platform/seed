@@ -8,6 +8,7 @@ from collections import namedtuple
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.db.models import QuerySet
 
 from seed.models import Analysis, Cycle, Property, PropertyState, PropertyView
 
@@ -84,21 +85,19 @@ class AnalysisPropertyView(models.Model):
         return analysis_property_view_ids, failures
 
     @classmethod
-    def get_property_views(cls, analysis_property_views):
+    def get_property_views(cls, analysis_property_views: QuerySet):
         """Get PropertyViews related to the AnalysisPropertyViews. If no PropertyView
         is found for an AnalysisPropertyView, the value will be None for that key.
 
-        :param analysis_property_views: list[AnalysisPropertyView]
+        :param analysis_property_views: QuerySet[AnalysisPropertyView]
         :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
         """
-        # build a query to find PropertyViews linked to the canonical property and cycles we're interested in
-        property_view_query = models.Q()
-        for analysis_property_view in analysis_property_views:
-            property_view_query |= (
-                models.Q(property_id=analysis_property_view.property_id)
-                & models.Q(cycle_id=analysis_property_view.cycle_id)
-            )
-        property_views = PropertyView.objects.filter(property_view_query)
+        # Fast query to find all potentially-necessary propertyViews
+        views = analysis_property_views.values('property_id', 'cycle_id')
+        property_views = PropertyView.objects.filter(
+            property_id__in=set(v['property_id'] for v in views),
+            cycle_id__in=set(v['cycle_id'] for v in views),
+        )
 
         # get original property views keyed by canonical property id and cycle
         property_views_by_property_cycle_id = {

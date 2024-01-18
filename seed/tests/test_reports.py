@@ -33,12 +33,9 @@ class ExportReport(DataMappingBaseTestCase):
             'email': 'test_user@demo.com'
         }
         self.client.login(**user_details)
-
-    def test_report_export_excel_workbook(self):
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         start = datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone())
-        # import pdb; pdb.set_trace()
-        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2", start=start)
+        self.cycle_2 = self.cycle_factory.get_cycle(name="Cycle 2", start=start)
 
         # create 5 records with site_eui and gross_floor_area in each cycle
         for i in range(1, 6):
@@ -66,17 +63,17 @@ class ExportReport(DataMappingBaseTestCase):
                 cycle_id=self.cycle_2.id
             )
 
+    def test_report_export_excel_workbook(self):
         url = reverse('api:v3:organizations-report-export', args=[self.org.pk])
 
         # needs to be turned into post?
-        response = self.client.get(url + '?{}={}&{}={}&{}={}&{}={}&{}={}&{}={}'.format(
-            'start', '2014-12-31T00:00:00-07:53',
-            'end', '2017-12-31T00:00:00-07:53',
-            'x_var', 'site_eui',
-            'x_label', 'Site EUI',
-            'y_var', 'gross_floor_area',
-            'y_label', 'Gross Floor Area'
-        ))
+        response = self.client.get(url, data={
+            'cycle_ids': [self.cycle.id, self.cycle_2.id],
+            'x_var': 'site_eui',
+            'x_label': 'Site EUI',
+            'y_var': 'gross_floor_area',
+            'y_label': 'Gross Floor Area',
+        })
 
         self.assertEqual(200, response.status_code)
 
@@ -110,3 +107,56 @@ class ExportReport(DataMappingBaseTestCase):
         self.assertEqual('Gross Floor Area', agg_sheet.cell(0, 1).value)
         self.assertEqual('0-99k', agg_sheet.cell(1, 1).value)
         self.assertEqual('0-99k', agg_sheet.cell(2, 1).value)
+
+    def test_report(self):
+        url = reverse('api:v3:organizations-report', args=[self.org.pk])
+        data = {
+            'cycle_ids': [self.cycle.id, self.cycle_2.id],
+            'x_var': 'site_eui',
+            'y_var': 'gross_floor_area',
+        }
+        response = self.client.get(url, data)
+
+        assert response.json()["data"]["property_counts"] == [
+            {'yr_e': '2016', 'num_properties': 5, 'num_properties_w-data': 5},
+            {'yr_e': '2015', 'num_properties': 5, 'num_properties_w-data': 5}
+        ]
+
+        data["cycle_ids"] = [self.cycle.id]
+        response = self.client.get(url, data)
+
+        assert response.json()["data"]["property_counts"] == [
+            {'yr_e': '2015', 'num_properties': 5, 'num_properties_w-data': 5}
+        ]
+
+    def test_report_aggregated(self):
+        url = reverse('api:v3:organizations-report-aggregated', args=[self.org.pk])
+        data = {
+            'cycle_ids': [self.cycle.id, self.cycle_2.id],
+            'x_var': 'site_eui',
+            'y_var': 'gross_floor_area',
+        }
+        response = self.client.get(url, data)
+
+        assert response.json()["aggregated_data"]["property_counts"] == [
+            {'yr_e': '2016', 'num_properties': 5, 'num_properties_w-data': 5},
+            {'yr_e': '2015', 'num_properties': 5, 'num_properties_w-data': 5}
+        ]
+
+        data["cycle_ids"] = [self.cycle.id]
+        response = self.client.get(url, data)
+
+        assert response.json()["aggregated_data"]["property_counts"] == [
+            {'yr_e': '2015', 'num_properties': 5, 'num_properties_w-data': 5}
+        ]
+
+    def test_report_missing_arg(self):
+        url = reverse('api:v3:organizations-report-aggregated', args=[self.org.pk])
+        data = {
+            'cycle_ids': [self.cycle.id, self.cycle_2.id],
+            'x_var': 'site_eui',
+            # 'y_var': 'gross_floor_area', it's missing!
+        }
+        response = self.client.get(url, data)
+
+        assert response.status_code == 400
