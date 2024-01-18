@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
         color: 'gray',
         label: 'default',
         name: '',
-        show_in_list: false
+        show_in_list: true
       };
     };
 
