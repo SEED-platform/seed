@@ -377,8 +377,10 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     const findList = {};
     for (const elementId of ['filters-list', 'sort-list']) {
       findList[elementId] = { attempts: 0 };
+      const element = document.getElementById(elementId);
+      if (!element) continue;
       findList[elementId].interval = setInterval(() => {
-        const listInput = document.getElementById(elementId).getElementsByTagName('input')[0];
+        const listInput = element.getElementsByTagName('input')[0];
         if (listInput) {
           listInput.readOnly = true;
           clearInterval(findList[elementId].interval);
@@ -1631,7 +1633,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
 
     $scope.selected_display = '';
     $scope.update_selected_display = () => {
-      if ($scope.gridApi) {
+      if ($scope.gridApi && $scope.gridApi.grid.gridMenuScope) {
         uiGridGridMenuService.removeFromGridMenu($scope.gridApi.grid, 'dynamic-export');
         $scope.gridApi.core.addToGridMenu($scope.gridApi.grid, [
           {
