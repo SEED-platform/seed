@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         '$uibModalInstance',
         'Notification',
         'goal_service',
+        'auth_payload',
         'organization',
         'cycles',
         'area_columns',
@@ -23,6 +24,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $uibModalInstance,
             Notification,
             goal_service,
+            auth_payload,
             organization,
             cycles,
             area_columns,
@@ -30,6 +32,7 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             access_level_tree,
             goal,
         ) {
+            $scope.auth = auth_payload.auth;
             $scope.organization = organization;
             $scope.goal = goal || {};
             $scope.access_level_tree = access_level_tree.access_level_tree;

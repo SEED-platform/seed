@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
         'cycles',
         'organization_payload',
         'access_level_tree',
+        'auth_payload',
         'property_columns',
         'uiGridConstants',
         'gridUtil',
@@ -31,6 +32,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             cycles,
             organization_payload,
             access_level_tree,
+            auth_payload,
             property_columns,
             uiGridConstants,
             gridUtil,
@@ -155,6 +157,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     size: 'lg',
                     backdrop: 'static',
                     resolve: {
+                        auth_payload: () => auth_payload,
                         organization: () => $scope.organization,
                         cycles: () => $scope.cycles,
                         area_columns: () => $scope.area_columns,

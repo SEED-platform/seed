@@ -122,7 +122,13 @@
                                         </select>
                                     </li>
                                     <li class="r-info">
-                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i><i>Not seeing your column? Update column data type to "area" in Column Settings.</i>
+                                        <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
+                                        <span>Not seeing your column? 
+                                            <span ng-if="auth.requires_owner">Update the column's data type to "Area" in 
+                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()" translate>Column Settings</a>
+                                            </span>
+                                            <span ng-if="!auth.requires_owner">Have your organization owner update the column's data type to "Area"</span>
+                                        </span>
                                     </li>
                                 </ul>
                                 <!-- EUI Target Columns -->
@@ -161,7 +167,12 @@
                                     <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
                                         <!-- <span> The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both primary and secondary are unavailable.</span> -->
-                                        <span><i>Not seeing your column? Update column data type to "eui" in Column Settings.</i></span>
+                                        <span>Not seeing your column?
+                                            <span ng-if="auth.requires_owner">Update the column's data type to "EUI" in
+                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()" translate>Column Settings</a>
+                                            </span>
+                                            <span ng-if="!auth.requires_owner">Have your organization owner update the column's data type to "EUI"</span>
+                                        </span>
                                     </li>
                                 </ul>
                                 <!-- Target -->

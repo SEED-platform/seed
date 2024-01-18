@@ -2855,6 +2855,10 @@ SEED_app.config([
             var organization_id = organization_payload.organization.id;
             return organization_service.get_organization_access_level_tree(organization_id);
           }],
+          auth_payload: ['auth_service', '$q', 'organization_payload', (auth_service, $q, organization_payload) => {
+            const organization_id = organization_payload.organization.id;
+            return auth_service.is_authorized(organization_id, ['requires_owner']);
+          }],
         }
       })
       .state({
