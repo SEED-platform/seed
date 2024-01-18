@@ -1560,6 +1560,13 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
 
+        # invalid organization id returns 403 error
+        params['organization_id'] = 'invalid'
+        response = self.client.get(
+            reverse('api:v3:cycles-list'), params
+        )
+        self.assertEqual(403, response.status_code)
+
     def test_postoffice(self):
         # Create a template
         response = self.client.post('/api/v3/postoffice/', {
