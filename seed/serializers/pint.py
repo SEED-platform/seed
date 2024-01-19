@@ -13,6 +13,7 @@ from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers
+
 from seed.models import Column
 
 # Update the registry's definition for year
@@ -79,12 +80,15 @@ def apply_display_unit_preferences(org, pt_dict):
     API and collapse any Quantity objects present down to a straight float, per
     the organization preferences.
     """
-    # apply_unit_to_extra_data(pt_dict)
+    extra_data_columns = Column.objects.filter(is_extra_data=True)
+    extra_data_columns = {str(col.id): col for col in extra_data_columns}
+    add_unit_to_extra_data(pt_dict, extra_data_columns)
     converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.items()}
 
     return converted_dict
 
-def apply_unit_to_extra_data(pt_dict):
+
+def add_unit_to_extra_data(pt_dict, extra_data_columns):
     """
     apply pint units to the state's extra data values based on the extra data column data types
     """
@@ -96,19 +100,17 @@ def apply_unit_to_extra_data(pt_dict):
         'ghg_intensity': 'kgCO2e/ft**2/year'
     }
 
-    extra_columns = Column.objects.filter(is_extra_data=True)
-    extra_columns = {str(col.id): col for col in extra_columns}
-
     for (k, v) in pt_dict.items():
         # k is formatted as {columns_name}_{id} with a few exceptions ('id', 'lat_long', 'notes_count'...)
         col_id = k.split('_', 1)[-1]
         if v is None or not col_id.isdigit():
             continue
 
-        col = extra_columns.get(col_id)
+        col = extra_data_columns.get(col_id)
         if col and col.data_type in unit_lookup:
             unit = ureg(unit_lookup[col.data_type])
             pt_dict[k] = v * unit
+
 
 def pretty_units(quantity):
     """
