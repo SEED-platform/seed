@@ -25,6 +25,7 @@
     "ACCESS_LEVEL_ROOT_TEXT": "There is only one access level instance allowed at the root of the tree (level 1). Click on the pencil icon if you wish to rename it.",
     "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT": "Upload your Organizational Structure in spreadsheet form. The file should include a column for each access level with its column header equal to the custom access level name. Each row should contain an access level instance, with its ancestry fully defined (parent node name, grand-parent node name, etc.)",
     "ACCESS_LEVEL_TREE_HELP_1": "This page allows you to view the structure of your organization's content. The structure is made up of hierarchical levels that define a tree; these are called access levels. Each level contains one or more nodes, called access level instances. Permissions are managed by associating content and users with a particular access level instance, thereby grouping and restricting access to the content. The number of access levels in your structure, the names of the levels, and the names of the access level instances are customizable.",
+    "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG": "Saving access level instances in progress... This process depends on the size of your file and may take several minutes.",
     "ADD_FILES_TO": "Add files to {dataset_name}.",
     "ADD_REMOVE_LABELS_FROM_PROPERTIES": "Add or remove labels from {num, plural, one{1 selected property} other{# selected properties}}",
     "ADD_REMOVE_LABELS_FROM_TAXLOTS": "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}",
