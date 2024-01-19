@@ -16,8 +16,9 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
   'inventory_ids',
   'inventory_type',
   'Notification',
+  'spinner_utility',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
+  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, notification, spinner_utility) {
     $scope.inventory_ids = inventory_ids;
     $scope.inventory_type = inventory_type;
     // keep track of status of service call
@@ -41,7 +42,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
         color: 'gray',
         label: 'default',
         name: '',
-        show_in_list: false
+        show_in_list: true
       };
     };
 
@@ -92,6 +93,8 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
 
     /* User has indicated 'Done' so perform selected label operations */
     $scope.done = function () {
+      $scope.waiting = true;
+      spinner_utility.show();
       const addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value()
         .sort();
       const removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value()
@@ -110,7 +113,8 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
           (data, status) => {
             $log.error('error:', data, status);
           }
-        );
+        ).finally(() => spinner_utility.hide());
+
       } else if (inventory_type === 'taxlots') {
         label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
@@ -124,7 +128,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
           (data, status) => {
             $log.error('error:', data, status);
           }
-        );
+        ).finally(() => spinner_utility.hide());
       }
     };
 
