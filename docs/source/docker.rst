@@ -110,7 +110,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
 
 
 Deploying with Docker
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 The preferred way to deploy with Docker is using docker swarm and docker stack.
 Look at the `deploy.sh script`_  for implementation details.

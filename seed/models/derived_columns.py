@@ -202,7 +202,7 @@ class DerivedColumn(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['organization', 'name'], name='unique_name_for_organization'
+                fields=['organization', 'name', 'inventory_type'], name='unique_name_for_organization'
             )
         ]
 
