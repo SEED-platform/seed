@@ -589,6 +589,13 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
             taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
         )
 
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.save()
+
     def test_taxlots_merge_without_losing_labels(self):
         # Create 3 Labels
         label_factory = FakeStatusLabelFactory(organization=self.org)
@@ -613,6 +620,23 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
         self.assertEqual(view.labels.count(), 3)
         label_names = list(view.labels.values_list('name', flat=True))
         self.assertCountEqual(label_names, [label_1.name, label_2.name, label_3.name])
+
+    def test_taxlots_merge_mismatched_alis(self):
+        # set taxlots alis
+        self.taxlot_1.access_level_instance = self.me_ali
+        self.taxlot_1.save()
+        self.taxlot_2.access_level_instance = self.sister_ali
+        self.taxlot_2.save()
+
+        # Merge the properties
+        url = reverse('api:v3:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'taxlot_view_ids': [self.view_2.pk, self.view_1.pk]
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+
+        assert response.status_code == 400
+        assert TaxLot.objects.count() == 2
 
     def test_taxlots_merge_without_losing_notes(self):
         note_factory = FakeNoteFactory(organization=self.org, user=self.user)

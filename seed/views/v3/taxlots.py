@@ -4,6 +4,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from collections import namedtuple
 
+from django.db import transaction
 from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
@@ -47,7 +48,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link
 from seed.utils.merge import merge_taxlots
 from seed.utils.properties import (
     get_changed_fields,
@@ -284,20 +285,22 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
+        try:
+            with transaction.atomic():
+                merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
+                merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'These two taxlots have different alis.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        result = {
-            'status': 'success'
-        }
-
-        result.update({
+        return {
+            'status': 'success',
             'match_merged_count': merge_count,
             'match_link_count': link_count,
-        })
-
-        return result
+        }
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
