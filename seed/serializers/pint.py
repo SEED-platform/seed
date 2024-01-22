@@ -14,8 +14,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield.units import ureg
 from rest_framework import serializers
 
-from seed.models import Column
-
 # Update the registry's definition for year
 # Updating pint from 0.9 resulted in a change in the symbol from 'year' to 'a'
 # see: https://github.com/hgrecco/pint/commit/3ad5c2bb24ca92cb69353af9a84458da9bebc8f3#diff-cc2784e7cfe7c2d896ae4ec1ef1563eed99bed539cb02f5a0f00e276dab48fe5R125
@@ -80,36 +78,9 @@ def apply_display_unit_preferences(org, pt_dict):
     API and collapse any Quantity objects present down to a straight float, per
     the organization preferences.
     """
-    extra_data_columns = Column.objects.filter(is_extra_data=True)
-    extra_data_columns = {str(col.id): col for col in extra_data_columns}
-    add_unit_to_extra_data(pt_dict, extra_data_columns)
     converted_dict = {k: collapse_unit(org, v) for k, v in pt_dict.items()}
 
     return converted_dict
-
-
-def add_unit_to_extra_data(pt_dict, extra_data_columns):
-    """
-    apply pint units to the state's extra data values based on the extra data column data types
-    """
-    # hardcoded from PropertyState model definition
-    unit_lookup = {
-        'eui': 'kBtu/ft**2/year',
-        'area': 'ft**2',
-        'ghg': 'MtCO2e/year',
-        'ghg_intensity': 'kgCO2e/ft**2/year'
-    }
-
-    for (k, v) in pt_dict.items():
-        # k is formatted as {columns_name}_{id} with a few exceptions ('id', 'lat_long', 'notes_count'...)
-        col_id = k.split('_', 1)[-1]
-        if v is None or not col_id.isdigit():
-            continue
-
-        col = extra_data_columns.get(col_id)
-        if col and col.data_type in unit_lookup:
-            unit = ureg(unit_lookup[col.data_type])
-            pt_dict[k] = v * unit
 
 
 def pretty_units(quantity):
