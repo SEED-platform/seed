@@ -17,6 +17,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db import models
 from django.db.models import Count
 from django.utils.timezone import make_naive
+from quantityfield.units import ureg
 
 from seed.models.columns import Column
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
@@ -52,23 +53,27 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None):
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units=None):
         """
         Convert the extra data to a dictionary with a name mapping for the keys
 
         :param instance: dict, the extra data dictionary
         :param mappings: dict, mapping names { "from_name": "to_name", ...}
-        :param fields: list, extra data fields to include. Use the original column names (the ones in the database)
+        :param fields: list, extra data fields with units to include. Use the original column names (the ones in the database)
         :return: dict
         """
         data = {}
 
         if fields:
             for field in fields:
+                value = instance.get(field, None)
+                if units and units.get(field):
+                    value = value * ureg(units[field])
+
                 if field in mappings:
-                    data[mappings[field]] = instance.get(field, None)
+                    data[mappings[field]] = value
                 else:
-                    data[field] = instance.get(field, None)
+                    data[field] = value
 
         return data
 
@@ -145,11 +150,19 @@ class TaxLotProperty(models.Model):
             return []
 
         if object_list[0].__class__.__name__ == 'PropertyView':
+            from seed.models.properties import PropertyState
             this_cls, this_lower = 'Property', 'property'
             related_cls, related_lower = 'TaxLot', 'taxlot'
+            unit_lookup = {
+                'eui': PropertyState.source_eui.field.units,
+                'area': PropertyState.gross_floor_area.field.units,
+                'ghg': PropertyState.total_ghg_emissions.field.units,
+                'ghg_intensity': PropertyState.total_ghg_emissions_intensity.field.units
+            }
         else:
             this_cls, this_lower = 'TaxLot', 'taxlot'
             related_cls, related_lower = 'Property', 'property'
+            unit_lookup = {}
 
         lookups = {
             'audit_log_class': apps.get_model('seed', f'{this_cls}AuditLog'),
@@ -203,8 +216,13 @@ class TaxLotProperty(models.Model):
         else:
             filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
                                    and col['id'] in show_columns])
-            filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
-                                              and col['id'] in show_columns])
+            field_units = {}
+            filtered_extra_data_fields = set()
+            for col in obj_columns:
+                if col['is_extra_data'] and col['id'] in show_columns:
+                    filtered_extra_data_fields.add(col['column_name'])
+                    field_units[col['column_name']] = unit_lookup.get(col['data_type'])
+            
 
         # get the related data
         join_map = {}
@@ -228,7 +246,8 @@ class TaxLotProperty(models.Model):
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         obj.state.extra_data,
                         obj_column_name_mapping,
-                        fields=filtered_extra_data_fields
+                        fields=filtered_extra_data_fields,
+                        units=field_units
                     ).items()
                 )
 
