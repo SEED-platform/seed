@@ -54,7 +54,7 @@ from seed.models import (
     get_column_mapping,
     obj_to_dict
 )
-from seed.serializers.pint import apply_display_unit_preferences, DEFAULT_UNITS
+from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
     AutoSchemaHelper,

@@ -41,6 +41,7 @@ DEFAULT_UNITS = {
     'ghg_intensity': GHG_INTENSITY_DEFAULT_UNITS,
 }
 
+
 def to_raw_magnitude(obj):
     return "{:.2f}".format(obj.magnitude)
 

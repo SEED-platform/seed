@@ -20,9 +20,9 @@ from django.utils.timezone import make_naive
 from quantityfield.units import ureg
 
 from seed.models.columns import Column
+from seed.serializers.pint import DEFAULT_UNITS
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
-from seed.serializers.pint import DEFAULT_UNITS
 
 if TYPE_CHECKING:
     from seed.models.properties import PropertyView
