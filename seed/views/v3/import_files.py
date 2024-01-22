@@ -373,7 +373,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     property_column_name_mapping[column['column_name']] = column['name']
                     if not column['is_extra_data']:
                         fields['PropertyState'].append(field_name[1])  # save to the raw db fields
-                    else:
+                    elif DEFAULT_UNITS.get(column['data_type']):
                         extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
                 elif column['table_name'] == 'TaxLotState' and \
                         field_name[0] == 'TaxLotState' and \
@@ -381,7 +381,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     taxlot_column_name_mapping[column['column_name']] = column['name']
                     if not column['is_extra_data']:
                         fields['TaxLotState'].append(field_name[1])  # save to the raw db fields
-                    continue
+                    elif DEFAULT_UNITS.get(column['data_type']):
+                        extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
+
 
         inventory_type = request.data.get('inventory_type', 'all')
 
