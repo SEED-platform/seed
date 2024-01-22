@@ -54,13 +54,15 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units=None):
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
         """
         Convert the extra data to a dictionary with a name mapping for the keys
 
         :param instance: dict, the extra data dictionary
         :param mappings: dict, mapping names { "from_name": "to_name", ...}
-        :param fields: list, extra data fields with units to include. Use the original column names (the ones in the database)
+        :param fields: list, extra data fields to include. Use the original column names (the ones in the database)
+        :param units: dict, extra data units
+
         :return: dict
         """
         data = {}
@@ -68,7 +70,7 @@ class TaxLotProperty(models.Model):
         if fields:
             for field in fields:
                 value = instance.get(field, None)
-                if units and units.get(field):
+                if units.get(field):
                     value = value * ureg(units[field])
 
                 if field in mappings:
