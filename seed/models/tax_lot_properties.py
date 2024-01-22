@@ -222,7 +222,6 @@ class TaxLotProperty(models.Model):
                 if col['is_extra_data'] and col['id'] in show_columns:
                     filtered_extra_data_fields.add(col['column_name'])
                     field_units[col['column_name']] = unit_lookup.get(col['data_type'])
-            
 
         # get the related data
         join_map = {}
