@@ -22,6 +22,7 @@ from quantityfield.units import ureg
 from seed.models.columns import Column
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
 from seed.utils.ubid import centroid_wkt
+from seed.serializers.pint import DEFAULT_UNITS
 
 if TYPE_CHECKING:
     from seed.models.properties import PropertyView
@@ -150,19 +151,11 @@ class TaxLotProperty(models.Model):
             return []
 
         if object_list[0].__class__.__name__ == 'PropertyView':
-            from seed.models.properties import PropertyState
             this_cls, this_lower = 'Property', 'property'
             related_cls, related_lower = 'TaxLot', 'taxlot'
-            unit_lookup = {
-                'eui': PropertyState.source_eui.field.units,
-                'area': PropertyState.gross_floor_area.field.units,
-                'ghg': PropertyState.total_ghg_emissions.field.units,
-                'ghg_intensity': PropertyState.total_ghg_emissions_intensity.field.units
-            }
         else:
             this_cls, this_lower = 'TaxLot', 'taxlot'
             related_cls, related_lower = 'Property', 'property'
-            unit_lookup = {}
 
         lookups = {
             'audit_log_class': apps.get_model('seed', f'{this_cls}AuditLog'),
@@ -216,12 +209,12 @@ class TaxLotProperty(models.Model):
         else:
             filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
                                    and col['id'] in show_columns])
-            field_units = {}
+            extra_data_units = {}
             filtered_extra_data_fields = set()
             for col in obj_columns:
                 if col['is_extra_data'] and col['id'] in show_columns:
                     filtered_extra_data_fields.add(col['column_name'])
-                    field_units[col['column_name']] = unit_lookup.get(col['data_type'])
+                    extra_data_units[col['column_name']] = DEFAULT_UNITS.get(col['data_type'])
 
         # get the related data
         join_map = {}
@@ -246,7 +239,7 @@ class TaxLotProperty(models.Model):
                         obj.state.extra_data,
                         obj_column_name_mapping,
                         fields=filtered_extra_data_fields,
-                        units=field_units
+                        units=extra_data_units
                     ).items()
                 )
 

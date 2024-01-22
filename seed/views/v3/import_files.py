@@ -54,7 +54,7 @@ from seed.models import (
     get_column_mapping,
     obj_to_dict
 )
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.pint import apply_display_unit_preferences, DEFAULT_UNITS
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import (
     AutoSchemaHelper,
@@ -363,6 +363,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         columns_from_db = Column.retrieve_all(org_id)
         property_column_name_mapping = {}
         taxlot_column_name_mapping = {}
+        extra_data_units = {}
         for field_name in field_names:
             # find the field from the columns in the database
             for column in columns_from_db:
@@ -372,7 +373,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     property_column_name_mapping[column['column_name']] = column['name']
                     if not column['is_extra_data']:
                         fields['PropertyState'].append(field_name[1])  # save to the raw db fields
-                    continue
+                    else:
+                        extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
                 elif column['table_name'] == 'TaxLotState' and \
                         field_name[0] == 'TaxLotState' and \
                         field_name[1] == column['column_name']:
@@ -408,6 +410,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                         prop.extra_data,
                         property_column_name_mapping,
                         fields=prop.extra_data.keys(),
+                        units=extra_data_units
                     ).items()
                 )
 
