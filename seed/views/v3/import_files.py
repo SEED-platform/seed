@@ -384,7 +384,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     elif DEFAULT_UNITS.get(column['data_type']):
                         extra_data_units[column['column_name']] = DEFAULT_UNITS.get(column['data_type'])
 
-
         inventory_type = request.data.get('inventory_type', 'all')
 
         result = {
