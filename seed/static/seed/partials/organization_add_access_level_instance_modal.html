@@ -10,7 +10,7 @@
                 id="selected_level_index"
                 ng-model="selected_level_index"
                 ng-change="change_selected_level_index()"
-                ng-options="i as ('Level ' + i + ' - ' + level_name) for (i, level_name) in level_names">
+                ng-options="level_names.indexOf(level_name)  as ('Level ' + (level_names.indexOf(level_name) + 1) + ' - ' + level_name) for (i, level_name) in level_names.slice(1)">
             </select>
         </div>
     </div>
