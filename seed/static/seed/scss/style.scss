@@ -5078,15 +5078,20 @@ ul.r-list {
   display: flex;
   flex-direction: column;
 
+  .goals-header-text {
+    padding: 10px;
+    font-size: 1.2em;
+  }
   .goal-actions-wrapper {
     display: flex;
-    margin: 20px 10px 0 10px;
+    margin: 10px 10px 0 10px;
     div {
       margin: 0 10px;
     }
 
     .goal-select-wrapper {
       display: flex;
+      min-height: 30px;
       margin: 15px;
       .goal-select-label {
         margin: auto;
@@ -5242,6 +5247,11 @@ ul.r-list {
       }
     }
   }
+}
+
+.goals-text {
+  padding: 5px 100px 10px 10px;
+  font-size: 1.1em;
 }
 
 #goal-details {

@@ -12,25 +12,28 @@
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
 <div class="portfolio-summary-wrapper">
+    <div class="goals-header-text" translate>
+        PORTFOLIO_SUMMARY_HEADER_TEXT
+    </div>
     <div class="goal-actions-wrapper">
         <div class="goal-select-wrapper">
-            <label class="goal-select-label" for="goal-select">
+            <label class="goal-select-label" for="goal-select" ng-if="goals.length > 0" translate>
                 GOAL
             </label>
-            <div class="goal-selection">
+            <div class="goal-selection" ng-if="goals.length > 0">
                 <select name="goal-select" id="goal-select"
                     ng-options="goal as goal.name for goal in goals" ng-model="goal">
                 </select>
             </div>
             <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()">
-                {$ valid ? 'Add or Edit' : 'New Goal' $}
+                {$:: 'Configure Goals' | translate $}
             </button>
         </div>
     </div>
     <!-- GOAL DETAILS -->
     <div class="goal-details-container" ng-if="valid">
         <div class="goal-details-column" style="margin-left: 10px;">
-            <div ng-repeat="detail in goal_details.slice(0, 4)" class="goal-detail">
+            <div ng-repeat="detail in goal_details.slice(0, 3)" class="goal-detail">
                 <div class="goal-detail-key" style="width: 100px">
                     {$ detail[0] $}:
                 </div>
@@ -40,7 +43,7 @@
             </div>
         </div>
         <div class="goal-details-column">
-            <div ng-repeat="detail in goal_details.slice(4)" class="goal-detail">
+            <div ng-repeat="detail in goal_details.slice(3)" class="goal-detail">
                 <div class="goal-detail-key">
                     {$ detail[0] $}:
                 </div>
@@ -50,17 +53,18 @@
             </div>
 
         </div>
+
     </div>
     <div id="portfolio-summary-selection-wrapper" class="row">
 
         <!-- Summary Table-->
         <div id="portfolio-summary" class="col-sm-10x" ng-if="summary_loading || summary_valid">
-            <h3 style="margin-top:0;">
+            <h3 style="margin-top:0;" translate>
                 Portfolio Summary
             </h3>
             <div ng-if="summary_valid" ui-grid="summaryGridOptions" ui-grid-resize-columns ui-grid-group-columns style="height:60px"></div>
             <div class="portfolio-summary-loading" ng-if="summary_loading">
-                <h4>Loading Summary Data...</h4>
+                <h4>{$:: 'Loading Summary Data...' | translate $}</h4>
                 <uib-progress class="progress-striped active">
                     <uib-bar value="100" type="info"></uib-bar>
                 </uib-progress>
