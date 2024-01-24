@@ -49,9 +49,10 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
 
             const get_goals = () => {
                 goal_service.get_goals().then(result => {
-                    $scope.goals = result.status == 'success' ? result.goals : [];
+                    $scope.goals = result.status == 'success' ? sort_goals(result.goals) : [];
                 })
             }
+            const sort_goals = (goals) => goals.sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1)            
             get_goals()
 
             $scope.$watch('goal', (cur, old) => {

@@ -76,12 +76,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             // optionally pass a goal name to be set as $scope.goal - used on modal close
             const get_goals = (goal_name=false) => {
                 goal_service.get_goals().then(result => {
-                    $scope.goals = _.isEmpty(result.goals) ? [] : result.goals
+                    $scope.goals = _.isEmpty(result.goals) ? [] : sort_goals(result.goals)
                     $scope.goal = goal_name ?
                         $scope.goals.find(goal => goal.name == goal_name) :
                         $scope.goals[0]
                 })
             }
+            const sort_goals = (goals) => goals.sort((a,b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1)            
             get_goals()
 
             // If goal changes, reset grid filters and repopulate ui-grids

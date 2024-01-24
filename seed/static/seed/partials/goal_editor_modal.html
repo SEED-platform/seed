@@ -11,7 +11,19 @@
     <div class="modal-body">
         <div class="section">
             <div class="section_content_container rp-data-view">
-                <p class="goals-text" translate>GOAL_SETUP_TEXT</p>
+                <p class="goals-text">
+                    Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below.
+                    <i class="ui-grid-icon-info-circled" ng-mouseover="show_help = true" ng-mouseout="show_help = false"></i>
+                    <div class="alert alert-info" ng-show="show_help"
+                        style="margin-top: -10px; position: absolute; z-index: 1; font-weight: normal">
+                        <ul>
+                            <li>Select a baseline cycle and a current cycle for comparison</li>
+                            <li>Indicate the level in your access level tree that this goal applies to</li>
+                            <li>Indicate which fields in your data should be used for EUI and square footage information</li>
+                            <li>Specify a percentage EUI improvement target</li>
+                        </ul>
+                    </div>
+                </p>
             </div>
             <div class="section_content_container rp-data-view">
                 <div class="section_content r-columns rp-data-view-config">
@@ -20,8 +32,10 @@
                         <ul class="r-list">
                             <li class="r-list-header" translate>Goal</li>
                             <li ng-show="goal" class="r-selected r-row r-row-centered">
-                                <span class="r-grow" uib-tooltip="{$ goal.name.length > 200 ? goal.name : '' $}">{$ goal.name $}</span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal.id)"></i>
+                                <span class="r-grow goal-name" uib-tooltip="{$ goal.name.length > 40 ? goal.name : '' $}" tooltip-class="tooltip-long" style="height:18px;"
+                                >{$ goal.name $}
+                                </span>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="goal.id" ng-click="delete_goal(goal.id)" ></i>
                             </li>
                         </ul>
                         <ul class="r-list r-scrollable" id="goal-list">
@@ -29,7 +43,7 @@
                                 ng-repeat-start="goal_option in goals" ng-repeat-end
                                 ng-show="goal_option.id != goal.id"
                                 class="r-row r-row-centered">
-                                <span class="r-grow" uib-tooltip="{$ goal_option.name.length > 200 ? goal_option.name : '' $}" style="cursor: pointer" ng-click="set_goal(goal_option)">{$ goal_option.name $}</span>
+                                <span class="r-grow goal-name" uib-tooltip="{$ goal_option.name.length > 40 ? goal_option.name : '' $}" tooltip-class="tooltip-long" style="cursor: pointer" ng-click="set_goal(goal_option)">{$ goal_option.name $}</span>
                                 <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal_option.id)"></i>
                             </li>
                         </ul>
@@ -43,7 +57,7 @@
                     </div>
                     <!-- New Goal -->
 
-                    <div id="goal-details" style="max-height: 70vh; overflow: scroll">
+                    <div id="goal-details" style="max-height: 62vh; overflow: scroll; width: 90%">
                         <form name="goal_form">
                             <div id="goal-details-col1" class="r-column table_list_container" style="width:100%">
                                 <!-- Name -->
@@ -127,8 +141,8 @@
                                     <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
                                         <span>{$:: 'Not seeing your column?' | translate $}
-                                            <span ng-if="auth.requires_owner" translate>Update the data type of the column to "Area" in
-                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()" translate>Column Settings</a>
+                                            <span ng-if="auth.requires_owner">{$ 'Update the data type of the column to "Area" in' | translate $}
+                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()">Column Settings</a>
                                             </span>
                                             <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "Area"</span>
                                         </span>
@@ -170,16 +184,16 @@
                                     <li class="r-info">
                                         <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
                                         <!-- <span> The calculation will default to the secondary column if the primary is missing, and to the tertiary column if both primary and secondary are unavailable.</span> -->
-                                        <span translate>Not seeing your column?
-                                            <span ng-if="auth.requires_owner" >{$:: 'Update the data type of the column to "EUI" in' | translate $}
-                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()" translate>Column Settings</a>
+                                        <span>{$:: 'Not seeing your column?' | translate $}
+                                            <span ng-if="auth.requires_owner">{$ 'Update the data type of the column to "EUI" in' | translate $}
+                                                <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()">Column Settings</a>
                                             </span>
-                                            <span ng-if="!auth.requires_owner" translate>Have your organization owner update the data type of the column to "EUI"</span>
+                                            <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "EUI"</span>
                                         </span>
                                     </li>
                                 </ul>
                                 <!-- Target -->
-                                <ul class="r-list">
+                                <ul class="r-list" style="margin-bottom: 40px;">
                                     <li class="r-list-header" translate>Portfolio Target</li>
                                     <li class="r-row r-row-centered">
                                         <label for="input-target" class="r-pad-right-5 goal-label">Percentage (%)</label>
@@ -196,7 +210,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>        
+        <div class="scroll-indicator"></div>
     </div>
     <div class="modal-footer">
         <div id="goal-messages" class="alert-danger" ng-if="errors">

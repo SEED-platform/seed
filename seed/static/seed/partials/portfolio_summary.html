@@ -17,10 +17,10 @@
     </div>
     <div class="goal-actions-wrapper">
         <div class="goal-select-wrapper">
-            <label class="goal-select-label" for="goal-select" ng-if="goals.length > 0" translate>
+            <label class="goal-select-label" for="goal-select" ng-show="goal" translate>
                 GOAL
             </label>
-            <div class="goal-selection" ng-if="goals.length > 0">
+            <div class="goal-selection" ng-show="goal">
                 <select name="goal-select" id="goal-select"
                     ng-options="goal as goal.name for goal in goals" ng-model="goal">
                 </select>

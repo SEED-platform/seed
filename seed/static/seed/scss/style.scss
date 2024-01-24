@@ -1816,6 +1816,7 @@ a:not([href]) {
   background-image: linear-gradient(transparent, #fff);
   position: fixed;
   bottom: 66px;
+  pointer-events: none;
 }
 
 .gradient-height {
@@ -5080,11 +5081,11 @@ ul.r-list {
 
   .goals-header-text {
     padding: 10px;
-    font-size: 1.2em;
+    padding-bottom: 0;
   }
   .goal-actions-wrapper {
     display: flex;
-    margin: 10px 10px 0 10px;
+    margin: 0 10px;
     div {
       margin: 0 10px;
     }
@@ -5363,4 +5364,12 @@ tags-input .tags .tag-item {
   &:has(.label-primary) {
     background: #337ab7;
   }
+}
+.goal-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+.tooltip-long {
+  word-wrap: break-word;
 }
