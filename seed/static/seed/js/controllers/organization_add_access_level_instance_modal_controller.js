@@ -25,7 +25,7 @@ angular.module('BE.seed.controller.organization_add_access_level_instance_modal'
       $scope.level_names = level_names;
       $scope.selected_level_index = null;
       $scope.parent = null;
-      $scope.potental_parents = [];
+      $scope.potential_parents = [];
       $scope.new_level_instance_name = '';
 
 
@@ -42,8 +42,8 @@ angular.module('BE.seed.controller.organization_add_access_level_instance_modal'
       calculate_access_level_instances_by_depth(access_level_tree, 1);
 
       $scope.change_selected_level_index = function () {
-        const new_level_instance_depth = parseInt($scope.selected_level_index);
-        $scope.potental_parents = access_level_instances_by_depth[new_level_instance_depth];
+        const new_level_instance_depth = parseInt($scope.selected_level_index, 10);
+        $scope.potential_parents = access_level_instances_by_depth[new_level_instance_depth];
         $scope.parent = null;
       };
 

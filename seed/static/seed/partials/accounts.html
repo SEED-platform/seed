@@ -28,7 +28,7 @@
                 <a ui-sref="organization_members(::{organization_id: org.id})">{$:: org.name $}</a>
               </td>
               <td class="account_org right">
-                <a ui-sref="organization_access_level_tree(::{organization_id: org.id})"><i class="fa fa-users"></i>{$:: 'Access Level Tree' | translate $}</a>
+                <a ui-sref="organization_access_level_tree(::{organization_id: org.id})"><i class="fa-solid fa-users"></i>{$:: 'Access Level Tree' | translate $}</a>
                 <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::org.is_parent"
                   ><i class="fa-solid fa-sitemap"></i>{$:: 'Column Mappings' | translate $}</a
                 >

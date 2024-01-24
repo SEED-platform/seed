@@ -10,7 +10,7 @@
                 id="selected_level_index"
                 ng-model="selected_level_index"
                 ng-change="change_selected_level_index()"
-                ng-options="level_names.indexOf(level_name)  as ('Level ' + (level_names.indexOf(level_name) + 1) + ' - ' + level_name) for (i, level_name) in level_names.slice(1)">
+                ng-options="level_names.indexOf(level_name) as ('Level ' + (level_names.indexOf(level_name) + 1) + ' - ' + level_name) for (i, level_name) in level_names.slice(1)">
             </select>
         </div>
     </div>
@@ -21,14 +21,14 @@
                 class="form-control"
                 id="potential_parents"
                 ng-model="parent"
-                ng-options="potental_parent as potental_parent.name for potental_parent in potental_parents">
+                ng-options="potential_parent as potential_parent.name for potential_parent in potential_parents">
             </select>
         </div>
     </div>
     <div class="row pad-bot-10">
         <div class="form-group col-sm-12">
             <label for="name" translate>Enter a Name for the new Access Level Instance</label>
-            <input id="name" style="margin: 10px 0px;" type="text" class="form-control" ng-model="new_level_instance_name">
+            <input id="name" style="margin: 10px 0;" type="text" class="form-control" ng-model="new_level_instance_name">
         </div>
     </div>
 </div>
