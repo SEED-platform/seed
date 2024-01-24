@@ -37,6 +37,7 @@
       <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
         <li class="dropdown-header" translate>Organization Settings</li>
         <li class="divider"></li>
+        <li><a ui-sref="organization_access_level_tree({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Access Level Tree</a></li>
         <li>
           <a ui-sref="organization_column_mappings({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ng-if="auth.requires_owner" ui-sref-active="active" translate
             >Column Mappings</a
@@ -73,8 +74,6 @@
             >Sub-Organizations</a
           >
         </li>
-        <li><a ui-sref="organization_access_level_tree({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Access Level Tree</a></li>
-
         <!--<li>
                     <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
                 </li>
