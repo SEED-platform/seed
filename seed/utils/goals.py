@@ -23,14 +23,14 @@ def get_eui_expression(goal):
     # Iterate through the columns in priority order
     for eui_column in goal.eui_columns():
         if eui_column.is_extra_data:
-            eui_column_expression = extra_data_expression(eui_column, 0.0)
+            eui_column_expression = extra_data_expression(eui_column, None)
         else:
             eui_column_expression = Cast(F(f'state__{eui_column.column_name}'), output_field=FloatField())
 
         priority.append(eui_column_expression)
 
     # default value
-    priority.append(Value(0.0, output_field=FloatField()))
+    priority.append(Value(None, output_field=FloatField()))
     # Coalesce to pick the first non-null value
     eui_expression = Coalesce(*priority, output_field=FloatField())
 

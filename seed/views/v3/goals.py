@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
+from quantityfield.units import ureg
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
@@ -130,7 +131,9 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
             if total_kbtu is not None and total_sqft:
                 # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
-                weighted_eui = collapse_unit(org, int(total_kbtu / total_sqft))
+                total_sqft = total_sqft * ureg('ft**2')
+                total_kbtu = total_kbtu * ureg('kBtu/year')
+                weighted_eui = int(collapse_unit(org, (total_kbtu / total_sqft)))
             else:
                 weighted_eui = None
 

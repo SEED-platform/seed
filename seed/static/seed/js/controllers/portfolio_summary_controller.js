@@ -251,7 +251,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             };
 
             const percentage = (a, b) => {
-                if (!a) return null;
+                if (!a || b == null) return null;
                 const value = Math.round((a - b) / a * 100);
                 return isNaN(value) ? null : value;
             }
