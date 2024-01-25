@@ -82,7 +82,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         $scope.goals[0]
                 })
             }
-            const sort_goals = (goals) => goals.sort((a,b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1)            
+            const sort_goals = (goals) => goals.sort((a,b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1)
             get_goals()
 
             // If goal changes, reset grid filters and repopulate ui-grids

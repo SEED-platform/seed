@@ -5,9 +5,9 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from quantityfield.units import ureg
 from rest_framework import status
 from rest_framework.decorators import action
-from quantityfield.units import ureg
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import (
