@@ -129,11 +129,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             total_kbtu = aggregated_data['total_kbtu']
             total_sqft = aggregated_data['total_sqft']
 
+            if total_kbtu:
+                total_kbtu = int(total_kbtu)
+
             if total_kbtu is not None and total_sqft:
                 # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
                 total_sqft = total_sqft * ureg('ft**2')
-                total_kbtu = total_kbtu * ureg('kBtu/year')
-                weighted_eui = int(collapse_unit(org, (total_kbtu / total_sqft)))
+                weighted_eui = total_kbtu * ureg('kBtu/year') / total_sqft
+                weighted_eui = int(collapse_unit(org, weighted_eui))
             else:
                 weighted_eui = None
 
