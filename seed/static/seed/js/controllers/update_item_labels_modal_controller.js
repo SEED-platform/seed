@@ -60,7 +60,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
           // in this modal...
           createdLabel.is_checked_add = true;
 
-          $scope.newLabelForm.$setPristine();
+          form.$setPristine();
           $scope.labels.unshift(createdLabel);
           $scope.initialize_new_label();
         },

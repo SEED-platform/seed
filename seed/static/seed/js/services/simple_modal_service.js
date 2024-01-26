@@ -75,7 +75,7 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
       // Map modal.html $scope custom properties to defaults defined in service
       angular.extend(tempModalOptions, modalOptions, customModalOptions);
 
-      tempModalDefaults.controller = ($scope, $uibModalInstance) => {
+      tempModalDefaults.controller = ['$scope', '$uibModalInstance', ($scope, $uibModalInstance) => {
         $scope.modalOptions = tempModalOptions;
         $scope.modalOptions.ok = () => {
           $uibModalInstance.close(tempModalOptions.okResult);
@@ -83,8 +83,7 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
         $scope.modalOptions.cancel = () => {
           $uibModalInstance.dismiss('cancel');
         };
-      };
-
+      }];
       return $uibModal.open(tempModalDefaults).result;
     };
 
@@ -96,6 +95,7 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
        */
     function showModal(customModalOptions, customModalDefaults) {
       if (customModalOptions && customModalOptions.type !== null) {
+
         if (!_.includes(validModalTypes, customModalOptions.type)) {
           throw new Error('Invalid modal type');
         }

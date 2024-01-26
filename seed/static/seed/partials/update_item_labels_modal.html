@@ -3,7 +3,7 @@
     <h4 class="modal-title" id="manageLabelsModalLabel" translate>Add/Remove Labels</h4>
   </div>
   <div class="modal-body">
-    <div class="newLabelInput" ng-if="is_ali_root" style="margin-top: 0">
+    <div class="newLabelInput" ng-if="is_ali_root" style="margin-top: 0" ng-if="is_ali_root">
       <form name="newLabelForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm)" novalidate>
         <label class="control-label sectionLabel" style="padding-right: 20px" translate>Create new label</label>
         <div class="form-group" ng-class="{'has-error': newLabelForm.name.$invalid && newLabelForm.name.$dirty }">
