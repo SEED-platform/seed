@@ -515,7 +515,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             pk=pk,
             cycle__organization_id=org_id
         )
-        merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
+        try:
+            with transaction.atomic():
+                merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
+
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This taxlot shares matching criteria with at least one taxlot in a different ali. This should not happen. Please contact your system administrator.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             'view_id': view_id,

@@ -884,7 +884,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             pk=pk,
             cycle__organization_id=org_id
         )
-        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+        try:
+            with transaction.atomic():
+                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             'view_id': view_id,

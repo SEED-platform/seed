@@ -106,6 +106,13 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
 
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.save()
+
     def test_create_property(self):
         state = self.property_state_factory.get_property_state()
         cycle_id = self.cycle.id
@@ -558,6 +565,33 @@ class PropertyViewTests(DataMappingBaseTestCase):
         refreshed_view_1 = PropertyView.objects.get(state_id=ps_1.id)
         view_2 = PropertyView.objects.get(state_id=ps_2.id)
         self.assertEqual(refreshed_view_1.property_id, view_2.property_id)
+
+    def test_property_match_merge_link_different_alis(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+        prprty = self.property_factory.get_property(access_level_instance=self.me_ali)
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=ps_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+        prprty_2 = self.property_factory.get_property(access_level_instance=self.sister_ali)
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=ps_2
+        )
+
+        url = reverse('api:v3:properties-match-merge-link', args=[view_1.id])
+        url += f'?organization_id={self.org.pk}'
+        response = self.client.post(url, content_type='application/json')
+
+        assert response.status_code == 400
+        assert response.json()["message"] == 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
 
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets

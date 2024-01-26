@@ -61,6 +61,13 @@ class TaxLotViewTests(DataMappingBaseTestCase):
 
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
 
+        # create tree
+        self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
+        mom_ali = self.org.add_new_access_level_instance(self.org.root.id, "mom")
+        self.me_ali = self.org.add_new_access_level_instance(mom_ali.id, "me")
+        self.sister_ali = self.org.add_new_access_level_instance(mom_ali.id, "sister")
+        self.org.save()
+
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
         state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})
@@ -289,6 +296,33 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         refreshed_view_1 = TaxLotView.objects.get(state_id=tls_1.id)
         view_2 = TaxLotView.objects.get(state_id=tls_2.id)
         self.assertEqual(refreshed_view_1.taxlot_id, view_2.taxlot_id)
+
+    def test_taxlot_match_merge_link_different_alis(self):
+        base_details = {
+            'jurisdiction_tax_lot_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.me_ali)
+        view_1 = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=tls_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        taxlot_2 = self.taxlot_factory.get_taxlot(access_level_instance=self.sister_ali)
+        TaxLotView.objects.create(
+            taxlot=taxlot_2, cycle=cycle_2, state=tls_2
+        )
+
+        url = reverse('api:v3:taxlots-match-merge-link', args=[view_1.id])
+        url += f'?organization_id={self.org.pk}'
+        response = self.client.post(url, content_type='application/json')
+
+        assert response.status_code == 400
+        assert response.json()["message"] == 'This taxlot shares matching criteria with at least one taxlot in a different ali. This should not happen. Please contact your system administrator.'
 
     def test_taxlots_cycles_list(self):
         # Create TaxLot set in cycle 1
