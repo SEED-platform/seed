@@ -98,6 +98,13 @@ from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.ERROR,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
 DISPLAY_RAW_EXTRADATA = True

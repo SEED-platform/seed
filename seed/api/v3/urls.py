@@ -31,6 +31,7 @@ from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.goals import GoalViewSet
 from seed.views.v3.green_assessment_properties import (
     GreenAssessmentPropertyViewSet
 )
@@ -80,6 +81,7 @@ api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='deriv
 api_v3_router.register(r'eeej', EEEJViewSet, basename='eeej')
 api_v3_router.register(r'filter_groups', FilterGroupViewSet, basename='filter_groups')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename='gbr_properties')
+api_v3_router.register(r'goals', GoalViewSet, basename='goals')
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename='green_assessment_properties')
 api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename='green_assessment_urls')

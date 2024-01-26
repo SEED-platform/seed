@@ -90,6 +90,9 @@ msgstr "Téléchargez votre structure organisationnelle sous forme de feuille de
 msgid "ACCESS_LEVEL_TREE_HELP_1"
 msgstr "Cette page vous permet de visualiser la structure du contenu de votre organisation. La structure est constituée de niveaux hiérarchiques qui définissent une arborescence ; c'est ce qu'on appelle les niveaux d'accès. Chaque niveau contient un ou plusieurs nœuds, appelés instances de niveau d'accès. Les autorisations sont gérées en associant le contenu et les utilisateurs à une instance de niveau d'accès particulière, regroupant et restreignant ainsi l'accès au contenu. Le nombre de niveaux d'accès dans votre structure, les noms des niveaux et les noms des instances de niveau d'accès sont personnalisables."
 
+msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
+msgstr "Enregistrement des instances de niveau d'accès en cours... Ce processus dépend de la taille de votre fichier et peut prendre plusieurs minutes."
+
 msgid "ADD_FILES_TO"
 msgstr "Ajoutez des fichiers à {dataset_name}."
 
@@ -156,6 +159,15 @@ msgstr "Acceptez"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:11
 msgid "Accept Terms of Service?"
 msgstr "Accepter les conditions d'utilisation?"
+
+msgid "Access Level"
+msgstr "Niveau d'accès"
+
+msgid "Access Level Instance"
+msgstr "Instance de niveau d'accès"
+
+msgid "Access Level Instance Information"
+msgstr "Informations sur l'instance de niveau d'accès"
 
 msgid "Access Level Instances Errors"
 msgstr "Erreurs d’instances de niveau d’accès"
@@ -329,6 +341,12 @@ msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces lots fiscaux pour en
 msgid "Area"
 msgstr "Superficie"
 
+msgid "Area Column"
+msgstr "Colonne de Superficie"
+
+msgid "Area Target Column"
+msgstr "Colonne Cible de Superficie"
+
 msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 msgstr "En tant qu'administrateur de votre instance SEED, vous pouvez contrôler les données partagées dans votre organisation et entre vos sous-organisations ainsi que les données partagées à l'externe avec le public. Le sous-ensemble de données que vous choisissez de partager avec le public peut être différent du sous-ensemble partagé entre vos sous-organisations."
 
@@ -388,6 +406,9 @@ msgstr "Retour à la Liste"
 
 msgid "Back to Mapping"
 msgstr "Retournez à les mappages"
+
+msgid "Baseline Cycle"
+msgstr "Cycle de référence"
 
 #: seed/models/models.py:135
 #, fuzzy
@@ -660,6 +681,9 @@ msgstr "Surface climatisé"
 msgid "Configuration"
 msgstr "Configuration"
 
+msgid "Configure Goals"
+msgstr "Configurer les Objectifs"
+
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
@@ -800,6 +824,12 @@ msgstr "Entre les Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Profil de mappage de colonne actuel"
 
+msgid "Current Cycle"
+msgstr "Cycle actuel"
+
+msgid "Current Cycle will be measured against Baseline Cycle"
+msgstr "Le cycle actuel sera mesuré par rapport au cycle de référence"
+
 msgid "Current Filters"
 msgstr "Filtres Actuel"
 
@@ -832,6 +862,9 @@ msgstr "Cycle"
 
 msgid "Cycle Name"
 msgstr "Nom du cycle"
+
+msgid "Cycle Selection"
+msgstr "Sélection des cycles"
 
 msgid "Cycle updated."
 msgstr "Cycle mis à jour."
@@ -1114,6 +1147,9 @@ msgstr "Choisissez une méthode d'importation de données EnergyStar Portfolio M
 
 msgid "EUI"
 msgstr "IUE"
+
+msgid "EUI Target Columns"
+msgstr "Colonnes cibles EUI"
 
 msgid "EXCLUDE"
 msgstr "EXCLURE"
@@ -1433,6 +1469,12 @@ msgstr "Géocodage maintenant ..."
 msgid "GJ/m²/year"
 msgstr "GJ/m²/année"
 
+msgid "GOAL"
+msgstr "OBJECTIF"
+
+msgid "GOAL_SETUP_TEXT"
+msgstr "Configurez un ou plusieurs objectifs de réduction de l'intensité de l'utilisation d'énergie (IUE) du portefeuille ci-dessous. Sélectionnez un cycle de référence et un cycle actuel à des fins de comparaison, identifiez le niveau dans votre arborescence de niveaux d'accès auquel cet objectif s'applique, spécifiez un objectif d'amélioration de l'IUE en pourcentage et indiquez quels champs de vos données doivent être utilisés pour les informations sur l'IUE et la superficie en pieds carrés."
+
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirmer le contenu du fichier GreenButton"
 
@@ -1479,6 +1521,9 @@ msgstr "Aller aux compteurs"
 msgid "Go to Notes"
 msgstr "Accéder aux Notes"
 
+msgid "Goal Setup"
+msgstr "Configuration des objectifs"
+
 msgid "Gross Floor Area"
 msgstr "Surface brute"
 
@@ -1496,6 +1541,12 @@ msgstr "Erreur HTTP! Code d'état : 404. L'URL demandée est introuvable."
 
 msgid "HTTP Error! Status Code: 500. Internal Server Error."
 msgstr "Erreur HTTP! Code d'état : 500. Erreur interne du serveur."
+
+msgid "Have your organization owner update the column's data type to \"Area\""
+msgstr "Demandez au propriétaire de votre organisation d s'assurer que le type de données de la colonne est \"Area\" dans"
+
+msgid "Have your organization owner update the data type of the column to \"EUI\""
+msgstr "Demandez au propriétaire de votre organisation de mettre à jour le type de données de la colonne en \"EUI\"."
 
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
@@ -1719,6 +1770,12 @@ msgstr "Moitié gauche"
 
 msgid "Level"
 msgstr "Niveau"
+
+msgid "Level Instance"
+msgstr "Instance de niveau"
+
+msgid "Loading Summary Data..."
+msgstr "Chargement des données récapitulatives..."
 
 msgid "Loading data..."
 msgstr "Chargeant les données ..."
@@ -2066,6 +2123,9 @@ msgstr "Laboratoire National Des Énergies Renouvelables"
 msgid "New Analysis"
 msgstr "Nouvelle analyse"
 
+msgid "New Goal"
+msgstr "Nouvel Objectif"
+
 msgid "New Note"
 msgstr "Nouvelle note"
 
@@ -2130,6 +2190,9 @@ msgstr "Pas nul"
 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Tous les éléments de l'inventaire n'ont pas été supprimés"
+
+msgid "Not seeing your column?"
+msgstr "Vous ne voyez pas votre colonne?"
 
 msgid "Note:"
 msgstr "Remarque:"
@@ -2271,6 +2334,9 @@ msgstr "Résultats d'importation de Portfolio Manager"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
 
+msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
+msgstr "La page de résumé du portefeuille compare 2 cycles pour calculer les progrès vers un objectif de réduction de l'intensité de l'utilisation d'énergie. La sélection du cycle et les détails des objectifs peuvent être personnalisés en cliquant sur le bouton Configurer les Objectifs ci-dessous."
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Nombre mis à jour après le géocodage"
 
@@ -2362,6 +2428,15 @@ msgstr "Veuillez patienter pendant que vos données sont chargées ..."
 msgid "Populate SEED Headers with best known matches"
 msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
 
+msgid "Portfolio Summary"
+msgstr "Résumé du portefeuille"
+
+msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
+msgstr "Le résumé du portefeuille inclura uniquement les propriétés appartenant à cette instance de niveau d'accès."
+
+msgid "Portfolio Target"
+msgstr "Cible du portefeuille"
+
 msgid "Postal Code"
 msgstr "Code postal"
 
@@ -2388,6 +2463,9 @@ msgstr "Aperçu Chargement"
 
 msgid "Previous"
 msgstr "Précédente"
+
+msgid "Primary Column"
+msgstr "Colonne principale"
 
 msgid "Primary Tax Lot ID"
 msgstr "ID de lot d'impôt primaire"
@@ -2941,6 +3019,9 @@ msgstr "Rechercher le nom du champ"
 msgid "Search table name"
 msgstr "Rechercher le nom de la table"
 
+msgid "Secondary (optional)"
+msgstr "Secondaire (facultatif)"
+
 msgid "Security"
 msgstr "Sécurité"
 
@@ -3194,6 +3275,9 @@ msgstr "Colonne cible"
 msgid "Target Field"
 msgstr "Champ cible"
 
+msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+msgstr "Cible pour quantifier l’amélioration de l’IUE du portefeuille. Doit être compris entre 0 et 100."
+
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
 
@@ -3243,6 +3327,9 @@ msgstr "Conditions d'utilisation"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:6
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Conditions de service à partir de% (tos.created | date: \"SHORT_DATE_FORMAT\") s"
+
+msgid "Tertiary (optional)"
+msgstr "Tertiaire (facultatif)"
 
 msgid "Test Connection"
 msgstr "Tester la Connexion"
@@ -3525,6 +3612,12 @@ msgstr "Mettre à jour Salesforce"
 
 msgid "Update UBID"
 msgstr "Mettre à jour UBID"
+
+msgid "Update the data type of the column to \"Area\" in"
+msgstr "Assurez-vous que le type de données de la colonne est bien \"Area\" dans"
+
+msgid "Update the data type of the column to \"EUI\" in"
+msgstr "Assurez-vous que le type de données de la colonne est \"EUI\" dans"
 
 msgid "Update with Audit Template"
 msgstr "Mise à jour avec Audit Template"
@@ -3966,6 +4059,9 @@ msgstr "Prénom"
 #: seed/landing/templates/landing/password_reset_email.html:3
 msgid "for your SEED Platform user account"
 msgstr "pour votre compte utilisateur SEED Platform"
+
+msgid "goal"
+msgstr "Objectif"
 
 #: seed/models/models.py:183
 msgid "gray"

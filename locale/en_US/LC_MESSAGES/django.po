@@ -89,6 +89,9 @@ msgstr "Upload your Organizational Structure in spreadsheet form. The file shoul
 msgid "ACCESS_LEVEL_TREE_HELP_1"
 msgstr "This page allows you to view the structure of your organization's content. The structure is made up of hierarchical levels that define a tree; these are called access levels. Each level contains one or more nodes, called access level instances. Permissions are managed by associating content and users with a particular access level instance, thereby grouping and restricting access to the content. The number of access levels in your structure, the names of the levels, and the names of the access level instances are customizable."
 
+msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
+msgstr "Saving access level instances in progress... This process depends on the size of your file and may take several minutes."
+
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
 
@@ -154,6 +157,15 @@ msgstr "Accept"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:11
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
+
+msgid "Access Level"
+msgstr "Access Level"
+
+msgid "Access Level Instance"
+msgstr "Access Level Instance"
+
+msgid "Access Level Instance Information"
+msgstr "Access Level Instance Information"
 
 msgid "Access Level Instances Errors"
 msgstr "Access Level Instances Errors"
@@ -327,6 +339,12 @@ msgstr "Are you sure you want to unmerge these tax lots and then merge with the 
 msgid "Area"
 msgstr "Area"
 
+msgid "Area Column"
+msgstr "Area Column"
+
+msgid "Area Target Column"
+msgstr "Area Target Column"
+
 msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 msgstr "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 
@@ -386,6 +404,9 @@ msgstr "Back to List"
 
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
+
+msgid "Baseline Cycle"
+msgstr "Baseline Cycle"
 
 #: seed/models/models.py:135
 msgid "Benchmarking"
@@ -652,6 +673,9 @@ msgstr "Conditioned Floor Area"
 msgid "Configuration"
 msgstr "Configuration"
 
+msgid "Configure Goals"
+msgstr "Configure Goals"
+
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
 msgid "Confirm"
@@ -791,6 +815,12 @@ msgstr "Cross-Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Current Column Mapping Profile"
 
+msgid "Current Cycle"
+msgstr "Current Cycle"
+
+msgid "Current Cycle will be measured against Baseline Cycle"
+msgstr "Current Cycle will be measured against Baseline Cycle"
+
 msgid "Current Filters"
 msgstr "Current Filters"
 
@@ -823,6 +853,9 @@ msgstr "Cycle"
 
 msgid "Cycle Name"
 msgstr "Cycle Name"
+
+msgid "Cycle Selection"
+msgstr "Cycle Selection"
 
 msgid "Cycle updated."
 msgstr "Cycle updated."
@@ -1104,6 +1137,9 @@ msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method belo
 
 msgid "EUI"
 msgstr "EUI"
+
+msgid "EUI Target Columns"
+msgstr "EUI Target Columns"
 
 msgid "EXCLUDE"
 msgstr "EXCLUDE"
@@ -1420,6 +1456,12 @@ msgstr "Geocoding now..."
 msgid "GJ/m²/year"
 msgstr "GJ/m²/year"
 
+msgid "GOAL"
+msgstr "GOAL"
+
+msgid "GOAL_SETUP_TEXT"
+msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below. Select a baseline cycle and a current cycle for comparison, indicate the level in your access level tree that this goal applies to, specify a percentage EUI improvement target, and indicate which fields in your data should be used for EUI and square footage information."
+
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirm GreenButton File Contents"
 
@@ -1466,6 +1508,9 @@ msgstr "Go to Meters"
 msgid "Go to Notes"
 msgstr "Go to Notes"
 
+msgid "Goal Setup"
+msgstr "Goal Setup"
+
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
@@ -1483,6 +1528,12 @@ msgstr "HTTP Error! Status Code: 404. The requested URL was not found."
 
 msgid "HTTP Error! Status Code: 500. Internal Server Error."
 msgstr "HTTP Error! Status Code: 500. Internal Server Error."
+
+msgid "Have your organization owner update the column's data type to \"Area\""
+msgstr "Have your organization owner update the column's data type to \"Area\""
+
+msgid "Have your organization owner update the data type of the column to \"EUI\""
+msgstr "Have your organization owner update the data type of the column to \"EUI\""
 
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
@@ -1704,6 +1755,12 @@ msgstr "Left Half"
 
 msgid "Level"
 msgstr "Level"
+
+msgid "Level Instance"
+msgstr "Level Instance"
+
+msgid "Loading Summary Data..."
+msgstr "Loading Summary Data..."
 
 msgid "Loading data..."
 msgstr "Loading data..."
@@ -2050,6 +2107,9 @@ msgstr "National Renewable Energy Laboratory"
 msgid "New Analysis"
 msgstr "New Analysis"
 
+msgid "New Goal"
+msgstr "New Goal"
+
 msgid "New Note"
 msgstr "New Note"
 
@@ -2114,6 +2174,9 @@ msgstr "Not Null"
 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Not all inventory items were successfully deleted"
+
+msgid "Not seeing your column?"
+msgstr "Not seeing your column?"
 
 msgid "Note:"
 msgstr "Note:"
@@ -2255,6 +2318,9 @@ msgstr "Portfolio Manager Meter Import Results"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
 
+msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
+msgstr "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal. Cycle selection and goal details can be customized by clicking the Configure Goals button below."
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Updated counts after geocoding"
 
@@ -2346,6 +2412,15 @@ msgstr "Please wait while your data is loaded..."
 msgid "Populate SEED Headers with best known matches"
 msgstr "Populate SEED Headers with best known matches"
 
+msgid "Portfolio Summary"
+msgstr "Portfolio Summary"
+
+msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
+msgstr "Portfolio Summary will only include properties belonging to this Access Level Instance."
+
+msgid "Portfolio Target"
+msgstr "Portfolio Target"
+
 msgid "Postal Code"
 msgstr "Postal Code"
 
@@ -2372,6 +2447,9 @@ msgstr "Preview Loading"
 
 msgid "Previous"
 msgstr "Previous"
+
+msgid "Primary Column"
+msgstr "Primary Column"
 
 msgid "Primary Tax Lot ID"
 msgstr "Primary Tax Lot ID"
@@ -2916,6 +2994,9 @@ msgstr "Search field name"
 msgid "Search table name"
 msgstr "Search table name"
 
+msgid "Secondary (optional)"
+msgstr "Secondary (optional)"
+
 msgid "Security"
 msgstr "Security"
 
@@ -3169,6 +3250,9 @@ msgstr "Target Column"
 msgid "Target Field"
 msgstr "Target Field"
 
+msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+msgstr "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
@@ -3217,6 +3301,9 @@ msgstr "Terms of Service"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:6
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
+
+msgid "Tertiary (optional)"
+msgstr "Tertiary (optional)"
 
 msgid "Test Connection"
 msgstr "Test Connection"
@@ -3498,6 +3585,12 @@ msgstr "Update Salesforce"
 
 msgid "Update UBID"
 msgstr "Update UBID"
+
+msgid "Update the data type of the column to \"Area\" in"
+msgstr "Update the column's data type to \"Area\" in"
+
+msgid "Update the data type of the column to \"EUI\" in"
+msgstr "Update the data type of the column to \"EUI\" in"
 
 msgid "Update with Audit Template"
 msgstr "Update with Audit Template"
@@ -3938,6 +4031,9 @@ msgstr "first name"
 #: seed/landing/templates/landing/password_reset_email.html:3
 msgid "for your SEED Platform user account"
 msgstr "for your SEED Platform user account"
+
+msgid "goal"
+msgstr "Goal"
 
 #: seed/models/models.py:183
 msgid "gray"
