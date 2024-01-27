@@ -36,7 +36,7 @@ class TestUnicodeNormalization(DataMappingBaseTestCase):
         the letter and diacritics, which seems to provide the best compatibility."""
         # Guillemets
         unicode_text = "Café «Déjà Vu»"
-        expected_out = "Café <<Déjà Vu>>"
+        expected_out = "Café \"Déjà Vu\""
         normalized_text = normalize_unicode_and_characters(unicode_text)
         self.assertEqual(normalized_text, expected_out)
 

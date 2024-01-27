@@ -53,11 +53,11 @@ CHAR_MAPPING = {
     ord('—'): '--',
     ord('―'): '-',
     ord('¬'): '-',
-    # guillemets?
-    ord('‹'): '<',
-    ord('›'): '>',
-    ord('«'): '<<',
-    ord('»'): '>>',
+    # guillemets to single and double quotes
+    ord('‹'): ''',
+    ord('›'): ''',
+    ord('«'): '"',
+    ord('»'): '"',
 }
 
 
