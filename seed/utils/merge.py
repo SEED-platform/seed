@@ -59,6 +59,11 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
         view_ids = list(views.values_list('id', flat=True))
         canonical_ids = list(views.values_list('property_id', flat=True))
 
+        alis = views.values_list("property__access_level_instance", flat=True)
+        if len(set(alis)) != 1:
+            from seed.utils.match import MultipleALIError
+            raise MultipleALIError
+
         # Create new inventory record and associate it to a new view
         new_property = Property(organization_id=org_id)
         new_property.save()
@@ -109,6 +114,11 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
         canonical_ids = list(views.values_list('taxlot_id', flat=True))
+
+        alis = views.values_list("taxlot__access_level_instance", flat=True)
+        if len(set(alis)) != 1:
+            from seed.utils.match import MultipleALIError
+            raise MultipleALIError
 
         # Create new inventory record and associate it to a new view
         new_taxlot = TaxLot(organization_id=org_id)
