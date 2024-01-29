@@ -147,7 +147,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         )
 
     try:
-        views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+        views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
     except ValueError as e:
         return JsonResponse(
             {
