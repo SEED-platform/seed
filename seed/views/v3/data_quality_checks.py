@@ -11,10 +11,10 @@ from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from unidecode import unidecode
 
 from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import PropertyView, TaxLotView
 from seed.models.data_quality import DataQualityCheck
@@ -149,8 +149,9 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
                     result['formatted_field'],
                     result.get('label', None),
                     result['condition'],
-                    # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
-                    unidecode(result['detailed_message']),
+                    # the detailed_message field can have units which has superscripts/subscripts,
+                    # so normalize_unicode_and_characters it!
+                    normalize_unicode_and_characters(result['detailed_message']),
                     result['severity']
                 ])
 

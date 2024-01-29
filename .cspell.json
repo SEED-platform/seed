@@ -150,6 +150,7 @@
     "graphviz",
     "greenbutton",
     "gte",
+    "guillemets",
     "Gunter",
     "Gzip",
     "hardcoded",
@@ -206,6 +207,7 @@
     "lookup",
     "lte",
     "lxml",
+    "malcriado",
     "MapItem",
     "mappable",
     "mapquest",
@@ -225,6 +227,7 @@
     "MyBrowser",
     "MyModel",
     "namespace",
+    "Ñaño",
     "natively",
     "netcat",
     "newdomain",
@@ -307,6 +310,7 @@
     "runtime",
     "salesforce",
     "scalable",
+    "schön",
     "seeddb",
     "seedorg",
     "seedpass",
@@ -371,6 +375,7 @@
     "tsts",
     "tuples",
     "typechecking",
+    "über",
     "ubid",
     "UBID",
     "ubidmodel",
@@ -416,6 +421,7 @@
     "webdriver",
     "webserver",
     "webservers",
+    "Welstone",
     "whitelist",
     "wildcards",
     "workflow",
@@ -432,7 +438,9 @@
     "xpaths",
     "XSLX",
     "yasg",
-    "yml"
+    "yml",
+    "اضافية",
+    "بيانات"
   ],
   "flagWords": [
     "hte"
