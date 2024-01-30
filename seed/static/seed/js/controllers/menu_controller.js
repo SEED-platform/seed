@@ -241,6 +241,7 @@ angular.module('BE.seed.controller.menu', []).controller('menu_controller', [
             $scope.menu.user.organization = _.find(data.organizations, { id: _.toInteger(user_service.get_organization().id) });
             $scope.menu.user.access_level_instance_name = user_service.get_access_level_instance().name;
             $scope.menu.user.is_ali_root = user_service.get_access_level_instance().is_ali_root;
+            $scope.menu.user.is_ali_leaf = user_service.get_access_level_instance().is_ali_leaf;
             set_auth($scope.menu.user.organization.id);
           })
           .catch((error) => {
