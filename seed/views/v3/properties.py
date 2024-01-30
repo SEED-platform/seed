@@ -1388,7 +1388,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        try:
+                            with transaction.atomic():
+                                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        except MergeLinkPairError:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'This change causes the property to perform a forbidden merge and is thus forbidden'
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
                         result.update({
                             'view_id': view_id,

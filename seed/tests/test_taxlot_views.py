@@ -399,7 +399,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.assertEqual(result_2[0]['id'], taxlot_2.id)
 
 
-class TaxlotViewTestPermissions(AccessLevelBaseTestCase):
+class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -923,3 +923,78 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
 
         self.assertTrue(TaxLot.objects.filter(pk=view.taxlot_id).exists())
         self.assertEqual(TaxLot.objects.count(), 3)
+
+
+class TaxLotUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.state_1 = self.taxlot_state_factory.get_taxlot_state(
+            address_line_1='1 taxlot state',
+            jurisdiction_tax_lot_id='5766973'  # this allows the Taxlot to be targeted for PM meter additions
+        )
+        self.taxlot_1 = self.taxlot_factory.get_taxlot()
+        self.view_1 = TaxLotView.objects.create(
+            taxlot=self.taxlot_1, cycle=self.cycle, state=self.state_1
+        )
+
+        self.state_2 = self.taxlot_state_factory.get_taxlot_state(address_line_1='2 taxlot state')
+        self.taxlot_2 = self.taxlot_factory.get_taxlot()
+        self.view_2 = TaxLotView.objects.create(
+            taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
+        )
+
+    def test_taxlots_update_causes_merge(self):
+        url = reverse('api:v3:taxlots-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"jurisdiction_tax_lot_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert TaxLot.objects.count() == 1
+        assert TaxLotView.objects.count() == 1
+
+    def test_taxlots_update_causes_link(self):
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:taxlots-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"jurisdiction_tax_lot_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert TaxLotView.objects.count() == 2
+        assert list(TaxLotView.objects.values_list("taxlot", flat=True)) == [self.taxlot_1.id, self.taxlot_1.id]
+
+    def test_taxlots_update_causes_merge_different_ali(self):
+        self.taxlot_1.access_level_instance = self.child_level_instance
+        self.taxlot_1.save()
+
+        url = reverse('api:v3:taxlots-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"jurisdiction_tax_lot_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert TaxLot.objects.count() == 2
+        assert TaxLotView.objects.count() == 2
+
+    def test_taxlots_update_causes_link_different_ali(self):
+        self.taxlot_1.access_level_instance = self.child_level_instance
+        self.taxlot_1.save()
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:taxlots-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"jurisdiction_tax_lot_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert TaxLotView.objects.count() == 2
+        assert list(TaxLotView.objects.values_list("taxlot", flat=True)) == [self.taxlot_1.id, self.taxlot_2.id]

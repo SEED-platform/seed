@@ -817,7 +817,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                         Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                        try:
+                            with transaction.atomic():
+                                merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                        except MergeLinkPairError:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'This change causes the taxlot to perform a forbidden merge and is thus forbidden'
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
                         result.update({
                             'view_id': view_id,

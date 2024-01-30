@@ -1216,6 +1216,81 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 404
 
 
+class PropertyUpdateCausesMergesAndLinkTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.state_1 = self.property_state_factory.get_property_state(
+            address_line_1='1 property state',
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
+        )
+        self.property_1 = self.property_factory.get_property()
+        self.view_1 = PropertyView.objects.create(
+            property=self.property_1, cycle=self.cycle, state=self.state_1
+        )
+
+        self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
+        self.property_2 = self.property_factory.get_property()
+        self.view_2 = PropertyView.objects.create(
+            property=self.property_2, cycle=self.cycle, state=self.state_2
+        )
+
+    def test_properties_update_causes_merge(self):
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert Property.objects.count() == 1
+        assert PropertyView.objects.count() == 1
+
+    def test_properties_update_causes_link(self):
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 200
+        assert PropertyView.objects.count() == 2
+        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_1.id]
+
+    def test_properties_update_causes_merge_different_ali(self):
+        self.property_1.access_level_instance = self.child_level_instance
+        self.property_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert Property.objects.count() == 2
+        assert PropertyView.objects.count() == 2
+
+    def test_properties_update_causes_link_different_ali(self):
+        self.property_1.access_level_instance = self.child_level_instance
+        self.property_1.save()
+        self.view_1.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2020, 10, 10, tzinfo=get_current_timezone()))
+        self.view_1.save()
+
+        url = reverse('api:v3:properties-detail', args=[self.view_2.id]) + f'?organization_id={self.org.pk}'
+        param = json.dumps({"state": {"pm_property_id": "5766973"}})
+
+        response = self.client.put(url, param, content_type='application/json')
+
+        assert response.status_code == 400
+        assert PropertyView.objects.count() == 2
+        assert list(PropertyView.objects.values_list("property", flat=True)) == [self.property_1.id, self.property_2.id]
+
+
 class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
