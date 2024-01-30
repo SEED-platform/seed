@@ -152,7 +152,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         return JsonResponse(
             {
                 'stauts': 'error',
-                'message': f'Error filtering: Clear filters and try again: {str(e)}'
+                'message': f'Error filtering: {str(e)}'
             },
             status=status.HTTP_400_BAD_REQUEST
         )
