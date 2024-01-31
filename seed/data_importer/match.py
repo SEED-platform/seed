@@ -213,8 +213,8 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
 
         # Look for links across Cycles
         log_debug('Start Properties link_views')
-        merged_linked_property_views = link_views(
-            merged_property_views,
+        merged_linked_property_views = link_states(
+            [v.state for v in merged_property_views],
             PropertyView,
             sub_progress_key,
         )
@@ -257,8 +257,8 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
 
         # Look for links across Cycles
         log_debug('Start TaxLots link_views')
-        merged_linked_taxlot_views = link_views(
-            merged_linked_taxlot_views,
+        merged_linked_taxlot_views = link_states(
+            [v.state for v in merged_linked_taxlot_views],
             TaxLotView,
             sub_progress_key,
         )
@@ -612,9 +612,9 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count, errored_merged_states, errored_new_states
 
 
-def link_views(merged_views, ViewClass, sub_progress_key):
+def link_states(states, ViewClass, sub_progress_key):
     """
-    Run each of the given -Views through a linking round.
+    Run each of the given -States through a linking round.
 
     For details on the actual linking logic, please refer to the the
     match_merge_link() method.
@@ -629,14 +629,11 @@ def link_views(merged_views, ViewClass, sub_progress_key):
 
     processed_views = []
 
-    batch_size = math.ceil(len(merged_views) / 100)
-    for idx, view in enumerate(merged_views):
-        _merge_count, _link_count, view_id = match_merge_link(view.state_id, state_class_name)
+    batch_size = math.ceil(len(states) / 100)
+    for idx, state in enumerate(states):
+        _merge_count, _link_count, view_id = match_merge_link(state.id, state_class_name)
 
-        if view_id is not None:
-            processed_views.append(ViewClass.objects.get(pk=view_id))
-        else:
-            processed_views.append(view)
+        processed_views.append(ViewClass.objects.get(pk=view_id))
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (6/6): Merging Views')
     sub_progress_data.finish_with_success()

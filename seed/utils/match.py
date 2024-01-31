@@ -222,7 +222,8 @@ def match_merge_link(state_id, StateClassName):
 
     # If associated -State has empty matching criteria, do nothing
     if all(v is None for v in matching_criteria.values()):
-        return 0, 0, None
+        target_view = ViewClass.objects.get(state_id=state_id)
+        return 0, 0, target_view.id
 
     # 'state__' is appended to be able to query from the related -View Class
     state_appended_matching_criteria = {
@@ -255,7 +256,7 @@ def match_merge_link(state_id, StateClassName):
     if merge_count > 0:
         return merge_count, link_count, target_view.id
     else:
-        return 0, link_count, None
+        return 0, link_count, target_view.id
 
 
 @shared_task(serializer='pickle', ignore_result=True)
