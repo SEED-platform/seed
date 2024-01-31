@@ -171,19 +171,19 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_destroy(self):
         goal_count = Goal.objects.count()
 
-        # cannot delete parent goal
+        # invalid permission
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
-        # leaf alis cannot delete any goal
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
+        # valid
         self.login_as_root_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
@@ -216,7 +216,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             }
         goal_data = reset_goal_data('child_goal 2')
 
-        # leaf have invalid permissions
+        # leaves have invalid permissions
         self.login_as_child_member()
         response = self.client.post(
             url,
