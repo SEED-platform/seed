@@ -37,7 +37,6 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $scope.auth = auth_payload.auth;
             $scope.organization = organization;
             $scope.write_permission = write_permission;
-            console.log('write permission', $scope.write_permission)
             $scope.goal = goal || {};
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.all_level_names = []

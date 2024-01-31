@@ -82,6 +82,10 @@ def requires_root_member_access(org_user):
     """ User must be an owner or member at the root access level"""
     return org_user.access_level_instance.depth == 1 and org_user.role_level >= ROLE_MEMBER
 
+def requires_non_leaf_access(org_user):
+    """ User must be a non leaf member. Exception when user is both root and leaf. """
+    return org_user.access_level_instance.is_root() or not org_user.access_level_instance.is_leaf()
+
 
 def can_create_sub_org(org_user):
     return requires_parent_org_owner(org_user)
@@ -148,6 +152,7 @@ PERMS = {
     'requires_member': requires_member,
     'requires_viewer': requires_viewer,
     'requires_root_member_access': requires_root_member_access,
+    'requires_non_leaf_access': requires_non_leaf_access,
     'can_create_sub_org': can_create_sub_org,
     'can_remove_org': can_remove_org,
     'can_invite_member': can_invite_member,

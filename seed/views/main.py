@@ -57,7 +57,7 @@ def _get_default_org(user):
         ali_name = ou.access_level_instance.name
         ali_id = ou.access_level_instance.id
         is_ali_root = ou.access_level_instance == ou.organization.root
-        is_ali_leaf = ou.access_level_instance.depth == len(org.access_level_names)
+        is_ali_leaf = ou.access_level_instance.is_leaf()
         return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf
     else:
         return "", "", "", "", "", "", ""
