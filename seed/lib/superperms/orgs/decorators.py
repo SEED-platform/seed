@@ -82,6 +82,7 @@ def requires_root_member_access(org_user):
     """ User must be an owner or member at the root access level"""
     return org_user.access_level_instance.depth == 1 and org_user.role_level >= ROLE_MEMBER
 
+
 def requires_non_leaf_access(org_user):
     """ User must be a non leaf member. Exception when user is both root and leaf. """
     return org_user.access_level_instance.is_root() or not org_user.access_level_instance.is_leaf()

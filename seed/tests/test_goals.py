@@ -323,7 +323,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['eui_column1'] == original_goal.eui_column1.id
 
-
         # unexpected fields are ignored
         goal_data = {
             'name': 'child_goal y',
