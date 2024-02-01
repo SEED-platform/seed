@@ -60,7 +60,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     const matching = c.is_matching_criteria;
                     const area = c.data_type === 'area';
                     const eui = c.data_type === 'eui';
-                    const other = ['property_name', 'property_type'].includes(c.column_name);
+                    const other = ['property_name', 'property_type', 'year_built'].includes(c.column_name);
 
                     if (default_display || matching || eui || area || other ) table_column_ids.push(c.id);
                     if (eui) $scope.eui_columns.push(c);
@@ -450,6 +450,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     ...matching_column_names,
                     'property_name',
                     'property_type',
+                    'year_built'
                 ]
             )]
             // handle cycle specific columns
