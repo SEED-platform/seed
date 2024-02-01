@@ -3,8 +3,8 @@
   <div
     class="progress_bar_copy_top"
     ng-if="step.number === 20"
-    ng-attr-translate="{$ multipleCycleUpload ? 'UPLOADING_PROGRESS_MULTIPLE_CYCLE' : 'UPLOADING_PROGRESS' $}"
-    translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"
+    ng-attr-translate="UPLOADING_PROGRESS_NO_CYCLE"
+    translate-values="{ dataset_filename: dataset.filename }"
   ></div>
   <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
   <div ng-if="step.number !== 20" class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
