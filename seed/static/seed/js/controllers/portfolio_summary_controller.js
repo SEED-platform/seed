@@ -423,7 +423,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     let baseline = baseline_properties.find(p => p.id == id)
                     let current = current_properties.find(p => p.id == id)
                     // set accumulator
-                    let property = current || baseline
+                    let property = combine_properties(current, baseline)
                     // add baseline stats
                     if (baseline) {
                         property.baseline_cycle = baseline_cycle_name
@@ -440,6 +440,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     combined_properties.push(property)
                 })
                 return combined_properties
+            }
+
+            const combine_properties = (a, b) => {
+                // Given 2 properties, find non null values and combine into a single property
+                let c = {};
+                Object.keys(a).forEach(key => c[key] = a[key] !== null ? a[key] : b[key])
+                return c
             }
 
             const apply_defaults = (cols, ...defaults) => { _.map(cols, (col) => _.defaults(col, ...defaults)) }
