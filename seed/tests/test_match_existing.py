@@ -509,9 +509,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, _link_count, no_match_indicator = match_merge_link(ps_1_view.state_id, 'PropertyState')
+        count_result, link_count, view_id = match_merge_link(ps_1_view.state_id, 'PropertyState')
         self.assertEqual(count_result, 0)
-        self.assertIsNone(no_match_indicator)
+        self.assertEqual(link_count, 0)
 
         self.assertEqual(Property.objects.count(), 3)
         self.assertEqual(PropertyState.objects.count(), 3)
@@ -649,9 +649,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, _link_count, no_match_indicator = match_merge_link(tls_1_view.state_id, 'TaxLotState')
+        count_result, link_count, view_id = match_merge_link(tls_1_view.state_id, 'TaxLotState')
         self.assertEqual(count_result, 0)
-        self.assertIsNone(no_match_indicator)
+        self.assertEqual(link_count, 0)
 
         self.assertEqual(TaxLot.objects.count(), 3)
         self.assertEqual(TaxLotState.objects.count(), 3)

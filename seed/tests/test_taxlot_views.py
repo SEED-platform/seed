@@ -287,7 +287,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         summary = response.json()
 
         expected_summary = {
-            'view_id': None,
+            'view_id': view_1.id,
             'match_merged_count': 0,
             'match_link_count': 1,
         }
