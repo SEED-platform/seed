@@ -55,7 +55,7 @@
               </td>
               <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>
               <td class="analysis-status {$ analysis.status.toLowerCase() $}">
-                <i class="fa-solid fa-arrows-rotate fa-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
+                <i class="fa-solid fa-arrows-rotate fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!analysis._finished_with_tasks"></i>
                 {$ analysis.status $}
               </td>
               <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>

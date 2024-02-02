@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.organization_edit_access_level_instance_modal
     'instance_id',
     'instance_name',
     'Notification',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $state,
@@ -25,13 +26,15 @@ angular.module('BE.seed.controller.organization_edit_access_level_instance_modal
       $scope.instance_id = instance_id;
       $scope.level_instance_name = instance_name;
 
-      $scope.edit_level_instance = function () {
+      $scope.save_if_changed = () => {
+        if (instance_name === $scope.level_instance_name) $scope.cancel();
+
         organization_service.edit_organization_access_level_instance(org_id, $scope.instance_id, $scope.level_instance_name)
-          .then((_) => $uibModalInstance.close())
+          .then(() => $uibModalInstance.close())
           .catch((err) => { Notification.error(err); });
       };
 
-      $scope.cancel = function () {
+      $scope.cancel = () => {
         $uibModalInstance.dismiss('cancel');
       };
     }]);
