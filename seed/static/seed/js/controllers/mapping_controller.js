@@ -403,19 +403,19 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     $scope.updateColIsDisallowedCreation = () => {
-      if (window.BE.is_ali_root == "True"){
-        return
+      if (window.BE.is_ali_root === 'True') {
+        return;
       }
 
       existing_columns = [
-        ...$scope.mappable_property_columns.map(col => col.display_name),
+        ...$scope.mappable_property_columns.map((col) => col.display_name),
         ...$scope.organization.access_level_names
-      ]
-      $scope.mappings.forEach(col => {
-        col.is_disallowed_creation = !!col.suggestion && !existing_columns.some(existing_col => existing_col === col.suggestion);
+      ];
+      $scope.mappings.forEach((col) => {
+        col.is_disallowed_creation = !!col.suggestion && !existing_columns.some((existing_col) => existing_col === col.suggestion);
       });
 
-      $scope.disallowed_creation_present = $scope.mappings.some(col => col.is_disallowed_creation)
+      $scope.disallowed_creation_present = $scope.mappings.some((col) => col.is_disallowed_creation);
     };
 
     // Verify there are not any suggested Column names that match an existing Derived Column name
@@ -619,21 +619,19 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
      */
-    $scope.empty_units_present = () => {
-      return $scope.mappings.some((field) => (
-          !field.isOmitted &&
+    $scope.empty_units_present = () => $scope.mappings.some((field) => (
+      !field.isOmitted &&
           field.suggestion_table_name === 'PropertyState' &&
           field.from_units === null &&
           ($scope.is_area_column(field) || $scope.is_eui_column(field))
-      ))
-    };
+    ));
 
     /**
      * empty_fields_present: used to disable or enable the 'show & review
      *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
      */
     const suggestions_not_provided_yet = () => {
-      const non_omitted_mappings = $scope.mappings.filter(m => !m.isOmitted)
+      const non_omitted_mappings = $scope.mappings.filter((m) => !m.isOmitted);
       const no_suggestion_value = Boolean(_.find(non_omitted_mappings, { suggestion: undefined }));
       const no_suggestion_table_name = Boolean(_.find(non_omitted_mappings, { suggestion_table_name: undefined }));
 

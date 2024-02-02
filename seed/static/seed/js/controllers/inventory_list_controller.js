@@ -578,7 +578,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         resolve: {
           inventory_ids: () => selectedViewIds,
           inventory_type: () => $scope.inventory_type,
-          is_ali_root: () => $scope.menu.user.is_ali_root,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(() => {
