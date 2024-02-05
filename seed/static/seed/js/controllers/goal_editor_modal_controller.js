@@ -10,13 +10,14 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
         '$uibModalInstance',
         'Notification',
         'goal_service',
-        'auth_payload',
-        'organization',
-        'cycles',
-        'area_columns',
-        'eui_columns',
         'access_level_tree',
+        'area_columns',
+        'auth_payload',
+        'cycles',
+        'eui_columns',
         'goal',
+        'organization',
+        'write_permission',
         function (
             $scope,
             $state,
@@ -24,16 +25,18 @@ angular.module('BE.seed.controller.goal_editor_modal', [])
             $uibModalInstance,
             Notification,
             goal_service,
-            auth_payload,
-            organization,
-            cycles,
-            area_columns,
-            eui_columns,
             access_level_tree,
+            area_columns,
+            auth_payload,
+            cycles,
+            eui_columns,
             goal,
+            organization,
+            write_permission,
         ) {
             $scope.auth = auth_payload.auth;
             $scope.organization = organization;
+            $scope.write_permission = write_permission;
             $scope.goal = goal || {};
             $scope.access_level_tree = access_level_tree.access_level_tree;
             $scope.all_level_names = []
