@@ -422,8 +422,8 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 let combined_properties = []
                 unique_ids.forEach(id => {
                     // find matching properties
-                    let baseline = baseline_properties.find(p => p.id == id)
-                    let current = current_properties.find(p => p.id == id)
+                    let baseline = baseline_properties.find(p => p.id == id) || {}
+                    let current = current_properties.find(p => p.id == id) || {}
                     // set accumulator
                     let property = combine_properties(current, baseline)
                     // add baseline stats
