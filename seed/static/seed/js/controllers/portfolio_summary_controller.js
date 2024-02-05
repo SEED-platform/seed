@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     const matching = c.is_matching_criteria;
                     const area = c.data_type === 'area';
                     const eui = c.data_type === 'eui';
-                    const other = ['property_name', 'property_type'].includes(c.column_name);
+                    const other = ['property_name', 'property_type', 'year_built'].includes(c.column_name);
 
                     if (default_display || matching || eui || area || other ) table_column_ids.push(c.id);
                     if (eui) $scope.eui_columns.push(c);
@@ -425,7 +425,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     let baseline = baseline_properties.find(p => p.id == id)
                     let current = current_properties.find(p => p.id == id)
                     // set accumulator
-                    let property = current || baseline
+                    let property = combine_properties(current, baseline)
                     // add baseline stats
                     if (baseline) {
                         property.baseline_cycle = baseline_cycle_name
@@ -444,6 +444,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 return combined_properties
             }
 
+            const combine_properties = (a, b) => {
+                // Given 2 properties, find non null values and combine into a single property
+                let c = {};
+                Object.keys(a).forEach(key => c[key] = a[key] !== null ? a[key] : b[key])
+                return c
+            }
+
             const apply_defaults = (cols, ...defaults) => { _.map(cols, (col) => _.defaults(col, ...defaults)) }
 
             const property_column_names = [...new Set(
@@ -452,6 +459,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     ...matching_column_names,
                     'property_name',
                     'property_type',
+                    'year_built'
                 ]
             )]
             // handle cycle specific columns
