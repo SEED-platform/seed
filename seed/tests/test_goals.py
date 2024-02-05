@@ -10,7 +10,7 @@ from datetime import datetime
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, Goal
+from seed.models import Column, Goal, GoalNote
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -90,7 +90,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
         self.view13 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_13, cycle=self.cycle3)
         self.view2 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_2, cycle=self.cycle2)
-        self.view31 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
         self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
 
         self.root_goal = Goal.objects.create(
@@ -383,3 +383,89 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
 
         assert summary == exp_summary
+
+class GoalNoteViewTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
+
+        # access level instances
+        self.root_ali = self.org.root
+        self.child_ali = self.org.root.get_children().first()
+
+        # properties
+        self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
+        self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
+
+        state_details= self.property_state_factory.get_details()
+        self.state_11 = self.property_state_factory.get_property_state(**state_details)
+        self.state_12 = self.property_state_factory.get_property_state(**state_details)
+        self.state_21 = self.property_state_factory.get_property_state(**state_details)
+        self.state_22 = self.property_state_factory.get_property_state(**state_details)
+
+        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
+        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
+        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
+        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
+
+        # goals
+        goal_details = {
+            'organization': self.org,
+            'baseline_cycle': self.cycle1,
+            'current_cycle': self.cycle2,            
+            'access_level_instance': None,
+            'eui_column1': Column.objects.get(organization=self.org.id, column_name='source_eui'),
+            'eui_column2': None,
+            'eui_column3': None,
+            'area_column': Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
+            'target_percentage': 20,
+            'name': 'name'
+        }
+        root_details = goal_details 
+        root_details['name'] = 'root_goal'
+        root_details['access_level_instance'] = self.root_ali
+        self.root_goal = Goal.objects.create(**root_details)
+
+        child_details = goal_details
+        child_details['name'] = 'child_goal1'
+        child_details['access_level_instance'] = self.child_ali
+        self.child_goal1 = Goal.objects.create(**child_details)
+        child_details['name'] = 'child_goal2'
+        self.child_goal2 = Goal.objects.create(**child_details)
+
+        # goal notes 
+        note_details = {
+            'goal': self.child_goal1,
+            'property': self.property1,
+            'question': 1,
+            'resolution': 'resolution1',
+            'passed_checks': False,
+            'new_or_acquired': False
+        }
+        self.note_p1_g1 = GoalNote.objects.create(**note_details)
+        note_details['goal'] = self.child_goal2
+        self.note_p1_g2 = GoalNote.objects.create(**note_details)
+        note_details['property'] = self.property2
+        self.note_p2_g2 = GoalNote.objects.create(**note_details)
+
+    def test_get_goal_notes(self):
+        url = reverse_lazy('api:v3:goal_notes-list') + '?organization_id=' + str(self.org.id)
+        self.login_as_root_member()
+        response = self.client.get(url, contemt_type='application/json')
+        assert response.status_code == 200
+        # assert len(response.json()['goals']) == 3
+
+        self.login_as_child_member()
+        response = self.client.get(url, contemt_type='application/json')
+        assert response.status_code == 200
+        breakpoint()
+        assert len(response.json()['goals']) == 2
+       
