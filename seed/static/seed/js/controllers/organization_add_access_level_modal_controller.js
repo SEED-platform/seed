@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
     'org_id',
     'current_access_level_names',
     'Notification',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $state,
@@ -20,16 +21,13 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
       current_access_level_names,
       Notification
     ) {
-      $scope.current_access_level_names = [...current_access_level_names];
-      $scope.new_access_level_names = current_access_level_names;
+      $scope.new_access_level_names = angular.copy(current_access_level_names);
 
-      $scope.is_modifed = () => !_.isEqual($scope.current_access_level_names, $scope.new_access_level_names);
+      $scope.is_modified = () => !_.isEqual(current_access_level_names, $scope.new_access_level_names);
 
-      $scope.save_access_level_names = function () {
+      $scope.save_access_level_names = () => {
         organization_service.update_organization_access_level_names(org_id, $scope.new_access_level_names)
-          .then(
-            (_) => $uibModalInstance.close()
-          )
+          .then(() => $uibModalInstance.close())
           .catch((err) => {
             console.log(err.data.message);
             Notification.error(err.data.message);
@@ -41,7 +39,7 @@ angular.module('BE.seed.controller.organization_add_access_level_modal', [])
       };
 
       $scope.add_level = () => {
-        $scope.new_access_level_names.push("");
+        $scope.new_access_level_names.push('');
       };
 
       $scope.cancel = () => {

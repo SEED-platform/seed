@@ -239,7 +239,7 @@
               <!-- Show read-only current derived column value -->
               <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
                 <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
+                  <span ng-if="!item_derived_values.hasOwnProperty(col.id)"><i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i> Loading...</span>
                   <span ng-if="!!item_derived_values.hasOwnProperty(col.id)">{$ item_derived_values[col.id] $}</span>
                 </span>
               </td>

@@ -36,6 +36,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
     decorator=[
         swagger_auto_schema_org_query_param,
         has_perm_class('requires_member'),
+        has_perm_class('requires_non_leaf_access'),
         has_hierarchy_access(goal_id_kwarg="pk")
     ]
 )
@@ -44,6 +45,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
     decorator=[
         swagger_auto_schema_org_query_param,
         has_perm_class('requires_member'),
+        has_perm_class('requires_non_leaf_access'),
         has_hierarchy_access(body_ali_id="access_level_instance")
     ]
 )
@@ -70,6 +72,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class('requires_member')
+    @has_perm_class('requires_non_leaf_access')
     @has_hierarchy_access(goal_id_kwarg='pk')
     def update(self, request, pk):
         try:

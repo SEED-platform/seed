@@ -4830,13 +4830,17 @@ ul.r-list {
 }
 
 .accordion-header[aria-expanded='true'] i {
-  transform: rotate(90deg);
-  transition: transform 0.5s;
+  &:not(.fa-pencil):not(.fa-trash) {
+    transform: rotate(90deg);
+    transition: transform 0.5s;
+  }
 }
 
 .accordion-header[aria-expanded='false'] i {
-  transform: rotate(0deg);
-  transition: transform 0.5s;
+  &:not(.fa-pencil):not(.fa-trash) {
+    transform: rotate(0deg);
+    transition: transform 0.5s;
+  }
 }
 
 .measure-elec {
@@ -5005,10 +5009,31 @@ ul.r-list {
   border-color: #2e6da4;
 }
 
+.access-level-tree {
+  .hidden-row {
+    padding: 0 !important;
+
+    &:not(:has(> .collapse.in, > .collapsing)) {
+      // No border if collapsed
+      border-bottom-width: 0 !important;
+    }
+  }
+}
+
 .levels-header {
   font-weight: bold;
   padding: 0;
-  background: #efefef;
+}
+
+.level-child {
+  &:has(> i.fa-chevron-right) {
+    cursor: pointer;
+  }
+
+  span {
+    margin-bottom: -1px;
+    padding-left: 8px;
+  }
 }
 
 .levels-table-item-detail {
@@ -5075,6 +5100,7 @@ ul.r-list {
     border-bottom: 1px solid #ddd;
   }
 }
+
 .portfolio-summary-wrapper {
   display: flex;
   flex-direction: column;
@@ -5083,9 +5109,11 @@ ul.r-list {
     padding: 10px;
     padding-bottom: 0;
   }
+
   .goal-actions-wrapper {
     display: flex;
     margin: 0 10px;
+
     div {
       margin: 0 10px;
     }
@@ -5094,9 +5122,11 @@ ul.r-list {
       display: flex;
       min-height: 30px;
       margin: 15px;
+
       .goal-select-label {
         margin: auto;
       }
+
       .goal-selection {
         #goal-select {
           width: 30vw;
@@ -5106,12 +5136,14 @@ ul.r-list {
           padding: 5px;
         }
       }
+
       button {
         margin-left: 10px;
         height: 100%;
       }
     }
   }
+
   #portfolio-summary-selection-wrapper {
     margin: 10px 7px;
     display: flex;
@@ -5125,6 +5157,7 @@ ul.r-list {
         font-size: 10px;
         padding: 4px 0 6px 0;
       }
+
       .portfolio-summary-constant {
         border: 1px solid gray;
         border-radius: 2px;
@@ -5134,9 +5167,11 @@ ul.r-list {
         text-overflow: ellipsis;
         padding-left: 4px;
       }
+
       .starting-legend {
         background-color: #f8f1cf;
       }
+
       .ending-legend {
         background-color: #f8d0c4;
       }
@@ -5154,10 +5189,12 @@ ul.r-list {
       border-bottom: 1px solid rgb(199, 199, 199);
     }
   }
+
   .portfolio-summary-btn {
     height: 28px;
     padding: 0 10px;
   }
+
   #portfolio-summary-grid {
     margin: 0 24px;
   }
@@ -5204,6 +5241,7 @@ ul.r-list {
       }
     }
   }
+
   .portfolio-summary-loading {
     border: 1px solid rgb(188, 188, 188);
     border-radius: 5px;
@@ -5213,6 +5251,7 @@ ul.r-list {
     background: rgba(128, 128, 128, 0.1);
     color: rgb(128, 128, 128);
   }
+
   .portfolio-summary-item-count {
     margin: 0 24px;
     margin-top: 2px;
@@ -5233,11 +5272,13 @@ ul.r-list {
     .goal-details-column {
       .goal-detail {
         display: flex;
+
         .goal-detail-key {
           text-align: right;
           width: 120px;
           padding-right: 10px;
         }
+
         .goal-detail-value {
           font-weight: bold;
           white-space: nowrap;
@@ -5264,20 +5305,24 @@ ul.r-list {
   .goal-label {
     width: 150px;
   }
+
   .goal-form-control {
     height: unset;
     padding: 0;
   }
 }
+
 #goal-list {
   max-height: 485px;
 }
+
 #goal-messages {
   margin: 10px;
   padding: 10px;
   border-radius: 10px;
   text-align: left;
 }
+
 .analysis-results-section {
   padding: 5px 10px;
   margin: 0;
@@ -5300,7 +5345,7 @@ ul.r-list {
 }
 
 .al-label {
-  margin-top: 15px;
+  margin: 0;
   font-size: 1.1em;
 }
 
@@ -5365,10 +5410,12 @@ tags-input .tags .tag-item {
     background: #337ab7;
   }
 }
+
 .goal-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .tooltip-long {
   word-wrap: break-word;
 }

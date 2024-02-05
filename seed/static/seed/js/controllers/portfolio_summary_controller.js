@@ -39,6 +39,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             spinner_utility,
         ) {
             $scope.organization = organization_payload.organization;
+            $scope.write_permission = $scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf
             // Ii there a better way to convert string units to displayUnits?
             const area_units = $scope.organization.display_units_area.replace('**2', '²');
             const eui_units = $scope.organization.display_units_eui.replace('**2', '²');
@@ -158,13 +159,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     size: 'lg',
                     backdrop: 'static',
                     resolve: {
-                        auth_payload: () => auth_payload,
-                        organization: () => $scope.organization,
-                        cycles: () => $scope.cycles,
-                        area_columns: () => $scope.area_columns,
-                        eui_columns: () => $scope.eui_columns,
                         access_level_tree: () => access_level_tree,
+                        area_columns: () => $scope.area_columns,
+                        auth_payload: () => auth_payload,
+                        cycles: () => $scope.cycles,
+                        eui_columns: () => $scope.eui_columns,
                         goal: () => $scope.goal,
+                        organization: () => $scope.organization,
+                        write_permission: () => $scope.write_permission,
                     },
                 });
 

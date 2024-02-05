@@ -33,6 +33,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       id: window.BE.access_level_instance_id,
       name: window.BE.access_level_instance_name,
       is_ali_root: window.BE.is_ali_root == "True",
+      is_ali_leaf: window.BE.is_ali_leaf == "True"
     };
 
     /**

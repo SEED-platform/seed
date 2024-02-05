@@ -279,7 +279,7 @@
       </div>
       <div class="right_60 section_action_container section_action_btn">
         <button type="button" class="btn btn-default" ng-click="open_data_quality_modal()">
-          <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
+          <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0" ng-if="!data_quality_results_ready"></i>
           <span ng-if="data_quality_results_ready && data_quality_errors > 0"> {$ data_quality_errors $} <i class="fa-solid fa-triangle-exclamation" style="color: #ffb7b7"></i> </span>
           <span ng-if="data_quality_results_ready && data_quality_warnings > 0"> {$ data_quality_warnings $} <i class="fa-solid fa-triangle-exclamation" style="color: #fdf4bf"></i> </span>
           {$:: 'Data Quality Results' | translate $}

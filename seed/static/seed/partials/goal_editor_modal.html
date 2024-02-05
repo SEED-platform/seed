@@ -35,7 +35,7 @@
                                 <span class="r-grow goal-name" uib-tooltip="{$ goal.name.length > 40 ? goal.name : '' $}" tooltip-class="tooltip-long" style="height:18px;"
                                 >{$ goal.name $}
                                 </span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="goal.id" ng-click="delete_goal(goal.id)" ></i>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="goal.id && write_permission" ng-click="delete_goal(goal.id)" ></i>
                             </li>
                         </ul>
                         <ul class="r-list r-scrollable" id="goal-list">
@@ -44,10 +44,10 @@
                                 ng-show="goal_option.id != goal.id"
                                 class="r-row r-row-centered">
                                 <span class="r-grow goal-name" uib-tooltip="{$ goal_option.name.length > 40 ? goal_option.name : '' $}" tooltip-class="tooltip-long" style="cursor: pointer" ng-click="set_goal(goal_option)">{$ goal_option.name $}</span>
-                                <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_goal(goal_option.id)"></i>
+                                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="write_permission" ng-click="delete_goal(goal_option.id)"></i>
                             </li>
                         </ul>
-                        <ul class="r-list">
+                        <ul class="r-list" ng-if="write_permission">
                             <li>
                                 <button class="btn btn-success r-grow" ng-click="new_goal()">
                                     <i class="fa-solid fa-circle-plus r-pad-right-5"></i>{$:: 'New Goal' | translate $}
@@ -221,7 +221,7 @@
             </div>
         </div>
         <div class="section_action_container right_40 section_action_btn pull-right">
-            <button class="btn btn-primary" ng-click="save_goal()" ng-disabled="goal_form.$invalid || !goal_changed" translate>
+            <button class="btn btn-primary" ng-click="save_goal()" ng-disabled="goal_form.$invalid || !goal_changed" ng-if="write_permission" translate>
                 Save Changes<i class="fa-solid fa-check" ng-show="settings_updated" ></i>
             </button>
             <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>

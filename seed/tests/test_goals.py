@@ -175,10 +175,16 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
-        assert response.status_code == 404
+        assert response.status_code == 403
+        assert Goal.objects.count() == goal_count
+
+        url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 403
         assert Goal.objects.count() == goal_count
 
         # valid
+        self.login_as_root_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 204
@@ -210,8 +216,26 @@ class GoalViewTests(AccessLevelBaseTestCase):
             }
         goal_data = reset_goal_data('child_goal 2')
 
-        # success
+        # leaves have invalid permissions
         self.login_as_child_member()
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_data),
+            content_type='application/json'
+        )
+        assert response.status_code == 403
+        assert Goal.objects.count() == goal_count
+
+        goal_data['access_level_instance'] = self.root_ali.id
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_data),
+            content_type='application/json'
+        )
+        assert response.status_code == 403
+        assert Goal.objects.count() == goal_count
+
+        self.login_as_root_member()
         response = self.client.post(
             url,
             data=json.dumps(goal_data),
@@ -220,16 +244,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         goal_count = Goal.objects.count()
-
-        # invalid permission
-        goal_data['access_level_instance'] = self.root_ali.id
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_data),
-            content_type='application/json'
-        )
-        assert response.status_code == 404
-        assert Goal.objects.count() == goal_count
 
         # invalid data
         goal_data['access_level_instance'] = self.child_ali.id
@@ -291,6 +305,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
 
+        # invalid permission
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-detail', args=[self.child_goal.id]) + '?organization_id=' + str(self.org.id)
         goal_data = {
@@ -298,18 +313,15 @@ class GoalViewTests(AccessLevelBaseTestCase):
             'target_percentage': 99,
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
+        assert response.status_code == 403
+
+        # valid permissions
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.status_code == 200
         assert response.json()['target_percentage'] == 99
         assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['eui_column1'] == original_goal.eui_column1.id
-
-        # invalid permission
-        goal_data = {
-            'access_level_instance': self.root_ali.id
-        }
-        response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
-        assert response.status_code == 404
-        assert response.json()['message'] == 'No such resource.'
 
         # unexpected fields are ignored
         goal_data = {

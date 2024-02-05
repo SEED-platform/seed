@@ -279,7 +279,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             # but not the other way around
             wrong_headers = False
             # handle having the root level in file or not
-            level_names = org.access_level_names
+            level_names = org.access_level_names.copy()
             if headers[0] != level_names[0]:
                 level_names.pop(0)
 
@@ -298,7 +298,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
 
-        return JsonResponse({'success': True, "tempfile": temp_file.name})
+        return JsonResponse({'success': True, 'tempfile': temp_file.name})
 
     @swagger_auto_schema(
         manual_parameters=[

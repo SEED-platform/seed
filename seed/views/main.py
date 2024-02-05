@@ -57,9 +57,10 @@ def _get_default_org(user):
         ali_name = ou.access_level_instance.name
         ali_id = ou.access_level_instance.id
         is_ali_root = ou.access_level_instance == ou.organization.root
-        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root
+        is_ali_leaf = ou.access_level_instance.is_leaf()
+        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf
     else:
-        return "", "", "", "", "", ""
+        return "", "", "", "", "", "", ""
 
 
 @login_required
@@ -71,7 +72,7 @@ def home(request):
         * **username**: the request user's username (first and last name)
     """
     username = request.user.first_name + " " + request.user.last_name
-    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root = _get_default_org(
+    initial_org_id, initial_org_name, initial_org_user_role, access_level_instance_name, access_level_instance_id, is_ali_root, is_ali_leaf = _get_default_org(
         request.user
     )
     debug = settings.DEBUG

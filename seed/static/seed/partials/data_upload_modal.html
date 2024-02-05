@@ -305,7 +305,7 @@
             ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
             class="progress_bar_copy_bottom"
           >
-            <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
+            <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i>
             SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
           </div>
         </div>
