@@ -169,11 +169,17 @@ msgstr "Instance de niveau d'accès"
 msgid "Access Level Instance Information"
 msgstr "Informations sur l'instance de niveau d'accès"
 
+msgid "Access Level Instance Tree"
+msgstr "Graphe en arbre des instances de niveau d'accès"
+
 msgid "Access Level Instances Errors"
 msgstr "Erreurs d’instances de niveau d’accès"
 
 msgid "Access Level Tree"
 msgstr "Graphe en arbre des niveaux d'accès"
+
+msgid "Access Levels"
+msgstr "Niveaux d'accès"
 
 msgid "Access Levels (AL)"
 msgstr "Niveaux d'accès (AL)"
