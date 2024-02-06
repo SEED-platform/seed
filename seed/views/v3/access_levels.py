@@ -284,13 +284,17 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 level_names.pop(0)
 
             for idx, name in enumerate(headers):
+                if idx >= len(level_names):
+                    wrong_headers = True
+                    break
                 if level_names[idx] != name:
                     wrong_headers = True
+                    break
 
             if wrong_headers:
                 return JsonResponse({
                     'success': False,
-                    'message': "Import File %s's headers did not match the access level names." % the_file.name
+                    'message': "Import File %s's headers did not match the Access Level names defined in SEED. Click the 'Edit/Add Access Levels' button to review your defined access levels before uploading the file. " % the_file.name
                 })
 
         # save the file
@@ -337,7 +341,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['PATCH'])
+    @action(detail=True, methods=['PUT'])
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),

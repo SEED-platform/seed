@@ -67,8 +67,8 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       { parent_id, name }
     ).then((response) => response.data);
 
-    organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.patch(
-      `/api/v3/organizations/${org_id}/access_levels/${instance_id}/edit_instance/`,
+    organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.put(
+      `/api/v3/organizations/${org_id}/` + `access_levels/${instance_id}/edit_instance/`,
       { name }
     ).then((response) => response.data);
 
