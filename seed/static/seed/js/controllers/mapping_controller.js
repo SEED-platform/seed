@@ -403,11 +403,11 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     $scope.updateColIsDisallowedCreation = () => {
-      if (window.BE.is_ali_root === 'True') {
+      if (window.BE.is_ali_root) {
         return;
       }
 
-      existing_columns = [
+      const existing_columns = [
         ...$scope.mappable_property_columns.map((col) => col.display_name),
         ...$scope.organization.access_level_names
       ];
