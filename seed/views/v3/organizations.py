@@ -1353,7 +1353,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Create a merge of the last 2 properties
         state_ids_to_merge = ids[-2:]
         merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
-        match_merge_link(merged_state.id, 'PropertyState')
+        view = merged_state.propertyview_set.first()
+        match_merge_link(merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle)
 
         # pair a property to tax lot
         property_id = property_views[0].id
