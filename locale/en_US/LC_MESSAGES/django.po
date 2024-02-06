@@ -167,11 +167,17 @@ msgstr "Access Level Instance"
 msgid "Access Level Instance Information"
 msgstr "Access Level Instance Information"
 
+msgid "Access Level Instance Tree"
+msgstr "Access Level Instance Tree"
+
 msgid "Access Level Instances Errors"
 msgstr "Access Level Instances Errors"
 
 msgid "Access Level Tree"
 msgstr "Access Level Tree"
+
+msgid "Access Levels"
+msgstr "Access Levels"
 
 msgid "Access Levels (AL)"
 msgstr "Access Levels (AL)"

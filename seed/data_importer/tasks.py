@@ -534,12 +534,12 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
     # try to get ali matching ali info within subtree
     paths_match = Q(path=ali_info)
     in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
-    ali = AccessLevelInstance.objects.filter(Q(paths_match & in_subtree)).first()
+    ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(paths_match & in_subtree)).first()
 
     # if ali is None, we error
     if ali is None:
         is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
-        ancestor_ali = AccessLevelInstance.objects.filter(Q(is_ancestor & paths_match)).first()
+        ancestor_ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(is_ancestor & paths_match)).first()
 
         # differing errors if
         # 1. the user can see the ali but cannot access, or
