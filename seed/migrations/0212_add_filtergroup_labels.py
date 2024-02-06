@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0210_natural_sort'),
+        ('seed', '0211_auto_20240109_1348'),
     ]
 
     operations = [
