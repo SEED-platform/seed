@@ -22,7 +22,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
     decorator=[
         swagger_auto_schema_org_query_param,
         has_perm_class('requires_viewer'),
-        has_hierarchy_access(goal_id_kwarg='pk') # what are we doing here? is it property/goal/goal_note?
+        has_hierarchy_access(goal_id_kwarg='goal_pk')
     ]
 )
 @method_decorator(
@@ -30,7 +30,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
     decorator=[
         swagger_auto_schema_org_query_param,
         has_perm_class('requires_member'),
-        has_hierarchy_access(goal_id_kwarg="pk") # what are we doing here?
+        has_hierarchy_access(goal_id_kwarg="goal_pk")
     ]
 )
 @method_decorator(
@@ -38,22 +38,28 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
     decorator=[
         swagger_auto_schema_org_query_param,
         has_perm_class('requires_member'),
-        has_hierarchy_access(body_ali_id="access_level_instance")
+        has_hierarchy_access(goal_id_kwarg="goal_pk")
     ]
 )
-
 class GoalNoteViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = GoalNoteSerializer
     queryset = GoalNote.objects.all()
 
     @swagger_auto_schema_org_query_param
     @has_perm_class('requires_viewer')
-    def list(self, request):
-        organization_id = self.get_organization(request)
+    def list(self, request, goal_pk):
+        """ 
+        IS THIS ENDPOINT NECESSAY?
+        when would I need to access all goalnotes for a single goal?
+        notes are on a property by property basis
+        Id rather get the notes when I get the properties with select-related
+        """
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        organization = access_level_instance.organization
 
         goal_notes = GoalNote.objects.filter(
-            organization=organization_id,
+            goal=goal_pk,
+            goal__organization=organization.id,
             goal__access_level_instance__lft__gte=access_level_instance.lft,
             goal__access_level_instance__rgt__lte=access_level_instance.rgt
         )

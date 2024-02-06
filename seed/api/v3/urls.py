@@ -83,7 +83,6 @@ api_v3_router.register(r'eeej', EEEJViewSet, basename='eeej')
 api_v3_router.register(r'filter_groups', FilterGroupViewSet, basename='filter_groups')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename='gbr_properties')
 api_v3_router.register(r'goals', GoalViewSet, basename='goals')
-api_v3_router.register(r'goal_notes', GoalNoteViewSet, basename='goal_notes')
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename='green_assessment_properties')
 api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename='green_assessment_urls')
@@ -124,6 +123,9 @@ analysis_messages_router.register(r'messages', AnalysisMessageViewSet, basename=
 analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views_router, r'views', lookup='views')
 analysis_view_messages_router.register(r'views_messages', AnalysisMessageViewSet, basename='analysis-messages')
 
+goals_router = nested_routers.NestedSimpleRouter(api_v3_router, r'goals', lookup='goal')
+goals_router.register(r'goal_notes', GoalNoteViewSet, basename='goal_notes')
+
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
@@ -159,6 +161,7 @@ urlpatterns = [
     re_path(r'^', include(analysis_views_router.urls)),
     re_path(r'^', include(analysis_messages_router.urls)),
     re_path(r'^', include(analysis_view_messages_router.urls)),
+    re_path(r'^', include(goals_router.urls)),
     re_path(r'^', include(properties_router.urls)),
     re_path(r'^', include(meters_router.urls)),
     re_path(r'^', include(property_measures_router.urls)),

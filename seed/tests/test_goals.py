@@ -142,12 +142,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_list(self):
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         self.login_as_root_member()
-        response = self.client.get(url, contemt_type='application/json')
+        response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         assert len(response.json()['goals']) == 3
 
         self.login_as_child_member()
-        response = self.client.get(url, contemt_type='application/json')
+        response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
         assert len(response.json()['goals']) == 2
 
@@ -455,29 +455,109 @@ class GoalNoteViewTests(AccessLevelBaseTestCase):
 
         # goal notes 
         note_details = {
-            'goal': self.child_goal1,
+            'goal': self.root_goal,
             'property': self.property1,
             'question': 1,
             'resolution': 'resolution1',
             'passed_checks': False,
             'new_or_acquired': False
         }
-        self.note_p1_g1 = GoalNote.objects.create(**note_details)
+        self.note_p1_grt = GoalNote.objects.create(**note_details)
+        note_details['goal'] = self.child_goal1
+        self.note_p1_gch1 = GoalNote.objects.create(**note_details)
         note_details['goal'] = self.child_goal2
-        self.note_p1_g2 = GoalNote.objects.create(**note_details)
+        self.note_p1_gch2 = GoalNote.objects.create(**note_details)
         note_details['property'] = self.property2
-        self.note_p2_g2 = GoalNote.objects.create(**note_details)
+        self.note_p2_gch2 = GoalNote.objects.create(**note_details)
 
-    def test_get_goal_notes(self):
-        url = reverse_lazy('api:v3:goal_notes-list') + '?organization_id=' + str(self.org.id)
-        self.login_as_root_member()
-        response = self.client.get(url, contemt_type='application/json')
+    def test_goal_note_list(self):
+        self.login_as_child_member()
+        url = reverse_lazy('api:v3:goal_notes-list', args=[self.child_goal1.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url, content_type='application/json')
         assert response.status_code == 200
-        # assert len(response.json()['goals']) == 3
+        assert len(response.json()['data']) == 1
+        assert response.json()['data'][0]['goal'] == self.child_goal1.id
+
+        url = reverse_lazy('api:v3:goal_notes-list', args=[self.child_goal2.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert len(response.json()['data']) == 2
+        assert response.json()['data'][0]['goal'] == self.child_goal2.id
+
+
+        url = reverse_lazy('api:v3:goal_notes-list', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert len(response.json()['data']) == 0
+
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        assert len(response.json()['data']) == 1
+
+    def test_goal_note_retrieve(self):
+        self.login_as_child_member()
+        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 404 
+        assert response.json()['message'] == 'No such resource.'
+
+        self.login_as_root_member()
+        response = self.client.get(url, content_type='application/json')
+        assert response.status_code == 200
+        goal_note = response.json()
+        assert goal_note['id'] == self.note_p1_grt.id
+        assert goal_note['property'] == self.property1.id
+        assert goal_note['goal'] == self.root_goal.id
+        assert goal_note['resolution'] == 'resolution1'
+
+    def test_goal_note_create(self):
+        assert GoalNote.objects.count() == 4
+        goal_note_data = {
+            'goal': self.root_goal.id,
+            'property': self.property2.id,
+            'question': 3,
+            'resolution': '',
+            'passed_checks': False,
+            'new_or_acquired': False
+        }
+        
+        self.login_as_child_member()
+        url = reverse_lazy('api:v3:goal_notes-list', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_note_data),
+            content_type='application/json'
+        )
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.post(
+            url,
+            data=json.dumps(goal_note_data),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 201
+        goal_note = response.json()
+        assert goal_note['property'] == self.property2.id
+        assert goal_note['goal'] == self.root_goal.id
+        assert goal_note['resolution'] == ''
+        assert goal_note['question'] == 3
+
+        assert GoalNote.objects.count() == 5
+        # INVALID DATA TESTING ?
+
+    def test_goal_note_delete(self):
+        goal_note_count = GoalNote.objects.count()
 
         self.login_as_child_member()
-        response = self.client.get(url, contemt_type='application/json')
-        assert response.status_code == 200
-        breakpoint()
-        assert len(response.json()['goals']) == 2
-       
+        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 404
+        assert GoalNote.objects.count() == goal_note_count
+
+        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.child_goal1.id, self.note_p1_gch1.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.delete(url, content_type='application/json')
+        assert response.status_code == 204
+        assert GoalNote.objects.count() == goal_note_count - 1
