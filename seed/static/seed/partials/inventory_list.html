@@ -96,31 +96,30 @@
       </div>
     </div>
     <div class="row">
-      <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
+      <label for="and-tags-input">{$:: 'Must Include' | translate $}:</label>
       <div class="input-group input-group-sm grow">
-        <tags-input
-          id="tags-input"
-          class="remove-editing ti-input-sm tags-input-style grow"
-          ng-model="selected_labels"
-          on-tag-added="filterUsingLabels()"
-          on-tag-removed="filterUsingLabels()"
-          min-length="1"
-          placeholder="{$:: 'Add a label' | translate $}"
-          replace-spaces-with-dashes="false"
-          add-from-autocomplete-only="true"
-          template="colored-labels"
-          ng-disabled="!labels.length"
-        >
+        <tags-input id="and-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_and_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
           <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
         </tags-input>
-        <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa-solid fa-lg fa-trash"></i></span>
+        <span ng-click="clear_labels('and')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_and_labels.length"><i class="fa fa-lg fa-trash"></i></span>
       </div>
-      <div class="btn-group" style="height: 30px">
-        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and'); filterUsingLabels()" ng-disabled="!labels.length" translate>AND</span>
-        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or'); filterUsingLabels()" ng-disabled="!labels.length" translate>OR</span>
-        <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude'); filterUsingLabels()" ng-disabled="!labels.length" translate
-          >EXCLUDE</span
-        >
+    </div>
+    <div class="row">
+      <label for="or-tags-input">{$:: 'Include Any' | translate $}:</label>
+      <div class="input-group input-group-sm grow">
+        <tags-input id="or-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_or_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+          <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+        </tags-input>
+        <span ng-click="clear_labels('or')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_or_labels.length"><i class="fa fa-lg fa-trash"></i></span>
+      </div>
+    </div>
+    <div class="row">
+      <label for="exclude-tags-input">{$:: 'Exclude' | translate $}:</label>
+      <div class="input-group input-group-sm grow">
+        <tags-input id="exclude-tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_exclude_labels" on-tag-added="filterUsingLabels()" on-tag-removed="filterUsingLabels()" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+          <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+        </tags-input>
+        <span ng-click="clear_labels('exclude')" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_exclude_labels.length"><i class="fa fa-lg fa-trash"></i></span>
       </div>
     </div>
     <div class="row">
