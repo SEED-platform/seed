@@ -42,7 +42,6 @@ Markdown==3.1.1
 polling==0.3.2
 pyyaml==6.0.1
 street-address==0.4.0
-unidecode==1.1.1
 xlrd==1.2.0
 xlsxwriter==1.2.7
 xmltodict==0.12.0
