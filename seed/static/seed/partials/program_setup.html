@@ -6,7 +6,7 @@
           <h2><i class="fa-solid fa-gauge-high"></i> {$:: 'Program Setup' | translate $}</h2>
         </div>
         <div ng-show="selected_compliance_metric" class="section_action_container right_40 section_action_btn pull-right">
-          <button class="btn btn-info r-margin-right-5" ng-click="click_delete()" translate>Delete</button>
+          <button class="btn btn-info r-margin-right-5" ng-disabled="!selected_compliance_metric.id" ng-click="click_delete()" translate>Delete</button>
           <button class="btn btn-primary" ng-disabled="program_settings_not_changed" ng-click="save_settings()">
             {$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
           </button>
@@ -22,7 +22,7 @@
           <li class="r-list-header" translate>Program</li>
           <li ng-show="selected_compliance_metric" class="r-selected r-row r-row-centered">
             <span class="r-grow">{$ selected_compliance_metric.name $}</span>
-            <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(compliance_metric)"></i>
+            <i class="fa-solid fa-xmark r-margin-left-5" ng-if="selected_compliance_metric.id" ng-click="click_delete(compliance_metric)"></i>
           </li>
         </ul>
         <ul class="r-list r-scrollable">
@@ -38,7 +38,7 @@
         </ul>
         <ul class="r-list">
           <li>
-            <button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()" ng-disabled="!program_settings_not_changed">
+            <button class="btn btn-success r-grow" ng-click="click_new_compliance_metric()">
               <i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Program
             </button>
           </li>
