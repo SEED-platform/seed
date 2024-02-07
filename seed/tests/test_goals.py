@@ -561,3 +561,30 @@ class GoalNoteViewTests(AccessLevelBaseTestCase):
         response = self.client.delete(url, content_type='application/json')
         assert response.status_code == 204
         assert GoalNote.objects.count() == goal_note_count - 1
+
+    def test_goal_note_update(self):
+        original_goal_note = GoalNote.objects.get(id=self.note_p1_grt.id)
+        goal_note_data = {
+            'question': 5,
+            'resolution': 'updated res',
+            'passed_checks': True
+        }
+        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
+        self.login_as_child_member()
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert original_goal_note.question == 1
+        assert original_goal_note.resulution == 'resolution1'
+        assert original_goal_note.passed_checks == False
+        updated_goal_note = GoalNote.objects.get(id=self.note_p1_grt.id)
+        response_goal_note = response.json()
+        assert response_goal_note['goal'] == updated_goal_note.goal.id
+        assert response_goal_note['property'] == updated_goal_note.property.id
+        assert updated_goal_note.question == 5
+        assert updated_goal_note.resolution == 'updated res'
+        assert updated_goal_note.passed_checks == True
+        assert response_goal_note['new_or_acquired'] == updated_goal_note.new_or_acquired
+ 

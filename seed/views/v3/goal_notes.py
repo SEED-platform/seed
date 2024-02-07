@@ -71,10 +71,10 @@ class GoalNoteViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class('requires_member')
-    @has_hierarchy_access(goal_id_kwarg='pk') # what are we doing here?
-    def update(self, request, pk):
+    @has_hierarchy_access(goal_id_kwarg='goal_pk') # what are we doing here?
+    def update(self, request, goal_pk, pk):
         try:
-            goal_note = GoalNote.objects.get(pk=pk)
+            goal_note = GoalNote.objects.get(goal=goal_pk, pk=pk)
         except GoalNote.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
