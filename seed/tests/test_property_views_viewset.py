@@ -1,7 +1,6 @@
 
 
 import json
-from unittest import skip
 
 from django.urls import reverse_lazy
 
@@ -81,7 +80,6 @@ class PropertyViewsTests(AccessLevelBaseTestCase):
         resp = self.client.patch(url, params, content_type='application/json')
         assert resp.status_code == 200
 
-    @skip("doesn't work???")
     def test_property_views_create(self):
         url = reverse_lazy('api:v3:property_views-list') + f"?organization_id={self.org.id}"
         params = json.dumps({"cycle_id": self.cycle.pk, "property_id": self.root_property.pk, "state_id": self.root_view.pk})
