@@ -80,18 +80,21 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
         self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
         self.property3 = self.property_factory.get_property(access_level_instance=self.child_ali)
+        self.property4 = self.property_factory.get_property(access_level_instance=self.root_ali)
 
         self.state_11 = self.property_state_factory.get_property_state(**property_details_11)
         self.state_13 = self.property_state_factory.get_property_state(**property_details_13)
         self.state_2 = self.property_state_factory.get_property_state(**property_details_11)
         self.state_31 = self.property_state_factory.get_property_state(**property_details_31)
         self.state_33 = self.property_state_factory.get_property_state(**property_details_33)
+        self.state_41 = self.property_state_factory.get_property_state(**property_details_33)
 
         self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
         self.view13 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_13, cycle=self.cycle3)
         self.view2 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_2, cycle=self.cycle2)
         self.view21 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_31, cycle=self.cycle1)
         self.view33 = self.property_view_factory.get_property_view(prprty=self.property3, state=self.state_33, cycle=self.cycle3)
+        self.view41 = self.property_view_factory.get_property_view(prprty=self.property4, state=self.state_41, cycle=self.cycle1)
 
         self.root_goal = Goal.objects.create(
             organization=self.org,
@@ -192,6 +195,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_create(self):
         goal_count = Goal.objects.count()
+        goal_note_count = GoalNote.objects.count()
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         goal_columns = [
             'placeholder',
@@ -243,6 +247,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         )
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
+        assert GoalNote.objects.count() == goal_note_count + 3
         goal_count = Goal.objects.count()
 
         # invalid data
@@ -346,6 +351,38 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors['eui_column1'] == ['Invalid pk "999" - object does not exist.']
         assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
 
+    def test_goal_note_update(self):
+        goal_note = GoalNote.objects.get(goal_id=self.root_goal.id, property_id=self.property4)
+        assert goal_note.question == None
+        assert goal_note.resolution == None
+
+        goal_note_data = {
+            'question': 5,
+            'resolution': 'updated res',
+        }
+        url = reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property4.id, goal_note.id]) + '?organization_id=' + str(self.org.id)
+        self.login_as_child_member()
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert response.status_code == 200
+        response_goal = response.json()
+        assert response_goal['question'] == 5
+        assert response_goal['resolution'] == 'updated res'
+
+        # reset goal note
+        goal_note_data = {
+            'question': None,
+            'resolution': None,
+        }
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert response.status_code == 200
+        response_goal = response.json()
+        assert response_goal['question'] == None
+        assert response_goal['resolution'] == None
+
     def test_portfolio_summary(self):
         self.login_as_child_member()
         url = reverse_lazy('api:v3:goals-portfolio-summary', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
@@ -395,196 +432,3 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
 
         assert summary == exp_summary
-
-class GoalNoteViewTests(AccessLevelBaseTestCase):
-    def setUp(self):
-        super().setUp()
-        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
-        self.column_factory = FakeColumnFactory(organization=self.org)
-        self.property_factory = FakePropertyFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-
-        # cycles
-        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
-        self.cycle2 = self.cycle_factory.get_cycle(start=datetime(2002, 1, 1), end=datetime(2003, 1, 1))
-
-        # access level instances
-        self.root_ali = self.org.root
-        self.child_ali = self.org.root.get_children().first()
-
-        # properties
-        self.property1 = self.property_factory.get_property(access_level_instance=self.child_ali)
-        self.property2 = self.property_factory.get_property(access_level_instance=self.child_ali)
-
-        state_details= self.property_state_factory.get_details()
-        self.state_11 = self.property_state_factory.get_property_state(**state_details)
-        self.state_12 = self.property_state_factory.get_property_state(**state_details)
-        self.state_21 = self.property_state_factory.get_property_state(**state_details)
-        self.state_22 = self.property_state_factory.get_property_state(**state_details)
-
-        self.view11 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_11, cycle=self.cycle1)
-        self.view12 = self.property_view_factory.get_property_view(prprty=self.property1, state=self.state_12, cycle=self.cycle2)
-        self.view21 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_21, cycle=self.cycle1)
-        self.view22 = self.property_view_factory.get_property_view(prprty=self.property2, state=self.state_22, cycle=self.cycle2)
-
-        # goals
-        goal_details = {
-            'organization': self.org,
-            'baseline_cycle': self.cycle1,
-            'current_cycle': self.cycle2,            
-            'access_level_instance': None,
-            'eui_column1': Column.objects.get(organization=self.org.id, column_name='source_eui'),
-            'eui_column2': None,
-            'eui_column3': None,
-            'area_column': Column.objects.get(organization=self.org.id, column_name='gross_floor_area'),
-            'target_percentage': 20,
-            'name': 'name'
-        }
-        root_details = goal_details 
-        root_details['name'] = 'root_goal'
-        root_details['access_level_instance'] = self.root_ali
-        self.root_goal = Goal.objects.create(**root_details)
-
-        child_details = goal_details
-        child_details['name'] = 'child_goal1'
-        child_details['access_level_instance'] = self.child_ali
-        self.child_goal1 = Goal.objects.create(**child_details)
-        child_details['name'] = 'child_goal2'
-        self.child_goal2 = Goal.objects.create(**child_details)
-
-        # goal notes 
-        note_details = {
-            'goal': self.root_goal,
-            'property': self.property1,
-            'question': 1,
-            'resolution': 'resolution1',
-            'passed_checks': False,
-            'new_or_acquired': False
-        }
-        self.note_p1_grt = GoalNote.objects.create(**note_details)
-        note_details['goal'] = self.child_goal1
-        self.note_p1_gch1 = GoalNote.objects.create(**note_details)
-        note_details['goal'] = self.child_goal2
-        self.note_p1_gch2 = GoalNote.objects.create(**note_details)
-        note_details['property'] = self.property2
-        self.note_p2_gch2 = GoalNote.objects.create(**note_details)
-
-    def test_goal_note_list(self):
-        self.login_as_child_member()
-        url = reverse_lazy('api:v3:goal_notes-list', args=[self.child_goal1.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200
-        assert len(response.json()['data']) == 1
-        assert response.json()['data'][0]['goal'] == self.child_goal1.id
-
-        url = reverse_lazy('api:v3:goal_notes-list', args=[self.child_goal2.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200
-        assert len(response.json()['data']) == 2
-        assert response.json()['data'][0]['goal'] == self.child_goal2.id
-
-
-        url = reverse_lazy('api:v3:goal_notes-list', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200
-        assert len(response.json()['data']) == 0
-
-        self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200
-        assert len(response.json()['data']) == 1
-
-    def test_goal_note_retrieve(self):
-        self.login_as_child_member()
-        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 404 
-        assert response.json()['message'] == 'No such resource.'
-
-        self.login_as_root_member()
-        response = self.client.get(url, content_type='application/json')
-        assert response.status_code == 200
-        goal_note = response.json()
-        assert goal_note['id'] == self.note_p1_grt.id
-        assert goal_note['property'] == self.property1.id
-        assert goal_note['goal'] == self.root_goal.id
-        assert goal_note['resolution'] == 'resolution1'
-
-    def test_goal_note_create(self):
-        assert GoalNote.objects.count() == 4
-        goal_note_data = {
-            'goal': self.root_goal.id,
-            'property': self.property2.id,
-            'question': 3,
-            'resolution': '',
-            'passed_checks': False,
-            'new_or_acquired': False
-        }
-        
-        self.login_as_child_member()
-        url = reverse_lazy('api:v3:goal_notes-list', args=[self.root_goal.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_note_data),
-            content_type='application/json'
-        )
-        assert response.status_code == 404
-
-        self.login_as_root_member()
-        response = self.client.post(
-            url,
-            data=json.dumps(goal_note_data),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 201
-        goal_note = response.json()
-        assert goal_note['property'] == self.property2.id
-        assert goal_note['goal'] == self.root_goal.id
-        assert goal_note['resolution'] == ''
-        assert goal_note['question'] == 3
-
-        assert GoalNote.objects.count() == 5
-        # INVALID DATA TESTING ?
-
-    def test_goal_note_delete(self):
-        goal_note_count = GoalNote.objects.count()
-
-        self.login_as_child_member()
-        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.delete(url, content_type='application/json')
-        assert response.status_code == 404
-        assert GoalNote.objects.count() == goal_note_count
-
-        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.child_goal1.id, self.note_p1_gch1.id]) + '?organization_id=' + str(self.org.id)
-        response = self.client.delete(url, content_type='application/json')
-        assert response.status_code == 204
-        assert GoalNote.objects.count() == goal_note_count - 1
-
-    def test_goal_note_update(self):
-        original_goal_note = GoalNote.objects.get(id=self.note_p1_grt.id)
-        goal_note_data = {
-            'question': 5,
-            'resolution': 'updated res',
-            'passed_checks': True
-        }
-        url = reverse_lazy('api:v3:goal_notes-detail', args=[self.root_goal.id, self.note_p1_grt.id]) + '?organization_id=' + str(self.org.id)
-        self.login_as_child_member()
-        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
-        assert response.status_code == 404
-
-        self.login_as_root_member()
-        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
-        assert original_goal_note.question == 1
-        assert original_goal_note.resulution == 'resolution1'
-        assert original_goal_note.passed_checks == False
-        updated_goal_note = GoalNote.objects.get(id=self.note_p1_grt.id)
-        response_goal_note = response.json()
-        assert response_goal_note['goal'] == updated_goal_note.goal.id
-        assert response_goal_note['property'] == updated_goal_note.property.id
-        assert updated_goal_note.question == 5
-        assert updated_goal_note.resolution == 'updated res'
-        assert updated_goal_note.passed_checks == True
-        assert response_goal_note['new_or_acquired'] == updated_goal_note.new_or_acquired
- 

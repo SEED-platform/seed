@@ -123,14 +123,12 @@ analysis_messages_router.register(r'messages', AnalysisMessageViewSet, basename=
 analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views_router, r'views', lookup='views')
 analysis_view_messages_router.register(r'views_messages', AnalysisMessageViewSet, basename='analysis-messages')
 
-goals_router = nested_routers.NestedSimpleRouter(api_v3_router, r'goals', lookup='goal')
-goals_router.register(r'goal_notes', GoalNoteViewSet, basename='goal_notes')
-
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
 properties_router.register(r'events', EventViewSet, basename='property-events')
+properties_router.register(r'goal_notes', GoalNoteViewSet, basename='property-goal-notes')
 
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')
@@ -161,7 +159,6 @@ urlpatterns = [
     re_path(r'^', include(analysis_views_router.urls)),
     re_path(r'^', include(analysis_messages_router.urls)),
     re_path(r'^', include(analysis_view_messages_router.urls)),
-    re_path(r'^', include(goals_router.urls)),
     re_path(r'^', include(properties_router.urls)),
     re_path(r'^', include(meters_router.urls)),
     re_path(r'^', include(property_measures_router.urls)),
