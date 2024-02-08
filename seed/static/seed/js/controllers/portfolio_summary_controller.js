@@ -118,13 +118,13 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     [level_name, access_level_instance],
                     ['Portfolio Target', `${$scope.goal.target_percentage} %`],
                     ['Area Column', get_column_name($scope.goal.area_column)],
-                    ['Primary Column', get_column_name($scope.goal.eui_column1)],
+                    ['Primary EUI', get_column_name($scope.goal.eui_column1)],
                 ]
                 if ($scope.goal.eui_column2) {
-                    $scope.goal_details.push(['Secondary Column', get_column_name($scope.goal.eui_column2)])
+                    $scope.goal_details.push(['Secondary EUI', get_column_name($scope.goal.eui_column2)])
                 }
                 if ($scope.goal.eui_column3) {
-                    $scope.goal_details.push(['Tertiary Column', get_column_name($scope.goal.eui_column3)])
+                    $scope.goal_details.push(['Tertiary EUI', get_column_name($scope.goal.eui_column3)])
                 }
             }
 
