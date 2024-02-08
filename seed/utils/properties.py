@@ -6,6 +6,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import itertools
 import json
+import logging
 
 # Imports from Django
 from django.http import JsonResponse
@@ -25,6 +26,12 @@ from seed.models import (
 )
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import build_view_filters_and_sorts
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.ERROR,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 
 def get_changed_fields(old, new):

@@ -357,8 +357,8 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         table_name='PropertyState',
     )
     if created:
-        column.display_name = 'Average Annual CO2 (kgCO2e)',
-        column.column_description = 'Average Annual CO2 (kgCO2e)',
+        column.display_name = 'Average Annual CO2 (kgCO2e)'
+        column.column_description = 'Average Annual CO2 (kgCO2e)'
         column.save()
 
     column, created = Column.objects.get_or_create(

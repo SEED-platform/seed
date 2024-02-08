@@ -498,7 +498,7 @@ class PortfolioManagerImport(object):
         # Now we need to wait while the report is being generated
         attempt_count = 0
         report_generation_complete = False
-        while attempt_count < 10:
+        while attempt_count < 90:
             attempt_count += 1
 
             # get the report data

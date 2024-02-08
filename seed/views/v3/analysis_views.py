@@ -14,7 +14,7 @@ from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
 )
-from seed.models import AnalysisPropertyView
+from seed.models import AnalysisPropertyView, PropertyView
 from seed.serializers.analysis_property_views import (
     AnalysisPropertyViewSerializer
 )
@@ -73,8 +73,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."
             }, status=HTTP_409_CONFLICT)
 
-        property_view_by_apv_id = AnalysisPropertyView.get_property_views([view])
-        original_view = property_view_by_apv_id[view.id]
+        original_view = PropertyView.objects.filter(property=view.property, cycle=view.cycle).first()
 
         return JsonResponse({
             'status': 'success',

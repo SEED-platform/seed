@@ -39,6 +39,9 @@
       </div>
     </div>
   </div>
+  <div ng-switch-when="20">
+    <p translate>ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT</p>
+  </div>
   <!-- Step 2 & 13: Choose upload type (also Portfolio Manager Data Import) -->
   <div class="data_upload_steps container-fluid" ng-switch-when="2|13" ng-switch-when-separator="|">
     <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
@@ -302,7 +305,7 @@
             ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
             class="progress_bar_copy_bottom"
           >
-            <i class="fa-solid fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
+            <i class="fa-solid fa-spinner fa-spin-pulse fa-fw" style="padding-right: 0"></i>
             SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
           </div>
         </div>
@@ -463,7 +466,6 @@
   <!-- Step 15:  Upload PM Meter Readings -->
   <div class="data_upload_steps" ng-switch-when="15">
     <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>{$:: pm_meter_import_error $}</div>
-
     <div class="progress_bar_container" ng-show="uploader.in_progress">
       <div class="progress_bar_copy_top" translate="UPLOADING_PROGRESS" translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
 

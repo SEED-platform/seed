@@ -15,13 +15,15 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
   'label_service',
   'inventory_ids',
   'inventory_type',
+  'is_ali_root',
   'Notification',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, notification) {
+  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, is_ali_root, notification) {
     $scope.inventory_ids = inventory_ids;
     $scope.inventory_type = inventory_type;
     // keep track of status of service call
     $scope.loading = false;
+    $scope.is_ali_root = is_ali_root;
 
     // An array of all available labels in the system.
     // These label objects should have the is_applied property set so
@@ -58,7 +60,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
           // in this modal...
           createdLabel.is_checked_add = true;
 
-          $scope.newLabelForm.$setPristine();
+          form.$setPristine();
           $scope.labels.unshift(createdLabel);
           $scope.initialize_new_label();
         },

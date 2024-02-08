@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
   '$state',
   '$stateParams',
   '$q',
+  '$timeout',
   'inventory_service',
   'label_service',
   'data_quality_service',
@@ -45,6 +46,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
     $state,
     $stateParams,
     $q,
+    $timeout,
     inventory_service,
     label_service,
     data_quality_service,
@@ -575,7 +577,8 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: () => selectedViewIds,
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(() => {
@@ -1192,7 +1195,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
         // finally, update the data to include the calculated values
         $scope.data.forEach((row) => {
           Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-            const derived_column = attached_derived_columns.find((col) => col.id === derived_column_id);
+            const derived_column = attached_derived_columns.find((col) => col.id === Number(derived_column_id));
             const result = results.find((res) => res.id === row.id) || {};
             row[column_name_lookup[derived_column.name]] = result.value;
           });
@@ -1859,7 +1862,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       fastWatch: true,
       flatEntityAccess: true,
       gridMenuShowHideColumns: false,
-      showTreeExpandNoChildren: false,
+      hidePinRight: true,
       saveFocus: false,
       saveGrouping: false,
       saveGroupingExpandedStates: false,
@@ -1870,6 +1873,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       saveTreeView: false,
       saveVisible: false,
       saveWidths: false,
+      showTreeExpandNoChildren: false,
       useExternalFiltering: true,
       useExternalSorting: true,
       columnDefs: $scope.columns,
@@ -1933,7 +1937,24 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
             }
           }, 1000)
         );
-        gridApi.pinning.on.columnPinned($scope, saveSettings);
+        gridApi.pinning.on.columnPinned($scope, (colDef, container) => {
+          if (container) {
+            saveSettings();
+          } else {
+            // Hack to fix disappearing filter after unpinning a column
+            const gridCol = gridApi.grid.columns.find(({ colDef: { name } }) => name === colDef.name);
+            if (gridCol) {
+              gridCol.colDef.visible = false;
+              gridApi.grid.refresh();
+
+              $timeout(() => {
+                gridCol.colDef.visible = true;
+                gridApi.grid.refresh();
+                saveSettings();
+              }, 0);
+            }
+          }
+        });
 
         const selectionChanged = () => {
           const selected = gridApi.selection.getSelectedRows();

@@ -38,9 +38,6 @@ from seed.models import (
     PropertyView
 )
 from seed.serializers.analyses import AnalysisSerializer
-from seed.serializers.analysis_property_views import (
-    AnalysisPropertyViewSerializer
-)
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -172,7 +169,25 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             views_queryset = views_queryset.annotate(display_name=F(f'property_state__{display_column_field}')).prefetch_related("analysisoutputfile_set")
             property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
 
-            results["views"] = AnalysisPropertyViewSerializer(list(views_queryset), many=True).data
+            results["views"] = [
+                {
+                    "id": view.id,
+                    "display_name": view.display_name,
+                    "analysis": view.analysis_id,
+                    "property": view.property_id,
+                    "cycle": view.cycle_id,
+                    "property_state": view.property_state_id,
+                    "output_files": [
+                        {
+                            "id": output_file.id,
+                            "content_type": output_file.content_type,
+                            "file": output_file.file.path
+                        }
+                        for output_file in view.analysisoutputfile_set.all()
+                    ],
+                }
+                for view in views_queryset
+            ]
             results["original_views"] = {
                 apv_id: property_view.id if property_view is not None else None
                 for apv_id, property_view in property_views_by_apv_id.items()

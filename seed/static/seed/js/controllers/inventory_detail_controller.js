@@ -513,7 +513,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(

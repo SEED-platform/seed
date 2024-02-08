@@ -386,8 +386,11 @@ class Organization(models.Model):
 
         return new_access_level_instance
 
-    def get_access_tree(self) -> dict:
-        return AccessLevelInstance.dump_bulk(self.root)
+    def get_access_tree(self, from_ali=None) -> dict:
+        if from_ali is None:
+            from_ali = self.root
+
+        return AccessLevelInstance.dump_bulk(from_ali)
 
     def __str__(self):
         return 'Organization: {0}({1})'.format(self.name, self.pk)
@@ -422,7 +425,7 @@ def presave_organization(sender, instance, **kwargs):
         _assert_alns_are_valid(instance)
         _update_alis_path_keys(instance, previous_access_level_names)
 
-    taken_names = Column.objects.filter(display_name__in=instance.access_level_names).values_list("display_name", flat=True)
+    taken_names = Column.objects.filter(organization=instance, display_name__in=instance.access_level_names).values_list("display_name", flat=True)
     if len(taken_names) > 0:
         raise ValueError(f"{taken_names} are column names.")
 
@@ -437,7 +440,7 @@ def _assert_alns_are_valid(org):
     columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
     if columns_with_same_names.count() > 0:
         repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
-        raise ValueError(f"Organiation's access_level_names must not be column names: {list(repeated_names)}")
+        raise ValueError(f"Access level names cannot match SEED column names: {list(repeated_names)}")
 
 
 def _update_alis_path_keys(org, previous_access_level_names):

@@ -31,7 +31,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     user_factory.get_access_level_instance = () => access_level_instance ?? {
       id: window.BE.access_level_instance_id,
-      name: window.BE.access_level_instance_name
+      name: window.BE.access_level_instance_name,
+      is_ali_root: window.BE.is_ali_root,
+      is_ali_leaf: window.BE.is_ali_leaf
     };
 
     /**

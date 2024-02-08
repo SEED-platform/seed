@@ -399,7 +399,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
-                        _process_ali_data(map_model_obj, import_file.access_level_instance)
+                        # _process_ali_data(map_model_obj, import_file.access_level_instance)
+                        _process_ali_data(map_model_obj, row, import_file.access_level_instance, table_mappings.get(""))
 
                         if hasattr(map_model_obj, 'data_state'):
                             map_model_obj.data_state = DATA_STATE_MAPPING
@@ -501,22 +502,25 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     return True
 
 
-def _process_ali_data(model, import_file_ali):
-    """Removes ALI info from model.extra_data and adds access_level_instance_id to model.extra_data"""
+def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
     org_alns = model.organization.access_level_names
-    extra_data = model.extra_data
-
-    # pull all the ali info out of model extra data
-    ali_info = {k: v for k, v in extra_data.items() if k in org_alns}
-    model.extra_data = {k: v for k, v in extra_data.items() if k not in ali_info}
 
     # if org only has root, just assign it to root, they won't have any ali info
     if AccessLevelInstance.objects.filter(organization=model.organization).count() <= 1:
         model.raw_access_level_instance = model.organization.root
         return
 
+    # if not mappings
+    if not ah_mappings:
+        model.raw_access_level_instance_error = "Missing Access Level mappings."
+        return
+
     # clean ali_info
-    ali_info = {k: v for k, v in ali_info.items() if v is not None}
+    ali_info = {
+        to_col: raw_data.get(from_col)
+        for from_col, (_, to_col, _, _) in ah_mappings.items()
+        if raw_data.get(from_col) is not None and raw_data.get(from_col) != ""
+    }
     if not ali_info:
         model.raw_access_level_instance_error = "Missing Access Level Column data."
         return
@@ -530,12 +534,12 @@ def _process_ali_data(model, import_file_ali):
     # try to get ali matching ali info within subtree
     paths_match = Q(path=ali_info)
     in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
-    ali = AccessLevelInstance.objects.filter(Q(paths_match & in_subtree)).first()
+    ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(paths_match & in_subtree)).first()
 
     # if ali is None, we error
     if ali is None:
         is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
-        ancestor_ali = AccessLevelInstance.objects.filter(Q(is_ancestor & paths_match)).first()
+        ancestor_ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(is_ancestor & paths_match)).first()
 
         # differing errors if
         # 1. the user can see the ali but cannot access, or

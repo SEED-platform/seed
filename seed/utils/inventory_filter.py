@@ -31,7 +31,6 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     page = request.query_params.get('page')
     per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
-    access_level_instance_id = request.access_level_instance_id
     cycle_id = request.query_params.get('cycle')
     ids_only = request.query_params.get('ids_only', 'false').lower() == 'true'
     # check if there is a query parameter for the profile_id. If so, then use that one
@@ -43,7 +42,15 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
             status=status.HTTP_400_BAD_REQUEST)
     org = Organization.objects.get(id=org_id)
+
+    access_level_instance_id = request.data.get('access_level_instance_id', request.access_level_instance_id)
     access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+    user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+    if not (user_ali == access_level_instance or access_level_instance.is_descendant_of(user_ali)):
+        return JsonResponse({
+            'status': 'error',
+            'message': f'No access_level_instance with id {access_level_instance_id}.'
+        }, status=status.HTTP_404_NOT_FOUND)
 
     if cycle_id:
         cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -160,6 +167,10 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     # exclude property views limited to the 'exclude_view_ids' list if not empty
     if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
         views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
+
+    # return property views limited to the 'include_property_ids' list if not empty
+    if include_property_ids := request.data.get('include_property_ids'):
+        views_list = views_list.filter(property__id__in=include_property_ids)
 
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))

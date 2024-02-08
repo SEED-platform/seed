@@ -363,7 +363,8 @@ angular.module('BE.seed.controller.inventory_list_legacy', []).controller('inven
             }),
             'taxlot_state_id'
           ),
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root,
         }
       });
     };
