@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0210_natural_sort'),
+        ('seed', '0214_delete_filtergroup_labels'),
     ]
 
     operations = [
