@@ -180,8 +180,8 @@ class ProgressData(object):
 
     def increment_value(self):
         """
-        Return the value to increment the progress back. Currently this is always assume that that
-        size of the step is 1 to the self.total count.
+        Return the value used to increment the progress. Currently, this always assumes that the
+        size of the step is 1 / self.total count.
 
         :return: float, value to increment the step by
         """

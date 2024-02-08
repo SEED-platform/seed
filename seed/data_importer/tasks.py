@@ -1161,7 +1161,8 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         if message:
             result[row[access_level_names[-1]]] = {'message': message}
 
-    progress_data.step()
+        progress_data.step()
+
     return result
 
 
@@ -1176,8 +1177,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     )
     access_level_instances_data = parser.access_level_instances_details
 
-    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
+    progress_data.total = len(access_level_instances_data)
     progress_data.save()
+    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
     return finish_raw_ali_save(results, progress_data.key)
 
 
@@ -1479,10 +1481,9 @@ def save_raw_access_level_instances_data(filename, org_id):
     """ save data and keep progress """
     progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
     try:
-        # queue up the tasks and immediately return. This is needed in the case of large files
-        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
-        # large files can take quite some time.
-        _save_access_level_instances_data_create_tasks(filename, org_id, progress_data.key)
+        # queue up the tasks and immediately return. This is needed in the case of large hierarchy files
+        # causing the website to timeout due to inactivity.
+        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except KeyError as e:

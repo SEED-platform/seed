@@ -386,7 +386,7 @@ class Organization(models.Model):
 
         return new_access_level_instance
 
-    def get_access_tree(self, from_ali=None) -> dict:
+    def get_access_tree(self, from_ali=None) -> list:
         if from_ali is None:
             from_ali = self.root
 
