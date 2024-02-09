@@ -520,17 +520,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         displayName: 'Question', 
                         enableFiltering: false, 
                         enableSorting: false, 
-                        cellClass: 'cell-dropdown',
                         editableCellTemplate: "ui-grid/dropdownEditor", 
                         editDropdownOptionsArray: $scope.question_options,
                         editDropdownIdLabel: 'value',
-                        enableCellEdit: true,
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span class="cell-dropdown-indicator">
+                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">
                                     <span>{{row.entity.question}}</span>
                                     <i class="fa-solid fa-chevron-down" ></i>
                                 </span>
+                                <span ng-if="!grid.appScope.write_permission">{{row.entity.question}}</span>
                             <div>
                         `
                      },
@@ -552,13 +554,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         editableCellTemplate: "ui-grid/dropdownEditor", 
                         editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
                         editDropdownIdLabel: 'value',
-                        enableCellEdit: true,
-                        cellClass: 'cell-dropdown',
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span class="cell-dropdown-indicator">{{row.entity.passed_checks}}
+                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">{{row.entity.passed_checks}}
                                     <i class="fa-solid fa-chevron-down" ></i>
                                 </span>
+                                <span ng-if="!grid.appScope.write_permission">{{row.entity.passed_checks}}</span>
                             <div>
                         `
                     },
@@ -570,13 +574,16 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         editableCellTemplate: "ui-grid/dropdownEditor", 
                         editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
                         editDropdownIdLabel: 'value',
-                        enableCellEdit: true,
-                        cellClass: 'cell-dropdown',
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span class="cell-dropdown-indicator">{{row.entity.new_or_acquired}}
+                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">{{row.entity.new_or_acquired}}
                                     <i class="fa-solid fa-chevron-down" ></i>
                                 </span>
+                                <span ng-if="!grid.appScope.write_permission">{{row.entity.new_or_acquired}}</span>
+
                             <div>
                         `
                     },

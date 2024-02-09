@@ -342,14 +342,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # invalid data
         goal_data = {
-            'eui_column1': 999,
-            'baseline_cycle': 999,
-            'target_percentage': 999,
+            'eui_column1': -1,
+            'baseline_cycle': -1,
+            'target_percentage': -1,
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         errors = response.json()['errors']
-        assert errors['eui_column1'] == ['Invalid pk "999" - object does not exist.']
-        assert errors['baseline_cycle'] == ['Invalid pk "999" - object does not exist.']
+        assert errors['eui_column1'] == ['Invalid pk "-1" - object does not exist.']
+        assert errors['baseline_cycle'] == ['Invalid pk "-1" - object does not exist.']
 
     def test_goal_note_update(self):
         goal_note = GoalNote.objects.get(goal_id=self.root_goal.id, property_id=self.property4)
@@ -382,6 +382,27 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response_goal = response.json()
         assert response_goal['question'] == None
         assert response_goal['resolution'] == None
+
+        # child user can only update resolution
+        self.login_as_child_member()
+        goal_note = GoalNote.objects.get(goal_id=self.child_goal.id, property_id=self.property1) 
+        goal_note_data = {
+            'question': 'Do you have data to report?',
+            'resolution': 'updated res',
+            'passed_checks': True,
+            'new_or_acquired': True,
+        }
+        url = reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property1.id, goal_note.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
+        assert response.status_code == 200
+        response_goal = response.json()
+        assert response_goal['question'] == None
+        assert response_goal['resolution'] == 'updated res'
+        assert response_goal['passed_checks'] == False
+        assert response_goal['new_or_acquired'] == False
+
+
+
 
     def test_portfolio_summary(self):
         self.login_as_child_member()

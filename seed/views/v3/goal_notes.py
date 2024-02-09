@@ -35,9 +35,10 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
             return JsonResponse({
                 'status': 'error',
                 'errors': "No such resource."
-            })
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = GoalNoteSerializer(goal_note, data=request.data, partial=True)
+        data = self.get_permission_data(request.data, goal_note)
+        serializer = GoalNoteSerializer(goal_note, data=data, partial=True)
 
         if not serializer.is_valid():
             return JsonResponse({
@@ -49,3 +50,11 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
 
         return JsonResponse(serializer.data)
     
+    def get_permission_data(self, data, goal_note):
+        # leaf users are only permitted to update 'resolution'
+        access_level_instance = goal_note.goal.access_level_instance
+        write_permission = access_level_instance.is_root() or not access_level_instance.is_leaf() 
+        if write_permission:
+            return data 
+
+        return {'resolution': data.get('resolution')} if 'resolution' in data else {}
