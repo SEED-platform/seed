@@ -9,11 +9,11 @@ from seed.models import Goal, Property
 
 class GoalNote(models.Model):
     QUESTION_CHOICES = (
-        (1, 'Is this a new construction or acquisition?'),
-        (2, 'Do you have data to report?'),
-        (3, 'Is this value correct?'),
-        (4, 'Are these values correct?'),
-        (5, 'Other or multiple flags; explain in Additional Notes field'),
+        ('Is this a new construction or acquisition?', 'Is this a new construction or acquisition?'),
+        ('Do you have data to report?', 'Do you have data to report?'),
+        ('Is this value correct?', 'Is this value correct?'),
+        ('Are these values correct?', 'Are these values correct?'),
+        ('Other or multiple flags; explain in Additional Notes field', 'Other or multiple flags; explain in Additional Notes field'),
     )
 
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE)
@@ -23,3 +23,8 @@ class GoalNote(models.Model):
     resolution = models.CharField(max_length=1024, blank=True, null=True)
     passed_checks = models.BooleanField(default=False)
     new_or_acquired = models.BooleanField(default=False)
+
+    def serialized(self):
+        from seed.serializers.goal_notes import GoalNoteSerializer
+        serializer = GoalNoteSerializer(self)
+        return serializer.data

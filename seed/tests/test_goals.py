@@ -357,7 +357,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert goal_note.resolution == None
 
         goal_note_data = {
-            'question': 5,
+            'question': 'Do you have data to report?',
             'resolution': 'updated res',
         }
         url = reverse_lazy('api:v3:property-goal-notes-detail', args=[self.property4.id, goal_note.id]) + '?organization_id=' + str(self.org.id)
@@ -369,7 +369,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
         assert response.status_code == 200
         response_goal = response.json()
-        assert response_goal['question'] == 5
+        assert response_goal['question'] == 'Do you have data to report?'
         assert response_goal['resolution'] == 'updated res'
 
         # reset goal note

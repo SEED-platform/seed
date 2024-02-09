@@ -5419,3 +5419,18 @@ tags-input .tags .tag-item {
 .tooltip-long {
   word-wrap: break-word;
 }
+.cell-dropdown {
+  cursor: context-menu;
+}
+.cell-edit {
+  cursor: cell;
+}
+.cell-dropdown-indicator {
+  display: flex;
+  justify-content:space-between;
+  align-items: center;
+  margin-right: 3px;
+  i {
+    color: gray;
+  }
+}

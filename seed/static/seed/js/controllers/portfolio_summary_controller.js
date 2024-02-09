@@ -210,7 +210,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // order of cycle property filter is dynamic based on column_sorts
                 let cycle_priority = baseline_first ? [baseline_cycle, current_cycle]: [current_cycle, baseline_cycle]
 
-                get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true).then(result0 => {
+                get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null, $scope.goal.id).then(result0 => {
                     $scope.inventory_pagination = result0.pagination
                     properties = result0.results
                     combined_result[cycle_priority[0].id] = properties;
@@ -229,7 +229,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 })
             }
 
-            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids=null) => {
+            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids=null, goal_id=null) => {
                 fn = inventory_service.get_properties;
                 const [filters, sorts] = include_filters_sorts ? [$scope.column_filters, $scope.column_sorts] : [[],[]]
 
@@ -249,6 +249,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     table_column_ids.join(),
                     access_level_instance_id,
                     include_property_ids,
+                    goal_id, // optional param to retrieve goal note details
                 );
             };
 
@@ -440,12 +441,19 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
                     set_eui_goal(baseline, current, property, preferred_columns)
                     combined_properties.push(property)
+
+                    // goal notes 
+                    property.question = property.goal_note.question
+                    property.resolution = property.goal_note.resolution
+                    property.passed_checks = property.goal_note.passed_checks
+                    property.new_or_acquired = property.goal_note.new_or_acquired
                 })
                 return combined_properties
             }
 
-            const combine_properties = (a, b) => {
+            const combine_properties = (current, baseline) => {
                 // Given 2 properties, find non null values and combine into a single property
+                let [a, b] = baseline_first ? [baseline, current] : [current, baseline];
                 let c = {};
                 Object.keys(a).forEach(key => c[key] = a[key] !== null ? a[key] : b[key])
                 return c
@@ -462,6 +470,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     'year_built'
                 ]
             )]
+
+            $scope.question_options = [
+                {id: 0, value: null},
+                {id: 1, value: 'Is this a new construction or acquisition?'},
+                {id: 2, value: 'Do you have data to report?'},
+                {id: 3, value: 'Is this value correct?'},
+                {id: 4, value: 'Are these values correct?'},
+                {id: 5, value: 'Other or multiple flags; explain in Additional Notes field'},
+            ]
             // handle cycle specific columns
             const selected_columns = () => {
                 let cols = property_column_names.map(name => $scope.columns.find(col => col.column_name === name))
@@ -497,9 +514,78 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name' },
                 ]
 
+                const goal_note_cols = [
+                    { 
+                        field: 'question', 
+                        displayName: 'Question', 
+                        enableFiltering: false, 
+                        enableSorting: false, 
+                        cellClass: 'cell-dropdown',
+                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                        editDropdownOptionsArray: $scope.question_options,
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: true,
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents">
+                                <span class="cell-dropdown-indicator">
+                                    <span>{{row.entity.question}}</span>
+                                    <i class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                     },
+                    { 
+                        field: 'resolution', 
+                        displayName: 'Resolution', 
+                        enableFiltering: false, 
+                        enableSorting: false, 
+                        enableCellEdit: true,
+                        ediableCellTempalte: 'ui-grid/cellTitleValidator',
+                        cellClass: 'cell-edit',
+
+                    },
+                    { 
+                        field: 'passed_checks', 
+                        displayName: 'Passed Checks', 
+                        enableFiltering: false, 
+                        enableSorting: false, 
+                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                        editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: true,
+                        cellClass: 'cell-dropdown',
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents">
+                                <span class="cell-dropdown-indicator">{{row.entity.passed_checks}}
+                                    <i class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                    },
+                    { 
+                        field: 'new_or_acquired', 
+                        displayName: 'New Build or Acquired', 
+                        enableFiltering: false, 
+                        enableSorting: false, 
+                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                        editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: true,
+                        cellClass: 'cell-dropdown',
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents">
+                                <span class="cell-dropdown-indicator">{{row.entity.new_or_acquired}}
+                                    <i class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                    },
+
+                ]
+
                 apply_defaults(baseline_cols, default_baseline)
                 apply_defaults(current_cols, default_current)
-                cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols]
+                cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols, ...goal_note_cols]
 
                 // Apply filters
                 // from inventory_list_controller
@@ -611,7 +697,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const remove_conflict_columns = (grid_columns) => {
                 // Property's are returned from 2 different get requests. One for the current, one for the baseline
                 // The second filter is solely based on the property ids from the first
-                // Filtering on the first and  second will result in unrepresntative data
+                // Filtering on the first and second will result in unrepresntative data
                 // Remove the conflict to allow sorting/filtering on either baseline or current.
 
                 const column_names = grid_columns.map(c => c.name);
@@ -787,6 +873,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                                 $scope.load_inventory(1);
                             }, 2000)
                         );
+                        
+                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {
+                            goal_service.update_goal_note(
+                                rowEntity.id,
+                                rowEntity.goal_note.id,
+                                { [colDef.field]: newValue }
+                            )
+                        })
                     }
                 }
             }

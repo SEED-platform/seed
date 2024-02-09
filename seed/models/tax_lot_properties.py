@@ -125,6 +125,7 @@ class TaxLotProperty(models.Model):
         show_columns: Optional[list[int]],
         columns_from_database: list[dict],
         include_related: bool = True,
+        goal_id: int = False,
     ) -> list[dict]:
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
@@ -268,6 +269,11 @@ class TaxLotProperty(models.Model):
             # remove the measures from this view for now
             if obj_dict.get('measures'):
                 del obj_dict['measures']
+
+            # add goal note data 
+            if goal_id:
+                goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
+                obj_dict['goal_note'] = goal_note.serialized() if goal_note else None
 
             results.append(obj_dict)
 
