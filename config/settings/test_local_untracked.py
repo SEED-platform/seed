@@ -47,10 +47,6 @@ else:
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': CELERY_BROKER_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            },
-            'TIMEOUT': 300
         }
     }
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL

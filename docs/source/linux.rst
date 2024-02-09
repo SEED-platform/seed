@@ -148,10 +148,6 @@ settings.
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': CELERY_BROKER_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            },
-            'TIMEOUT': 300
         }
     }
 
@@ -327,10 +323,6 @@ local_untracked.py
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': CELERY_BROKER_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            },
-            'TIMEOUT': 300
         }
     }
 

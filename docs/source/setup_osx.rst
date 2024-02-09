@@ -275,10 +275,6 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': CELERY_BROKER_URL,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            },
-            'TIMEOUT': 300
         }
     }
 
