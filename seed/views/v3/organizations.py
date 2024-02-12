@@ -812,18 +812,25 @@ class OrganizationViewSet(viewsets.ViewSet):
         # set x
         if x_var == "Count":
             result["x"] = 1
-
-        elif not getattr(state, x_var):
-            return {}
-
         else:
-            result["x"] = getattr(state, x_var)
+            try:
+                result["x"] = getattr(state, x_var)
+            except AttributeError:
+                # check extra data
+                try:
+                    result["x"] = state.extra_data.get(x_var)
+                except AttributeError:
+                    return {}
 
         # set y
-        if not getattr(state, y_var, None):
-            return {}
-        else:
+        try:
             result["y"] = getattr(state, y_var)
+        except AttributeError:
+            # check extra data
+            try:
+                result["y"] = state.extra_data.get(y_var)
+            except AttributeError:
+                return {}
 
         return result
 
@@ -888,7 +895,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y
@@ -945,7 +952,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var
@@ -1113,7 +1120,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report_export(self, request, pk=None):
         """
