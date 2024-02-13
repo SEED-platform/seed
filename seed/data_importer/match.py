@@ -235,7 +235,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
             linked_property_state_errors,
             new_property_views,
             new_property_state_errors,
-        ) = hannah_links(
+        ) = link_views_and_states(
             merged_property_views,
             new_property_views,
             errored_new_property_states,
@@ -294,7 +294,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
             linked_taxlot_state_errors,
             new_taxlot_views,
             new_taxlot_state_errors,
-        ) = hannah_links(
+        ) = link_views_and_states(
             merged_taxlot_views,
             new_taxlot_views,
             errored_new_taxlot_states,
@@ -357,7 +357,7 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
     }
 
 
-def hannah_links(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):
+def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):
     shared_args = [ViewClass, cycle, ali, sub_progress_key]
 
     # merged_property_views are attached to properties that existed in the db prior to import, so it
