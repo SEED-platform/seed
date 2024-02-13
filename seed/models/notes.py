@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import MAX_NAME_LENGTH, PropertyView, TaxLotView
+from seed.models import MAX_NAME_LENGTH, PropertyView, TaxLotView, Property
 from seed.utils.generic import obj_to_dict
 
 
@@ -108,3 +108,7 @@ class Note(models.Model):
 
     def to_dict(self):
         return obj_to_dict(self)
+
+class HistoricalNote(models.Model):
+    text = models.TextField(blank=True)
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='historical_note')
