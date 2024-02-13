@@ -72,23 +72,18 @@ if SEED_TESTING:
     TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 else:
     # Redis / Celery config
+    if 'REDIS_PASSWORD' in os.environ:
+        CELERY_BROKER_URL = f"redis://:{os.environ.get('REDIS_PASSWORD')}@{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+    else:
+        CELERY_BROKER_URL = f"redis://{os.environ.get('REDIS_HOST', 'db-redis')}:6379/1"
+
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': f"{os.environ.get('REDIS_HOST', 'db-redis')}:6379",
-            'OPTIONS': {
-                'DB': 1
-            },
-            'TIMEOUT': 300,
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    if 'REDIS_PASSWORD' in os.environ:
-        CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        CELERY_BROKER_URL = f"redis://:{CACHES['default']['OPTIONS']['PASSWORD']}@{CACHES['default']['LOCATION']}/{CACHES['default']['OPTIONS']['DB']}"
-    else:
-        CELERY_BROKER_URL = f"redis://{CACHES['default']['LOCATION']}/{CACHES['default']['OPTIONS']['DB']}"
 
-    CELERY_BROKER_TRANSPORT = 'redis'
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
