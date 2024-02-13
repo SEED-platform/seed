@@ -11,6 +11,7 @@ from collections import namedtuple
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
+from django.db import transaction
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -84,7 +85,7 @@ from seed.utils.api_schema import (
 )
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
-from seed.utils.match import match_merge_link
+from seed.utils.match import MergeLinkPairError, match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import (
@@ -648,20 +649,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
+        try:
+            with transaction.atomic():
+                merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
+                merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
-        merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'These two properties have different alis.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        result = {
-            'status': 'success'
-        }
-
-        result.update({
+        return {
+            'status': 'success',
             'match_merged_count': merge_count,
             'match_link_count': link_count,
-        })
-
-        return result
+        }
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -888,7 +891,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             pk=pk,
             cycle__organization_id=org_id
         )
-        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+        try:
+            with transaction.atomic():
+                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+
+        except MergeLinkPairError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This property shares matching criteria with at least one property in a different ali. This should not happen. Please contact your system administrator.'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         result = {
             'view_id': view_id,
@@ -1384,7 +1395,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
-                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        try:
+                            with transaction.atomic():
+                                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        except MergeLinkPairError:
+                            return JsonResponse({
+                                'status': 'error',
+                                'message': 'This change causes the property to perform a forbidden merge and is thus forbidden'
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
                         result.update({
                             'view_id': view_id,

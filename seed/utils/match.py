@@ -27,6 +27,14 @@ from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles
 
 
+class MergeLinkPairError(Exception):
+    pass
+
+
+class MultipleALIError(MergeLinkPairError):
+    pass
+
+
 def empty_criteria_filter(StateClass, column_names):
     """
     Using an empty -State, return a dict that can be used as a QS filter
@@ -200,9 +208,11 @@ def match_merge_link(view_id, StateClassName):
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
+        class_name = "property"
     elif StateClassName == 'TaxLotState':
         StateClass = TaxLotState
         ViewClass = TaxLotView
+        class_name = "taxlot"
 
     view = ViewClass.objects.get(pk=view_id)
     given_state_id = view.state_id
@@ -230,6 +240,12 @@ def match_merge_link(view_id, StateClassName):
             state__organization_id=org_id,
             **state_appended_matching_criteria
         )
+
+    # Ensure matching_views contain alis equal each other.
+    if matching_views.count() > 0:
+        matching_alis = matching_views.values_list(f"{class_name}__access_level_instance", flat=True)
+        if len(set(matching_alis)) != 1:
+            raise MultipleALIError
 
     merge_count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
 

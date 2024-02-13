@@ -709,20 +709,24 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     $scope.match_merge_link_record = () => {
-      let new_view_id;
       if ($scope.inventory_type === 'properties') {
-        inventory_service.property_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.property_match_merge_link
       } else if ($scope.inventory_type === 'taxlots') {
-        inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.taxlot_match_merge_link
       }
+
+      match_merge_link_fn($scope.inventory.view_id)
+      .then(result => {
+        notify_merges_and_links(result);
+        new_view_id = result.view_id;
+        if (new_view_id) reload_with_view_id(new_view_id);
+      })
+      .catch(result => {
+        Notification.error({
+          message: result.data.message,
+          delay: 10000
+        });
+      });
     };
 
     $scope.open_match_merge_link_warning_modal = (accept_action, trigger) => {
