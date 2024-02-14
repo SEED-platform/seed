@@ -287,7 +287,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         summary = response.json()
 
         expected_summary = {
-            'view_id': None,
+            'view_id': view_1.id,
             'match_merged_count': 0,
             'match_link_count': 1,
         }
@@ -504,7 +504,7 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
             taxlot=self.taxlot_2, cycle=self.cycle, state=self.state_2
         )
         merged_state = merge_taxlots([self.view.state.pk, self.state_2.pk], self.org.pk, 'Manual Match')
-        _, _, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        _, _, view_id = match_merge_link(merged_state.id, 'TaxLotState', self.org.root, self.cycle)
         view_id = TaxLotView.objects.first().id
         url = reverse('api:v3:taxlots-unmerge', args=[view_id]) + '?organization_id={}'.format(self.org.pk)
 

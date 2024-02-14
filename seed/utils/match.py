@@ -35,6 +35,14 @@ class MultipleALIError(MergeLinkPairError):
     pass
 
 
+class NoAccessError(MergeLinkPairError):
+    pass
+
+
+class NoViewsError(MergeLinkPairError):
+    pass
+
+
 def empty_criteria_filter(StateClass, column_names):
     """
     Using an empty -State, return a dict that can be used as a QS filter
@@ -194,17 +202,89 @@ def _link_matches(matching_views, org_id, view, ViewClass):
     return matching_views.count() - 1
 
 
-def match_merge_link(view_id, StateClassName):
-    """
-    This method receives a -View's ID, checks for matches for that -View's
-    -State across Cycles, merges matches where there are multiple in a Cycle,
-    and finally after there are at most one match in any Cycle, creates links
-    between the matching -Views.
+def match(state_id, cycle_id, StateClass, StateClassName, ViewClass):
+    state = StateClass.objects.get(pk=state_id)
+    org_id = state.organization_id
 
-    This method returns the total count of merged -States, the number of links
-    as well as the target -View if merges did occur (whether it was
-    updated or not).
-    """
+    # Get the View, if any, attached to this State
+    try:
+        self_view = ViewClass.objects.get(state_id=state_id, cycle_id=cycle_id)
+    except ViewClass.DoesNotExist:
+        self_view = None
+
+    # Create matching criteria filter
+    column_names = matching_criteria_column_names(org_id, StateClassName)
+    matching_criteria = matching_filter_criteria(state, column_names)
+    state_appended_matching_criteria = {
+        'state__' + col_name: v
+        for col_name, v
+        in matching_criteria.items()
+    }
+
+    # If matching criteria for this state is None, return no matches (empty querysets)
+    if all(v is None for v in matching_criteria.values()):
+        return self_view, ViewClass.objects.none(), ViewClass.objects.none()
+
+    # Get matching view in and outside of the cycle
+    all_matching_views = ViewClass.objects.prefetch_related('state').filter(
+        state__organization_id=org_id,
+        **state_appended_matching_criteria
+    )
+    if self_view:
+        all_matching_views = all_matching_views.exclude(id=self_view.id)
+
+    matching_views_in_cycle = all_matching_views.filter(cycle_id=cycle_id)
+    matching_views_out_of_cycle = all_matching_views.exclude(cycle_id=cycle_id)
+
+    return self_view, matching_views_in_cycle, matching_views_out_of_cycle
+
+
+def _get_ali(view, matching_views, highest_ali, class_name, ViewClass):
+    # Get the ali of the matching views
+    matching_ali_ids = list(set(matching_views.values_list(f"{class_name}__access_level_instance", flat=True)))
+    if len(matching_ali_ids) == 0:
+        matching_ali_id = None
+    elif len(matching_ali_ids) == 1:
+        matching_ali_id = matching_ali_ids[0]
+    elif len(matching_ali_ids) > 1:
+        raise AssertionError  # if matches have different alis, BIG problem
+
+    # get the ali of the view
+    if view:
+        view_ali_id = list(ViewClass.objects.filter(id=view.id).values_list(f"{class_name}__access_level_instance", flat=True))[0]
+    else:
+        view_ali_id = None
+
+    # get the ali
+    if matching_ali_id is None and view_ali_id is None:
+        raise NoViewsError
+
+    elif matching_ali_id is None:
+        ali_id = view_ali_id
+
+    elif view_ali_id is None:
+        ali_id = matching_ali_id
+
+    # if views ali is different, the views invalid
+    elif view_ali_id != matching_ali_id:
+        raise MultipleALIError
+
+    else:
+        ali_id = matching_ali_id
+
+    ali = AccessLevelInstance.objects.get(pk=ali_id)
+
+    # if we don't has access to matching_ali, raise an access error
+    if highest_ali and not (
+        ali == highest_ali or
+        ali.is_descendant_of(highest_ali)
+    ):
+        raise NoAccessError
+
+    return ali
+
+
+def match_merge_link(state_id, StateClassName, highest_ali, cycle):
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
@@ -214,50 +294,36 @@ def match_merge_link(view_id, StateClassName):
         ViewClass = TaxLotView
         class_name = "taxlot"
 
-    view = ViewClass.objects.get(pk=view_id)
-    given_state_id = view.state_id
-    org_id = view.state.organization_id
+    state = StateClass.objects.get(pk=state_id)
+    org_id = state.organization_id
 
-    column_names = matching_criteria_column_names(org_id, StateClassName)
+    # MATCH
+    view, matching_views_in_cycle, matching_views_out_of_cycle = match(state_id, cycle.id, StateClass, StateClassName, ViewClass)
 
-    # If associated -State has empty matching criteria, do nothing
-    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
-    if StateClass.objects.filter(pk=given_state_id, **empty_matching_criteria).exists():
-        return 0, 0, None
+    # Get ali and perform ali related checks
+    ali = _get_ali(view, matching_views_in_cycle | matching_views_out_of_cycle, highest_ali, class_name, ViewClass)
 
-    # 'state__' is appended to be able to query from the related -View Class
-    matching_criteria = matching_filter_criteria(view.state, column_names)
-    state_appended_matching_criteria = {
-        'state__' + col_name: v
-        for col_name, v
-        in matching_criteria.items()
-    }
+    # if a view for this cycle doesn't already exist, create one
+    if view is None:
+        state.raw_access_level_instance = ali
+        view = state.promote(cycle=cycle)
 
-    # Get all matching views (across Cycles in this Organization)
-    matching_views = ViewClass.objects.\
-        prefetch_related('state').\
-        filter(
-            state__organization_id=org_id,
-            **state_appended_matching_criteria
-        )
+    # MERGE
+    # TODO: _merge_matches_across_cycles wants _all_ the matching views. idk quite why. Why would
+    # the out of cycle views need to merge? Why would both the target state and view need to be
+    # passed? We should take a look at this, But for now, I don't want to anger it.
+    all_matching_views = (
+        ViewClass.objects.filter(pk=view.id).prefetch_related('state') |
+        matching_views_in_cycle |
+        matching_views_out_of_cycle
+    )
+    merge_count, target_state_id = _merge_matches_across_cycles(all_matching_views, org_id, state_id, StateClass)
+    view = ViewClass.objects.get(state_id=target_state_id)
 
-    # Ensure matching_views contain alis equal each other.
-    if matching_views.count() > 0:
-        matching_alis = matching_views.values_list(f"{class_name}__access_level_instance", flat=True)
-        if len(set(matching_alis)) != 1:
-            raise MultipleALIError
+    # LINK
+    link_count = _link_matches(all_matching_views, org_id, view, ViewClass)
 
-    merge_count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
-
-    # Refresh target_view in case merges changed the target -View in last step.
-    target_view = ViewClass.objects.get(state_id=target_state_id)
-
-    link_count = _link_matches(matching_views, org_id, target_view, ViewClass)
-
-    if merge_count > 0:
-        return merge_count, link_count, target_view.id
-    else:
-        return 0, link_count, None
+    return merge_count, link_count, view.id
 
 
 @shared_task(serializer='pickle', ignore_result=True)

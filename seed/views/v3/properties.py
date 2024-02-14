@@ -652,7 +652,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             with transaction.atomic():
                 merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
-                merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+                view = merged_state.propertyview_set.first()
+                merge_count, link_count, view_id = match_merge_link(merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse({
@@ -893,7 +894,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
         try:
             with transaction.atomic():
-                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                merge_count, link_count, view_id = match_merge_link(property_view.state.id, 'PropertyState', property_view.property.access_level_instance, property_view.cycle)
 
         except MergeLinkPairError:
             return JsonResponse({
@@ -1397,7 +1398,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
                         try:
                             with transaction.atomic():
-                                merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                                merge_count, link_count, view_id = match_merge_link(property_view.state.id, 'PropertyState', property_view.property.access_level_instance, property_view.cycle)
                         except MergeLinkPairError:
                             return JsonResponse({
                                 'status': 'error',

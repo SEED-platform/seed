@@ -36,6 +36,9 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
+    MultipleALIError,
+    NoAccessError,
+    NoViewsError,
     empty_criteria_filter,
     match_merge_link,
     matching_criteria_column_names,
@@ -135,30 +138,43 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
     progress_data.step('Matching data')
 
     # Set defaults
-    property_duplicates_against_existing_count = 0
+    # property - within file
+    property_initial_incoming_count = 0
     property_duplicates_within_file_count = 0
     property_duplicates_within_file_errors = []
-    property_merges_against_existing_count = 0
-    property_merges_against_existing_errors = []
-    property_merges_between_existing_count = 0
     property_merges_within_file_count = 0
     property_merges_within_file_errors = []
-    property_new_count = 0
-    property_new_errors = []
 
-    tax_lot_duplicates_against_existing_count = 0
+    # property - within existing records
+    property_merges_between_existing_count = 0
+
+    # property - introduce file to existing
+    property_duplicates_against_existing_count = 0
+    merged_property_views = []
+    merged_property_state_errors = []
+    linked_property_views = []
+    linked_property_state_errors = []
+    new_property_views = []
+    new_property_state_errors = []
+
+    # taxlot - within  file
+    tax_lot_initial_incoming_count = 0
     tax_lot_duplicates_within_file_count = 0
     tax_lot_duplicates_within_file_errors = []
-    tax_lot_merges_against_existing_count = 0
-    tax_lot_merges_against_existing_errors = []
-    tax_lot_merges_between_existing_count = 0
     tax_lot_merges_within_file_count = 0
     tax_lot_merges_within_file_errors = []
-    tax_lot_new_count = 0
-    tax_lot_new_errors = []
 
-    merged_linked_property_views = []
-    merged_linked_taxlot_views = []
+    # taxlot - within existing records
+    taxlot_merges_between_existing_count = 0
+
+    # taxlot - introduce file to existing
+    taxlot_duplicates_against_existing_count = 0
+    merged_taxlot_views = []
+    merged_taxlot_state_errors = []
+    linked_taxlot_views = []
+    linked_taxlot_state_errors = []
+    new_taxlot_views = []
+    new_taxlot_state_errors = []
 
     # Get lists and counts of all the properties and tax lots based on the import file.
     property_initial_incoming_count = incoming_properties.count()
@@ -194,13 +210,12 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
         (
-            merged_property_views,
-            property_duplicates_against_existing_count,
-            property_new_count,
-            property_merges_against_existing_count,
             property_merges_between_existing_count,
-            property_merges_against_existing_errors,
-            property_new_errors,
+            property_duplicates_against_existing_count,
+            merged_property_views,
+            merged_property_state_errors,  # TODO: we don't do anything with these. they should probably be deleted.
+            new_property_views,
+            errored_new_property_states,
         ) = states_to_views(
             promoted_property_ids,
             org,
@@ -213,11 +228,26 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
 
         # Look for links across Cycles
         log_debug('Start Properties link_views')
-        merged_linked_property_views = link_views(
+        (
             merged_property_views,
+            # no merged_property_state_errors, they got off the ride before linking
+            linked_property_views,  # note: view that merge _and_ linked are in merged_property_views, not linked_property_views
+            linked_property_state_errors,
+            new_property_views,
+            new_property_state_errors,
+        ) = link_views_and_states(
+            merged_property_views,
+            new_property_views,
+            errored_new_property_states,
             PropertyView,
+            cycle,
+            import_file.import_record.access_level_instance,
             sub_progress_key,
         )
+
+        # TODO: the states and Property should probably be deleted too
+        errored_linked_property_views = PropertyView.objects.filter(state__in=linked_property_state_errors)
+        errored_linked_property_views.delete()
 
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
@@ -239,13 +269,13 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
         (
-            merged_linked_taxlot_views,
-            tax_lot_duplicates_against_existing_count,
-            tax_lot_new_count,
-            tax_lot_merges_against_existing_count,
-            tax_lot_merges_between_existing_count,
-            tax_lot_merges_against_existing_errors,
-            tax_lot_new_errors,
+
+            taxlot_merges_between_existing_count,
+            taxlot_duplicates_against_existing_count,
+            merged_taxlot_views,
+            merged_taxlot_state_errors,  # TODO: we don't do anything with these. they should probably be deleted.
+            new_taxlot_views,
+            errored_new_taxlot_states,
         ) = states_to_views(
             promoted_tax_lot_ids,
             org,
@@ -257,44 +287,112 @@ def match_and_link_incoming_properties_and_taxlots_by_cycle(file_pk, progress_ke
 
         # Look for links across Cycles
         log_debug('Start TaxLots link_views')
-        merged_linked_taxlot_views = link_views(
-            merged_linked_taxlot_views,
+        (
+            merged_taxlot_views,
+            # no merged_taxlot_state_errors, they got off the ride before linking
+            linked_taxlot_views,  # note: view that merge _and_ linked are in merged_taxlot_views, not linked_taxlot_views
+            linked_taxlot_state_errors,
+            new_taxlot_views,
+            new_taxlot_state_errors,
+        ) = link_views_and_states(
+            merged_taxlot_views,
+            new_taxlot_views,
+            errored_new_taxlot_states,
             TaxLotView,
+            cycle,
+            import_file.import_record.access_level_instance,
             sub_progress_key,
         )
+
+        # TODO: the states and taxlot should probably be deleted too
+        errored_linked_taxlot_views = TaxLotView.objects.filter(state__in=linked_taxlot_state_errors)
+        errored_linked_taxlot_views.delete()
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
     pair_new_states(
-        merged_linked_property_views,
-        merged_linked_taxlot_views,
+        linked_property_views + new_property_views + merged_property_views,
+        linked_taxlot_views + new_taxlot_views + merged_taxlot_views,
         sub_progress_key,
     )
 
     return {
+        # property - within file
         'property_initial_incoming': property_initial_incoming_count,
-        'property_duplicates_against_existing': property_duplicates_against_existing_count,
         'property_duplicates_within_file': property_duplicates_within_file_count,
         'property_duplicates_within_file_errors': len(property_duplicates_within_file_errors),
-        'property_merges_against_existing': property_merges_against_existing_count,
-        'property_merges_against_existing_errors': len(property_merges_against_existing_errors),
-        'property_merges_between_existing': property_merges_between_existing_count,
         'property_merges_within_file': property_merges_within_file_count,
         'property_merges_within_file_errors': len(property_merges_within_file_errors),
-        'property_new': property_new_count,
-        'property_new_errors': len(property_new_errors),
+
+        # property - within existing records
+        'property_merges_between_existing': property_merges_between_existing_count,
+
+        # property - introduce file to existing
+        'property_duplicates_against_existing': property_duplicates_against_existing_count,
+        'property_merges_against_existing': len(merged_property_views),
+        'property_merges_against_existing_errors': len(merged_property_state_errors),
+        'property_links_against_existing': len(linked_property_views),
+        'property_links_against_existing_errors': len(linked_property_state_errors),
+        'property_new': len(new_property_views),
+        'property_new_errors': len(new_property_state_errors),
+
+        # taxlot - within  file
         'tax_lot_initial_incoming': tax_lot_initial_incoming_count,
-        'tax_lot_duplicates_against_existing': tax_lot_duplicates_against_existing_count,
         'tax_lot_duplicates_within_file': tax_lot_duplicates_within_file_count,
         'tax_lot_duplicates_within_file_errors': len(tax_lot_duplicates_within_file_errors),
-        'tax_lot_merges_against_existing': tax_lot_merges_against_existing_count,
-        'tax_lot_merges_against_existing_errors': len(tax_lot_merges_against_existing_errors),
-        'tax_lot_merges_between_existing': tax_lot_merges_between_existing_count,
         'tax_lot_merges_within_file': tax_lot_merges_within_file_count,
         'tax_lot_merges_within_file_errors': len(tax_lot_merges_within_file_errors),
-        'tax_lot_new': tax_lot_new_count,
-        'tax_lot_new_errored': len(tax_lot_new_errors),
+
+        # taxlot - within existing records
+        'tax_lot_merges_between_existing': taxlot_merges_between_existing_count,
+
+        # taxlot - introduce file to existing
+        'tax_lot_duplicates_against_existing': taxlot_duplicates_against_existing_count,
+        'tax_lot_merges_against_existing': len(merged_taxlot_views),
+        'tax_lot_merges_against_existing_errors': len(merged_taxlot_state_errors),
+        'tax_lot_links_against_existing': len(linked_taxlot_views),
+        'tax_lot_links_against_existing_errors': len(linked_taxlot_state_errors),
+        'tax_lot_new': len(new_taxlot_views),
+        'tax_lot_new_errored': len(new_taxlot_state_errors),
     }
+
+
+def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass, cycle, ali, sub_progress_key):
+    shared_args = [ViewClass, cycle, ali, sub_progress_key]
+
+    # merged_property_views are attached to properties that existed in the db prior to import, so it
+    # REALLY should not fail.
+    (
+        merged_and_linked_views,
+        merged_views,
+        merge_and_linked_states_errors,
+        _,
+    ) = link_states([v.state for v in merged_views], *shared_args)
+
+    # new_views may try to link invalidly if the existing records has a different ali. In that case,
+    # the new record should have never been created.
+    (
+        linked_views_a,
+        new_views,
+        linked_state_errors_a,
+        _,
+    ) = link_states([v.state for v in new_views], *shared_args)
+
+    # errored_new_states are new states without alis that also didn't merge. If they don't link or
+    # try to link invalidly, we throw them out. As there are not yet attached to a record, successfully
+    # not linking is not an option.
+    (
+        linked_views_b,
+        _,
+        linked_state_errors_b,
+        new_state_errors,
+    ) = link_states(errored_new_states, *shared_args)
+
+    merged_views += merged_and_linked_views
+    linked_views = linked_views_a + linked_views_b
+    linked_state_errors = linked_state_errors_a + linked_state_errors_b
+
+    return merged_views, linked_views, linked_state_errors, new_views, new_state_errors
 
 
 def filter_duplicate_states(unmatched_states, sub_progress_key):
@@ -544,13 +642,12 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
     priorities = Column.retrieve_priorities(org.pk)
-    processed_views = []
-    promoted_ids = []
-    merged_state_ids = []
-    errored_merged_states = []
-    errored_new_states = []
     try:
         with transaction.atomic():
+            # For each merge_state_pairs, try to merge the new state into the existing property views
+            merged_views = []
+            merged_state_ids = []
+            errored_merged_states = []
             batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
@@ -577,21 +674,25 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
                 existing_view.state = merged_state
                 existing_view.save()
 
-                processed_views.append(existing_view)
+                merged_views.append(existing_view)
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('Matching Data (4/6): Merging State Pairs')
 
             sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
+            # For each state that doesn't merge into an existing property, promote it, creating a new property
+            new_views = []
+            promoted_state_ids = []
+            errored_new_states = []
             batch_size = math.ceil(len(promote_states) / 100)
             for idx, state in enumerate(promote_states):
                 created_view = state.promote(cycle)
                 if created_view is None:
                     errored_new_states.append(state)
                 else:
-                    promoted_ids.append(state.id)
-                    processed_views.append(created_view)
+                    promoted_state_ids.append(state.id)
+                    new_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('Matching Data (5/6): Promoting States')
             sub_progress_data.finish_with_success()
@@ -599,22 +700,28 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
-    new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
-    StateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
+    StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
         merge_state=MERGE_STATE_NEW
     )
-    matched_count = StateClass.objects.filter(pk__in=merged_state_ids).update(
+    StateClass.objects.filter(pk__in=merged_state_ids).update(
         data_state=DATA_STATE_MATCHING,
         merge_state=MERGE_STATE_MERGED
     )
 
-    return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count, errored_merged_states, errored_new_states
+    return (
+        merged_between_existing_count,
+        duplicate_count,
+        list(set(merged_views)),  # so no dupes, I think?
+        errored_merged_states,
+        new_views,
+        errored_new_states,
+    )
 
 
-def link_views(merged_views, ViewClass, sub_progress_key):
+def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key):
     """
-    Run each of the given -Views through a linking round.
+    Run each of the given -States through a linking round.
 
     For details on the actual linking logic, please refer to the the
     match_merge_link() method.
@@ -627,21 +734,34 @@ def link_views(merged_views, ViewClass, sub_progress_key):
     else:
         state_class_name = "TaxLotState"
 
-    processed_views = []
+    linked_views = []
+    unlinked_views = []
+    invalid_link_states = []
+    unlinked_states = []
 
-    batch_size = math.ceil(len(merged_views) / 100)
-    for idx, view in enumerate(merged_views):
-        _merge_count, _link_count, view_id = match_merge_link(view.id, state_class_name)
+    batch_size = math.ceil(len(states) / 100)
+    for idx, state in enumerate(states):
+        try:
+            _merge_count, _link_count, view_id = match_merge_link(state.id, state_class_name, highest_ali=highest_ali, cycle=cycle)
+        except (MultipleALIError, NoAccessError):
+            invalid_link_states.append(state.id)
+            continue
+        except NoViewsError:
+            unlinked_states.append(state.id)
+            continue
 
-        if view_id is not None:
-            processed_views.append(ViewClass.objects.get(pk=view_id))
+        view = ViewClass.objects.get(pk=view_id)
+        if _link_count == 0:
+            unlinked_views.append(view)
         else:
-            processed_views.append(view)
+            linked_views.append(view)
+
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (6/6): Merging Views')
+
     sub_progress_data.finish_with_success()
 
-    return processed_views
+    return linked_views, unlinked_views, invalid_link_states, unlinked_states
 
 
 def save_state_match(state1, state2, priorities):
