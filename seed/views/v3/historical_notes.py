@@ -2,7 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 
 from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
@@ -10,12 +10,10 @@ from seed.lib.superperms.orgs.decorators import (
 )
 from seed.models import HistoricalNote
 from seed.serializers.historical_notes import HistoricalNoteSerializer
-from django.utils.decorators import method_decorator
-
-
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import UpdateWithoutPatchModelMixin
+
 
 @method_decorator(
     name='update',
@@ -32,5 +30,3 @@ class HistoricalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
     # Delete is handled through Property cascade deletes
     serializer_class = HistoricalNoteSerializer
     queryset = HistoricalNote.objects.all()
-
-    

@@ -442,7 +442,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     set_eui_goal(baseline, current, property, preferred_columns)
                     combined_properties.push(property)
 
-                    // goal notes 
+                    // goal notes
                     property.question = property.goal_note.question
                     property.resolution = property.goal_note.resolution
                     property.passed_checks = property.goal_note.passed_checks
@@ -515,12 +515,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 ]
 
                 const goal_note_cols = [
-                    { 
-                        field: 'question', 
-                        displayName: 'Question', 
-                        enableFiltering: false, 
-                        enableSorting: false, 
-                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                    {
+                        field: 'question',
+                        displayName: 'Question',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
                         editDropdownOptionsArray: $scope.question_options,
                         editDropdownIdLabel: 'value',
                         enableCellEdit: $scope.write_permission,
@@ -536,22 +536,22 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                             <div>
                         `
                      },
-                    { 
-                        field: 'resolution', 
-                        displayName: 'Resolution', 
-                        enableFiltering: false, 
-                        enableSorting: false, 
+                    {
+                        field: 'resolution',
+                        displayName: 'Resolution',
+                        enableFiltering: false,
+                        enableSorting: false,
                         enableCellEdit: true,
                         ediableCellTempalte: 'ui-grid/cellTitleValidator',
                         cellClass: 'cell-edit',
 
                     },
-                    { 
-                        field: 'passed_checks', 
-                        displayName: 'Passed Checks', 
-                        enableFiltering: false, 
-                        enableSorting: false, 
-                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                    {
+                        field: 'passed_checks',
+                        displayName: 'Passed Checks',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
                         editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
                         editDropdownIdLabel: 'value',
                         enableCellEdit: $scope.write_permission,
@@ -566,12 +566,12 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                             <div>
                         `
                     },
-                    { 
-                        field: 'new_or_acquired', 
-                        displayName: 'New Build or Acquired', 
-                        enableFiltering: false, 
-                        enableSorting: false, 
-                        editableCellTemplate: "ui-grid/dropdownEditor", 
+                    {
+                        field: 'new_or_acquired',
+                        displayName: 'New Build or Acquired',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
                         editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
                         editDropdownIdLabel: 'value',
                         enableCellEdit: $scope.write_permission,
@@ -880,7 +880,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                                 $scope.load_inventory(1);
                             }, 2000)
                         );
-                        
+
                         gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {
                             goal_service.update_goal_note(
                                 rowEntity.id,

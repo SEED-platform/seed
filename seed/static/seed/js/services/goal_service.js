@@ -24,8 +24,8 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
         }
 
         goal_service.update_goal_note = (property, goal_note, data) => {
-            return $http.put(`/api/v3/properties/${property}/goal_notes/${goal_note}/`, 
-                    data, 
+            return $http.put(`/api/v3/properties/${property}/goal_notes/${goal_note}/`,
+                    data,
                     {params: { organization_id: user_service.get_organization().id }}
                 )
                 .then(response => response)

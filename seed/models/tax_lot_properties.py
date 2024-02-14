@@ -270,7 +270,7 @@ class TaxLotProperty(models.Model):
             if obj_dict.get('measures'):
                 del obj_dict['measures']
 
-            # add goal note data 
+            # add goal note data
             if goal_id:
                 goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
                 obj_dict['goal_note'] = goal_note.serialized() if goal_note else None

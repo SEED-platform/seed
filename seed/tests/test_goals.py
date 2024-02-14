@@ -362,8 +362,8 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_note_update(self):
         goal_note = GoalNote.objects.get(goal_id=self.root_goal.id, property_id=self.property4)
-        assert goal_note.question == None
-        assert goal_note.resolution == None
+        assert goal_note.question is None
+        assert goal_note.resolution is None
 
         goal_note_data = {
             'question': 'Do you have data to report?',
@@ -389,12 +389,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
         assert response.status_code == 200
         response_goal = response.json()
-        assert response_goal['question'] == None
-        assert response_goal['resolution'] == None
+        assert response_goal['question'] is None
+        assert response_goal['resolution'] is None
 
         # child user can only update resolution
         self.login_as_child_member()
-        goal_note = GoalNote.objects.get(goal_id=self.child_goal.id, property_id=self.property1) 
+        goal_note = GoalNote.objects.get(goal_id=self.child_goal.id, property_id=self.property1)
         goal_note_data = {
             'question': 'Do you have data to report?',
             'resolution': 'updated res',
@@ -405,10 +405,10 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps(goal_note_data), content_type='application/json')
         assert response.status_code == 200
         response_goal = response.json()
-        assert response_goal['question'] == None
+        assert response_goal['question'] is None
         assert response_goal['resolution'] == 'updated res'
-        assert response_goal['passed_checks'] == False
-        assert response_goal['new_or_acquired'] == False
+        assert response_goal['passed_checks'] is False
+        assert response_goal['new_or_acquired'] is False
 
     def test_historical_note_update(self):
         self.login_as_child_member()
@@ -422,7 +422,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         assert response.json()['text'] == 'updated text'
         assert HistoricalNote.objects.get(property=self.property1).text == 'updated text'
-
 
     def test_portfolio_summary(self):
         self.login_as_child_member()

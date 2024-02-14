@@ -27,7 +27,7 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @has_perm_class('requires_member')
-    @has_hierarchy_access(property_id_kwarg='property_pk') # should this be nested under the goal or properties router?
+    @has_hierarchy_access(property_id_kwarg='property_pk')  # should this be nested under the goal or properties router?
     def update(self, request, property_pk, pk):
         try:
             goal_note = GoalNote.objects.get(property=property_pk, pk=pk)
@@ -49,12 +49,12 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
         serializer.save()
 
         return JsonResponse(serializer.data)
-    
+
     def get_permission_data(self, data, goal_note):
         # leaf users are only permitted to update 'resolution'
         access_level_instance = goal_note.goal.access_level_instance
-        write_permission = access_level_instance.is_root() or not access_level_instance.is_leaf() 
+        write_permission = access_level_instance.is_root() or not access_level_instance.is_leaf()
         if write_permission:
-            return data 
+            return data
 
         return {'resolution': data.get('resolution')} if 'resolution' in data else {}
