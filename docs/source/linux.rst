@@ -143,15 +143,13 @@ settings.
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': '127.0.0.1:6379',
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 
 Creating the initial user
@@ -320,15 +318,13 @@ local_untracked.py
     # config for local storage backend
     DOMAIN_URLCONFS = {'default': 'config.urls'}
 
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': '127.0.0.1:6379',
-            'OPTIONS': {'DB': 1},
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
     # SMTP config
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

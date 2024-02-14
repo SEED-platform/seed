@@ -1691,6 +1691,7 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
       gte: '>=',
       icontains: ''
     };
+    const operatorArr = [">", "<", "=", "!", "!=", "<=", ">="]
 
     $scope.delete_filter = (filterToDelete) => {
       const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
@@ -1797,6 +1798,12 @@ angular.module('BE.seed.controller.inventory_list', []).controller('inventory_li
           const subFilters = _.map(_.split(filter.term, ','), _.trim);
           for (const subFilter of subFilters) {
             if (subFilter) {
+
+              // ignore filters with only an operator. user is not done typing
+              if (operatorArr.includes(subFilter)) {
+                continue
+              }
+
               const { string, operator, value } = parseFilter(subFilter);
               const index = all_columns.findIndex((p) => p.name === column_name);
               const display = [$scope.columnDisplayByName[name], string, value].join(' ');
