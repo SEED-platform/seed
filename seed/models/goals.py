@@ -4,6 +4,7 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from itertools import chain
@@ -31,71 +32,33 @@ class Goal(models.Model):
         """ Preferred column order """
         eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
         return [column for column in eui_columns if column]
+    
+    def properties(self):
+        properties = Property.objects.filter(
+            Q(views__cycle=self.baseline_cycle) |
+            Q(views__cycle=self.current_cycle),
+            access_level_instance=self.access_level_instance
+        )
+        return properties
 
 
 @receiver(post_save, sender=Goal)
-def post_save_goal(sender, instance, created, **kwargs):
-    # need to do updated aswell
-    if created:
-        from seed.models import GoalNote
-        # GoalNote requires goal and property. Find a list of properties associated with either cycle.
-        baseline_property_ids = instance.baseline_cycle.propertyview_set.values_list('property_id', flat=True)
-        current_property_ids = instance.current_cycle.propertyview_set.values_list('property_id', flat=True)
-        property_ids = set(chain(baseline_property_ids, current_property_ids))
-        properties = Property.objects.filter(id__in=property_ids)
-        # PROPERTIES_WITHOUT_HISTORICAL_NOTES = properties.filter(historical_note__isnull=True)
-        default_goal_note = {'goal': instance}
-
-        # THIS SHOULD BE BULK_CREATE 
-        # AND GET_OR_CREATE HISTORICAL NOTE
-        for property in properties:
-            default_goal_note['property'] = property
-            GoalNote.objects.create(**default_goal_note)
-
-def sandbox(sender, instance, created, **kwargs):
-    """ Upon create or update goal_notes must be created (or deleted) from the associated goal """
+def post_save_goal(sender, instance, **kwargs):
     from seed.models import GoalNote
-    # GoalNote requires goal and property. Find a list of properties associated with either cycle.
-    baseline_property_ids = instance.baseline_cycle.propertyview_set.values_list('property_id', flat=True)
-    current_property_ids = instance.current_cycle.propertyview_set.values_list('property_id', flat=True)
-    property_ids = set(chain(baseline_property_ids, current_property_ids))
-    goal_properties = Property.objects.filter(id__in=property_ids)
+    # retrieve a flat set of all property ids associated with this goal
+    goal_property_ids = instance.properties.values_list('id', flat=True)
 
-    # create new goal_notes
+    # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
+    previous_property_ids = set(instance.goalnote_set.values_list('property_id', flat=True))
 
-    def bulk_create_goal_notes(properties):
-        new_goal_notes = [ GoalNote(goal=instance, property=property) for property in properties ]
+    # create, or update has added more properties to the goal
+    new_property_ids = goal_property_ids - previous_property_ids
+    # update has removed properties from the goal
+    removed_property_ids = previous_property_ids - goal_property_ids
+
+    if new_property_ids:
+        new_goal_notes = [GoalNote(goal=instance, property_id=id) for id in new_property_ids]
         GoalNote.objects.bulk_create(new_goal_notes)
 
-    if created:
-        bulk_create_goal_notes(goal_properties)
-        return
-
-    # goal -> goal_notes -> properties 
-    previous_goal_notes = instance.goalnote_set.all()
-    previous_properties = [goal_note.property for goal_note in previous_goal_notes]
-    
-
-    # if new properties are added to the goal, create new goal notes
-    if len(previous_properties) < goal_properties.count():
-        new_properties = set(goal_properties) - set(previous_properties)
-        bulk_create_goal_notes(new_properties)
-        # need to create some goal notes for the non duplicate proposed props
-
-    # if properties are removed from the goal, delete associated goal notes
-    elif (len(previous_properties) > goal_properties.count()):
-        x = 10
-
-
-        # existing goal notes
-
-        # properties from current goal notes
-
-        # compare to all properties and create goal notes for those that dont match
-
-
-    # What happens when goal is updated to include fewer properties. those goal_notes will still exist? 
-        # ideally they are deleted
-        # so I need to know new and old properties. 
-        # if new is greater, create some goal notes
-        # if old is greater, delete some goal notes
+    if removed_property_ids:
+        GoalNote.objects.filter(goal=instance, property_id__in=removed_property_ids).delete()
