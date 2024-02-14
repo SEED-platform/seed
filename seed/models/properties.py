@@ -20,7 +20,8 @@ from django.db.models.signals import (
     m2m_changed,
     post_save,
     pre_delete,
-    pre_save
+    pre_save,
+    post_save
 )
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
@@ -146,6 +147,12 @@ def set_default_access_level_instance(sender, instance, **kwargs):
         .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
     if bad_taxlotproperty.count() > 0:
         raise ValidationError("cannot change property's ALI to Ali different that related taxlots.")
+
+@receiver(post_save, sender=Property)
+def post_save_property(sender, instance, created, **kwargs):
+    if created:
+        from seed.models import HistoricalNote
+        HistoricalNote.objects.get_or_create(property=instance)
 
 
 class PropertyState(models.Model):
