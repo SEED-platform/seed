@@ -10,7 +10,7 @@ from datetime import datetime
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, Goal, GoalNote
+from seed.models import Column, Goal, GoalNote, HistoricalNote
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -196,6 +196,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_create(self):
         goal_count = Goal.objects.count()
         goal_note_count = GoalNote.objects.count()
+        historical_note_count = HistoricalNote.objects.count()
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         goal_columns = [
             'placeholder',
@@ -248,6 +249,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         assert GoalNote.objects.count() == goal_note_count + 3
+        assert HistoricalNote.objects.count() == historical_note_count + 3
         goal_count = Goal.objects.count()
 
         # invalid data
@@ -309,6 +311,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
+        goal_note_count = GoalNote.objects.count()
 
         # invalid permission
         self.login_as_child_member()
@@ -327,16 +330,22 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()['target_percentage'] == 99
         assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['eui_column1'] == original_goal.eui_column1.id
+        # changing to cycle 2 adds a new property (and goal_note)
+        assert GoalNote.objects.count() == goal_note_count + 1
+
+        goal_data = {'baseline_cycle': self.cycle1.id}
+        response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
+        assert GoalNote.objects.count() == goal_note_count
 
         # unexpected fields are ignored
         goal_data = {
             'name': 'child_goal y',
-            'baseline_cycle': self.cycle1.id,
+            'baseline_cycle': self.cycle2.id,
             'unexpected': 'invalid'
         }
         response = self.client.put(url, data=json.dumps(goal_data), content_type='application/json')
         assert response.json()['name'] == 'child_goal y'
-        assert response.json()['baseline_cycle'] == self.cycle1.id
+        assert response.json()['baseline_cycle'] == self.cycle2.id
         assert response.json()['eui_column1'] == original_goal.eui_column1.id
         assert 'extra_data' not in response.json()
 
@@ -401,7 +410,18 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response_goal['passed_checks'] == False
         assert response_goal['new_or_acquired'] == False
 
-
+    def test_historical_note_update(self):
+        self.login_as_child_member()
+        assert self.property1.historical_note.text == ''
+        url = reverse_lazy('api:v3:property-historical-notes-detail', args=[self.property1.id, self.property1.historical_note.id]) + '?organization_id=' + str(self.org.id)
+        data = {
+            'property': self.property1.id,
+            'text': 'updated text'
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type='application/json')
+        assert response.status_code == 200
+        assert response.json()['text'] == 'updated text'
+        assert HistoricalNote.objects.get(property=self.property1).text == 'updated text'
 
 
     def test_portfolio_summary(self):

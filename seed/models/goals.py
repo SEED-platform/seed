@@ -46,7 +46,7 @@ class Goal(models.Model):
 def post_save_goal(sender, instance, **kwargs):
     from seed.models import GoalNote
     # retrieve a flat set of all property ids associated with this goal
-    goal_property_ids = instance.properties.values_list('id', flat=True)
+    goal_property_ids = set(instance.properties().values_list('id', flat=True))
 
     # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
     previous_property_ids = set(instance.goalnote_set.values_list('property_id', flat=True))
