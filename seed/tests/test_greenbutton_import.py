@@ -263,7 +263,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
                 "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,
-                "errors": 'Overlapping readings.',
+                "errors": 'Import failed. Unable to import data with overlapping readings.',
             },
         ]
 
