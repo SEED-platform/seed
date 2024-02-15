@@ -2940,6 +2940,9 @@ msgstr "STEP 1: Map Your Data"
 msgid "STEP 2: Review Your Data Mappings"
 msgstr "STEP 2: Review Your Data Mappings"
 
+msgid "SUB_ORG_DEPRECATION"
+msgstr "The Sub-Organization functionality is no longer recommended and will be deprecated soon. Visit the Access Level Tree page to define access levels to structure your organization's content."
+
 msgid "SUGGEST_TO_VERIFY"
 msgstr "Please verify before continuing."
 

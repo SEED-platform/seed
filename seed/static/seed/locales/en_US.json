@@ -957,6 +957,7 @@
     "SHOWING_UNFILTERED_TAXLOTS": "Showing {start} to {end} of {total} tax lots",
     "STEP 1: Map Your Data": "STEP 1: Map Your Data",
     "STEP 2: Review Your Data Mappings": "STEP 2: Review Your Data Mappings",
+    "SUB_ORG_DEPRECATION": "The Sub-Organization functionality is no longer recommended and will be deprecated soon. Visit the Access Level Tree page to define access levels to structure your organization's content.",
     "SUGGEST_TO_VERIFY": "Please verify before continuing.",
     "SUGGEST_UPDATE_GEOCODE_COLS": "Update the geocoding column settings in your organization's column settings page.",
     "Salesforce": "Salesforce",

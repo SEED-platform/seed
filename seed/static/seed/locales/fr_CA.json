@@ -957,6 +957,7 @@
     "SHOWING_UNFILTERED_TAXLOTS": "Affichage {start} à {end} des {total} lots d'impôt en tout",
     "STEP 1: Map Your Data": "ÉTAPE 1: Mappez vos données",
     "STEP 2: Review Your Data Mappings": "ÉTAPE 2: Consultez vos mappages de données",
+    "SUB_ORG_DEPRECATION": "La fonctionnalité Sous-organisation n’est plus recommandée et sera bientôt obsolète. Visitez la page des niveaux d'accès pour définir les niveaux d'accès afin de structurer le contenu de votre organisation.",
     "SUGGEST_TO_VERIFY": "Veuillez vérifier les points suivants avant de continuer.",
     "SUGGEST_UPDATE_GEOCODE_COLS": "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation.",
     "Salesforce": "Salesforce",
