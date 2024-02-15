@@ -63,6 +63,16 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
             .catch(response => response)
         }
 
+        goal_service.update_historical_note = (property, historical_note, data) => {
+            data.property = property
+            return $http.put(`/api/v3/properties/${property}/historical_notes/${historical_note}/`,
+                data,
+                {params: { organization_id: user_service.get_organization().id}}
+            )
+            .then(response => response)
+            .catch(response => response)
+        }
+
         return goal_service
         }
     ]

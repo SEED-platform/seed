@@ -24,7 +24,7 @@ class GoalNote(models.Model):
     passed_checks = models.BooleanField(default=False)
     new_or_acquired = models.BooleanField(default=False)
 
-    def serialized(self):
+    def serialize(self):
         from seed.serializers.goal_notes import GoalNoteSerializer
         serializer = GoalNoteSerializer(self)
         return serializer.data

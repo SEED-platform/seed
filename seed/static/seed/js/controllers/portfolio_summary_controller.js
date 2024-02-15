@@ -441,12 +441,6 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     property.sqft_change = percentage(property.current_sqft, property.baseline_sqft)
                     set_eui_goal(baseline, current, property, preferred_columns)
                     combined_properties.push(property)
-
-                    // goal notes
-                    property.question = property.goal_note.question
-                    property.resolution = property.goal_note.resolution
-                    property.passed_checks = property.goal_note.passed_checks
-                    property.new_or_acquired = property.goal_note.new_or_acquired
                 })
                 return combined_properties
             }
@@ -516,7 +510,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
 
                 const goal_note_cols = [
                     {
-                        field: 'question',
+                        field: 'goal_note.question',
                         displayName: 'Question',
                         enableFiltering: false,
                         enableSorting: false,
@@ -528,26 +522,33 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">
-                                    <span>{{row.entity.question}}</span>
-                                    <i class="fa-solid fa-chevron-down" ></i>
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">
+                                    <span>{{row.entity.goal_note.question}}</span>
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
                                 </span>
-                                <span ng-if="!grid.appScope.write_permission">{{row.entity.question}}</span>
                             <div>
                         `
                      },
                     {
-                        field: 'resolution',
+                        field: 'goal_note.resolution',
                         displayName: 'Resolution',
                         enableFiltering: false,
                         enableSorting: false,
                         enableCellEdit: true,
                         ediableCellTempalte: 'ui-grid/cellTitleValidator',
                         cellClass: 'cell-edit',
-
                     },
                     {
-                        field: 'passed_checks',
+                        field: 'historical_note.text',
+                        displayName: 'Historical Notes',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        enableCellEdit: true,
+                        ediableCellTempalte: 'ui-grid/cellTitleValidator',
+                        cellClass: 'cell-edit',
+                    },
+                    {
+                        field: 'goal_note.passed_checks',
                         displayName: 'Passed Checks',
                         enableFiltering: false,
                         enableSorting: false,
@@ -559,15 +560,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">{{row.entity.passed_checks}}
-                                    <i class="fa-solid fa-chevron-down" ></i>
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.passed_checks}}
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
                                 </span>
-                                <span ng-if="!grid.appScope.write_permission">{{row.entity.passed_checks}}</span>
                             <div>
                         `
                     },
                     {
-                        field: 'new_or_acquired',
+                        field: 'goal_note.new_or_acquired',
                         displayName: 'New Build or Acquired',
                         enableFiltering: false,
                         enableSorting: false,
@@ -579,11 +579,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         // if user has write permission show a dropdown inidcator
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
-                                <span ng-if="grid.appScope.write_permission" class="cell-dropdown-indicator">{{row.entity.new_or_acquired}}
-                                    <i class="fa-solid fa-chevron-down" ></i>
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.new_or_acquired}}
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
                                 </span>
-                                <span ng-if="!grid.appScope.write_permission">{{row.entity.new_or_acquired}}</span>
-
                             <div>
                         `
                     },
@@ -881,12 +879,14 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                             }, 2000)
                         );
 
-                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {
-                            goal_service.update_goal_note(
-                                rowEntity.id,
-                                rowEntity.goal_note.id,
-                                { [colDef.field]: newValue }
-                            )
+                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {                            
+                            [model, field] = colDef.field.split('.')
+
+                            if (model == 'historical_note') {
+                                goal_service.update_historical_note( rowEntity.id, rowEntity.historical_note.id, {[field]: newValue} )
+                            } else if (model == 'goal_note') {
+                                goal_service.update_goal_note( rowEntity.id, rowEntity.goal_note.id, { [field]: newValue } )
+                            }
                         })
                     }
                 }

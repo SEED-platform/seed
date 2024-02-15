@@ -113,3 +113,9 @@ class Note(models.Model):
 class HistoricalNote(models.Model):
     text = models.TextField(blank=True)
     property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='historical_note')
+
+    def serialize(self):
+        from seed.serializers.historical_notes import HistoricalNoteSerializer
+        serializer = HistoricalNoteSerializer(self)
+        return serializer.data
+

@@ -273,8 +273,8 @@ class TaxLotProperty(models.Model):
             # add goal note data
             if goal_id:
                 goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
-                obj_dict['goal_note'] = goal_note.serialized() if goal_note else None
-                obj_dict['historical_note'] = obj.property.historical_note.text
+                obj_dict['goal_note'] = goal_note.serialize() if goal_note else None
+                obj_dict['historical_note'] = obj.property.historical_note.serialize()
 
             results.append(obj_dict)
 
