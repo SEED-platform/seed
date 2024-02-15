@@ -130,6 +130,8 @@ def _dict_org(request, organizations):
             'is_parent': o.is_parent,
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
+            'display_units_ghg': o.display_units_ghg,
+            'display_units_ghg_intensity': o.display_units_ghg_intensity,
             'display_units_area': o.display_units_area,
             'display_decimal_places': o.display_decimal_places,
             'cycles': cycles,
@@ -508,6 +510,18 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             warn_bad_pint_spec('eui', desired_display_units_eui)
 
+        desired_display_units_ghg = posted_org.get('display_units_ghg')
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_GHG, desired_display_units_ghg):
+            org.display_units_ghg = desired_display_units_ghg
+        else:
+            warn_bad_pint_spec('ghg', desired_display_units_ghg)
+
+        desired_display_units_ghg_intensity = posted_org.get('display_units_ghg_intensity')
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_GHG_INTENSITY, desired_display_units_ghg_intensity):
+            org.display_units_ghg_intensity = desired_display_units_ghg_intensity
+        else:
+            warn_bad_pint_spec('ghg_intensity', desired_display_units_ghg_intensity)
+
         desired_display_units_area = posted_org.get('display_units_area')
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
             org.display_units_area = desired_display_units_area
@@ -806,18 +820,25 @@ class OrganizationViewSet(viewsets.ViewSet):
         # set x
         if x_var == "Count":
             result["x"] = 1
-
-        elif not getattr(state, x_var):
-            return {}
-
         else:
-            result["x"] = getattr(state, x_var)
+            try:
+                result["x"] = getattr(state, x_var)
+            except AttributeError:
+                # check extra data
+                try:
+                    result["x"] = state.extra_data.get(x_var)
+                except AttributeError:
+                    return {}
 
         # set y
-        if not getattr(state, y_var, None):
-            return {}
-        else:
+        try:
             result["y"] = getattr(state, y_var)
+        except AttributeError:
+            # check extra data
+            try:
+                result["y"] = state.extra_data.get(y_var)
+            except AttributeError:
+                return {}
 
         return result
 
@@ -884,7 +905,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y
@@ -942,7 +963,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var
@@ -1112,7 +1133,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def report_export(self, request, pk=None):
         """
@@ -1353,7 +1374,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         # Create a merge of the last 2 properties
         state_ids_to_merge = ids[-2:]
         merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
-        match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        view = merged_state.propertyview_set.first()
+        match_merge_link(merged_state.id, 'PropertyState', view.property.access_level_instance, view.cycle)
 
         # pair a property to tax lot
         property_id = property_views[0].id

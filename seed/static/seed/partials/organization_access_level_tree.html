@@ -30,7 +30,7 @@
               <h3 translate>Access Levels Instances (ALI)</h3>
               <p translate>ACCESS_LEVEL_INSTANCE_DESCRIPTION</p>
               <h3 translate>Example Access Level Tree</h3>
-              <img class="tree-image" ng-src="{$ static_url $}seed/images/ali-tree-example-lg.png">
+              <img class="tree-image" ng-src="{$ static_url $}seed/images/ali-tree-example-lg.webp">
 
               <h3 ng-if="auth.requires_owner" translate>Managing the Access Level Tree</h3>
               <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_ORG_OWNER</p>
@@ -45,18 +45,31 @@
               <p ng-if="auth.requires_owner" translate>ACCESS_LEVEL_OWNER_END</p>
             </div>
             <div class="pad-top-10">
-                <h3>Current Access Level Tree:</h3>
+                <h3 class="tree-header" translate>Access Levels</h3>
                 <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_modal()">
                     {$:: 'Edit/Add Access Levels' | translate $}
                 </button>
-
+                <div ng-if="access_level_names" class="levels-table">
+                    <table class="access-level-tree trigger-table table table-bordered table-striped table-condensed">
+                        <thead class="level1"><tr>
+                            <th ng-repeat="level in access_level_names track by $index"> Level {$:: ($index + 1) $} Name</th>
+                        </tr></thead>
+                        <tbody><tr>
+                            <td ng-repeat="level in access_level_names">
+                                {$:: level $}
+                            </td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h3 class="tree-header" translate>Access Level Instance Tree</h3>
                 <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_add_level_instance_modal()">
                     {$:: 'Add Access Level Instance' | translate $}
                 </button>
                 <button type="button" class="btn btn-primary tree-button" ng-show="auth.requires_owner" ng-click="open_upload_al_instances_modal()">
                     {$:: 'Upload Access Level Instances' | translate $}
                 </button>
-
                 <div id="access-level-tree">
                     <div class="level1">
                       {$:: 'Level' | translate $} 1: {$ access_level_names[0] $}
@@ -74,7 +87,6 @@
                         </button>
                       </span>
                     </div>
-
                     <div ng-if="access_level_names[1]" class="section_content" style="width:98%; float:right; margin-right:10px;">
                       <div data-toggle="collapse">
                         <div ng-include="'tree'" ng-init="level=1;children=access_level_tree[0].children"></div>

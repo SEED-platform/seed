@@ -6,6 +6,8 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 
 
+from datetime import datetime
+
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots
 )
@@ -19,8 +21,10 @@ from seed.models import (
     PropertyView
 )
 from seed.test_helpers.fake import (
+    FakeCycleFactory,
     FakePropertyFactory,
-    FakePropertyStateFactory
+    FakePropertyStateFactory,
+    FakePropertyViewFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -31,6 +35,7 @@ class TestAHImportFile(DataMappingBaseTestCase):
         self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
         self.import_file.mapping_done = True
         self.import_file.save()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
         # create tree
         self.org.access_level_names = ["1st Gen", "2nd Gen", "3rd Gen"]
@@ -692,3 +697,255 @@ class TestAHImportMatchExisting(TestAHImportFile):
         assert PropertyView.objects.count() == 1
         pv = PropertyView.objects.first()
         assert pv.state.city is None
+
+
+class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
+    def setUp(self):
+        super().setUp()
+
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+        # this causes all the states to match
+        self.base_details["ubid"] = '86HJPCWQ+2VV-1-3-2-3'
+        self.base_details["no_default_data"] = False
+
+        self.state = self.property_state_factory.get_property_state(**self.base_details)
+        self.state.data_state = DATA_STATE_MATCHING
+        self.state.save()
+        self.existing_property = self.property_factory.get_property(access_level_instance=self.me_ali)
+        self.other_cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10))
+        self.view = PropertyView.objects.create(
+            property=self.existing_property,
+            cycle=self.other_cycle,
+            state=self.state
+        )
+
+    def test_has_ali_merges_and_links(self):
+        # Set Up - create view for merge
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+
+        # Set Up - update new state info
+        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_merges_against_existing'] = 1
+        self.blank_result['property_links_against_existing'] = 0  # not 1 cause the view it merged into was already linked
+        self.blank_result['property_new'] = 0  # not 1 cause the property already exists
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # one Property in right ali
+        self.assertEqual(Property.objects.count(), 1)
+        p = Property.objects.first()
+        assert p.access_level_instance == self.me_ali
+
+        # 3 in a little merge tree, 1 in the other cycle
+        assert PropertyState.objects.count() == 4
+
+        # city changed in the correct view
+        assert PropertyView.objects.count() == 2
+        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.cycle.id,
+                "state__city": "Denver",
+            },
+        ]
+
+    def test_no_ali_merges_and_links(self):
+        # Set Up - create view for merge
+        self.property_view_factory.get_property_view(prprty=self.existing_property, cycle=self.cycle)
+
+        # Set Up - update new state info
+        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_merges_against_existing'] = 1
+        self.blank_result['property_links_against_existing'] = 0  # not 1 cause the view it merged into was already linked
+        self.blank_result['property_new'] = 0  # not 1 cause the property already exists
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # one Property in right ali
+        self.assertEqual(Property.objects.count(), 1)
+        p = Property.objects.first()
+        assert p.access_level_instance == self.me_ali
+
+        # 3 in a little merge tree, 1 in the other cycle
+        assert PropertyState.objects.count() == 4
+
+        # city changed in the correct view
+        assert PropertyView.objects.count() == 2
+        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.cycle.id,
+                "state__city": "Denver",
+            },
+        ]
+
+    def test_has_ali_links(self):
+        # Set Up - update new state info
+        self.base_details["raw_access_level_instance_id"] = self.me_ali.id
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_links_against_existing'] = 1
+        self.blank_result['property_new'] = 0  # not 1 cause the property already exists
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # 1 in each cycle
+        assert PropertyState.objects.count() == 2
+
+        # city changed in the correct view
+        assert PropertyView.objects.count() == 2
+        view_info = PropertyView.objects.values("property_id", "property__access_level_instance_id", "cycle_id", "state__city")
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "property__access_level_instance_id": self.me_ali.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+            {
+                "property_id": self.existing_property.id,
+                "property__access_level_instance_id": self.me_ali.id,
+                "cycle_id": self.cycle.id,
+                "state__city": "Denver",
+            },
+        ]
+
+    def test_has_ali_links_different_ali(self):
+        # Set Up - update existing state ali
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+
+        # Set Up - update new state info
+        self.base_details["raw_access_level_instance_id"] = self.me_ali.id  # different ali
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_links_against_existing_errors'] = 1
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # theres two Properties and two PropertyStates, but one of each is abandoned
+        self.assertEqual(Property.objects.count(), 2)
+        assert PropertyState.objects.count() == 2
+
+        # no change
+        assert PropertyView.objects.count() == 1
+        view_info = PropertyView.objects.values("property_id", "property__access_level_instance_id", "cycle_id", "state__city")
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "property__access_level_instance_id": self.sister.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+        ]
+
+    def test_no_ali_links(self):
+        # Set Up - update new state info
+        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_links_against_existing'] = 1
+        self.blank_result['property_new'] = 0  # not 1 cause the property already exists
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # two properties, but one abandoned
+        self.assertEqual(Property.objects.count(), 2)
+
+        # 1 in each cycle
+        assert PropertyState.objects.count() == 2
+
+        # city changed in the correct view
+        assert PropertyView.objects.count() == 2
+        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.cycle.id,
+                "state__city": "Denver",
+            },
+        ]
+
+    def test_no_ali_links_no_access(self):
+        # Set Up - file and existing property have different alis
+        self.existing_property.access_level_instance = self.sister
+        self.existing_property.save()
+        self.import_record.access_level_instance = self.me_ali
+        self.import_record.save()
+
+        # update new state info
+        self.base_details["raw_access_level_instance_error"] = "uh oh"
+        self.base_details['city'] = 'Denver'  # so not duplicate
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # Action
+        results = match_and_link_incoming_properties_and_taxlots(*self.action_args)
+
+        # Assert - results
+        self.blank_result['property_initial_incoming'] = 1
+        self.blank_result['property_links_against_existing_errors'] = 1
+        self.assertDictContainsSubset(self.blank_result, results)
+
+        # one Property in right ali
+        self.assertEqual(Property.objects.count(), 1)
+        p = Property.objects.first()
+        assert p.access_level_instance == self.sister
+
+        # no change
+        assert PropertyView.objects.count() == 1
+        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
+        assert list(view_info) == [
+            {
+                "property_id": self.existing_property.id,
+                "cycle_id": self.other_cycle.id,
+                "state__city": None,
+            },
+        ]

@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.organization_delete_access_level_instance_mod
       instance_id,
       instance_name,
       spinner_utility,
-      Notification,
+      Notification
     ) {
       $scope.instance_id = instance_id;
       $scope.level_instance_name = instance_name;
@@ -31,23 +31,22 @@ angular.module('BE.seed.controller.organization_delete_access_level_instance_mod
 
       spinner_utility.show();
       organization_service.can_delete_access_level_instance(org_id, $scope.instance_id)
-        .then(res => {
+        .then((res) => {
           $scope.can_delete_access_level_instance = res.can_delete;
           if (!$scope.can_delete_access_level_instance) {
             $scope.reasons_why = res.reasons;
           }
         })
-        .catch(err => {Notification.error(err)})
+        .catch((err) => { Notification.error(err); })
         .finally(() => spinner_utility.hide());
-
 
       $scope.delete = () => {
         organization_service.delete_access_level_instance(org_id, $scope.instance_id)
-        .then(_ => $uibModalInstance.close())
-        .catch(err => {Notification.error(err)});
-      }
+          .then(() => $uibModalInstance.close())
+          .catch((err) => { Notification.error(err); });
+      };
 
       $scope.cancel = () => {
         $uibModalInstance.dismiss('cancel');
-      }
+      };
     }]);

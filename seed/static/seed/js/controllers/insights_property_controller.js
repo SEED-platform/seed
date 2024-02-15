@@ -620,7 +620,7 @@ angular.module('BE.seed.controller.insights_property', []).controller('insights_
         resolve: {
           inventory_ids: $scope.visibleIds,
           inventory_type: () => 'properties',
-          is_ali_root: () => $scope.menu.user.is_ali_root,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
     };

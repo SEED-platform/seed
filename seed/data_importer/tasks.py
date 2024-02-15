@@ -36,7 +36,6 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from unidecode import unidecode
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
@@ -56,6 +55,7 @@ from seed.data_importer.models import (
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
@@ -534,12 +534,12 @@ def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
     # try to get ali matching ali info within subtree
     paths_match = Q(path=ali_info)
     in_subtree = Q(lft__gte=import_file_ali.lft, rgt__lte=import_file_ali.rgt)
-    ali = AccessLevelInstance.objects.filter(Q(paths_match & in_subtree)).first()
+    ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(paths_match & in_subtree)).first()
 
     # if ali is None, we error
     if ali is None:
         is_ancestor = Q(lft__lt=import_file_ali.lft, rgt__gt=import_file_ali.rgt)
-        ancestor_ali = AccessLevelInstance.objects.filter(Q(is_ancestor & paths_match)).first()
+        ancestor_ali = AccessLevelInstance.objects.filter(organization=model.organization).filter(Q(is_ancestor & paths_match)).first()
 
         # differing errors if
         # 1. the user can see the ali but cannot access, or
@@ -803,7 +803,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     elif key == "_source_filename":  # grab source filename (for BSync)
                         source_filename = v
                     elif isinstance(v, basestring):
-                        new_chunk[key] = unidecode(v)
+                        new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
@@ -1161,7 +1161,8 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         if message:
             result[row[access_level_names[-1]]] = {'message': message}
 
-    progress_data.step()
+        progress_data.step()
+
     return result
 
 
@@ -1176,8 +1177,9 @@ def _save_access_level_instances_data_create_tasks(filename, org_id, progress_ke
     )
     access_level_instances_data = parser.access_level_instances_details
 
-    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
+    progress_data.total = len(access_level_instances_data)
     progress_data.save()
+    results = _save_access_level_instances_task(access_level_instances_data, org_id, progress_data.key)
     return finish_raw_ali_save(results, progress_data.key)
 
 
@@ -1479,10 +1481,9 @@ def save_raw_access_level_instances_data(filename, org_id):
     """ save data and keep progress """
     progress_data = ProgressData(func_name='save_raw_access_level_instances_data', unique_id=int(time.time()))
     try:
-        # queue up the tasks and immediately return. This is needed in the case of large files
-        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
-        # large files can take quite some time.
-        _save_access_level_instances_data_create_tasks(filename, org_id, progress_data.key)
+        # queue up the tasks and immediately return. This is needed in the case of large hierarchy files
+        # causing the website to timeout due to inactivity.
+        _save_access_level_instances_data_create_tasks.s(filename, org_id, progress_data.key).delay()
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except KeyError as e:
@@ -1750,9 +1751,10 @@ def hash_state_object(obj, include_extra_data=True):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
-                hash_obj.update(str(unidecode(key)).encode('utf-8'))
+                # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
+                hash_obj.update(str(normalize_unicode_and_characters(key)).encode('utf-8'))
                 if isinstance(value, basestring):
-                    hash_obj.update(unidecode(value).encode('utf-8'))
+                    hash_obj.update(normalize_unicode_and_characters(value).encode('utf-8'))
                 else:
                     hash_obj.update(str(value).encode('utf-8'))
         return hash_obj

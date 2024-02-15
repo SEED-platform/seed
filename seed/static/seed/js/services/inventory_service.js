@@ -100,17 +100,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
             params.cycle = lastCycleId;
           }
 
-          let data = {
+          const data = {
             // Pass the specific ids if they exist
             include_view_ids,
             exclude_view_ids,
             include_property_ids,
             // Pass the current profile (if one exists) to limit the column data that is returned
-            profile_id,
-          }
+            profile_id
+          };
           // add access_level_instance if it exists
           if (access_level_instance_id) {
-            data.access_level_instance_id = access_level_instance_id
+            data.access_level_instance_id = access_level_instance_id;
           }
           if (goal_id) {
             data.goal_id = goal_id
@@ -1059,13 +1059,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = (key, ids) => {
-      key += `.${user_service.get_organization().id}`;
+    inventory_service.saveSelectedLabels = (key, ids, action='') => {
+      key += `.${action}.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = (key) => {
-      key += `.${user_service.get_organization().id}`;
+    inventory_service.loadSelectedLabels = (key, action='') => {
+      key += `.${action}.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };
 
@@ -1218,13 +1218,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.filter_by_property = (cycle_id, property_ids) => {
-      return $http.post('/api/v3/properties/filter_by_property/', {
-        organization_id: user_service.get_organization().id,
-        cycle: cycle_id,
-        property_ids: property_ids
-      }).then(response => response.data)
-    }
+    inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
+      organization_id: user_service.get_organization().id,
+      cycle: cycle_id,
+      property_ids
+    }).then((response) => response.data);
 
     return inventory_service;
   }
