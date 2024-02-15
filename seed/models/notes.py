@@ -118,4 +118,3 @@ class HistoricalNote(models.Model):
         from seed.serializers.historical_notes import HistoricalNoteSerializer
         serializer = HistoricalNoteSerializer(self)
         return serializer.data
-

@@ -879,7 +879,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                             }, 2000)
                         );
 
-                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {                            
+                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {
                             [model, field] = colDef.field.split('.')
 
                             if (model == 'historical_note') {

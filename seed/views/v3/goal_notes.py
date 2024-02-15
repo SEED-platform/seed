@@ -9,7 +9,7 @@ from seed.lib.superperms.orgs.decorators import (
     has_hierarchy_access,
     has_perm_class
 )
-from seed.models import GoalNote, AccessLevelInstance
+from seed.models import AccessLevelInstance, GoalNote
 from seed.serializers.goal_notes import GoalNoteSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
