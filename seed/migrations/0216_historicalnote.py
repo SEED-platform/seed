@@ -21,7 +21,7 @@ def backfill_historical_notes(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0214_goalnote'),
+        ('seed', '0215_goalnote'),
     ]
 
     operations = [
