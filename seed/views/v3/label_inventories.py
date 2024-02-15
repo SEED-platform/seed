@@ -152,7 +152,7 @@ class LabelInventoryViewSet(APIView):
                     if pk not in exclude[label_id]:
                         new_inventory_label = self.label_factory(inventory_type, label_id, pk)
                         new_inventory_labels.append(new_inventory_label)
-            model.objects.bulk_create(new_inventory_labels)
+            model.objects.bulk_create(new_inventory_labels, ignore_conflicts=True)
             added = [
                 self.get_inventory_id(m, inventory_type)
                 for m in new_inventory_labels

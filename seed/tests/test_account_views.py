@@ -74,6 +74,8 @@ class AccountsViewTests(TestCase):
             'parent_id': self.org.pk,
             'display_units_eui': 'kBtu/ft**2/year',
             'display_units_area': 'ft**2',
+            'display_units_ghg': 'MtCO2e/year',
+            'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
             'display_decimal_places': 2,
             'cycles': [{
                 'name': self.cal_year_name,
@@ -181,6 +183,8 @@ class AccountsViewTests(TestCase):
                 'parent_id': self.org.pk,
                 'display_units_eui': 'kBtu/ft**2/year',
                 'display_units_area': 'ft**2',
+                'display_units_ghg': 'MtCO2e/year',
+                'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
                 'display_decimal_places': 2,
                 'cycles': [{
                     'name': self.cal_year_name,
@@ -213,6 +217,8 @@ class AccountsViewTests(TestCase):
             'parent_id': self.org.pk,
             'display_units_eui': 'kBtu/ft**2/year',
             'display_units_area': 'ft**2',
+            'display_units_ghg': 'MtCO2e/year',
+            'display_units_ghg_intensity': 'kgCO2e/ft**2/year',
             'display_decimal_places': 2,
             'cycles': [{
                 'name': self.cal_year_name,

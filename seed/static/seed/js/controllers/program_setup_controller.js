@@ -78,9 +78,9 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
       }
       if (id != null) {
         $scope.selected_compliance_metric = $scope.compliance_metrics.find((item) => item.id === id);
-        $scope.available_x_axis_columns = () => $scope.x_axis_columns.filter(({ id }) => !$scope.selected_compliance_metric?.x_axis_columns.includes(id));
-        $scope.available_cycles = () => $scope.cycles.filter(({ id }) => !$scope.selected_compliance_metric?.cycles.includes(id));
       }
+      $scope.available_x_axis_columns = () => $scope.x_axis_columns.filter(({ id }) => !$scope.selected_compliance_metric?.x_axis_columns.includes(id));
+      $scope.available_cycles = () => $scope.cycles.filter(({ id }) => !$scope.selected_compliance_metric?.cycles.includes(id));
     };
 
     $scope.init_selected_metric($scope.id);
@@ -212,27 +212,35 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         return;
       }
 
-      // update the compliance metric
-      compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then((data) => {
-        if ('status' in data && data.status === 'error') {
-          for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
-            $scope.compliance_metrics_error.push(`${key}: ${error}`);
-          }
-        } else {
-          // success. the ID would already be saved so this block seems unnecesary
-          if (!$scope.selected_compliance_metric.id) {
-            $scope.selected_compliance_metric.id = data.id;
-          }
-          // replace data into compliance metric
-          const index = _.findIndex($scope.compliance_metrics, ['id', data.id]);
-          if (index >= 0) {
-            $scope.compliance_metrics[index] = data;
+      if ($scope.selected_compliance_metric.id) {
+        // update the compliance metric
+        compliance_metric_service.update_compliance_metric($scope.selected_compliance_metric.id, $scope.selected_compliance_metric, $scope.org.id).then((data) => {
+          if ('status' in data && data.status === 'error') {
+            for (const [key, error] of Object.entries(data.compliance_metrics_error)) {
+              $scope.compliance_metrics_error.push(`${key}: ${error}`);
+            }
           } else {
-            $scope.compliance_metrics.push(data);
+            // success. the ID would already be saved so this block seems unnecesary
+            if (!$scope.selected_compliance_metric.id) {
+              $scope.selected_compliance_metric.id = data.id;
+            }
+            // replace data into compliance metric
+            const index = _.findIndex($scope.compliance_metrics, ['id', data.id]);
+            if (index >= 0) {
+              $scope.compliance_metrics[index] = data;
+            } else {
+              $scope.compliance_metrics.push(data);
+            }
+            $scope.selected_compliance_metric = data;
           }
-          $scope.selected_compliance_metric = data;
-        }
-      });
+        });
+      } else {
+        // create the compliance metric
+        compliance_metric_service.new_compliance_metric($scope.selected_compliance_metric, $scope.org.id).then((data) => {
+          $scope.compliance_metrics.push(data);
+          $scope.init_selected_metric(data.id);
+        });
+      }
 
       // display messages
       // Notification.primary({ message: '<a href="#/insights" style="color: #337ab7;">Click here to view your Program Overview</a>', delay: 5000 });
@@ -247,7 +255,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
       // create a new metric using api and then assign it to selected_compliance_metric that
       // way it will have an id
-      const template_compliance_metric = {
+      $scope.selected_compliance_metric = {
         name: 'New Program',
         cycles: [],
         actual_energy_column: null,
@@ -259,10 +267,6 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         filter_group: null,
         x_axis_columns: []
       };
-      compliance_metric_service.new_compliance_metric(template_compliance_metric, $scope.org.id).then((data) => {
-        $scope.compliance_metrics.push(data);
-        $scope.init_selected_metric(data.id);
-      });
       //spinner_utility.hide();
     }
 
