@@ -987,7 +987,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     result[sensor_column_name] = {'count': len(cursor.fetchall())}
         except ProgrammingError as e:
             if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-                result[sensor_column_name] = {'error': 'Import failed. Unable to import data with overlapping readings.'}
+                result[sensor_column_name] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
             else:
                 progress_data.finish_with_error('data failed to import')
                 raise e
@@ -1052,7 +1052,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
                 result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-            result[result_summary_key] = {'error': 'Import failed. Unable to import data with overlapping readings.'}
+            result[result_summary_key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1121,7 +1121,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
                 meter_readings.get('source_id'),
                 type_lookup[meter_readings['type']]
             )
-            result[key] = {'error': 'Import failed. Unable to import data with overlapping readings.'}
+            result[key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e

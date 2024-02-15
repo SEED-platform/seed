@@ -263,7 +263,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
                 "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,
-                "errors": 'Import failed. Unable to import data with overlapping readings.',
+                "errors": 'Import failed. Unable to import data with duplicate start and end date pairs.',
             },
         ]
 
