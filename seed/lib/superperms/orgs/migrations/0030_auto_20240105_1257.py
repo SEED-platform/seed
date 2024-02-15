@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('orgs', '0028_organization_audit_template_report_type'),
+        ('orgs', '0029_auto_20230413_1250'),
     ]
 
     operations = [
