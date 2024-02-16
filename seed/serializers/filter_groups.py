@@ -7,13 +7,12 @@ See also https://github.com/seed-platform/seed/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.models import VIEW_LIST_INVENTORY_TYPE, FilterGroup
-from seed.models.filter_group import LABEL_LOGIC_TYPE
 
 
 class FilterGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = FilterGroup
-        fields = ('name', 'query_dict', 'inventory_type', 'id', "organization_id", "labels", "label_logic")
+        fields = ('name', 'query_dict', 'inventory_type', 'id', "organization_id", "and_labels", "or_labels", "exclude_labels")
         extra_kwargs = {
             'user': {'read_only': True},
             'organization': {'read_only': True},
@@ -24,7 +23,8 @@ class FilterGroupSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
 
         ret["inventory_type"] = VIEW_LIST_INVENTORY_TYPE[ret["inventory_type"]][1]
-        ret["label_logic"] = LABEL_LOGIC_TYPE[ret["label_logic"]][1]
-        ret["labels"] = sorted(ret["labels"])
+        ret["and_labels"] = sorted(ret["and_labels"])
+        ret["or_labels"] = sorted(ret["or_labels"])
+        ret["exclude_labels"] = sorted(ret["exclude_labels"])
 
         return ret

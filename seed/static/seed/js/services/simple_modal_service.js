@@ -84,6 +84,7 @@ angular.module('BE.seed.service.simple_modal', []).factory('simple_modal_service
           $uibModalInstance.dismiss('cancel');
         };
       }];
+
       return $uibModal.open(tempModalDefaults).result;
     };
 

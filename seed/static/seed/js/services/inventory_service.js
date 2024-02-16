@@ -1055,13 +1055,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = (key, ids) => {
-      key += `.${user_service.get_organization().id}`;
+    inventory_service.saveSelectedLabels = (key, ids, action='') => {
+      key += `.${action}.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = (key) => {
-      key += `.${user_service.get_organization().id}`;
+    inventory_service.loadSelectedLabels = (key, action='') => {
+      key += `.${action}.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };
 

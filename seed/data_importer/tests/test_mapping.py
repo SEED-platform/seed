@@ -94,7 +94,7 @@ class TestMapping(DataMappingBaseTestCase):
         # for p in props:
         #     pp(p)
 
-    def test_remapping_with_and_without_unit_aware_columns_doesnt_lose_data(self):
+    def test_remapping_with_and_without_unit_aware_columns_does_not_lose_data(self):
         """
         During import, when the initial -State objects are created from the extra_data values,
         ColumnMapping objects are used to take the extra_data dictionary values and create the

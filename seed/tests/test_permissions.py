@@ -138,6 +138,27 @@ class PermissionsFunctionsTests(TestCase):
         result = get_org_id(mock_request)
         self.assertEqual(None, result)
 
+        # invalid ids are returned as -1 (not found)
+        mock_request = mock_request_factory(
+            view_authz_org_id_kwarg=None,
+            parser_kwargs={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'organization_id': 'invalid_id'},
+            data={'organization_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(-1, result)
+
+        mock_request = mock_request_factory(
+            view_authz_org_id_kwarg=None,
+            parser_kwargs={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'not_org_id': 2},
+            data={'organization_id': 'invalid_id'}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(-1, result)
+
     def test_get_user_org(self):
         """Test getting org from user"""
         fake_user = User.objects.create(username='test')
