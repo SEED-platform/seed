@@ -35,6 +35,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
   'dataset_service',
   'mapping_service',
   'matching_service',
+  'organization_service',
   'inventory_service',
   'spinner_utility',
   'step',
@@ -57,6 +58,7 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
     dataset_service,
     mapping_service,
     matching_service,
+    organization_service,
     inventory_service,
     spinner_utility,
     step,
@@ -91,7 +93,12 @@ angular.module('BE.seed.controller.data_upload_modal', []).controller('data_uplo
      *  newly created data set
      * file: the file being upload file.filename is the file's name
      */
-    $scope.organization = organization;
+    $scope.organization = organization
+    // get full organization payload (to get inventory count)
+    organization_service.get_organization(organization.id).then((data) => {
+      $scope.organization = data.organization;
+    });
+
     $scope.dataset = {
       name: '',
       disabled() {
