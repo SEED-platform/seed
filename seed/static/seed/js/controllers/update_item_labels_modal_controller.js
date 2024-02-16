@@ -19,7 +19,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
   'Notification',
   'spinner_utility',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, is_ali_root, notification, spinner_utility) {
+  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, is_ali_root, Notification, spinner_utility) {
     $scope.inventory_ids = inventory_ids;
     $scope.inventory_type = inventory_type;
     // keep track of status of service call
@@ -106,9 +106,9 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
         label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} property updated.`);
+              Notification.primary(`${data.num_updated} property updated.`);
             } else {
-              notification.primary(`${data.num_updated} properties updated.`);
+              Notification.primary(`${data.num_updated} properties updated.`);
             }
             $uibModalInstance.close();
           },
@@ -121,9 +121,9 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
         label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} tax lot updated.`);
+              Notification.primary(`${data.num_updated} tax lot updated.`);
             } else {
-              notification.primary(`${data.num_updated} tax lots updated.`);
+              Notification.primary(`${data.num_updated} tax lots updated.`);
             }
             $uibModalInstance.close();
           },
