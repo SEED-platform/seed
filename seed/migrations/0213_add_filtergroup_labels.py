@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0211_auto_20240109_1348'),
+        ('seed', '0212_auto_add_props_to_tree_squashed_0213_analysis_access_level_instance'),
     ]
 
     operations = [
