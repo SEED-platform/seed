@@ -248,7 +248,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         assert GoalNote.objects.count() == goal_note_count + 3
-        
+
         goal_count = Goal.objects.count()
 
         # invalid data
