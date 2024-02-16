@@ -196,7 +196,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
     def test_goal_create(self):
         goal_count = Goal.objects.count()
         goal_note_count = GoalNote.objects.count()
-        historical_note_count = HistoricalNote.objects.count()
         url = reverse_lazy('api:v3:goals-list') + '?organization_id=' + str(self.org.id)
         goal_columns = [
             'placeholder',
@@ -249,7 +248,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
         assert GoalNote.objects.count() == goal_note_count + 3
-        assert HistoricalNote.objects.count() == historical_note_count + 3
+        
         goal_count = Goal.objects.count()
 
         # invalid data

@@ -43,8 +43,10 @@ class Goal(models.Model):
         properties = Property.objects.filter(
             Q(views__cycle=self.baseline_cycle) |
             Q(views__cycle=self.current_cycle),
-            access_level_instance=self.access_level_instance
-        )
+            access_level_instance__lft__gte=self.access_level_instance.lft,
+            access_level_instance__rgt__lte=self.access_level_instance.rgt
+        ).distinct()
+
         return properties
 
 
