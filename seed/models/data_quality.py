@@ -203,7 +203,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20241231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -232,7 +232,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20241231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -241,7 +241,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20241231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -308,7 +308,7 @@ class Rule(models.Model):
             'data_type': TYPE_YEAR,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 1700,
-            'max': 2024,
+            'max': str(datetime.now().year),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }, {
@@ -317,7 +317,7 @@ class Rule(models.Model):
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
-            'max': 20241231,
+            'max': datetime.now().strftime("%Y1231"),
             'severity': SEVERITY_ERROR,
             'condition': RULE_RANGE,
         }
