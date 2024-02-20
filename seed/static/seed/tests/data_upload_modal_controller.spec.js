@@ -111,14 +111,14 @@ describe('controller: data_upload_modal_controller', () => {
           file_id: 3
         }));
       spyOn(mock_organization_service, 'get_organization').andCallFake(() =>
-        // return organiation
+        // return organization
         $q.resolve({
-          organization: {id: 1},
+          organization: {},
         }));
       spyOn(mock_auth_service, 'is_authorized').andCallFake(() =>
         // return auth
         $q.resolve({
-          auth: true,
+          auth: {},
         }));
     });
   });
