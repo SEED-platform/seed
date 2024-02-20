@@ -161,15 +161,13 @@ settings.
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379",
-            'OPTIONS': { 'DB': 1 },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
-    CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
 Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -809,7 +809,7 @@ class MeterUsageImportTest(TestCase):
                 "type": "Electric - Grid",
                 "incoming": 4,
                 "successfully_imported": 0,
-                "errors": "Overlapping readings.",
+                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
             },
             {
                 "property_id": self.property_2.id,
@@ -819,7 +819,7 @@ class MeterUsageImportTest(TestCase):
                 "type": "Natural Gas",
                 "incoming": 4,
                 "successfully_imported": 0,
-                "errors": "Overlapping readings.",
+                "errors": "Import failed. Unable to import data with duplicate start and end date pairs.",
             },
         ]
 

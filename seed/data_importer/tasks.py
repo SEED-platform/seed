@@ -36,7 +36,6 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from unidecode import unidecode
 
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
@@ -56,6 +55,7 @@ from seed.data_importer.models import (
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
+from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
@@ -803,7 +803,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     elif key == "_source_filename":  # grab source filename (for BSync)
                         source_filename = v
                     elif isinstance(v, basestring):
-                        new_chunk[key] = unidecode(v)
+                        new_chunk[key] = normalize_unicode_and_characters(v)
                     elif isinstance(v, (datetime, date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
@@ -1065,7 +1065,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     result[sensor_column_name] = {'count': len(cursor.fetchall())}
         except ProgrammingError as e:
             if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-                result[sensor_column_name] = {'error': 'Overlapping readings.'}
+                result[sensor_column_name] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
             else:
                 progress_data.finish_with_error('data failed to import')
                 raise e
@@ -1227,7 +1227,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
                 result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-            result[result_summary_key] = {'error': 'Overlapping readings.'}
+            result[result_summary_key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1296,7 +1296,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
                 meter_readings.get('source_id'),
                 type_lookup[meter_readings['type']]
             )
-            result[key] = {'error': 'Overlapping readings.'}
+            result[key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1751,9 +1751,10 @@ def hash_state_object(obj, include_extra_data=True):
             if isinstance(value, dict):
                 add_dictionary_repr_to_hash(hash_obj, value)
             else:
-                hash_obj.update(str(unidecode(key)).encode('utf-8'))
+                # TODO: Do we need to normalize_unicode_and_characters (formerly unidecode) here?
+                hash_obj.update(str(normalize_unicode_and_characters(key)).encode('utf-8'))
                 if isinstance(value, basestring):
-                    hash_obj.update(unidecode(value).encode('utf-8'))
+                    hash_obj.update(normalize_unicode_and_characters(value).encode('utf-8'))
                 else:
                     hash_obj.update(str(value).encode('utf-8'))
         return hash_obj

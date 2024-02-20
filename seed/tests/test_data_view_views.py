@@ -73,7 +73,7 @@ class DataViewViewTests(TestCase):
                 inventory_type=1,  # Tax Lot
                 query_dict={f'year_built_{year_built_id}__lt': ['1950']},
             )
-            filter_group.labels.add(self.label_1.id)
+            filter_group.and_labels.add(self.label_1.id)
             filter_group.save()
 
             self.filter_groups.append(filter_group)
@@ -936,9 +936,8 @@ class DataViewInventoryTests(TestCase):
             organization_id=self.org.id,
             inventory_type=1,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
-            label_logic=0  # and,
         )
-        self.fg_and.labels.set([self.label2.id, self.label3.id])
+        self.fg_and.and_labels.set([self.label2.id, self.label3.id])
         self.fg_and.save()
 
         self.fg_or = FilterGroup.objects.create(
@@ -946,9 +945,8 @@ class DataViewInventoryTests(TestCase):
             organization_id=self.org.id,
             inventory_type=1,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
-            label_logic=1  # or,
         )
-        self.fg_or.labels.set([self.label2.id, self.label3.id])
+        self.fg_or.or_labels.set([self.label2.id, self.label3.id])
         self.fg_or.save()
 
         self.fg_exc = FilterGroup.objects.create(
@@ -956,9 +954,8 @@ class DataViewInventoryTests(TestCase):
             organization_id=self.org.id,
             inventory_type=1,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
-            label_logic=2,  # exclude
         )
-        self.fg_exc.labels.set([self.label3.id, self.label4.id])
+        self.fg_exc.exclude_labels.set([self.label3.id, self.label4.id])
         self.fg_exc.save()
 
         # filter, labels

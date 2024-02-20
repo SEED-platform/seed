@@ -120,7 +120,9 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )
-        self.assertEqual(ps1.hash_object, ps2.hash_object)
+        # Not that we support unicode in the fields, then the hashes should not be the
+        # same anymore. #TODO: Should we strip all unicode characters in extra data fields?
+        self.assertNotEqual(ps1.hash_object, ps2.hash_object)
 
     def test_hash_release_date(self):
         """The hash_state_object method makes the timezones naive, so this should work because

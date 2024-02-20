@@ -16,9 +16,9 @@ from seed.models import (
     DATA_STATE_MAPPING,
     VIEW_LIST_TAXLOT,
     Column,
-    Label,
     Note,
     PropertyView,
+    StatusLabel,
     TaxLot,
     TaxLotProperty,
     TaxLotView
@@ -406,7 +406,7 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         self.cycle = self.cycle_factory.get_cycle()
         self.view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
         self.taxlot = TaxLot.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.label = StatusLabel.objects.create(color="red", name="test_label", super_organization=self.org,)
         self.view.labels.add(self.label)
         self.view.taxlot = self.taxlot
         self.view.save()

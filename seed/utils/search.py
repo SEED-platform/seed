@@ -273,7 +273,10 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         .replace("'", '-') \
         .replace('"', '-') \
         .replace('`', '-') \
-        .replace(';', '-')
+        .replace(';', '-') \
+        .replace('[', '_') \
+        .replace(']', '_') \
+        .replace('%', '_')
     text_field_name = f'_{cleaned_column_name}_to_text'
     final_field_name = f'_{cleaned_column_name}_final'
 

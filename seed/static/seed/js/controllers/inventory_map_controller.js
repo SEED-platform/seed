@@ -395,7 +395,7 @@ angular.module('BE.seed.controller.inventory_map', []).controller('inventory_map
         stopEvent: false,
         autoPan: true,
         autoPanMargin: 75,
-        offset: [0, -135]
+        offset: [0, -10]
       });
       $scope.map.addOverlay(popupOverlay);
 

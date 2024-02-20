@@ -14,7 +14,6 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
-from seed.models.models import StatusLabel as Label
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
@@ -243,26 +242,30 @@ class DataView(models.Model):
             return list(filter_views)
 
     def _get_label_views(self, cycle, filter_group, user_ali):
-        if len(filter_group.labels.all()) == 0:
+        if not (filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists()):
             return None
 
-        logic = filter_group.label_logic
-        labels = Label.objects.filter(id__in=filter_group.labels.all())
         permissions_filter = {
             "property__access_level_instance__lft__gte": user_ali.lft,
             "property__access_level_instance__rgt__lte": user_ali.rgt,
         }
 
-        if logic == 0:  # and
-            views_all = []
-            for label in labels:
-                views = cycle.propertyview_set.filter(labels__in=[label]).filter(**permissions_filter)
-                views_all.append(views)
-            return list(set.intersection(*map(set, views_all)))
-        elif logic == 1:  # or
-            return list(cycle.propertyview_set.filter(labels__in=labels).filter(**permissions_filter))
-        elif logic == 2:  # exclude
-            return list(cycle.propertyview_set.exclude(labels__in=labels).filter(**permissions_filter))
+        and_labels = filter_group.and_labels.all()
+        or_labels = filter_group.or_labels.all()
+        exclude_labels = filter_group.exclude_labels.all()
+        views = None
+
+        if and_labels.exists():  # and
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            for label in and_labels:
+                views = views.filter(labels=label)
+        if or_labels.exists():  # or
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            views = views.filter(labels__in=or_labels)
+        if exclude_labels.exists():  # exclude
+            views = views or cycle.propertyview_set.filter(**permissions_filter)
+            views = views.exclude(labels__in=exclude_labels)
+        return list(views)
 
     def _get_filter_group_views(self, cycle, query_dict, user_ali):
         org_id = self.organization.id
