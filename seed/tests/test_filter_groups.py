@@ -372,13 +372,12 @@ class FilterGroupsTests(TransactionTestCase):
             reverse(
                 'api:v3:filter_groups-detail',
                 args=[self.filter_group.id]
-            ),
+            ) + f"?organization_id={self.org.id}",
             data=json.dumps({
                 "and_labels": [first_label.id, -1],
                 "or_labels": [first_label.id, -1],
             }),
             content_type='application/json',
-            **self.headers
         )
 
         # Assertion
@@ -386,8 +385,7 @@ class FilterGroupsTests(TransactionTestCase):
 
         # Action
         response = self.client.get(
-            reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]),
-            **self.headers
+            reverse('api:v3:filter_groups-detail', args=[self.filter_group.id]) + f"?organization_id={self.org.id}",
         )
 
         # Assertion

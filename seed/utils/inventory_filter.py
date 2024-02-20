@@ -124,7 +124,16 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    try:
+        views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
+    except ValueError as e:
+        return JsonResponse(
+            {
+                'stauts': 'error',
+                'message': f'Error filtering: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     # If we are returning the children, build the childrens filters.
     if include_related:
@@ -195,6 +204,14 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
                 'status': 'error',
                 'recommended_action': 'update_column_settings',
                 'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except IndexError as e:
+        return JsonResponse(
+            {
+                'status': 'error',
+                'message': f'Error filtering - Clear filters and try again: {str(e)}'
             },
             status=status.HTTP_400_BAD_REQUEST
         )

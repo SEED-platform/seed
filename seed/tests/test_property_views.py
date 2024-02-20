@@ -38,7 +38,6 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
     InventoryDocument,
-    Label,
     Meter,
     MeterReading,
     Note,
@@ -47,6 +46,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Scenario,
+    StatusLabel,
     TaxLotProperty,
     TaxLotView
 )
@@ -756,7 +756,7 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view = self.property_view_factory.get_property_view(cycle=self.cycle)
         self.taxlot_view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
         self.property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
-        self.label = Label.objects.create(color="red", name="test_label", super_organization=self.org,)
+        self.label = StatusLabel.objects.create(color="red", name="test_label", super_organization=self.org,)
         self.view.labels.add(self.label)
         self.view.property = self.property
         self.view.save()
