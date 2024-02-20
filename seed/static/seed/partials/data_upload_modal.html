@@ -81,6 +81,7 @@
           <div class="alert alert-warning" ng-show="organization.inventory_count == 0">
             <i class="fa-solid fa-triangle-exclamation"></i>
               <span translate>REVIEW_MATCHING_CRITERIA</span>
+              <a ng-if="auth.requires_owner" target="_blank" ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})">Column Settings</a>
           </div>
           <div class="row">
             <div class="col-sm-4">
