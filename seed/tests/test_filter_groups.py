@@ -126,6 +126,22 @@ class FilterGroupsTests(TransactionTestCase):
         # Assertion
         self.assertEqual(400, response.status_code)
 
+    def test_create_filter_group_bad_label_logic(self):
+        # Action
+        response = self.client.post(
+            reverse('api:v3:filter_groups-list') + f"?organization_id={self.org.id}",
+            data=json.dumps({
+                "name": "new_filter_group",
+                "inventory_type": "Tax Lot",
+                "query_dict": {'year_built__lt': ['1950']},
+                "label_logic": "bad label logic",
+            }),
+            content_type='application/json',
+        )
+
+        # Assertion
+        self.assertEqual(400, response.status_code)
+
     def test_create_filter_group_label_doesnt_exist(self):
         # Action
         response = self.client.post(
