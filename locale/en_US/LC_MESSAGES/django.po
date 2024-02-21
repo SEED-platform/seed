@@ -2596,6 +2596,9 @@ msgstr "Rename allows users to change the name of the underlying field shown in 
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "REVIEW YOUR DATA MAPPINGS"
 
+msgid "REVIEW_MATCHING_CRITERIA"
+msgstr "Review your matching criteria on the Column Settings page before importing data for the first time. You will not be able to remove fields from the matching criteria after data is added to your organization."
+
 msgid "Read more here."
 msgstr "Read more here."
 

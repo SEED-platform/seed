@@ -844,6 +844,7 @@
     "RENAME_COLUMN_TITLE": "Rename Column",
     "RENAME_SYS_LEVEL_COL": "Rename allows users to change the name of the underlying field shown in Column Name \/ Field Name. Renaming a field means that field will be changed in all the data for the organization.",
     "REVIEW YOUR DATA MAPPINGS": "REVIEW YOUR DATA MAPPINGS",
+    "REVIEW_MATCHING_CRITERIA": "Review your matching criteria on the Column Settings page before importing data for the first time. You will not be able to remove fields from the matching criteria after data is added to your organization.",
     "Read more here.": "Read more here.",
     "Really reset all passwords?  This will sign you out of SEED.": "Really reset all passwords?  This will sign you out of SEED.",
     "Recent Sale Date": "Recent Sale Date",
