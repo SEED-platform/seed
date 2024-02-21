@@ -2616,6 +2616,9 @@ msgstr "Renommer permet aux utilisateurs de modifier le nom du champ sous-jacent
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "EXAMINER VOS MAPPAGES DE DONNÉES"
 
+msgid "REVIEW_MATCHING_CRITERIA"
+msgstr "Vérifiez vos critères de correspondance sur la page Paramètres de colonne avant d'importer des données pour la première fois. Vous ne pourrez pas supprimer des champs des critères de correspondance une fois les données ajoutées à votre organisation."
+
 msgid "Read more here."
 msgstr "Lire la suite ici."
 
@@ -2963,6 +2966,9 @@ msgstr "ÉTAPE 1: Mappez vos données"
 
 msgid "STEP 2: Review Your Data Mappings"
 msgstr "ÉTAPE 2: Consultez vos mappages de données"
+
+msgid "SUB_ORG_DEPRECATION"
+msgstr "La fonctionnalité Sous-organisation n’est plus recommandée et sera bientôt obsolète. Visitez la page des niveaux d'accès pour définir les niveaux d'accès afin de structurer le contenu de votre organisation."
 
 #, fuzzy
 msgid "SUGGEST_TO_VERIFY"

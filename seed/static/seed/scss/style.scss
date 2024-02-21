@@ -5427,6 +5427,7 @@ tags-input .tags .tag-item {
 .tooltip-long {
   word-wrap: break-word;
 }
+
 .cell-dropdown {
   cursor: copy;
 }
@@ -5441,4 +5442,9 @@ tags-input .tags .tag-item {
   i {
     color: gray;
   }
+}
+
+.deprecation-warning {
+  padding: 10px;
+  color: #c24e00;
 }
