@@ -520,6 +520,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         enableCellEdit: $scope.write_permission,
                         cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
                         // if user has write permission show a dropdown inidcator
+                        width: 350,
                         cellTemplate: `
                             <div class="ui-grid-cell-contents">
                                 <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">
@@ -537,6 +538,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         enableCellEdit: true,
                         ediableCellTempalte: 'ui-grid/cellTitleValidator',
                         cellClass: 'cell-edit',
+                        width: 300,
                     },
                     {
                         field: 'historical_note.text',
@@ -546,6 +548,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         enableCellEdit: true,
                         ediableCellTempalte: 'ui-grid/cellTitleValidator',
                         cellClass: 'cell-edit',
+                        width: 300,
                     },
                     {
                         field: 'goal_note.passed_checks',
@@ -559,7 +562,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
                         // if user has write permission show a dropdown inidcator
                         cellTemplate: `
-                            <div class="ui-grid-cell-contents">
+                            <div class="ui-grid-cell-contents" ng-class="row.entity.goal_note.passed_checks ? 'cell-pass' : 'cell-fail'">
                                 <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.passed_checks}}
                                     <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
                                 </span>
@@ -578,7 +581,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                         cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
                         // if user has write permission show a dropdown inidcator
                         cellTemplate: `
-                            <div class="ui-grid-cell-contents">
+                            <div class="ui-grid-cell-contents" ng-class="row.entity.goal_note.new_or_acquired && 'cell-pass'">
                                 <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.new_or_acquired}}
                                     <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
                                 </span>

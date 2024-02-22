@@ -5234,7 +5234,7 @@ ul.r-list {
     }
 
     .above-target {
-      background: #9dca8f;
+      background: #d0e6d4;
     }
 
     .below-target {
@@ -5447,4 +5447,12 @@ tags-input .tags .tag-item {
 .deprecation-warning {
   padding: 10px;
   color: #c24e00;
+}
+.cell-pass {
+  background-color: #d0e6d4;
+  border-top: 1px solid #d4d4d4;
+}
+.cell-fail {
+  background-color: #fefbd1;
+  border-top: 1px solid #d4d4d4;
 }
