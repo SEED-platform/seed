@@ -8,7 +8,6 @@ import os
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Max
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -190,14 +189,20 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'Query param `access_level_names` must be a list of strings'
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        # assert access_level_names is deep enough
-        depth = AccessLevelInstance.objects.filter(organization=org).aggregate(max_depth=Max('depth')).get("max_depth", 0)
-        if len(new_access_level_names) < depth:
+        if len(new_access_level_names) < 1:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Query param `access_level_names` is shorter than depth of existing tree'
+                'message': 'There must be at least one access level.'
             }, status=status.HTTP_400_BAD_REQUEST)
+        if any([n == "" for n in new_access_level_names]):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Access Level Instance may not be ""'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # delete alis at deleted depths
+        depth = len(new_access_level_names)
+        AccessLevelInstance.objects.filter(organization=org, depth__gt=depth).delete()
 
         # save names
         org.access_level_names = new_access_level_names
