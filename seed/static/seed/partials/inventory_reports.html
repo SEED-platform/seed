@@ -39,12 +39,12 @@
                 <div style="display: flex; flex-direction: column;">
                   <div class="form-group pad-bottom-10">
                     <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
-                    <sd-dropdown is-button id="xAxisSelector" ng-model="xAxisSelectedItem" items="xAxisVars"></sd-dropdown>
+                    <select class="form-control" id="xAxisSelector" ng-model="xAxisSelectedItem" ng-options="x.name for x in xAxisVars"></select>
                   </div>
 
                   <div class="form-group">
                     <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
-                    <sd-dropdown is-button id="yAxisSelector" ng-model="yAxisSelectedItem" items="yAxisVars"></sd-dropdown>
+                    <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-options="y.name for y in yAxisVars"></select>
                   </div>
                 </div>
                 <div class="form-group">
