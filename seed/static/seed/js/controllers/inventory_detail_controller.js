@@ -127,8 +127,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     $scope.ali_path = {};
     if (typeof (ali) === 'object') {
       $scope.ali_path = ali.path;
-      // the first key in the path (<org name>: 'root') is not necessary to display
-      delete $scope.ali_path[$scope.organization.name];
     }
 
     $scope.order_historical_items_with_scenarios = () => {

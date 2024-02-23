@@ -23,6 +23,16 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
                 .catch(response => response)
         }
 
+        goal_service.update_goal_note = (property, goal_note, data) => {
+            return $http.put(`/api/v3/properties/${property}/goal_notes/${goal_note}/`,
+                    data,
+                    {params: { organization_id: user_service.get_organization().id }}
+                )
+                .then(response => response)
+                .catch(response => response)
+
+        }
+
         goal_service.get_goals = () => {
             return $http.get('/api/v3/goals/', {
                 params: {
@@ -49,6 +59,16 @@ angular.module('BE.seed.service.goal', []).factory('goal_service', [
                     organization_id: user_service.get_organization().id
                 }
             })
+            .then(response => response)
+            .catch(response => response)
+        }
+
+        goal_service.update_historical_note = (property, historical_note, data) => {
+            data.property = property
+            return $http.put(`/api/v3/properties/${property}/historical_notes/${historical_note}/`,
+                data,
+                {params: { organization_id: user_service.get_organization().id}}
+            )
             .then(response => response)
             .catch(response => response)
         }

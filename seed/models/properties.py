@@ -148,6 +148,13 @@ def set_default_access_level_instance(sender, instance, **kwargs):
         raise ValidationError("cannot change property's ALI to Ali different that related taxlots.")
 
 
+@receiver(post_save, sender=Property)
+def post_save_property(sender, instance, created, **kwargs):
+    if created:
+        from seed.models import HistoricalNote
+        HistoricalNote.objects.get_or_create(property=instance)
+
+
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
