@@ -31,12 +31,14 @@ from seed.views.v3.events import EventViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.goal_notes import GoalNoteViewSet
 from seed.views.v3.goals import GoalViewSet
 from seed.views.v3.green_assessment_properties import (
     GreenAssessmentPropertyViewSet
 )
 from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
+from seed.views.v3.historical_notes import HistoricalNoteViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
@@ -125,6 +127,8 @@ properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
 properties_router.register(r'events', EventViewSet, basename='property-events')
+properties_router.register(r'goal_notes', GoalNoteViewSet, basename='property-goal-notes')
+properties_router.register(r'historical_notes', HistoricalNoteViewSet, basename='property-historical-notes')
 
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')

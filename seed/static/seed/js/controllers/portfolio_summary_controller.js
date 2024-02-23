@@ -210,7 +210,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 // order of cycle property filter is dynamic based on column_sorts
                 let cycle_priority = baseline_first ? [baseline_cycle, current_cycle]: [current_cycle, baseline_cycle]
 
-                get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true).then(result0 => {
+                get_paginated_properties(page, per_page, cycle_priority[0], access_level_instance_id, true, null, $scope.goal.id).then(result0 => {
                     $scope.inventory_pagination = result0.pagination
                     properties = result0.results
                     combined_result[cycle_priority[0].id] = properties;
@@ -229,7 +229,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 })
             }
 
-            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids=null) => {
+            const get_paginated_properties = (page, chunk, cycle, access_level_instance_id, include_filters_sorts, include_property_ids=null, goal_id=null) => {
                 fn = inventory_service.get_properties;
                 const [filters, sorts] = include_filters_sorts ? [$scope.column_filters, $scope.column_sorts] : [[],[]]
 
@@ -249,6 +249,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     table_column_ids.join(),
                     access_level_instance_id,
                     include_property_ids,
+                    goal_id, // optional param to retrieve goal note details
                 );
             };
 
@@ -444,8 +445,9 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                 return combined_properties
             }
 
-            const combine_properties = (a, b) => {
+            const combine_properties = (current, baseline) => {
                 // Given 2 properties, find non null values and combine into a single property
+                let [a, b] = baseline_first ? [baseline, current] : [current, baseline];
                 let c = {};
                 Object.keys(a).forEach(key => c[key] = a[key] !== null ? a[key] : b[key])
                 return c
@@ -462,6 +464,15 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     'year_built'
                 ]
             )]
+
+            $scope.question_options = [
+                {id: 0, value: null},
+                {id: 1, value: 'Is this a new construction or acquisition?'},
+                {id: 2, value: 'Do you have data to report?'},
+                {id: 3, value: 'Is this value correct?'},
+                {id: 4, value: 'Are these values correct?'},
+                {id: 5, value: 'Other or multiple flags; explain in Additional Notes field'},
+            ]
             // handle cycle specific columns
             const selected_columns = () => {
                 let cols = property_column_names.map(name => $scope.columns.find(col => col.column_name === name))
@@ -497,9 +508,92 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                     { field: 'eui_change', displayName: 'EUI % Improvement', enableFiltering: false, enableSorting: false, headerCellClass: 'derived-column-display-name' },
                 ]
 
+                const goal_note_cols = [
+                    {
+                        field: 'goal_note.question',
+                        displayName: 'Question',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
+                        editDropdownOptionsArray: $scope.question_options,
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
+                        width: 350,
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents">
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">
+                                    <span>{{row.entity.goal_note.question}}</span>
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                     },
+                    {
+                        field: 'goal_note.resolution',
+                        displayName: 'Resolution',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        enableCellEdit: true,
+                        ediableCellTempalte: 'ui-grid/cellTitleValidator',
+                        cellClass: 'cell-edit',
+                        width: 300,
+                    },
+                    {
+                        field: 'historical_note.text',
+                        displayName: 'Historical Notes',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        enableCellEdit: true,
+                        ediableCellTempalte: 'ui-grid/cellTitleValidator',
+                        cellClass: 'cell-edit',
+                        width: 300,
+                    },
+                    {
+                        field: 'goal_note.passed_checks',
+                        displayName: 'Passed Checks',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
+                        editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents" ng-class="row.entity.goal_note.passed_checks ? 'cell-pass' : 'cell-fail'">
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.passed_checks}}
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                    },
+                    {
+                        field: 'goal_note.new_or_acquired',
+                        displayName: 'New Build or Acquired',
+                        enableFiltering: false,
+                        enableSorting: false,
+                        editableCellTemplate: "ui-grid/dropdownEditor",
+                        editDropdownOptionsArray: [{id: 1, value: true}, {id: 2, value: false}],
+                        editDropdownIdLabel: 'value',
+                        enableCellEdit: $scope.write_permission,
+                        cellClass: (grid, row, col, rowRenderIndex, colRenderIndex) => $scope.write_permission && 'cell-dropdown',
+                        // if user has write permission show a dropdown inidcator
+                        cellTemplate: `
+                            <div class="ui-grid-cell-contents" ng-class="row.entity.goal_note.new_or_acquired && 'cell-pass'">
+                                <span ng-class="grid.appScope.write_permission && 'cell-dropdown-indicator'">{{row.entity.goal_note.new_or_acquired}}
+                                    <i ng-if="grid.appScope.write_permission" class="fa-solid fa-chevron-down" ></i>
+                                </span>
+                            <div>
+                        `
+                    },
+
+                ]
+
                 apply_defaults(baseline_cols, default_baseline)
                 apply_defaults(current_cols, default_current)
-                cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols]
+                cols = [...cols, ...baseline_cols, ...current_cols, ...summary_cols, ...goal_note_cols]
 
                 // Apply filters
                 // from inventory_list_controller
@@ -611,7 +705,7 @@ angular.module('BE.seed.controller.portfolio_summary', [])
             const remove_conflict_columns = (grid_columns) => {
                 // Property's are returned from 2 different get requests. One for the current, one for the baseline
                 // The second filter is solely based on the property ids from the first
-                // Filtering on the first and  second will result in unrepresntative data
+                // Filtering on the first and second will result in unrepresntative data
                 // Remove the conflict to allow sorting/filtering on either baseline or current.
 
                 const column_names = grid_columns.map(c => c.name);
@@ -787,6 +881,16 @@ angular.module('BE.seed.controller.portfolio_summary', [])
                                 $scope.load_inventory(1);
                             }, 2000)
                         );
+
+                        gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue, oldValue) => {
+                            [model, field] = colDef.field.split('.')
+
+                            if (model == 'historical_note') {
+                                goal_service.update_historical_note( rowEntity.id, rowEntity.historical_note.id, {[field]: newValue} )
+                            } else if (model == 'goal_note') {
+                                goal_service.update_goal_note( rowEntity.id, rowEntity.goal_note.id, { [field]: newValue } )
+                            }
+                        })
                     }
                 }
             }

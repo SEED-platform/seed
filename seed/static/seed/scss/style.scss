@@ -5234,7 +5234,7 @@ ul.r-list {
     }
 
     .above-target {
-      background: #9dca8f;
+      background: #d0e6d4;
     }
 
     .below-target {
@@ -5428,7 +5428,31 @@ tags-input .tags .tag-item {
   word-wrap: break-word;
 }
 
+.cell-dropdown {
+  cursor: copy;
+}
+.cell-edit {
+  cursor: cell;
+}
+.cell-dropdown-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 3px;
+  i {
+    color: gray;
+  }
+}
+
 .deprecation-warning {
   padding: 10px;
   color: #c24e00;
+}
+.cell-pass {
+  background-color: #d0e6d4;
+  border-top: 1px solid #d4d4d4;
+}
+.cell-fail {
+  background-color: #fefbd1;
+  border-top: 1px solid #d4d4d4;
 }
