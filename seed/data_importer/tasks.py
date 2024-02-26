@@ -987,7 +987,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                     result[sensor_column_name] = {'count': len(cursor.fetchall())}
         except ProgrammingError as e:
             if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-                result[sensor_column_name] = {'error': 'Overlapping readings.'}
+                result[sensor_column_name] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
             else:
                 progress_data.finish_with_error('data failed to import')
                 raise e
@@ -1052,7 +1052,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
                 result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-            result[result_summary_key] = {'error': 'Overlapping readings.'}
+            result[result_summary_key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1121,7 +1121,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
                 meter_readings.get('source_id'),
                 type_lookup[meter_readings['type']]
             )
-            result[key] = {'error': 'Overlapping readings.'}
+            result[key] = {'error': 'Import failed. Unable to import data with duplicate start and end date pairs.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -1276,6 +1276,9 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         except Exception as e:
             _log.debug(f'Error reading XLSX file: {str(e)}')
             return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
+
+    if any('{' in header or '}' in header for header in parser.headers):
+        return progress_data.finish_with_error('Failed to import. Please review your import file - headers cannot contain braces: { }')
 
     import_file.has_generated_headers = False
     if hasattr(parser, 'has_generated_headers'):
