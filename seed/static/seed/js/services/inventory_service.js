@@ -64,7 +64,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null,
       access_level_instance_id = null,
-      include_property_ids
+      include_property_ids,
+      goal_id = null,
     ) => {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
@@ -110,6 +111,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // add access_level_instance if it exists
           if (access_level_instance_id) {
             data.access_level_instance_id = access_level_instance_id;
+          }
+          if (goal_id) {
+            data.goal_id = goal_id
           }
 
           return $http
