@@ -12,6 +12,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.grid',
   'ui.grid.draggable-rows',
   'ui.grid.exporter',
+  'ui.grid.edit',
   'ui.grid.moveColumns',
   'ui.grid.pinning',
   'ui.grid.resizeColumns',
