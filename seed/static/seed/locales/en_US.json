@@ -163,6 +163,7 @@
     "COMPLETE_AND_REFRESH": "Complete and Refresh Page",
     "CONFIGURE_PROGRAM": "Need to configure your Program?",
     "CONFIRMING_DELETE_PROFILE": "Are you sure you want to delete the profile",
+    "CONFIRM_ACCESS_LEVEL_DELETE": "Are you sure you want to delete this access level? This action will also delete {num_access_levels} access level instances.",
     "CONFIRM_AND_START_MATCHING": "Confirm mappings &amp; start matching",
     "CONTINUE": "Continue",
     "CONTINUE_QUESTION": "Are you sure you want to continue?",
